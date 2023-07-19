@@ -42,16 +42,12 @@ TEST_F(OperatorCostModelTest, test_table_scan) {
 
     SecureSqlInput input(db_name_, sql, false, collation); 	
 
-	size_t start_gates = manager_->andGateCount();
 	auto scanned = input.run();
 	
     auto cost = OperatorCostModel::operatorCost(&input);
+    auto gate_cnt = input.getGateCount();
 
-	size_t end_gates = manager_->andGateCount();
-    auto gate_cnt = end_gates - start_gates;
-
-	std::cout << "Predicted cost: " << cost << "\n";
-	std::cout << "Observed cost: " << gate_cnt << "\n";
+	std::cout << "Predicted cost: " << cost << ", observed cost: " << gate_cnt << "\n";
 
 	if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, false);

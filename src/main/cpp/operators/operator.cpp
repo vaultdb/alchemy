@@ -66,8 +66,12 @@ QueryTable<B> *Operator<B>::run() {
 
         if (gate_cnt_ > 0) {
         size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
+        float relative_error = std::fabs(((float) estimated_gates) - ((float) gate_cnt_)) / (float) gate_cnt_ * 100.0;
         cout << "Estimated cost: " << estimated_gates << ", Observed gates: " << gate_cnt_ << ", Error rate(%) : "
-             << std::fabs(((float) estimated_gates) - ((float) gate_cnt_)) / (float) gate_cnt_ * 100.0 << endl;
+             << relative_error << endl;
+        if(relative_error > 15.0) cout << "***Warning: high cost model error on operator (" << this->getOperatorId() << ") " << this->getOperatorType() << endl;
+
+
         }
         //cout << "      Operator desc: " << this->toString() << endl;
     }

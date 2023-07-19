@@ -60,15 +60,20 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
             if(alice_tuple_cnt > 0) secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table, 0, true);
             if(bob_tuple_cnt > 0)  secret_share_send(emp::BOB, src, dst_table, alice_tuple_cnt, false);
         }
+
+
         int counter = 0;
         Sort<emp::Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true, counter);
+
         float n = dst_table->getTupleCount();
         float rounds = log2(dst_table->getTupleCount());
 
         float comparisons_per_stage = n /2;
         float total_comparisons = rounds * comparisons_per_stage;
         float relative_error = fabs(total_comparisons - counter)/counter;
+        auto gate_cnt = this->andGateCount();
         cout << "Estimated comparisons: " << total_comparisons << ", observed=" << counter << ", relative error=" << relative_error << endl;
+        cout << "Gate count: " << gate_cnt << ", avg cost per comparison: " << gate_cnt/total_comparisons << endl;
     }
     else { // concatenate Alice and Bob
         if (party_ == emp::ALICE) {
@@ -86,33 +91,51 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
 
 }
 
-void SH2PCManager::secret_share_recv(const size_t &tuple_count, const int &dst_party,
+void SH2PCManager::secret_share_recv(const size_t &tuple_count, const int &party,
                                     SecureTable *dst_table, const size_t &write_offset,
                                     const bool &reverse_read_order)  {
 
     int32_t cursor = (int32_t) write_offset;
+    auto dst_schema = dst_table->getSchema();
+    auto src_schema = QuerySchema::toPlain(dst_schema);
+
+    PlainTuple src_tuple(&src_schema);
 
     if(reverse_read_order) {
 
         for(int32_t i = tuple_count - 1; i >= 0; --i) {
-            FieldUtilities::secret_share_recv(dst_table, cursor, dst_party);
+            for(int j = 0; j < dst_table->getSchema().getFieldCount(); ++j) {
+                PlainField placeholder = src_tuple.getField(j);
+                auto field_desc = src_schema.getField(j);
+                auto dst_field = SecureField::secretShareHelper(placeholder, field_desc, party, false);
+                dst_table->setPackedField(cursor, j, dst_field);
+            }
+
+            emp::Bit b(0, party);
+            dst_table->setDummyTag(cursor, b);
             ++cursor;
         }
-
-
-
         return;
     }
 
     // else
     for(size_t i = 0; i < tuple_count; ++i) {
-        FieldUtilities::secret_share_recv(dst_table, cursor, dst_party);
+        for(int j = 0; j < dst_table->getSchema().getFieldCount(); ++j) {
+            PlainField placeholder = src_tuple.getField(j);
+            auto field_desc = src_schema.getField(j);
+            auto dst_field = SecureField::secretShareHelper(placeholder, field_desc, party, false);
+            dst_table->setPackedField(cursor, j, dst_field);
+        }
+
+        emp::Bit b(0, party);
+        dst_table->setDummyTag(cursor, b);
         ++cursor;
     }
 
-
-
 }
+
+
+
 
 
 
@@ -121,20 +144,37 @@ SH2PCManager::secret_share_send(const int &party,const PlainTable *src_table, Se
                                const bool &reverse_read_order)  {
 
     int cursor = (int) write_offset;
+    auto src_schema = src_table->getSchema();
+
 
     if(reverse_read_order) {
         for(int i = src_table->getTupleCount() - 1; i >= 0; --i) {
-            FieldUtilities::secret_share_send(src_table, i, dst_table,  cursor, party);
+            for(int j = 0; j < src_table->getSchema().getFieldCount(); ++j) {
+                auto src_field = src_table->getField(i, j);
+                auto field_desc = src_schema.getField(j);
+
+                auto dst_field = SecureField::secretShareHelper(src_field, field_desc, party, true);
+                dst_table->setPackedField(cursor, j, dst_field);
+            }
+            emp::Bit b(src_table->getDummyTag(i), party);
+            dst_table->setDummyTag(cursor, b);
+
             ++cursor;
         }
-
-        return;
-
+        return; // end reverse order
     }
 
     // else
     for(size_t i = 0; i < src_table->getTupleCount(); ++i) {
-        FieldUtilities::secret_share_send(src_table, i, dst_table,  cursor, party);
+        for(int j = 0; j < src_table->getSchema().getFieldCount(); ++j) {
+            auto src_field = src_table->getField(i, j);
+            auto field_desc = src_schema.getField(j);
+            auto dst_field = SecureField::secretShareHelper(src_field, field_desc, party, true);
+            dst_table->setPackedField(cursor, j, dst_field);
+        }
+
+        emp::Bit b(src_table->getDummyTag(i), party);
+        dst_table->setDummyTag(cursor, b);
         ++cursor;
     }
 

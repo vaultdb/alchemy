@@ -71,7 +71,6 @@ void SecureSortMergeJoinTest::runCustomerOrdersTest() {
     SortMergeJoin join(orders_input, customer_input, predicate);
     // Join output schema: (#0 encrypted-int32(13) orders.o_orderkey, #1 encrypted-int32(8) orders.o_custkey, #2 encrypted-int64(28) orders.o_orderdate, #3 encrypted-int32(1) orders.o_shippriority, #4 encrypted-int32(8) customer.c_custkey)
 
-	std::cout << "Predicted cost: " << OperatorCostModel::operatorCost(&join) << "\n";
     auto joined = join.run();
     if(FLAGS_validation) {
         PlainTable *observed = joined->reveal();

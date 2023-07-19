@@ -89,8 +89,12 @@ namespace vaultdb {
 
         static SecureField
         secret_share_send(const PlainField &src, const QueryFieldDesc &field_desc, const int &src_party);
+
         static SecureField
-        secret_share_recv(const QueryFieldDesc &&field_desc, const int &src_party);
+        secret_share_recv(const QueryFieldDesc &field_desc, const int &src_party);
+
+        static SecureField secretShareHelper(const PlainField &field, const QueryFieldDesc &field_desc, const int &party,
+                                       const bool &send);
 
         std::string toString() const;
 
@@ -192,9 +196,6 @@ namespace vaultdb {
 
             return res;
         }
-
-        static Value secretShareHelper(const PlainField &field, const QueryFieldDesc &field_desc, const int &party,
-                                       const bool &send);
 
     };
 

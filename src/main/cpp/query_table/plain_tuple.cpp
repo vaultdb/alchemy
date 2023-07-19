@@ -122,7 +122,7 @@ string QueryTuple<bool>::toString(const bool &showDummies) const {
 QueryTuple<bool>::QueryTuple(QuerySchema *schema) {
     size_t tuple_byte_cnt = schema->size()/8;
     managed_data_ = new int8_t[tuple_byte_cnt];
-    memset(managed_data_, 0, tuple_byte_cnt); // zero out memory (for dummy tuples
+    memset(managed_data_, 0, tuple_byte_cnt); // zero out memory (for dummy tuples)
     fields_ = managed_data_;
     schema_ = schema;
 

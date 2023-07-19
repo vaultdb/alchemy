@@ -61,6 +61,15 @@ void SortMergeJoin<B>::setup() {
     one_ = FieldFactory<B>::getOne(int_field_type_);
     zero_ = FieldFactory<B>::getZero(int_field_type_);
     bit_packed_ = SystemConfiguration::getInstance().bitPackingEnabled();
+
+    // just taking the first instance of equi-join key
+    // TODO: refine sort order in optimizer
+    SortDefinition sort_def;
+    for(auto &pos : join_idxs_) {
+        sort_def.push_back(ColumnSort (pos.first, SortDirection::ASCENDING));
+    }
+    this->setSortOrder(sort_def);
+
 }
 
 template<typename B>

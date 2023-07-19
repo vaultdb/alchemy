@@ -109,8 +109,6 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders) {
 
 
 
-// compose C-O-L join should produce one output tuple, order ID 210945
-// compose C-O-L join should produce one output tuple, order ID 210945
 TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
@@ -150,18 +148,16 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
     auto *full_join = new SortMergeJoin(lineitem_input, customer_orders_join, 0, lineitem_orders_predicate);
 
 
-    PlainTable *observed = full_join->run();
 	SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(7);
-    Sort<bool> observed_sort(observed, sort_def);
-    observed = observed_sort.run();
+    Sort<bool> observed_sort(full_join, sort_def);
+    auto observed = observed_sort.run();
 
-    //observed->setSortOrder(expected->getSortOrder());
+    expected->setSortOrder(observed->getSortOrder());
 
 
     ASSERT_EQ(*expected, *observed);
 
     delete expected;
-	delete full_join;
 
 }
 
@@ -279,7 +275,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
     auto full_join = new SortMergeJoin(customer_orders_join, lineitem_input, 1, lineitem_orders_predicate);
 
 
-    PlainTable *observed = full_join->run();
+    PlainTable *observed = full_join->run()->clone();
 	SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(7);
     Sort<bool> observed_sort(observed, sort_def);
     observed = observed_sort.run();

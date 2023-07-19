@@ -157,13 +157,13 @@ B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int 
     B swap = false;
     B not_init = true;
 
+//    auto before = SystemConfiguration::getInstance().andGateCount();
 
     for (size_t i = 0; i < sort_definition.size(); ++i) {
 //        auto start_ands = SystemConfiguration::getInstance().andGateCount();
         bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
         if(dir)
             asc = !asc;
-
 
         const Field<B> lhs_field = table->getPackedField(lhs_idx,sort_definition[i].first);
         const Field<B> rhs_field = table->getPackedField(rhs_idx,sort_definition[i].first);
@@ -187,7 +187,7 @@ B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int 
     }
 
 //    if(lhs_idx== 0 && rhs_idx == 1) {
-//        cout << endl;
+//        cout << " total gates: " << SystemConfiguration::getInstance().andGateCount() - before <<  endl;
 //    }
 
     return swap;

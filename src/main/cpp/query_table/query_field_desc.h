@@ -85,6 +85,7 @@ namespace  vaultdb {
         }
         void initializeFieldSizeWithCardinality(int cardinality);
         string prettyPrint() const;
+        inline int getBitPackedSize() const { return bit_packed_size_; }
     private:
         void initializeFieldSize();
 

@@ -3,7 +3,6 @@
 #include "field_factory.h"
 #include <util/field_utilities.h>
 #include <util/system_configuration.h>
-#include <bit>
 
 using namespace vaultdb;
 
@@ -123,9 +122,9 @@ B Field<B>::operator>(const Field &rhs) const {
 template<typename B>
 SecureField Field<B>::secret_share() const {
     QueryFieldDesc anon(0, "anon", "", type_, 0);
-    Value result = secretShareHelper((PlainField &) *this, anon, 0, true);
-    FieldType resType = TypeUtilities::toSecure(type_);
-    return SecureField(resType, result, string_length_);
+    if(type_ == TypeUtilities::toSecure(type_))
+        return *((SecureField *) this);
+    return secretShareHelper((PlainField &) *this, anon, 0, true);
 }
 
 
@@ -133,15 +132,14 @@ SecureField Field<B>::secret_share() const {
 
 template<typename B>
 SecureField Field<B>::secret_share_send(const PlainField &src, const QueryFieldDesc &field_desc, const int &src_party) {
-    Value result = secretShareHelper(src, field_desc, src_party, true);
-    FieldType resType = TypeUtilities::toSecure(src.type_);
-
-    return SecureField(resType, result, src.string_length_);
+    return  secretShareHelper(src, field_desc, src_party, true);
 }
+
+
 
 template<typename B>
 SecureField
-Field<B>::secret_share_recv(const QueryFieldDesc &&field_desc, const int &src_party) {
+Field<B>::secret_share_recv(const QueryFieldDesc &field_desc, const int &src_party) {
     assert(TypeUtilities::isEncrypted(field_desc.getType()));
 
     FieldType plain_type = TypeUtilities::toPlain(field_desc.getType());
@@ -149,8 +147,7 @@ Field<B>::secret_share_recv(const QueryFieldDesc &&field_desc, const int &src_pa
 
 
     PlainField p(plain_type, input, field_desc.getStringLength());
-    Value result = secretShareHelper(p, field_desc, src_party, false);
-    return SecureField(field_desc.getType(), result, field_desc.getStringLength());
+    return secretShareHelper(p, field_desc, src_party, false);
 
 
 }
@@ -445,40 +442,49 @@ void Field<B>::serializePacked(int8_t *dst, const QueryFieldDesc &schema) const 
 }
 
 
-// does not need QueryFieldDesc - sending deserialized (unpacked) version of payload
 template<typename B>
-Value
-Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDesc &field_desc, const int &party, const bool &send) {
 
+SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDesc &src_field_desc, const int &party, const bool &send) {
 
+    Value v;
+    FieldType type;
 
     switch (f.type_) {
         case FieldType::BOOL:
-            return emp::Bit(f.getValue<bool>(), party);
-        case FieldType::INT:
-            // + bitpacked to add one bit if we are padding it for two's complement
-            // full length because this is unpacked representation, don't need more than this because we'll do this in serialize()
-            return emp::Integer(32,  (send) ?  boost::get<int32_t>(f.payload_)
-                                            : 0, party);
-        case FieldType::LONG:
-            return emp::Integer(64,  (send) ?  boost::get<int64_t>(f.payload_)
-                                                           : 0L, party);
-        case FieldType::STRING:
-            return secretShareString(boost::get<string>(f.payload_), send, f.string_length_, party);
+            v =  emp::Bit(f.getValue<bool>(), party);
+            break;
+        case FieldType::INT: {
+            int32_t val = (send) ? boost::get<int32_t>(f.payload_) : 0;
+            int bit_packed_size = src_field_desc.getBitPackedSize();
+            bool bit_packed_dst = (bit_packed_size != src_field_desc.size());
+            if (bit_packed_dst && send) val = val - src_field_desc.getFieldMin();
+            // + bit_packed_dst to add one bit if we are padding it for two's complement
+            v = emp::Integer(bit_packed_size + bit_packed_dst, val, party);
+            type = FieldType::SECURE_INT;
+            break;
+        }
+        case FieldType::LONG: {
+            int64_t val = (send) ? boost::get<int64_t>(f.payload_) : 0L;
+            int bit_packed_size = src_field_desc.getBitPackedSize();
+            bool bit_packed_dst = (bit_packed_size != src_field_desc.size());
+            if (bit_packed_dst && send) val = val - src_field_desc.getFieldMin();
+            v = emp::Integer(bit_packed_size + bit_packed_dst, val, party);
+            type = FieldType::SECURE_LONG;
+            break;
+        }
+        case FieldType::STRING: {
+            v = secretShareString(boost::get<string>(f.payload_), send, f.string_length_, party);
+            type = FieldType::SECURE_STRING;
+            break;
+        }
         case FieldType::FLOAT:
-            return emp::Float(f.getValue<float_t>(), party);
-        case FieldType::SECURE_BOOL:
-            return f.getValue<emp::Bit>();
-        case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-        case FieldType::SECURE_STRING:
-            return f.getValue<emp::Integer>();
-        case FieldType::SECURE_FLOAT:
-            return f.getValue<emp::Float>();
-
-        default:
+            v = emp::Float(f.getValue<float_t>(), party);
+            type = FieldType::SECURE_FLOAT;
+            break;
+        default: // type alignment error
             throw;
     }
+    return SecureField(type, v, f.string_length_);
 
 }
 
