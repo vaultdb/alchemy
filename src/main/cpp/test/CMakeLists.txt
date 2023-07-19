@@ -94,7 +94,7 @@ package_add_test(expression_cost_model_test mpc/expression_cost_model_test.cpp m
 package_add_test(operator_cost_model_test mpc/operator_cost_model_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
 package_add_test(plan_cost_test mpc/plan_cost_test.cpp  mpc/emp_base_test.h mpc/emp_base_test.cpp)
 package_add_test(fully_optimized_test mpc/fully_optimized_test.cpp  mpc/emp_base_test.h mpc/emp_base_test.cpp)
-package_add_test(aggregate_cost_model_test mpc/aggregate_cost_model_test.cpp  mpc/emp_base_test.h mpc/emp_base_test.cpp)
+package_add_test(join_cost_comparison_test mpc/join_cost_comparison_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
 
 
 #ZK experiments - optional

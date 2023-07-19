@@ -70,8 +70,6 @@ QueryTable<B> *Operator<B>::run() {
         cout << "Estimated cost: " << estimated_gates << ", Observed gates: " << gate_cnt_ << ", Error rate(%) : "
              << relative_error << endl;
         if(relative_error > 15.0) cout << "***Warning: high cost model error on operator (" << this->getOperatorId() << ") " << this->getOperatorType() << endl;
-
-
         }
         //cout << "      Operator desc: " << this->toString() << endl;
     }
@@ -117,6 +115,9 @@ std::string Operator<B>::toString() const {
         ss << "(" << params << ") ";
 
     ss << ": " <<  output_schema_ <<    " order by: " << DataUtilities::printSortDefinition(sort_definition_);
+
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
+    ss << " Estimated cost: " << estimated_gates;
 
     return ss.str();
 

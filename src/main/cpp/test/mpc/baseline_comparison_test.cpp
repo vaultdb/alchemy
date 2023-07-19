@@ -36,7 +36,7 @@ protected:
     void runTest_handcode(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
 
-    int input_tuple_limit_ = FLAGS_cutoff;
+    int input_tuple_limit_ = -1;
 
 };
 
