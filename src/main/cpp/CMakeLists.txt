@@ -90,6 +90,7 @@ set(sources
 		operators/join.cpp
 		operators/basic_join.cpp
 		operators/keyed_join.cpp
+		operators/merge_join.cpp
 		operators/support/scalar_aggregate_impl.cpp
 		operators/scalar_aggregate.cpp
 		operators/union.cpp
