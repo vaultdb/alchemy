@@ -65,7 +65,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-    std::cout << root->printTree() << endl;
+    //std::cout << root->printTree() << endl;
 
     SecureTable *result = root->run();
 
@@ -106,7 +106,7 @@ FullyOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDe
     return query;
 }
 
-/*
+
 TEST_F(FullyOptimizedTest, tpch_q1) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest(1, "q1", expected_sort, FLAGS_unioned_db);
@@ -143,7 +143,7 @@ TEST_F(FullyOptimizedTest, tpch_q9) {
     runTest(9, "q9", expected_sort, FLAGS_unioned_db);
 
 }
-*/
+
 
 TEST_F(FullyOptimizedTest, tpch_q18) {
     // -1 ASC, $4 DESC, $3 ASC
