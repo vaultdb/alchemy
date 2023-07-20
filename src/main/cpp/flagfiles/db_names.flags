@@ -1,0 +1,3 @@
+--unioned_db=tpch_unioned_150
+--alice_db=tpch_alice_150
+--bob_db=tpch_bob_150
