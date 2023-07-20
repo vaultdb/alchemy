@@ -140,7 +140,7 @@ TEST_F(JoinCostComparisonTest, tpch_q9) {
 
 
 TEST_F(JoinCostComparisonTest, tpch_q18) {
-    int join_count = 4;
+    int join_count = 5;
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(4, SortDirection::DESCENDING),
                                  ColumnSort(3, SortDirection::ASCENDING)};
