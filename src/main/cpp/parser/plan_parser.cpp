@@ -18,6 +18,7 @@
 #include <operators/scalar_aggregate.h>
 #include <operators/keyed_join.h>
 #include <operators/sort_merge_join.h>
+#include <operators/merge_join.h>
 #include <operators/basic_join.h>
 #include <operators/filter.h>
 #include <operators/project.h>
@@ -325,7 +326,11 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
             string joinType = join_tree.get_child("operator-algorithm").template get_value<string>();
             if (joinType == "sort-merge-join")
                 return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
+            if (joinType == "merge-join")
+                return new MergeJoin<B>(lhs, rhs, join_condition);
+
             return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
+
 
 
         }

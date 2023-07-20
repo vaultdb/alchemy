@@ -11,6 +11,7 @@
 #include "operators/secure_sql_input.h"
 #include "operators/sort.h"
 #include "operators/sort_merge_join.h"
+#include "operators/merge_join.h"
 #include "operators/scalar_aggregate.h"
 #include "operators/shrinkwrap.h"
 #include "operators/union.h"
@@ -26,6 +27,7 @@ namespace vaultdb {
         static size_t basicJoinCost(const BasicJoin<Bit> *join);
         static size_t keyedJoinCost(const KeyedJoin<Bit> *join);
         static size_t sortMergeJoinCost(SortMergeJoin<Bit> *join);
+        static size_t mergeJoinCost(MergeJoin<Bit> *join);
         static size_t groupByAggregateCost(const GroupByAggregate<Bit> *aggregate);
         static size_t nestedLoopAggregateCost(const NestedLoopAggregate<Bit> *aggregate);
         static size_t sortCost(const Sort<Bit> *sort);

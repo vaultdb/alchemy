@@ -18,6 +18,8 @@ size_t OperatorCostModel::operatorCost(const SecureOperator *op) {
         return keyedJoinCost((KeyedJoin<Bit> *) op);
     else if(operator_type == "BasicJoin")
         return basicJoinCost((BasicJoin<Bit> *) op);
+    else if(operator_type == "MergeJoin")
+        return mergeJoinCost((MergeJoin<Bit> *) op);
     else if(operator_type == "Shrinkwrap")
         return shrinkwrapCost((Shrinkwrap<Bit> *) op);
     else if(operator_type == "Project")
@@ -75,6 +77,18 @@ size_t OperatorCostModel::basicJoinCost(const BasicJoin<Bit> *join) {
     return per_row_cost * row_count;
 
 }
+
+size_t OperatorCostModel::mergeJoinCost(MergeJoin<Bit> *join) {
+    Expression<Bit> *predicate = join->getPredicate();
+    assert(predicate->exprClass() == ExpressionClass::GENERIC);
+    ExpressionNode<Bit> *root = ((GenericExpression<Bit> *) predicate)->root_;
+
+    ExpressionCostModel<Bit> cost_model(root, join->getOutputSchema());
+    size_t per_row_cost = cost_model.cost() + 3; // +3 for bookkeeping on dummy tag
+    size_t row_count = join->getOutputCardinality();
+    return per_row_cost * row_count;
+}
+
 
 size_t OperatorCostModel::keyedJoinCost(const KeyedJoin<Bit> *join) {
     Expression<Bit> *predicate = join->getPredicate();
@@ -488,4 +502,5 @@ size_t OperatorCostModel::sortCost(const QuerySchema &schema, const SortDefiniti
     size_t c_and_s_cost = compareSwapCost(schema, sort, n);
     return comparison_cnt * c_and_s_cost;
 }
+
 
