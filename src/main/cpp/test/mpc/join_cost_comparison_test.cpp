@@ -17,6 +17,9 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 7654, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -39,12 +42,12 @@ void
 JoinCostComparisonTest::runTest(const int &test_id, const string & test_name, const string & join_index, const SortDefinition &expected_sort, const string &db_name) {
 
 
-    cout << "Expected DB : " << FLAGS_dbname;
+    cout << "Expected DB : " << FLAGS_unioned_db;
     this->initializeBitPacking(FLAGS_dbname);
 
     string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_dbname);
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
-    string local_db = FLAGS_dbname;
+    string local_db = FLAGS_unioned_db;
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
     cout << " Observed DB : "<< local_db << " - Bit Packed" << endl;
@@ -109,7 +112,7 @@ TEST_F(JoinCostComparisonTest, tpch_q3) {
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
     for(int i = 0; i < join_count; i++)
-        runTest(3, "q3", std::to_string(i+1), expected_sort, unioned_db_);
+        runTest(3, "q3", std::to_string(i+1), expected_sort, FLAGS_unioned_db);
 }
 
 
@@ -117,7 +120,7 @@ TEST_F(JoinCostComparisonTest, tpch_q5) {
     int join_count = 4;
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
     for(int i = 0; i < join_count; i++)
-        runTest(5, "q5", std::to_string(i+1), expected_sort, unioned_db_);
+        runTest(5, "q5", std::to_string(i+1), expected_sort, FLAGS_unioned_db);
 }
 
 
@@ -125,7 +128,7 @@ TEST_F(JoinCostComparisonTest, tpch_q8) {
     int join_count = 4;
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     for(int i = 0; i < join_count; i++)
-        runTest(8, "q8", std::to_string(i+1), expected_sort, unioned_db_);
+        runTest(8, "q8", std::to_string(i+1), expected_sort, FLAGS_unioned_db);
 }
 
 
@@ -134,7 +137,7 @@ TEST_F(JoinCostComparisonTest, tpch_q9) {
     int join_count = 4;
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
     for(int i = 0; i < join_count; i++)
-        runTest(9, "q9", std::to_string(i+1), expected_sort, unioned_db_);
+        runTest(9, "q9", std::to_string(i+1), expected_sort, FLAGS_unioned_db);
 
 }
 
@@ -145,7 +148,7 @@ TEST_F(JoinCostComparisonTest, tpch_q18) {
                                  ColumnSort(4, SortDirection::DESCENDING),
                                  ColumnSort(3, SortDirection::ASCENDING)};
     for(int i = 0; i < join_count; i++)
-        runTest(18, "q18", std::to_string(i+1), expected_sort, unioned_db_);
+        runTest(18, "q18", std::to_string(i+1), expected_sort, FLAGS_unioned_db);
 }
 
 

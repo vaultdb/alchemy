@@ -10,6 +10,9 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43450, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65458, "port for managing EMP control flow by passing public values");
@@ -45,7 +48,7 @@ TEST_F(SecureMergeJoinTest, merge_q18) {
     auto joined = join.run()->reveal();
 
     // need unioned results to cover a corner case
-    auto expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, expected_sql, false);
+    auto expected = DataUtilities::getUnionedResults(FLAGS_alice_db, FLAGS_bob_db, expected_sql, false);
 
     Sort sorter(expected, collation);
     expected = sorter.run();

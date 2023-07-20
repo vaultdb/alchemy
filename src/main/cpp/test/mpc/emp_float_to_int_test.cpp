@@ -6,6 +6,9 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54326, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 using namespace vaultdb;

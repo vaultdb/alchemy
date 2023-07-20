@@ -18,6 +18,9 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 7654, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65478, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -87,7 +90,7 @@ SecureTpcHTest::generateExpectedOutputQuery(const int &test_id, const string &db
  // passes in ~17 secs on codd2
 TEST_F(SecureTpcHTest, tpch_q01) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort, unioned_db_);
+    runTest(1, "q1", expected_sort, FLAGS_unioned_db);
 }
 
 
@@ -100,7 +103,7 @@ TEST_F(SecureTpcHTest, tpch_q03) {
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
-    runTest(3, "q3", expected_sort, unioned_db_);
+    runTest(3, "q3", expected_sort, FLAGS_unioned_db);
 }
 
 
@@ -109,7 +112,7 @@ TEST_F(SecureTpcHTest, tpch_q05) {
     input_tuple_limit_ = 200;
 
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(5, "q5", expected_sort, unioned_db_);
+    runTest(5, "q5", expected_sort, FLAGS_unioned_db);
 
 }
 
@@ -117,14 +120,14 @@ TEST_F(SecureTpcHTest, tpch_q05) {
 TEST_F(SecureTpcHTest, tpch_q08) {
     input_tuple_limit_ = 400;
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest(8, "q8", expected_sort, unioned_db_);
+    runTest(8, "q8", expected_sort, FLAGS_unioned_db);
 }
 
  // *passes in around ~42 secs on codd2
 TEST_F(SecureTpcHTest, tpch_q09) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(9, "q9", expected_sort, unioned_db_);
+    runTest(9, "q9", expected_sort, FLAGS_unioned_db);
 
 }
 // passes in ~2.5 mins
@@ -137,7 +140,7 @@ TEST_F(SecureTpcHTest, tpch_q18) {
                                  ColumnSort(3, SortDirection::ASCENDING)};
 
 
-    runTest(18, "q18", expected_sort, unioned_db_);
+    runTest(18, "q18", expected_sort, FLAGS_unioned_db);
 }
 
 

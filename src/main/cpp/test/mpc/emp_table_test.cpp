@@ -6,6 +6,9 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54334, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65428, "port for managing EMP control flow by passing public values");
@@ -80,7 +83,7 @@ TEST_F(EmpTableTest, secret_share_table_dummy_tag) {
     SecureTable *secret_shared = input->secretShare();
     if(FLAGS_validation) {
         PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, true);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, true);
         expected->setSortOrder(collation);
         DataUtilities::removeDummies(expected);
         ASSERT_EQ(*expected, *revealed);
@@ -107,7 +110,7 @@ TEST_F(EmpTableTest, bit_packing_test) {
     // c_nationkey has 25 distinct vals, should have 5 bits
     ASSERT_EQ(5, secret_shared->getSchema().getField(1).size());
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
     expected->setSortOrder(collation);
 
     ASSERT_EQ(secret_shared->getTupleCount(),  expected->getTupleCount());
@@ -138,7 +141,7 @@ void EmpTableTest::secretShareAndValidate(const std::string & sql, const SortDef
 
     if(FLAGS_validation) {
         PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, false);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
         expected->setSortOrder(sort);
 
         ASSERT_EQ(*expected, *revealed);

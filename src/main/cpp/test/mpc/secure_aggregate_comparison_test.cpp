@@ -23,13 +23,15 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 7654, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_string(bitpacking, "packed", "bit packed or non-bit packed");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_int32(cutoff, 10, "cutoff for Operator Comparison");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
-DEFINE_string(dbname, "tpch_unioned_150", "db name for baseline comparison test");
 
 
 class SecureAggregateComparisonTest : public EmpBaseTest {
@@ -55,7 +57,7 @@ void
 SecureAggregateComparisonTest::runTest_SMA(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 
     if(FLAGS_bitpacking == "packed")
-        this->initializeBitPacking(unioned_db_);
+        this->initializeBitPacking(FLAGS_unioned_db);
     else
         this->disableBitPacking();
 
@@ -111,7 +113,7 @@ void
 SecureAggregateComparisonTest::runTest_NLA(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 
     if(FLAGS_bitpacking == "packed")
-        this->initializeBitPacking(unioned_db_);
+        this->initializeBitPacking(FLAGS_unioned_db);
     else
         this->disableBitPacking();
 
@@ -187,15 +189,13 @@ SecureAggregateComparisonTest::controlBitPacking(const string &db_name) {
 
 
 TEST_F(SecureAggregateComparisonTest, tpch_q1_NLA) {
+    controlBitPacking(FLAGS_unioned_db);
+    string local_db = (FLAGS_party == ALICE) ? FLAGS_alice_db : FLAGS_bob_db;
+    int cutoff = FLAGS_cutoff;
 
-    cout << "Expected DB : " << FLAGS_dbname;
-    controlBitPacking(FLAGS_dbname);
+    std::cout << "Expected : " << FLAGS_unioned_db << " Observed : " << local_db << " cutoff : " << std::to_string(cutoff) << "\n";
+    string input_rows = "SELECT * FROM lineitem WHERE l_orderkey IN (SELECT o_orderkey FROM orders WHERE o_custkey <= " + std::to_string(cutoff) + ") ORDER BY l_orderkey, l_linenumber";
 
-    string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
-    string local_db = FLAGS_dbname;
-    boost::replace_first(local_db, "unioned", party_name.c_str());
-
-    string input_rows = "SELECT * FROM lineitem WHERE l_orderkey IN (SELECT o_orderkey FROM orders WHERE o_custkey <= " + std::to_string(cutoff_) + ") ORDER BY l_orderkey, l_linenumber";
     string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                  " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
                  " FROM (" + input_rows + ") selection \n"
@@ -247,7 +247,9 @@ TEST_F(SecureAggregateComparisonTest, tpch_q1_NLA) {
 
         //auto sort = new Sort(observed, sort_def);
         //observed = sort->run();
-        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_dbname, expected_sql, false, 2);
+
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 2);
+
 
         ASSERT_EQ(*expected, *observed);
 
@@ -261,12 +263,11 @@ TEST_F(SecureAggregateComparisonTest, tpch_q1_NLA) {
 
 TEST_F(SecureAggregateComparisonTest, tpch_q1_SMA) {
 
-    cout << "Expected DB : " << FLAGS_dbname;
-    controlBitPacking(FLAGS_dbname);
+    controlBitPacking(FLAGS_unioned_db);
+    string local_db = (FLAGS_party == ALICE) ? FLAGS_alice_db : FLAGS_bob_db;
+    int cutoff = FLAGS_cutoff;
 
-    string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
-    string local_db = FLAGS_dbname;
-    boost::replace_first(local_db, "unioned", party_name.c_str());
+    std::cout << "Expected : " << FLAGS_unioned_db << " Observed : " << local_db << " cutoff : " << std::to_string(cutoff) << "\n";
 
     string input_rows = "SELECT * FROM lineitem WHERE l_orderkey IN (SELECT o_orderkey FROM orders WHERE o_custkey <= " + std::to_string(cutoff_) + ") ORDER BY l_orderkey, l_linenumber";
     string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
@@ -320,7 +321,8 @@ TEST_F(SecureAggregateComparisonTest, tpch_q1_SMA) {
 
         PlainTable *observed = aggregated->reveal(PUBLIC);
 
-        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_dbname, expected_sql, false, 2);
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 2);
+
         ASSERT_EQ(*expected, *observed);
         delete observed;
         delete expected;
@@ -328,11 +330,11 @@ TEST_F(SecureAggregateComparisonTest, tpch_q1_SMA) {
 }
 
 TEST_F(SecureAggregateComparisonTest, tpch_q5_NLA) {
+    controlBitPacking(FLAGS_unioned_db);
+    string local_db = (FLAGS_party == ALICE) ? FLAGS_unioned_db : "tpch_empty";
+    int cutoff = FLAGS_cutoff;
 
-    cout << "Expected DB : " << FLAGS_dbname;
-    controlBitPacking(FLAGS_dbname);
-
-    string local_db = (FLAGS_party == ALICE) ? FLAGS_dbname : "tpch_empty";
+    std::cout << "Expected : " << FLAGS_unioned_db << " Observed : " << local_db << " cutoff : " << std::to_string(cutoff) << "\n";
 
     string sql = "SELECT n.n_name, l.l_extendedprice * (1 - l.l_discount) as revenue, NOT (c.c_nationkey = s.s_nationkey  AND o.o_orderdate >= date '1993-01-01' AND o.o_orderdate < date '1994-01-01') AS dummy_tag\n"
                  "                 FROM  customer c JOIN orders o ON c.c_custkey = o.o_custkey\n"
@@ -369,7 +371,8 @@ TEST_F(SecureAggregateComparisonTest, tpch_q5_NLA) {
 
         //auto sort = new Sort(observed, sort_def);
         //observed = sort->run();
-        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_dbname, expected_sql, false, 1);
+
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 1);
 
         ASSERT_EQ(*expected, *observed);
 
@@ -381,10 +384,12 @@ TEST_F(SecureAggregateComparisonTest, tpch_q5_NLA) {
 
 }
 TEST_F(SecureAggregateComparisonTest, tpch_q5_SMA) {
-    cout << "Expected DB : " << FLAGS_dbname;
-    controlBitPacking(FLAGS_dbname);
 
-    string local_db = (FLAGS_party == ALICE) ? FLAGS_dbname : "tpch_empty";
+    controlBitPacking(FLAGS_unioned_db);
+    string local_db = (FLAGS_party == ALICE) ? FLAGS_unioned_db : "tpch_empty";
+    int cutoff = FLAGS_cutoff;
+    
+    std::cout << "Expected : " << FLAGS_unioned_db << " Observed : " << local_db << " cutoff : " << std::to_string(cutoff) << "\n";
 
     string sql = "SELECT n.n_name, l.l_extendedprice * (1 - l.l_discount) as revenue, NOT (c.c_nationkey = s.s_nationkey  AND o.o_orderdate >= date '1993-01-01' AND o.o_orderdate < date '1994-01-01') AS dummy_tag\n"
                  "                 FROM  customer c JOIN orders o ON c.c_custkey = o.o_custkey\n"
@@ -422,7 +427,8 @@ TEST_F(SecureAggregateComparisonTest, tpch_q5_SMA) {
 
         //auto sort = new Sort(observed, sort_def);
         //observed = sort->run();
-        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_dbname, expected_sql, false, 1);
+
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 1);
 
         ASSERT_EQ(*expected, *observed);
 
@@ -436,10 +442,12 @@ TEST_F(SecureAggregateComparisonTest, tpch_q5_SMA) {
 
 
 TEST_F(SecureAggregateComparisonTest, tpch_q9_SMA) {
-    cout << "Expected DB : " << FLAGS_dbname;
-    controlBitPacking(FLAGS_dbname);
 
-    string local_db = (FLAGS_party == ALICE) ? FLAGS_dbname : "tpch_empty";
+    controlBitPacking(FLAGS_unioned_db);
+    string local_db = (FLAGS_party == ALICE) ? FLAGS_unioned_db : "tpch_empty";
+    int cutoff = FLAGS_cutoff;
+
+    std::cout << "Expected : " << FLAGS_unioned_db << " Observed : " << local_db << " cutoff : " << std::to_string(cutoff) << "\n";
 
     string sql = "WITH order_years AS (\n"
                           "                     SELECT extract(year from o_orderdate)::INT as o_year, o.o_orderkey\n"
@@ -524,7 +532,9 @@ TEST_F(SecureAggregateComparisonTest, tpch_q9_SMA) {
 
         //auto sort = new Sort(observed, sort_def);
         //observed = sort->run();
-        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_dbname, expected_sql, false, 0);
+
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 0);
+
         expected->setSortOrder(sort_def);
 
         ASSERT_EQ(*expected, *observed);
@@ -538,10 +548,12 @@ TEST_F(SecureAggregateComparisonTest, tpch_q9_SMA) {
 }
 
 TEST_F(SecureAggregateComparisonTest, tpch_q9_NLA) {
-    cout << "Expected DB : " << FLAGS_dbname;
-    controlBitPacking(FLAGS_dbname);
 
-    string local_db = (FLAGS_party == ALICE) ? FLAGS_dbname : "tpch_empty";
+    controlBitPacking(FLAGS_unioned_db);
+    string local_db = (FLAGS_party == ALICE) ? FLAGS_unioned_db : "tpch_empty";
+    int cutoff = FLAGS_cutoff;
+
+    std::cout << "Expected : " << FLAGS_unioned_db << " Observed : " << local_db << " cutoff : " << std::to_string(cutoff) << "\n";
 
     string sql = "WITH order_years AS (\n"
                  "                     SELECT extract(year from o_orderdate)::INT as o_year, o.o_orderkey\n"
@@ -626,7 +638,8 @@ TEST_F(SecureAggregateComparisonTest, tpch_q9_NLA) {
 
         //auto sort = new Sort(observed, sort_def);
         //observed = sort->run();
-        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_dbname, expected_sql, false, 0);
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 0);
+
         expected->setSortOrder(sort_def);
 
         ASSERT_EQ(*expected, *observed);
@@ -642,12 +655,11 @@ TEST_F(SecureAggregateComparisonTest, tpch_q9_NLA) {
 
 /*
 TEST_F(SecureAggregateComparisonTest, tpch_q3_SMA) {
-    string unioned_db_name = "tpch_unioned";
-    controlBitPacking(unioned_db_name);
-    string local_db_name = (FLAGS_party == ALICE) ? "tpch_unioned" : "tpch_empty";
+        controlBitPacking(FLAGS_unioned_db);
+    string local_db = (FLAGS_party == ALICE) ? "tpch_unioned" : "tpch_empty";
     int cutoff = FLAGS_cutoff;
 
-    std::cout << "Expected : " << unioned_db_name << " Observed : " << local_db_name << " cutoff : " << std::to_string(cutoff) << "\n";
+    std::cout << "Expected : " << FLAGS_unioned_db << " Observed : " << local_db << " cutoff : " << std::to_string(cutoff) << "\n";
 
     string sql = "SELECT o_orderkey, o_orderdate, o_shippriority, l.l_extendedprice * (1 - l.l_discount) as revenue, NOT (c.c_mktsegment = 'HOUSEHOLD'  AND o.o_orderdate < date '1995-03-25' AND l.l_shipdate > date '1995-03-25') AS dummy_tag\n"
                  " FROM customer c JOIN orders o ON  c.c_custkey = o.o_custkey\n"
@@ -668,7 +680,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q3_SMA) {
     SortDefinition  sort_def{ColumnSort(0, SortDirection::ASCENDING),
                              ColumnSort(1, SortDirection::ASCENDING),
                              ColumnSort(2, SortDirection::ASCENDING)};
-    auto input = new SecureSqlInput(local_db_name, sql, true);
+    auto input = new SecureSqlInput(local_db, sql, true);
     auto sort = new Sort(input, sort_def);
 
     auto aggregate = new GroupByAggregate(sort, group_bys, aggregators);
@@ -680,7 +692,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q3_SMA) {
 
         //auto sort = new Sort(observed, sort_def);
         //observed = sort->run();
-        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_name, expected_sql, false, 0);
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 0);
         expected->setSortOrder(sort_def);
 
         ASSERT_EQ(*expected, *observed);
@@ -694,12 +706,11 @@ TEST_F(SecureAggregateComparisonTest, tpch_q3_SMA) {
 }
 
 TEST_F(SecureAggregateComparisonTest, tpch_q3_NLA) {
-    string unioned_db_name = "tpch_unioned";
-    controlBitPacking(unioned_db_name);
-    string local_db_name = (FLAGS_party == ALICE) ? "tpch_unioned" : "tpch_empty";
+        controlBitPacking(FLAGS_unioned_db);
+    string local_db = (FLAGS_party == ALICE) ? "tpch_unioned" : "tpch_empty";
     int cutoff = FLAGS_cutoff;
 
-    std::cout << "Expected : " << unioned_db_name << " Observed : " << local_db_name << " cutoff : " << std::to_string(cutoff) << "\n";
+    std::cout << "Expected : " << FLAGS_unioned_db << " Observed : " << local_db << " cutoff : " << std::to_string(cutoff) << "\n";
 
     string sql = "SELECT o_orderkey, o_orderdate, o_shippriority, l.l_extendedprice * (1 - l.l_discount) as revenue, NOT (c.c_mktsegment = 'HOUSEHOLD'  AND o.o_orderdate < date '1995-03-25' AND l.l_shipdate > date '1995-03-25') AS dummy_tag\n"
                  " FROM customer c JOIN orders o ON  c.c_custkey = o.o_custkey\n"
@@ -720,7 +731,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q3_NLA) {
     SortDefinition  sort_def{ColumnSort(0, SortDirection::ASCENDING),
                              ColumnSort(1, SortDirection::ASCENDING),
                              ColumnSort(2, SortDirection::ASCENDING)};
-    auto input = new SecureSqlInput(local_db_name, sql, true);
+    auto input = new SecureSqlInput(local_db, sql, true);
     auto sort = new Sort(input, sort_def);
 
     auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 150000);
@@ -732,7 +743,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q3_NLA) {
 
         //auto sort = new Sort(observed, sort_def);
         //observed = sort->run();
-        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_name, expected_sql, false, 0);
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 0);
         expected->setSortOrder(sort_def);
 
         ASSERT_EQ(*expected, *observed);
@@ -748,13 +759,13 @@ TEST_F(SecureAggregateComparisonTest, tpch_q3_NLA) {
 /*
 TEST_F(SecureAggregateComparisonTest, tpch_q1_SMA) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest_SMA(1, "q1", expected_sort, unioned_db_);
+    runTest_SMA(1, "q1", expected_sort, FLAGS_unioned_db);
 }
 
 
 TEST_F(SecureAggregateComparisonTest, tpch_q1_NLA) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest_NLA(1, "q1", expected_sort, unioned_db_);
+    runTest_NLA(1, "q1", expected_sort, FLAGS_unioned_db);
 }
 
 
@@ -767,7 +778,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q3_SMA) {
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
-    runTest_SMA(3, "q3", expected_sort, unioned_db_);
+    runTest_SMA(3, "q3", expected_sort, FLAGS_unioned_db);
 }
 
 
@@ -779,7 +790,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q3_NLA) {
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
-    runTest_NLA(3, "q3", expected_sort, unioned_db_);
+    runTest_NLA(3, "q3", expected_sort, FLAGS_unioned_db);
 }
 
 
@@ -788,7 +799,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q5_SMA) {
     //input_tuple_limit_ = 1000;
 
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest_SMA(5, "q5", expected_sort, unioned_db_);
+    runTest_SMA(5, "q5", expected_sort, FLAGS_unioned_db);
 }
 
 
@@ -797,35 +808,35 @@ TEST_F(SecureAggregateComparisonTest, tpch_q5_NLA) {
     //input_tuple_limit_ = 1000;
 
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest_NLA(5, "q5", expected_sort, unioned_db_);
+    runTest_NLA(5, "q5", expected_sort, FLAGS_unioned_db);
 }
 
 
 TEST_F(SecureAggregateComparisonTest, tpch_q8_SMA) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest_SMA(8, "q8", expected_sort, unioned_db_);
+    runTest_SMA(8, "q8", expected_sort, FLAGS_unioned_db);
 }
 
 
 TEST_F(SecureAggregateComparisonTest, tpch_q8_NLA) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest_NLA(8, "q8", expected_sort, unioned_db_);
+    runTest_NLA(8, "q8", expected_sort, FLAGS_unioned_db);
 }
 
 
 TEST_F(SecureAggregateComparisonTest, tpch_q9_SMA) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest_SMA(9, "q9", expected_sort, unioned_db_);
+    runTest_SMA(9, "q9", expected_sort, FLAGS_unioned_db);
 
 }
 
 TEST_F(SecureAggregateComparisonTest, tpch_q9_NLA) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest_NLA(9, "q9", expected_sort, unioned_db_);
+    runTest_NLA(9, "q9", expected_sort, FLAGS_unioned_db);
 
 }
 
@@ -835,7 +846,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q18_SMA) {
                                  ColumnSort(4, SortDirection::DESCENDING),
                                  ColumnSort(3, SortDirection::ASCENDING)};
 
-    runTest_SMA(18, "q18", expected_sort, unioned_db_);
+    runTest_SMA(18, "q18", expected_sort, FLAGS_unioned_db);
 }
 
 TEST_F(SecureAggregateComparisonTest, tpch_q18_NLA) {
@@ -844,7 +855,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q18_NLA) {
                                  ColumnSort(4, SortDirection::DESCENDING),
                                  ColumnSort(3, SortDirection::ASCENDING)};
 
-    runTest_NLA(18, "q18", expected_sort, unioned_db_);
+    runTest_NLA(18, "q18", expected_sort, FLAGS_unioned_db);
 }
 */
 

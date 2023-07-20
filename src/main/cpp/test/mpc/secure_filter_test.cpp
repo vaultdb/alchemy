@@ -18,6 +18,9 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54325, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65454, "port for managing EMP control flow by passing public values");
@@ -39,7 +42,7 @@ TEST_F(SecureFilterTest, test_table_scan) {
     SecureSqlInput input(db_name_, sql, false, collation);
     auto scanned = input.run();
     if(FLAGS_validation) {
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, false);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
         expected->setSortOrder(collation);
 
         PlainTable *revealed = scanned->reveal(emp::PUBLIC);
@@ -63,7 +66,7 @@ TEST_F(SecureFilterTest, test_filter) {
     SortDefinition collation = DataUtilities::getDefaultSortDefinition(2);
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
     expected->setSortOrder(collation);
 
     SecureSqlInput *input = new SecureSqlInput(db_name_, sql, false, collation);

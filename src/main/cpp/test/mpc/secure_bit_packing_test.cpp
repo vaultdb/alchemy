@@ -21,6 +21,9 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54330, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(query, 1, "query number");
 DEFINE_string(bitpacking, "packed", "bit packed or non-bit packed");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
@@ -105,25 +108,25 @@ SecureBitPackingTest::generateExpectedOutputQuery(const int &test_id, const Sort
 
 
 TEST_F(SecureBitPackingTest, tpch_q1) {
-    this->initializeBitPacking(unioned_db_);
+    this->initializeBitPacking(FLAGS_unioned_db);
     cout << "Q1 Bit Packed " << endl;
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort, unioned_db_);
+    runTest(1, "q1", expected_sort, FLAGS_unioned_db);
 }
 
 TEST_F(SecureBitPackingTest, tpch_q1_non_bitpacked) {
     this->disableBitPacking();
     cout << "Q1 non Bit Packed " << endl;
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort, unioned_db_);
+    runTest(1, "q1", expected_sort, FLAGS_unioned_db);
 }
 
 TEST_F(SecureBitPackingTest, tpch_q3) {
-    this->initializeBitPacking(unioned_db_);
+    this->initializeBitPacking(FLAGS_unioned_db);
     cout << "Q3 Bit Packed " << endl;
     SortDefinition expected_sort{ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
-    runTest(3, "q3", expected_sort, unioned_db_);
+    runTest(3, "q3", expected_sort, FLAGS_unioned_db);
 }
 
 TEST_F(SecureBitPackingTest, tpch_q3_non_bitpacked) {
@@ -131,63 +134,63 @@ TEST_F(SecureBitPackingTest, tpch_q3_non_bitpacked) {
     cout << "Q3 non Bit Packed " << endl;
     SortDefinition expected_sort{ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
-    runTest(3, "q3", expected_sort, unioned_db_);
+    runTest(3, "q3", expected_sort, FLAGS_unioned_db);
 }
 
 TEST_F(SecureBitPackingTest, tpch_q5) {
-    this->initializeBitPacking(unioned_db_);
+    this->initializeBitPacking(FLAGS_unioned_db);
     cout << "Q5 Bit Packed " << endl;
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(5, "q5", expected_sort, unioned_db_);
+    runTest(5, "q5", expected_sort, FLAGS_unioned_db);
 }
 
 TEST_F(SecureBitPackingTest, tpch_q5_non_bitpacked) {
     this->disableBitPacking();
     cout << "Q5 non Bit Packed " << endl;
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(5, "q5", expected_sort, unioned_db_);
+    runTest(5, "q5", expected_sort, FLAGS_unioned_db);
 }
 
 
 TEST_F(SecureBitPackingTest, tpch_q8) {
-    this->initializeBitPacking(unioned_db_);
+    this->initializeBitPacking(FLAGS_unioned_db);
     cout << "Q8 Bit Packed " << endl;
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest(8, "q8", expected_sort, unioned_db_);
+    runTest(8, "q8", expected_sort, FLAGS_unioned_db);
 }
 
 TEST_F(SecureBitPackingTest, tpch_q8_non_bitpacked) {
     this->disableBitPacking();
     cout << "Q8 non Bit Packed " << endl;
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest(8, "q8", expected_sort, unioned_db_);
+    runTest(8, "q8", expected_sort, FLAGS_unioned_db);
 }
 
 
 // passed, runs in 15 mins
 TEST_F(SecureBitPackingTest, tpch_q9) {
-    this->initializeBitPacking(unioned_db_);
+    this->initializeBitPacking(FLAGS_unioned_db);
     cout << "Q9 Bit Packed " << endl;
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(9, "q9", expected_sort, unioned_db_);
+    runTest(9, "q9", expected_sort, FLAGS_unioned_db);
 }
 
 TEST_F(SecureBitPackingTest, tpch_q9_non_bitpacked) {
     this->disableBitPacking();
     cout << "Q9 non Bit Packed " << endl;
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(9, "q9", expected_sort, unioned_db_);
+    runTest(9, "q9", expected_sort, FLAGS_unioned_db);
 }
 
 
 TEST_F(SecureBitPackingTest, tpch_q18) {
-    this->initializeBitPacking(unioned_db_);
+    this->initializeBitPacking(FLAGS_unioned_db);
     cout << "Q18 Bit Packed " << endl;
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(4, SortDirection::DESCENDING),
                                  ColumnSort(3, SortDirection::ASCENDING)};
 
-    runTest(18, "q18", expected_sort, unioned_db_);
+    runTest(18, "q18", expected_sort, FLAGS_unioned_db);
 }
 
 TEST_F(SecureBitPackingTest, tpch_q18_non_bitpacked) {
@@ -197,7 +200,7 @@ TEST_F(SecureBitPackingTest, tpch_q18_non_bitpacked) {
                                  ColumnSort(4, SortDirection::DESCENDING),
                                  ColumnSort(3, SortDirection::ASCENDING)};
 
-    runTest(18, "q18", expected_sort, unioned_db_);
+    runTest(18, "q18", expected_sort, FLAGS_unioned_db);
 }
 
 

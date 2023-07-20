@@ -10,6 +10,9 @@ DECLARE_int32(party);
 DECLARE_int32(port);
 DECLARE_int32(ctrl_port);
 DECLARE_string(alice_host);
+DECLARE_string(unioned_db);
+DECLARE_string(alice_db);
+DECLARE_string(bob_db);
 DECLARE_int32(cutoff);
 DECLARE_string(storage); // row || column
 DECLARE_string(filter); //run only the tests with names matching this regex.
@@ -23,14 +26,10 @@ class EmpBaseTest  : public ::testing::Test {
 protected:
 
 
-
-    static const std::string unioned_db_;
-    static const std::string alice_db_;
-    static const std::string bob_db_;
     static const std::string empty_db_;
     EmpMode emp_mode_;
 
-    std::string db_name_ = unioned_db_; // default, set in setUp()
+    std::string db_name_; // set in setUp()
     StorageModel storage_model_ = StorageModel::ROW_STORE;
     EmpManager *manager_ = nullptr;
 

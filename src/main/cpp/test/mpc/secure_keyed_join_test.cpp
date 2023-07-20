@@ -10,6 +10,9 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43442, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65458, "port for managing EMP control flow by passing public values");
@@ -72,7 +75,7 @@ void SecureKeyedJoinTest::runCustomerOrdersTest() {
 
 
     if(FLAGS_validation) {
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql,  false);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,  false);
         PlainTable *observed = joined->reveal();
         expected->setSortOrder(observed->getSortOrder());
 
@@ -110,7 +113,7 @@ void SecureKeyedJoinTest::runLineitemOrdersTest() {
 
 
     if(FLAGS_validation) {
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql,  false);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,  false);
         PlainTable *observed = joined->reveal();
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(6);
         Sort<bool> observed_sort(observed, sort_def);
@@ -165,7 +168,7 @@ void SecureKeyedJoinTest::runLineitemOrdersCustomerTest() {
         Sort<bool> observed_sort(observed, sort_def);
         observed = observed_sort.run();
 
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
         expected->setSortOrder(observed->getSortOrder());
 
         ASSERT_EQ(*expected, *observed);

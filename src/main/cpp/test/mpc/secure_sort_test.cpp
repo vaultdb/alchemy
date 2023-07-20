@@ -12,6 +12,9 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54333, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65475, "port for managing EMP control flow by passing public values");
@@ -89,7 +92,7 @@ TEST_F(SecureSortTest, tpchQ01Sort) {
     auto sorted = sort.run();
     if(FLAGS_validation) {
         auto observed = sorted->reveal();
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_results_sql, false);
         expected->setSortOrder(sort_def);
 
         ASSERT_EQ(*expected, *observed);
@@ -126,7 +129,7 @@ TEST_F(SecureSortTest, tpchQ03Sort) {
         Project project(revealed, builder.getExprs());
 
         PlainTable *observed = project.run();
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_result_sql,false);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_result_sql,false);
 
         // copy out the projected sort order
         expected->setSortOrder(observed->getSortOrder());
@@ -161,7 +164,7 @@ TEST_F(SecureSortTest, tpchQ05Sort) {
 
         PlainTable *observed  = project.run();
 
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_results_sql, false);
         expected->setSortOrder(observed->getSortOrder());
 
 
@@ -192,7 +195,7 @@ TEST_F(SecureSortTest, tpchQ08Sort) {
     if(FLAGS_validation) {
         PlainTable *observed  = sorted->reveal();
 
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
         expected->setSortOrder(observed->getSortOrder());
 
         ASSERT_EQ(*expected, *observed);

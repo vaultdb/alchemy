@@ -16,6 +16,9 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43440, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65454, "port for managing EMP control flow by passing public values");
@@ -54,7 +57,7 @@ void SecureGroupByAggregateTest::runTest(const string &expected_sql,
 
     if(FLAGS_validation) {
         // set up expected output
-        const PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 1);
+        const PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 1);
 
         PlainTable *revealed = aggregated->reveal();
         ASSERT_EQ(*expected, *revealed);
@@ -89,7 +92,7 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expected_sql,
     cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
-        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false,  1);
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false,  1);
         auto revealed = aggregated->reveal();
         ASSERT_EQ(*expected, *revealed);
 
@@ -235,7 +238,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
     cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
-        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 2);
         auto revealed = aggregated->reveal(PUBLIC);
         ASSERT_EQ(*expected, *revealed);
         delete revealed;
@@ -293,7 +296,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
     cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
-        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 2);
         auto revealed = aggregated->reveal(PUBLIC);
         ASSERT_EQ(*expected, *revealed);
         delete revealed;
@@ -362,7 +365,7 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
     cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
-        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 2);
         auto revealed = aggregated->reveal(PUBLIC);
         ASSERT_EQ(*expected, *revealed);
         delete revealed;

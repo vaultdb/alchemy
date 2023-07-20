@@ -11,6 +11,9 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43455, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for generator");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65470, "port for managing EMP control flow by passing public values");
@@ -77,7 +80,7 @@ void SecureSortMergeJoinTest::runCustomerOrdersTest() {
         Sort sorter(observed, DataUtilities::getDefaultSortDefinition(5));
         observed = sorter.run();
 
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
         expected->setSortOrder(observed->getSortOrder());
 
         ASSERT_EQ(*expected, *observed);
@@ -96,7 +99,7 @@ void SecureSortMergeJoinTest::runLineitemOrdersTest() {
                                                                                                             "WHERE NOT o_dummy AND NOT l_dummy "
                                                                                                             "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue";
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql,  false);
+    PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,  false);
 
     auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true);
     auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true);
@@ -135,7 +138,7 @@ void SecureSortMergeJoinTest::runLineitemOrdersCustomerTest() {
                                " WHERE NOT c_dummy AND NOT o_dummy AND NOT l_dummy "
                                " ORDER BY  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey  \n";
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql,  false);
+    PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,  false);
 
 
     auto customer_input = new SecureSqlInput(db_name_, customer_sql_, true);

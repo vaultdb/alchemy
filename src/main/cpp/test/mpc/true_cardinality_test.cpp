@@ -18,6 +18,9 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 7654, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
@@ -113,7 +116,7 @@ TrueCardinalityTest::generateExpectedOutputQuery(const int &test_id, const SortD
 /*
 TEST_F(TrueCardinalityTest, tpch_q1) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort, unioned_db_);
+    runTest(1, "q1", expected_sort, FLAGS_unioned_db);
 }
 
 
@@ -121,25 +124,25 @@ TEST_F(TrueCardinalityTest, tpch_q3) {
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
-    runTest(3, "q3", expected_sort, unioned_db_);
+    runTest(3, "q3", expected_sort, FLAGS_unioned_db);
 }
 
 
 TEST_F(TrueCardinalityTest, tpch_q5) {
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(5, "q5", expected_sort, unioned_db_);
+    runTest(5, "q5", expected_sort, FLAGS_unioned_db);
 }
 
 
 TEST_F(TrueCardinalityTest, tpch_q8) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest(8, "q8", expected_sort, unioned_db_);
+    runTest(8, "q8", expected_sort, FLAGS_unioned_db);
 }
 
 
 TEST_F(TrueCardinalityTest, tpch_q9) {
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(9, "q9", expected_sort, unioned_db_);
+    runTest(9, "q9", expected_sort, FLAGS_unioned_db);
 
 }
 
@@ -150,7 +153,7 @@ TEST_F(TrueCardinalityTest, tpch_q18) {
                                  ColumnSort(4, SortDirection::DESCENDING),
                                  ColumnSort(3, SortDirection::ASCENDING)};
 
-    runTest(18, "q18", expected_sort, unioned_db_);
+    runTest(18, "q18", expected_sort, FLAGS_unioned_db);
 }
 
 

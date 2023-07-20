@@ -11,6 +11,9 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54325, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
@@ -50,7 +53,7 @@ TEST_F(OperatorCostModelTest, test_table_scan) {
 	std::cout << "Predicted cost: " << cost << ", observed cost: " << gate_cnt << "\n";
 
 	if(FLAGS_validation) {
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, false);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
         expected->setSortOrder(collation);
 
         PlainTable *revealed = scanned->reveal(emp::PUBLIC);
@@ -68,7 +71,7 @@ TEST_F(OperatorCostModelTest, test_filter) {
     SortDefinition collation = DataUtilities::getDefaultSortDefinition(2);
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
     expected->setSortOrder(collation);
 
     SecureSqlInput *input = new SecureSqlInput(db_name_, sql, false, collation);
@@ -134,7 +137,7 @@ TEST_F(OperatorCostModelTest, test_sort) { //from tpchQ01Sort
 
     if(FLAGS_validation) {
         auto observed = sorted->reveal();
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_results_sql, false);
         expected->setSortOrder(sort_def);
 
         ASSERT_EQ(*expected, *observed);
@@ -156,7 +159,7 @@ TEST_F(OperatorCostModelTest, test_basic_join) { //from test_tpch_q3_customer_or
                                                                                                              "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql,false);
+    PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,false);
 
     auto customer_input = new SecureSqlInput(db_name_, customer_sql_, true);
     auto orders_input= new SecureSqlInput(db_name_, orders_sql_, true);
@@ -231,7 +234,7 @@ TEST_F(OperatorCostModelTest, test_keyed_join) {
 	std::cout << "Observed cost: " << gate_cnt << "\n";
 
     if(FLAGS_validation) {
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql,  false);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,  false);
         PlainTable *observed = joined->reveal();
         expected->setSortOrder(observed->getSortOrder());
 
@@ -285,7 +288,7 @@ TEST_F(OperatorCostModelTest, test_sort_merge_join) {
         Sort sorter(observed, DataUtilities::getDefaultSortDefinition(5));
         observed = sorter.run();
 
-        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
         expected->setSortOrder(observed->getSortOrder());
 
         ASSERT_EQ(*expected, *observed);
@@ -321,7 +324,7 @@ TEST_F(OperatorCostModelTest, test_scalar_aggregate) { //from test_count
 
 	if(FLAGS_validation) {
 		PlainTable *observed = aggregated->reveal();
-		PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
+		PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
 		ASSERT_EQ(*expected, *observed);
 
 		delete observed;
@@ -361,7 +364,7 @@ TEST_F(OperatorCostModelTest, test_group_by_aggregate) {
 
     if(FLAGS_validation) {
         // set up expected output
-        const PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 1);
+        const PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 1);
 
         PlainTable *revealed = aggregated->reveal();
         ASSERT_EQ(*expected, *revealed);
@@ -405,7 +408,7 @@ TEST_F(OperatorCostModelTest, test_nested_loop_aggregate) {
     if(FLAGS_validation) {
         Sort sort(aggregated->reveal(), SortDefinition{ColumnSort {0, SortDirection::ASCENDING}});
         auto observed = sort.run();
-        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 1);
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 1);
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
