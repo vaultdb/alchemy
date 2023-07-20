@@ -206,13 +206,15 @@ TEST_F(SecureSortTest, tpchQ08Sort) {
 }
 
 
-
+// this test is intentionally set to a large input size to test join scaling
+// outside of cutoff
+// join scale up has surfaced many bugs in the past, thus having it larger than most.
 TEST_F(SecureSortTest, tpchQ09Sort) {
 
     std::string sql = "SELECT o_orderyear, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
                       "  JOIN supplier s ON s_suppkey = l_suppkey"
                       "  JOIN nation on n_nationkey = s_nationkey"
-                      " ORDER BY l_comment LIMIT " + std::to_string(FLAGS_cutoff); //  order by to ensure order is reproducible and not sorted on the sort cols
+                      " ORDER BY l_comment LIMIT 1000"; //  order by to ensure order is reproducible and not sorted on the sort cols
 
 
 
