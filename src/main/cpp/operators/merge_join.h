@@ -9,12 +9,13 @@ namespace  vaultdb {
     template<typename B>
     class MergeJoin : public Join<B> {
         public:
-
+        // predicate unused, columns lined up owing to construction in input order
         MergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition()) : Join<B>(lhs, rhs, predicate, sort) {
+            setup();
           }
 
         MergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition()) : Join<B>(lhs, rhs, predicate, sort) {
-            this->output_cardinality_ = lhs->getTupleCount();
+            setup();
         }
 
 
@@ -33,4 +34,4 @@ namespace  vaultdb {
 }
 
 
-#endif // _FILTER_H
+#endif

@@ -13,12 +13,15 @@ QueryTable<B> *MergeJoin<B>::runSelf() {
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
-
     this->output_ = TableFactory<B>::getTable(lhs->getTupleCount(), this->output_schema_, lhs->storageModel(), this->sort_definition_);
+    B selected, dst_dummy_tag;
 
     for(int i = 0; i < this->output_cardinality_; ++i) {
         Join<B>::write_left(this->output_, i,  lhs, i);
         Join<B>::write_right(this->output_, i,  rhs, i);
+        selected = Join<B>::predicate_->call(lhs, i, rhs, i).template getValue<B>();
+        dst_dummy_tag = (!selected) | lhs->getDummyTag(i) | rhs->getDummyTag(i);
+        this->output_->setDummyTag(i, dst_dummy_tag);
     }
 
     return this->output_;
@@ -31,13 +34,15 @@ void MergeJoin<B>::setup() {
     auto lhs = this->getChild(0);
     auto rhs = this->getChild(1);
 
-    assert(lhs->isEncrypted() == rhs->isEncrypted()); // only support all plaintext or all MPC
+    // just use lhs sort order for now, can use one or sides' since they are equivalent for equi-join
+    this->sort_definition_ = lhs->getSortOrder();
+
     assert(lhs->getOutputCardinality() == rhs->getOutputCardinality());
 
     this->output_cardinality_ = lhs->getOutputCardinality();
 
     // require that this is sorted on the join key
-    // TODO: make this robust to permutations on sort orders
+    // TODO: make this robust to permutations in sort column order
     auto p = (GenericExpression<B> *) this->predicate_;
     JoinEqualityConditionVisitor<B> join_visitor(p->root_);
     auto join_idxs  = join_visitor.getEqualities();
@@ -52,9 +57,12 @@ void MergeJoin<B>::setup() {
     for(auto key_pair : join_idxs) {
         // visitor always outputs lhs, rhs
         assert(lhs_sort[i].first == key_pair.first);
-        assert(rhs_sort[i].first == (key_pair.second - lhs->getSchema().getFieldCount()));
+        assert(rhs_sort[i].first == (key_pair.second - lhs->getOutputSchema().getFieldCount()));
         assert(lhs_sort[i].second == rhs_sort[i].second);
         ++i;
     }
 
 }
+
+template class vaultdb::MergeJoin<bool>;
+template class vaultdb::MergeJoin<emp::Bit>;
