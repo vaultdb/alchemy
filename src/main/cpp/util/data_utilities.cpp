@@ -25,8 +25,8 @@ unsigned char DataUtilities::reverse(unsigned char b) {
 
 // in some cases, like with LIMIT, we can't just run over tpch_unioned
 PlainTable *
-DataUtilities::getUnionedResults(const std::string &alice_db, const std::string &bob_db, const std::string &sql,  const StorageModel & model,
-                                 const bool &has_dummy_tag, const size_t & limit) {
+DataUtilities::getUnionedResults(const std::string &alice_db, const std::string &bob_db, const std::string &sql,
+                                 const bool &has_dummy_tag, const size_t &limit) {
 
     PsqlDataProvider dataProvider;
 

@@ -21,7 +21,7 @@ bash run-plain-tests.sh
 ./bin/emp_table_test  --flagfile=flagfiles/alice.flags --validation=false
 ./bin/secure_filter_test  --flagfile=flagfiles/alice.flags --validation=false
 ./bin/secure_sort_test  --flagfile=flagfiles/alice.flags --validation=false
-./bin/secure_basic_join_test  --cutoff=25 --validation=false
+./bin/secure_basic_join_test  --cutoff=10 --validation=false
 ./bin/secure_keyed_join_test  --flagfile=flagfiles/alice.flags --validation=false
 ./bin/secure_sort_merge_join_test --flagfile=flagfiles/alice.flags --validation=false
 ./bin/secure_scalar_aggregate_test 	 --flagfile=flagfiles/alice.flags --validation=false
