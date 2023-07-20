@@ -6,8 +6,8 @@ bash run.sh emp_table_test
 bash run.sh secure_filter_test
 bash run.sh secure_sort_test
 #manually running this to manage cutoff
-./bin/secure_basic_join_test --cutoff=10 &
-./bin/secure_basic_join_test --party=2 --cutoff=10
+./bin/secure_basic_join_test --cutoff=5 &
+./bin/secure_basic_join_test --party=2 --cutoff=5
 
 bash run.sh secure_keyed_join_test
 bash run.sh secure_sort_merge_join_test
