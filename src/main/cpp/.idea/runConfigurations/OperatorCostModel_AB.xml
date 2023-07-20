@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="OperatorCostModel AB" type="CompoundRunConfigurationType">
+    <toRun name="operator_cost_model_test A" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="operator_cost_model_test B" type="CMakeGoogleTestRunConfigurationType" />
+    <method v="2" />
+  </configuration>
+</component>

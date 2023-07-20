@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="EMP Test OMPC" type="CompoundRunConfigurationType">
+    <toRun name="emp_test P1" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="emp_test P2" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="emp_test P3" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="emp_test TP" type="CMakeGoogleTestRunConfigurationType" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -6,7 +6,7 @@ set +x
 ./bin/field_expression_test --flagfile=flagfiles/plain.flags
 ./bin/filter_test --flagfile=flagfiles/plain.flags
 ./bin/project_test --flagfile=flagfiles/plain.flags
-./bin/basic_join_test --flagfile=flagfiles/plain.flags
+./bin/basic_join_test --cutoff=25
 ./bin/keyed_join_test --flagfile=flagfiles/plain.flags
 ./bin/sort_merge_join_test --flagfile=flagfiles/plain.flags
 ./bin/sort_test --flagfile=flagfiles/plain.flags

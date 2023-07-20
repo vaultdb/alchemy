@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Secure Basic Join Test A+B" type="CompoundRunConfigurationType">
     <toRun name="secure_basic_join_test A" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="secure_basic_join_test B" targetId="CMakeBuildProfile:Debug" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="secure_basic_join_test B" type="CMakeGoogleTestRunConfigurationType" />
     <method v="2" />
   </configuration>
 </component>
