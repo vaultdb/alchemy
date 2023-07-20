@@ -9,6 +9,7 @@ set +x
 ./bin/basic_join_test --cutoff=10
 ./bin/keyed_join_test --flagfile=flagfiles/plain.flags
 ./bin/sort_merge_join_test --flagfile=flagfiles/plain.flags
+./bin/merge_join_test --flagfile=flagfiles/plain.flags
 ./bin/sort_test --flagfile=flagfiles/plain.flags
 ./bin/scalar_aggregate_test --flagfile=flagfiles/plain.flags
 ./bin/group_by_aggregate_test --flagfile=flagfiles/plain.flags

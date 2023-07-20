@@ -24,6 +24,7 @@ bash run-plain-tests.sh
 ./bin/secure_basic_join_test  --cutoff=10 --validation=false
 ./bin/secure_keyed_join_test  --flagfile=flagfiles/alice.flags --validation=false
 ./bin/secure_sort_merge_join_test --flagfile=flagfiles/alice.flags --validation=false
+./bin/secure_merge_join_test --flagfile=flagfiles/alice.flags --validation=false
 ./bin/secure_scalar_aggregate_test 	 --flagfile=flagfiles/alice.flags --validation=false
 ./bin/secure_group_by_aggregate_test  --flagfile=flagfiles/alice.flags --validation=false
 ./bin/secure_nested_loop_aggregate_test --flagfile=flagfiles/alice.flags --validation=false

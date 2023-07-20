@@ -28,6 +28,7 @@ ALICE_HOST=$1
 ./bin/secure_basic_join_test  --party=2  --cutoff=10  --alice_host=$ALICE_HOST --validation=false
 ./bin/secure_keyed_join_test  --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
 ./bin/secure_sort_merge_join_test --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
+./bin/secure_merge_join_test  --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
 ./bin/secure_scalar_aggregate_test   --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
 ./bin/secure_group_by_aggregate_test  --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
 ./bin/secure_nested_loop_aggregate_test --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
