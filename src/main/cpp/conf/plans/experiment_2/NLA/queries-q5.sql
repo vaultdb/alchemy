@@ -1,8 +1,28 @@
--- 0
-SELECT n.n_name, l.l_extendedprice * (1 - l.l_discount) as revenue, NOT (c.c_nationkey = s.s_nationkey  AND o.o_orderdate >= date '1993-01-01' AND o.o_orderdate < date '1994-01-01') AS dummy_tag
-                 FROM  customer c JOIN orders o ON c.c_custkey = o.o_custkey
-                     JOIN lineitem l ON l.l_orderkey = o.o_orderkey
-                     JOIN supplier s ON l.l_suppkey = s.s_suppkey
-                     JOIN nation n ON s.s_nationkey = n.n_nationkey
-                     JOIN region r ON n.n_regionkey = r.r_regionkey
-                WHERE r.r_name = 'EUROPE' AND c_custkey < 100
+-- 0, collation: (0 ASC, 1 ASC, 2 ASC)
+SELECT t1.n_name, t2.c_custkey, t2.c_nationkey
+FROM (SELECT r_regionkey, r_name
+      FROM region
+      WHERE r_name = 'EUROPE') AS t0
+         INNER JOIN (SELECT n_nationkey, n_name, n_regionkey
+                     FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey
+         INNER JOIN (SELECT c_custkey, c_nationkey
+                     FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey
+ORDER BY t1.n_name, t2.c_custkey, t2.c_nationkey
+-- 1, collation: (0 ASC, 1 ASC)
+SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag
+FROM orders
+ORDER BY o_orderkey, o_custkey;
+-- 4, collation: (0 ASC, 1 ASC, 2 DESC)
+SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue
+FROM lineitem
+ORDER BY l_orderkey, l_suppkey, revenue DESC
+-- 7, collation: (1 ASC, 0 ASC)
+SELECT t2.s_suppkey, t2.s_nationkey
+FROM (SELECT r_regionkey, r_name
+      FROM region
+      WHERE r_name = 'EUROPE') AS t0
+         INNER JOIN (SELECT n_nationkey, n_regionkey
+                     FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey
+         INNER JOIN (SELECT s_suppkey, s_nationkey
+                     FROM supplier) AS t2 ON t1.n_nationkey = t2.s_nationkey
+ORDER BY t2.s_nationkey, t2.s_suppkey

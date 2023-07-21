@@ -208,22 +208,6 @@
           "name": "count_order"
         }
       ]
-    },
-    {
-      "id": "2",
-      "relOp": "LogicalSort",
-      "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "LAST"
-        },
-        {
-          "field": 1,
-          "direction": "ASCENDING",
-          "nulls": "LAST"
-        }
-      ]
     }
   ]
 }

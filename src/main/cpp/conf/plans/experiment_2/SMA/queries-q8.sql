@@ -1,7 +1,29 @@
--- 0
-SELECT o_year, CASE WHEN n_nation = 'KENYA' THEN volume ELSE 0.0 END AS nation_check, volume, NOT (o_orderdate BETWEEN DATE '1995-01-01' AND DATE '1996-12-31') AS dummy_tag
-FROM ( SELECT o_orderyear::INT  AS o_year, l.l_extendedprice * (1 - l.l_discount) AS volume, o_orderdate, p_type, n2.n_name as n_nation
-       FROM part p, supplier s, lineitem l, orders o, customer c, nation n1, nation n2, region r
-                           WHERE p.p_partkey = l.l_partkey AND s.s_suppkey = l.l_suppkey AND l.l_orderkey = o.o_orderkey AND  o.o_custkey = c.c_custkey
-                                 AND c.c_nationkey = n1.n_nationkey AND n1.n_regionkey = r.r_regionkey AND r.r_name = 'AFRICA' AND s.s_nationkey = n2.n_nationkey
-                                 AND p_type = 'LARGE ANODIZED STEEL' AND c_custkey < 100) AS all_nations
+-- 0, collation: (0 ASC)
+SELECT c_custkey
+FROM customer c
+         JOIN nation n1 ON c_nationkey = n_nationkey
+         JOIN region ON r_regionkey = n_regionkey
+WHERE r_name = ''AFRICA''
+ORDER BY c_custkey
+-- 1, collation: (1 ASC, 0 ASC)
+SELECT o_orderkey,
+       o_custkey,
+       o_orderyear::INT AS o_year, NOT (o_orderdate >= date ''1995 - 01 - 01'' and o_orderdate < date ''1996 - 12 - 31 '') dummy_tag
+FROM orders
+ORDER BY o_custkey, o_orderkey
+-- 4, collation: (0 ASC)
+SELECT s_suppkey, CASE WHEN n_name = ''KENYA'' THEN 1.0 ELSE 0.0 END AS nation_check
+FROM supplier
+         JOIN nation ON n_nationkey = s_nationkey
+ORDER BY s_suppkey
+-- 5, collation: (0 ASC)
+SELECT l_orderkey,
+       l_suppkey,
+       l_extendedprice * (1.0 - l_discount) AS volume,
+       CASE
+           WHEN p_type = ''LARGE ANODIZED STEEL'' AND p_partkey = l_partkey THEN FALSE
+           ELSE TRUE
+END
+AS dummy_tag
+FROM lineitem LEFT JOIN part ON p_partkey = l_partkey
+ORDER BY l_orderkey
