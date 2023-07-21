@@ -24,7 +24,6 @@ DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(dbname, "tpch_unioned_150", "db name for baseline comparison test");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
@@ -34,7 +33,7 @@ protected:
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
 
-    int input_tuple_limit_ = -1;
+    int input_tuple_limit_ = FLAGS_cutoff;
 
 };
 
@@ -42,18 +41,17 @@ protected:
 void
 FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 
+ 
+    this->initializeBitPacking(FLAGS_unioned_db);
 
-    cout << "Expected DB : " << FLAGS_dbname;
-    this->initializeBitPacking(FLAGS_dbname);
-
-    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_dbname);
+    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_unioned_db);
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
-    string local_db = FLAGS_dbname;
+    string local_db = FLAGS_unioned_db;
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
     cout << " Observed DB : "<< local_db << " - Bit Packed" << endl;
 
-    PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_dbname, expected_query, false, 0);
+    PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
 
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-" + test_name + ".sql";
@@ -89,8 +87,8 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
 
 string
 FullyOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDefinition &expected_sort, const string &db_name) {
-    string alice_db = db_name;
-    string bob_db = db_name;
+    string alice_db = FLAGS_unioned_db;
+    string bob_db = FLAGS_unioned_db;
     boost::replace_first(alice_db, "unioned", "alice");
     boost::replace_first(bob_db, "unioned", "bob");
 
