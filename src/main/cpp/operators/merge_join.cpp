@@ -1,11 +1,13 @@
 #include "merge_join.h"
 #include "expression/visitor/join_equality_condition_visitor.h"
 #include "query_table/table_factory.h"
+#include "util/field_utilities.h"
 
 using namespace vaultdb;
 
 template<typename B>
 QueryTable<B> *MergeJoin<B>::runSelf() {
+    // This Merge Join works like right join, we keep all rows in right table. 
     auto lhs = this->getChild(0)->getOutput();
     auto rhs = this->getChild(1)->getOutput();
 
@@ -16,14 +18,42 @@ QueryTable<B> *MergeJoin<B>::runSelf() {
     this->output_ = TableFactory<B>::getTable(lhs->getTupleCount(), this->output_schema_, lhs->storageModel(), this->sort_definition_);
     B selected, dst_dummy_tag;
 
+    int lhs_idx = 0;
     for(int i = 0; i < this->output_cardinality_; ++i) {
-        Join<B>::write_left(this->output_, i,  lhs, i);
+        selected = Join<B>::predicate_->call(lhs, lhs_idx, rhs, i).template getValue<B>();
+
+        // Only Iterate when lhs is not dummy value, if dummy value, just write down.
+        // Iterate until selected got true, Find next matched left tuple
+        if(FieldUtilities::extract_bool(selected)){
+            while(FieldUtilities::extract_bool(lhs->getDummyTag(lhs_idx))){
+                lhs_idx++;
+            }
+
+            // In case if there are dummies with same key in a row
+            selected = Join<B>::predicate_->call(lhs, lhs_idx, rhs, i).template getValue<B>();
+            if(!FieldUtilities::extract_bool(selected))
+                lhs_idx--;
+
+        } else{
+            while(!FieldUtilities::extract_bool(selected))
+                selected = Join<B>::predicate_->call(lhs, ++lhs_idx, rhs, i).template getValue<B>();
+
+            while(FieldUtilities::extract_bool(lhs->getDummyTag(lhs_idx))){
+                selected = Join<B>::predicate_->call(lhs, ++lhs_idx, rhs, i).template getValue<B>();
+                if(!FieldUtilities::extract_bool(selected)){
+                    lhs_idx--;
+                    break;
+                }
+            }
+
+        }
+        selected = Join<B>::predicate_->call(lhs, lhs_idx, rhs, i).template getValue<B>();
+        Join<B>::write_left(this->output_, i,  lhs, lhs_idx);
         Join<B>::write_right(this->output_, i,  rhs, i);
-        selected = Join<B>::predicate_->call(lhs, i, rhs, i).template getValue<B>();
-        dst_dummy_tag = (!selected) | lhs->getDummyTag(i) | rhs->getDummyTag(i);
+        dst_dummy_tag = (!selected) | lhs->getDummyTag(lhs_idx) | rhs->getDummyTag(i);
+
         this->output_->setDummyTag(i, dst_dummy_tag);
     }
-
     return this->output_;
 }
 
