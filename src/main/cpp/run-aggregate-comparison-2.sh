@@ -16,8 +16,8 @@ log_file="AggregateComparison_${date}.log"
 for ((i=0; i<${#unioned_dbs[@]}; i++))
 do
     echo "Running tests with Bit Packed" >> "$log_file"
-    $executable --party=$PARTY --alice_host=129.105.61.182 --cutoff=${cutoff_values[$i]} --unioned_db=${unioned_dbs[$i]} --alice_db=${alice_dbs[$i]} --bob_db=${bob_dbs[$i]} --bitpacking="packed" >> "$log_file"
+    $executable --party=$PARTY --alice_host=129.105.61.182 --unioned_db=${unioned_dbs[$i]} --alice_db=${alice_dbs[$i]} --bob_db=${bob_dbs[$i]} --bitpacking="packed" >> "$log_file"
 
     echo "Running tests with Non Bit Packed" >> "$log_file"
-    $executable --party=$PARTY --alice_host=129.105.61.182 --cutoff=${cutoff_values[$i]} --unioned_db=${unioned_dbs[$i]} --alice_db=${alice_dbs[$i]} --bob_db=${bob_dbs[$i]} --bitpacking="non" >> "$log_file"
+    $executable --party=$PARTY --alice_host=129.105.61.182 --unioned_db=${unioned_dbs[$i]} --alice_db=${alice_dbs[$i]} --bob_db=${bob_dbs[$i]} --bitpacking="non" >> "$log_file"
 done
