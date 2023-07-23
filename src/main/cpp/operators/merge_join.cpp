@@ -7,7 +7,7 @@ using namespace vaultdb;
 
 template<typename B>
 QueryTable<B> *MergeJoin<B>::runSelf() {
-    // This Merge Join works like right join, we keep all rows in right table. 
+    // This Merge Join works like right join, we keep all rows in right table.
     auto lhs = this->getChild(0)->getOutput();
     auto rhs = this->getChild(1)->getOutput();
 

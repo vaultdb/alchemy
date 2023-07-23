@@ -281,7 +281,6 @@
       "id": "10",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "sort-merge-aggregate",
-      "cardBound" : 5,
       "group": [
         0
       ],
