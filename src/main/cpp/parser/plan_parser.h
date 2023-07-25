@@ -2,6 +2,7 @@
 #define _PLAN_READER_H
 
 #include <string>
+#include <tuple>
 #include <map>
 #include <boost/property_tree/ptree.hpp>
 #include <emp-tool/emp-tool.h>
@@ -29,7 +30,7 @@ namespace vaultdb {
         // for ZK plans
         static Operator <B> *parse(const string &db_name, const string &json_plan, const int &limit = -1);
 
-        static pair<int, SortDefinition> parseSqlHeader(const string & header);
+        static tuple<int, SortDefinition, int> parseSqlHeader(const string & header);
     protected:
         std::string db_name_;
         StorageModel storage_model_ = SystemConfiguration::getInstance().storageModel();
@@ -58,6 +59,9 @@ namespace vaultdb {
         // faux template specialization
         Operator<bool> *createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag, const bool & plain_has_dummy_tag);
         Operator<emp::Bit> *createInputOperator(const string &sql, const SortDefinition &collation, const emp::Bit &has_dummy_tag, const bool & plain_has_dummy_tag);
+        Operator<bool> *createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party, const bool &has_dummy_tag, const bool & plain_has_dummy_tag);
+        Operator<emp::Bit> *createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party, const emp::Bit &has_dummy_tag, const bool & plain_has_dummy_tag);
+
 
         // utils
         Operator<B> * getChildOperator(const int & my_operator_id, const boost::property_tree::ptree &pt) const;

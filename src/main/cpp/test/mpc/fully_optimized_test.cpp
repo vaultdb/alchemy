@@ -75,7 +75,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
 
     if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
-        DataUtilities::removeDummies(observed);
+        //DataUtilities::removeDummies(observed);
 
         ASSERT_EQ(*expected, *observed);
         ASSERT_TRUE(!observed->empty()); // want all tests to produce output

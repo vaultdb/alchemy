@@ -30,6 +30,7 @@ namespace  vaultdb {
 
     public:
         SecureSqlInput(const string & db, const string & sql, const bool & dummy_tag, const SortDefinition & def, const size_t & input_tuple_cnt = 0); // truncate tuples with last term
+        SecureSqlInput(const string & db, const string & sql, const bool & dummy_tag, const int & input_party, const size_t & input_tuple_cnt, const SortDefinition & def);
 
         SecureSqlInput(const string &db, const string & sql, const bool &dummy_tag, const size_t & input_tuple_cnt = 0);
          ~SecureSqlInput() {
@@ -41,6 +42,7 @@ namespace  vaultdb {
 
     private:
         void runQuery();
+        void runQuery(const int & input_party);
         PlainTable *plain_input_ = nullptr;
         size_t input_tuple_limit_;
     };

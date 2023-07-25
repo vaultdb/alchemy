@@ -44,7 +44,7 @@ TEST_F(SecureMergeJoinTest, merge_q18) {
     Expression<Bit> *predicate = FieldUtilities::getEqualityPredicate<Bit>(lhs_input, 0,
                                                                                               rhs_input, 2);
 
-    MergeJoin join(lhs_input, rhs_input, predicate);
+    MergeJoin join(lhs_input, rhs_input, predicate, SortDefinition(), false);
     auto joined = join.run()->reveal();
 
     // need unioned results to cover a corner case

@@ -23,6 +23,8 @@ namespace  vaultdb {
         SqlInput(std::string db, std::string sql, bool dummy_tag);
         SqlInput(std::string db, std::string sql, bool dummy_tag, const SortDefinition &sort_def,
                  const size_t &tuple_limit = 0);
+        SqlInput(std::string db, std::string sql, bool dummy_tag, const SortDefinition &sort_def, const int &input_party,
+                 const size_t &tuple_limit = 0);
         virtual ~SqlInput() {
         }
 
@@ -30,6 +32,7 @@ namespace  vaultdb {
 
     private:
         void runQuery();
+        void runQuery(const int & input_party);
 
     protected:
         PlainTable *runSelf() override;

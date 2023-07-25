@@ -18,11 +18,26 @@ namespace  vaultdb {
             setup();
         }
 
+        MergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool partyJoin = false) : Join<B>(lhs, rhs, predicate, sort) {
+            this->setPartyJoin(partyJoin);
+            setup();
+        }
+
+        MergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool partyJoin = false) : Join<B>(lhs, rhs, predicate, sort) {
+            this->setPartyJoin(partyJoin);
+            setup();
+        }
+
 
 
     protected:
+        bool partyJoin = false;
         QueryTable<B> *runSelf() override;
+        QueryTable<B> *runSelf(const bool partyJoin);
         inline string getOperatorType() const override {     return "MergeJoin"; }
+
+        bool getPartyJoin() { return this->partyJoin; }
+        void setPartyJoin(bool partyJoin) {this->partyJoin = partyJoin ;}
 
     private:
         void setup();

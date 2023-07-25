@@ -66,7 +66,7 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
     int query_id = 0;
     bool init = false;
     B has_dummy = false;
-    pair<int, SortDefinition> input_parameters; // operator_id, sorting info (if applicable)
+    tuple<int, SortDefinition, int> input_parameters; // operator_id, sorting info (if applicable)
 
     for(vector<string>::iterator pos = lines.begin(); pos != lines.end(); ++pos) {
 
@@ -74,9 +74,14 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
             if(init) { // skip the first one
                 has_dummy = (query.find("dummy_tag") != std::string::npos);
                 bool tmp =  (query.find("dummy_tag") != std::string::npos);
-                query_id = input_parameters.first;
+                query_id = get<0>(input_parameters);
 
-                operators_[query_id] = createInputOperator(query, input_parameters.second, has_dummy, tmp);
+                // Define Party if exists
+                if(get<2>(input_parameters)>0)
+                    operators_[query_id] = createInputOperator(query, get<1>(input_parameters), get<2>(input_parameters), has_dummy, tmp);
+                else
+                    operators_[query_id] = createInputOperator(query, get<1>(input_parameters), has_dummy, tmp);
+
                 operators_.at(query_id)->setOperatorId(query_id);
 
             }
@@ -94,9 +99,14 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
     has_dummy = (query.find("dummy") != std::string::npos);
     bool tmp =  (query.find("dummy_tag") != std::string::npos);
 
-    query_id = input_parameters.first;
+    query_id = get<0>(input_parameters);
 
-    operators_[query_id] = createInputOperator(query, input_parameters.second,  has_dummy, tmp);
+    // Define Party if exists
+    if(get<2>(input_parameters)>0)
+        operators_[query_id] = createInputOperator(query, get<1>(input_parameters), get<2>(input_parameters), has_dummy, tmp);
+    else
+        operators_[query_id] = createInputOperator(query, get<1>(input_parameters), has_dummy, tmp);
+
     operators_.at(query_id)->setOperatorId(query_id);
 
 }
@@ -202,6 +212,24 @@ Operator<emp::Bit> *PlanParser<B>::createInputOperator(const string &sql, const 
     }
 
     return new SecureSqlInput(db_name_, sql, plain_has_dummy_tag, collation,  limit);
+}
+
+template<typename B>
+Operator<bool> *PlanParser<B>::createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party, const bool &has_dummy_tag, const bool & plain_has_dummy_tag) {
+    size_t limit = (input_limit_ < 0) ? 0 : input_limit_;
+
+    return new SqlInput(db_name_, sql, plain_has_dummy_tag, collation, input_party, limit);
+}
+
+template<typename B>
+Operator<emp::Bit> *PlanParser<B>::createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party, const emp::Bit &has_dummy_tag, const bool & plain_has_dummy_tag) {
+    size_t limit = (input_limit_ < 0) ? 0 : input_limit_;
+
+    if(zk_plan_) {
+        return new ZkSqlInput(db_name_, sql, plain_has_dummy_tag, collation,  limit);
+    }
+
+    return new SecureSqlInput(db_name_, sql, plain_has_dummy_tag, input_party, limit, collation);
 
 }
 
@@ -326,8 +354,12 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
             string joinType = join_tree.get_child("operator-algorithm").template get_value<string>();
             if (joinType == "sort-merge-join")
                 return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
-            if (joinType == "merge-join")
-                return new MergeJoin<B>(lhs, rhs, join_condition);
+            if (joinType == "merge-join") {
+                if(join_tree.count("partyJoin") > 0)
+                    return new MergeJoin<B>(lhs, rhs, join_condition, SortDefinition(), true);
+                else
+                    return new MergeJoin<B>(lhs, rhs, join_condition, SortDefinition(), false);
+            }
 
             return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
 
@@ -461,12 +493,10 @@ const std::string PlanParser<B>::truncateInput(const std::string sql) const {
 //   (above actually all ASC in tpc-h, DESC for testing)
 
 template<typename B>
-pair<int, SortDefinition> PlanParser<B>::parseSqlHeader(const string &header) {
+tuple<int, SortDefinition, int> PlanParser<B>::parseSqlHeader(const string &header) {
     int comma_idx = header.find( ',');
     int operator_id = std::atoi(header.substr(3, comma_idx-3).c_str()); // chop off "-- "
 
-    pair<int, SortDefinition> result;
-    result.first = operator_id;
     SortDefinition output_collation;
 
 
@@ -488,8 +518,17 @@ pair<int, SortDefinition> PlanParser<B>::parseSqlHeader(const string &header) {
         }
     }
 
-    result.second = output_collation;
+    //result.second = output_collation;
+    int party_number = 0;
 
+    if (header.find("party") != std::string::npos) {
+        int party_start = header.find("party:");
+        int party_end = header.find('\n', party_start);
+        std::string party_str = header.substr(party_start + 6, party_end - party_start - 6);
+        party_number = std::atoi(party_str.c_str());
+    }
+
+    tuple<int, SortDefinition, int> result = make_tuple(operator_id, output_collation, party_number);
     return result;
 }
 
