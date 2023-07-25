@@ -196,5 +196,9 @@ QuerySchema QuerySchema::fromFile(const std::string &filename) {
     return QuerySchema(schema_str);
 }
 
+void QuerySchema::toFile(const string &filename) const {
+        DataUtilities::writeFile(filename, prettyPrint());
+}
+
 
 

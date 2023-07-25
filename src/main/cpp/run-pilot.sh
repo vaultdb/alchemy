@@ -1,6 +1,8 @@
 
 bash pilot/test/generate-and-load-test-data.sh 1000
 
+make -j run_data_partner assemble_secret_shares
+
 mkdir -p pilot/test/batch/
 mkdir -p pilot/secret_shares/tables
 

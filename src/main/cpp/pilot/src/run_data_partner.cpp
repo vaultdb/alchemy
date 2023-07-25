@@ -43,6 +43,11 @@ SecureTable *runRollup(int idx, string colName, int party, SecureTable *data_cub
     std::string output_file = output_path + "/" + colName + "." + suffix;
     DataUtilities::writeFile(output_file, results);
 
+    string dst_file = output_path + "/" + colName + ".schema";
+
+    string dst_schema = QuerySchema::toPlain(stratified->getSchema()).prettyPrint();
+    DataUtilities::writeFile(dst_file, dst_schema);
+
     // validate it against the DB for testing
     if(TESTBED) {
         SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(2);
@@ -59,9 +64,8 @@ SecureTable *runRollup(int idx, string colName, int party, SecureTable *data_cub
         Utilities::mkdir(out_path);
         PlainTable *result = DataUtilities::getExpectedResults(PilotUtilities::unioned_db_name_, query, false, 1);
 
-        std::stringstream schema_str;
-        schema_str << result->getSchema() << std::endl;
-        csv = schema_str.str();
+        string schema_file = out_path + "/" + colName + ".schema";
+        result->getSchema().toFile(schema_file);
 
         for(size_t i = 0; i < result->getTupleCount(); ++i) {
             csv += result->getPlainTuple(i).toString() + "\n";
