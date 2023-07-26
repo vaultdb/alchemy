@@ -13,11 +13,7 @@ mkdir -p pilot/test/output
 mkdir -p  pilot/test/batch
 mkdir -p  pilot/secret_shares/tables
 
-
-
-#cmake .  
 make -j generate_enrich_data_three_parties secret_share_from_query secret_share_batch_from_query
-
 
 ./bin/generate_enrich_data_three_parties pilot/test/input/ $TUPLE_COUNT 
 
@@ -27,8 +23,6 @@ createdb $DB_NAME
 
 
 psql $DB_NAME <  pilot/test/load-generated-data.sql
-
-
 
 pg_dump $DB_NAME > pilot/test/output/$DB_NAME.sql
 

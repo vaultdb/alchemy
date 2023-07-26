@@ -9,7 +9,8 @@ set(NAME "capricorn-pilot")
 
 include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR})
 
-
+# to link secret share directories in clion:
+#  ln -s /home/vaultdb/tmp/tmp.M87RFh6Lh8/pilot/secret_shares cmake-build-debug-sh2pc@codd10/pilot/secret_shares
 
 macro(package_add_binary BINNAME)
     # create an exectuable in which the tests will be stored

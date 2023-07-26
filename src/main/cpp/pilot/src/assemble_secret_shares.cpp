@@ -13,71 +13,54 @@ using namespace vaultdb;
 std::string src_path = Utilities::getCurrentWorkingDirectory() + "/";
 std::string dst_path = src_path;
 
-// output schema consists of rollup field and counts, e.g.:
-// result (#0 int32 .age_strata, #1 int64 .numerator, #2 int64 .denominator, #3 int64 .numerator_multisite, #4 int64 .denominator_multisite)
-QuerySchema getSchema(const std::string & rollupName) {
-    QuerySchema schema = SharedSchema::getInputSchema();
-    QuerySchema outputSchema;
-    QueryFieldDesc rollupField = schema.getField(rollupName);
-    rollupField.setOrdinal(0);
-
-    QueryFieldDesc numerator(1, "numerator", "", FieldType::LONG, 0);
-    QueryFieldDesc denominator(2, "denominator", "", FieldType::LONG, 0);
-    QueryFieldDesc numerator_multisite(3, "numerator_multisite", "", FieldType::LONG, 0);
-    QueryFieldDesc denominator_multisite(4, "denominator_multisite", "", FieldType::LONG, 0);
-
-
-
-    outputSchema.putField(rollupField);
-    outputSchema.putField(numerator);
-    outputSchema.putField(denominator);
-    outputSchema.putField(numerator_multisite);
-    outputSchema.putField(denominator_multisite);
-
-    return outputSchema;
-}
-
 void revealRollup(const std::string & rollup_name) {
 
-    std::string aliceFile = src_path + "/" + rollup_name + ".alice";
-    std::string bobFile = src_path + "/" + rollup_name + ".bob";
+    std::string alice_file = src_path + "/" + rollup_name + ".alice";
+    std::string bob_file = src_path + "/" + rollup_name + ".bob";
+    std::string schema_file = src_path + "/" + rollup_name + ".schema";
 
-    vector<int8_t> aliceBits = DataUtilities::readFile(aliceFile);
-    vector<int8_t> bobBits = DataUtilities::readFile(bobFile);
+    vector<int8_t> alice_bits = DataUtilities::readFile(alice_file);
+    vector<int8_t> bob_bits = DataUtilities::readFile(bob_file);
+
     vector<int8_t> revealed;
 
-    assert(aliceBits.size() == bobBits.size());
-    revealed.resize(aliceBits.size());
+    assert(alice_bits.size() == bob_bits.size());
+    revealed.resize(alice_bits.size());
 
-    vector<int8_t>::iterator  alicePos = aliceBits.begin();
-    vector<int8_t>::iterator  bobPos = bobBits.begin();
-    vector<int8_t>::iterator  revealedPos = revealed.begin();
+    vector<int8_t>::iterator  alice_pos = alice_bits.begin();
+    vector<int8_t>::iterator  bob_pos = bob_bits.begin();
+    vector<int8_t>::iterator  revealed_pos = revealed.begin();
 
-    while(alicePos != aliceBits.end()) {
-        *revealedPos = *alicePos ^ *bobPos;
-        ++alicePos;
-        ++bobPos;
-        ++revealedPos;
+    while(alice_pos != alice_bits.end()) {
+        *revealed_pos = *alice_pos ^ *bob_pos;
+        ++alice_pos;
+        ++bob_pos;
+        ++revealed_pos;
     }
 
 
-    QuerySchema rollup_schema = getSchema(rollup_name); // rollup_name != "age_strata" ? getSchema(rollup_name) : getSchema("age_days");
+    QuerySchema rollup_schema = QuerySchema::fromFile(schema_file);
+    rollup_schema = QuerySchema::toPlain(rollup_schema);
+
     PlainTable *result = RowTable<bool>::deserialize(rollup_schema, revealed);
 
-    std::stringstream schema_str;
-    schema_str << result->getSchema() << std::endl;
-    std::string csv = schema_str.str();
 
+    std::string csv;
     for(size_t i = 0; i < result->getTupleCount(); ++i) {
-        PlainTuple tuple = result->getPlainTuple(i);
-        if(!tuple.getDummyTag())
-            csv += result->getPlainTuple(i).toString() + "\n";
+        if(!result->getDummyTag(i)) {
+            PlainTuple tuple = result->getPlainTuple(i);
+            csv += tuple.toString() + "\n";
+        }
     }
 
     std::cout << "Revealing " << csv << std::endl;
     std::string out_file = dst_path + "/" + rollup_name + ".csv";
+    string out_schema = dst_path + "/" + rollup_name + ".schema";
 
     DataUtilities::writeFile(out_file, csv);
+    QuerySchema out_schema_desc = result->getSchema();
+    out_schema_desc.toFile(out_schema);
+
     delete result;
 }
 

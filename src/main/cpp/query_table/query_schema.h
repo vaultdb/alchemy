@@ -93,6 +93,7 @@ namespace  vaultdb {
         static QuerySchema concatenate(const QuerySchema & lhs, const QuerySchema & rhs, const bool &append_bool = false);
 
         static QuerySchema fromFile(const string & filename);
+        void toFile(const string & filename) const;
 
         inline bool fieldInitialized(const int & ordinal) { return fields_.find(ordinal) != fields_.end();}
         void initializeFieldOffsets();

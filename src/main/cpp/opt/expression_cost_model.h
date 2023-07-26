@@ -77,7 +77,7 @@ namespace vaultdb {
 
 
         void visit(CastNode<B>  & node) override {
-            throw; // Not yet implemented
+           return; // TODO: implement on a case-by-case basis
         }
 
         void visit(CaseNode<B>  & node) override;

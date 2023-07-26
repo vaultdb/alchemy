@@ -452,6 +452,7 @@ SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDes
     switch (f.type_) {
         case FieldType::BOOL:
             v =  emp::Bit(f.getValue<bool>(), party);
+            type = FieldType::SECURE_BOOL;
             break;
         case FieldType::INT: {
             int32_t val = (send) ? boost::get<int32_t>(f.payload_) : 0;
