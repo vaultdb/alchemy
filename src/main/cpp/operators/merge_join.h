@@ -18,26 +18,26 @@ namespace  vaultdb {
             setup();
         }
 
-        MergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool partyJoin = false) : Join<B>(lhs, rhs, predicate, sort) {
-            this->setPartyJoin(partyJoin);
+        MergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool leafNodeFlag = false) : Join<B>(lhs, rhs, predicate, sort) {
+            this->setLeafNodeFlag(leafNodeFlag);
             setup();
         }
 
-        MergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool partyJoin = false) : Join<B>(lhs, rhs, predicate, sort) {
-            this->setPartyJoin(partyJoin);
+        MergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool leafNodeFlag = false) : Join<B>(lhs, rhs, predicate, sort) {
+            this->setLeafNodeFlag(leafNodeFlag);
             setup();
         }
 
 
 
     protected:
-        bool partyJoin = false;
+        bool leafNodeFlag = false;
         QueryTable<B> *runSelf() override;
-        QueryTable<B> *runSelf(const bool partyJoin);
+        QueryTable<B> *runSelf(const bool leafNodeFlag);
         inline string getOperatorType() const override {     return "MergeJoin"; }
 
-        bool getPartyJoin() { return this->partyJoin; }
-        void setPartyJoin(bool partyJoin) {this->partyJoin = partyJoin ;}
+        bool getLeafNodeFlag() { return this->leafNodeFlag; }
+        void setLeafNodeFlag(bool leafNodeFlag) {this->leafNodeFlag = leafNodeFlag ;}
 
     private:
         void setup();

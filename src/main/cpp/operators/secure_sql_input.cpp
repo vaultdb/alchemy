@@ -1,5 +1,6 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <regex>
 #include "secure_sql_input.h"
 #include "util/field_utilities.h"
 
@@ -70,14 +71,11 @@ void SecureSqlInput::runQuery(const int & input_party) {
     string local_db = db_name_;
 
     if (!boost::contains(local_db, party_name)) {
-        // If "dummy_tag" is not found in input_query, add ", TRUE AS dummy_tag" before "FROM"
-        boost::replace_first(input_query_, "FROM", ", TRUE AS dummy_tag FROM");
-        plain_input_ = dataProvider.getQueryTable(local_db, input_query_, true);
         // If party_name is not found in local_db, replace local_db with "tpch_empty"
-        //local_db = "tpch_empty";
+        local_db = "tpch_empty";
+        input_query_ = std::regex_replace(input_query_, std::regex("generate_series\\(1, \\d+\\)"), "generate_series(1, -1)");
     }
-    else
-        plain_input_ = dataProvider.getQueryTable(local_db, input_query_, has_dummy_tag_);
+    plain_input_ = dataProvider.getQueryTable(local_db, input_query_, has_dummy_tag_);
     plain_input_->setSortOrder(getSortOrder());
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
     this->output_cardinality_ = manager->getTableCardinality(plain_input_->getTupleCount());

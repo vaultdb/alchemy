@@ -355,7 +355,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
             if (joinType == "sort-merge-join")
                 return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
             if (joinType == "merge-join") {
-                if(join_tree.count("partyJoin") > 0)
+                if(join_tree.count("leafNodeFlag") > 0)
                     return new MergeJoin<B>(lhs, rhs, join_condition, SortDefinition(), true);
                 else
                     return new MergeJoin<B>(lhs, rhs, join_condition, SortDefinition(), false);

@@ -1,13 +1,21 @@
 -- 0, collation: (0 ASC), party: 1
-SELECT l_orderkey, sum(l_quantity) as sum_qty
-FROM lineitem
-GROUP BY l_orderkey
-ORDER BY l_orderkey
+WITH all_keys AS (SELECT generate_series(1, 5988) ak),
+     sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag
+                  FROM lineitem
+                  GROUP BY l_orderkey
+                  ORDER BY l_orderkey)
+SELECT ak, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag
+FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = ak
+ORDER BY ak
 -- 1, collation: (0 ASC), party: 2
-SELECT l_orderkey, sum(l_quantity) as sum_qty
-FROM lineitem
-GROUP BY l_orderkey
-ORDER BY l_orderkey
+    WITH all_keys AS (SELECT generate_series(1, 5988) ak),
+    sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag
+    FROM lineitem
+    GROUP BY l_orderkey
+    ORDER BY l_orderkey)
+SELECT ak, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag
+FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = ak
+ORDER BY ak
 -- 6, collation: (0 ASC, 1 ASC)
 SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate
 FROM orders
