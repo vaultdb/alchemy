@@ -73,7 +73,6 @@ void SecureSqlInput::runQuery(const int & input_party) {
     if (!boost::contains(local_db, party_name)) {
         // If party_name is not found in local_db, replace local_db with "tpch_empty"
         local_db = "tpch_empty";
-        input_query_ = std::regex_replace(input_query_, std::regex("generate_series\\(1, \\d+\\)"), "generate_series(1, -1)");
     }
     plain_input_ = dataProvider.getQueryTable(local_db, input_query_, has_dummy_tag_);
     plain_input_->setSortOrder(getSortOrder());

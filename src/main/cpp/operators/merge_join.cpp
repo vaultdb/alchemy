@@ -16,38 +16,19 @@ QueryTable<B> *MergeJoin<B>::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
     this->output_ = TableFactory<B>::getTable(lhs->getTupleCount(), this->output_schema_, lhs->storageModel(), this->sort_definition_);
-    B selected, dst_dummy_tag, lhs_dummy_tag, rhs_dummy_tag;
+    B selected, dst_dummy_tag;
 
-    int write_idx = 0;
     for(int i = 0; i < this->output_cardinality_; ++i) {
+        Join<B>::write_left(this->output_, i,  lhs, i);
+        Join<B>::write_right(this->output_, i,  rhs, i);
+        selected = Join<B>::predicate_->call(lhs, i, rhs, i).template getValue<B>();
 
-        lhs_dummy_tag = lhs->getDummyTag(i);
-        rhs_dummy_tag = rhs->getDummyTag(i);
-
-        if(this->getLeafNodeFlag()) {
-            if(FieldUtilities::extract_bool(lhs_dummy_tag & rhs_dummy_tag))
-                continue;
-
-            Join<B>::write_left(this->output_, write_idx,  lhs, i);
-            Join<B>::write_right(this->output_, write_idx,  rhs, i);
-            selected = Join<B>::predicate_->call(lhs, i, rhs, i).template getValue<B>();
-
-            dst_dummy_tag = (!selected) | lhs_dummy_tag & rhs_dummy_tag;
-            this->output_->setDummyTag(write_idx, dst_dummy_tag);
-            write_idx++;
-        }
-        else {
-            Join<B>::write_left(this->output_, write_idx,  lhs, i);
-            Join<B>::write_right(this->output_, write_idx,  rhs, i);
-            selected = Join<B>::predicate_->call(lhs, i, rhs, i).template getValue<B>();
-
-            dst_dummy_tag = (!selected) | lhs_dummy_tag | rhs_dummy_tag;
-            this->output_->setDummyTag(write_idx, dst_dummy_tag);
-            write_idx++;
-        }
+        if(this->getLeafNodeFlag())
+            dst_dummy_tag = (!selected) | lhs->getDummyTag(i) & rhs->getDummyTag(i);
+        else
+            dst_dummy_tag = (!selected) | lhs->getDummyTag(i) | rhs->getDummyTag(i);
+        this->output_->setDummyTag(i, dst_dummy_tag);
     }
-    this->output_cardinality_ = write_idx;
-    this->output_->tuple_cnt_ = write_idx;
     return this->output_;
 }
 
