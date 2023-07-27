@@ -30,7 +30,6 @@ QueryTable<B> *MergeJoin<B>::runSelf() {
 
         this->output_->setDummyTag(i, dst_dummy_tag);
     }
-
     return this->output_;
 }
 
@@ -44,7 +43,7 @@ void MergeJoin<B>::setup() {
     // just use lhs sort order for now, can use one or sides' since they are equivalent for equi-join
     this->sort_definition_ = lhs->getSortOrder();
 
-    //assert(lhs->getOutputCardinality() == rhs->getOutputCardinality());
+    assert(lhs->getOutputCardinality() == rhs->getOutputCardinality());
 
     this->output_cardinality_ = lhs->getOutputCardinality();
     // TODO: make this robust to permutations in sort column order

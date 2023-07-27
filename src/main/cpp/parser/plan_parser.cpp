@@ -257,9 +257,11 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     if(aggregate_json.count("cardBound") > 0)
         cardBound = aggregate_json.get_child("cardBound").template get_value<int>();
 
+    bool checkSort = false;
+    if(aggregate_json.count("checkSort") > 0)
+        checkSort = true;
+
     boost::property_tree::ptree agg_payload = aggregate_json.get_child("aggs");
-
-
 
     for (ptree::const_iterator it = agg_payload.begin(); it != agg_payload.end(); ++it) {
 
@@ -275,7 +277,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
         s.alias = it->second.get_child("name").template get_value<std::string>();
         s.is_distinct = (it->second.get_child("distinct").template get_value<std::string>() == "false") ? false : true;
 
-        assert(s.is_distinct == false); // distinct not yet implemented
+        assert(!s.is_distinct); // distinct not yet implemented
 
         aggregators.push_back(s);
     }
@@ -286,6 +288,8 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     if(!group_by_ordinals.empty()) {
         if(cardBound > 0)
             return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardBound);
+        else if(checkSort)
+            return new GroupByAggregate<B>(checkSort, child, group_by_ordinals, aggregators);
         else {
             // if sort not aligned, insert a sort op
             SortDefinition child_sort = child->getSortOrder();
@@ -298,11 +302,10 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
                 child = new Sort<B>(child, child_sort);
                 support_ops_.template emplace_back(child);
             }
-            return new GroupByAggregate<B>(child, group_by_ordinals, aggregators);
+            return new GroupByAggregate<B>(checkSort, child, group_by_ordinals, aggregators);
         }
     }
     else {
-
         return new ScalarAggregate<B>(child, aggregators);
     }
 

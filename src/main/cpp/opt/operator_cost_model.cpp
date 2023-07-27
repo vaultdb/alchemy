@@ -123,7 +123,8 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 	size_t table_id_idx_ = augmented_schema.getFieldCount() - 1;
 	sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
 
-	cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());	
+	size_t augment_cost = 0;
+	augment_cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());	
 
 	sort_def.clear();
     sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
@@ -131,7 +132,10 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
         sort_def.emplace_back(i, SortDirection::ASCENDING);
     }
 
-	cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());	
+	augment_cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());
+	//std::cout << "Predicted cost of augmentTables: " << augment_cost << "\n";
+
+	cost += augment_cost;
 
 	//next we have the cost of the sort from obliviousDistribute
 	QueryFieldDesc weight(augmented_schema.getFieldCount(), "weight", "", FieldType::SECURE_INT);
@@ -145,16 +149,23 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 
 	SortDefinition second_sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
 
-	cost += sortCost(augmented_schema, second_sort_def, (join->foreignKeyChild() == 0) ? rhs->getOutputCardinality() : lhs->getOutputCardinality());
+	size_t distribute_cost = 0;
+
+	distribute_cost += sortCost(augmented_schema, second_sort_def, (join->foreignKeyChild() == 0) ? rhs->getOutputCardinality() : lhs->getOutputCardinality());
+
+	//std::cout << "Predicted cost of sorting in obliviousDistribute: " << distribute_cost << "\n";
 
 	//obliviousDistribute
 	size_t n = join->getOutputCardinality();
-	float inner_loop = Sort<Bit>::powerOfTwoLessThan(n);
-	float outer_loop = log2(inner_loop);
+	float inner_loop = n;
+	float outer_loop = floor(log2(inner_loop));
 	 
 	float comparisons = outer_loop * inner_loop;
     size_t c_and_s_cost = compareSwapCost(augmented_schema, second_sort_def, n);
-	size_t distribute_cost = c_and_s_cost * (size_t) comparisons; 
+	distribute_cost += c_and_s_cost * (size_t) comparisons;
+
+	//std::cout << "Predicted cost of obliviousDistribute (distribute step only): " << distribute_cost << "\n";
+
     cost += distribute_cost;
 	
 	//cost of conditional write step from obliviousExpand
@@ -164,9 +175,13 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 	EqualNode equality_check((ExpressionNode<Bit> *) &read_field, (ExpressionNode<Bit> *) &constant_input);
 
 	ExpressionCostModel<Bit> model(&equality_check, augmented_schema);
-	auto if_cost = model.cost();
+	auto if_cost = model.cost();	
 
-	cost += n * (if_cost + augmented_schema.size() + 2);
+	size_t conditional_write_cost = n * (if_cost + augmented_schema.size() + 2);	
+
+	//std::cout << "Predicted cost of conditional write step: " << conditional_write_cost << "\n";
+
+	cost += conditional_write_cost;
 	
     return cost;
 }

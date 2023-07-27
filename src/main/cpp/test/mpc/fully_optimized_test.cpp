@@ -33,7 +33,7 @@ protected:
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
 
-    int input_tuple_limit_ = FLAGS_cutoff;
+    int input_tuple_limit_ = -1;
 
 };
 
@@ -59,12 +59,12 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
 
-    PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
-    SecureOperator *root = parser.getRoot();
+    PlanParser<bool> parser(local_db, sql_file, plan_file, input_tuple_limit_);
+    PlainOperator *root = parser.getRoot();
 
-    std::cout << root->printTree() << endl;
+//    std::cout << root->printTree() << endl;
 
-    SecureTable *result = root->run();
+    PlainTable *result = root->run();
 
     double secureClockTicks = (double) (clock() - secureStartClock);
     double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
@@ -139,6 +139,7 @@ TEST_F(FullyOptimizedTest, tpch_q1) {
     }
 
 }
+
 
 TEST_F(FullyOptimizedTest, tpch_q3) {
 

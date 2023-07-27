@@ -24,18 +24,18 @@ class OperatorCostModelTest : public EmpBaseTest {
 protected:
     const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' c_dummy \n"
                                       "FROM customer  \n"
-                                      "WHERE c_custkey < " + std::to_string(FLAGS_cutoff) +
+                                      "WHERE c_custkey <= " + std::to_string(FLAGS_cutoff) +
                                       " ORDER BY c_custkey";
 
 
     const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' o_dummy \n"
                                     "FROM orders \n"
-                                    "WHERE o_custkey <  " + std::to_string(FLAGS_cutoff) +
+                                    "WHERE o_custkey <=  " + std::to_string(FLAGS_cutoff) +
                                     " ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' l_dummy \n"
                                       "FROM lineitem \n"
-                                      "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < " + std::to_string(FLAGS_cutoff) + ")  \n"
+                                      "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= " + std::to_string(FLAGS_cutoff) + ")  \n"
                                                                                                                                           " ORDER BY l_orderkey, revenue ";
 };
 
@@ -43,7 +43,7 @@ TEST_F(OperatorCostModelTest, test_table_scan) {
 	std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
     SortDefinition collation = DataUtilities::getDefaultSortDefinition(2);
 
-    SecureSqlInput input(db_name_, sql, false, collation); 	
+    SecureSqlInput input(db_name_, sql, false, collation);
 
 	auto scanned = input.run();
 	
@@ -248,6 +248,7 @@ TEST_F(OperatorCostModelTest, test_keyed_join) {
 }
 
 TEST_F(OperatorCostModelTest, test_sort_merge_join) {
+	this->disableBitPacking();
 
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
                                                                           "orders_cte AS (" + orders_sql_ + ") "

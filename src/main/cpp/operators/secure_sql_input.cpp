@@ -1,5 +1,6 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <regex>
 #include "secure_sql_input.h"
 #include "util/field_utilities.h"
 

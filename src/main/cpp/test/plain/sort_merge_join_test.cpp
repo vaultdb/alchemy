@@ -4,8 +4,21 @@
 #include <operators/sort_merge_join.h>
 #include <operators/sort.h>
 
+#include <gflags/gflags.h>
+#include <gtest/gtest.h>
+#include <stdexcept>
+#include <util/type_utilities.h>
+#include <util/data_utilities.h>
+
+#include <test/support/tpch_queries.h>
+#include <boost/algorithm/string/replace.hpp>
+#include <parser/plan_parser.h>
+
+
+
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 class SortMergeJoinTest :  public PlainBaseTest  {
@@ -30,7 +43,93 @@ protected:
                                                                                                                                           " ORDER BY l_orderkey, revenue ";
 
 
+	void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 
+	 
+		//this->initializeBitPacking(FLAGS_unioned_db);
+
+		string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_unioned_db);
+		//string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
+		string local_db = FLAGS_unioned_db;
+		//boost::replace_first(local_db, "unioned", party_name.c_str());
+
+		cout << " Observed DB : "<< local_db << " - Bit Packed" << endl;
+		cout << "expected query: " << expected_query << "\n";
+		PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
+		expected->setSortOrder(expected_sort);
+
+		std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-" + test_name + ".sql";
+		std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-"  + test_name + ".json";
+
+		time_point<high_resolution_clock> startTime = clock_start();
+		clock_t secureStartClock = clock();
+
+		PlanParser<bool> parser(local_db, sql_file, plan_file, FLAGS_cutoff);
+		PlainOperator *root = parser.getRoot();
+
+		//std::cout << root->printTree() << endl;
+
+		PlainTable *result = root->run();
+
+		double secureClockTicks = (double) (clock() - secureStartClock);
+		double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
+		double duration = time_from(startTime) / 1e6;
+
+		cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
+
+
+        PlainTable *observed = result->reveal();
+        DataUtilities::removeDummies(observed);
+
+		Sort sorter(observed, DataUtilities::getDefaultSortDefinition(5));
+		observed = sorter.run()->clone();
+		expected->setSortOrder(observed->getSortOrder());
+
+        ASSERT_EQ(*expected, *observed);
+        ASSERT_TRUE(!observed->empty()); // want all tests to produce output	
+
+        delete observed;
+        delete expected;
+
+
+
+	}
+
+	string generateExpectedOutputQuery(const int &test_id, const SortDefinition &expected_sort, const string &db_name) {
+		string alice_db = FLAGS_unioned_db;
+		string bob_db = "tpch_empty";
+		//boost::replace_first(alice_db, "unioned", "alice");
+		//boost::replace_first(bob_db, "unioned", "bob");
+
+		string query = 	"WITH lhs AS (SELECT t1.n_name, t2.c_custkey, t2.c_nationkey\n"
+						"FROM (SELECT r_regionkey, r_name\n"
+						"	FROM region\n"
+						"	WHERE r_name = 'EUROPE') AS t0\n"
+						"	INNER JOIN (SELECT n_nationkey, n_name, n_regionkey\n"
+						"	FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey\n"
+						"	INNER JOIN (SELECT c_custkey, c_nationkey\n"
+						"FROM customer LIMIT $LIMIT) AS t2 ON t1.n_nationkey = t2.c_nationkey\n"
+						"ORDER BY t1.n_name, t2.c_custkey, t2.c_nationkey\n"
+						"),\n"
+						"rhs AS (SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag\n"
+						"FROM orders\n"
+						"ORDER BY o_orderkey, o_custkey\n"
+						"LIMIT $LIMIT\n"
+						")\n"
+						"SELECT n_name, c_custkey, c_nationkey,o_orderkey,o_custkey\n"
+						"FROM lhs JOIN rhs ON c_custkey = o_custkey\n"
+						"WHERE NOT dummy_tag\n"
+						"ORDER BY n_name, c_custkey, c_nationkey, o_orderkey, o_custkey ASC;";
+
+		if(FLAGS_cutoff > 0) {
+			//query = truncated_tpch_queries[test_id];
+			boost::replace_all(query, "$LIMIT", std::to_string(FLAGS_cutoff));
+			boost::replace_all(query, "$ALICE_DB", alice_db);
+			boost::replace_all(query, "$BOB_DB", bob_db);
+		}
+
+		return query;
+	}
 
 };
 
@@ -152,7 +251,12 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
     Sort<bool> observed_sort(full_join, sort_def);
     auto observed = observed_sort.run();
 
+    DataUtilities::removeDummies(observed);
+
     expected->setSortOrder(observed->getSortOrder());
+
+	DataUtilities::removeDummies(expected);
+
 
 
     ASSERT_EQ(*expected, *observed);
@@ -224,6 +328,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_reversed) {
 
     DataUtilities::removeDummies(observed);
     expected->setSortOrder(observed->getSortOrder());
+	DataUtilities::removeDummies(expected);
 
 
     ASSERT_EQ(*expected, *observed);
@@ -280,8 +385,11 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
     Sort<bool> observed_sort(observed, sort_def);
     observed = observed_sort.run();
 
+	DataUtilities::removeDummies(observed);
+
     expected->setSortOrder(observed->getSortOrder());
 
+	DataUtilities::removeDummies(expected);
 
     ASSERT_EQ(*expected, *observed);
     delete expected;
@@ -290,6 +398,13 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
 
 
 
+}
+
+TEST_F(SortMergeJoinTest, tpch_q5) {
+    //FLAGS_cutoff = 1000;
+
+    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+    runTest(5, "q5", expected_sort, FLAGS_unioned_db);
 }
 
 int main(int argc, char **argv) {

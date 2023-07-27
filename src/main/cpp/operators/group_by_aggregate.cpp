@@ -56,6 +56,15 @@ GroupByAggregate<B>::GroupByAggregate(QueryTable<B> *child, const vector<int32_t
     setup();
 }
 
+template<typename B>
+GroupByAggregate<B>::GroupByAggregate(const bool &checkSort, Operator<B> *child, const vector<int32_t> &groupBys,
+                                      const vector<ScalarAggregateDefinition> &aggregates,
+                                      const size_t & output_card) : check_sort_(checkSort), Operator<B>(child, SortDefinition()),
+                                                                    aggregate_definitions_(aggregates),
+                                                                    group_by_(groupBys), output_cardinality_(output_card) {
+    setup();
+}
+
 
 template<typename B>
 QueryTable<B> *GroupByAggregate<B>::runSelf() {
@@ -243,7 +252,8 @@ void GroupByAggregate<B>::setup() {
 
 
     // sorted on group-by cols
-    assert(sortCompatible(input_sort, group_by_));
+    if(!check_sort_)
+        assert(sortCompatible(input_sort, group_by_));
 
     // output card bound NYI
     // TODO: make this conditional once cardinality bound implemented
