@@ -60,12 +60,16 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
 
-    PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
-    SecureOperator *root = parser.getRoot();
+    PlanParser<bool> parser(local_db, sql_file, plan_file, input_tuple_limit_);
+    PlainOperator *root = parser.getRoot();
+
 
     std::cout << root->printTree() << endl;
 
-    SecureTable *result = root->run();
+	//std::cout << root->printTree() << endl;
+
+
+    PlainTable *result = root->run();
 
     double secureClockTicks = (double) (clock() - secureStartClock);
     double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
