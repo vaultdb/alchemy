@@ -17,11 +17,15 @@ namespace vaultdb {
     public:
         std::vector<ScalarAggregateDefinition> aggregate_definitions_;
         std::vector<int32_t> group_by_;
+        bool check_sort_ = false;
 
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const size_t & output_card = 0);
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
 			       const vector<ScalarAggregateDefinition> &aggregates, const size_t & output_card = 0);
+
+        GroupByAggregate(const bool &checkSort, Operator<B> *child, const vector<int32_t> &group_bys,
+                         const vector<ScalarAggregateDefinition> &aggregates, const size_t & output_card = 0);
 
         GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const size_t & output_card = 0);

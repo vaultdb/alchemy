@@ -43,7 +43,7 @@ TEST_F(OperatorCostModelTest, test_table_scan) {
 	std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
     SortDefinition collation = DataUtilities::getDefaultSortDefinition(2);
 
-    SecureSqlInput input(db_name_, sql, false, collation); 	
+    SecureSqlInput input(db_name_, sql, false, collation);
 
 	auto scanned = input.run();
 	

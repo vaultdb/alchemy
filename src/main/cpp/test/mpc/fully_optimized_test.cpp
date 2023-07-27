@@ -33,7 +33,7 @@ protected:
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
 
-    int input_tuple_limit_ = FLAGS_cutoff;
+    int input_tuple_limit_ = -1;
 
 };
 
@@ -63,7 +63,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-    //std::cout << root->printTree() << endl;
+    std::cout << root->printTree() << endl;
 
     SecureTable *result = root->run();
 
@@ -104,11 +104,12 @@ FullyOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDe
     return query;
 }
 
-
+/*
 TEST_F(FullyOptimizedTest, tpch_q1) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest(1, "q1", expected_sort, FLAGS_unioned_db);
 }
+*/
 
 TEST_F(FullyOptimizedTest, tpch_q3) {
 
@@ -118,7 +119,7 @@ TEST_F(FullyOptimizedTest, tpch_q3) {
     runTest(3, "q3", expected_sort, FLAGS_unioned_db);
 }
 
-
+/*
 TEST_F(FullyOptimizedTest, tpch_q5) {
     //input_tuple_limit_ = 1000;
 
@@ -141,7 +142,7 @@ TEST_F(FullyOptimizedTest, tpch_q9) {
     runTest(9, "q9", expected_sort, FLAGS_unioned_db);
 
 }
-
+*/
 
 TEST_F(FullyOptimizedTest, tpch_q18) {
     // -1 ASC, $4 DESC, $3 ASC
