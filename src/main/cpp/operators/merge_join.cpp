@@ -7,7 +7,6 @@ using namespace vaultdb;
 
 template<typename B>
 QueryTable<B> *MergeJoin<B>::runSelf() {
-    // This Merge Join works like right join, we keep all rows in right table.
     auto lhs = this->getChild(0)->getOutput();
     auto rhs = this->getChild(1)->getOutput();
 
@@ -23,10 +22,12 @@ QueryTable<B> *MergeJoin<B>::runSelf() {
         Join<B>::write_right(this->output_, i,  rhs, i);
         selected = Join<B>::predicate_->call(lhs, i, rhs, i).template getValue<B>();
 
-        if(this->getPartyJoin())
-            dst_dummy_tag = (!selected) | (lhs->getDummyTag(i) & rhs->getDummyTag(i));
-        else
+        if(or_dummy_tags_)
             dst_dummy_tag = (!selected) | lhs->getDummyTag(i) | rhs->getDummyTag(i);
+        else
+            dst_dummy_tag = (!selected) | (lhs->getDummyTag(i) & rhs->getDummyTag(i));
+
+
         this->output_->setDummyTag(i, dst_dummy_tag);
     }
 
@@ -46,27 +47,17 @@ void MergeJoin<B>::setup() {
     //assert(lhs->getOutputCardinality() == rhs->getOutputCardinality());
 
     this->output_cardinality_ = lhs->getOutputCardinality();
-
-    // require that this is sorted on the join key
     // TODO: make this robust to permutations in sort column order
-    auto p = (GenericExpression<B> *) this->predicate_;
-    JoinEqualityConditionVisitor<B> join_visitor(p->root_);
-    auto join_idxs  = join_visitor.getEqualities();
+    // assuming it was sorted on the join key for both sides
+    this->sort_definition_ = lhs->getSortOrder();
 
-    auto lhs_sort = lhs->getSortOrder();
-    auto rhs_sort = rhs->getSortOrder();
-
-    assert(lhs_sort.size() >= join_idxs.size());
-    assert(rhs_sort.size() >= join_idxs.size());
-
-    int i = 0;
-    for(auto key_pair : join_idxs) {
-        // visitor always outputs lhs, rhs
-        assert(lhs_sort[i].first == key_pair.first);
-        assert(rhs_sort[i].first == (key_pair.second - lhs->getOutputSchema().getFieldCount()));
-        assert(lhs_sort[i].second == rhs_sort[i].second);
-        ++i;
-    }
+    // check sort compatibility
+    auto lhs_collation = lhs->getSortOrder();
+    auto rhs_collation = rhs->getSortOrder();
+    assert(lhs_collation.size() == rhs_collation.size());
+   for(int i = 0; i < lhs_collation.size(); ++i) {
+       assert(lhs_collation[i] == rhs_collation[i]);
+   }
 
 }
 

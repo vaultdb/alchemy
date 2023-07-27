@@ -1,8 +1,8 @@
 #include "system_configuration.h"
 
+using namespace vaultdb;
 
-vaultdb::BitPackingDefinition
-vaultdb::SystemConfiguration::getBitPackingSpec(const string &table_name, const string &col_name) {
+BitPackingDefinition SystemConfiguration::getBitPackingSpec(const string &table_name, const string &col_name) {
 
 
     ColumnReference c(table_name, col_name);

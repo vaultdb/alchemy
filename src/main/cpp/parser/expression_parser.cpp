@@ -41,7 +41,6 @@ Expression<B> * ExpressionParser<B>::parseJSONExpression(const std::string &json
 template<typename B>
 Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & lhs, const QuerySchema & rhs) {
     ExpressionNode<B> *expression_root = parseHelper(tree, lhs, rhs);
-
     QuerySchema input_schema = QuerySchema::concatenate(lhs, rhs);
     TypeValidationVisitor<B> visitor(expression_root, input_schema);
     expression_root->accept(&visitor);
@@ -97,6 +96,7 @@ ExpressionNode<B> * ExpressionParser<B>::parseSubExpression(const ptree &tree, c
 
 template<typename B>
 ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const QuerySchema & lhs, const QuerySchema & rhs) {
+
     if(tree.count("literal")  > 0) {
         ptree literal = tree.get_child("literal");
         std::string type_str = tree.get_child("type").get_child("type").template get_value<std::string>();
@@ -146,6 +146,10 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
         throw std::invalid_argument("Parsing input of type " + type_str + " not yet implemented!");
 
     }
+    if(tree.count("no-op")  > 0) {
+        return new NoOp<B>();
+    }
+
     // else it is an input
     std::string expr = tree.get_child("input").get_value<std::string>();
     uint32_t src_ordinal;

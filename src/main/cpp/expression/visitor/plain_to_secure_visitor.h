@@ -29,6 +29,8 @@ namespace  vaultdb {
 
         void visit(LiteralNode<bool> & node) override;
 
+        void visit(NoOp<bool> & node) override;
+
         void visit(AndNode<bool> & node) override;
 
         void visit(OrNode<bool> & node) override;

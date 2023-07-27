@@ -62,6 +62,9 @@ template class vaultdb::InputReference<emp::Bit>;
 template class vaultdb::LiteralNode<bool>;
 template class vaultdb::LiteralNode<emp::Bit>;
 
+template class vaultdb::NoOp<bool>;
+template class vaultdb::NoOp<emp::Bit>;
+
 template class vaultdb::CastNode<bool>;
 template class vaultdb::CastNode<emp::Bit>;
 

@@ -38,6 +38,9 @@ namespace vaultdb{
         }
 
         string getUnionedDbName() const { return unioned_db_name_; }
+        string getEmptyDbName() const { return empty_db_name_; }
+        void setEmptyDbName(const string & db_name) { empty_db_name_ = db_name; }
+        
         BitPackingDefinition getBitPackingSpec(const string & table_name, const string & col_name);
         SystemConfiguration(const SystemConfiguration&) = delete;
         SystemConfiguration& operator=(const SystemConfiguration &) = delete;
@@ -79,7 +82,8 @@ namespace vaultdb{
     private:
         SystemConfiguration() {
         }
-        string unioned_db_name_;
+        string unioned_db_name_, empty_db_name_; // empty DB used for schema lookups (for public info)
+
         StorageModel storage_model_ = StorageModel::ROW_STORE; // only support one storage model at a time
         std::map<ColumnReference, BitPackingDefinition> bit_packing_;
         bool bit_packing_enabled_ = false;

@@ -18,26 +18,21 @@ namespace  vaultdb {
             setup();
         }
 
-        MergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool partyJoin = false) : Join<B>(lhs, rhs, predicate, sort) {
-            this->setPartyJoin(partyJoin);
+        MergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool or_dummy_tags = false) : Join<B>(lhs, rhs, predicate, sort), or_dummy_tags_(or_dummy_tags) {
             setup();
         }
 
-        MergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool partyJoin = false) : Join<B>(lhs, rhs, predicate, sort) {
-            this->setPartyJoin(partyJoin);
+        MergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool or_dummy_tags = false) : Join<B>(lhs, rhs, predicate, sort), or_dummy_tags_(or_dummy_tags)  {
             setup();
         }
 
 
 
     protected:
-        bool partyJoin = false;
+        bool or_dummy_tags_ = false;
         QueryTable<B> *runSelf() override;
-        QueryTable<B> *runSelf(const bool partyJoin);
         inline string getOperatorType() const override {     return "MergeJoin"; }
 
-        bool getPartyJoin() { return this->partyJoin; }
-        void setPartyJoin(bool partyJoin) {this->partyJoin = partyJoin ;}
 
     private:
         void setup();

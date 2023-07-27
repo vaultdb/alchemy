@@ -34,6 +34,9 @@ void ToPackedExpressionVisitor<B>::visit(LiteralNode<B> & node) {
     
     root_ = node.clone();
  }
+template<typename B>
+void ToPackedExpressionVisitor<B>::visit(NoOp<B> & node) { root_ = node.clone(); }
+
 
 template<typename B>
 void ToPackedExpressionVisitor<B>::visit(AndNode<B> & node) {

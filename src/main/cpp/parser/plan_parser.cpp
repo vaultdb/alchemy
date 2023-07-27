@@ -331,6 +331,10 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
         sort_def.emplace_back(ColumnSort(pos.first + lhs->getOutputSchema().getFieldCount(), pos.second));
     }
 
+    string join_type;
+    if(join_tree.count("operator-algorithm") > 0)
+        join_type = join_tree.get_child("operator-algorithm").template get_value<string>();
+
     // if fkey designation exists, use this to create keyed join
     // key: foreignKey
     if(join_tree.count("foreignKey") > 0) {
@@ -351,24 +355,22 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
         }
 
         if(join_tree.count("operator-algorithm") > 0) {
-            string joinType = join_tree.get_child("operator-algorithm").template get_value<string>();
-            if (joinType == "sort-merge-join")
+            if (join_type == "sort-merge-join")
                 return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
-            if (joinType == "merge-join") {
-                if(join_tree.count("partyJoin") > 0)
-                    return new MergeJoin<B>(lhs, rhs, join_condition, SortDefinition(), true);
-                else
-                    return new MergeJoin<B>(lhs, rhs, join_condition, SortDefinition(), false);
-            }
 
             return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
-
-
 
         }
         else { // if unspecified but FK, use KeyedJoin
             return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
         }
+    }
+
+    if (join_type == "merge-join") {
+        if(join_tree.count("dummy-handling") > 0 && join_tree.get_child("dummy-handling").template get_value<string>() == "OR")
+            return new MergeJoin<B>(lhs, rhs, join_condition, SortDefinition(), true);
+        else
+            return new MergeJoin<B>(lhs, rhs, join_condition, SortDefinition(), false);
     }
 
 
@@ -412,6 +414,7 @@ Operator<B> *PlanParser<B>::parseProjection(const int &operator_id, const ptree 
     }
     Project<B> *p =  new Project<B>(child, builder.getExprs());
     QuerySchema schema = p->getOutputSchema();
+
     // add field names
     if(output_names.size() == schema.getFieldCount()) {
         for(int i = 0; i < schema.getFieldCount(); ++i) {

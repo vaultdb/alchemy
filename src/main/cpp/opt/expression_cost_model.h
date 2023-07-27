@@ -24,6 +24,10 @@ namespace vaultdb {
 
         void visit(LiteralNode<B>  & node) override;
 
+        void visit(NoOp<B> & node) override {
+            cumulative_cost_ = 0L;
+        }
+
         void visit(AndNode<B>  & node) override {
             cumulative_cost_ = sumChildCosts( (vaultdb::ExpressionNode<B> *) &node)  + 1; // +1 for AND gate
         }

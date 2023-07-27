@@ -10,10 +10,6 @@
 namespace  vaultdb {
     class SecureSqlInput : public Operator<emp::Bit> {
 
-
-        NetIO *netio_;
-        int src_party_;
-
         string input_query_;
         string db_name_;
         bool has_dummy_tag_;
@@ -49,4 +45,4 @@ namespace  vaultdb {
 
 }
 
-#endif // ENCRYPTED_SQL_INPUT_H
+#endif 

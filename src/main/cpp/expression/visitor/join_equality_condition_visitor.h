@@ -35,6 +35,8 @@ namespace vaultdb {
 
         void visit(LiteralNode<B> & node) override { throw; }
 
+        void visit(NoOp<B> & node) override { return; } // sometimes we have an empty join predicate
+
         void visit(AndNode<B> & node) override;
 
         void visit(OrNode<B> & node) override { throw; }

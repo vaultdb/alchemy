@@ -24,6 +24,11 @@ void PrintExpressionVisitor<B>::visit(LiteralNode<B>&  node) {
 }
 
 template<typename B>
+void PrintExpressionVisitor<B>::visit(NoOp<B>&  node) {
+    last_value_ = "no-op";
+}
+
+template<typename B>
 void PrintExpressionVisitor<B>::visit(AndNode<B> & node) {
     visitBinaryExpression(node, "AND");
 }
@@ -110,9 +115,15 @@ template<typename B>
 void PrintExpressionVisitor<B>::visitBinaryExpression(ExpressionNode<B> &binary_node, const std::string &connector) {
     binary_node.lhs_->accept(this);
     std::string lhs_str = last_value_;
+    if(binary_node.lhs_->lhs_ != nullptr) {
+        lhs_str = "(" + lhs_str + ")";
+    }
 
     binary_node.rhs_->accept(this);
     std::string rhs_str = last_value_;
+    if(binary_node.rhs_->lhs_ != nullptr) {
+        rhs_str = "(" + rhs_str + ")";
+    }
 
     last_value_ = lhs_str + " " + connector + " " + rhs_str;
 
