@@ -77,8 +77,8 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     QueryTable<B> *lhs = this->getChild(0)->getOutput();
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
-	std::cout << "LHS: " << lhs->toString(true) << "\n";
-	std::cout << "RHS: " << rhs->toString(true) << "\n";
+	//std::cout << "LHS: " << lhs->toString(true) << "\n";
+	//std::cout << "RHS: " << rhs->toString(true) << "\n";
 
     this->start_time_ = clock_start();
 
@@ -104,8 +104,8 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 	s1 = obliviousExpand(augmented.first, true);
 	s2 = obliviousExpand(augmented.second, false);
 
-	std::cout << "s1 expanded: " << s1->toString(true) << "\n";
-	std::cout << "s2 expanded: " << s2->toString(true) << "\n";
+	//std::cout << "s1 expanded: " << s1->toString(true) << "\n";
+	//std::cout << "s2 expanded: " << s2->toString(true) << "\n";
 	
 	delete augmented.first;
 	delete augmented.second;
@@ -216,17 +216,19 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
     // sort s.t. fkey entries are first, pkey entries are second 
 	sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
-	sort_def.emplace_back(table_id_idx_, SortDirection::DESCENDING);
+	
+	bool lhs_is_foreign_key = foreign_key_input_ == 0;
+	sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
 
     Sort<B> sorter(unioned, sort_def);
     sorter.setOperatorId(-2);	
 
     QueryTable<B> *sorted = sorter.run()->clone();
-	std::cout << "First sort: " << sorted->toString(true) << "\n";
+	//std::cout << "First sort: " << sorted->toString(true) << "\n";
 
     if(is_secure_ && bit_packed_) initializeAlphasPacked(sorted);
     else initializeAlphas(sorted);
-	std::cout << "Initialize alphas: " << sorted->toString(true) << "\n";
+	//std::cout << "Initialize alphas: " << sorted->toString(true) << "\n";
 
     sort_def.clear();
     sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
@@ -330,7 +332,7 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
 		alpha_1 = Field<B>::If(is_foreign_key & same_group, alpha_1, Field<B>::If(!is_foreign_key, one_, zero_));
 		dst->setPackedField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getPackedField(i, alpha_idx_)));
-		//dst->setPackedField(i, alpha_idx_, Field<B>::If(dst->getDummyTag(i), zero_, dst->getPackedField(i, alpha_idx_)));
+		dst->setPackedField(i, alpha_idx_, Field<B>::If(dst->getDummyTag(i), zero_, dst->getPackedField(i, alpha_idx_)));
 	}
 }
 
@@ -477,7 +479,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
                                      Field<B>::If(result, zero_, s));
         intermediate_table->setField(i, is_new_idx_,
                                      Field<B>::If(result, one_b,  zero_b));
-        intermediate_table->setDummyTag(i, input->getDummyTag(i));
+        intermediate_table->setDummyTag(i, input->getDummyTag(i) | result);
 		s = s + cnt;
     }	
     // cout << "Calling obliviousDistribute with and gate count: " << this->system_conf_.andGateCount() << endl;
@@ -506,7 +508,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
 
         }
 		Field<B> write_index = FieldFactory<B>::getInt(i);
-		B end_matches = write_index >= s;
+		B end_matches = write_index >= s-one_;
         dst_table->setDummyTag(i, FieldUtilities::select(result, tmp.getDummyTag() | end_matches, dst_table->getDummyTag(i) | end_matches));
     }
 
