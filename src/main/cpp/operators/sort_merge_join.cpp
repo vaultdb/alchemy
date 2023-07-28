@@ -134,7 +134,60 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 }
 
 template<typename B>
+QuerySchema SortMergeJoin<B>::deriveAugmentedSchema() const {
+    // pick bigger schema as starting point
+    Operator<B> *lhs_child = this->getChild(0);
+    Operator<B> *rhs_child = this->getChild(1);
 
+    QuerySchema schema = (lhs_smaller_)  ? rhs_child->getOutputSchema() : lhs_child->getOutputSchema();
+    int lhs_schema_fields = lhs_child->getOutputSchema().getFieldCount();
+    vector<int> keys;
+    int write_cursor = 0;
+    QuerySchema augmented_schema;
+
+
+    for(auto key_pair : join_idxs_) {
+        // visitor always outputs lhs, rhs
+        int k = (lhs_smaller_) ? (key_pair.second  - lhs_schema_fields) : key_pair.first;
+        QueryFieldDesc f = schema.getField(k);
+        f.setOrdinal(write_cursor);
+        ++write_cursor;
+        augmented_schema.putField(f);
+        keys.emplace_back(k);
+    }
+
+    for(int i = 0; i < schema.getFieldCount(); i++) {
+        if(std::find(keys.begin(), keys.end(), i) == keys.end()) {
+            QueryFieldDesc f = schema.getField(i);
+            f.setOrdinal(write_cursor);
+            ++write_cursor;
+            augmented_schema.putField(f);
+        }
+    }
+
+
+    if(!is_secure_) {
+        QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_, 0);
+        augmented_schema.putField(alpha);
+        QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::BOOL, 0);
+        augmented_schema.putField(table_id);
+    }
+    else {
+        QueryFieldDesc alpha(write_cursor, "alpha", "", int_field_type_);
+        int max_alpha =  lhs_child->getOutputCardinality() + rhs_child->getOutputCardinality();
+        if(bit_packed_) alpha.initializeFieldSizeWithCardinality(max_alpha);
+        ++write_cursor;
+
+        augmented_schema.putField(alpha);
+        QueryFieldDesc table_id(write_cursor, "table_id", "", FieldType::SECURE_BOOL);
+        augmented_schema.putField(table_id);
+    }
+    augmented_schema.initializeFieldOffsets();
+
+    return augmented_schema;
+}
+
+template<typename B>
 QuerySchema SortMergeJoin<B>::getAugmentedSchema() {
 	QueryTable<B> * lhs = this->getChild(0)->getOutput();
 	QueryTable<B> * rhs = this->getChild(1)->getOutput();

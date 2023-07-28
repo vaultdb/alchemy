@@ -29,7 +29,7 @@ namespace  vaultdb {
                       const SortDefinition &sort = SortDefinition());
 
 		int foreignKeyChild() const { return foreign_key_input_; }
-		QuerySchema getAugmentedSchema();
+        QuerySchema deriveAugmentedSchema() const;
 
     protected:
         QueryTable<B> *runSelf() override;
@@ -60,6 +60,7 @@ namespace  vaultdb {
         QueryTable<B> *obliviousExpand(QueryTable<B> *input, bool is_lhs);
         // only for use when bit_packed_ = true and is_secure_ = true
         QueryTable<B> *obliviousExpandPacked(QueryTable<B> *input, bool is_lhs);
+        QuerySchema getAugmentedSchema();
 
         //QueryTable<B> *alignTable(QueryTable<B> *input);
         QueryTable<B> *revertProjection(QueryTable<B> *s, const map<int, int> &expr_map, const bool &is_lhs) const;
@@ -68,6 +69,7 @@ namespace  vaultdb {
 
         void initializeAlphas(QueryTable<B> *dst); // update in place
         void initializeAlphasPacked(QueryTable<B> *dst); // update in place
+
 
         inline B joinMatch(QueryTable<B> *t, int lhs_row, int rhs_row) {
             // previous alignment step will make join keys in first n columns

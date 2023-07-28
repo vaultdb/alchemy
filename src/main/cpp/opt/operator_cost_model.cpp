@@ -112,23 +112,23 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 
 	Operator<Bit>* lhs = join->getChild(0);
 	Operator<Bit>* rhs = join->getChild(1);
-	QuerySchema augmented_schema = join->getAugmentedSchema();
+	QuerySchema augmented_schema = join->deriveAugmentedSchema();
 
 	//first we have the cost of two sorts from augmentTables
 	auto p = (GenericExpression<Bit>*) join->getPredicate();
 	JoinEqualityConditionVisitor<Bit> join_visitor(p->root_);
-	vector<pair<uint32_t, uint32_t> > join_idxs_  = join_visitor.getEqualities();
-	SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size());
+	vector<pair<uint32_t, uint32_t> > join_idxs  = join_visitor.getEqualities();
+	SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join_idxs.size());
 
-	size_t table_id_idx_ = augmented_schema.getFieldCount() - 1;
-	sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
+	size_t table_id_idx = augmented_schema.getFieldCount() - 1;
+	sort_def.emplace_back(table_id_idx, SortDirection::ASCENDING);
 
 	size_t augment_cost = 0;
 	augment_cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());	
 
 	sort_def.clear();
-    sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
-    for(int i = 0; i < join_idxs_.size(); ++i) {
+    sort_def.emplace_back(table_id_idx, SortDirection::ASCENDING);
+    for(int i = 0; i < join_idxs.size(); ++i) {
         sort_def.emplace_back(i, SortDirection::ASCENDING);
     }
 
