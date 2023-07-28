@@ -81,9 +81,12 @@ protected:
         PlainTable *observed = result->reveal();
         DataUtilities::removeDummies(observed);
 
+		Sort sorter(observed, DataUtilities::getDefaultSortDefinition(5));
+		observed = sorter.run()->clone();
+		expected->setSortOrder(observed->getSortOrder());
+
         ASSERT_EQ(*expected, *observed);
-        ASSERT_TRUE(!observed->empty()); // want all tests to produce output
-		
+        ASSERT_TRUE(!observed->empty()); // want all tests to produce output	
 
         delete observed;
         delete expected;
@@ -113,9 +116,10 @@ protected:
 						"ORDER BY o_orderkey, o_custkey\n"
 						"LIMIT $LIMIT\n"
 						")\n"
-						"SELECT *\n"
+						"SELECT n_name, c_custkey, c_nationkey,o_orderkey,o_custkey\n"
 						"FROM lhs JOIN rhs ON c_custkey = o_custkey\n"
-						"WHERE NOT dummy_tag;";
+						"WHERE NOT dummy_tag\n"
+						"ORDER BY n_name, c_custkey, c_nationkey, o_orderkey, o_custkey ASC;";
 
 		if(FLAGS_cutoff > 0) {
 			//query = truncated_tpch_queries[test_id];
@@ -247,7 +251,12 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
     Sort<bool> observed_sort(full_join, sort_def);
     auto observed = observed_sort.run();
 
+    DataUtilities::removeDummies(observed);
+
     expected->setSortOrder(observed->getSortOrder());
+
+	DataUtilities::removeDummies(expected);
+
 
 
     ASSERT_EQ(*expected, *observed);
@@ -319,6 +328,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_reversed) {
 
     DataUtilities::removeDummies(observed);
     expected->setSortOrder(observed->getSortOrder());
+	DataUtilities::removeDummies(expected);
 
 
     ASSERT_EQ(*expected, *observed);
@@ -375,8 +385,11 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
     Sort<bool> observed_sort(observed, sort_def);
     observed = observed_sort.run();
 
+	DataUtilities::removeDummies(observed);
+
     expected->setSortOrder(observed->getSortOrder());
 
+	DataUtilities::removeDummies(expected);
 
     ASSERT_EQ(*expected, *observed);
     delete expected;

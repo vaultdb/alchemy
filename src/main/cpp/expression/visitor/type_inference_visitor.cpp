@@ -34,6 +34,10 @@ void TypeInferenceVisitor<B>::visit(LiteralNode<B> & node) {
     last_expression_type_ = node.payload_.getType();
 }
 
+template<typename B>
+void TypeInferenceVisitor<B>::visit(NoOp<B> & node) {
+    last_expression_type_ = node.output_.getType();
+}
 
 // B has to match up with Field<B> if/when we plug in values to the equation later
 template<typename B>

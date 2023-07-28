@@ -10,7 +10,8 @@ namespace vaultdb {
     template<typename B> class PackedInputReference;
 
     template<typename B> class  LiteralNode;
-    
+    template<typename B> class  NoOp;
+
     template<typename B> class  AndNode;
     template<typename B> class  OrNode;
     template<typename B> class  NotNode;
@@ -65,6 +66,8 @@ namespace vaultdb {
 
         virtual void visit(CastNode<B>  & node) = 0;
         virtual void visit(CaseNode<B>  & node) = 0;
+
+        virtual void visit(NoOp<B> & node) = 0;
 
     };
 

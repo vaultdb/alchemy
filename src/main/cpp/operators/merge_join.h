@@ -18,26 +18,21 @@ namespace  vaultdb {
             setup();
         }
 
-        MergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool leafNodeFlag = false) : Join<B>(lhs, rhs, predicate, sort) {
-            this->setLeafNodeFlag(leafNodeFlag);
+        MergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool or_dummy_tags = false) : Join<B>(lhs, rhs, predicate, sort), or_dummy_tags_(or_dummy_tags) {
             setup();
         }
 
-        MergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool leafNodeFlag = false) : Join<B>(lhs, rhs, predicate, sort) {
-            this->setLeafNodeFlag(leafNodeFlag);
+        MergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool or_dummy_tags = false) : Join<B>(lhs, rhs, predicate, sort), or_dummy_tags_(or_dummy_tags)  {
             setup();
-        }
+            }
 
 
 
     protected:
-        bool leafNodeFlag = false;
+        bool or_dummy_tags_ = false;
         QueryTable<B> *runSelf() override;
-        QueryTable<B> *runSelf(const bool leafNodeFlag);
         inline string getOperatorType() const override {     return "MergeJoin"; }
 
-        bool getLeafNodeFlag() { return this->leafNodeFlag; }
-        void setLeafNodeFlag(bool leafNodeFlag) {this->leafNodeFlag = leafNodeFlag ;}
 
     private:
         void setup();

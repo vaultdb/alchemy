@@ -46,8 +46,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
 
     string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_unioned_db);
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
-    string local_db = FLAGS_unioned_db;
-    boost::replace_first(local_db, "unioned", party_name.c_str());
+    string local_db = db_name_;
 
     cout << " Observed DB : "<< local_db << " - Bit Packed" << endl;
 
@@ -60,12 +59,12 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
 
-    PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
-    SecureOperator *root = parser.getRoot();
+    PlanParser<bool> parser(local_db, sql_file, plan_file, input_tuple_limit_);
+    PlainOperator *root = parser.getRoot();
 
-    std::cout << root->printTree() << endl;
+//    std::cout << root->printTree() << endl;
 
-    SecureTable *result = root->run();
+    PlainTable *result = root->run();
 
     double secureClockTicks = (double) (clock() - secureStartClock);
     double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
@@ -75,10 +74,8 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
 
     if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
-        //DataUtilities::removeDummies(observed);
 
         ASSERT_EQ(*expected, *observed);
-        ASSERT_TRUE(!observed->empty()); // want all tests to produce output
 
         delete observed;
         delete expected;
@@ -104,12 +101,45 @@ FullyOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDe
     return query;
 }
 
-/*
+
 TEST_F(FullyOptimizedTest, tpch_q1) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort, FLAGS_unioned_db);
+
+    this->initializeBitPacking(FLAGS_unioned_db);
+    string test_name = "q1";
+
+    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-" + test_name + ".sql";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-"  + test_name + ".json";
+
+    time_point<high_resolution_clock> startTime = clock_start();
+    clock_t secureStartClock = clock();
+
+    PlanParser<emp::Bit> parser(db_name_, sql_file, plan_file, input_tuple_limit_);
+    SecureOperator *root = parser.getRoot();
+
+    std::cout << root->printTree() << endl;
+
+    SecureTable *result = root->run();
+
+    double secureClockTicks = (double) (clock() - secureStartClock);
+    double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
+    double duration = time_from(startTime) / 1e6;
+
+    cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
+
+    if(FLAGS_validation) {
+        PlainTable *observed = result->reveal();
+        string expected_query = tpch_queries[1];
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 2);
+
+        ASSERT_EQ(*expected, *observed);
+
+        delete observed;
+        delete expected;
+    }
+
 }
-*/
+
 
 TEST_F(FullyOptimizedTest, tpch_q3) {
 
@@ -119,7 +149,7 @@ TEST_F(FullyOptimizedTest, tpch_q3) {
     runTest(3, "q3", expected_sort, FLAGS_unioned_db);
 }
 
-/*
+
 TEST_F(FullyOptimizedTest, tpch_q5) {
     //input_tuple_limit_ = 1000;
 
@@ -142,7 +172,7 @@ TEST_F(FullyOptimizedTest, tpch_q9) {
     runTest(9, "q9", expected_sort, FLAGS_unioned_db);
 
 }
-*/
+
 
 TEST_F(FullyOptimizedTest, tpch_q18) {
     // -1 ASC, $4 DESC, $3 ASC

@@ -18,6 +18,11 @@ void PlainToSecureVisitor::visit(LiteralNode<bool> & node) {
     root_ =  node.toSecure();
 }
 
+void PlainToSecureVisitor::visit(NoOp<bool> &node) {
+    root_ =  node.toSecure();
+}
+
+
 void PlainToSecureVisitor::visit(AndNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit> * lhs = root_;

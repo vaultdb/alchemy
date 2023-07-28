@@ -58,6 +58,8 @@ ExpressionNode<B> *rhs) {
             return new GreaterThanNode<B>(lhs, rhs);
         case ExpressionKind::GEQ:
             return new GreaterThanEqNode<B>(lhs, rhs);
+        case ExpressionKind::NO_OP:
+            return new NoOp<B>();
         default:
             throw new std::invalid_argument("Can't create ExpressionNode for kind " + std::to_string((int) kind));
     }

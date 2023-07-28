@@ -245,6 +245,43 @@ namespace vaultdb {
     };
 
 
+    // placeholder that always returns true for when our predicate is NULL
+    template<typename B>
+    class NoOp : public ExpressionNode<B> {
+    public:
+        NoOp() : ExpressionNode<B>(nullptr) {
+            B payload = true;
+            FieldType type = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+            output_ = Field<B>(type, payload);
+
+        }
+        ~NoOp() = default;
+
+        Field<B> call(const QueryTuple<B> & target) const override { return  output_; }
+
+        inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
+            return output_;
+        }
+
+        Field<B>
+        call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            return output_;
+        }
+
+        ExpressionKind kind() const override {    return ExpressionKind::NO_OP; }
+
+        void accept(ExpressionVisitor<B> *visitor) override {  visitor->visit(*this); }
+
+        NoOp<emp::Bit>  *toSecure() const { return new NoOp<emp::Bit>(); }
+
+        ExpressionNode<B> *clone() const override { return  new NoOp<B>(); }
+
+
+        Field<B> output_;
+
+    };
+
+
     template<typename B>
     class CastNode : public ExpressionNode<B> {
     public:

@@ -18,6 +18,7 @@ namespace vaultdb {
         void visit(InputReference<B>  & node) override;
         void visit(PackedInputReference<B>  & node) override;
         void visit(LiteralNode<B>  & node) override;
+        void visit(NoOp<B> & node) override { last_expression_type_ =  node.output_.getType(); }
 
         void visit(AndNode<B>  & node) override;
         void visit(OrNode<B>  & node) override;

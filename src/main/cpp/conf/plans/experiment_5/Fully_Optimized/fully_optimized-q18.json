@@ -47,7 +47,7 @@
       "relOp": "LogicalJoin",
       "joinOn": "L1.l_orderkey = L2.l_orderkey",
       "operator-algorithm" : "merge-join",
-      "leafNodeFlag" : 1,
+      "dummy-handling" : "OR",
       "outputFields": "L1.l_orderkey (#0), L1.sum_qty (#1), L2.l_orderkey (#2), L2.sum_qty (#3)",
       "condition": {
         "op": {

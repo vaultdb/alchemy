@@ -19,7 +19,7 @@ namespace  vaultdb {
         SortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
 
-        SortMergeJoin(QueryTable<B> *foreign_key, QueryTable<B> *prkmary_key, Expression<B> *predicate,
+        SortMergeJoin(QueryTable<B> *foreign_key, QueryTable<B> *primary_key, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
 
         SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,

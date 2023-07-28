@@ -67,17 +67,19 @@ void SecureSqlInput::runQuery(const int & input_party) {
         input_query_ = "SELECT * FROM (" + input_query_ + ") input LIMIT " + std::to_string(input_tuple_limit_);
     }
 
-    string party_name = input_party == emp::ALICE ? "alice" : "bob";
+    int party = SystemConfiguration::getInstance().party_;
     string local_db = db_name_;
 
-    if (!boost::contains(local_db, party_name)) {
-        // If party_name is not found in local_db, replace local_db with "tpch_empty"
-        local_db = "tpch_empty";
-    }
+    bool no_input = (input_party > 0 && (party != input_party));
+    if(no_input) local_db = SystemConfiguration::getInstance().getEmptyDbName();
+
     plain_input_ = dataProvider.getQueryTable(local_db, input_query_, has_dummy_tag_);
     plain_input_->setSortOrder(getSortOrder());
+    if(no_input) plain_input_->resize(0); // in case the domain is fixed (e.g., TPC-H Q1)
+
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
     this->output_cardinality_ = manager->getTableCardinality(plain_input_->getTupleCount());
+
 }
 
 string SecureSqlInput::getOperatorType() const {

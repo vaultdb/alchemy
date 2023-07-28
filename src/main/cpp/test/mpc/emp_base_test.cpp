@@ -55,6 +55,7 @@ void EmpBaseTest::SetUp()  {
 
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(FLAGS_unioned_db);
     s.initialize(db_name_, md, storage_model_);
+    s.setEmptyDbName(empty_db_);
     s.emp_manager_ = manager_;
 }
 
