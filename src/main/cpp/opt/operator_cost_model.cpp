@@ -144,10 +144,10 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
     augmented_schema.putField(is_new);
     augmented_schema.initializeFieldOffsets();
 
-	size_t is_new_idx_ = augmented_schema.getFieldCount() - 1;
-    size_t weight_idx_ = augmented_schema.getFieldCount() - 2;
+	size_t is_new_idx = augmented_schema.getFieldCount() - 1;
+    size_t weight_idx = augmented_schema.getFieldCount() - 2;
 
-	SortDefinition second_sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
+	SortDefinition second_sort_def{ ColumnSort(is_new_idx, SortDirection::ASCENDING), ColumnSort(weight_idx, SortDirection::ASCENDING)};
 
 	size_t distribute_cost = 0;
 
