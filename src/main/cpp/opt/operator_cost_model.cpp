@@ -169,7 +169,7 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
     cost += distribute_cost;
 	
 	//cost of conditional write step from obliviousExpand
-	InputReference<Bit> read_field(is_new_idx_, augmented_schema);
+	InputReference<Bit> read_field(is_new_idx, augmented_schema);
 	Field<Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
 	LiteralNode<Bit> constant_input(one);
 	EqualNode equality_check((ExpressionNode<Bit> *) &read_field, (ExpressionNode<Bit> *) &constant_input);
