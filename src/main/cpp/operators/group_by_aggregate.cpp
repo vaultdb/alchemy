@@ -57,9 +57,10 @@ GroupByAggregate<B>::GroupByAggregate(QueryTable<B> *child, const vector<int32_t
 }
 
 template<typename B>
-GroupByAggregate<B>::GroupByAggregate(const bool &checkSort, Operator<B> *child, const vector<int32_t> &groupBys,
-                                      const vector<ScalarAggregateDefinition> &aggregates,
-                                      const size_t & output_card) : check_sort_(checkSort), Operator<B>(child, SortDefinition()),
+GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+                                      const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort,
+                                      const size_t &output_card)
+        : check_sort_(check_sort), Operator<B>(child, SortDefinition()),
                                                                     aggregate_definitions_(aggregates),
                                                                     group_by_(groupBys), output_cardinality_(output_card) {
     setup();
@@ -259,7 +260,7 @@ void GroupByAggregate<B>::setup() {
 
 
     // sorted on group-by cols
-    if(!check_sort_)
+    if(check_sort_)
         assert(sortCompatible(input_sort, group_by_));
 
     // output card bound NYI

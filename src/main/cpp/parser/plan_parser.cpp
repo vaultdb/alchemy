@@ -257,9 +257,9 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     if(aggregate_json.count("cardBound") > 0)
         cardBound = aggregate_json.get_child("cardBound").template get_value<int>();
 
-    bool checkSort = false;
+    bool check_sort = true;
     if(aggregate_json.count("checkSort") > 0)
-        checkSort = true;
+        check_sort = false;
 
     boost::property_tree::ptree agg_payload = aggregate_json.get_child("aggs");
 
@@ -288,8 +288,8 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     if(!group_by_ordinals.empty()) {
         if(cardBound > 0)
             return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardBound);
-        else if(checkSort)
-            return new GroupByAggregate<B>(checkSort, child, group_by_ordinals, aggregators);
+        else if(!check_sort)
+            return new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort);
         else {
             // if sort not aligned, insert a sort op
             SortDefinition child_sort = child->getSortOrder();
@@ -302,7 +302,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
                 child = new Sort<B>(child, child_sort);
                 support_ops_.template emplace_back(child);
             }
-            return new GroupByAggregate<B>(checkSort, child, group_by_ordinals, aggregators);
+            return new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort);
         }
     }
     else {
