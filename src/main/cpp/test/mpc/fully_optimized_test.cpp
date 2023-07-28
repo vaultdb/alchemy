@@ -143,8 +143,7 @@ TEST_F(FullyOptimizedTest, tpch_q1) {
 
 TEST_F(FullyOptimizedTest, tpch_q3) {
 
-    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                                 ColumnSort(1, SortDirection::DESCENDING),
+    SortDefinition expected_sort{ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
     runTest(3, "q3", expected_sort, FLAGS_unioned_db);
 }
