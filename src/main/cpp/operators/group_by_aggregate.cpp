@@ -106,12 +106,19 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
     }
 
 
-    // output sort order equal to first group-by-col-count entries in input sort order
     SortDefinition input_sort = input->getSortOrder();
-    SortDefinition output_sort = vector<ColumnSort>(input_sort.begin(), input_sort.begin() + group_by_.size());
+    SortDefinition output_sort;
+    if(input_sort.size() >= group_by_.size()) {
+        // output sort order equal to first group-by-col-count entries in input sort order
+        output_sort = vector<ColumnSort>(input_sort.begin(), input_sort.begin() + group_by_.size());
 
-    Operator<B>::output_ = TableFactory<B>::getTable(input->getTupleCount(), Operator<B>::output_schema_, input->storageModel(), output_sort);
-    QueryTable<B> *output = Operator<B>::output_; // shorthand
+    } else {
+        // using FDs, hold onto initial collation
+        output_sort = input_sort;
+    }
+
+    this->output_ = TableFactory<B>::getTable(input->getTupleCount(), Operator<B>::output_schema_, input->storageModel(), output_sort);
+    QueryTable<B> *output = this->output_; // shorthand
     // SMA: if all dummies at the end, this would be simpler.  But we can't really do that if there are MPC joins, filters, etc before this op because they will sprinkle dummies throughout the table
     for(int j = 0; j < group_by_.size(); ++j) {
         output->assignField(0, j, input, 0, group_by_[j]); //memcpy the input values
