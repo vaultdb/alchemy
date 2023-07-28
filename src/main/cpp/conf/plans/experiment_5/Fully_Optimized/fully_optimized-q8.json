@@ -189,7 +189,7 @@
       "id": "8",
       "joinOn" : "o_orderkey = l_orderkey",
       "outputFields": "o_year (#0), o_orderkey (#1), nation_check(#2), l_orderkey (#3), volume (#4)",
-      "operator-algorithm" : "sort-merge-join",
+      "operator-algorithm" : "nested-loop-join",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
@@ -238,15 +238,15 @@
           },
           "operands": [
             {
-                  "input": 4,
-                  "name": "$4"
-                },
-                {
-                  "input": 2,
-                  "name": "$2"
-                }
-              ]
+              "input": 4,
+              "name": "$4"
             },
+            {
+              "input": 2,
+              "name": "$2"
+            }
+          ]
+        },
         {
           "input": 4,
           "name": "$4"
@@ -256,7 +256,8 @@
     {
       "id": "10",
       "relOp": "LogicalAggregate",
-      "operator-algorithm" : "sorted-merge-aggregate",
+      "operator-algorithm" : "nested-loop-aggregate",
+      "cardBound" : 7,
       "group": [
         0
       ],
