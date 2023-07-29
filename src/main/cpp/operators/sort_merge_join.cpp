@@ -78,9 +78,9 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
 	if(this->getOperatorId() == 8) {
-		std::cout << "LHS: " << lhs->revealInsecure()->toString(true) << "\n";
-		std::cout << "RHS: " << rhs->revealInsecure()->toString(true) << "\n";
-		std::cout << "RHS field min: " << rhs->getSchema().getField(1).getFieldMin() << "\n";
+		//std::cout << "LHS: " << lhs->revealInsecure()->toString(true) << "\n";
+		//std::cout << "RHS: " << rhs->revealInsecure()->toString(true) << "\n";
+		//std::cout << "RHS field min: " << rhs->getSchema().getField(1).getFieldMin() << "\n";
 	}
 
     this->start_time_ = clock_start();
@@ -251,9 +251,9 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     alpha_idx_ = augmented_schema.getFieldCount() - 2;
 
 	if(this->getOperatorId() == 8) {
-		std::cout << "LHS prime: " << lhs_prime->revealInsecure()->toString() << "\n";
-		std::cout << "RHS prime: " << rhs_prime->revealInsecure()->toString() << "\n";
-		std::cout << "Augmented field min: " << augmented_schema.getField(0).getFieldMin() << "\n";
+		//std::cout << "LHS prime: " << lhs_prime->revealInsecure()->toString() << "\n";
+		//std::cout << "RHS prime: " << rhs_prime->revealInsecure()->toString() << "\n";
+		//std::cout << "Augmented field min: " << augmented_schema.getField(0).getFieldMin() << "\n";
 	}
  
     int output_cursor = 0;
