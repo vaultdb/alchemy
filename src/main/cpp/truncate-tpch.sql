@@ -40,3 +40,11 @@ CREATE DATABASE :party_db  WITH TEMPLATE :target_db;
 \c :party_db
 \i 'select-bob.sql'
 SELECT split_tables_bob();
+
+-- Create table order_keys in tpch_unioned_':cutoff
+\c :target_db
+CREATE TABLE order_keys (
+    o_orderkey integer PRIMARY KEY
+);
+INSERT INTO order_keys (o_orderkey)
+SELECT o_orderkey FROM orders;
