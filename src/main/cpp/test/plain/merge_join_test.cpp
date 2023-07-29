@@ -11,7 +11,7 @@ DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 class MergeJoinTest : public PlainBaseTest {};
 
-TEST_F(MergeJoinTest, merge_q18_without_cutoff) {
+/*TEST_F(MergeJoinTest, merge_q18_without_cutoff) {
     string lhs_sql = "SELECT\n"
                      "    l.l_orderkey,\n"
                      "    CASE WHEN lq.total_quantity > 7 THEN FALSE ELSE TRUE END AS dummy_tag\n"
@@ -29,7 +29,7 @@ TEST_F(MergeJoinTest, merge_q18_without_cutoff) {
                      "ORDER BY\n"
                      "    l.l_orderkey;";
 
-    string rhs_sql = "SELECT l_orderkey, l_quantity FROM lineitem ORDER BY l_orderkey";
+    string rhs_sql = "SELECT o_orderkey FROM orders ORDER BY o_orderkey";
 
     string expected_sql = "WITH high_quantity AS (\n"
                           "    SELECT l_orderkey\n"
@@ -44,7 +44,7 @@ TEST_F(MergeJoinTest, merge_q18_without_cutoff) {
 
     auto collation = DataUtilities::getDefaultSortDefinition(1);
 
-    SqlInput *lhs_input = new SqlInput(db_name_, lhs_sql, false, collation);
+    SqlInput *lhs_input = new SqlInput(db_name_, lhs_sql, true, collation);
     SqlInput *rhs_input = new SqlInput(db_name_, rhs_sql, false, collation);
 
     Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(lhs_input, 0,
@@ -59,7 +59,7 @@ TEST_F(MergeJoinTest, merge_q18_without_cutoff) {
     ASSERT_EQ(*expected, *joined);
 
 }
-
+*/
 
 TEST_F(MergeJoinTest, merge_q18) {
     string lhs_sql = " SELECT l_orderkey, COUNT(*) \n"

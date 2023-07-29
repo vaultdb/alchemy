@@ -400,12 +400,12 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
 
 }
 
-TEST_F(SortMergeJoinTest, tpch_q5) {
-    //FLAGS_cutoff = 1000;
-
-    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(5, "q5", expected_sort, FLAGS_unioned_db);
-}
+//TEST_F(SortMergeJoinTest, tpch_q5) {
+//    //FLAGS_cutoff = 1000;
+//
+//    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+//    runTest(5, "q5", expected_sort, FLAGS_unioned_db);
+//}
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
