@@ -77,8 +77,11 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     QueryTable<B> *lhs = this->getChild(0)->getOutput();
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
-	//std::cout << "LHS: " << lhs->revealInsecure()->toString(true) << "\n";
-	//std::cout << "RHS: " << rhs->revealInsecure()->toString(true) << "\n";
+	if(this->getOperatorId() == 8) {
+		std::cout << "LHS: " << lhs->revealInsecure()->toString(true) << "\n";
+		std::cout << "RHS: " << rhs->revealInsecure()->toString(true) << "\n";
+		std::cout << "RHS field min: " << rhs->getSchema().getField(1).getFieldMin() << "\n";
+	}
 
     this->start_time_ = clock_start();
 
@@ -127,6 +130,8 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 
     delete lhs_reverted;
     delete rhs_reverted;
+
+	//std::cout << "Output of (" << this->getOperatorId() << "): " << Join<B>::output_->revealInsecure()->toString() << "\n";
 
     return Join<B>::output_;
 
@@ -244,6 +249,12 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 
 	table_id_idx_ = augmented_schema.getFieldCount() - 1;
     alpha_idx_ = augmented_schema.getFieldCount() - 2;
+
+	if(this->getOperatorId() == 8) {
+		std::cout << "LHS prime: " << lhs_prime->revealInsecure()->toString() << "\n";
+		std::cout << "RHS prime: " << rhs_prime->revealInsecure()->toString() << "\n";
+		std::cout << "Augmented field min: " << augmented_schema.getField(0).getFieldMin() << "\n";
+	}
  
     int output_cursor = 0;
     QueryTable<B> *unioned = TableFactory<B>::getTable(lhs->getTupleCount() + rhs->getTupleCount(), augmented_schema, storage_model_);
@@ -264,6 +275,11 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     delete lhs_prime;
     delete rhs_prime;
 
+	if(this->getOperatorId() == 8) {
+		//std::cout << "Unioned: " << unioned->revealInsecure()->toString() << "\n";
+		//std::cout << "Unioned field min: " << unioned->getSchema().getField(0).getFieldMin() << "\n";
+	}
+
     SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
     // sort s.t. fkey entries are first, pkey entries are second 
 	sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
@@ -276,12 +292,16 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 
     QueryTable<B> *sorted = sorter.run()->clone();
 
-	//std::cout << "First sort: " << sorted->revealInsecure()->toString(true) << "\n";
+	if(this->getOperatorId() == 8) {
+		//std::cout << "First sort: " << sorted->revealInsecure()->toString(true) << "\n";
+	}
 
     if(is_secure_ && bit_packed_) initializeAlphasPacked(sorted);
     else initializeAlphas(sorted);
 
-	//std::cout << "Initialize alphas: " << sorted->revealInsecure()->toString(true) << "\n";
+	if(this->getOperatorId() == 8) {
+		//std::cout << "Initialize alphas: " << sorted->revealInsecure()->toString(true) << "\n";
+	}
 
     sort_def.clear();
     sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
@@ -345,7 +365,7 @@ QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, v
     projection.setOperatorId(-2);
 
     if(is_lhs)  lhs_projected_schema_ = projection.getOutputSchema();
-    else rhs_projected_schema_ = projection.getOutputSchema();
+    else rhs_projected_schema_ = projection.getOutputSchema();	
 
     return projection.run()->clone();
 }
