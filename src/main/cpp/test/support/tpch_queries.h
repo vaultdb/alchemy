@@ -165,7 +165,8 @@ namespace vaultdb {
                 "  o.o_shippriority\n"
                 " order by\n"
                 "  revenue desc,\n"
-                "  o.o_orderdate "},
+                "  o.o_orderdate \n"
+                "LIMIT 10"},
             {5, "select\n"
                 "  n.n_name,\n"
                 "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue\n"
@@ -329,7 +330,8 @@ namespace vaultdb {
                 " WHERE  c.c_mktsegment = 'HOUSEHOLD'  AND o.o_orderdate < date '1995-03-25' AND l.l_shipdate > date '1995-03-25'\n"
                 " AND c_custkey < $cutoff\n"
                 " GROUP BY  o_orderkey, o.o_orderdate,  o.o_shippriority\n"
-                " ORDER BY  revenue DESC, o.o_orderdate"
+                " ORDER BY  revenue DESC, o.o_orderdate \n"
+                "LIMIT 10"
                },
             {5, "SELECT n.n_name, SUM(l.l_extendedprice * (1 - l.l_discount)) as revenue\n"
                 " FROM  customer c JOIN orders o ON c.c_custkey = o.o_custkey\n"

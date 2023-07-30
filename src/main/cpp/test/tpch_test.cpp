@@ -56,7 +56,8 @@ TEST_F(TpcHTest, tpch_q03) {
 
     // dummy_tag (-1), 1 DESC, 2 ASC
     // aka revenue desc,  o.o_orderdate
-    SortDefinition expected_sort{ColumnSort(1, SortDirection::DESCENDING),
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
     runTest(3, "q3", expected_sort, db_name_);
 }
