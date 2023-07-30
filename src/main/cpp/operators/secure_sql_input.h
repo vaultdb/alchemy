@@ -14,6 +14,7 @@ namespace  vaultdb {
         string db_name_;
         bool has_dummy_tag_;
         StorageModel storage_model_;
+        int input_party_ = 0;
 
 
     protected:
@@ -30,8 +31,8 @@ namespace  vaultdb {
 
         SecureSqlInput(const string &db, const string & sql, const bool &dummy_tag, const size_t & input_tuple_cnt = 0);
         SecureOperator *clone() const override {
-            return new SecureSqlInput(this->db_name_, this->input_query_, this->has_dummy_tag_,
-                                      this->input_tuple_limit_);
+            return new SecureSqlInput(this->db_name_, this->input_query_, this->has_dummy_tag_, this->input_party_,
+                                      this->input_tuple_limit_, this->sort_definition_);
         }
 
          ~SecureSqlInput() {

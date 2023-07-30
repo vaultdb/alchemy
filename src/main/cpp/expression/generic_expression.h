@@ -19,7 +19,7 @@ namespace  vaultdb {
             return root_->call(target);
         }
 
-        GenericExpression(const GenericExpression<B> & src) {
+        GenericExpression(const GenericExpression<B> & src)  : Expression<B>(src) {
             root_ = src.root_->clone();
         }
 

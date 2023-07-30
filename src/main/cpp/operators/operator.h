@@ -114,6 +114,9 @@ namespace  vaultdb {
         void setSchema(QuerySchema newSchema) { output_schema_.setSchema(newSchema); }
         size_t getOutputCardinality() const { return output_cardinality_; }
 
+        // returns summed cost over this operator (as root) and all of its children
+        size_t planCost() const;
+
 
     protected:
         // to be implemented by the operator classes, e.g., sort, filter, et cetera

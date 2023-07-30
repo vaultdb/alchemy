@@ -24,9 +24,9 @@ SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &
 }
 
 SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &dummy_tag, const int &input_party, const size_t & input_tuple_limit, const SortDefinition &sort_def) :
-        Operator(sort_def),  input_query_(sql), db_name_(db), has_dummy_tag_(dummy_tag), input_tuple_limit_(input_tuple_limit) {
+        Operator(sort_def),  input_query_(sql), db_name_(db), has_dummy_tag_(dummy_tag), input_tuple_limit_(input_tuple_limit), input_party_(input_party) {
 
-    runQuery(input_party);
+    runQuery(input_party_);
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
 }
 

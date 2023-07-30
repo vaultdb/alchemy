@@ -33,8 +33,7 @@ namespace vaultdb {
         void accept(ExpressionVisitor<B> *visitor) override {    visitor->visit(*this);
         }
 
-        ExpressionKind kind() const override {     return ExpressionKind::PLUS;
-        }
+        ExpressionKind kind() const override {     return ExpressionKind::PLUS; }
 
         ExpressionNode<B> *clone() const override {
             return new PlusNode<B>(ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
