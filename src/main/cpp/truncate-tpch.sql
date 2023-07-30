@@ -48,3 +48,11 @@ CREATE TABLE order_keys (
 );
 INSERT INTO order_keys (o_orderkey)
 SELECT o_orderkey FROM orders;
+
+-- Create table order_keys in tpch_empty
+\c 'tpch_empty'
+CREATE TABLE order_keys (
+    o_orderkey integer PRIMARY KEY
+);
+INSERT INTO order_keys (o_orderkey)
+SELECT o_orderkey FROM orders;
