@@ -29,6 +29,10 @@ namespace  vaultdb {
     public:
         ZkSqlInput(string db, string sql, bool dummy_tag, const size_t &input_tuple_cnt = 0); // truncate tuples with last term
         ZkSqlInput(const string &db, const string & sql, const bool &dummy_tag, const SortDefinition &sortDefinition, const size_t & input_tuple_cnt = 0);
+        SecureOperator *clone() const override {
+            return new ZkSqlInput(this->db_name_, this->input_query_, this->has_dummy_tag_, this->sort_definition_,
+                                  this->input_tuple_limit_);
+        }
          ~ZkSqlInput() {
              if(plain_input_) {
                  delete plain_input_;

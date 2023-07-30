@@ -342,7 +342,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
     // key: foreignKey
     if(join_tree.count("foreignKey") > 0) {
         int foreign_key = join_tree.get_child("foreignKey").template get_value<int>();
-
+// TODO: add cloning here
         if(foreign_key == 1) {
             // switch sort orders
             sort_def.clear();
@@ -357,23 +357,24 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
         }
 
         if(join_tree.count("operator-algorithm") > 0) {
-            Operator<B>* smj = new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
-            Operator<B>* nlj = new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
+            Operator<B>* smj = new SortMergeJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
+            Operator<B>* nlj = new KeyedJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone(), sort_def);
 
             // Use Cost Model to calculate NLJ and SMJ, pick more better one.
             if(join_type == "auto") {
-                size_t SMJ_cost = OperatorCostModel::operatorCost((SecureOperator *) (smj));
-                size_t NLJ_cost = OperatorCostModel::operatorCost((SecureOperator *) (nlj));
+                size_t SMJ_cost = OperatorCostModel::operatorCost((SecureOperator *) smj);
+                size_t NLJ_cost = OperatorCostModel::operatorCost((SecureOperator *) nlj);
                 join_type = (SMJ_cost < NLJ_cost) ? "sort-merge-join" : "nested-loop-join";
 
                 cout << "smj cost : " << SMJ_cost << ", nlj cost : " << NLJ_cost << ", join type : " << join_type << endl;
+                delete smj;
+                delete nlj;
+
                 if (join_type == "sort-merge-join") {
-                    //delete nlj;
-                    return smj;
+                    return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
                 }
                 else {
-                    //delete smj;
-                    return nlj;
+                    return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
                 }
 
             }

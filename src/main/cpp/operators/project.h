@@ -18,7 +18,7 @@ namespace vaultdb {
     template<typename B>
     class Project : public Operator<B> {
 
-        std::map<uint32_t, Expression<B> * > expressions_; // key = dst_idx, value is expression to evaluate
+        map<uint32_t, Expression<B> * > expressions_; // key = dst_idx, value is expression to evaluate
         ProjectionMappingSet column_mappings_;
         vector<uint32_t> exprs_to_exec_;
 
@@ -32,6 +32,16 @@ namespace vaultdb {
             setup();
 
         }
+
+        Operator<B> *clone() const override {
+            map<uint32_t, Expression<B> * > expressions_clone;
+            for(auto pos : expressions_) {
+                expressions_clone[pos.first] = pos.second->clone();
+            }
+
+            return new Project<B>(this->lhs_child_->clone(), expressions_clone, this->sort_definition_);
+        }
+
         ~Project() {
             for(auto pos : expressions_) {
                 if(pos.second != nullptr) delete pos.second;

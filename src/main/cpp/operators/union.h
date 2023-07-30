@@ -17,6 +17,10 @@ namespace  vaultdb {
 
         Union(QueryTable<B> *lhs, QueryTable<B> *rhs);
 
+        Operator<B> *clone() const override {
+            return new Union<B>(this->lhs_child_->clone(), this->rhs_child_->clone());
+        }
+
         virtual ~Union() = default;
 
 

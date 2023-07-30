@@ -57,6 +57,7 @@ namespace  vaultdb {
 
         Operator(Operator *child, const SortDefinition & sorted_on = SortDefinition());
         Operator(Operator *lhs, Operator *rhs, const SortDefinition & sorted_on = SortDefinition());
+        virtual Operator<B> *clone() const = 0;
 
 //        QueryTable<B> sortByDummyTag(QueryTable<B> & table);
 //        QueryTable<B> shrinkwrapToTrueCardinality(QueryTable<B> & table, bool isSorted);
@@ -154,6 +155,10 @@ namespace  vaultdb {
 
         QueryTable<B> *runSelf() override {
             return  this->output_;
+        }
+
+        Operator<B> *clone() const override {
+            return new TableInput<B>(this->output_->clone());
         }
 
         virtual ~TableInput() = default;

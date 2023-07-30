@@ -31,6 +31,9 @@ namespace vaultdb {
             //if(predicate_ != nullptr) delete predicate_;
         }
         Expression<B> *getPredicate() const { return predicate_; }
+        Operator<B> *clone() const override {
+            return new NestedLoopAggregate<B>(this->lhs_child_->clone(), this->group_by_, this->aggregate_definitions_, this->sort_definition_, this->output_cardinality_);
+        }
 
     protected:
         string OperatorType;

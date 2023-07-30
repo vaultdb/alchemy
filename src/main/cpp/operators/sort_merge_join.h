@@ -28,6 +28,10 @@ namespace  vaultdb {
         SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
 
+        Operator<B> *clone() const override {
+            return new SortMergeJoin<B>(this->lhs_child_->clone(), this->rhs_child_->clone(), this->foreign_key_input_, this->predicate_->clone(), this->sort_definition_);
+        }
+
 		int foreignKeyChild() const { return foreign_key_input_; }
         QuerySchema deriveAugmentedSchema() const;
 

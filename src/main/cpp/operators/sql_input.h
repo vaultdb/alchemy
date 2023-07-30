@@ -25,6 +25,11 @@ namespace  vaultdb {
                  const size_t &tuple_limit = 0);
         SqlInput(std::string db, std::string sql, bool dummy_tag, const SortDefinition &sort_def, const int &input_party,
                  const size_t &tuple_limit = 0);
+
+        PlainOperator *clone() const override {
+            return new SqlInput(this->db_name_, this->input_query_, this->dummy_tagged_, this->sort_definition_, this->tuple_limit_);
+        }
+
         virtual ~SqlInput() {
         }
 

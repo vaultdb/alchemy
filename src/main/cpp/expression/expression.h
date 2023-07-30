@@ -23,7 +23,7 @@ namespace vaultdb {
         Expression() : alias_("anonymous"), type_(FieldType::INVALID) {}
         Expression(const std::string & alias, const FieldType & type) : alias_(alias), type_(type) {}
         Expression(const Expression & src) : alias_(src.alias_), type_(src.type_) { }
-
+        virtual Expression<B> *clone() const = 0;
         virtual ~Expression() {}
 
 

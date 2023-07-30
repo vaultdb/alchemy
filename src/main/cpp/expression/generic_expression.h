@@ -23,6 +23,11 @@ namespace  vaultdb {
             root_ = src.root_->clone();
         }
 
+        Expression<B> *clone() const override {
+            return new GenericExpression<B>(*this);
+        }
+
+
         inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
             return root_->call(src, row);
         }
@@ -33,7 +38,6 @@ namespace  vaultdb {
 
         ExpressionKind kind() const override { return root_->kind(); }
         ExpressionClass exprClass() const override { return ExpressionClass::GENERIC; }
-
 
         ~GenericExpression()  {
             if(root_ != nullptr) {

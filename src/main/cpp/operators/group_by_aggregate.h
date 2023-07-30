@@ -33,6 +33,11 @@ namespace vaultdb {
 
         GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const size_t & output_card = 0);
+
+        Operator<B> *clone() const override {
+            return new GroupByAggregate<B>(this->lhs_child_->clone(), this->group_by_, this->aggregate_definitions_, this->check_sort_, this->output_cardinality_);
+        }
+
         virtual ~GroupByAggregate()  {
             for(size_t i = 0; i < aggregators_.size(); ++i) {
                 delete aggregators_[i];

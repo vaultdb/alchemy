@@ -19,6 +19,10 @@ namespace vaultdb {
         ScalarAggregate(Operator<B> *child, const std::vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition());
 
         ScalarAggregate(QueryTable<B> *child, const std::vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition());
+        Operator<B> *clone() const override {
+            return new ScalarAggregate<B>(this->lhs_child_->clone(), this->aggregate_definitions_, this->sort_definition_);
+        }
+
         virtual ~ScalarAggregate() {
             for(auto agg : aggregators_) {
                 delete agg;

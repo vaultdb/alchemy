@@ -15,6 +15,10 @@ namespace vaultdb {
     public:
         BasicJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
         BasicJoin(QueryTable<B> *lhs, QueryTable<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
+        Operator<B> *clone() const override {
+            return new BasicJoin<B>(this->lhs_child_->clone(), this->rhs_child_->clone(), this->predicate_->clone(), this->sort_definition_);
+        }
+
         ~BasicJoin() = default;
 
     protected:

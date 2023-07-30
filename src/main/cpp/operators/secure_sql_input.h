@@ -29,6 +29,11 @@ namespace  vaultdb {
         SecureSqlInput(const string & db, const string & sql, const bool & dummy_tag, const int & input_party, const size_t & input_tuple_cnt, const SortDefinition & def);
 
         SecureSqlInput(const string &db, const string & sql, const bool &dummy_tag, const size_t & input_tuple_cnt = 0);
+        SecureOperator *clone() const override {
+            return new SecureSqlInput(this->db_name_, this->input_query_, this->has_dummy_tag_,
+                                      this->input_tuple_limit_);
+        }
+
          ~SecureSqlInput() {
              if(plain_input_ != nullptr) {
                  delete plain_input_;

@@ -16,6 +16,10 @@ namespace  vaultdb {
 
             Filter(QueryTable<B> *child, Expression<B> *predicate);
 
+            Operator<B> *clone() const override {
+                return new Filter<B>(this->lhs_child_->clone(), this->predicate_->clone());
+            }
+
             virtual ~Filter() {
                  if(predicate_ != nullptr) delete predicate_;
             }

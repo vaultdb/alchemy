@@ -35,7 +35,9 @@ namespace vaultdb {
 
         ExpressionKind kind() const override { return ExpressionKind::FUNCTION; }
         ExpressionClass exprClass() const override { return ExpressionClass::FUNC; }
-
+        Expression<B> *clone() const override {
+            return new FunctionExpression<B>(*this);
+        }
 
 
         ~FunctionExpression() = default;

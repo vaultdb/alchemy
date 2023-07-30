@@ -11,6 +11,10 @@ namespace vaultdb {
     public:
         Shrinkwrap(Operator<B> *child, const size_t & output_cardinality);
         Shrinkwrap(QueryTable<B>*input, const size_t & output_cardinality);
+        Operator<B> *clone() const override {
+            return new Shrinkwrap<B>(this->lhs_child_->clone(), this->output_cardinality_);
+        }
+
         ~Shrinkwrap() = default;
 
     protected:
