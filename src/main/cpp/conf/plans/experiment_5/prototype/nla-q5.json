@@ -207,7 +207,7 @@
       "relOp": "LogicalJoin",
       "outputFields": "n_name (#0), c_nationkey (#1), l_suppkey (#2), revenue (#3), s_suppkey (#4), s_nationkey (#5)",
       "joinOn" : "c_nationkey = s_nationkey AND l_suppkey = s_suppkey",
-      "operator-algorithm" : "sort-merge-join",
+      "operator-algorithm" : "auto",
       "condition": {
         "op": {
           "name": "AND",
@@ -280,6 +280,7 @@
     {
       "id": "10",
       "relOp": "LogicalAggregate",
+      "operator-algorithm" : "nested-loop-aggregate",
       "cardBound" : 5,
       "group": [
         0

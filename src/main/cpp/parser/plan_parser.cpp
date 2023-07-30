@@ -261,6 +261,12 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     if(aggregate_json.count("checkSort") > 0)
         check_sort = false;
 
+    string agg_algo;
+    if(aggregate_json.count("operator-algorithm") > 0)
+        agg_algo = aggregate_json.get_child("operator-algorithm").template get_value<string>();
+    assert(agg_algo == "nested-loop-aggregate" || agg_algo == "sort-merge-aggregate" || agg_algo == "");
+
+
     boost::property_tree::ptree agg_payload = aggregate_json.get_child("aggs");
 
     for (ptree::const_iterator it = agg_payload.begin(); it != agg_payload.end(); ++it) {
@@ -286,9 +292,9 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
 
 
     if(!group_by_ordinals.empty()) {
-        if(cardBound > 0)
+        if(cardBound > 0 && (agg_algo == "nested-loop-aggregate" || agg_algo == ""))
             return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardBound);
-        else if(!check_sort)
+        else if(!check_sort && (agg_algo == "sort-merge-aggregate" || agg_algo == ""))
             return new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort);
         else {
             // if sort not aligned, insert a sort op

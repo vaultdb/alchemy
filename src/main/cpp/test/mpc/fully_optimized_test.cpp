@@ -4,7 +4,6 @@
 #include <util/type_utilities.h>
 #include <util/data_utilities.h>
 #include <test/mpc/emp_base_test.h>
-#include <query_table/secure_tuple.h>
 #include <test/support/tpch_queries.h>
 #include <boost/algorithm/string/replace.hpp>
 #include <parser/plan_parser.h>
@@ -32,7 +31,7 @@ protected:
 
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
-
+    void runStubTest(string & sql_plan, string & json_plan, string & expected_query, SortDefinition & expected_sort, const string & unioned_db);
     int input_tuple_limit_ = -1;
 
 };
@@ -49,6 +48,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     string local_db = db_name_;
 
     cout << " Observed DB : "<< local_db << " - Bit Packed" << endl;
+    auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
@@ -70,7 +70,11 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
     double duration = time_from(startTime) / 1e6;
 
+
     cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
+    auto end_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
+    cout << "End-to-end plan gates: " << root->planCost() << " estimated: " << end_gates - start_gates << " gates." << endl;
+
 
     if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
@@ -81,6 +85,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
         delete expected;
     }
 }
+
 
 string
 FullyOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDefinition &expected_sort, const string &db_name) {
@@ -101,20 +106,15 @@ FullyOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDe
     return query;
 }
 
-
-TEST_F(FullyOptimizedTest, tpch_q1) {
-    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-
-    this->initializeBitPacking(FLAGS_unioned_db);
-    string test_name = "q1";
-
-    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-" + test_name + ".sql";
-    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-"  + test_name + ".json";
-
+void FullyOptimizedTest::runStubTest(string & sql_plan, string & json_plan, string & expected_query, SortDefinition & expected_sort, const string & unioned_db) {
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
+    string local_db = unioned_db;
+    string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
+    boost::replace_all(local_db, "unioned", party_name);
+    auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
 
-    PlanParser<emp::Bit> parser(db_name_, sql_file, plan_file, input_tuple_limit_);
+    PlanParser<emp::Bit> parser(local_db, sql_plan, json_plan, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
     std::cout << root->printTree() << endl;
@@ -126,17 +126,36 @@ TEST_F(FullyOptimizedTest, tpch_q1) {
     double duration = time_from(startTime) / 1e6;
 
     cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
+    auto end_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
+    cout << "End-to-end plan gates: " << root->planCost() << " estimated: " << end_gates - start_gates << " gates." << endl;
 
     if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
-        string expected_query = tpch_queries[1];
-        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 2);
+        PlainTable  *expected = DataUtilities::getQueryResults(unioned_db, expected_query, false);
+        expected->setSortOrder(expected_sort);
 
         ASSERT_EQ(*expected, *observed);
 
         delete observed;
         delete expected;
     }
+
+}
+
+
+TEST_F(FullyOptimizedTest, tpch_q1) {
+    string test_name = "q1";
+    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-" + test_name + ".sql";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-"  + test_name + ".json";
+
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+    string expected_sql = tpch_queries[1];
+
+
+    this->initializeBitPacking(FLAGS_unioned_db);
+
+    runStubTest(sql_file, plan_file, expected_sql, expected_sort, FLAGS_unioned_db);
+
 
 }
 
@@ -174,6 +193,8 @@ TEST_F(FullyOptimizedTest, tpch_q9) {
 }
 
 
+
+
 TEST_F(FullyOptimizedTest, tpch_q18) {
     // -1 ASC, $4 DESC, $3 ASC
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
@@ -182,6 +203,29 @@ TEST_F(FullyOptimizedTest, tpch_q18) {
     runTest(18, "q18", expected_sort, FLAGS_unioned_db);
 }
 
+
+
+TEST_F(FullyOptimizedTest, tpch_q5_sma_prototype) {
+
+    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/prototype/sma-q5.sql";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory()  + "/conf/plans/experiment_5/prototype/sma-q5.json";
+
+    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+    string expected_sql = tpch_queries[5];
+
+    runStubTest(sql_file, plan_file, expected_sql, expected_sort, "tpch_unioned_600");
+}
+
+
+TEST_F(FullyOptimizedTest, tpch_q5_nla_prototype) {
+    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/prototype/nla-q5.sql";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory()  + "/conf/plans/experiment_5/prototype/nla-q5.json";
+
+    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+    string expected_sql = tpch_queries[5];
+
+    runStubTest(sql_file, plan_file, expected_sql, expected_sort, "tpch_unioned_600");
+}
 
 
 int main(int argc, char **argv) {

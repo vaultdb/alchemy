@@ -377,7 +377,7 @@
     {
       "id": "10",
       "relOp": "LogicalAggregate",
-      "operator-algorithm" : "sorted-merge-aggregate",
+      "operator-algorithm" : "sort-merge-aggregate",
       "inputFields": "n_name (#0), o_year (#1), amount (#2)",
       "group": [
         0,

@@ -180,7 +180,7 @@
     {
       "id": "7",
       "relOp": "LogicalAggregate",
-      "operator-algorithm" : "sorted-merge-aggregate",
+      "operator-algorithm" : "sort-merge-aggregate",
       "checkSort" : false,
       "group": [
         0,

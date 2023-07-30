@@ -256,7 +256,7 @@
     {
       "id": "10",
       "relOp": "LogicalAggregate",
-      "operator-algorithm": "sorted-merge-aggregate",
+      "operator-algorithm": "sort-merge-aggregate",
       "group": [
         0
       ],
