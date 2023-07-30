@@ -36,7 +36,7 @@ namespace  vaultdb {
 
         // predicate function needs aware of encrypted or plaintext state of its inputs
         // B = BoolField || SecureBoolField
-        Expression<B>  *predicate_;
+        Expression<B>  *predicate_ = nullptr;
 
 
     };
