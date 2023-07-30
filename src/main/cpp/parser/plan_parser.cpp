@@ -264,7 +264,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     string agg_algo;
     if(aggregate_json.count("operator-algorithm") > 0)
         agg_algo = aggregate_json.get_child("operator-algorithm").template get_value<string>();
-    assert(agg_algo == "nested-loop-aggregate" || agg_algo == "sort-merge-aggregate" || agg_algo == "");
+    assert(agg_algo == "nested-loop-aggregate" || agg_algo == "sort-merge-aggregate" || agg_algo == "auto" || agg_algo == "");
 
 
     boost::property_tree::ptree agg_payload = aggregate_json.get_child("aggs");

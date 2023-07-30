@@ -117,7 +117,7 @@ void FullyOptimizedTest::runStubTest(string & sql_plan, string & json_plan, stri
     PlanParser<emp::Bit> parser(local_db, sql_plan, json_plan, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-    std::cout << root->printTree() << endl;
+    std::cout << "Query plan: " << root->printTree() << endl;
 
     SecureTable *result = root->run();
 
@@ -127,7 +127,10 @@ void FullyOptimizedTest::runStubTest(string & sql_plan, string & json_plan, stri
 
     cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
     auto end_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
-    cout << "End-to-end plan gates: " << root->planCost() << " estimated: " << end_gates - start_gates << " gates." << endl;
+    float e2e_gates = (float) (end_gates - start_gates);
+    float cost_estimate = (float) root->planCost();
+    float relative_error = (fabs(e2e_gates - cost_estimate) / e2e_gates) * 100.0f;
+    cout << "End-to-end plan gates: " << root->planCost() << " estimated: " << end_gates - start_gates << " gates, relative error (%)=" << relative_error << endl;
 
     if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
