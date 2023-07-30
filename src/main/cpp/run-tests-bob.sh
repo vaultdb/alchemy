@@ -34,3 +34,4 @@ ALICE_HOST=$1
 ./bin/secure_nested_loop_aggregate_test --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
 #./bin/enrich_test  --party=2 --alice_host=$ALICE_HOST # excluded because data is not synced between A + B
 ./bin/secure_tpch_test  --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
+./bin/fully_optimized_test  --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false

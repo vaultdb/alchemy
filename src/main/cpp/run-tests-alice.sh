@@ -30,5 +30,5 @@ bash run-plain-tests.sh
 ./bin/secure_nested_loop_aggregate_test --flagfile=flagfiles/alice.flags --validation=false
 #./bin/enrich_test  --party=1  #excluded because data is not synced between A + B
 ./bin/secure_tpch_test  --flagfile=flagfiles/alice.flags --validation=false
-
+./bin/fully_optimized_test  --flagfile=flagfiles/alice.flags --validation=false
 
