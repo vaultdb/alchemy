@@ -16,10 +16,9 @@ WITH all_keys AS (SELECT o_orderkey AS ak FROM order_keys),
 SELECT ak, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag
 FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = ak
 ORDER BY ak;
--- 6, collation: (0 ASC)
+-- 6, collation: (0 ASC, 1 ASC)
 SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate
-FROM orders
-ORDER BY o_orderkey
+FROM orders                                                                                                                                                                                                                                                                                                                                                                                                                                                              ORDER BY o_orderkey, o_custkey
 -- 9, collation: (0 ASC)
 SELECT L2.l_orderkey, L2.l_quantity
 FROM lineitem L2

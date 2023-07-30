@@ -8,7 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <operators/support/aggregate_id.h>
-
+#include "opt/operator_cost_model.h"
 #include <operators/sql_input.h>
 #include <operators/secure_sql_input.h>
 #include <operators/zk_sql_input.h>
@@ -354,11 +354,30 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
             for(auto pos : lhs->getSortOrder()) {
                 sort_def.emplace_back(pos);
             }
-
         }
 
         if(join_tree.count("operator-algorithm") > 0) {
-            if (join_type == "sort-merge-join")
+            Operator<B>* smj = new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
+            Operator<B>* nlj = new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
+
+            // Use Cost Model to calculate NLJ and SMJ, pick more better one.
+            if(join_type == "auto") {
+                size_t SMJ_cost = OperatorCostModel::operatorCost((SecureOperator *) (smj));
+                size_t NLJ_cost = OperatorCostModel::operatorCost((SecureOperator *) (nlj));
+                join_type = (SMJ_cost < NLJ_cost) ? "sort-merge-join" : "nested-loop-join";
+
+                cout << "smj cost : " << SMJ_cost << ", nlj cost : " << NLJ_cost << ", join type : " << join_type << endl;
+                if (join_type == "sort-merge-join") {
+                    //delete nlj;
+                    return smj;
+                }
+                else {
+                    //delete smj;
+                    return nlj;
+                }
+
+            }
+            else if (join_type == "sort-merge-join")
                 return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
 
             return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);

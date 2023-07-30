@@ -47,6 +47,7 @@
       "relOp": "LogicalJoin",
       "joinOn": "No-op, keys aligned in SQL setup",
       "operator-algorithm" : "merge-join",
+      "dummy-handling" : "OR",
       "outputFields": "L1.l_orderkey (#0), L1.sum_qty (#1), L2.l_orderkey (#2), L2.sum_qty (#3)",
       "condition": {
         "no-op": true
@@ -181,6 +182,7 @@
         ]
       },
       "joinType": "inner",
+      "foreignKey": 0,
       "inputs": [
         "5",
         "6"
@@ -239,7 +241,7 @@
       "id": "10",
       "relOp": "LogicalJoin",
       "joinOn": "o_orderkey = L2.l_orderkey",
-      "operator-algorithm" : "sort-merge-join",
+      "operator-algorithm" : "auto",
       "outputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), L2.l_orderkey (#4), L2.l_quantity (#5)",
       "condition": {
         "op": {
@@ -322,7 +324,7 @@
       "id": "13",
       "relOp": "LogicalJoin",
       "joinOn": "o_custkey = c_custkey",
-      "operator-algorithm" : "sort-merge-join",
+      "operator-algorithm" : "auto",
       "outputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), l_quantity (#4), c_custkey (#5), c_name (#6)",
       "condition": {
         "op": {
