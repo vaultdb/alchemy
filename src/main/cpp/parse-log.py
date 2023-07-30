@@ -40,7 +40,7 @@ for line in read_file:
         # print(line)
         test_suite = re.findall(']\ ([a-z]+)\.', line,  flags=re.IGNORECASE)[0]
         mpc='f'
-        if(re.search('Secure|Emp', test_suite)):
+        if(re.search('Secure|Emp', test_suite) or re.search('FullyOptimized', branch)):
             mpc='t'
 
 
