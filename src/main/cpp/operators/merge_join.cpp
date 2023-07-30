@@ -23,9 +23,9 @@ QueryTable<B> *MergeJoin<B>::runSelf() {
         selected = Join<B>::predicate_->call(lhs, i, rhs, i).template getValue<B>();
 
         if(or_dummy_tags_)
-            dst_dummy_tag = (!selected) | (lhs->getDummyTag(i) & rhs->getDummyTag(i));
-        else
             dst_dummy_tag = (!selected) | lhs->getDummyTag(i) | rhs->getDummyTag(i);
+        else
+            dst_dummy_tag = (!selected) | (lhs->getDummyTag(i) & rhs->getDummyTag(i));
 
 
         this->output_->setDummyTag(i, dst_dummy_tag);

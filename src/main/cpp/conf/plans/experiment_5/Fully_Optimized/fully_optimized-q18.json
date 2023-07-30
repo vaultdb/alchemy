@@ -52,7 +52,7 @@
         "no-op": true
       },
       "joinType": "inner",
-      "dummy-handling" : "OR",
+      "dummy-handling" : "AND",
       "inputs": [
         "0",
         "1"
@@ -164,23 +164,10 @@
       "operator-algorithm" : "merge-join",
       "outputFields": "l_orderkey (#0), o_orderkey (#1), o_custkey (#2), o_totalprice (#3), o_orderdate (#4)",
       "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 0,
-            "name": "$0"
-          },
-          {
-            "input": 1,
-            "name": "$1"
-          }
-        ]
+        "no-op": true
       },
       "joinType": "inner",
+      "dummy-handling" : "OR",
       "inputs": [
         "5",
         "6"

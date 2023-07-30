@@ -33,7 +33,7 @@ protected:
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
 
-    int input_tuple_limit_ = FLAGS_cutoff;
+    int input_tuple_limit_ = -1;
 
 };
 
@@ -62,7 +62,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     PlanParser<Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-//    std::cout << root->printTree() << endl;
+    std::cout << root->printTree() << endl;
 
     SecureTable *result = root->run();
 

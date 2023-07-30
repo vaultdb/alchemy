@@ -17,3 +17,4 @@ bash run.sh secure_group_by_aggregate_test
 bash run.sh secure_nested_loop_aggregate_test
 bash run.sh enrich_test
 bash run.sh secure_tpch_test
+bash run.sh fully_optimized_test
