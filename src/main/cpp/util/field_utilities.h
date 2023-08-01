@@ -119,7 +119,6 @@ namespace vaultdb {
 
             GenericExpression<B> *g =  new GenericExpression<B>(packed_predicate, "predicate",
                                                                 std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
-            delete packed_predicate;
             delete equality_node;
             delete lhs_input;
             delete rhs_input;
