@@ -20,8 +20,7 @@ int Sort<B>::powerOfTwoLessThan(const int & n) {
 template<typename B>
 Sort<B>::Sort(Operator<B> *child, const SortDefinition &sort_def, const int & limit)
    : Operator<B>(child, sort_def), limit_(limit) {
-    //this->output_cardinality_ = child->getOutputCardinality();
-    this->output_cardinality_ = child->getOutput()->getTupleCount();
+    this->output_cardinality_ = child->getOutputCardinality();
 
     for(ColumnSort s : Operator<B>::sort_definition_) {
         if(s.second == SortDirection::INVALID)

@@ -21,6 +21,11 @@ namespace  vaultdb {
 
     public:
         ToPackedExpressionVisitor(ExpressionNode<B>  *root);
+        ~ToPackedExpressionVisitor() {
+            if(root_ != nullptr) {
+                delete root_;
+            }
+        }
 
 
        ExpressionNode<B> * getRoot() {

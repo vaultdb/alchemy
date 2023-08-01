@@ -15,10 +15,9 @@ using namespace std;
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
                                       const vector<ScalarAggregateDefinition> &aggregates,
-                                      const SortDefinition &sort,
-                                      const size_t & output_card) : Operator<B>(child, sort),
+                                      const SortDefinition &sort) : Operator<B>(child, sort),
                                                                     aggregate_definitions_(aggregates),
-                                                                    group_by_(group_bys), output_cardinality_(output_card)
+                                                                    group_by_(group_bys)
 {
 
     setup();
@@ -26,11 +25,10 @@ GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> 
 
 
 template<typename B>
-GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                                      const vector<ScalarAggregateDefinition> &aggregates,
-                                      const size_t & output_card) : Operator<B>(child, SortDefinition()),
+GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
+                                      const vector<ScalarAggregateDefinition> &aggregates) : Operator<B>(child, SortDefinition()),
                                                                     aggregate_definitions_(aggregates),
-                                                                    group_by_(groupBys), output_cardinality_(output_card) {
+                                                                    group_by_(group_bys) {
 
     setup();
 }
@@ -38,31 +36,27 @@ GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> 
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
                                       const vector<ScalarAggregateDefinition> &aggregates,
-                                      const SortDefinition &sort,
-                                      const size_t & output_card) : Operator<B>(child, sort),
+                                      const SortDefinition &sort) : Operator<B>(child, sort),
                                                                     aggregate_definitions_(aggregates),
-                                                                    group_by_(groupBys), output_cardinality_(output_card) {
+                                                                    group_by_(groupBys) {
 
     setup();
 }
 
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
-                                      const vector<ScalarAggregateDefinition> &aggregates,
-                                      const size_t & output_card) : Operator<B>(child, SortDefinition()),
+                                      const vector<ScalarAggregateDefinition> &aggregates) : Operator<B>(child, SortDefinition()),
                                                                     aggregate_definitions_(aggregates),
-                                                                    group_by_(groupBys), output_cardinality_(output_card) {
+                                                                    group_by_(groupBys){
 
     setup();
 }
 
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                                      const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort,
-                                      const size_t &output_card)
-        : check_sort_(check_sort), Operator<B>(child, SortDefinition()),
-                                                                    aggregate_definitions_(aggregates),
-                                                                    group_by_(groupBys), output_cardinality_(output_card) {
+                                      const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort)
+        :  Operator<B>(child, SortDefinition()), check_sort_(check_sort), aggregate_definitions_(aggregates),
+                                                                    group_by_(groupBys) {
     setup();
 }
 
@@ -263,10 +257,7 @@ void GroupByAggregate<B>::setup() {
     if(check_sort_)
         assert(sortCompatible(input_sort, group_by_));
 
-    // output card bound NYI
-    // TODO: make this conditional once cardinality bound implemented
     this->output_cardinality_ = this->getChild(0)->getOutputCardinality();
-
 }
 
 template<typename B>

@@ -71,9 +71,6 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-
-
-
     this->output_ = TableFactory<B>::getTable(this->output_cardinality_, Operator<B>::output_schema_, input->storageModel());
     QueryTable<B> *output = this->output_;
 
@@ -165,7 +162,7 @@ QuerySchema NestedLoopAggregate<B>::generateOutputSchema(const QuerySchema & inp
     QuerySchema output_schema;
     size_t i;
     bool bit_packing = SystemConfiguration::getInstance().bitPackingEnabled();
-    int input_row_cnt = this->getChild(0)->getOutput()->getTupleCount();
+    int input_row_cnt = this->getChild(0)->getOutputCardinality();
 
     for(i = 0; i < group_by_.size(); ++i) {
         QueryFieldDesc srcField = input_schema.getField(group_by_[i]);
@@ -202,7 +199,7 @@ QuerySchema NestedLoopAggregate<B>::generateOutputSchema(const QuerySchema & inp
 template<typename B>
 void NestedLoopAggregate<B>::setup() {
     QuerySchema input_schema = this->getChild(0)->getOutputSchema();
-    int max_cnt = this->getChild(0)->getOutput()->getTupleCount();
+    int max_cnt = this->getChild(0)->getOutputCardinality();
     int output_ordinal = group_by_.size();
 
 

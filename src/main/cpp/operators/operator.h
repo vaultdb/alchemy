@@ -37,6 +37,10 @@ namespace  vaultdb {
         size_t start_gate_cnt_ = 0L, gate_cnt_ = 0L;
         double runtime_ms_ = 0.0;
         SystemConfiguration & system_conf_;
+        bool operator_executed_ = false; // set when runSelf() executed once
+        size_t output_cardinality_ = 0L;
+
+
 
 
     public:
@@ -131,9 +135,6 @@ namespace  vaultdb {
 
             operator_executed_ = false;
         }
-
-        bool operator_executed_ = false; // set when runSelf() executed once
-        size_t output_cardinality_ = 0L;
 
 
     private:

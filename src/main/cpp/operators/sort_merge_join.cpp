@@ -77,12 +77,6 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     QueryTable<B> *lhs = this->getChild(0)->getOutput();
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
-	if(this->getOperatorId() == 8) {
-		//std::cout << "LHS: " << lhs->revealInsecure()->toString(true) << "\n";
-		//std::cout << "RHS: " << rhs->revealInsecure()->toString(true) << "\n";
-		//std::cout << "RHS field min: " << rhs->getSchema().getField(1).getFieldMin() << "\n";
-	}
-
     this->start_time_ = clock_start();
 
 	max_intermediate_cardinality_ =  lhs->getTupleCount() + rhs->getTupleCount();
