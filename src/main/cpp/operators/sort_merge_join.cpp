@@ -197,17 +197,17 @@ QuerySchema SortMergeJoin<B>::getAugmentedSchema() {
         lhs_keys.emplace_back(key_pair.first);
         rhs_keys.emplace_back(key_pair.second - lhs->getSchema().getFieldCount());
     }
-	lhs_prime = projectSortKeyToFirstAttr(lhs, lhs_keys, true);
-	rhs_prime = projectSortKeyToFirstAttr(rhs, rhs_keys, false);
+    lhs_prime_ = projectSortKeyToFirstAttr(lhs, lhs_keys, true);
+    rhs_prime_ = projectSortKeyToFirstAttr(rhs, rhs_keys, false);
 
-	QuerySchema augmented_schema = (lhs_smaller_) ? rhs_prime->getSchema() : lhs_prime->getSchema();	
+	QuerySchema augmented_schema = (lhs_smaller_) ? rhs_prime_->getSchema() : lhs_prime_->getSchema();
 	
     if(!is_secure_) {
         QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_, 0);
         augmented_schema.putField(alpha);
         QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::BOOL, 0);
         augmented_schema.putField(table_id);
-        table_id_field = Field<B>(FieldType::BOOL, true);
+        table_id_field_ = Field<B>(FieldType::BOOL, true);
     }
     else {
         QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_);
@@ -218,7 +218,7 @@ QuerySchema SortMergeJoin<B>::getAugmentedSchema() {
         QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::SECURE_BOOL);	
 
         augmented_schema.putField(table_id);
-        table_id_field = Field<B>( FieldType::SECURE_BOOL, Bit(true));
+        table_id_field_ = Field<B>(FieldType::SECURE_BOOL, Bit(true));
     }
 
     augmented_schema.initializeFieldOffsets();	
@@ -226,6 +226,7 @@ QuerySchema SortMergeJoin<B>::getAugmentedSchema() {
 	return augmented_schema;
 
 }
+
 
 template<typename B>
 pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
@@ -244,60 +245,14 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 	table_id_idx_ = augmented_schema.getFieldCount() - 1;
     alpha_idx_ = augmented_schema.getFieldCount() - 2;
 
-	if(this->getOperatorId() == 8) {
-		//std::cout << "LHS prime: " << lhs_prime->revealInsecure()->toString() << "\n";
-		//std::cout << "RHS prime: " << rhs_prime->revealInsecure()->toString() << "\n";
-		//std::cout << "Augmented field min: " << augmented_schema.getField(0).getFieldMin() << "\n";
-	}
- 
-    int output_cursor = 0;
-    QueryTable<B> *unioned = TableFactory<B>::getTable(lhs->getTupleCount() + rhs->getTupleCount(), augmented_schema, storage_model_);
-    for(int i = 0; i < lhs_prime->getTupleCount(); ++i) {
-        unioned->cloneRow(output_cursor, 0, lhs_prime, i);
-        unioned->setDummyTag(output_cursor, lhs_prime->getDummyTag(i));
-        ++output_cursor;
-
-    }
-
-    for(int i = 0; i < rhs_prime->getTupleCount(); ++i) {
-        unioned->cloneRow(output_cursor, 0, rhs_prime, i);
-        unioned->setDummyTag(output_cursor, rhs_prime->getDummyTag(i));
-        unioned->setField(output_cursor, table_id_idx_, table_id_field);
-        ++output_cursor;
-    }
-
-    delete lhs_prime;
-    delete rhs_prime;
-
-	if(this->getOperatorId() == 8) {
-		//std::cout << "Unioned: " << unioned->revealInsecure()->toString() << "\n";
-		//std::cout << "Unioned field min: " << unioned->getSchema().getField(0).getFieldMin() << "\n";
-	}
-
-    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
-    // sort s.t. fkey entries are first, pkey entries are second 
-	sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
-	
-	bool lhs_is_foreign_key = foreign_key_input_ == 0;
-	sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
-
-    Sort<B> sorter(unioned, sort_def);
-    sorter.setOperatorId(-2);	
-
-    QueryTable<B> *sorted = sorter.run()->clone();
-
-	if(this->getOperatorId() == 8) {
-		//std::cout << "First sort: " << sorted->revealInsecure()->toString(true) << "\n";
-	}
+    auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
 
     if(is_secure_ && bit_packed_) initializeAlphasPacked(sorted);
     else initializeAlphas(sorted);
 
-	if(this->getOperatorId() == 8) {
-		//std::cout << "Initialize alphas: " << sorted->revealInsecure()->toString(true) << "\n";
-	}
 
-    sort_def.clear();
+
+    SortDefinition sort_def;
     sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
     for(int i = 0; i < join_idxs_.size(); ++i) {
         sort_def.emplace_back(i, SortDirection::ASCENDING);
@@ -331,6 +286,79 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 
 
     return output;
+}
+
+
+template<typename B>
+QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
+    int output_cursor = 0;
+    QuerySchema augmented_schema = deriveAugmentedSchema();
+    QueryTable<B> *unioned = TableFactory<B>::getTable(lhs_prime_->getTupleCount() + rhs_prime_->getTupleCount(), augmented_schema, storage_model_);
+
+    for(int i = 0; i < lhs_prime_->getTupleCount(); ++i) {
+        unioned->cloneRow(output_cursor, 0, lhs_prime_, i);
+        unioned->setDummyTag(output_cursor, lhs_prime_->getDummyTag(i));
+        ++output_cursor;
+
+    }
+
+    for(int i = 0; i < rhs_prime_->getTupleCount(); ++i) {
+        unioned->cloneRow(output_cursor, 0, rhs_prime_, i);
+        unioned->setDummyTag(output_cursor, rhs_prime_->getDummyTag(i));
+        unioned->setField(output_cursor, table_id_idx_, table_id_field_);
+        ++output_cursor;
+    }
+
+    delete lhs_prime_;
+    delete rhs_prime_;
+
+    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
+    // sort s.t. fkey entries are first, pkey entries are second
+//    sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
+
+    bool lhs_is_foreign_key = (foreign_key_input_ == 0);
+    sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
+
+    Sort<B> sorter(unioned, sort_def);
+    sorter.setOperatorId(-2);
+
+   return sorter.run()->clone();
+}
+
+template<typename B>
+QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
+    QuerySchema augmented_schema = deriveAugmentedSchema();
+    int unioned_len = lhs_prime_->getTupleCount() + rhs_prime_->getTupleCount();
+    QueryTable<B> *unioned = TableFactory<B>::getTable(unioned_len, augmented_schema, storage_model_);
+
+    for(int i = 0; i < lhs_prime_->getTupleCount(); ++i) {
+        unioned->cloneRow(i, 0, lhs_prime_, i);
+        unioned->setDummyTag(i, lhs_prime_->getDummyTag(i));
+    }
+
+
+    int dst_idx = unioned_len - 1;
+    for(int i = 0; i < rhs_prime_->getTupleCount(); ++i) {
+        unioned->cloneRow(dst_idx, 0, rhs_prime_, i);
+        unioned->setDummyTag(dst_idx, rhs_prime_->getDummyTag(i));
+        unioned->setField(dst_idx, table_id_idx_, table_id_field_);
+        --dst_idx;
+    }
+
+    delete lhs_prime_;
+    delete rhs_prime_;
+
+    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
+    // sort s.t. fkey entries are first, pkey entries are second
+    //sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
+
+    bool lhs_is_foreign_key = (foreign_key_input_ == 0);
+    sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
+
+    Sort<B> sorter(unioned, sort_def);
+    sorter.setOperatorId(-2);
+
+    return sorter.run()->clone();
 }
 
 template<typename B>

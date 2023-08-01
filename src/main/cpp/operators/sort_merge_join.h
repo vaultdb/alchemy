@@ -32,6 +32,9 @@ namespace  vaultdb {
             return new SortMergeJoin<B>(this->lhs_child_->clone(), this->rhs_child_->clone(), this->foreign_key_input_, this->predicate_->clone(), this->sort_definition_);
         }
 
+        QueryTable<B> *unionAndSortTables();
+        QueryTable<B> *unionAndMergeTables();
+
 		int foreignKeyChild() const { return foreign_key_input_; }
         QuerySchema deriveAugmentedSchema() const;
 
@@ -56,9 +59,9 @@ namespace  vaultdb {
         QuerySchema lhs_projected_schema_, rhs_projected_schema_; // cache the schema of the smaller input relation
         bool bit_packed_ = false;
         long max_intermediate_cardinality_ = 0;
-		QueryTable<B> *lhs_prime;
-		QueryTable<B> *rhs_prime;
-		Field<B> table_id_field;
+		QueryTable<B> *lhs_prime_;
+		QueryTable<B> *rhs_prime_;
+		Field<B> table_id_field_;
         pair<QueryTable<B> *, QueryTable<B> *> augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs);
         QueryTable<B> *obliviousDistribute(QueryTable<B> *input, size_t target_size);
         QueryTable<B> *obliviousExpand(QueryTable<B> *input, bool is_lhs);
@@ -83,6 +86,24 @@ namespace  vaultdb {
                 match = match & (t->getPackedField(lhs_row, i) == t->getPackedField(rhs_row, i));
             }
             return match;
+        }
+
+        // to be run after getAugmentedSchema so lhs_prime_ and rhs_prime_ are initialized
+        inline bool sortCompatible() {
+            auto lhs_sort = lhs_prime_->getSortOrder();
+            auto rhs_sort = rhs_prime_->getSortOrder();
+
+            if(lhs_sort.size() < join_idxs_.size() || rhs_sort.size() < join_idxs_.size())
+                return false;
+
+            bool sort_compatible = true;
+            for(int i = 0; i < join_idxs_.size(); ++i) {
+                if(lhs_sort[i].first != i || rhs_sort[i].first != i) {
+                    sort_compatible = false;
+                    break;
+                }
+            }
+            return sort_compatible;
         }
 
         void setup();
