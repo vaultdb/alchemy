@@ -16,7 +16,7 @@
 
 
 
-DEFINE_int32(cutoff, 100, "limit clause for queries");
+DEFINE_int32(cutoff, 10, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
@@ -35,12 +35,12 @@ protected:
     const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' o_dummy \n"
                                     "FROM orders \n"
                                     "WHERE o_custkey <=  " + std::to_string(FLAGS_cutoff) +
-                                    " ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
+                                    " ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, o_dummy";
 
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' l_dummy \n"
                                       "FROM lineitem \n"
                                       "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= " + std::to_string(FLAGS_cutoff) + ")  \n"
-                                                                                                                                          " ORDER BY l_orderkey, revenue ";
+                                     " ORDER BY l_orderkey, revenue, l_dummy ";
 
 
 	void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
@@ -183,9 +183,11 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders) {
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
 
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
+    SortDefinition lineitem_sort = DataUtilities::getDefaultSortDefinition(2);
+    SortDefinition orders_sort = DataUtilities::getDefaultSortDefinition(4);
 
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true, lineitem_sort);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, true, orders_sort);
 
     // output schema: lineitem, orders
     // l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -225,10 +227,12 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
 
+    SortDefinition lineitem_sort = DataUtilities::getDefaultSortDefinition(2);
+    SortDefinition orders_sort = DataUtilities::getDefaultSortDefinition(4);
 
     auto *customer_input = new SqlInput(db_name_, customer_sql_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, true, orders_sort);
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true, lineitem_sort);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
@@ -314,8 +318,11 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_reversed) {
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
+    SortDefinition lineitem_sort = DataUtilities::getDefaultSortDefinition(2);
+    SortDefinition orders_sort = DataUtilities::getDefaultSortDefinition(4);
+
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true, lineitem_sort);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, true, orders_sort);
 
 
     // output schema:  orders, lineitem
@@ -357,10 +364,12 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
 
+    SortDefinition lineitem_sort = DataUtilities::getDefaultSortDefinition(2);
+    SortDefinition orders_sort = DataUtilities::getDefaultSortDefinition(4);
 
     auto *customer_input = new SqlInput(db_name_, customer_sql_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, true, orders_sort);
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true, lineitem_sort);
 
     // join output schema: (orders, customer)
     // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -400,12 +409,6 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
 
 }
 
-//TEST_F(SortMergeJoinTest, tpch_q5) {
-//    //FLAGS_cutoff = 1000;
-//
-//    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-//    runTest(5, "q5", expected_sort, FLAGS_unioned_db);
-//}
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

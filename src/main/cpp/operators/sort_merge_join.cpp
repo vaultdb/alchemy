@@ -246,7 +246,8 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 	table_id_idx_ = augmented_schema.getFieldCount() - 1;
     alpha_idx_ = augmented_schema.getFieldCount() - 2;
 
-    auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
+    //auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
+    auto sorted = unionAndSortTables();
 
     if(is_secure_ && bit_packed_) initializeAlphasPacked(sorted);
     else initializeAlphas(sorted);
@@ -325,42 +326,6 @@ QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
     sorter.setOperatorId(-2);
 
    return sorter.run()->clone();
-}
-
-template<typename B>
-QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
-    QuerySchema augmented_schema = deriveAugmentedSchema();
-    int unioned_len = lhs_prime_->getTupleCount() + rhs_prime_->getTupleCount();
-    QueryTable<B> *unioned = TableFactory<B>::getTable(unioned_len, augmented_schema, storage_model_);
-
-    for(int i = 0; i < lhs_prime_->getTupleCount(); ++i) {
-        unioned->cloneRow(i, 0, lhs_prime_, i);
-        unioned->setDummyTag(i, lhs_prime_->getDummyTag(i));
-    }
-
-
-    int dst_idx = unioned_len - 1;
-    for(int i = 0; i < rhs_prime_->getTupleCount(); ++i) {
-        unioned->cloneRow(dst_idx, 0, rhs_prime_, i);
-        unioned->setDummyTag(dst_idx, rhs_prime_->getDummyTag(i));
-        unioned->setField(dst_idx, table_id_idx_, table_id_field_);
-        --dst_idx;
-    }
-
-    delete lhs_prime_;
-    delete rhs_prime_;
-
-    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
-    // sort s.t. fkey entries are first, pkey entries are second
-    sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
-
-    bool lhs_is_foreign_key = (foreign_key_input_ == 0);
-    sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
-
-    Sort<B> sorter(unioned, sort_def);
-    sorter.setOperatorId(-2);
-
-    return sorter.run()->clone();
 }
 
 template<typename B>
