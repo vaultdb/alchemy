@@ -218,7 +218,7 @@
     {
       "id": "9",
       "inputFields": "o_year (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check (#4)",
-      "outputFields" : "o_year, volume * nation_check::float, volume",
+      "outputFields" : "o_year, nation_volume, volume",
       "relOp": "LogicalProject",
       "fields": [
         "o_year",
@@ -232,18 +232,25 @@
         },
         {
           "op": {
-            "name": "*",
-            "kind": "TIMES",
-            "syntax": "BINARY"
+            "name": "CASE",
+            "kind": "CASE",
+            "syntax": "SPECIAL"
           },
           "operands": [
             {
-              "input": 4,
+              "input":  4,
               "name": "$4"
             },
             {
-              "input": 2,
+              "input":  2,
               "name": "$2"
+            },
+            {
+              "literal": 0.0,
+              "type": {
+                "type": "FLOAT",
+                "nullable": false
+              }
             }
           ]
         },

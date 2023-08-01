@@ -17,6 +17,6 @@ SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume,
 FROM lineitem LEFT JOIN part ON p_partkey = l_partkey
 ORDER BY l_orderkey
 -- 7, collation: (0 ASC)
-SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN 1.0 ELSE 0.0 END AS nation_check
+SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check
 FROM supplier JOIN nation ON n_nationkey = s_nationkey
 ORDER BY s_suppkey
