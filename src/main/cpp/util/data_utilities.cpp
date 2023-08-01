@@ -5,6 +5,7 @@
 #include "data_utilities.h"
 #include <algorithm>
 #include <query_table/query_table.h>
+#include <query_table/row_table.h>
 
 
 
@@ -296,6 +297,43 @@ string DataUtilities::printByteArray(const int8_t *bytes, const size_t &byte_cnt
     return ss.str();
 }
 
+bool DataUtilities::verifyCollation(PlainTable *sorted) {
+    SortDefinition  collation = sorted->getSortOrder();
+    // delete dummies
+    int true_card = sorted->getTrueTupleCount();
+    RowTable<bool> no_dummies(true_card, sorted->getSchema(), sorted->getSortOrder());
+    int cursor = 0;
+    for(int i = 0; i < sorted->getTupleCount(); ++i) {
+        if(!sorted->getDummyTag(i)) {
+            no_dummies.cloneRow(cursor, 0, sorted, i);
+            no_dummies.setDummyTag(cursor, false);
+            ++cursor;
+        }
+    }
 
 
+
+    for(int i = 1; i < no_dummies.getTupleCount(); ++i) {
+        for(auto col_sort : collation) {
+                auto lhs_field = no_dummies.getField(i-1, col_sort.first);
+                auto rhs_field = no_dummies.getField(i, col_sort.first);
+
+                if(lhs_field == rhs_field) continue;
+
+                if(col_sort.second == SortDirection::ASCENDING)
+                    return lhs_field < rhs_field;
+                else  // DESC
+                    return lhs_field > rhs_field;
+            }
+        }// each tuple correctly ordered wrt its predecessor
+
+    return true;
+}
+
+bool DataUtilities::verifyCollation(SecureTable *sorted) {
+    auto tmp = sorted->revealInsecure();
+    bool verified = verifyCollation(tmp);
+    delete tmp;
+    return verified;
+}
 

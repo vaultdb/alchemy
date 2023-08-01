@@ -166,9 +166,10 @@ QuerySchema SortMergeJoin<B>::deriveAugmentedSchema() const {
 
 
     if(!is_secure_) {
-        QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_, 0);
+        QueryFieldDesc alpha(write_cursor, "alpha", "", int_field_type_, 0);
         augmented_schema.putField(alpha);
-        QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::BOOL, 0);
+        ++write_cursor;
+        QueryFieldDesc table_id(write_cursor, "table_id", "", FieldType::BOOL, 0);
         augmented_schema.putField(table_id);
     }
     else {
