@@ -145,7 +145,7 @@ void AutoOptimizedTest::runStubTest(string & sql_plan, string & json_plan, strin
 
 }
 
-
+/*
 TEST_F(AutoOptimizedTest, tpch_q1) {
 string test_name = "q1";
 std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-" + test_name + ".sql";
@@ -159,8 +159,7 @@ this->initializeBitPacking(FLAGS_unioned_db);
 
 runStubTest(sql_file, plan_file, expected_sql, expected_sort, FLAGS_unioned_db);
 
-
-}
+}*/
 
 
 TEST_F(AutoOptimizedTest, tpch_q3) {

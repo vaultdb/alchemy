@@ -165,7 +165,7 @@ QuerySchema NestedLoopAggregate<B>::generateOutputSchema(const QuerySchema & inp
     QuerySchema output_schema;
     size_t i;
     bool bit_packing = SystemConfiguration::getInstance().bitPackingEnabled();
-    int input_row_cnt = this->getChild(0)->getOutput()->getTupleCount();
+    int input_row_cnt = this->getChild(0)->getOutputCardinality();
 
     for(i = 0; i < group_by_.size(); ++i) {
         QueryFieldDesc srcField = input_schema.getField(group_by_[i]);
@@ -202,7 +202,7 @@ QuerySchema NestedLoopAggregate<B>::generateOutputSchema(const QuerySchema & inp
 template<typename B>
 void NestedLoopAggregate<B>::setup() {
     QuerySchema input_schema = this->getChild(0)->getOutputSchema();
-    int max_cnt = this->getChild(0)->getOutput()->getTupleCount();
+    int max_cnt = this->getChild(0)->getOutputCardinality();
     int output_ordinal = group_by_.size();
 
 

@@ -291,7 +291,20 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     Operator<B> *child = getChildOperator(operator_id, aggregate_json);
 
     if(!group_by_ordinals.empty()) {
-        
+
+        // Use Cost Model to calculate NLA and SMA, pick more better one.
+        if(agg_algo == "auto") {
+            Operator<B>* sma = new GroupByAggregate<B>(child->clone(), group_by_ordinals, aggregators, check_sort);
+            Operator<B>* nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, cardBound);
+
+            size_t SMA_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+            size_t NLA_cost = OperatorCostModel::operatorCost((SecureOperator *) nla);
+            agg_algo = (SMA_cost < NLA_cost) ? "sort-merge-aggregate" : "nested-loop-aggregate";
+
+            cout << "sma cost : " << SMA_cost << ", nla cost : " << NLA_cost << ", agg type : " << agg_algo << endl;
+            delete sma;
+            delete nla;
+        }
 
         if(cardBound > 0 && (agg_algo == "nested-loop-aggregate" || agg_algo == ""))
             return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardBound);
