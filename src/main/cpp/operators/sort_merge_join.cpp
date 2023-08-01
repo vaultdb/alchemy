@@ -293,7 +293,8 @@ template<typename B>
 QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
     int output_cursor = 0;
     QuerySchema augmented_schema = deriveAugmentedSchema();
-    QueryTable<B> *unioned = TableFactory<B>::getTable(lhs_prime_->getTupleCount() + rhs_prime_->getTupleCount(), augmented_schema, storage_model_);
+    int unioned_len = lhs_prime_->getTupleCount() + rhs_prime_->getTupleCount();
+    QueryTable<B> *unioned = TableFactory<B>::getTable(unioned_len, augmented_schema, storage_model_);
 
     for(int i = 0; i < lhs_prime_->getTupleCount(); ++i) {
         unioned->cloneRow(output_cursor, 0, lhs_prime_, i);
@@ -314,7 +315,7 @@ QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
 
     SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
     // sort s.t. fkey entries are first, pkey entries are second
-//    sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
+    sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
 
     bool lhs_is_foreign_key = (foreign_key_input_ == 0);
     sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
@@ -350,7 +351,7 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
 
     SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
     // sort s.t. fkey entries are first, pkey entries are second
-    //sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
+    sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
 
     bool lhs_is_foreign_key = (foreign_key_input_ == 0);
     sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
