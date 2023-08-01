@@ -290,8 +290,9 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
 
     Operator<B> *child = getChildOperator(operator_id, aggregate_json);
 
-
     if(!group_by_ordinals.empty()) {
+        
+
         if(cardBound > 0 && (agg_algo == "nested-loop-aggregate" || agg_algo == ""))
             return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardBound);
         else if(!check_sort && (agg_algo == "sort-merge-aggregate" || agg_algo == ""))

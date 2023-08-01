@@ -1,0 +1,218 @@
+#include <gflags/gflags.h>
+#include <gtest/gtest.h>
+#include <stdexcept>
+#include <util/type_utilities.h>
+#include <util/data_utilities.h>
+#include <test/mpc/emp_base_test.h>
+#include <test/support/tpch_queries.h>
+#include <boost/algorithm/string/replace.hpp>
+#include <parser/plan_parser.h>
+
+
+using namespace emp;
+using namespace vaultdb;
+
+
+DEFINE_int32(party, 1, "party for EMP execution");
+DEFINE_int32(port, 7654, "port for EMP execution");
+DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
+DEFINE_int32(cutoff, 100, "limit clause for queries");
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
+
+
+class AutoOptimizedTest : public EmpBaseTest {
+protected:
+
+    void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
+    string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
+    void runStubTest(string & sql_plan, string & json_plan, string & expected_query, SortDefinition & expected_sort, const string & unioned_db);
+    int input_tuple_limit_ = -1;
+
+};
+
+
+void
+AutoOptimizedTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
+
+
+    this->initializeBitPacking(FLAGS_unioned_db);
+
+    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_unioned_db);
+    string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
+    string local_db = db_name_;
+
+    cout << " Observed DB : "<< local_db << " - Bit Packed" << endl;
+    auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
+
+    PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
+    expected->setSortOrder(expected_sort);
+
+    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-" + test_name + ".sql";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-"  + test_name + ".json";
+
+    time_point<high_resolution_clock> startTime = clock_start();
+    clock_t secureStartClock = clock();
+
+    PlanParser<Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
+    SecureOperator *root = parser.getRoot();
+
+    std::cout << root->printTree() << endl;
+
+    SecureTable *result = root->run();
+
+    double secureClockTicks = (double) (clock() - secureStartClock);
+    double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
+    double duration = time_from(startTime) / 1e6;
+
+
+    cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
+    auto end_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
+    cout << "End-to-end plan gates: " << root->planCost() << " estimated: " << end_gates - start_gates << " gates." << endl;
+
+
+    if(FLAGS_validation) {
+        PlainTable *observed = result->reveal();
+
+        ASSERT_EQ(*expected, *observed);
+
+        delete observed;
+        delete expected;
+    }
+}
+
+
+string
+AutoOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDefinition &expected_sort, const string &db_name) {
+    string alice_db = FLAGS_unioned_db;
+    string bob_db = FLAGS_unioned_db;
+    boost::replace_first(alice_db, "unioned", "alice");
+    boost::replace_first(bob_db, "unioned", "bob");
+
+    string query = tpch_queries[test_id];
+
+    if(input_tuple_limit_ > 0) {
+        query = truncated_tpch_queries[test_id];
+        boost::replace_all(query, "$LIMIT", std::to_string(input_tuple_limit_));
+        boost::replace_all(query, "$ALICE_DB", alice_db);
+        boost::replace_all(query, "$BOB_DB", bob_db);
+    }
+
+    return query;
+}
+
+void AutoOptimizedTest::runStubTest(string & sql_plan, string & json_plan, string & expected_query, SortDefinition & expected_sort, const string & unioned_db) {
+    time_point<high_resolution_clock> startTime = clock_start();
+    clock_t secureStartClock = clock();
+    string local_db = unioned_db;
+    string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
+    boost::replace_all(local_db, "unioned", party_name);
+    auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
+
+    PlanParser<emp::Bit> parser(local_db, sql_plan, json_plan, input_tuple_limit_);
+    SecureOperator *root = parser.getRoot();
+
+    std::cout << "Query plan: " << root->printTree() << endl;
+
+    SecureTable *result = root->run();
+
+    double secureClockTicks = (double) (clock() - secureStartClock);
+    double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
+    double duration = time_from(startTime) / 1e6;
+
+    cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
+    auto end_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
+    float e2e_gates = (float) (end_gates - start_gates);
+    float cost_estimate = (float) root->planCost();
+    float relative_error = (fabs(e2e_gates - cost_estimate) / e2e_gates) * 100.0f;
+    cout << "End-to-end plan gates: " << root->planCost() << " estimated: " << end_gates - start_gates << " gates, relative error (%)=" << relative_error << endl;
+
+    if(FLAGS_validation) {
+        PlainTable *observed = result->reveal();
+        PlainTable  *expected = DataUtilities::getQueryResults(unioned_db, expected_query, false);
+        expected->setSortOrder(expected_sort);
+
+        ASSERT_EQ(*expected, *observed);
+
+        delete observed;
+        delete expected;
+    }
+
+}
+
+
+TEST_F(AutoOptimizedTest, tpch_q1) {
+string test_name = "q1";
+std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-" + test_name + ".sql";
+std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-"  + test_name + ".json";
+
+SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+string expected_sql = tpch_queries[1];
+
+
+this->initializeBitPacking(FLAGS_unioned_db);
+
+runStubTest(sql_file, plan_file, expected_sql, expected_sort, FLAGS_unioned_db);
+
+
+}
+
+
+TEST_F(AutoOptimizedTest, tpch_q3) {
+
+SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                             ColumnSort(1, SortDirection::DESCENDING),
+                             ColumnSort(2, SortDirection::ASCENDING)};
+runTest(3, "q3", expected_sort, FLAGS_unioned_db);
+}
+
+
+TEST_F(AutoOptimizedTest, tpch_q5) {
+//input_tuple_limit_ = 1000;
+
+SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+runTest(5, "q5", expected_sort, FLAGS_unioned_db);
+}
+
+
+TEST_F(AutoOptimizedTest, tpch_q8) {
+
+SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+runTest(8, "q8", expected_sort, FLAGS_unioned_db);
+}
+
+
+
+TEST_F(AutoOptimizedTest, tpch_q9) {
+// $0 ASC, $1 DESC
+SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+runTest(9, "q9", expected_sort, FLAGS_unioned_db);
+
+}
+
+
+
+
+TEST_F(AutoOptimizedTest, tpch_q18) {
+// -1 ASC, $4 DESC, $3 ASC
+SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                             ColumnSort(4, SortDirection::DESCENDING),
+                             ColumnSort(3, SortDirection::ASCENDING)};
+runTest(18, "q18", expected_sort, FLAGS_unioned_db);
+}
+
+
+
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    ::testing::GTEST_FLAG(filter)=FLAGS_filter;
+    return RUN_ALL_TESTS();
+}
