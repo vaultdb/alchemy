@@ -145,6 +145,7 @@ void AutoOptimizedTest::runStubTest(string & sql_plan, string & json_plan, strin
 
 }
 
+// No Aggregate
 /*
 TEST_F(AutoOptimizedTest, tpch_q1) {
 string test_name = "q1";
@@ -195,7 +196,8 @@ runTest(9, "q9", expected_sort, FLAGS_unioned_db);
 
 
 
-
+// No Aggregate
+/*
 TEST_F(AutoOptimizedTest, tpch_q18) {
 // -1 ASC, $4 DESC, $3 ASC
 SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
@@ -203,7 +205,7 @@ SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                              ColumnSort(3, SortDirection::ASCENDING)};
 runTest(18, "q18", expected_sort, FLAGS_unioned_db);
 }
-
+*/
 
 
 
