@@ -21,5 +21,5 @@ SELECT s_suppkey, s_name, s_address, s_nationkey, s_phone, s_acctbal, s_comment
 FROM supplier
 ORDER BY s_suppkey
 -- 13
-SELECT n2.n_nationkey, n2.n_name, n2.n_regionkey, n2.n_comment, CASE WHEN n2.n_name = 'KENYA' THEN 1.0 ELSE 0.0 END AS nation_check
+SELECT n2.n_nationkey, n2.n_name, n2.n_regionkey, n2.n_comment, CASE WHEN n2.n_name = 'KENYA' THEN true ELSE false END AS nation_check
 FROM nation n2

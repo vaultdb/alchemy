@@ -8,6 +8,9 @@
 #include <emp-tool/emp-tool.h>
 #include <operators/operator.h>
 #include "util/system_configuration.h"
+#include <operators/nested_loop_aggregate.h>
+#include <operators/group_by_aggregate.h>
+#include <operators/sort.h>
 
 
 // parse this from 1) list of SQL statements, and 2) Apache Calcite JSON for secure plan
@@ -31,6 +34,20 @@ namespace vaultdb {
         static Operator <B> *parse(const string &db_name, const string &json_plan, const int &limit = -1);
 
         static tuple<int, SortDefinition, int> parseSqlHeader(const string & header);
+
+        bool getAutoFlag() const { return agg_auto_flag; }
+        bool getSortFlag() const { return sort_before_sma_flag; }
+        int getOpId() const { return agg_op_id; }
+        NestedLoopAggregate<B>* getNLA() const { return nla_ptr; }
+        GroupByAggregate<B>* getSMA() const { return sma_ptr; }
+        Sort<B>* getSort() const { return sort_ptr; }
+        void setAutoFlag(bool inputFlag) { agg_auto_flag = inputFlag;}
+        void setSortFlag(bool inputSortBeforeSMAFlag) { sort_before_sma_flag = inputSortBeforeSMAFlag;}
+        void setOpId(int inputId) { agg_op_id = inputId; }
+        void setNLA(NestedLoopAggregate<B>* inputOp) { nla_ptr = inputOp;}
+        void setSMA(GroupByAggregate<B>* inputOp) { sma_ptr = inputOp;}
+        void setSort(Sort<B>* inputOp) { sort_ptr = inputOp;}
+
     protected:
         std::string db_name_;
         StorageModel storage_model_ = SystemConfiguration::getInstance().storageModel();
@@ -55,6 +72,14 @@ namespace vaultdb {
         Operator<B> *parseProjection(const int & operator_id, const boost::property_tree::ptree &project_tree);
         Operator<B> *parseSeqScan(const int & operator_id, const boost::property_tree::ptree &seq_scan_tree);
         Operator<B> *parseShrinkwrap(const int & operator_id, const boost::property_tree::ptree &pt);
+        void calculateAutoAggregate();
+
+        bool agg_auto_flag = false;
+        bool sort_before_sma_flag = false;
+        int agg_op_id = 0;
+        GroupByAggregate<B> *sma_ptr= nullptr;
+        NestedLoopAggregate<B> *nla_ptr = nullptr;
+        Sort<B> *sort_ptr = nullptr;
 
         // faux template specialization
         Operator<bool> *createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag, const bool & plain_has_dummy_tag);

@@ -12,9 +12,6 @@
 #include <operators/sql_input.h>
 #include <operators/secure_sql_input.h>
 #include <operators/zk_sql_input.h>
-#include <operators/sort.h>
-#include <operators/nested_loop_aggregate.h>
-#include <operators/group_by_aggregate.h>
 #include <operators/scalar_aggregate.h>
 #include <operators/keyed_join.h>
 #include <operators/sort_merge_join.h>
@@ -34,6 +31,8 @@ PlanParser<B>::PlanParser(const string &db_name, const string & sql_file, const 
                           const int &limit) : db_name_(db_name), input_limit_(limit) {
     parseSqlInputs(sql_file);
     parseSecurePlan(json_file);
+    if(agg_auto_flag)
+        calculateAutoAggregate();
 }
 
 // for ZK plans
@@ -234,6 +233,116 @@ Operator<emp::Bit> *PlanParser<B>::createInputOperator(const string &sql, const 
 
 }
 
+template<typename B>
+void PlanParser<B>::calculateAutoAggregate() {
+    GroupByAggregate<B> *sma = getSMA();
+    NestedLoopAggregate<B> *nla = getNLA();
+    Sort<B>* sort_before_sma;
+
+    size_t SMA_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+    size_t NLA_cost = OperatorCostModel::operatorCost((SecureOperator *) nla);
+
+    // If Sort exists before SMA, add it to the SMA's cost
+    if(getSortFlag()){
+        sort_before_sma = getSort();
+        SMA_cost += OperatorCostModel::operatorCost((SecureOperator *) sort_before_sma);
+    }
+
+    // Calculate Operator after NLA's cost
+    int agg_op_id = getOpId();
+    Operator<B> *cur_op = operators_[agg_op_id + 1];
+    cur_op->setOutputCardinality(nla->getOutputCardinality());
+    while (cur_op != nullptr) {
+        NLA_cost += OperatorCostModel::operatorCost((SecureOperator *) cur_op);
+        size_t cur_output_cardinality_ = cur_op->getOutputCardinality();
+        cur_op = cur_op->getParent();
+        if (cur_op != nullptr)
+            cur_op->setOutputCardinality(cur_output_cardinality_);
+    }
+
+    // Calculate Operator after SMA's cost
+    cur_op = operators_[agg_op_id + 1];
+    cur_op->setOutputCardinality(sma->getOutputCardinality());
+    bool sort_pass_flag;
+    while (cur_op != nullptr) {
+        sort_pass_flag = false;
+        if (cur_op->getOperatorType() == "Sort") {
+            SortDefinition cur_sort_order = cur_op->getSortOrder();
+            if (GroupByAggregate<B>::sortCompatible(cur_sort_order, sma->group_by_))
+                sort_pass_flag = true;
+        }
+        if (sort_pass_flag)
+            SMA_cost += OperatorCostModel::operatorCost((SecureOperator *) cur_op);
+        size_t cur_output_cardinality_ = cur_op->getOutputCardinality();
+        cur_op = cur_op->getParent();
+        if (cur_op != nullptr)
+            cur_op->setOutputCardinality(cur_output_cardinality_);
+    }
+
+    string agg_algo = (SMA_cost < NLA_cost) ? "sort-merge-aggregate" : "nested-loop-aggregate";
+
+    cout << "sma cost : " << SMA_cost << ", nla cost : " << NLA_cost << ", agg type : " << agg_algo << endl;
+
+    std::vector<int32_t> group_by_ordinals;
+    vector<ScalarAggregateDefinition> aggregators;
+    Operator<B>* child = operators_[agg_op_id - 1];
+    int agg_output_cardinality;
+    cur_op = operators_[agg_op_id + 1];
+
+    // create real aggregate operator
+    if (agg_algo == "sort-merge-aggregate"){
+
+        if(getSortFlag()){
+            // if sort not aligned, insert a sort op
+            SortDefinition sort_order = sort_before_sma->getSortOrder();
+            Operator<B>* real_sort_before_sma = new Sort<B>(child, sort_order);
+            support_ops_.template emplace_back(real_sort_before_sma);
+            child->setParent(real_sort_before_sma);
+            real_sort_before_sma->setChild(child);
+            child = real_sort_before_sma;
+        }
+
+
+        group_by_ordinals = sma->group_by_;
+        aggregators = sma->aggregate_definitions_;
+        bool check_sort = sma->check_sort_;
+
+        GroupByAggregate<B> *real_sma = new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort);
+        child->setParent(real_sma);
+        real_sma->setChild(child);
+        cur_op->setChild(real_sma);
+        real_sma->setParent(cur_op);
+        operators_[agg_op_id] = real_sma;
+        agg_output_cardinality = real_sma->getOutputCardinality();
+    }
+    else{
+        group_by_ordinals = nla->group_by_;
+        aggregators = nla->aggregate_definitions_;
+        int cardBound = nla->getOutputCardinality();
+
+        NestedLoopAggregate<B> *real_nla = new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardBound);
+        child->setParent(real_nla);
+        real_nla->setChild(child);
+        cur_op->setChild(real_nla);
+        real_nla->setParent(cur_op);
+        operators_[agg_op_id] = real_nla;
+        agg_output_cardinality = real_nla->getOutputCardinality();
+    }
+
+    // set right output cardinality for each operators after aggregate
+    operators_.at(agg_op_id)->setOperatorId(agg_op_id);
+    cur_op->setOutputCardinality(agg_output_cardinality);
+    while (cur_op != nullptr) {
+        size_t cur_output_cardinality_ = cur_op->getOutputCardinality();
+        cur_op = cur_op->getParent();
+        if (cur_op != nullptr)
+            cur_op->setOutputCardinality(cur_output_cardinality_);
+    }
+    delete sma;
+    delete nla;
+    if(getSortFlag())
+        delete sort_before_sma;
+}
 
 
 template<typename B>
@@ -293,7 +402,42 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     Operator<B> *child = getChildOperator(operator_id, aggregate_json);
 
     if(!group_by_ordinals.empty()) {
-        
+
+        // Use Cost Model to calculate NLA and SMA, pick more better one.
+        if(agg_algo == "auto") {
+            GroupByAggregate<B>* sma;
+            NestedLoopAggregate<B>* nla;
+            if(check_sort){
+                // if sort not aligned, insert a sort op
+                SortDefinition child_sort = child->getSortOrder();
+                if (!GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals)) {
+                    // insert sort
+                    SortDefinition child_sort;
+                    for (uint32_t idx: group_by_ordinals) {
+                        child_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
+                    }
+                    Sort<B>* sort_before_sma = new Sort<B>(child->clone(), child_sort);
+                    setSort(sort_before_sma);
+                    sma = new GroupByAggregate<B>(sort_before_sma->clone(), group_by_ordinals, aggregators, check_sort);
+                    setSortFlag(check_sort);
+                }
+                else
+                    sma = new GroupByAggregate<B>(child->clone(), group_by_ordinals, aggregators, check_sort);
+
+                nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, cardBound);
+            }
+            else {
+                sma = new GroupByAggregate<B>(child->clone(), group_by_ordinals, aggregators, check_sort);
+                nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, cardBound);
+            }
+
+            setSMA(sma);
+            setNLA(nla);
+            setAutoFlag(true);
+            setOpId(operator_id);
+
+            return sma;
+        }
 
         if(cardBound > 0 && (agg_algo == "nested-loop-aggregate" || agg_algo == ""))
             return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardBound);

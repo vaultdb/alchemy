@@ -47,13 +47,12 @@
       "relOp": "LogicalJoin",
       "joinOn": "No-op, keys aligned in SQL setup",
       "operator-algorithm" : "merge-join",
-      "dummy-handling" : "OR",
       "outputFields": "L1.l_orderkey (#0), L1.sum_qty (#1), L2.l_orderkey (#2), L2.sum_qty (#3)",
       "condition": {
         "no-op": true
       },
       "joinType": "inner",
-      "dummy-handling" : "OR",
+      "dummy-handling" : "AND",
       "inputs": [
         "0",
         "1"
@@ -117,19 +116,6 @@
     },
     {
       "id": "5",
-      "relOp": "LogicalProject",
-      "fields": [
-        "l_orderkey"
-      ],
-      "exprs": [
-        {
-          "input": 0,
-          "name": "$0"
-        }
-      ]
-    },
-    {
-      "id": "6",
       "relOp": "LogicalValues",
       "type": [
         {
@@ -159,49 +145,32 @@
       "inputs": []
     },
     {
-      "id": "7",
+      "id": "6",
       "relOp": "LogicalJoin",
       "joinOn": "l_orderkey = o_orderkey",
       "operator-algorithm" : "merge-join",
-      "outputFields": "l_orderkey (#0), o_orderkey (#1), o_custkey (#2), o_totalprice (#3), o_orderdate (#4)",
+      "outputFields": "l_orderkey (#0), sum_qty (#1), o_orderkey (#2), o_custkey (#3), o_totalprice (#4), o_orderdate (#5)",
       "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 0,
-            "name": "$0"
-          },
-          {
-            "input": 1,
-            "name": "$1"
-          }
-        ]
+        "no-op": true
       },
       "joinType": "inner",
-      "foreignKey": 0,
+      "dummy-handling" : "OR",
       "inputs": [
-        "5",
-        "6"
+        "4",
+        "5"
       ]
     },
     {
-      "id": "8",
+      "id": "7",
       "relOp": "LogicalProject",
       "fields": [
         "o_orderkey",
         "o_custkey",
         "o_totalprice",
-        "o_orderdate"
+        "o_orderdate",
+        "sum_qty"
       ],
       "exprs": [
-        {
-          "input": 1,
-          "name": "$1"
-        },
         {
           "input": 2,
           "name": "$2"
@@ -213,96 +182,19 @@
         {
           "input": 4,
           "name": "$4"
-        }
-      ]
-    },
-    {
-      "id": "9",
-      "relOp": "LogicalValues",
-      "outputFields" : "L2.l_orderkey (#0), L2.l_quantity (#1)",
-      "type": [
-        {
-          "type": "INTEGER",
-          "nullable": false,
-          "name": "L2.l_orderkey"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "L2.l_quantity"
-        }
-      ],
-      "tuples": [],
-      "inputs": []
-    },
-    {
-      "id": "10",
-      "relOp": "LogicalJoin",
-      "joinOn": "o_orderkey = L2.l_orderkey",
-      "operator-algorithm" : "auto",
-      "outputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), L2.l_orderkey (#4), L2.l_quantity (#5)",
-      "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 0,
-            "name": "$0"
-          },
-          {
-            "input": 4,
-            "name": "$4"
-          }
-        ]
-      },
-      "joinType": "inner",
-      "foreignKey": 1,
-      "inputs": [
-        "8",
-        "9"
-      ]
-    },
-    {
-      "id": "11",
-      "relOp": "LogicalProject",
-      "inputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), L2.l_orderkey (#4), L2.l_quantity (#5)",
-      "fields": [
-        "o_orderkey",
-        "o_custkey",
-        "o_totalprice",
-        "o_orderdate",
-        "l_quantity"
-      ],
-      "exprs": [
-        {
-          "input": 0,
-          "name": "$0"
-        },
-        {
-          "input": 1,
-          "name": "$1"
-        },
-        {
-          "input": 2,
-          "name": "$2"
-        },
-        {
-          "input": 3,
-          "name": "$3"
         },
         {
           "input": 5,
           "name": "$5"
+        },
+        {
+          "input": 1,
+          "name": "$1"
         }
       ]
     },
     {
-      "id": "12",
+      "id": "8",
       "relOp": "LogicalValues",
       "type": [
         {
@@ -321,11 +213,11 @@
       "inputs": []
     },
     {
-      "id": "13",
+      "id": "9",
       "relOp": "LogicalJoin",
       "joinOn": "o_custkey = c_custkey",
       "operator-algorithm" : "auto",
-      "outputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), l_quantity (#4), c_custkey (#5), c_name (#6)",
+      "outputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), sum_qty (#4), c_custkey (#5), c_name (#6)",
       "condition": {
         "op": {
           "name": "=",
@@ -346,13 +238,14 @@
       "joinType": "inner",
       "foreignKey": 0,
       "inputs": [
-        "11",
-        "12"
+        "7",
+        "8"
       ]
     },
     {
-      "id": "14",
+      "id": "10",
       "relOp": "LogicalProject",
+      "inputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), l_quantity (#4), c_custkey (#5), c_name (#6)",
       "fields": [
         "c_name",
         "c_custkey",
@@ -389,39 +282,7 @@
       ]
     },
     {
-      "id": "15",
-      "relOp": "LogicalAggregate",
-      "operator-algorithm" : "sort-merge-aggregate",
-      "group": [
-        0,
-        1,
-        2,
-        3,
-        4
-      ],
-      "aggs": [
-        {
-          "agg": {
-            "name": "SUM",
-            "kind": "SUM",
-            "syntax": "FUNCTION"
-          },
-          "type": {
-            "type": "DECIMAL",
-            "nullable": true,
-            "precision": 19,
-            "scale": 0
-          },
-          "distinct": false,
-          "operands": [
-            5
-          ],
-          "name": "sum_qty"
-        }
-      ]
-    },
-    {
-      "id": "16",
+      "id": "11",
       "relOp": "LogicalSort",
       "collation": [
         {

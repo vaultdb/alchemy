@@ -223,7 +223,14 @@
           "direction": "ASCENDING",
           "nulls": "LAST"
         }
-      ]
+      ],
+      "fetch": {
+        "literal": 10,
+        "type": {
+          "type": "INTEGER",
+          "nullable": false
+        }
+      }
     },
     {
       "id": "9",
