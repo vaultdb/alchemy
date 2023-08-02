@@ -31,6 +31,16 @@ namespace vaultdb {
         static Operator <B> *parse(const string &db_name, const string &json_plan, const int &limit = -1);
 
         static tuple<int, SortDefinition, int> parseSqlHeader(const string & header);
+
+        bool getAutoFlag() const { return agg_auto_flag; }
+        int getOpId() const { return agg_op_id; }
+        Operator<B>* getNLA() const { return nla_ptr; }
+        Operator<B>* getSMA() const { return sma_ptr; }
+        void setAutoFlag(bool inputFlag) { agg_auto_flag = inputFlag;}
+        void setOpId(int inputId) { agg_op_id = inputId; }
+        void setNLA(Operator<B>* inputOp) { nla_ptr = inputOp;}
+        void setSMA(Operator<B>* inputOp) { sma_ptr = inputOp;}
+
     protected:
         std::string db_name_;
         StorageModel storage_model_ = SystemConfiguration::getInstance().storageModel();
@@ -55,6 +65,12 @@ namespace vaultdb {
         Operator<B> *parseProjection(const int & operator_id, const boost::property_tree::ptree &project_tree);
         Operator<B> *parseSeqScan(const int & operator_id, const boost::property_tree::ptree &seq_scan_tree);
         Operator<B> *parseShrinkwrap(const int & operator_id, const boost::property_tree::ptree &pt);
+        void calculateAutoAggregate();
+
+        bool agg_auto_flag = false;
+        int agg_op_id = 0;
+        Operator<B> *sma_ptr= nullptr;
+        Operator<B> *nla_ptr = nullptr;
 
         // faux template specialization
         Operator<bool> *createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag, const bool & plain_has_dummy_tag);

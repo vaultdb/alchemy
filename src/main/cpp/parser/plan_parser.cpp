@@ -34,6 +34,8 @@ PlanParser<B>::PlanParser(const string &db_name, const string & sql_file, const 
                           const int &limit) : db_name_(db_name), input_limit_(limit) {
     parseSqlInputs(sql_file);
     parseSecurePlan(json_file);
+    if(agg_auto_flag)
+        calculateAutoAggregate();
 }
 
 // for ZK plans
@@ -233,6 +235,41 @@ Operator<emp::Bit> *PlanParser<B>::createInputOperator(const string &sql, const 
 
 }
 
+template<typename B>
+void PlanParser<B>::calculateAutoAggregate()
+{
+    Operator<B>* sma = getSMA();
+    Operator<B>* nla = getNLA();
+    size_t SMA_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+    size_t NLA_cost = OperatorCostModel::operatorCost((SecureOperator *) nla);
+    int agg_op_id = getOpId();
+    Operator<B>* cur_op = operators_[agg_op_id+1];
+    //cur_op->setOutputCardinality(sma->getOutputCardinality());
+    cur_op->setOutputCardinality(6005);
+    while(cur_op != nullptr){
+        SMA_cost += OperatorCostModel::operatorCost((SecureOperator *) cur_op);
+        size_t cur_output_cardinality_ = cur_op->getOutputCardinality();
+        cur_op = cur_op->getParent();
+        if(cur_op != nullptr)
+            cur_op->setOutputCardinality(cur_output_cardinality_);
+    }
+
+    cur_op = nla->getParent();
+    cur_op->setOutputCardinality(nla->getOutputCardinality());
+    while(cur_op != nullptr){
+        NLA_cost += OperatorCostModel::operatorCost((SecureOperator *) cur_op);
+        size_t cur_output_cardinality_ = cur_op->getOutputCardinality();
+        cur_op = cur_op->getParent();
+        if(cur_op != nullptr)
+            cur_op->setOutputCardinality(cur_output_cardinality_);
+    }
+
+    string agg_algo = (SMA_cost < NLA_cost) ? "sort-merge-aggregate" : "nested-loop-aggregate";
+
+    cout << "sma cost : " << SMA_cost << ", nla cost : " << NLA_cost << ", agg type : " << agg_algo << endl;
+    delete sma;
+    delete nla;
+}
 
 
 template<typename B>
@@ -297,13 +334,29 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
             Operator<B>* sma = new GroupByAggregate<B>(child->clone(), group_by_ordinals, aggregators, check_sort);
             Operator<B>* nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, cardBound);
 
-            size_t SMA_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
-            size_t NLA_cost = OperatorCostModel::operatorCost((SecureOperator *) nla);
-            agg_algo = (SMA_cost < NLA_cost) ? "sort-merge-aggregate" : "nested-loop-aggregate";
+            setSMA(sma);
+            setNLA(nla);
+            setAutoFlag(true);
+            setOpId(operator_id);
 
-            cout << "sma cost : " << SMA_cost << ", nla cost : " << NLA_cost << ", agg type : " << agg_algo << endl;
-            delete sma;
-            delete nla;
+            return sma;
+//            size_t SMA_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+//            size_t NLA_cost = OperatorCostModel::operatorCost((SecureOperator *) nla);
+//
+
+//            Operator<B>* cur_op = sma->getParent();
+//            while(cur_op != nullptr){
+//                SMA_cost += OperatorCostModel::operatorCost((SecureOperator *) cur_op);
+//                cur_op = cur_op->getParent();
+//            }
+//
+//            Operator<B>* nla_parent = nla->getParent();
+//
+//            agg_algo = (SMA_cost < NLA_cost) ? "sort-merge-aggregate" : "nested-loop-aggregate";
+//
+//            cout << "sma cost : " << SMA_cost << ", nla cost : " << NLA_cost << ", agg type : " << agg_algo << endl;
+//            delete sma;
+//            delete nla;
         }
 
         if(cardBound > 0 && (agg_algo == "nested-loop-aggregate" || agg_algo == ""))
