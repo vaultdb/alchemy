@@ -606,16 +606,16 @@
         },
         {
           "op": {
-            "name": "*",
-            "kind": "TIMES",
-            "syntax": "BINARY"
+            "name": "CASE",
+            "kind": "CASE",
+            "syntax": "SPECIAL"
           },
           "operands": [
-              {
-                "input": 8,
-                "name": "$8"
-              },
-              {
+            {
+              "input":  8,
+              "name": "$8"
+            },
+            {
               "op": {
                 "name": "*",
                 "kind": "TIMES",
@@ -647,6 +647,13 @@
                   ]
                 }
               ]
+            },
+            {
+              "literal": 0.0,
+              "type": {
+                "type": "FLOAT",
+                "nullable": false
+              }
             }
           ]
         },
