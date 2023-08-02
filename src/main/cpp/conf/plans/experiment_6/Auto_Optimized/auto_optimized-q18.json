@@ -391,7 +391,8 @@
     {
       "id": "15",
       "relOp": "LogicalAggregate",
-      "operator-algorithm" : "sort-merge-aggregate",
+      "operator-algorithm" : "auto",
+      "cardBound" : 6005,
       "group": [
         0,
         1,
