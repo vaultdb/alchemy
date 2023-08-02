@@ -172,7 +172,6 @@ runTest(3, "q3", expected_sort, FLAGS_unioned_db);
 
 
 TEST_F(AutoOptimizedTest, tpch_q5) {
-//input_tuple_limit_ = 1000;
 
 SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
 runTest(5, "q5", expected_sort, FLAGS_unioned_db);
