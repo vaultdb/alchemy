@@ -21,7 +21,6 @@ template<typename B>
 Sort<B>::Sort(Operator<B> *child, const SortDefinition &sort_def, const int & limit)
    : Operator<B>(child, sort_def), limit_(limit) {
     this->output_cardinality_ = child->getOutputCardinality();
-    //this->output_cardinality_ = child->getOutput()->getTupleCount();
 
     for(ColumnSort s : Operator<B>::sort_definition_) {
         if(s.second == SortDirection::INVALID)

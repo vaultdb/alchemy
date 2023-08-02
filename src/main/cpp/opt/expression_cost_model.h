@@ -106,6 +106,12 @@ namespace vaultdb {
                     return schema.size();
                 case FieldType::SECURE_FLOAT:
                     return float_comparison_gates_;
+                case FieldType::BOOL:
+                case FieldType::INT:
+                case FieldType::LONG:
+                case FieldType::FLOAT:
+                case FieldType::STRING:
+                    return 0;
                 default:
                     throw;
 

@@ -1,13 +1,9 @@
 -- 0, collation: (0 ASC, 1 ASC, 2 ASC)
-SELECT t1.n_name, t2.c_custkey, t2.c_nationkey
-FROM (SELECT r_regionkey, r_name
-FROM region
-WHERE r_name = 'EUROPE') AS t0
-INNER JOIN (SELECT n_nationkey, n_name, n_regionkey
-FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey
-INNER JOIN (SELECT c_custkey, c_nationkey
-FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey
-ORDER BY t1.n_name, t2.c_custkey, t2.c_nationkey
+SELECT n_name, c_custkey, c_nationkey
+FROM customer JOIN nation ON c_nationkey = n_nationkey
+    JOIN region ON n_regionkey = r_regionkey
+WHERE r_name = 'EUROPE'
+ORDER BY n_name, c_custkey, c_nationkey;
 -- 1, collation: (0 ASC, 1 ASC)
 SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag
 FROM orders

@@ -144,7 +144,7 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
 
     if(op_name == "LogicalValues") return; // handled in createInput
     if(op_name == "LogicalSort")   op = parseSort(operator_id, tree);
-    if(op_name == "LogicalAggregate")  op = parseAggregate(operator_id, tree);
+    if(op_name == "LogicalAggregate") { op = parseAggregate(operator_id, tree); }
     if(op_name == "LogicalJoin")  op = parseJoin(operator_id, tree);
     if(op_name == "LogicalProject")  op = parseProjection(operator_id, tree);
     if(op_name == "LogicalFilter")  op = parseFilter(operator_id, tree);
@@ -152,6 +152,7 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
     if(op_name == "ShrinkWrap")  op = parseShrinkwrap(operator_id, tree);
 
     if(op != nullptr) {
+
         operators_[operator_id] = op;
         operators_.at(operator_id)->setOperatorId(operator_id);
 
@@ -295,8 +296,9 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
         cardBound = aggregate_json.get_child("cardBound").template get_value<int>();
 
     bool check_sort = true;
-    if(aggregate_json.count("checkSort") > 0)
-        check_sort = false;
+    if(aggregate_json.count("checkSort") > 0) {
+        check_sort = aggregate_json.get_child("checkSort").template get_value<bool>();
+    }
 
     string agg_algo;
     if(aggregate_json.count("operator-algorithm") > 0)
@@ -415,7 +417,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
     // key: foreignKey
     if(join_tree.count("foreignKey") > 0) {
         int foreign_key = join_tree.get_child("foreignKey").template get_value<int>();
-// TODO: add cloning here
+
         if(foreign_key == 1) {
             // switch sort orders
             sort_def.clear();
@@ -430,11 +432,13 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
         }
 
         if(join_tree.count("operator-algorithm") > 0) {
-            Operator<B>* smj = new SortMergeJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
-            Operator<B>* nlj = new KeyedJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone(), sort_def);
 
             // Use Cost Model to calculate NLJ and SMJ, pick more better one.
             if(join_type == "auto") {
+
+                Operator<B>* smj = new SortMergeJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
+                Operator<B>* nlj = new KeyedJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone(), sort_def);
+
                 size_t SMJ_cost = OperatorCostModel::operatorCost((SecureOperator *) smj);
                 size_t NLJ_cost = OperatorCostModel::operatorCost((SecureOperator *) nlj);
                 join_type = (SMJ_cost < NLJ_cost) ? "sort-merge-join" : "nested-loop-join";

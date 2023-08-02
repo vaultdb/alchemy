@@ -101,8 +101,11 @@ void SecureSortMergeJoinTest::runLineitemOrdersTest() {
 
     PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,  false);
 
-    auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true);
-    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true);
+    SortDefinition lineitem_sort = DataUtilities::getDefaultSortDefinition(2);
+    SortDefinition orders_sort = DataUtilities::getDefaultSortDefinition(4);
+
+    auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true, lineitem_sort);
+    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, orders_sort);
 
 
     // join output schema:
@@ -140,10 +143,13 @@ void SecureSortMergeJoinTest::runLineitemOrdersCustomerTest() {
 
     PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,  false);
 
+    SortDefinition lineitem_sort = DataUtilities::getDefaultSortDefinition(2);
+    SortDefinition orders_sort = DataUtilities::getDefaultSortDefinition(4);
+
 
     auto customer_input = new SecureSqlInput(db_name_, customer_sql_, true);
-    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true);
-    auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true);
+    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, orders_sort);
+    auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true, lineitem_sort);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey

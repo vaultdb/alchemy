@@ -18,6 +18,7 @@ namespace vaultdb {
 
     template<typename B> class QueryTable;
     typedef QueryTable<bool> PlainTable;
+    typedef QueryTable<Bit> SecureTable;
 
     class DataUtilities {
 
@@ -76,6 +77,9 @@ namespace vaultdb {
 
 
         static bool isOrdinal(const string &s);
+
+        static bool verifyCollation(PlainTable *sorted);
+        static bool verifyCollation(SecureTable *sorted);
 
 
     };

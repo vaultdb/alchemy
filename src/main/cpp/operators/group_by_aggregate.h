@@ -20,22 +20,21 @@ namespace vaultdb {
         bool check_sort_ = true;
 
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const size_t & output_card = 0);
+                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort);
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
-			       const vector<ScalarAggregateDefinition> &aggregates, const size_t & output_card = 0);
+			       const vector<ScalarAggregateDefinition> &aggregates);
 
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort,
-                         const size_t &output_card = 0);
+                         const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort);
 
         GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const size_t & output_card = 0);
+                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort);
 
         GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const size_t & output_card = 0);
+                         const vector<ScalarAggregateDefinition> &aggregates);
 
         Operator<B> *clone() const override {
-            return new GroupByAggregate<B>(this->lhs_child_->clone(), this->group_by_, this->aggregate_definitions_, this->check_sort_, this->output_cardinality_);
+            return new GroupByAggregate<B>(this->lhs_child_->clone(), this->group_by_, this->aggregate_definitions_, this->check_sort_);
         }
 
         virtual ~GroupByAggregate()  {

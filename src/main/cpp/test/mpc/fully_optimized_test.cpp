@@ -47,7 +47,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
     string local_db = db_name_;
 
-    cout << " Observed DB : "<< local_db << " - Bit Packed" << endl;
+    cout << " Observed DB : "<< local_db << " - Bit Packed: " << SystemConfiguration::getInstance().bitPackingEnabled() <<  endl;
     auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
@@ -73,7 +73,10 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
 
     cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
     auto end_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
-    cout << "End-to-end plan gates: " << root->planCost() << " estimated: " << end_gates - start_gates << " gates." << endl;
+    float e2e_gates = (float) (end_gates - start_gates);
+    float cost_estimate = (float) root->planCost();
+    float relative_error = (fabs(e2e_gates - cost_estimate) / e2e_gates) * 100.0f;
+    cout << "End-to-end estimated gates: " << cost_estimate <<  ". observed gates: " << end_gates - start_gates << " gates, relative error (%)=" << relative_error << endl;
 
 
     if(FLAGS_validation) {
@@ -107,11 +110,14 @@ FullyOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDe
 }
 
 void FullyOptimizedTest::runStubTest(string & sql_plan, string & json_plan, string & expected_query, SortDefinition & expected_sort, const string & unioned_db) {
+
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
     string local_db = unioned_db;
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
     boost::replace_all(local_db, "unioned", party_name);
+    cout << "Querying db:  " << local_db << endl;
+
     auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
 
     PlanParser<emp::Bit> parser(local_db, sql_plan, json_plan, input_tuple_limit_);
@@ -130,7 +136,7 @@ void FullyOptimizedTest::runStubTest(string & sql_plan, string & json_plan, stri
     float e2e_gates = (float) (end_gates - start_gates);
     float cost_estimate = (float) root->planCost();
     float relative_error = (fabs(e2e_gates - cost_estimate) / e2e_gates) * 100.0f;
-    cout << "End-to-end plan gates: " << root->planCost() << " estimated: " << end_gates - start_gates << " gates, relative error (%)=" << relative_error << endl;
+    cout << "End-to-end estimated gates: " << cost_estimate <<  ". observed gates: " << end_gates - start_gates << " gates, relative error (%)=" << relative_error << endl;
 
     if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
@@ -204,30 +210,6 @@ TEST_F(FullyOptimizedTest, tpch_q18) {
                                  ColumnSort(4, SortDirection::DESCENDING),
                                  ColumnSort(3, SortDirection::ASCENDING)};
     runTest(18, "q18", expected_sort, FLAGS_unioned_db);
-}
-
-
-
-TEST_F(FullyOptimizedTest, tpch_q5_sma_prototype) {
-
-    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/prototype/sma-q5.sql";
-    std::string plan_file = Utilities::getCurrentWorkingDirectory()  + "/conf/plans/experiment_5/prototype/sma-q5.json";
-
-    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    string expected_sql = tpch_queries[5];
-
-    runStubTest(sql_file, plan_file, expected_sql, expected_sort, "tpch_unioned_600");
-}
-
-
-TEST_F(FullyOptimizedTest, tpch_q5_nla_prototype) {
-    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/prototype/nla-q5.sql";
-    std::string plan_file = Utilities::getCurrentWorkingDirectory()  + "/conf/plans/experiment_5/prototype/nla-q5.json";
-
-    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    string expected_sql = tpch_queries[5];
-
-    runStubTest(sql_file, plan_file, expected_sql, expected_sort, "tpch_unioned_600");
 }
 
 

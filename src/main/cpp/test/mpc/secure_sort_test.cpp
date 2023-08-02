@@ -27,49 +27,9 @@ using namespace vaultdb;
 class SecureSortTest : public EmpBaseTest {
 protected:
 
-    static bool correctOrder(const PlainTable *lhs, const int & l_row,
-                             const PlainTable *rhs, const int & r_row, const SortDefinition & sort_definition);
-    static bool isSorted(const PlainTable *table, const SortDefinition & sort_definition);
 
 
 };
-
-// is lhs  <= rhs
-// fails if either tuple is encrypted
-bool SecureSortTest::correctOrder(const PlainTable *lhs, const int & l_row,
-                                  const PlainTable *rhs, const int & r_row, const SortDefinition & sort_definition) {
-
-    assert(lhs->getSchema() == rhs->getSchema());
-
-    for(int i = 0; i < sort_definition.size(); ++i) {
-        PlainField lhs_field = lhs->getField(l_row, sort_definition[i].first);
-        PlainField rhs_field = rhs->getField(r_row, sort_definition[i].first);
-
-        if (lhs_field == rhs_field)
-            continue;
-
-        if(sort_definition[i].second == SortDirection::ASCENDING) {
-            return lhs_field < rhs_field;
-        }
-        else if(sort_definition[i].second == SortDirection::DESCENDING) {
-            return lhs_field >  rhs_field;
-        }
-    }
-    return true; // it's a toss-up, they are equal wrt sort fields
-}
-
-bool SecureSortTest::isSorted(const PlainTable *table, const SortDefinition & sort_definition) {
-
-    for(uint32_t i = 1; i < table->getTupleCount(); ++i) {
-        if(!correctOrder(table, i-1, table, i, sort_definition))  {
-            std::cout << "Incorrect order: " << table->getPlainTuple(i-1) << " --> " << table->getPlainTuple(i)  << std::endl;
-            return false;
-        }// each tuple correctly ordered wrt its predecessor
-
-    }
-    return true;
-}
-
 
 
 
@@ -232,7 +192,7 @@ TEST_F(SecureSortTest, tpchQ09Sort) {
 
     if(FLAGS_validation) {
         PlainTable *observed = sorted->reveal();
-        ASSERT_TRUE(isSorted(observed, sort_definition));
+        DataUtilities::verifyCollation(observed);
         delete observed;
     }
 
@@ -258,7 +218,7 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
 
     if(FLAGS_validation) {
         PlainTable *observed = sorted->reveal();
-        ASSERT_TRUE(isSorted(observed, sort_definition));
+        DataUtilities::verifyCollation(observed);
         delete observed;
     }
 

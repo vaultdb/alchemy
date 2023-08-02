@@ -32,6 +32,7 @@ Operator<B>::Operator(Operator *child, const SortDefinition & sorted_on)
      child->setParent(this);
 
     output_schema_ = child->output_schema_;
+    output_cardinality_ = child->output_cardinality_; // default to passing on child cardinality
     if(sorted_on.empty())
         sort_definition_ = child->sort_definition_;
 

@@ -71,9 +71,6 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-
-
-
     this->output_ = TableFactory<B>::getTable(this->output_cardinality_, Operator<B>::output_schema_, input->storageModel());
     QueryTable<B> *output = this->output_;
 

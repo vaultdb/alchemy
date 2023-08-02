@@ -54,7 +54,6 @@ Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const Qu
 
     delete expression_root;
 
-
     return g;
 
 }
