@@ -164,12 +164,8 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
     }
 
 
-    // output sorted on group-by cols
-    Operator<B>::output_->setSortOrder(DataUtilities::getDefaultSortDefinition(group_by_.size()));
 
-
-
-    return Operator<B>::output_;
+    return this->output_;
 
 }
 
