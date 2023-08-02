@@ -376,6 +376,22 @@
     },
     {
       "id": "10",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        },
+        {
+          "field": 1,
+          "direction": "DESCENDING",
+          "nulls": "FIRST"
+        }
+      ]
+    },
+    {
+      "id": "11",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "sort-merge-aggregate",
       "inputFields": "n_name (#0), o_year (#1), amount (#2)",
@@ -401,22 +417,6 @@
             2
           ],
           "name": "sum_profit"
-        }
-      ]
-    },
-    {
-      "id": "11",
-      "relOp": "LogicalSort",
-      "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "LAST"
-        },
-        {
-          "field": 1,
-          "direction": "DESCENDING",
-          "nulls": "FIRST"
         }
       ]
     }
