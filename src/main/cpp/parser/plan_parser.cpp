@@ -343,6 +343,9 @@ void PlanParser<B>::calculateAutoAggregate() {
             real_sma->setChild(child);
             operators_[agg_id[i]] = real_sma;
 
+            if(agg_id[i] + 1 == operators_.size())
+                root_ = real_sma;
+
         } else {  // type == NestedLoopAggregate
             group_by_ordinals = nla_vector[i]->group_by_;
             aggregators = nla_vector[i]->aggregate_definitions_;
@@ -352,6 +355,9 @@ void PlanParser<B>::calculateAutoAggregate() {
             child->setParent(real_nla);
             real_nla->setChild(child);
             operators_[agg_id[i]] = real_nla;
+
+            if(agg_id[i] + 1 == operators_.size())
+                root_ = real_nla;
         }
 
         operators_.at(agg_id[i])->setOperatorId(agg_id[i]);

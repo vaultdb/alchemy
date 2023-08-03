@@ -264,7 +264,7 @@
       "id": "10",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "auto",
-      "cardBound" : 2,
+      "cardBound" : 7,
       "group": [
         0
       ],
