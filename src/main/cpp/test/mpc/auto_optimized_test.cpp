@@ -30,6 +30,7 @@ class AutoOptimizedTest : public EmpBaseTest {
 protected:
 
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
+    void runMultiAggregatesTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name, const string & sql_file, const string &plan_file);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
     void runStubTest(string & sql_plan, string & json_plan, string & expected_query, SortDefinition & expected_sort, const string & unioned_db);
     int input_tuple_limit_ = -1;
@@ -55,6 +56,52 @@ AutoOptimizedTest::runTest(const int &test_id, const string & test_name, const S
 
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-"  + test_name + ".json";
+
+    time_point<high_resolution_clock> startTime = clock_start();
+    clock_t secureStartClock = clock();
+
+    PlanParser<Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
+    SecureOperator *root = parser.getRoot();
+
+    std::cout << root->printTree() << endl;
+
+    SecureTable *result = root->run();
+
+    double secureClockTicks = (double) (clock() - secureStartClock);
+    double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
+    double duration = time_from(startTime) / 1e6;
+
+
+    cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
+    auto end_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
+    cout << "End-to-end plan gates: " << root->planCost() << " estimated: " << end_gates - start_gates << " gates." << endl;
+
+
+    if(FLAGS_validation) {
+        PlainTable *observed = result->reveal();
+
+        ASSERT_EQ(*expected, *observed);
+
+        delete observed;
+        delete expected;
+    }
+}
+
+void
+AutoOptimizedTest::runMultiAggregatesTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name, const string & sql_file, const string &plan_file) {
+
+
+    this->initializeBitPacking(FLAGS_unioned_db);
+
+    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_unioned_db);
+    string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
+    string local_db = db_name_;
+
+    cout << " Observed DB : "<< local_db << " - Bit Packed" << endl;
+    auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
+
+    PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
+    expected->setSortOrder(expected_sort);
 
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
@@ -146,7 +193,7 @@ void AutoOptimizedTest::runStubTest(string & sql_plan, string & json_plan, strin
 }
 
 // No Aggregate
-/*
+
 TEST_F(AutoOptimizedTest, tpch_q1) {
 string test_name = "q1";
 std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-" + test_name + ".sql";
@@ -160,7 +207,7 @@ this->initializeBitPacking(FLAGS_unioned_db);
 
 runStubTest(sql_file, plan_file, expected_sql, expected_sort, FLAGS_unioned_db);
 
-}*/
+}
 
 
 TEST_F(AutoOptimizedTest, tpch_q3) {
@@ -197,7 +244,7 @@ runTest(9, "q9", expected_sort, FLAGS_unioned_db);
 
 
 // No Aggregate
-/*
+
 TEST_F(AutoOptimizedTest, tpch_q18) {
 // -1 ASC, $4 DESC, $3 ASC
 SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
@@ -205,7 +252,19 @@ SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                              ColumnSort(3, SortDirection::ASCENDING)};
 runTest(18, "q18", expected_sort, FLAGS_unioned_db);
 }
-*/
+
+
+TEST_F(AutoOptimizedTest, two_aggregates_q18) {
+    string test_name = "q18";
+    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/two_aggregates-" + test_name + ".sql";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/two_aggregates-"  + test_name + ".json";
+
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(4, SortDirection::DESCENDING),
+                                 ColumnSort(3, SortDirection::ASCENDING)};
+
+    runMultiAggregatesTest(18, "q18", expected_sort, FLAGS_unioned_db, sql_file, plan_file);
+}
 
 
 
