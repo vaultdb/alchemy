@@ -393,7 +393,8 @@
     {
       "id": "11",
       "relOp": "LogicalAggregate",
-      "operator-algorithm" : "sort-merge-aggregate",
+      "operator-algorithm" : "auto",
+      "cardBound" : 175,
       "inputFields": "n_name (#0), o_year (#1), amount (#2)",
       "group": [
         0,
