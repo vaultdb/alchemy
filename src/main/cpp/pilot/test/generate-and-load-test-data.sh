@@ -13,7 +13,7 @@ mkdir -p pilot/test/output
 mkdir -p  pilot/test/batch
 mkdir -p  pilot/secret_shares/tables
 
-make -j generate_enrich_data_three_parties secret_share_from_query secret_share_batch_from_query
+make -j4 generate_enrich_data_three_parties secret_share_from_query secret_share_batch_from_query
 
 ./bin/generate_enrich_data_three_parties pilot/test/input/ $TUPLE_COUNT 
 
