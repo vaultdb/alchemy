@@ -134,8 +134,13 @@ namespace vaultdb {
                      // invert the sign bit
                      dst = -dst;
             }
+//                int8_t *src_ptr = (int8_t *) &src;
+//                int8_t *dst_ptr = (int8_t *) &dst;
+//                for(int i = 0; i < sizeof(T); ++i) {
+//                    dst_ptr[i] = src_ptr[sizeof(T) - i - 1];
+//                }
 
-              // DataUtilities::reverseBytes((int8_t *) &src, (int8_t *)  &dst, sizeof(T));
+//               DataUtilities::reverseBytes((int8_t *) &src, (int8_t *)  &dst, sizeof(T));
                FieldType dst_type = (field.getType() == FieldType::LONG) ? FieldType::LONG : FieldType::INT;
                return PlainField(dst_type, dst);
             }
@@ -149,9 +154,13 @@ namespace vaultdb {
                 // invert the sign bit
                 dst = -dst;
             }
+//            int8_t *src_ptr = (int8_t *) &src;
+//            int8_t *dst_ptr = (int8_t *) &dst;
+//            for(int i = 0; i < sizeof(T); ++i) {
+//                dst_ptr[i] = src_ptr[sizeof(T) - i - 1];
+//            }
 
-
-            //DataUtilities::reverseBytes((int8_t *) &src, (int8_t *)  &dst, sizeof(T));
+//            DataUtilities::reverseBytes((int8_t *) &src, (int8_t *)  &dst, sizeof(T));
             FieldType dst_type = (field.getType() == FieldType::LONG) ? FieldType::LONG : FieldType::INT;
             return PlainField(dst_type, dst);
         }
