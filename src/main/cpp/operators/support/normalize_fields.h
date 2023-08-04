@@ -3,6 +3,7 @@
 
 #include <query_table/field/field.h>
 #include <util/data_utilities.h>
+#include "util/type_utilities.h"
 
 namespace vaultdb {
     class NormalizeFields {
@@ -22,8 +23,13 @@ namespace vaultdb {
                 case FieldType::STRING: {
                     std::string src = field.getValue<std::string>();
                     std::string dst = src;
+                    std::reverse(dst.begin(), dst.end());
+
                     if (dir == SortDirection::DESCENDING) {
-                        DataUtilities::reverseBytes((int8_t *) src.c_str(), (int8_t *) dst.c_str(), src.size());
+                        // invert bytes with XOR
+                        for(int i = 0; i < dst.size(); ++i) {
+                            dst[i] = dst[i] ^ 0xFF;
+                        }
                     }
                     PlainField res = field;
                     res.setValue(dst);
@@ -49,8 +55,13 @@ namespace vaultdb {
                 case FieldType::STRING: {
                     std::string src = field.getValue<std::string>();
                     std::string dst = src;
+                    std::reverse(dst.begin(), dst.end());
+
                     if (dir == SortDirection::DESCENDING) {
-                        DataUtilities::reverseBytes((int8_t *) src.c_str(), (int8_t *) dst.c_str(), src.size());
+                        for(int i = 0; i < dst.size(); ++i) {
+                            dst[i] = dst[i] ^ 0xFF;
+                        }
+
                     }
                     PlainField res = field;
                     res.setValue(dst);
@@ -121,9 +132,10 @@ namespace vaultdb {
                T dst = src;
                if(dir == SortDirection::DESCENDING) {
                      // invert the sign bit
-                     src = -src;
-                     DataUtilities::reverseBytes((int8_t *) &src, (int8_t *)  &dst, sizeof(T));
-               }
+                     dst = -dst;
+            }
+
+              // DataUtilities::reverseBytes((int8_t *) &src, (int8_t *)  &dst, sizeof(T));
                FieldType dst_type = (field.getType() == FieldType::LONG) ? FieldType::LONG : FieldType::INT;
                return PlainField(dst_type, dst);
             }
@@ -133,10 +145,13 @@ namespace vaultdb {
             T src = field.getValue<T>();
             T dst = src;
             if(dir == SortDirection::DESCENDING) {
-                DataUtilities::reverseBytes((int8_t *) &src, (int8_t *)  &dst, sizeof(T));
+              //
                 // invert the sign bit
                 dst = -dst;
             }
+
+
+            //DataUtilities::reverseBytes((int8_t *) &src, (int8_t *)  &dst, sizeof(T));
             FieldType dst_type = (field.getType() == FieldType::LONG) ? FieldType::LONG : FieldType::INT;
             return PlainField(dst_type, dst);
         }
