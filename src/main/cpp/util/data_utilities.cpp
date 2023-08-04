@@ -11,12 +11,7 @@
 
 using namespace vaultdb;
 
-unsigned char DataUtilities::reverse(unsigned char b) {
-    b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-    b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-    b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-    return b;
-}
+
 
 
 
@@ -312,18 +307,22 @@ bool DataUtilities::verifyCollation(PlainTable *sorted) {
     }
 
 
-
     for(int i = 1; i < no_dummies.getTupleCount(); ++i) {
+//        cout << "Comparing row " << no_dummies.getPlainTuple(i-1) << " with " << no_dummies.getPlainTuple(i) << endl;
         for(auto col_sort : collation) {
                 auto lhs_field = no_dummies.getField(i-1, col_sort.first);
                 auto rhs_field = no_dummies.getField(i, col_sort.first);
-
+//                cout << "   (" << col_sort.first << ", "
+//                << ((col_sort.second == SortDirection::ASCENDING) ? "ASC" : "DESC" ) << ") "
+//                <<  "Comparing " << lhs_field << " with " << rhs_field << endl;
                 if(lhs_field == rhs_field) continue;
 
                 if(col_sort.second == SortDirection::ASCENDING)
-                    return lhs_field < rhs_field;
+                    if(lhs_field > rhs_field) return false;
+                        else break;
                 else  // DESC
-                    return lhs_field > rhs_field;
+                    if(lhs_field < rhs_field)  return false;
+                        else break;
             }
         }// each tuple correctly ordered wrt its predecessor
 
@@ -337,3 +336,15 @@ bool DataUtilities::verifyCollation(SecureTable *sorted) {
     return verified;
 }
 
+string DataUtilities::printBitArray(const int8_t *bits, const size_t &byte_cnt) {
+    std::stringstream  s;
+    for(int i = 0; i < byte_cnt; ++i) {
+        int8_t b = bits[i];
+        for(int j = 0; j < 8; ++j) {
+            s << ((b & (1<<j)) != 0);
+        }
+        s << " ";
+
+    }
+    return s.str();
+}

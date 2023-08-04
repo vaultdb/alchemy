@@ -23,8 +23,6 @@ namespace vaultdb {
     class DataUtilities {
 
 
-        // reverse the order of bits in a byte
-        static unsigned char reverse(unsigned char b);
 
 
     public:
@@ -70,6 +68,7 @@ namespace vaultdb {
 
         static size_t getTupleCount(const string &db_name, const string &sql, bool has_dummy_tag);
         static string printByteArray(const int8_t *bytes, const size_t & byte_cnt);
+        static string printBitArray(const int8_t *bits, const size_t & byte_cnt);
 //        static emp::Integer toEmpInteger(const vector<int8_t> & src_bytes);
 
        static vector<string> readTextFile(const string & filename);
@@ -80,6 +79,24 @@ namespace vaultdb {
 
         static bool verifyCollation(PlainTable *sorted);
         static bool verifyCollation(SecureTable *sorted);
+
+        // reverse the order of bits in a byte
+        static inline unsigned char reverse(unsigned char b) {
+            b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+            b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+            b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+            return b;
+        }
+
+        static inline void reverseBytes(int8_t *src_bytes, int8_t *dst_bytes, const size_t & byte_cnt) {
+            int8_t *dst_cursor = dst_bytes + byte_cnt - 1;
+
+            for(size_t i = 0; i < byte_cnt; ++i) {
+                *dst_cursor = reverse(src_bytes[i]);
+                --dst_cursor;
+            }
+        }
+
 
 
     };

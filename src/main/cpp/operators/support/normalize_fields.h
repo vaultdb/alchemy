@@ -217,7 +217,6 @@ namespace vaultdb {
 
             return PlainField(FieldType::FLOAT, dst);
         }
-
         // ***END PLAIN FIELD SUPPORT
         // ***START MPC FIELD SUPPORT
         static SecureField normalizeInt(const SecureField & s, const SortDirection & dir) {

@@ -55,6 +55,7 @@ FieldType TypeUtilities::getTypeFromString(const string & field_str) {
 
     if(field_str_lower == "float")
         return FieldType::FLOAT;
+    // TODO: rename this to char!
     if(field_str_lower == "varchar")
         return FieldType::STRING;
 

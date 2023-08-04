@@ -23,6 +23,8 @@ namespace  vaultdb {
         virtual ~Sort() = default;
         QueryTable<B> *runSelf() override;
         static void bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_def, const int &lo, const int &cnt, const bool &invert_dir,  int & counter);
+        void bitonicMergeNormalized( QueryTable<B> *table, const SortDefinition & sort_def, const int &lo, const int &cnt, const bool &invert_dir,  int & counter);
+
         static int powerOfTwoLessThan(const int &n);
 
     protected:
@@ -31,9 +33,19 @@ namespace  vaultdb {
 
     private:
         void bitonicSort(const int &lo, const int &cnt, const bool &dir,  int & counter);
+        void bitonicSortNormalized(const int &lo, const int &cnt, const bool &dir,  int & counter);
+
         static B swapTuples(const QueryTable<B> *table, const int & lhs_idx, const int & rhs_idx, const SortDefinition  & sort_definition, const bool & dir);
+        static Bit swapTuplesNormalized(const QueryTable<Bit> *table, const int & lhs_idx, const int & rhs_idx, const bool & dir, const int & sort_key_width_bits);
+        static bool swapTuplesNormalized(const QueryTable<bool> *table, const int & lhs_idx, const int & rhs_idx, const bool & dir, const int & sort_key_width_bits);
+
+         QueryTable<B> *normalizeTable(QueryTable<B> *src, const SortDefinition & sort_definition);
+         QueryTable<B> *denormalizeTable(QueryTable<B> *src, const SortDefinition & sort_definition);
 
         int limit_; // -1 means no LIMIT op
+        map<int, int> sort_key_map_;
+        int sort_key_size_bits_ = 0;
+        QuerySchema projected_schema_;
 
 
     };

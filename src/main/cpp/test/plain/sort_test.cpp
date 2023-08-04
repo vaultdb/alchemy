@@ -44,8 +44,6 @@ TEST_F(SortTest, tpchQ1Sort) {
     Sort<bool> sort(input, sort_def);
     PlainTable *sorted = sort.run();
 
-
-    // no projection needed here
     ASSERT_EQ(*expected, *sorted);
 
     delete expected;
@@ -56,69 +54,33 @@ TEST_F(SortTest, tpchQ1Sort) {
 
 
 TEST_F(SortTest, tpchQ3Sort) {
-    // casting revenue to float for these trials
-    // TODO: set up discrete testbed to deal with floating point errors
-    string sql = "SELECT l_orderkey, (l.l_extendedprice * (1 - l.l_discount))::INT revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey ORDER BY  l_comment, l_orderkey LIMIT " + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the sort cols
-
-    string expected_sql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate")  + " FROM input ORDER BY revenue DESC, o_orderdate";
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
+    string sql = "SELECT l_orderkey, (l.l_extendedprice * (1 - l.l_discount)) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey ORDER BY  l_comment, l_orderkey LIMIT " + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the sort key cols
 
 
     SortDefinition sort_def{ColumnSort(1, SortDirection::DESCENDING), ColumnSort(3, SortDirection::ASCENDING)};
 
 
     auto input = new SqlInput(db_name_, sql, false);
+
     auto sort = new Sort<bool>(input, sort_def);
+    auto observed = sort->run();
 
-
-    ExpressionMapBuilder<bool> builder(sort->getOutputSchema());
-    builder.addMapping(1, 0);
-    builder.addMapping(3, 1);
-
-    // project it down to $1, $3
-    Project project(sort, builder.getExprs());
-
-    PlainTable *observed = project.run();
-
-    // update sort def to account for projection -- also testing sort order carryover - the metadata in querytable describing sorted order of its contents
-    sort_def[0].first = 0;
-    sort_def[1].first = 1;
-
-    expected->setSortOrder(sort_def);
-
-    ASSERT_EQ(*expected, *observed);
-
-    delete expected;
+    ASSERT_TRUE(DataUtilities::verifyCollation(observed));
 }
 
 
 TEST_F(SortTest, tpchQ5Sort) {
 
-    string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY  l_comment, l_orderkey LIMIT " + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the sort cols
-    string expected_sql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
+    string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY  l_comment, l_orderkey LIMIT "  + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the sort cols
 
     SortDefinition sort_def{ ColumnSort(1, SortDirection::DESCENDING)};
 
     auto input = new SqlInput(db_name_, sql, false);
-    auto sorter = new Sort<bool>(input, sort_def);
+    Sort<bool> sorter(input, sort_def);
+    auto observed = sorter.run();
 
-    // project it down to $1
-    ExpressionMapBuilder<bool> builder(sorter->getOutputSchema());
-    builder.addMapping(1, 0);
+    ASSERT_TRUE(DataUtilities::verifyCollation(observed));
 
-    Project project(sorter, builder.getExprs());
-
-
-    // update sort def to account for projection -- also testing sort order carryover - the metadata in PlainTable  describing sorted order of its contents
-    sort_def[0].first = 0;
-    expected->setSortOrder(sort_def);
-
-    PlainTable *observed = project.run();
-
-    ASSERT_EQ(*expected, *observed);
-
-    delete expected;
 
 }
 
@@ -157,35 +119,17 @@ TEST_F(SortTest, tpchQ9Sort) {
     string sql = "SELECT o_orderyear, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
                       "  JOIN supplier s ON s_suppkey = l_suppkey"
                       "  JOIN nation on n_nationkey = s_nationkey"
-                      " ORDER BY  l_comment, l_orderkey LIMIT " + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the sort cols
-    string expected_sql = "WITH input AS (" + sql + ") SELECT n_name, o_orderyear FROM input ORDER BY n_name, o_orderyear DESC";
-
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
-
+                      " ORDER BY  l_comment, l_orderkey LIMIT "  + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the sort cols
 
 
     SortDefinition sort_def{ColumnSort(2, SortDirection::ASCENDING), ColumnSort(0, SortDirection::DESCENDING)};
-
     auto input = new SqlInput(db_name_, sql, false);
-    auto sort = new Sort<bool>(input, sort_def);
-
-    // project it down to $0
-    ExpressionMapBuilder<bool> builder(sort->getOutputSchema());
-    builder.addMapping(2, 0);
-    builder.addMapping(0, 1);
-
-    Project project(sort, builder.getExprs());
-
-    PlainTable *observed = project.run();
+    Sort sort(input, sort_def);
 
 
-    sort_def[0].first = 0;
-    sort_def[1].first = 1;
-    expected->setSortOrder(sort_def);
+    PlainTable *observed = sort.run();
 
-    ASSERT_EQ(*expected, *observed);
-    delete expected;
-
+    ASSERT_TRUE(DataUtilities::verifyCollation(observed));
 
 }
 
@@ -193,12 +137,10 @@ TEST_F(SortTest, tpchQ9Sort) {
 
 // 18
 TEST_F(SortTest, tpchQ18Sort) {
-    // Q3 has the same program logic, but it succeeds.  Why?
-    // both have 10 values.
     string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders"
                       " ORDER BY o_clerk, o_custkey, o_orderkey LIMIT " + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the to-sort cols
     string expected_sql = "WITH input AS (" + sql + ") "
-                    "SELECT o_totalprice, " + DataUtilities::queryDatetime("o_orderdate") + "  FROM input "
+                    "SELECT o_orderkey, " + DataUtilities::queryDatetime("o_orderdate") + ", o_totalprice  FROM input "
                     "ORDER BY o_totalprice DESC, o_orderdate ASC";
 
 
@@ -211,25 +153,13 @@ TEST_F(SortTest, tpchQ18Sort) {
 
 
     auto input = new SqlInput(db_name_, sql, false);
-    auto sort = new Sort<bool>(input, sort_def);
+    Sort<bool> sort(input, sort_def);
 
 
-    // project it down to $2, $1
-    ExpressionMapBuilder<bool> builder(sort->getOutputSchema());
-    builder.addMapping(2, 0);
-    builder.addMapping(1, 1);
-
-
-    Project project(sort, builder.getExprs());
-    
-    PlainTable *observed = project.run();
-
-
-    sort_def[0].first = 0;
-    sort_def[1].first = 1;
-    expected->setSortOrder(sort_def);
+    PlainTable *observed = sort.run();
 
     ASSERT_EQ(*expected, *observed);
+    ASSERT_TRUE(DataUtilities::verifyCollation(observed));
 
     delete expected;
 

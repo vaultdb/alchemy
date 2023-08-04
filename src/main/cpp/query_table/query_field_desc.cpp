@@ -43,6 +43,7 @@ QueryFieldDesc::QueryFieldDesc(const int & anOrdinal, const string &n, const str
 
 
 // spec is of the form "table_name.field_name:field_type"
+// e.g. "nation.n_name:varchar(25)"
 // table name is optional
 QueryFieldDesc::QueryFieldDesc(const int & ordinal, const string & field_spec) : ordinal_(ordinal), string_length_(0) {
 

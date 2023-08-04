@@ -101,6 +101,7 @@ set(sources
 		operators/sort_merge_join.cpp
 		operators/nested_loop_aggregate.cpp
 		operators/support/unsorted_aggregate_impl.cpp
+		operators/support/normalize_fields.h
 
 		expression/function_expression.cpp
 		expression/generic_expression.cpp

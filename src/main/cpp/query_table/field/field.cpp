@@ -368,7 +368,7 @@ void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
             break;
         case FieldType::STRING:
             s = getValue<string>();
-            std::reverse(s.begin(), s.end()); // reverse it so we can more easily conver to EMP format
+            std::reverse(s.begin(), s.end()); // reverse it so we can more easily convert to EMP format
             memcpy(dst, (int8_t *) s.c_str(), s.size()); // null termination chopped
             break;
 

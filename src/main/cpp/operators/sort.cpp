@@ -1,10 +1,12 @@
 #include "sort.h"
-
+#include "project.h"
 #include <query_table/plain_tuple.h>
 // keep this file to ensure overloaded methods are visible
 #include <query_table/secure_tuple.h>
 #include <util/field_utilities.h>
 #include <util/data_utilities.h>
+#include <query_table/row_table.h>
+#include <operators/support/normalize_fields.h>
 
 
 using namespace vaultdb;
@@ -56,26 +58,22 @@ QueryTable<B> *Sort<B>::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-//    cout << "Sorting on " << DataUtilities::printSortDefinition(this->sort_definition_) << endl;
-    // deep copy new output
-    Operator<B>::output_ = input->clone();
-    int counter = 0;
-    int n = this->output_->getTupleCount();
-    bitonicSort(0, this->output_->getTupleCount(), true, counter);
-//    auto end_gates = this->system_conf_.andGateCount();
-//    auto total_gates = end_gates - this->start_gate_cnt_;
-//    cout << "Sorted on " << this->output_->getTupleCount() << " rows, have " << counter << " compare & swap ops in " << total_gates << " gates."   << endl;
 
-//    float rounds = log2(n);
-//    float stages = (rounds * (rounds + 1))/2.0;
+    if(SystemConfiguration::getInstance().storageModel() == StorageModel::ROW_STORE) {
+        this->output_ = normalizeTable(input, this->sort_definition_);
+        int counter = 0;
+        bitonicSortNormalized(0, this->output_->getTupleCount(), true, counter);
 
-//    float comparisons_per_stage = n / 2.0;
-//    float total_comparisons = stages * comparisons_per_stage;
-//    float relative_error = fabs(total_comparisons - counter)/counter;
-//    cout << "Estimated row comparisons: " << total_comparisons << ", actual comparisons: " << counter << ", relative error: " << relative_error <<  endl;
-
-    Operator<B>::output_->setSortOrder(Operator<B>::sort_definition_);
-
+        auto tmp = denormalizeTable(this->output_, this->sort_definition_);
+        delete this->output_;
+        this->output_ = tmp;
+        this->output_->setSortOrder(this->sort_definition_);
+    }
+    else {
+        this->output_ = input->clone();
+        int counter = 0;
+        bitonicSort(0, this->output_->getTupleCount(), true, counter);
+    }
     // implement LIMIT
     if(limit_ > 0) {
         size_t cutoff = limit_;
@@ -98,11 +96,11 @@ QueryTable<B> *Sort<B>::runSelf() {
             if(first_dummy > 0 && first_dummy < limit_)
                 cutoff = first_dummy;
         }
-        Operator<B>::output_->resize(cutoff);
+        this->output_->resize(cutoff);
     }
 
 
-    return Operator<B>::output_;
+    return this->output_;
 }
 
 
@@ -126,7 +124,16 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &dir,  int &
 
 }
 
+template<typename B>
+void Sort<B>::bitonicSortNormalized(const int &lo, const int &cnt, const bool &dir,  int & counter) {
+    if (cnt > 1) {
+        int m = cnt / 2;
+        bitonicSortNormalized(lo, m, !dir,   counter);
+        bitonicSortNormalized(lo + m, cnt - m, dir, counter);
+        bitonicMergeNormalized(this->output_, this->sort_definition_, lo, cnt, dir, counter);
+    }
 
+}
 /** The procedure BitonicMerge recursively sorts a bitonic sequence in
  * ascending order, if dir = ASCENDING, and in descending order
  * otherwise. The sequence to be sorted starts at index position lo,
@@ -149,6 +156,24 @@ void Sort<B>::bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_de
 }
 
 
+template<typename B>
+void Sort<B>::bitonicMergeNormalized( QueryTable<B> *table, const SortDefinition & sort_def, const int &lo, const int &n, const bool &dir,  int & counter) {
+
+    if (n > 1) {
+        int m = powerOfTwoLessThan(n);
+        for (int i = lo; i < lo + n - m; ++i) {
+            B to_swap = swapTuplesNormalized(table, i, i+m, dir, sort_key_size_bits_);
+            table->compareSwap(to_swap, i, i+m);
+            //if(FieldUtilities::extract_bool(to_swap))
+            //    cout << "After swap: \n" << *table << endl;
+            ++counter;
+        }
+
+        bitonicMergeNormalized(table, sort_def, lo, m,  dir, counter);
+        bitonicMergeNormalized(table, sort_def, lo + m, n - m, dir, counter);
+    }
+}
+
 
 
 template<typename B>
@@ -157,10 +182,8 @@ B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int 
     B swap = false;
     B not_init = true;
 
-//    auto before = SystemConfiguration::getInstance().andGateCount();
 
     for (size_t i = 0; i < sort_definition.size(); ++i) {
-//        auto start_ands = SystemConfiguration::getInstance().andGateCount();
         bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
         if(dir)
             asc = !asc;
@@ -170,29 +193,75 @@ B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int 
 
         B eq = (lhs_field == rhs_field);
 
-//        auto eq_gates = SystemConfiguration::getInstance().andGateCount() - start_ands;
-
         B to_swap =  ((lhs_field < rhs_field) == asc);
 
-//        auto lt_gates = SystemConfiguration::getInstance().andGateCount() - start_ands - eq_gates;
 
         swap = FieldUtilities::select(not_init, to_swap, swap);
         not_init = not_init & eq;
-//        auto bookkeeping_gates = SystemConfiguration::getInstance().andGateCount() - start_ands - eq_gates - lt_gates;
-//       if(lhs_idx== 0 && rhs_idx == 1) {
-//            cout << "For sort comparison over " << table->getSchema().getField(sort_definition[i].first)
-//            << "  have " << eq_gates + bookkeeping_gates  + lt_gates << " AND gates, eq="
-//            << eq_gates << " lt=" << lt_gates << ", bookkeeping: " << bookkeeping_gates <<  endl;
-//        }
     }
 
-//    if(lhs_idx== 0 && rhs_idx == 1) {
-//        cout << " total gates: " << SystemConfiguration::getInstance().andGateCount() - before <<  endl;
-//    }
 
     return swap;
 
 }
+
+template <typename B>
+Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir, const int & sort_key_width_bits) {
+    assert(table->storageModel() == StorageModel::ROW_STORE);
+    vector<Bit> placeholder(sort_key_width_bits);
+    // placeholder to avoid initializing public value for Integer
+    Integer lhs_key(placeholder);
+    Integer rhs_key(placeholder);
+
+    RowTable<Bit> *row_table = (RowTable<Bit> *) table;
+
+    memcpy(lhs_key.bits.data(), row_table->tuple_data_.data() + row_table->tuple_size_ * lhs_idx, sort_key_width_bits * TypeUtilities::getEmpBitSize());
+    memcpy(rhs_key.bits.data(), row_table->tuple_data_.data() + row_table->tuple_size_ * rhs_idx, sort_key_width_bits * TypeUtilities::getEmpBitSize());
+
+    return (lhs_key > rhs_key) == dir;
+
+}
+
+template<typename B>
+bool Sort<B>::swapTuplesNormalized(const QueryTable<bool> *table, const int &lhs_idx, const int &rhs_idx,
+                                   const bool &dir, const int &sort_key_width_bits) {
+    assert(table->storageModel() == StorageModel::ROW_STORE);
+    RowTable<Bit> *row_table = (RowTable<Bit> *) table;
+//    cout << "Comparing rows: (" << lhs_idx<< ", " << rhs_idx << ", "
+//    << (dir ? "ASC" : "DESC")
+//    << "): "<< table->getPlainTuple(lhs_idx) << ", " << table->getPlainTuple(rhs_idx) << endl;
+
+    int8_t *lhs = row_table->tuple_data_.data() + row_table->tuple_size_ * lhs_idx;
+    int8_t *rhs = row_table->tuple_data_.data() + row_table->tuple_size_ * rhs_idx;
+    int res = std::memcmp(lhs, rhs, sort_key_width_bits/8);
+
+//    int32_t lhs_tmp;
+//    int32_t rhs_tmp;
+//    for(int i = 0; i < 4; ++i) {
+//        ((int8_t *) &lhs_tmp)[i] = lhs[3-i];
+//        ((int8_t *) &rhs_tmp)[i] = rhs[3-i];
+//    }
+//
+//    int res = std::memcmp(( int8_t *) &lhs_tmp, (int8_t *) &rhs_tmp, 4); // was sort_key_width_bits/8
+
+
+    // < 0: lhs < rhs
+    // > 0: lhs > rhs
+    bool r2 =  (res > 0) == dir;
+//    cout << "To swap? " << r2 << endl;
+//    if(r2) {
+//        cout << "LHS bytes: " << DataUtilities::printByteArray(lhs, 4) << ", " << DataUtilities::printBitArray(lhs, 4) << endl;
+//        cout << "RHS bytes: " << DataUtilities::printByteArray(rhs, 4) << ", " << DataUtilities::printBitArray(rhs, 4) <<  endl;
+//
+//        cout << "Result: " << res << ", " <<
+//             ( (res < 0) ? "rhs smaller" : (res > 0) ? "lhs smaller" : "equal") << endl;
+//
+//
+//    }
+
+    return r2;
+}
+
 
 template<typename B>
 string Sort<B>::getOperatorType() const {
@@ -201,7 +270,99 @@ string Sort<B>::getOperatorType() const {
 
 template<typename B>
 string Sort<B>::getParameters() const {
-    return DataUtilities::printSortDefinition(Operator<B>::sort_definition_);
+    return DataUtilities::printSortDefinition(this->sort_definition_);
+}
+
+
+// project sort key to the front of table and normalize all fields
+template<typename B>
+QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src, const SortDefinition &sort_def) {
+    ExpressionMapBuilder<B> builder(src->getSchema());
+    int write_cursor = 0;
+    sort_key_size_bits_ = 0;
+
+    vector<int> sort_cols;
+    for(auto key : sort_def) {
+        builder.addMapping(key.first, write_cursor);
+        // dst, src
+        sort_key_map_[write_cursor] = key.first;
+        sort_cols.emplace_back(key.first);
+        sort_key_size_bits_ += src->getSchema().getField(key.first).size();
+        ++write_cursor;
+    }
+
+    for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+        if(std::find(sort_cols.begin(), sort_cols.end(),i) == sort_cols.end()) {
+            builder.addMapping(i, write_cursor);
+            sort_key_map_[write_cursor] = i;
+            ++write_cursor;
+        }
+    }
+
+    Project<B> projection(src->clone(), builder.getExprs());
+    projection.setOperatorId(-2);
+
+    auto projected = projection.run();
+    auto dst = projected->clone();
+    projected_schema_ = dst->getSchema();
+    // normalize the fields for the sort key
+    QuerySchema normed_schema = projected_schema_; // convert floats to int32s
+
+    for(int i = 0; i < sort_def.size(); ++i) {
+        QueryFieldDesc f = dst->getSchema().getField(i);
+        if(f.getType() == FieldType::FLOAT) {
+            f = QueryFieldDesc(f, FieldType::INT);
+            normed_schema.putField(f);
+        }
+        if(f.getType() == FieldType::SECURE_FLOAT) {
+            f = QueryFieldDesc(f, FieldType::SECURE_INT);
+            normed_schema.putField(f);
+        }
+    }
+
+    normed_schema.initializeFieldOffsets();
+    dst->setSchema(normed_schema);
+
+    // normalize the fields for the sort key
+    for(int i = 0; i < dst->getTupleCount(); ++i) {
+        for(int j = 0; j < sort_def.size(); ++j)  {
+            // TODO: add packed fields here
+            Field<B> s = projected->getField(i, j);
+            Field<B> d = NormalizeFields::normalize(s, sort_def[j].second);
+            dst->setField(i, j, d);
+        }
+    }
+    //cout << "Normalized table: " << *dst << endl;
+    return dst;
+}
+
+
+template<typename B>
+QueryTable<B> *Sort<B>::denormalizeTable(QueryTable<B> *src, const SortDefinition &sort_def) {
+    // denormalize the fields for the sort key
+    auto dst = src->clone();
+   // cout << "Normalized sorted table: " << *dst << endl;
+    QuerySchema dst_schema = projected_schema_;
+    dst->setSchema(dst_schema);
+    for(int i = 0; i < src->getTupleCount(); ++i) {
+        for(int j = 0; j < sort_def.size(); ++j)  {
+            Field<B> s = src->getField(i, j);
+            Field<B> d = NormalizeFields::denormalize(s, dst_schema.getField(j).getType(), sort_def[j].second);
+            dst->setField(i, j, d);
+        }
+    }
+
+    //cout << "Denormalized sorted table: " << *dst << endl;
+
+    ExpressionMapBuilder<B> builder(src->getSchema());
+    for(auto pos : sort_key_map_) {
+        builder.addMapping(pos.first, pos.second);
+    }
+
+    Project<B> projection(dst->clone(), builder.getExprs());
+    projection.setOperatorId(-2);
+    return projection.run()->clone();
+
 }
 
 

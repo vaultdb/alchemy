@@ -41,23 +41,23 @@ size_t FieldUtilities::getPhysicalSize(const FieldType &id, const size_t &str_le
 emp::Float FieldUtilities::toFloat(const emp::Integer &input) {
     const Integer zero(32, 0, PUBLIC);
     const Integer one(32, 1, PUBLIC);
-    const Integer maxInt(32, 1 << 24, PUBLIC); // 2^24
-    const Integer minInt = Integer(32, -1 * (1 << 24), PUBLIC); // -2^24
-    const Integer twentyThree(32, 23, PUBLIC);
+    const Integer max_int(32, 1 << 24, PUBLIC); // 2^24
+    const Integer min_int = Integer(32, -1 * (1 << 24), PUBLIC); // -2^24
+    const Integer twenty_three(32, 23, PUBLIC);
 
     Float output(0.0, PUBLIC);
 
-    Bit signBit = input.bits[31];
-    Integer unsignedInput = input.abs();
+    Bit sign_bit = input.bits[31];
+    Integer unsigned_input = input.abs();
 
-    Integer firstOneIdx = Integer(32, 31, PUBLIC) - unsignedInput.leading_zeros().resize(32);
+    Integer first_1_idx = Integer(32, 31, PUBLIC) - unsigned_input.leading_zeros().resize(32);
 
-    Bit leftShift = firstOneIdx >= twentyThree;
-    Integer shiftOffset = emp::If(leftShift, firstOneIdx - twentyThree, twentyThree - firstOneIdx);
-    Integer shifted = emp::If(leftShift, unsignedInput >> shiftOffset, unsignedInput << shiftOffset);
+    Bit left_shift = first_1_idx >= twenty_three;
+    Integer shift_offset = emp::If(left_shift, first_1_idx - twenty_three, twenty_three - first_1_idx);
+    Integer shifted = emp::If(left_shift, unsigned_input >> shift_offset, unsigned_input << shift_offset);
 
     // exponent is biased by 127
-    Integer exponent = firstOneIdx + Integer(32, 127, PUBLIC);
+    Integer exponent = first_1_idx + Integer(32, 127, PUBLIC);
     // move exp to the right place in final output
     exponent = exponent << 23;
 
@@ -67,19 +67,33 @@ emp::Float FieldUtilities::toFloat(const emp::Integer &input) {
 
 
     // bitwise OR the sign bit | exp | coeff
-    Integer outputInt(32, 0, PUBLIC);
-    outputInt.bits[31] = signBit; // bit 31 is sign bit
+    Integer output_int(32, 0, PUBLIC);
+    output_int.bits[31] = sign_bit; // bit 31 is sign bit
 
-    outputInt =  coefficient | exponent | outputInt;
-    memcpy(&(output.value[0]), &(outputInt.bits[0]), 32 * sizeof(Bit));
+    output_int = coefficient | exponent | output_int;
+    memcpy(&(output.value[0]), &(output_int.bits[0]), 32 * sizeof(Bit));
 
     // cover the corner cases
     output = emp::If(input == zero, Float(0.0, PUBLIC), output);
-    output = emp::If(input < minInt, Float(INT_MIN, PUBLIC), output);
-    output = emp::If(input > maxInt, Float(INT_MAX, PUBLIC), output);
+    output = emp::If(input < min_int, Float(INT_MIN, PUBLIC), output);
+    output = emp::If(input > max_int, Float(INT_MAX, PUBLIC), output);
 
     return output;
 }
+// from: https://stackoverflow.com/questions/33678827/compare-floating-point-numbers-as-integers
+emp::Integer FieldUtilities::toComparableInt(const Float &input) {
+    Integer bits(32, 0);
+    memcpy(&(bits.bits[0]), &(input.value[0]), 32 * sizeof(Bit));
+
+    Bit sign_bit = bits.bits[31];
+    int32_t reset = 0x7FFFFFFF;
+    Integer reset_i(32, reset, PUBLIC);
+    Integer tmp = reset_i - bits;
+    bits = emp::If(sign_bit, tmp, bits);
+    return bits;
+}
+
+
 
 void FieldUtilities::secret_share_send(const PlainTable *src, const int &src_idx, SecureTable *dst, const int &dst_idx,
                                        const int &party) {
@@ -186,6 +200,7 @@ BitPackingMetadata FieldUtilities::getBitPackingMetadata(const std::string & db_
     delete p;
     return bit_packing;
 }
+
 
 
 

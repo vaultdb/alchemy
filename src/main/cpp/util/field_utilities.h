@@ -24,6 +24,7 @@ namespace vaultdb {
         // size is in bytes
         static size_t getPhysicalSize(const FieldType &id, const size_t & str_length = 0);
         static emp::Float toFloat(const emp::Integer &input);
+        static emp::Integer toComparableInt(const emp::Float &input);
 
         template<typename B>
         static inline bool validateTypeAlignment(const Field<B> &field) {
