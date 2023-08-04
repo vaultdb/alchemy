@@ -7,6 +7,8 @@
 namespace vaultdb {
     class NormalizeFields {
     public:
+
+
         static PlainField normalize(const  PlainField &field, const SortDirection & dir) {
             switch(field.getType()) {
                 case FieldType::BOOL:
@@ -148,35 +150,22 @@ namespace vaultdb {
                 int32_t bits;
                 memcpy(&bits, &f, sizeof(float_t));
                const uint32_t sign_bit = bits & 0x80000000ul; // collects (sign) first bit alone
-                cout << "Input bits: " << DataUtilities::printBitArray((int8_t * ) &bits, sizeof(uint32_t)) << ", ";
-
-                cout << "sign bit: " << sign_bit << ", ";
                 if (sign_bit) {
                     bits = 0x7FFFFFF - bits;
                 }
-            bits = 0x7FFFFFF - bits;
+              bits = 0x7FFFFFF - bits; // flip it a second time
 
-            cout << "output bits: " << DataUtilities::printBitArray((int8_t * ) &bits, sizeof(uint32_t)) << "\n";
 
-                PlainField res(FieldType::INT, bits);
-                PlainField check = denormalizeFloat(res, dir);
-                cout << "Original: " << field << " Normalized: " << res << " Denormalized: " << check << endl;
-
-                return res;
+                return PlainField(FieldType::INT, bits);
             }
 
 
         static PlainField denormalizeFloat(const PlainField & field, const SortDirection & dir) {
             int32_t bits = field.getValue<int32_t>();
-            cout << "Input bits: " << DataUtilities::printBitArray((int8_t * ) &bits, sizeof(uint32_t)) << ", ";
-            const bool sign_bit = !(bits & 0x80000000ul); // formerly & , 1 should be getting last bit
-            cout << "sign bit: " << sign_bit << ", ";
+            const bool sign_bit = !(bits & 0x80000000ul); // first bit is zero
             if (sign_bit) {
                 bits = 0x7FFFFFF - bits;
             }
-//            bits = 0x7FFFFFF  bits;
-
-            cout << "output bits: " << DataUtilities::printBitArray((int8_t * ) &bits, sizeof(uint32_t)) << "\n";
 
             float_t dst;
             memcpy(&dst, &bits, sizeof(float_t));
@@ -184,7 +173,7 @@ namespace vaultdb {
             if(dir == SortDirection::DESCENDING) {
                 dst = -dst;
             }
-            cout << "Denormed: " << dst << endl;
+
             return PlainField(FieldType::FLOAT, dst);
         }
 
@@ -222,35 +211,38 @@ namespace vaultdb {
 
         // same as above, but for secure fields
         static SecureField normalizeFloat(const SecureField & field, const SortDirection & dir) {
-            Float input = field.getValue<Float>();
-            Integer bits(32, 0);
-            memcpy(&(bits.bits[0]), &(input.value[0]), 32 * sizeof(Bit));
+            Float f = field.getValue<Float>();
+            if(dir == SortDirection::DESCENDING) {
+                f = -f;
+            }
+            vector<Bit> bit_array(32);
+            Integer bits(bit_array);
+            memcpy(bits.bits.data(), f.value.data(), FLOAT_LEN * TypeUtilities::getEmpBitSize());
+            Bit sign_bit = bits.bits[FLOAT_LEN - 1];
 
-            Bit sign_bit = bits.bits[31];
-            int32_t reset = 0x7FFFFFFF;
-            Integer reset_i(32, reset, PUBLIC);
-            Integer tmp = reset_i - bits;
-            bits = emp::If(sign_bit, tmp, bits);
+            Integer ones(32, 0x7FFFFFF);
+            bits = emp::If(sign_bit, ones - bits, bits);
+            bits = ones - bits; // flip it a second time
 
-            SecureField res(FieldType::SECURE_INT, bits);
-            return normalizeInt(res, dir);
+
+            return SecureField (FieldType::SECURE_INT, bits);
         }
 
 
         static SecureField denormalizeFloat(const SecureField & field, const SortDirection & dir) {
-            SecureField denormed_int = denormalizeInt(field, dir);
-            Integer bits = denormed_int.getValue<Integer>();
-
-            Bit sign_bit = bits.bits[31];
-            int32_t reset = 0x7FFFFFFF;
-            Integer reset_i(32, reset, PUBLIC);
-            Integer tmp = reset_i - bits;
-            bits = emp::If(sign_bit, tmp, bits);
+            Integer bits = field.getValue<Integer>();
+            Bit sign_bit = !bits.bits[FLOAT_LEN - 1]; // bits are inverted for sorting
+            Integer ones(32, 0x7FFFFFF);
+            bits = emp::If(sign_bit, ones - bits, bits);
 
             Float dst;
+            memcpy(&dst, &bits, FLOAT_LEN * TypeUtilities::getEmpBitSize());
 
-            memcpy(dst.value.data(), bits.bits.data(), FLOAT_LEN * TypeUtilities::getEmpBitSize());
-            return SecureField(FieldType::SECURE_FLOAT, dst);
+            if(dir == SortDirection::DESCENDING) {
+                dst = -dst;
+            }
+
+            return SecureField (FieldType::FLOAT, dst);
         }
 
 
