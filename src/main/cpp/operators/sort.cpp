@@ -207,18 +207,44 @@ B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int 
 
 template <typename B>
 Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir, const int & sort_key_width_bits) {
-    assert(table->storageModel() == StorageModel::ROW_STORE);
+
+  //    assert(table->storageModel() == StorageModel::ROW_STORE);
+    QuerySchema dst_tmp = QuerySchema::toPlain(table->getSchema());
+
+    RowTable<Bit> *row_table = (RowTable<Bit> *) table;
     vector<Bit> placeholder(sort_key_width_bits);
     // placeholder to avoid initializing public value for Integer
     Integer lhs_key(placeholder);
     Integer rhs_key(placeholder);
 
-    RowTable<Bit> *row_table = (RowTable<Bit> *) table;
+    PlainTuple l_tmp = table->revealRow(lhs_idx, dst_tmp);
+    PlainTuple r_tmp = table->revealRow(rhs_idx, dst_tmp);
+    cout << "Comparing rows: (" << lhs_idx << ", " << rhs_idx << ", " << (dir ? "ASC" : "DESC")
+         << "): "<< l_tmp << ", " << r_tmp << endl;
 
-    memcpy(lhs_key.bits.data(), row_table->tuple_data_.data() + row_table->tuple_size_ * lhs_idx, sort_key_width_bits * TypeUtilities::getEmpBitSize());
-    memcpy(rhs_key.bits.data(), row_table->tuple_data_.data() + row_table->tuple_size_ * rhs_idx, sort_key_width_bits * TypeUtilities::getEmpBitSize());
 
-    return (lhs_key > rhs_key) == dir;
+    Bit *lhs = (Bit *) (row_table->tuple_data_.data() + row_table->tuple_size_ * lhs_idx);
+    Bit *rhs = (Bit *) (row_table->tuple_data_.data() + row_table->tuple_size_ * rhs_idx);
+
+    DataUtilities::reverseBytes(lhs, lhs_key.bits.data(), sort_key_width_bits/8);
+    DataUtilities::reverseBytes(rhs, rhs_key.bits.data(), sort_key_width_bits/8);
+
+    Bit key_cmp = (lhs_key > rhs_key);
+    Bit res = ((lhs_key > rhs_key) == dir);
+//    if((l_tmp != r_tmp)) {
+//        bool r2 = res.reveal();
+//        cout << ">To swap? " << r2 << endl;
+//        cout << ">Key cmp " << key_cmp.reveal() << " with dir " << dir << endl;
+//        cout << ">LHS: " << lhs_key.reveal<int>() << ": " << lhs_key.reveal<string>()  << endl; //  << ", " << Field<Bit>::revealString(lhs_key) << endl;
+//        cout << ">RHS: " << rhs_key.reveal<int>() << ": " << rhs_key.reveal<string>()  << endl; //  << ", " << Field<Bit>::revealString(rhs_key) << endl;
+//
+//        cout << ">LHS bytes: " << DataUtilities::printByteArray(l_tmp.getData(), 2) << ", " << DataUtilities::printBitArray(l_tmp.getData(), 2) << endl;
+//        cout << ">RHS bytes: " << DataUtilities::printByteArray(r_tmp.getData(), 2) << ", " << DataUtilities::printBitArray(r_tmp.getData(), 2) <<  endl;
+//
+//    }
+
+
+    return res;
 
 }
 
@@ -226,40 +252,15 @@ template<typename B>
 bool Sort<B>::swapTuplesNormalized(const QueryTable<bool> *table, const int &lhs_idx, const int &rhs_idx,
                                    const bool &dir, const int &sort_key_width_bits) {
     assert(table->storageModel() == StorageModel::ROW_STORE);
-    RowTable<Bit> *row_table = (RowTable<Bit> *) table;
-//    cout << "Comparing rows: (" << lhs_idx<< ", " << rhs_idx << ", "
-//    << (dir ? "ASC" : "DESC")
-//    << "): "<< table->getPlainTuple(lhs_idx) << ", " << table->getPlainTuple(rhs_idx) << endl;
+    RowTable<bool> *row_table = (RowTable<bool> *) table;
 
     int8_t *lhs = row_table->tuple_data_.data() + row_table->tuple_size_ * lhs_idx;
     int8_t *rhs = row_table->tuple_data_.data() + row_table->tuple_size_ * rhs_idx;
     int res = std::memcmp(lhs, rhs, sort_key_width_bits/8);
 
-//    int32_t lhs_tmp;
-//    int32_t rhs_tmp;
-//    for(int i = 0; i < 4; ++i) {
-//        ((int8_t *) &lhs_tmp)[i] = lhs[3-i];
-//        ((int8_t *) &rhs_tmp)[i] = rhs[3-i];
-//    }
-//
-//    int res = std::memcmp(( int8_t *) &lhs_tmp, (int8_t *) &rhs_tmp, 4); // was sort_key_width_bits/8
-
-
     // < 0: lhs < rhs
     // > 0: lhs > rhs
-    bool r2 =  (res > 0) == dir;
-//    cout << "To swap? " << r2 << endl;
-//    if(r2) {
-//        cout << "LHS bytes: " << DataUtilities::printByteArray(lhs, 4) << ", " << DataUtilities::printBitArray(lhs, 4) << endl;
-//        cout << "RHS bytes: " << DataUtilities::printByteArray(rhs, 4) << ", " << DataUtilities::printBitArray(rhs, 4) <<  endl;
-//
-//        cout << "Result: " << res << ", " <<
-//             ( (res < 0) ? "rhs smaller" : (res > 0) ? "lhs smaller" : "equal") << endl;
-//
-//
-//    }
-
-    return r2;
+    return ((res > 0) == dir);
 }
 
 
@@ -300,6 +301,7 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src, const SortDefinition 
     }
 
     Project<B> projection(src->clone(), builder.getExprs());
+    cout << "Normalization projection: " << projection<< endl;
     projection.setOperatorId(-2);
 
     auto projected = projection.run();
@@ -332,7 +334,7 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src, const SortDefinition 
             dst->setField(i, j, d);
         }
     }
-    //cout << "Normalized table: " << *dst << endl;
+    cout << "Normalized table: " << *(dst->revealInsecure()) << endl;
     return dst;
 }
 
@@ -341,7 +343,7 @@ template<typename B>
 QueryTable<B> *Sort<B>::denormalizeTable(QueryTable<B> *src, const SortDefinition &sort_def) {
     // denormalize the fields for the sort key
     auto dst = src->clone();
-   // cout << "Normalized sorted table: " << *dst << endl;
+    cout << "Normalized sorted table: " << *(dst->revealInsecure()) << endl;
     QuerySchema dst_schema = projected_schema_;
     dst->setSchema(dst_schema);
     for(int i = 0; i < src->getTupleCount(); ++i) {
@@ -352,13 +354,14 @@ QueryTable<B> *Sort<B>::denormalizeTable(QueryTable<B> *src, const SortDefinitio
         }
     }
 
-    //cout << "Denormalized sorted table: " << *dst << endl;
+    cout << "Denormalized sorted table: " << *(dst->revealInsecure()) << endl;
 
+    cout << "Denormalized projection mappings: " << endl;
     ExpressionMapBuilder<B> builder(src->getSchema());
     for(auto pos : sort_key_map_) {
+        cout << "    (" << pos.first << ", " << pos.second << ")" << endl;
         builder.addMapping(pos.first, pos.second);
     }
-
     Project<B> projection(dst->clone(), builder.getExprs());
     projection.setOperatorId(-2);
     return projection.run()->clone();

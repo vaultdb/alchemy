@@ -1,7 +1,7 @@
 #ifndef DATA_UTILITIES_H
 #define DATA_UTILITIES_H
 
-// For EMP memory instrumentation
+// For memory instrumentation
 #if defined(__linux__)
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -13,6 +13,7 @@
 
 #include <cstdint>
 #include "utilities.h"
+#include "util/system_configuration.h"
 
 namespace vaultdb {
 
@@ -88,7 +89,7 @@ namespace vaultdb {
             return b;
         }
 
-        static inline void reverseBytes(int8_t *src_bytes, int8_t *dst_bytes, const size_t & byte_cnt) {
+        static inline void reverseBitstring(int8_t *src_bytes, int8_t *dst_bytes, const size_t & byte_cnt) {
             int8_t *dst_cursor = dst_bytes + byte_cnt - 1;
 
             for(size_t i = 0; i < byte_cnt; ++i) {
@@ -97,7 +98,15 @@ namespace vaultdb {
             }
         }
 
-
+    static inline void reverseBytes(Bit *src, Bit *dst, const int & byte_cnt) {
+            Bit *src_ptr = src;
+            Bit *dst_ptr = dst + (byte_cnt - 1)*8;
+            for(int i = 0; i < byte_cnt; ++i) {
+                memcpy(dst_ptr, src_ptr, 8 * SystemConfiguration::getInstance().emp_bit_size_bytes_);
+                src_ptr += 8;
+                dst_ptr -= 8;
+            }
+    }
 
     };
 }
