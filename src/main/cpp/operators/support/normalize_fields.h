@@ -150,7 +150,6 @@ namespace vaultdb {
             T src = field.getValue<T>();
             T dst = src;
             if(dir == SortDirection::DESCENDING) {
-              //
                 // invert the sign bit
                 dst = -dst;
             }
@@ -177,10 +176,17 @@ namespace vaultdb {
                 if (sign_bit) {
                     bits = 0x7FFFFFF - bits;
                 }
-              bits = 0x7FFFFFF - bits; // flip it a second time
+
+                // reverse byte order
+                int32_t dst;
+                int8_t *dst_ptr = (int8_t *) &dst;
+                for(int i = 0; i < 4; ++i) {
+                    *dst_ptr =  ((int8_t *) &bits)[3 - i];
+                    ++dst_ptr;
+                }
 
 
-                return PlainField(FieldType::INT, bits);
+                return PlainField(FieldType::INT, dst);
             }
 
 
@@ -192,7 +198,11 @@ namespace vaultdb {
             }
 
             float_t dst;
-            memcpy(&dst, &bits, sizeof(float_t));
+            for(int i = 0; i < 4; ++i) {
+                ((int8_t *) &dst)[i] = ((int8_t *) &bits)[3 - i];
+            }
+
+//            memcpy(&dst, &bits, sizeof(float_t));
 
             if(dir == SortDirection::DESCENDING) {
                 dst = -dst;
