@@ -36,17 +36,7 @@ namespace vaultdb {
         static tuple<int, SortDefinition, int> parseSqlHeader(const string & header);
 
         bool getAutoFlag() const { return agg_auto_flag; }
-        bool getSortFlag() const { return sort_before_sma_flag; }
-        int getOpId() const { return agg_op_id; }
-        NestedLoopAggregate<B>* getNLA() const { return nla_ptr; }
-        GroupByAggregate<B>* getSMA() const { return sma_ptr; }
-        Sort<B>* getSort() const { return sort_ptr; }
         void setAutoFlag(bool inputFlag) { agg_auto_flag = inputFlag;}
-        void setSortFlag(bool inputSortBeforeSMAFlag) { sort_before_sma_flag = inputSortBeforeSMAFlag;}
-        void setOpId(int inputId) { agg_op_id = inputId; }
-        void setNLA(NestedLoopAggregate<B>* inputOp) { nla_ptr = inputOp;}
-        void setSMA(GroupByAggregate<B>* inputOp) { sma_ptr = inputOp;}
-        void setSort(Sort<B>* inputOp) { sort_ptr = inputOp;}
 
     protected:
         std::string db_name_;
@@ -75,11 +65,11 @@ namespace vaultdb {
         void calculateAutoAggregate();
 
         bool agg_auto_flag = false;
-        bool sort_before_sma_flag = false;
-        int agg_op_id = 0;
-        GroupByAggregate<B> *sma_ptr= nullptr;
-        NestedLoopAggregate<B> *nla_ptr = nullptr;
-        Sort<B> *sort_ptr = nullptr;
+        std::vector<GroupByAggregate<B> * > sma_vector;
+        std::vector<NestedLoopAggregate<B> * > nla_vector;
+        std::vector<Sort<B> * > sort_vector;
+        std::vector<int> agg_id;
+
 
         // faux template specialization
         Operator<bool> *createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag, const bool & plain_has_dummy_tag);

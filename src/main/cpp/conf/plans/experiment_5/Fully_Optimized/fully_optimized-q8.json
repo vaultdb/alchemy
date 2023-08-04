@@ -263,8 +263,8 @@
     {
       "id": "10",
       "relOp": "LogicalAggregate",
-      "operator-algorithm" : "nested-loop-aggregate",
-      "cardBound" : 2,
+      "operator-algorithm" : "auto",
+      "cardBound" : 7,
       "group": [
         0
       ],
