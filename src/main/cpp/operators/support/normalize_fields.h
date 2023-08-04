@@ -147,8 +147,7 @@ namespace vaultdb {
                 }
                 int32_t bits;
                 memcpy(&bits, &f, sizeof(float_t));
-                bool sign_bit = (f < 0.0);
-               //  const uint32_t sign_bit = bits & 0x80000000ul; // collects first bit alone
+               const uint32_t sign_bit = bits & 0x80000000ul; // collects first bit alone
                 cout << "Input bits: " << DataUtilities::printBitArray((int8_t * ) &bits, sizeof(uint32_t)) << ", ";
 
                 cout << "sign bit: " << sign_bit << ", ";
@@ -160,7 +159,6 @@ namespace vaultdb {
                 PlainField res(FieldType::INT, bits);
                 PlainField check = denormalizeFloat(res, dir);
                 cout << "Original: " << field << " Normalized: " << res << " Denormalized: " << check << endl;
-                //assert(check == res);
 
                 return res;
             }
@@ -182,6 +180,7 @@ namespace vaultdb {
             if(dir == SortDirection::DESCENDING) {
                 dst = -dst;
             }
+            cout << "Denormed: " << dst << endl;
             return PlainField(FieldType::FLOAT, dst);
         }
 
