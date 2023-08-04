@@ -20,21 +20,8 @@ namespace vaultdb {
                     return normalizeInt<int64_t>(field, dir);
                 case FieldType::FLOAT:
                    return normalizeFloat(field, dir);
-                case FieldType::STRING: {
-                    std::string src = field.getValue<std::string>();
-                    std::string dst = src;
-                    std::reverse(dst.begin(), dst.end());
-
-                    if (dir == SortDirection::DESCENDING) {
-                        // invert bytes with XOR
-                        for(int i = 0; i < dst.size(); ++i) {
-                            dst[i] = dst[i] ^ 0xFF;
-                        }
-                    }
-                    PlainField res = field;
-                    res.setValue(dst);
-                    return res;
-                }
+                case FieldType::STRING:
+                    return normalizeString(field, dir);
                 default:
                         throw std::runtime_error("Unsupported field type");
                 }
@@ -52,21 +39,8 @@ namespace vaultdb {
                     return denormalizeInt<int64_t>(field, dir);
                 case FieldType::FLOAT:
                     return denormalizeFloat(field, dir);
-                case FieldType::STRING: {
-                    std::string src = field.getValue<std::string>();
-                    std::string dst = src;
-                    std::reverse(dst.begin(), dst.end());
-
-                    if (dir == SortDirection::DESCENDING) {
-                        for(int i = 0; i < dst.size(); ++i) {
-                            dst[i] = dst[i] ^ 0xFF;
-                        }
-
-                    }
-                    PlainField res = field;
-                    res.setValue(dst);
-                    return res;
-                }
+                case FieldType::STRING:
+                    return normalizeString(field, dir); // reuse normalizeString - it does the same thing here
                 default:
                     throw std::runtime_error("Unsupported field type");
             }
@@ -81,18 +55,8 @@ namespace vaultdb {
                     return normalizeInt(field, dir);
                 case FieldType::SECURE_FLOAT:
                    return normalizeFloat(field, dir);
-                case FieldType::SECURE_STRING: {
-                    Integer src = field.getValue<Integer>();
-                    Integer dst = src;
-                    if(dir == SortDirection::DESCENDING) {
-                        for(int i = 0; i < src.size(); ++i) {
-                            dst[i] = src[src.size() - i - 1];
-                        }
-                    }
-                    SecureField res = field;
-                    res.setValue(dst);
-                    return res;
-                }
+                case FieldType::SECURE_STRING:
+                    return normalizeString(field, dir);
                 default:
                     throw std::runtime_error("Unsupported field type");
             }
@@ -107,18 +71,8 @@ namespace vaultdb {
                     return denormalizeInt(field, dir);
                 case FieldType::SECURE_FLOAT:
                     return denormalizeFloat(field, dir);
-                case FieldType::SECURE_STRING: {
-                    Integer src = field.getValue<Integer>();
-                    Integer dst = src;
-                    if(dir == SortDirection::DESCENDING) {
-                        for(int i = 0; i < src.size(); ++i) {
-                            dst[i] = src[src.size() - i - 1];
-                        }
-                    }
-                    SecureField res = field;
-                    res.setValue(dst);
-                    return res;
-                }
+                case FieldType::SECURE_STRING:
+                    return normalizeString(field, dir); // reuse normalizeString - it does the same thing here
                 default:
                     throw std::runtime_error("Unsupported field type");
             }
@@ -134,13 +88,7 @@ namespace vaultdb {
                      // invert the sign bit
                      dst = -dst;
             }
-//                int8_t *src_ptr = (int8_t *) &src;
-//                int8_t *dst_ptr = (int8_t *) &dst;
-//                for(int i = 0; i < sizeof(T); ++i) {
-//                    dst_ptr[i] = src_ptr[sizeof(T) - i - 1];
-//                }
 
-//               DataUtilities::reverseBytes((int8_t *) &src, (int8_t *)  &dst, sizeof(T));
                FieldType dst_type = (field.getType() == FieldType::LONG) ? FieldType::LONG : FieldType::INT;
                return PlainField(dst_type, dst);
             }
@@ -153,13 +101,7 @@ namespace vaultdb {
                 // invert the sign bit
                 dst = -dst;
             }
-//            int8_t *src_ptr = (int8_t *) &src;
-//            int8_t *dst_ptr = (int8_t *) &dst;
-//            for(int i = 0; i < sizeof(T); ++i) {
-//                dst_ptr[i] = src_ptr[sizeof(T) - i - 1];
-//            }
 
-//            DataUtilities::reverseBytes((int8_t *) &src, (int8_t *)  &dst, sizeof(T));
             FieldType dst_type = (field.getType() == FieldType::LONG) ? FieldType::LONG : FieldType::INT;
             return PlainField(dst_type, dst);
         }
@@ -217,31 +159,39 @@ namespace vaultdb {
 
             return PlainField(FieldType::FLOAT, dst);
         }
+
+       static PlainField normalizeString(const PlainField & field, const SortDirection & dir) {
+            std::string src = field.getValue<std::string>();
+            std::string dst = src;
+            std::reverse(dst.begin(), dst.end());
+
+            if (dir == SortDirection::DESCENDING) {
+                // invert bytes with XOR
+                for(int i = 0; i < dst.size(); ++i) {
+                    dst[i] = dst[i] ^ 0xFF;
+                }
+            }
+            return PlainField(FieldType::STRING, dst, field.string_length_);
+        }
+
         // ***END PLAIN FIELD SUPPORT
+
         // ***START MPC FIELD SUPPORT
         static SecureField normalizeInt(const SecureField & s, const SortDirection & dir) {
-            Integer src = s.getValue<Integer>();
-            Integer dst = src;
+            Integer dst = s.getValue<Integer>();
             if(dir == SortDirection::DESCENDING) {
                 // invert the sign bit
-                src = -src;
-                for(int i = 0; i < src.size(); ++i) {
-                    dst[i] = src[src.size() - i - 1];
-                }
+                dst = -dst;
             }
             FieldType dst_type = (s.getType() == FieldType::SECURE_LONG) ? FieldType::SECURE_LONG : FieldType::SECURE_INT;
             return SecureField(dst_type, dst);
         }
 
         static SecureField denormalizeInt(const SecureField & s, const SortDirection & dir) {
-            Integer src = s.getValue<Integer>();
-            Integer dst = src;
+            Integer dst = s.getValue<Integer>();
             if(dir == SortDirection::DESCENDING) {
-                for(int i = 0; i < src.size(); ++i) {
-                    dst[i] = src[src.size() - i - 1];
-                }
                 // invert the sign bit
-                src = -src;
+                dst = -dst;
             }
 
             FieldType dst_type = (s.getType() == FieldType::SECURE_LONG) ? FieldType::SECURE_LONG : FieldType::SECURE_INT;
@@ -252,26 +202,45 @@ namespace vaultdb {
         // same as above, but for secure fields
         static SecureField normalizeFloat(const SecureField & field, const SortDirection & dir) {
             Float f = field.getValue<Float>();
+            Integer bits;
+
             if(dir == SortDirection::DESCENDING) {
                 f = -f;
             }
-            vector<Bit> bit_array(32);
-            Integer bits(bit_array);
-            memcpy(bits.bits.data(), f.value.data(), FLOAT_LEN * TypeUtilities::getEmpBitSize());
-            Bit sign_bit = bits.bits[FLOAT_LEN - 1];
 
+            Bit sign_bit = f[FLOAT_LEN - 1];
             Integer ones(32, 0x7FFFFFF);
+
+            memcpy(bits.bits.data(), f.value.data(), FLOAT_LEN * TypeUtilities::getEmpBitSize());
+
             bits = emp::If(sign_bit, ones - bits, bits);
-            bits = ones - bits; // flip it a second time
 
+            vector<Bit> tmp(32);
+            // reverse byte order
+            memcpy(tmp.data(), bits.bits.data() + 24, 8 * TypeUtilities::getEmpBitSize());
+            memcpy(tmp.data() + 8, bits.bits.data() + 16, 8 * TypeUtilities::getEmpBitSize());
+            memcpy(tmp.data() + 16, bits.bits.data() + 8, 8 * TypeUtilities::getEmpBitSize());
+            memcpy(tmp.data() + 24, bits.bits.data(), 8 * TypeUtilities::getEmpBitSize());
 
-            return SecureField (FieldType::SECURE_INT, bits);
+            Integer dst(tmp);
+
+            return SecureField (FieldType::SECURE_INT, dst);
         }
 
 
         static SecureField denormalizeFloat(const SecureField & field, const SortDirection & dir) {
             Integer bits = field.getValue<Integer>();
-            Bit sign_bit = !bits.bits[FLOAT_LEN - 1]; // bits are inverted for sorting
+            // reverse byte order
+            vector<Bit> tmp(32);
+            // reverse byte order
+            memcpy(tmp.data(), bits.bits.data() + 24, 8 * TypeUtilities::getEmpBitSize());
+            memcpy(tmp.data() + 8, bits.bits.data() + 16, 8 * TypeUtilities::getEmpBitSize());
+            memcpy(tmp.data() + 16, bits.bits.data() + 8, 8 * TypeUtilities::getEmpBitSize());
+            memcpy(tmp.data() + 24, bits.bits.data(), 8 * TypeUtilities::getEmpBitSize());
+
+            bits.bits = tmp;
+
+            const Bit sign_bit = !(bits.bits[FLOAT_LEN - 1]); // first bit is zero
             Integer ones(32, 0x7FFFFFF);
             bits = emp::If(sign_bit, ones - bits, bits);
 
@@ -282,10 +251,33 @@ namespace vaultdb {
                 dst = -dst;
             }
 
-            return SecureField (FieldType::FLOAT, dst);
+            return SecureField (FieldType::SECURE_FLOAT, dst);
+
         }
 
+        static SecureField normalizeString(const SecureField & field, const SortDirection & dir) {
+            Integer src = field.getValue<Integer>();
+            Integer dst = src;
+            int8_t *src_ptr, *dst_ptr;
+            // reverse byte order
+            for(int i = 0; i < src.size()/8; ++i) {
+                dst_ptr = ((int8_t *) dst.bits.data()) + i * 8 * TypeUtilities::getEmpBitSize();
+                src_ptr = ((int8_t *) src.bits.data()) + (src.size() - (i + 1) * 8) * TypeUtilities::getEmpBitSize();
+                memcpy(dst_ptr, src_ptr, 8 * TypeUtilities::getEmpBitSize());
+            }
 
+
+            if (dir == SortDirection::DESCENDING) {
+                // invert the bits
+                for(int i = 0; i < dst.size(); ++i) {
+                    dst[i] = !dst[i];
+                }
+            }
+
+            return SecureField(FieldType::SECURE_STRING, dst, field.string_length_);
+        }
+
+        // ***END MPC FIELD SUPPORT
     };
 
 }
