@@ -116,7 +116,7 @@ namespace vaultdb {
             return new InputReference<B>(*this);
         }
 
-        uint32_t read_idx_;
+        int read_idx_;
         uint32_t output_idx_;
         bool binary_mode_ = false;
         uint32_t read_lhs_ = true;

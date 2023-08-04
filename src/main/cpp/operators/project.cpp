@@ -67,6 +67,11 @@ void Project<B>::setup() {
             InputReference<B> *node = (InputReference<B> *) expr->root_;
             column_mappings_.template emplace_back(node->read_idx_, expr_pos->first);
         }
+        else if(expr_pos->second->kind() == ExpressionKind::PACKED_INPUT_REF) {
+            GenericExpression<B> *expr = (GenericExpression<B> *) expr_pos->second;
+            PackedInputReference<B> *node = (PackedInputReference<B> *) expr->root_;
+            column_mappings_.template emplace_back(node->read_idx_, expr_pos->first);
+        }
         else {
             exprs_to_exec_.emplace_back(expr_pos->first); // dst_ordinal
         }
