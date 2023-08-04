@@ -147,14 +147,16 @@ namespace vaultdb {
                 }
                 int32_t bits;
                 memcpy(&bits, &f, sizeof(float_t));
-               const uint32_t sign_bit = bits & 0x80000000ul; // collects first bit alone
+               const uint32_t sign_bit = bits & 0x80000000ul; // collects (sign) first bit alone
                 cout << "Input bits: " << DataUtilities::printBitArray((int8_t * ) &bits, sizeof(uint32_t)) << ", ";
 
                 cout << "sign bit: " << sign_bit << ", ";
                 if (sign_bit) {
                     bits = 0x7FFFFFF - bits;
                 }
-                cout << "output bits: " << DataUtilities::printBitArray((int8_t * ) &bits, sizeof(uint32_t)) << "\n";
+            bits = 0x7FFFFFF - bits;
+
+            cout << "output bits: " << DataUtilities::printBitArray((int8_t * ) &bits, sizeof(uint32_t)) << "\n";
 
                 PlainField res(FieldType::INT, bits);
                 PlainField check = denormalizeFloat(res, dir);
@@ -172,6 +174,8 @@ namespace vaultdb {
             if (sign_bit) {
                 bits = 0x7FFFFFF - bits;
             }
+//            bits = 0x7FFFFFF  bits;
+
             cout << "output bits: " << DataUtilities::printBitArray((int8_t * ) &bits, sizeof(uint32_t)) << "\n";
 
             float_t dst;
