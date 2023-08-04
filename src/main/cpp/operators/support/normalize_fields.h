@@ -167,42 +167,49 @@ namespace vaultdb {
         // from https://stackoverflow.com/questions/33678827/compare-floating-point-numbers-as-integers
             static PlainField normalizeFloat(const PlainField & field, const SortDirection & dir) {
                 float_t f = field.getValue<float_t>();
-                if(dir == SortDirection::DESCENDING) {
+                int32_t bits, dst;
+
+            if(dir == SortDirection::DESCENDING) {
                     f = -f;
                 }
-                int32_t bits;
-                memcpy(&bits, &f, sizeof(float_t));
-               const uint32_t sign_bit = bits & 0x80000000ul; // collects (sign) first bit alone
-                if (sign_bit) {
-                    bits = 0x7FFFFFF - bits;
-                }
 
-                // reverse byte order
-                int32_t dst;
-                int8_t *dst_ptr = (int8_t *) &dst;
-                for(int i = 0; i < 4; ++i) {
-                    *dst_ptr =  ((int8_t *) &bits)[3 - i];
-                    ++dst_ptr;
-                }
-
-
-                return PlainField(FieldType::INT, dst);
+            memcpy(&bits, &f, sizeof(float_t));
+            const uint32_t sign_bit = bits & 0x80000000ul; // collects first bit alone
+            if (sign_bit) {
+                bits = 0x7FFFFFF - bits;
             }
+
+            // reverse byte order
+            int8_t *dst_ptr = (int8_t *) &dst;
+            for(int i = 0; i < 4; ++i) {
+                *dst_ptr =  ((int8_t *) &bits)[3 - i];
+                ++dst_ptr;
+            }
+
+
+            return PlainField(FieldType::INT, dst);
+        }
 
 
         static PlainField denormalizeFloat(const PlainField & field, const SortDirection & dir) {
             int32_t bits = field.getValue<int32_t>();
+            int32_t tmp;
+            // reverse byte order
+            int8_t *tmp_ptr = (int8_t *) &tmp;
+            for(int i = 0; i < 4; ++i) {
+                *tmp_ptr =  ((int8_t *) &bits)[3 - i];
+                ++tmp_ptr;
+            }
+
+            bits = tmp;
+
             const bool sign_bit = !(bits & 0x80000000ul); // first bit is zero
             if (sign_bit) {
                 bits = 0x7FFFFFF - bits;
             }
 
             float_t dst;
-            for(int i = 0; i < 4; ++i) {
-                ((int8_t *) &dst)[i] = ((int8_t *) &bits)[3 - i];
-            }
-
-//            memcpy(&dst, &bits, sizeof(float_t));
+            memcpy(&dst, &bits, sizeof(float_t));
 
             if(dir == SortDirection::DESCENDING) {
                 dst = -dst;
