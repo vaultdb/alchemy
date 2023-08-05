@@ -57,6 +57,9 @@ namespace vaultdb {
         static void removeDummies( PlainTable *input);
 
         static std::string printSortDefinition(const SortDefinition  & sortDefinition);
+        static std::string printSortDirection(const SortDirection & sort_dir){
+            return (sort_dir == SortDirection::ASCENDING) ? "ASC" : (sort_dir == SortDirection::DESCENDING) ? "DESC" : "INVALID";
+        }
 
         static vector<int8_t> readFile(const string &fileName);
         // if the file were divided into batches of length *batch_tuple_cnt*, read in the *batch_no* partition

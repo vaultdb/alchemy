@@ -4,13 +4,14 @@
 #include <query_table/field/field.h>
 #include <util/data_utilities.h>
 #include "util/type_utilities.h"
+#include "util/field_utilities.h"
 
 namespace vaultdb {
     class NormalizeFields {
     public:
 
 
-        static PlainField normalize(const  PlainField &field, const SortDirection & dir) {
+        static PlainField normalize(const  PlainField &field, const SortDirection & dir, const bool & packed = false) {
             switch(field.getType()) {
                 case FieldType::BOOL:
                     return (dir == SortDirection::ASCENDING) ? field : !field;
@@ -29,7 +30,7 @@ namespace vaultdb {
 
 
         // reverse the process
-        static PlainField denormalize(const  PlainField &field, const FieldType & dst_type, const SortDirection & dir) {
+        static PlainField denormalize(const  PlainField &field, const FieldType & dst_type, const SortDirection & dir, const bool & packed = false) {
             switch (dst_type) {
                 case FieldType::BOOL:
                     return (dir == SortDirection::ASCENDING) ? field : !field;
@@ -46,13 +47,18 @@ namespace vaultdb {
             }
         }
 
-        static SecureField normalize(const  SecureField &field, const SortDirection & dir) {
+        static SecureField normalize(const  SecureField &field, const SortDirection & dir, const bool & packed = false) {
             switch(field.getType()) {
                 case FieldType::SECURE_BOOL:
                     return (dir == SortDirection::ASCENDING) ? field : !field;
                 case FieldType::SECURE_INT:
-                case FieldType::SECURE_LONG:
-                    return normalizeInt(field, dir);
+                case FieldType::SECURE_LONG:{
+                    auto tmp =  normalizeInt(field, dir, packed);
+                    cout << "Normalized int: " << FieldUtilities::printInt(field.getValue<Integer>()) << "\n"
+                        <<  " to             " << FieldUtilities::printInt(tmp.getValue<Integer>()) << ", dir=" << DataUtilities::printSortDirection(dir) <<  endl;
+                    return tmp;
+//                    return normalizeInt(field, dir, packed);
+                }
                 case FieldType::SECURE_FLOAT:
                    return normalizeFloat(field, dir);
                 case FieldType::SECURE_STRING:
@@ -62,13 +68,13 @@ namespace vaultdb {
             }
         }
 
-        static SecureField denormalize(const  SecureField &field,  const FieldType & dst_type, const SortDirection & dir) {
+        static SecureField denormalize(const  SecureField &field,  const FieldType & dst_type, const SortDirection & dir, const bool & packed = false) {
             switch(dst_type) {
                 case FieldType::SECURE_BOOL:
                     return (dir == SortDirection::ASCENDING) ? field : !field;
                 case FieldType::SECURE_INT:
                 case FieldType::SECURE_LONG:
-                    return denormalizeInt(field, dir);
+                    return denormalizeInt(field, dir, packed);
                 case FieldType::SECURE_FLOAT:
                     return denormalizeFloat(field, dir);
                 case FieldType::SECURE_STRING:
@@ -110,15 +116,21 @@ namespace vaultdb {
             static PlainField normalizeFloat(const PlainField & field, const SortDirection & dir) {
                 float_t f = field.getValue<float_t>();
                 int32_t bits, dst;
-
+            cout << "Normalizing float " << f << ": " << endl;
             if(dir == SortDirection::DESCENDING) {
                     f = -f;
                 }
+            cout << " after DESC: " << FieldUtilities::printFloat(f) << endl;
 
             memcpy(&bits, &f, sizeof(float_t));
+
+
             const uint32_t sign_bit = bits & 0x80000000ul; // collects first bit alone
+
             if (sign_bit) {
                 bits = 0x7FFFFFF - bits;
+                cout << " after flipping bits: " << FieldUtilities::printInt(bits) << endl;
+
             }
 
             // reverse byte order
@@ -127,7 +139,7 @@ namespace vaultdb {
                 *dst_ptr =  ((int8_t *) &bits)[3 - i];
                 ++dst_ptr;
             }
-
+            cout << " after reversing bytes: " << FieldUtilities::printInt(dst) << endl;
 
             return PlainField(FieldType::INT, dst);
         }
@@ -146,6 +158,8 @@ namespace vaultdb {
             bits = tmp;
 
             const bool sign_bit = !(bits & 0x80000000ul); // first bit is zero
+
+
             if (sign_bit) {
                 bits = 0x7FFFFFF - bits;
             }
@@ -177,22 +191,50 @@ namespace vaultdb {
         // ***END PLAIN FIELD SUPPORT
 
         // ***START MPC FIELD SUPPORT
-        static SecureField normalizeInt(const SecureField & s, const SortDirection & dir) {
+        static SecureField normalizeInt(const SecureField & s, const SortDirection & dir, const bool & packed) {
             Integer dst = s.getValue<Integer>();
-            if(dir == SortDirection::DESCENDING) {
-                // invert the sign bit
-                dst = -dst;
+            if (dir == SortDirection::DESCENDING) {
+                if(packed) {
+                    // unsigned --> invert bits
+                    // start at 1 to ignore the sign bit
+                    for(int i = 0; i < dst.size()-1; ++i) {
+                        dst[i] = !dst[i];
+                    }
+                }
+                else { // keep sign bit
+                    // invert the sign bit
+                    dst = -dst;
+                }
             }
+
+            // reverse the bits (except the sign bit)
+//            Integer tmp = dst;
+//            for(int i = 0; i < dst.size()-1; ++i) {
+//                dst[i] = tmp[dst.size() - 2 - i];
+//            }
+
             FieldType dst_type = (s.getType() == FieldType::SECURE_LONG) ? FieldType::SECURE_LONG : FieldType::SECURE_INT;
             return SecureField(dst_type, dst);
         }
 
-        static SecureField denormalizeInt(const SecureField & s, const SortDirection & dir) {
+        static SecureField denormalizeInt(const SecureField & s, const SortDirection & dir, const bool & packed) {
             Integer dst = s.getValue<Integer>();
             if(dir == SortDirection::DESCENDING) {
-                // invert the sign bit
-                dst = -dst;
+                if(packed) {
+                    // start at 1 to ignore the sign bit
+                    for(int i = 0; i < dst.size()-1; ++i) {
+                        dst[i] = !dst[i];
+                    }
+                }
+                else {// invert the sign bit
+                    dst = -dst;
+                }
             }
+            // reverse the bits
+//            Integer tmp = dst;
+//            for(int i = 1; i < dst.size(); ++i) {
+//                dst[i] = tmp[dst.size() - 1 - i];
+//            }
 
             FieldType dst_type = (s.getType() == FieldType::SECURE_LONG) ? FieldType::SECURE_LONG : FieldType::SECURE_INT;
             return SecureField(dst_type, dst);
@@ -202,7 +244,6 @@ namespace vaultdb {
         // same as above, but for secure fields
         static SecureField normalizeFloat(const SecureField & field, const SortDirection & dir) {
             Float f = field.getValue<Float>();
-            Integer bits;
 
             if(dir == SortDirection::DESCENDING) {
                 f = -f;
@@ -210,7 +251,7 @@ namespace vaultdb {
 
             Bit sign_bit = f[FLOAT_LEN - 1];
             Integer ones(32, 0x7FFFFFF);
-
+            Integer bits(ones);
             memcpy(bits.bits.data(), f.value.data(), FLOAT_LEN * TypeUtilities::getEmpBitSize());
 
             bits = emp::If(sign_bit, ones - bits, bits);

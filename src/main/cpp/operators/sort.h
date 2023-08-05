@@ -39,8 +39,8 @@ namespace  vaultdb {
         static Bit swapTuplesNormalized(const QueryTable<Bit> *table, const int & lhs_idx, const int & rhs_idx, const bool & dir, const int & sort_key_width_bits);
         static bool swapTuplesNormalized(const QueryTable<bool> *table, const int & lhs_idx, const int & rhs_idx, const bool & dir, const int & sort_key_width_bits);
 
-         QueryTable<B> *normalizeTable(QueryTable<B> *src, const SortDefinition & sort_definition);
-         QueryTable<B> *denormalizeTable(QueryTable<B> *src, const SortDefinition & sort_definition);
+         QueryTable<B> *normalizeTable(QueryTable<B> *src,  SortDefinition & sort_definition);
+         QueryTable<B> *denormalizeTable(QueryTable<B> *src, SortDefinition & sort_definition);
 
         int limit_; // -1 means no LIMIT op
         map<int, int> sort_key_map_;

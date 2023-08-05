@@ -168,9 +168,9 @@ namespace  vaultdb {
                 PlainField p = this->getField(row, i).reveal(party);
                 plain.setField(i, p);
             }
-            bool dummy_tag = this->getDummyTag(row).reveal(party);
-            plain.setDummyTag(dummy_tag);
 
+            PlainField dummy_tag = this->getField(row, -1).reveal(party);
+            plain.setDummyTag(dummy_tag);
 
             return plain;
         }

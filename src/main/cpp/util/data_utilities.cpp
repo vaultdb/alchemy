@@ -150,7 +150,7 @@ std::string DataUtilities::printSortDefinition(const SortDefinition &sortDefinit
     for(ColumnSort c : sortDefinition) {
         if(init)
             result << ", ";
-        string direction = (c.second == SortDirection::ASCENDING) ? "ASC" : "DESC";
+        string direction = (c.second == SortDirection::ASCENDING) ? "ASC" : (c.second == SortDirection::DESCENDING) ? "DESC" : "INVALID";
         result << "<" << c.first << ", "
                   << direction << "> ";
 

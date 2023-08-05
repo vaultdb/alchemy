@@ -80,19 +80,6 @@ emp::Float FieldUtilities::toFloat(const emp::Integer &input) {
 
     return output;
 }
-// from: https://stackoverflow.com/questions/33678827/compare-floating-point-numbers-as-integers
-emp::Integer FieldUtilities::toComparableInt(const Float &input) {
-    Integer bits(32, 0);
-    memcpy(&(bits.bits[0]), &(input.value[0]), 32 * sizeof(Bit));
-
-    Bit sign_bit = bits.bits[31];
-    int32_t reset = 0x7FFFFFFF;
-    Integer reset_i(32, reset, PUBLIC);
-    Integer tmp = reset_i - bits;
-    bits = emp::If(sign_bit, tmp, bits);
-    return bits;
-}
-
 
 
 void FieldUtilities::secret_share_send(const PlainTable *src, const int &src_idx, SecureTable *dst, const int &dst_idx,
@@ -199,6 +186,37 @@ BitPackingMetadata FieldUtilities::getBitPackingMetadata(const std::string & db_
 
     delete p;
     return bit_packing;
+}
+
+string FieldUtilities::printFloat(const float_t &f) {
+    stringstream ss;
+    ss << std::fixed << std::setprecision(10) << f << ": " << DataUtilities::printBitArray((int8_t *) &f, 4) << ", " << DataUtilities::printByteArray((int8_t *) &f, 4);
+    return ss.str();
+}
+
+string FieldUtilities::printFloat(const Float &f) {
+    stringstream ss;
+    Integer ii(32, 0);
+    memcpy(ii.bits.data(), f.value.data(), 32*TypeUtilities::getEmpBitSize());
+    int32_t i = ii.reveal<int32_t>();
+    double tmp = f.reveal<double>();
+
+    ss << std::fixed << std::setprecision(10) << tmp << ": " << ii.reveal<string>() << ", " << DataUtilities::printByteArray((int8_t *) &i, 4);
+    return ss.str();
+}
+
+string FieldUtilities::printInt(const int32_t &i) {
+    stringstream ss;
+    ss << i << ": " << DataUtilities::printBitArray((int8_t *) &i, 4) << ", " << DataUtilities::printByteArray((int8_t *) &i, 4);
+    return ss.str();
+}
+
+string FieldUtilities::printInt(const Integer &i) {
+    int32_t ii = i.reveal<int32_t>();
+    stringstream ss;
+    ss << ii << ": " << i.reveal<string>() << ", " << DataUtilities::printByteArray((int8_t *) &ii, 4);
+    return ss.str();
+
 }
 
 

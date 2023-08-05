@@ -24,7 +24,6 @@ namespace vaultdb {
         // size is in bytes
         static size_t getPhysicalSize(const FieldType &id, const size_t & str_length = 0);
         static emp::Float toFloat(const emp::Integer &input);
-        static emp::Integer toComparableInt(const emp::Float &input);
 
         template<typename B>
         static inline bool validateTypeAlignment(const Field<B> &field) {
@@ -150,6 +149,41 @@ namespace vaultdb {
             ss << ") (dummy=" << FieldUtilities::extract_bool(table->getDummyTag(idx)) << ")";
             return ss.str();
         }
+
+        static string printFloat(const float_t & f);
+        static string printFloat(const Float & f);
+        static string printInt(const int32_t & i);
+        static string printInt(const Integer & i);
+        static string printField(const SecureField & f) {
+            if(f.getType() == FieldType::SECURE_FLOAT) {
+                return printFloat(f.getValue<Float>());
+            }
+            if(f.getType() == FieldType::SECURE_BOOL) {
+                stringstream ss;
+                bool b = f.getValue<emp::Bit>().reveal();
+                ss << b << ": " << (b ? "true" : "false");
+                return ss.str();
+            }
+            return printInt(f.getValue<Integer>());
+
+        }
+
+        static string printField(const PlainField & f) {
+            if(f.getType() == FieldType::FLOAT) {
+                return printFloat(f.getValue<float_t>());
+            }
+            if(f.getType() == FieldType::BOOL) {
+                stringstream ss;
+                bool b = f.getValue<bool>();
+                ss << b << ": " << (b ? "true" : "false");
+                return ss.str();
+            }
+            // TODO: should cover int64_t too
+            return printInt(f.getValue<int32_t>());
+
+        }
+
+
     };
 
 
