@@ -4,6 +4,8 @@
 #include <iostream>
 #include "emp-tool/emp-tool.h"
 #include "query_table/table_factory.h"
+#include "operators/support/normalize_fields.h"
+#include "util/field_utilities.h"
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -139,9 +141,52 @@ TEST_F(EmpTest, emp_test_varchar) {
 
 }
 
+TEST_F(EmpTest, test_float_normalization) {
+    float f_input = 31713.646484;
+    float g_input = 38269.800781; //  19980.431641;
+
+    cout << "f input: " << FieldUtilities::printFloat(f_input) << endl;
+    cout << "g input: " << FieldUtilities::printFloat(g_input) << endl << endl;
+
+    PlainField f_input_prime = PlainField(FieldType::FLOAT, f_input);
+    PlainField g_input_prime = PlainField(FieldType::FLOAT, g_input);
+
+    PlainField f_input_norm = NormalizeFields::normalize(f_input_prime, SortDirection::DESCENDING);
+    PlainField g_input_norm = NormalizeFields::normalize(g_input_prime, SortDirection::DESCENDING);
+
+    cout << "f norm:  " << FieldUtilities::printInt(f_input_norm.getValue<int32_t>()) << endl;
+    cout << "g norm:  " << FieldUtilities::printInt(g_input_norm.getValue<int32_t>()) << endl << endl;
+
+    bool input_lt = (f_input < g_input);
+    bool norm_lt = !(f_input_norm < g_input_norm); // inverting for DESC
+    ASSERT_EQ(input_lt, norm_lt);
 
 
-// test encrypting a query table with a single int in EMP
+    Float f(f_input);
+    Float g(g_input);
+
+    SecureField f_prime(FieldType::SECURE_FLOAT, f);
+    SecureField g_prime(FieldType::SECURE_FLOAT, g);
+
+    SecureField f_norm = NormalizeFields::normalize(f_prime, SortDirection::DESCENDING);
+    SecureField g_norm = NormalizeFields::normalize(g_prime, SortDirection::DESCENDING);
+
+    Integer debug(32, 0);
+    memcpy(debug.bits.data(), f.value.data(), 32 * TypeUtilities::getEmpBitSize());
+    cout << "f shared: " << FieldUtilities::printFloat(f) << endl;
+    cout << "g shared: " << FieldUtilities::printFloat(g) << endl << endl;
+
+   Integer normalized = f_norm.getValue<Integer>();
+    cout << "f shared norm:  " << FieldUtilities::printInt(normalized) << endl;
+    cout << "g shared norm:  " << FieldUtilities::printInt(g_norm.getValue<Integer>()) << endl << endl;
+
+    Bit orig = (f_prime < g_prime);
+    Bit norm = !(f_norm < g_norm);
+    ASSERT_EQ(orig.reveal(), norm.reveal());
+}
+
+
+// test secret sharing a query table with a single int in EMP
 // Testing absent psql dependency
 TEST_F(EmpTest, secret_share_table_one_column) {
 

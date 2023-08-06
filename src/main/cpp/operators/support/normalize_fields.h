@@ -53,14 +53,19 @@ namespace vaultdb {
                     return (dir == SortDirection::ASCENDING) ? field : !field;
                 case FieldType::SECURE_INT:
                 case FieldType::SECURE_LONG:{
-                    auto tmp =  normalizeInt(field, dir, packed);
-                    cout << "Normalized int: " << FieldUtilities::printInt(field.getValue<Integer>()) << "\n"
-                        <<  " to             " << FieldUtilities::printInt(tmp.getValue<Integer>()) << ", dir=" << DataUtilities::printSortDirection(dir) <<  endl;
-                    return tmp;
-//                    return normalizeInt(field, dir, packed);
+//                    auto tmp =  normalizeInt(field, dir, packed);
+//                    cout << "Normalized int: " << FieldUtilities::printInt(field.getValue<Integer>()) << "\n"
+//                        <<  " to             " << FieldUtilities::printInt(tmp.getValue<Integer>()) << ", dir=" << DataUtilities::printSortDirection(dir) <<  endl;
+//                    return tmp;
+                    return normalizeInt(field, dir, packed);
                 }
-                case FieldType::SECURE_FLOAT:
-                   return normalizeFloat(field, dir);
+                case FieldType::SECURE_FLOAT: {
+                    auto tmp = normalizeFloat(field, dir);
+                    cout << "Normalized float " << FieldUtilities::printField(field) << "\n"
+                         << "              to " << FieldUtilities::printField(tmp) << endl;
+                    return tmp;
+//                    return normalizeFloat(field, dir);
+                }
                 case FieldType::SECURE_STRING:
                     return normalizeString(field, dir);
                 default:
@@ -75,8 +80,13 @@ namespace vaultdb {
                 case FieldType::SECURE_INT:
                 case FieldType::SECURE_LONG:
                     return denormalizeInt(field, dir, packed);
-                case FieldType::SECURE_FLOAT:
-                    return denormalizeFloat(field, dir);
+                case FieldType::SECURE_FLOAT: {
+                    auto tmp = denormalizeFloat(field, dir);
+                    cout << "Denormalized float " << FieldUtilities::printField(field) << "\n"
+                         << "                to " << FieldUtilities::printField(tmp) << endl;
+                    return tmp;
+//                    return denormalizeFloat(field, dir);
+                }
                 case FieldType::SECURE_STRING:
                     return normalizeString(field, dir); // reuse normalizeString - it does the same thing here
                 default:

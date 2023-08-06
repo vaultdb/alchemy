@@ -15,7 +15,7 @@ DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
-DEFINE_int32(cutoff, 100, "limit clause for queries");
+DEFINE_int32(cutoff, 2, "limit clause for queries"); // formerly 100
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65475, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -35,23 +35,29 @@ protected:
 
 TEST_F(SecureSortTest, tpchQ01Sort) {
 
-    string sql = "SELECT l_returnflag, l_linestatus FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string sql = "SELECT l_returnflag, l_linestatus FROM lineitem WHERE l_orderkey <= "   + std::to_string(FLAGS_cutoff) + " ORDER BY l_comment";
     string expected_results_sql = "WITH input AS ("
                                   + sql
                                   + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
 
 
-    SortDefinition sort_def{
-            ColumnSort(0, SortDirection::ASCENDING),
+    SortDefinition sort_def{ColumnSort(0, SortDirection::ASCENDING),
             ColumnSort(1, SortDirection::ASCENDING)
     };
+    cout << "Collation " << DataUtilities::printSortDefinition(sort_def) << endl;
 
     auto input = new SecureSqlInput(db_name_, sql, false);
+//    cout << "Input: " << *input->run()->revealInsecure() << endl;
     Sort<emp::Bit> sort(input, sort_def);
 
     auto sorted = sort.run();
+
+
     if(FLAGS_validation) {
+
         auto observed = sorted->reveal();
+        ASSERT_TRUE(DataUtilities::verifyCollation(observed));
+
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_results_sql, false);
         expected->setSortOrder(sort_def);
 
@@ -67,36 +73,33 @@ TEST_F(SecureSortTest, tpchQ01Sort) {
 
 
 TEST_F(SecureSortTest, tpchQ03Sort) {
+// TODO: return to this one
+    string sql = "SELECT l_orderkey, l_linenumber, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= 2"  + std::to_string(FLAGS_cutoff) +  "ORDER BY l_comment";
 
-    string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string expected_result_sql = "WITH input AS (" + sql + ") SELECT l_orderkey, l_linenumber, revenue, o_shippriority, " + DataUtilities::queryDatetime("o_orderdate") + " FROM input ORDER BY revenue DESC, o_orderdate";
 
-    string expected_result_sql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate") + " FROM input ORDER BY revenue DESC, o_orderdate";
+    SortDefinition sort_def{ColumnSort (2, SortDirection::DESCENDING),
+        ColumnSort (4, SortDirection::ASCENDING)};
 
-    SortDefinition sort_def{ColumnSort (1, SortDirection::DESCENDING), ColumnSort (3, SortDirection::ASCENDING)};
 
-    auto input= new SecureSqlInput(db_name_, sql, false);
-    auto sort = new Sort<emp::Bit>(input, sort_def);
-    auto sorted = sort->run();
+    auto input = new SecureSqlInput(db_name_, sql, false);
+    cout << "Input: " << *input->run()->revealInsecure() << endl;
+    Sort<Bit> sort(input, sort_def);
+     auto sorted = sort.run();
 
     if(FLAGS_validation) {
 
-        // project it down to $1, $3
-        ExpressionMapBuilder<bool> builder(sort->getOutputSchema());
-        builder.addMapping(1, 0);
-        builder.addMapping(3, 1);
-
-        auto revealed = sorted->reveal();
-        Project project(revealed, builder.getExprs());
-
-        PlainTable *observed = project.run();
+        PlainTable *observed = sorted->reveal();
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_result_sql,false);
-
-        // copy out the projected sort order
         expected->setSortOrder(observed->getSortOrder());
+        cout << "Expected: " << *expected << endl;
 
+
+        ASSERT_TRUE(DataUtilities::verifyCollation(observed));
         ASSERT_EQ(*expected, *observed);
 
         delete expected;
+        delete observed;
 
     }
 
@@ -105,38 +108,35 @@ TEST_F(SecureSortTest, tpchQ03Sort) {
 
 TEST_F(SecureSortTest, tpchQ05Sort) {
 
-    string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + "  ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
-    string expected_results_sql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
+    string sql = "SELECT l_orderkey, l_linenumber, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + "  ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
 
-    SortDefinition sort_definition;
-    sort_definition.emplace_back(1, SortDirection::DESCENDING);
+    SortDefinition sort_definition{ColumnSort(2, SortDirection::DESCENDING)};
+    cout << "Collation: " << DataUtilities::printSortDefinition(sort_definition) << endl;
+
 
     auto input = new SecureSqlInput(db_name_, sql, false);
-    auto *sort = new Sort<emp::Bit>(input, sort_definition);
-    auto sorted = sort->run();
+    cout << "Input: " << *input->run()->revealInsecure() << endl;
+    Sort<Bit> sort(input, sort_definition);
+    auto sorted = sort.run();
     
     if(FLAGS_validation) {
-        ExpressionMapBuilder<bool> builder(sort->getOutputSchema());
-        builder.addMapping(1, 0);
 
-        // project it down to $1
-        Project project(sorted->reveal(), builder.getExprs());
+        PlainTable *observed  = sorted->revealInsecure();
+        cout << "Sorted: " << *observed << endl;
+        ASSERT_TRUE(DataUtilities::verifyCollation(observed));
 
-        PlainTable *observed  = project.run();
-
-        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_results_sql, false);
+        string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY revenue DESC";
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
         expected->setSortOrder(observed->getSortOrder());
-
 
         ASSERT_EQ(*expected, *observed);
 
         delete expected;
+        delete observed;
 
 
     }
 
-
-    delete sort;
 }
 
 
@@ -148,12 +148,13 @@ TEST_F(SecureSortTest, tpchQ08Sort) {
 
     SortDefinition sort_def {ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
 
-
     auto input = new SecureSqlInput(db_name_, sql, false);
     auto sort = new Sort<emp::Bit>(input, sort_def);
     auto sorted = sort->run();
+
     if(FLAGS_validation) {
         PlainTable *observed  = sorted->reveal();
+        ASSERT_TRUE(DataUtilities::verifyCollation(observed));
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
         expected->setSortOrder(observed->getSortOrder());
@@ -224,6 +225,7 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
 
 }
 
+// warmup
 TEST_F(SecureSortTest, customerSort) {
 	string sql = "SELECT * FROM customer WHERE c_custkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY c_custkey";
 
@@ -233,6 +235,13 @@ TEST_F(SecureSortTest, customerSort) {
 	auto input = new SecureSqlInput(db_name_, sql, false);
 	Sort<Bit> sort(input, sort_definition);
 	auto sorted = sort.run();
+
+    if(FLAGS_validation) {
+        PlainTable *observed = sorted->reveal();
+        DataUtilities::verifyCollation(observed);
+        delete observed;
+    }
+
 }
 
 
