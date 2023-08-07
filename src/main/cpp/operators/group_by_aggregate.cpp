@@ -103,6 +103,7 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
 
     SortDefinition input_sort = input->getSortOrder();
     SortDefinition output_sort;
+    // TODO: shift over output collation to align with new column ordinals
     if(input_sort.size() >= group_by_.size()) {
         // output sort order equal to first group-by-col-count entries in input sort order
         output_sort = vector<ColumnSort>(input_sort.begin(), input_sort.begin() + group_by_.size());
@@ -202,10 +203,10 @@ QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & input_
     size_t i;
 
     for(i = 0; i < group_by_.size(); ++i) {
-        QueryFieldDesc srcField = input_schema.getField(group_by_[i]);
-        QueryFieldDesc dstField(i, srcField.getName(), srcField.getTableName(), srcField.getType());
-        dstField.setStringLength(srcField.getStringLength());
-        output_schema.putField(dstField);
+        QueryFieldDesc src_field = input_schema.getField(group_by_[i]);
+        QueryFieldDesc dst_field(i, src_field.getName(), src_field.getTableName(), src_field.getType());
+        dst_field.setStringLength(src_field.getStringLength());
+        output_schema.putField(dst_field);
     }
 
 

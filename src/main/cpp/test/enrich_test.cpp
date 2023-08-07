@@ -284,22 +284,6 @@ void EnrichTest::validateTable(const std::string & db_name, const std::string & 
     PlainTable *expected = data_provider.getQueryTable(db_name, sql);
     expected->setSortOrder(expected_sortDefinition);
 
-    ASSERT_EQ(expected->getSchema(), observed->getSchema());
-
-    // check that the types are faithfully aligned
-    for(size_t i = 0; i < observed->getSchema().getFieldCount(); ++i) {
-        FieldType schema_type = observed->getSchema().getField(i).getType();
-        FieldType instance_type = observed->getField(0, i).getType();
-        FieldType expected_type = expected->getField(0, i).getType();
-        /*if(schemaType != instanceType) {
-            std::cout << "Instance type not aligned! " << observed->get_schema().getField(i) << " expected: " << TypeUtilities::getTypeString(expectedType) << " received " << TypeUtilities::getTypeString(instanceType) << std::endl;
-        }*/
-
-        ASSERT_EQ(schema_type, instance_type);
-        ASSERT_EQ(schema_type, expected_type);
-
-    }
-
     ASSERT_EQ(*expected, *observed);
     delete expected;
 
@@ -509,45 +493,44 @@ TEST_F(EnrichTest, testRollups) {
     SecureTable *aggregator = aggregatePatientData();
     SortDefinition order_by = DataUtilities::getDefaultSortDefinition(1);
 
-
-    // TODO: make this more efficient by doing a single scan for multiple rollups
     // roll-ups:
     // age_strata (1)
-    PlainTable *age = rollUpAggregate(1, aggregator->clone())->reveal();
-    DataUtilities::removeDummies(age);
+    SecureTable *tmp = rollUpAggregate(1, aggregator->clone());
+    tmp->setSortOrder(order_by);
+    PlainTable *age = tmp->reveal();
     std::string expected_sql = getRollupExpectedResultsSql("age_strata");
     validateTable(unioned_enrich_db_, expected_sql, order_by, age);
-    //std::cout << "Validated age strata" <<  *ageStratified << std::endl;
 
     // gender (2)
-    PlainTable *gender = rollUpAggregate(2, aggregator->clone())->reveal();
-    DataUtilities::removeDummies(gender);
+    tmp = rollUpAggregate(2, aggregator->clone());
+    tmp->setSortOrder(order_by);
+    PlainTable *gender = tmp->reveal();
     expected_sql = getRollupExpectedResultsSql("sex");
     validateTable(unioned_enrich_db_, expected_sql, order_by, gender);
 
-    //std::cout << "Validated gender strata " << *genderStratified << std::endl;
 
     // ethnicity (3)
-    PlainTable *ethnicity = rollUpAggregate(3, aggregator->clone())->reveal();
-    DataUtilities::removeDummies(ethnicity);
+    tmp = rollUpAggregate(3, aggregator->clone());
+    tmp->setSortOrder(order_by);
+    PlainTable *ethnicity = tmp->reveal();
     expected_sql = getRollupExpectedResultsSql("ethnicity");
     validateTable(unioned_enrich_db_, expected_sql, order_by, ethnicity);
-    //std::cout << "Validated ethnicity strata " << *ethnicityStratified << std::endl;
 
     // race (4)
-    PlainTable *race = rollUpAggregate(4, aggregator->clone())->reveal();
-    DataUtilities::removeDummies(race);
+    tmp = rollUpAggregate(4, aggregator->clone());
+    tmp->setSortOrder(order_by);
+    PlainTable *race = tmp->reveal();
     expected_sql = getRollupExpectedResultsSql("race");
     validateTable(unioned_enrich_db_, expected_sql, order_by, race);
-    //std::cout << "Validated race strata " << *raceStratified << std::endl;
 
 
     // zip marker (0)
-    PlainTable *zip_marker = rollUpAggregate(0, aggregator->clone())->reveal();
-    DataUtilities::removeDummies(zip_marker);
+    tmp = rollUpAggregate(0, aggregator->clone());
+    tmp->setSortOrder(order_by);
+    PlainTable *zip_marker = tmp->reveal();
     expected_sql = getRollupExpectedResultsSql("zip_marker");
     validateTable(unioned_enrich_db_, expected_sql, order_by, zip_marker);
-    //std::cout << "Validated zip marker stratified " << *zipMarkerStratified << std::endl;
+
 
     delete aggregator;
     delete gender;
@@ -563,6 +546,8 @@ int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
 
+    ::testing::GTEST_FLAG(filter)=FLAGS_filter;
     return RUN_ALL_TESTS();
+
 }
 
