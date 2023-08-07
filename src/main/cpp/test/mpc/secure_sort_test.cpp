@@ -36,14 +36,10 @@ protected:
 TEST_F(SecureSortTest, tpchQ01Sort) {
 
     string sql = "SELECT l_returnflag, l_linestatus FROM lineitem WHERE l_orderkey <= "   + std::to_string(FLAGS_cutoff) + " ORDER BY l_comment";
-    string expected_results_sql = "WITH input AS ("
-                                  + sql
-                                  + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
 
 
     SortDefinition sort_def{ColumnSort(0, SortDirection::ASCENDING),
-            ColumnSort(1, SortDirection::ASCENDING)
-    };
+            ColumnSort(1, SortDirection::ASCENDING)};
 
 
     auto input = new SecureSqlInput(db_name_, sql, false);
@@ -56,6 +52,9 @@ TEST_F(SecureSortTest, tpchQ01Sort) {
 
         auto observed = sorted->reveal();
         ASSERT_TRUE(DataUtilities::verifyCollation(observed));
+        string expected_results_sql = "WITH input AS ("
+                                      + sql
+                                      + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_results_sql, false);
         expected->setSortOrder(sort_def);
@@ -72,7 +71,7 @@ TEST_F(SecureSortTest, tpchQ01Sort) {
 
 
 TEST_F(SecureSortTest, tpchQ03Sort) {
-    string sql = "SELECT l_orderkey, l_linenumber, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= 2"  + std::to_string(FLAGS_cutoff) +  " ORDER BY l_comment";
+    string sql = "SELECT l_orderkey, l_linenumber, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= "  + std::to_string(FLAGS_cutoff) +  " ORDER BY l_comment";
 
     SortDefinition sort_def{ColumnSort (2, SortDirection::DESCENDING),
         ColumnSort (4, SortDirection::ASCENDING)};
@@ -91,7 +90,7 @@ TEST_F(SecureSortTest, tpchQ03Sort) {
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_result_sql,false);
         expected->setSortOrder(observed->getSortOrder());
 
-
+//     commented out because of floating point comparison issues, validating with *expected instead
 //        ASSERT_TRUE(DataUtilities::verifyCollation(observed));
         ASSERT_EQ(*expected, *observed);
 
@@ -175,8 +174,8 @@ TEST_F(SecureSortTest, tpchQ09Sort) {
                       "  JOIN nation on n_nationkey = s_nationkey"
                       " ORDER BY l_comment LIMIT 1000"; //  order by to ensure order is reproducible and not sorted on the sort cols
 
-    // $1 not actually in Q9. using it here for validation
-    SortDefinition sort_definition{ColumnSort(2, SortDirection::ASCENDING), ColumnSort(0, SortDirection::DESCENDING), ColumnSort(1, SortDirection::ASCENDING)};
+    SortDefinition sort_definition{ColumnSort(2, SortDirection::ASCENDING),
+                                   ColumnSort(0, SortDirection::DESCENDING)};
 
 
     auto input = new SecureSqlInput(db_name_, sql, false);
@@ -186,8 +185,6 @@ TEST_F(SecureSortTest, tpchQ09Sort) {
     if(FLAGS_validation) {
         PlainTable *observed = sorted->reveal();
         DataUtilities::verifyCollation(observed);
-
-        string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY n_name, o_orderyear DESC, o_orderkey";
         delete observed;
     }
 
@@ -198,9 +195,9 @@ TEST_F(SecureSortTest, tpchQ09Sort) {
 
 // 18
 TEST_F(SecureSortTest, tpchQ18Sort) {
-
     string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders WHERE o_orderkey <= " + std::to_string(FLAGS_cutoff) + " "
-                 " ORDER BY o_comment, o_custkey, o_orderkey"; // order by to ensure order is reproducible and not sorted on the sort cols
+                        " ORDER BY o_comment, o_custkey, o_orderkey"; // order by to ensure order is reproducible and not sorted on the sort cols
+
 
 
     SortDefinition sort_definition;
