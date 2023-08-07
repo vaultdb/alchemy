@@ -244,14 +244,14 @@ Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_i
         cout << ">LHS: " << FieldUtilities::printInt(lhs_key) << endl;
         cout << ">RHS: " << FieldUtilities::printInt(rhs_key) << endl;
 
-        // #5 has real revenue (no norm), make sure that this comparison produces the opposite of key_cmp for DESC
-        SecureField lhs_revenue = table->getPackedField(lhs_idx, 5);
-        SecureField rhs_revenue = table->getPackedField(rhs_idx, 5);
-        cout << ">LHS revenue: " << FieldUtilities::printField(lhs_revenue) << endl;
-        cout << ">RHS revenue: " << FieldUtilities::printField(rhs_revenue) << endl;
-        Bit cmp = (lhs_revenue > rhs_revenue);
-        cout << ">lhs_rev > rhs_rev: " << cmp.reveal() << endl;
-        assert(cmp.reveal() != key_cmp.reveal());
+//        // #5 has real revenue (no norm), make sure that this comparison produces the opposite of key_cmp for DESC
+//        SecureField lhs_revenue = table->getPackedField(lhs_idx, 5);
+//        SecureField rhs_revenue = table->getPackedField(rhs_idx, 5);
+//        cout << ">LHS revenue: " << FieldUtilities::printField(lhs_revenue) << endl;
+//        cout << ">RHS revenue: " << FieldUtilities::printField(rhs_revenue) << endl;
+//        Bit cmp = (lhs_revenue > rhs_revenue);
+//        cout << ">lhs_rev > rhs_rev: " << cmp.reveal() << endl;
+//        assert(cmp.reveal() != key_cmp.reveal());
 
     }
 

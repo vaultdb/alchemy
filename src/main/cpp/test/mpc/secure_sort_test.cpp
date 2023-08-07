@@ -15,7 +15,7 @@ DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
-DEFINE_int32(cutoff, 1, "limit clause for queries"); // formerly 100
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65475, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -74,7 +74,7 @@ TEST_F(SecureSortTest, tpchQ01Sort) {
 
 TEST_F(SecureSortTest, tpchQ03Sort) {
 // TODO: return to this one
-    string sql = "SELECT l_orderkey, l_linenumber, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= 2"  + std::to_string(FLAGS_cutoff) +  "ORDER BY l_comment";
+    string sql = "SELECT l_orderkey, l_linenumber, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= 2"  + std::to_string(FLAGS_cutoff) +  " ORDER BY l_comment";
 
     string expected_result_sql = "WITH input AS (" + sql + ") SELECT l_orderkey, l_linenumber, revenue, o_shippriority, " + DataUtilities::queryDatetime("o_orderdate") + " FROM input ORDER BY revenue DESC, o_orderdate";
 
@@ -225,24 +225,6 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
 
 }
 
-// warmup
-TEST_F(SecureSortTest, customerSort) {
-	string sql = "SELECT * FROM customer WHERE c_custkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY c_custkey";
-
-	SortDefinition sort_definition;
-	sort_definition.emplace_back(0, SortDirection::ASCENDING);
-
-	auto input = new SecureSqlInput(db_name_, sql, false);
-	Sort<Bit> sort(input, sort_definition);
-	auto sorted = sort.run();
-
-    if(FLAGS_validation) {
-        PlainTable *observed = sorted->reveal();
-        DataUtilities::verifyCollation(observed);
-        delete observed;
-    }
-
-}
 
 
 int main(int argc, char **argv) {

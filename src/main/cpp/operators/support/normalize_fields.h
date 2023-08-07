@@ -333,11 +333,11 @@ namespace vaultdb {
             Integer dst = src;
             int8_t *src_ptr, *dst_ptr;
             // reverse byte order
-            for(int i = 0; i < src.size()/8; ++i) {
-                dst_ptr = ((int8_t *) dst.bits.data()) + i * 8 * TypeUtilities::getEmpBitSize();
-                src_ptr = ((int8_t *) src.bits.data()) + (src.size() - (i + 1) * 8) * TypeUtilities::getEmpBitSize();
-                memcpy(dst_ptr, src_ptr, 8 * TypeUtilities::getEmpBitSize());
-            }
+//            for(int i = 0; i < src.size()/8; ++i) {
+//                dst_ptr = ((int8_t *) dst.bits.data()) + i * 8 * TypeUtilities::getEmpBitSize();
+//                src_ptr = ((int8_t *) src.bits.data()) + (src.size() - (i + 1) * 8) * TypeUtilities::getEmpBitSize();
+//                memcpy(dst_ptr, src_ptr, 8 * TypeUtilities::getEmpBitSize());
+//            }
 
 
             if (dir == SortDirection::DESCENDING) {
