@@ -6,6 +6,7 @@
 #include "util/type_utilities.h"
 #include "util/field_utilities.h"
 
+// TODO: move this into Field.h/cpp or utils?
 namespace vaultdb {
     class NormalizeFields {
     public:
@@ -18,13 +19,8 @@ namespace vaultdb {
                     return normalizeInt<int32_t>(field, dir);
                 case FieldType::LONG:
                     return normalizeInt<int64_t>(field, dir);
-                case FieldType::FLOAT: {
-                    auto tmp = normalizeFloat(field, dir);
-                    cout << "Normalized float " << FieldUtilities::printField(field) << "\n"
-                         << "              to " << FieldUtilities::printField(tmp) << endl;
-                    return tmp;
-                    // return normalizeFloat(field, dir);
-                }
+                case FieldType::FLOAT:
+                     return normalizeFloat(field, dir);
                 case FieldType::STRING:
                     return normalizeString(field, dir);
                 default:
@@ -56,20 +52,10 @@ namespace vaultdb {
                 case FieldType::SECURE_BOOL:
                     return (dir == SortDirection::ASCENDING) ? field : !field;
                 case FieldType::SECURE_INT:
-                case FieldType::SECURE_LONG:{
-//                    auto tmp =  normalizeInt(field, dir, packed);
-//                    cout << "Normalized int: " << FieldUtilities::printInt(field.getValue<Integer>()) << "\n"
-//                        <<  " to             " << FieldUtilities::printInt(tmp.getValue<Integer>()) << ", dir=" << DataUtilities::printSortDirection(dir) <<  endl;
-//                    return tmp;
+                case FieldType::SECURE_LONG:
                     return normalizeInt(field, dir, packed);
-                }
-                case FieldType::SECURE_FLOAT: {
-                    auto tmp = normalizeFloat(field, dir);
-                    cout << "Normalized float " << FieldUtilities::printField(field) << "\n"
-                         << "              to " << FieldUtilities::printField(tmp) << endl;
-                    return tmp;
-//                    return normalizeFloat(field, dir);
-                }
+                case FieldType::SECURE_FLOAT:
+                    return normalizeFloat(field, dir);
                 case FieldType::SECURE_STRING:
                     return normalizeString(field, dir);
                 default:
@@ -84,13 +70,8 @@ namespace vaultdb {
                 case FieldType::SECURE_INT:
                 case FieldType::SECURE_LONG:
                     return denormalizeInt(field, dir, packed);
-                case FieldType::SECURE_FLOAT: {
-                    auto tmp = denormalizeFloat(field, dir);
-                    cout << "Denormalized float " << FieldUtilities::printField(field) << "\n"
-                         << "                to " << FieldUtilities::printField(tmp) << endl;
-                    return tmp;
-//                    return denormalizeFloat(field, dir);
-                }
+                case FieldType::SECURE_FLOAT:
+                    return denormalizeFloat(field, dir);
                 case FieldType::SECURE_STRING:
                     return normalizeString(field, dir); // reuse normalizeString - it does the same thing here
                 default:
@@ -167,7 +148,7 @@ namespace vaultdb {
 
         static PlainField denormalizeFloat(const PlainField & field, const SortDirection & dir) {
             int32_t bits = field.getValue<int32_t>();
-            cout << "Denorming int: " << FieldUtilities::printInt(bits) << ": " << endl;
+//            cout << "Denorming int: " << FieldUtilities::printInt(bits) << ": " << endl;
 
 //            int32_t tmp = bits;
 //            // reverse byte order
@@ -181,23 +162,23 @@ namespace vaultdb {
 //            cout << "After byte reversal: " << FieldUtilities::printInt(bits) << endl;
 
             const bool sign_bit = (bits & 0x80000000ul); // last bit is 1
-            cout << " sign bit: " << sign_bit << endl;
+//            cout << " sign bit: " << sign_bit << endl;
 
 
             if (sign_bit) {
 //                bits =  0x7FFFFFF  - bits;
                 bits = (0x7FFFFFF  | 0x80000000ul) - bits;
 
-                cout << " after flipping bits: " << FieldUtilities::printInt(bits) << endl;
+//                cout << " after flipping bits: " << FieldUtilities::printInt(bits) << endl;
             }
 
             float_t dst;
             memcpy(&dst, &bits, sizeof(float_t));
-            cout << " to float: " << FieldUtilities::printFloat(dst) << endl;
+//            cout << " to float: " << FieldUtilities::printFloat(dst) << endl;
             if(dir == SortDirection::DESCENDING) {
                 dst = -dst;
             }
-            cout << " after DESC: " << FieldUtilities::printFloat(dst) << endl;
+//            cout << " after DESC: " << FieldUtilities::printFloat(dst) << endl;
 
 
             return PlainField(FieldType::FLOAT, dst);
@@ -265,12 +246,12 @@ namespace vaultdb {
         // same as above, but for secure fields
         static SecureField normalizeFloat(const SecureField & field, const SortDirection & dir) {
             Float f = field.getValue<Float>();
-            cout << "Normalizing float " << f.reveal<double>() << endl;
+//            cout << "Normalizing float " << f.reveal<double>() << endl;
 
             if(dir == SortDirection::DESCENDING) {
                 f = -f;
             }
-            cout << " after DESC: " << FieldUtilities::printFloat(f) << endl;
+//            cout << " after DESC: " << FieldUtilities::printFloat(f) << endl;
 
             Bit sign_bit = f[FLOAT_LEN - 1];
             Integer ones(32, 0x7FFFFFF);
@@ -278,7 +259,7 @@ namespace vaultdb {
             memcpy(bits.bits.data(), f.value.data(), FLOAT_LEN * TypeUtilities::getEmpBitSize());
 
             bits = emp::If(sign_bit, ones - bits, bits);
-            cout << " after flipping bits: " << FieldUtilities::printInt(bits) << endl;
+//            cout << " after flipping bits: " << FieldUtilities::printInt(bits) << endl;
 
 //            vector<Bit> tmp(32);
 //            // reverse byte order
@@ -296,7 +277,7 @@ namespace vaultdb {
 
         static SecureField denormalizeFloat(const SecureField & field, const SortDirection & dir) {
             Integer bits = field.getValue<Integer>();
-            cout << "Denormalizing: " << FieldUtilities::printInt(bits) << endl;
+//            cout << "Denormalizing: " << FieldUtilities::printInt(bits) << endl;
 //            // reverse byte order
 //            vector<Bit> tmp(32);
 //            memcpy(tmp.data(), bits.bits.data() + 24, 8 * TypeUtilities::getEmpBitSize());
@@ -308,20 +289,20 @@ namespace vaultdb {
 //            cout << " after reversing bytes: " << FieldUtilities::printInt(bits) << endl;
 
             const Bit sign_bit = !(bits.bits[FLOAT_LEN - 1]); // first bit is zero
-            cout << " sign bit: " << sign_bit.reveal() << endl;
+//            cout << " sign bit: " << sign_bit.reveal() << endl;
 
             Integer ones(32, 0x7FFFFFF);
             bits = emp::If(sign_bit, ones - bits, bits);
-            cout << " after flipping bits: " << FieldUtilities::printInt(bits) << endl;
+//            cout << " after flipping bits: " << FieldUtilities::printInt(bits) << endl;
 
 
             Float dst;
             memcpy(dst.value.data(), bits.bits.data(), FLOAT_LEN * TypeUtilities::getEmpBitSize());
-            cout << " to float: " << FieldUtilities::printFloat(dst) << endl;
+//            cout << " to float: " << FieldUtilities::printFloat(dst) << endl;
             if(dir == SortDirection::DESCENDING) {
                 dst = -dst;
             }
-            cout << " after DESC: " << FieldUtilities::printFloat(dst) << endl;
+//            cout << " after DESC: " << FieldUtilities::printFloat(dst) << endl;
 
 
             return SecureField (FieldType::SECURE_FLOAT, dst);
@@ -329,9 +310,8 @@ namespace vaultdb {
         }
 
         static SecureField normalizeString(const SecureField & field, const SortDirection & dir) {
-            Integer src = field.getValue<Integer>();
-            Integer dst = src;
-            int8_t *src_ptr, *dst_ptr;
+            Integer dst = field.getValue<Integer>();
+//            int8_t *src_ptr, *dst_ptr;
             // reverse byte order
 //            for(int i = 0; i < src.size()/8; ++i) {
 //                dst_ptr = ((int8_t *) dst.bits.data()) + i * 8 * TypeUtilities::getEmpBitSize();

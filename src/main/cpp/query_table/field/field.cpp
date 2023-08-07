@@ -200,7 +200,7 @@ B Field<B>::operator>=(const Field &r) const {
             return getValue<int64_t>() >= r.getValue<int64_t>();
         case FieldType::FLOAT:
             return (getValue<float_t>()>= r.getValue<float_t>());
-            // TODO: consider adding manual equality check, like "epsilon" in operator===
+            // TODO: consider adding manual equality check, like "epsilon" in operator==
         case FieldType::STRING:
             return getValue<string>() >= r.getValue<string>();
         case FieldType::SECURE_BOOL:
@@ -322,7 +322,7 @@ B Field<B>::operator==(const Field<B> &r) const {
         case FieldType::FLOAT:
             // approx float equality
             lhs = getValue<float_t>();
-            epsilon = std::fabs(lhs * 0.00001);
+            epsilon = std::fabs(lhs * 0.000001);
             rhs = r.getValue<float_t>();
             return std::fabs(rhs - lhs) <=  epsilon;
         case FieldType::STRING:

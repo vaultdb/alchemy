@@ -180,11 +180,8 @@ TEST_F(SecureSortTest, tpchQ09Sort) {
                       "  JOIN nation on n_nationkey = s_nationkey"
                       " ORDER BY l_comment LIMIT 1000"; //  order by to ensure order is reproducible and not sorted on the sort cols
 
-
-
-    SortDefinition sort_definition;
-    sort_definition.emplace_back(2, SortDirection::ASCENDING);
-    sort_definition.emplace_back(0, SortDirection::DESCENDING);
+    // $1 not actually in Q9. using it here for validation
+    SortDefinition sort_definition{ColumnSort(2, SortDirection::ASCENDING), ColumnSort(0, SortDirection::DESCENDING), ColumnSort(1, SortDirection::ASCENDING)};
 
 
     auto input = new SecureSqlInput(db_name_, sql, false);
@@ -194,6 +191,8 @@ TEST_F(SecureSortTest, tpchQ09Sort) {
     if(FLAGS_validation) {
         PlainTable *observed = sorted->reveal();
         DataUtilities::verifyCollation(observed);
+
+        string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY n_name, o_orderyear DESC, o_orderkey";
         delete observed;
     }
 

@@ -312,9 +312,9 @@ bool DataUtilities::verifyCollation(PlainTable *sorted) {
         for(auto col_sort : collation) {
                 auto lhs_field = no_dummies.getField(i-1, col_sort.first);
                 auto rhs_field = no_dummies.getField(i, col_sort.first);
-                cout << "   (" << col_sort.first << ", "
-                << ((col_sort.second == SortDirection::ASCENDING) ? "ASC" : "DESC" ) << ") "
-                <<  "Comparing " << lhs_field << " with " << rhs_field << endl;
+//                cout << "   (" << col_sort.first << ", "
+//                << ((col_sort.second == SortDirection::ASCENDING) ? "ASC" : "DESC" ) << ") "
+//                <<  "Comparing " << lhs_field << " with " << rhs_field << endl;
                 if(lhs_field == rhs_field) continue;
 
                 if(col_sort.second == SortDirection::ASCENDING)

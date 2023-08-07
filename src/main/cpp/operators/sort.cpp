@@ -217,11 +217,10 @@ Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_i
     Integer lhs_key(placeholder);
     Integer rhs_key(placeholder);
 
-    PlainTuple l_tmp = table->revealRow(lhs_idx, dst_tmp);
-    PlainTuple r_tmp = table->revealRow(rhs_idx, dst_tmp);
-    cout << "Comparing rows: (" << lhs_idx << ", " << rhs_idx << ", " << (dir ? "ASC" : "DESC")
-         << "): "<< l_tmp << ", " << r_tmp << ", sort key width=" << sort_key_width_bits <<  endl;
-
+//    PlainTuple l_tmp = table->revealRow(lhs_idx, dst_tmp);
+//    PlainTuple r_tmp = table->revealRow(rhs_idx, dst_tmp);
+//    cout << "Comparing rows: (" << lhs_idx << ", " << rhs_idx << ", " << (dir ? "ASC" : "DESC")
+//         << "): "<< l_tmp << ", " << r_tmp << ", sort key width=" << sort_key_width_bits <<  endl;
 
 
     Bit *lhs = (Bit *) (row_table->tuple_data_.data() + row_table->tuple_size_ * lhs_idx);
@@ -237,12 +236,12 @@ Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_i
 
     Bit key_cmp = (lhs_key > rhs_key);
     Bit res = ((lhs_key > rhs_key) == dir);
-    if((l_tmp != r_tmp)) {
-        bool r2 = res.reveal();
-        cout << ">To swap? " << r2 << endl;
-        cout << ">(lhs > rhs): " << key_cmp.reveal() << " with dir " << dir << endl;
-        cout << ">LHS: " << FieldUtilities::printInt(lhs_key) << endl;
-        cout << ">RHS: " << FieldUtilities::printInt(rhs_key) << endl;
+//    if((l_tmp != r_tmp)) {
+//        bool r2 = res.reveal();
+//        cout << ">To swap? " << r2 << endl;
+//        cout << ">(lhs > rhs): " << key_cmp.reveal() << " with dir " << dir << endl;
+//        cout << ">LHS: " << FieldUtilities::printInt(lhs_key) << endl;
+//        cout << ">RHS: " << FieldUtilities::printInt(rhs_key) << endl;
 
 //        // #5 has real revenue (no norm), make sure that this comparison produces the opposite of key_cmp for DESC
 //        SecureField lhs_revenue = table->getPackedField(lhs_idx, 5);
@@ -253,7 +252,7 @@ Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_i
 //        cout << ">lhs_rev > rhs_rev: " << cmp.reveal() << endl;
 //        assert(cmp.reveal() != key_cmp.reveal());
 
-    }
+//    }
 
     return res;
 
