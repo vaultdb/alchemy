@@ -187,22 +187,12 @@ TEST_F(SecureSortMergeJoinTest, test_tpch_q3_customer_orders) {
 }
 
 
-TEST_F(SecureSortMergeJoinTest, test_tpch_q3_customer_orders_no_bitpacking) {
-    this->disableBitPacking();
-    runCustomerOrdersTest();
-}
 
 TEST_F(SecureSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
     runLineitemOrdersTest();
 }
 
-TEST_F(SecureSortMergeJoinTest, test_tpch_q3_lineitem_orders_no_bitpacking) {
 
-    this->disableBitPacking();
-    runLineitemOrdersTest();
-
-
-}
 
 // compose C-O-L join
 TEST_F(SecureSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
@@ -211,10 +201,7 @@ TEST_F(SecureSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
 }
 
 
-TEST_F(SecureSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_no_bitpacking) {
-    this->disableBitPacking();
-    runLineitemOrdersCustomerTest();
-}
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

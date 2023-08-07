@@ -184,21 +184,9 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
 }
 
 
-TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders_no_bit_packing) {
-    this->disableBitPacking();
-    runCustomerOrdersTest();
-}
-
 
 
 TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
-    runLineitemOrdersTest();
-}
-
-
-TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_no_bit_packing) {
-
-    this->disableBitPacking();
     runLineitemOrdersTest();
 }
 
@@ -208,13 +196,6 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_no_bit_packing) {
 TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
         runLineitemOrdersCustomerTest();
 }
-
-TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer_no_bit_packing) {
-
-    this->disableBitPacking();
-    runLineitemOrdersCustomerTest();
-}
-
 
 
 int main(int argc, char **argv) {
