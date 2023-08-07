@@ -154,6 +154,8 @@ namespace vaultdb {
         static string printFloat(const Float & f);
         static string printInt(const int32_t & i);
         static string printInt(const Integer & i);
+        static string printString(const string & s);
+
         static string printField(const SecureField & f) {
             if(f.getType() == FieldType::SECURE_FLOAT) {
                 return printFloat(f.getValue<Float>());
@@ -178,8 +180,18 @@ namespace vaultdb {
                 ss << b << ": " << (b ? "true" : "false");
                 return ss.str();
             }
-            // TODO: should cover int64_t too
-            return printInt(f.getValue<int32_t>());
+            if(f.getType() == FieldType::STRING) {
+                string s = f.getValue<string>();
+                return printString(s);
+            }
+
+            if(f.getType() == FieldType::INT)
+                return printInt(f.getValue<int32_t>());
+
+            if(f.getType() == FieldType::LONG)
+                return printInt(f.getValue<int64_t>());
+
+            throw; // other types N/A
 
         }
 

@@ -206,7 +206,7 @@ namespace vaultdb {
        static PlainField normalizeString(const PlainField & field, const SortDirection & dir) {
             std::string src = field.getValue<std::string>();
             std::string dst = src;
-            std::reverse(dst.begin(), dst.end());
+//            std::reverse(dst.begin(), dst.end());
 
             if (dir == SortDirection::DESCENDING) {
                 // invert bytes with XOR

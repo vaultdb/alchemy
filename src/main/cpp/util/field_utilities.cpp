@@ -219,6 +219,12 @@ string FieldUtilities::printInt(const Integer &i) {
 
 }
 
+string FieldUtilities::printString(const string &s) {
+    stringstream ss;
+    ss << s << ": " << DataUtilities::printBitArray((int8_t *) s.c_str(), s.size()) << ", " << DataUtilities::printByteArray((int8_t *) s.c_str(), s.size());
+    return ss.str();
+}
+
 
 
 

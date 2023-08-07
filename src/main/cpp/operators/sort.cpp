@@ -300,14 +300,10 @@ bool Sort<B>::swapTuplesNormalized(const QueryTable<bool> *table, const int &lhs
 
         cout << ">To swap? " << ret << endl;
         cout << ">(lhs > rhs): " << key_cmp << " with dir " << dir << endl;
-        int32_t l_tmp, r_tmp;
-        memcpy(&l_tmp, lhs, 4);
-        memcpy(&r_tmp, rhs, 4);
+//        cout << "LHS nation: " <<  FieldUtilities::printField(l_tmp.getField(1)) << endl;
+//        cout << "RHS nation: " <<  FieldUtilities::printField(r_tmp.getField(1)) << endl;
 
-        cout << ">LHS: " << FieldUtilities::printInt(l_tmp) << endl;
-        cout << ">RHS: " << FieldUtilities::printInt(r_tmp) << endl;
-        cout << ">Int lhs > rhs: " << (l_tmp > r_tmp) << endl;
-//
+        //
 //        // #5 has real revenue (no norm), make sure that this comparison produces the opposite of key_cmp for DESC
 //        PlainField lhs_revenue = table->getField(lhs_idx, 5);
 //        PlainField rhs_revenue = table->getField(rhs_idx, 5);

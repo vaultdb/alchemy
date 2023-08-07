@@ -4,7 +4,7 @@
 #include <operators/project.h>
 #include "query_table/table_factory.h"
 
-DEFINE_int32(cutoff, 100, "limit clause for queries"); // formerly 100
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
@@ -127,7 +127,9 @@ TEST_F(SortTest, tpchQ9Sort) {
                       "  JOIN nation on n_nationkey = s_nationkey"
                       " ORDER BY  l_comment, l_orderkey LIMIT "  + std::to_string(FLAGS_cutoff);
 
-    SortDefinition sort_def{ColumnSort(2, SortDirection::ASCENDING), ColumnSort(0, SortDirection::DESCENDING)};
+    SortDefinition sort_def{ColumnSort(2, SortDirection::ASCENDING),
+                            ColumnSort(0, SortDirection::DESCENDING),
+                            ColumnSort(1, SortDirection::ASCENDING)}; // $1 added for verification, not needed in real Q9
     auto input = new SqlInput(db_name_, sql, false);
     Sort sort(input, sort_def);
 
@@ -136,7 +138,7 @@ TEST_F(SortTest, tpchQ9Sort) {
 
     ASSERT_TRUE(DataUtilities::verifyCollation(observed));
 
-    string expected_sql = "SELECT * FROM (" + sql + ") subquery ORDER BY n_name, o_orderyear DESC";
+    string expected_sql = "SELECT * FROM (" + sql + ") subquery ORDER BY n_name, o_orderyear DESC, o_orderkey";
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
     expected->setSortOrder(observed->getSortOrder());
     ASSERT_EQ(*expected, *observed);
