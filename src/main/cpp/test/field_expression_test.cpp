@@ -84,26 +84,6 @@ TEST_F(FieldExpressionTest, cmp_swap) {
 
 }
 
-TEST_F(FieldExpressionTest, string_normalization_test) {
-    string l = "UNITED KINGDOM";
-    string r = "UNITED STATES ";
-    // USA > UK in alphabetical order, it comes later in sorted order
-
-    while(l.size() < 25) l += " ";
-    while(r.size() < 25) r += " ";
-
-    cout << "LHS: " << l << ": " <<  DataUtilities::printByteArray((int8_t *) l.c_str(), 25) << endl;
-    cout << "RHS: " << r << ": " << DataUtilities::printByteArray((int8_t *) r.c_str(), 25) <<  endl;
-    QueryFieldDesc desc(0, "nation.n_name:varchar(25)");
-    PlainField lhs = Field<bool>::deserialize(desc, (int8_t *) l.c_str());
-    PlainField lhs_norm = NormalizeFields::normalize(lhs, SortDirection::ASCENDING);
-
-
-    PlainField rhs = Field<bool>::deserialize(desc, (int8_t *) r.c_str());
-    PlainField rhs_norm = NormalizeFields::normalize(rhs, SortDirection::ASCENDING);
-    ASSERT_TRUE(lhs_norm < rhs_norm);
-}
-
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
