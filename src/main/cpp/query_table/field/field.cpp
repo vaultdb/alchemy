@@ -322,7 +322,7 @@ B Field<B>::operator==(const Field<B> &r) const {
         case FieldType::FLOAT:
             // approx float equality
             lhs = getValue<float_t>();
-            epsilon = std::fabs(lhs * 0.000001);
+            epsilon = std::fabs(lhs *  0.00001);
             rhs = r.getValue<float_t>();
             return std::fabs(rhs - lhs) <=  epsilon;
         case FieldType::STRING:
