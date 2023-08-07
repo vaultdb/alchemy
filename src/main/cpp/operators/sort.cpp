@@ -164,8 +164,6 @@ void Sort<B>::bitonicMergeNormalized( QueryTable<B> *table, const SortDefinition
         for (int i = lo; i < lo + n - m; ++i) {
             B to_swap = swapTuplesNormalized(table, i, i+m, dir, sort_key_size_bits_);
             table->compareSwap(to_swap, i, i+m);
-//            if(FieldUtilities::extract_bool(to_swap))
-//                cout << "After swap: \n" << *(table->revealInsecure()) << endl;
             ++counter;
         }
 
@@ -217,11 +215,6 @@ Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_i
     Integer lhs_key(placeholder);
     Integer rhs_key(placeholder);
 
-//    PlainTuple l_tmp = table->revealRow(lhs_idx, dst_tmp);
-//    PlainTuple r_tmp = table->revealRow(rhs_idx, dst_tmp);
-//    cout << "Comparing rows: (" << lhs_idx << ", " << rhs_idx << ", " << (dir ? "ASC" : "DESC")
-//         << "): "<< l_tmp << ", " << r_tmp << ", sort key width=" << sort_key_width_bits <<  endl;
-
 
     Bit *lhs = (Bit *) (row_table->tuple_data_.data() + row_table->tuple_size_ * lhs_idx);
     Bit *rhs = (Bit *) (row_table->tuple_data_.data() + row_table->tuple_size_ * rhs_idx);
@@ -234,27 +227,7 @@ Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_i
     rhs_key[sort_key_width_bits] = 1;
 
 
-    Bit key_cmp = (lhs_key > rhs_key);
-    Bit res = ((lhs_key > rhs_key) == dir);
-//    if((l_tmp != r_tmp)) {
-//        bool r2 = res.reveal();
-//        cout << ">To swap? " << r2 << endl;
-//        cout << ">(lhs > rhs): " << key_cmp.reveal() << " with dir " << dir << endl;
-//        cout << ">LHS: " << FieldUtilities::printInt(lhs_key) << endl;
-//        cout << ">RHS: " << FieldUtilities::printInt(rhs_key) << endl;
-
-//        // #5 has real revenue (no norm), make sure that this comparison produces the opposite of key_cmp for DESC
-//        SecureField lhs_revenue = table->getPackedField(lhs_idx, 5);
-//        SecureField rhs_revenue = table->getPackedField(rhs_idx, 5);
-//        cout << ">LHS revenue: " << FieldUtilities::printField(lhs_revenue) << endl;
-//        cout << ">RHS revenue: " << FieldUtilities::printField(rhs_revenue) << endl;
-//        Bit cmp = (lhs_revenue > rhs_revenue);
-//        cout << ">lhs_rev > rhs_rev: " << cmp.reveal() << endl;
-//        assert(cmp.reveal() != key_cmp.reveal());
-
-//    }
-
-    return res;
+    return ((lhs_key > rhs_key) == dir);
 
 }
 
@@ -265,24 +238,17 @@ bool Sort<B>::swapTuplesNormalized(const QueryTable<bool> *table, const int &lhs
     assert(table->storageModel() == StorageModel::ROW_STORE);
     RowTable<bool> *row_table = (RowTable<bool> *) table;
 
-    PlainTuple l_tmp = table->getPlainTuple(lhs_idx);
-    PlainTuple r_tmp = table->getPlainTuple(rhs_idx);
-    cout << "Comparing rows: (" << lhs_idx << ", " << rhs_idx << ", " << (dir ? "ASC" : "DESC")
-         << "): "<< l_tmp << ", " << r_tmp << endl;
-
-
 
     int8_t *lhs =  (row_table->tuple_data_.data() + row_table->tuple_size_ * lhs_idx);
     int8_t *rhs =  (row_table->tuple_data_.data() + row_table->tuple_size_ * rhs_idx);
     int byte_cnt = sort_key_width_bits / 8;
-    cout << "LHS: " << DataUtilities::printBitArray(lhs, byte_cnt) << ", " << DataUtilities::printByteArray(lhs, byte_cnt) << endl;
-    cout << "RHS: " << DataUtilities::printBitArray(rhs, byte_cnt) << ", " << DataUtilities::printByteArray(rhs, byte_cnt) << endl;
 
+    // TODO: streamline this with memcmp over reversed keys
     bool lhs_gt = false;
     for(int i = byte_cnt - 1; i >= 0; --i) {
         auto l = (unsigned int) lhs[i];
         auto r = (unsigned int) rhs[i];
-        cout << "Comparing bytes: " << l<< ", " << r << endl;
+
         if(l == r) continue;
         if(l > r) {
             lhs_gt = true;
@@ -292,32 +258,7 @@ bool Sort<B>::swapTuplesNormalized(const QueryTable<bool> *table, const int &lhs
     }
 
 //    int res =  std::memcmp(lhs, rhs, sort_key_width_bits/8);
-//    cout << ">Res: " << res << endl;
-    bool key_cmp = lhs_gt; //  (res > 0);
-    bool ret = (key_cmp == dir);
-    if(l_tmp != r_tmp) {
-
-        cout << ">To swap? " << ret << endl;
-        cout << ">(lhs > rhs): " << key_cmp << " with dir " << dir << endl;
-//        cout << "LHS nation: " <<  FieldUtilities::printField(l_tmp.getField(1)) << endl;
-//        cout << "RHS nation: " <<  FieldUtilities::printField(r_tmp.getField(1)) << endl;
-
-        //
-//        // #5 has real revenue (no norm), make sure that this comparison produces the opposite of key_cmp for DESC
-//        PlainField lhs_revenue = table->getField(lhs_idx, 5);
-//        PlainField rhs_revenue = table->getField(rhs_idx, 5);
-//        cout << ">LHS revenue: " << FieldUtilities::printField(lhs_revenue) << endl;
-//        cout << ">RHS revenue: " << FieldUtilities::printField(rhs_revenue) << endl;
-//        bool cmp = (lhs_revenue > rhs_revenue);
-//        cout << ">lhs_rev > rhs_rev: " << cmp << endl;
-//        assert(cmp != key_cmp);
-//        assert((l_tmp > r_tmp) == key_cmp);
-
-    }
-
-    // < 0: lhs < rhs
-    // > 0: lhs > rhs
-    return ret;
+    return  (lhs_gt == dir);
 }
 
 
@@ -343,25 +284,10 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src, SortDefinition &sort_
 
 
     vector<int> sort_cols;
-//    if(std::is_same_v<B, bool>) {
-//        for (auto key: sort_def) {
-//            builder.addMapping(key.first, write_cursor);
-////            cout << "Mapping " << key.first << " to " << write_cursor << endl;
-//
-//            if (key.first != -1) {
-//                sort_cols.emplace_back(key.first);
-//                sort_key_map_[write_cursor] = key.first;
-//            }
-//
-//            sort_key_size_bits_ += src->getSchema().getField(key.first).size();
-//            ++write_cursor;
-//        }
-//    } else { // reverse order of sort keys for Bits
         for(int i = sort_def.size()-1; i >= 0; --i) {
             auto key = sort_def[i];
 
             builder.addMapping(key.first, write_cursor);
-//            cout << "Mapping " << key.first << " to " << write_cursor << endl;
 
             if (key.first != -1) {
                 sort_cols.emplace_back(key.first);
@@ -372,22 +298,13 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src, SortDefinition &sort_
             ++write_cursor;
         }
         std::reverse(sort_def.begin(), sort_def.end());
-//    }
 
     for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
         if(std::find(sort_cols.begin(), sort_cols.end(),i) == sort_cols.end()) {
             builder.addMapping(i, write_cursor);
-//            cout << "Mapping " << i << " to " << write_cursor << endl;
             sort_key_map_[write_cursor] = i;
             ++write_cursor;
         }
-    }
-
-    // temporarily put original row after normalized one for debugging
-    // TODO: remove this for loop
-    for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
-            builder.addMapping(i, write_cursor);
-            ++write_cursor;
     }
 
     Project<B> projection(src->clone(), builder.getExprs());
@@ -419,37 +336,14 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src, SortDefinition &sort_
 
     // normalize the fields for the sort key
     for(int i = 0; i < dst->getTupleCount(); ++i) {
-//        cout << rows->revealRow(i, plain_schema, PUBLIC) << endl;
-//        Bit *tmp = (Bit *) (rows->tuple_data_.data() + rows->tuple_size_ * i);
-//        cout << "Row starts at offset: " << rows->tuple_size_ * i << endl; // 16 bytes / Bit, 17 Bits (2*(3+13)+1 (dt)) per row = 528 bytes / row
-//        cout << "Before starting bits: ";
-//        for(int j = 0; j < this->sort_key_size_bits_; ++j) {
-//            cout << tmp[j].reveal();
-//        }
-//        cout << endl;
-
         for(int j = 0; j < sort_def.size(); ++j)  {
             Field<B> s = projected->getPackedField(i, j);
             Field<B> d = NormalizeFields::normalize(s, sort_def[j].second, normed_schema.getField(j).bitPacked());
-//            cout << "Received packed field: " << FieldUtilities::printField(d) << endl;
             dst->setPackedField(i, j, d);
 
-//            cout << "During starting bits " << j << ": ";
-//            for(int j = 0; j < this->sort_key_size_bits_; ++j) {
-//                cout << tmp[j].reveal();
-//            }
-//            cout << endl;
         }
 
-//        cout << "After starting bits:  ";
-//        for(int j = 0; j < this->sort_key_size_bits_; ++j) {
-//            cout << tmp[j].reveal();
-//        }
-//        cout << endl << endl;
-
     }
-    cout << "Normalized schema: " << normed_schema << endl;
-    cout << "Normalized table: " << *(dst->revealInsecure()) << endl;
 
     return dst;
 }
@@ -459,7 +353,7 @@ template<typename B>
 QueryTable<B> *Sort<B>::denormalizeTable(QueryTable<B> *src,  SortDefinition &sort_def) {
     // denormalize the fields for the sort key
     auto dst = src->clone();
-    cout << "Normalized sorted table: " << *(dst->revealInsecure()) << endl;
+
     QuerySchema dst_schema = projected_schema_;
     dst->setSchema(dst_schema);
     for(int i = 0; i < src->getTupleCount(); ++i) {
@@ -470,14 +364,10 @@ QueryTable<B> *Sort<B>::denormalizeTable(QueryTable<B> *src,  SortDefinition &so
         }
     }
 
-    cout << "Denormalized sorted table: " << *(dst->revealInsecure()) << endl;
-//    if(std::is_same_v<B, Bit>) {
-        std::reverse(sort_def.begin(), sort_def.end());
-//    }
+    std::reverse(sort_def.begin(), sort_def.end());
 
     ExpressionMapBuilder<B> builder(src->getSchema());
     for(auto pos : sort_key_map_) {
-        cout << "Mapping " << pos.first << " to " << pos.second << endl;
         builder.addMapping(pos.first, pos.second);
     }
     Project<B> projection(dst->clone(), builder.getExprs());

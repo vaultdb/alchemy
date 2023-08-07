@@ -494,7 +494,7 @@ size_t OperatorCostModel::compareSwapCost(const QuerySchema &schema, const SortD
 
     for(auto col_sort : sort) {
         QueryFieldDesc f = schema.getField(col_sort.first);
-        comparison_cost += 2 * ExpressionCostModel<Bit>::getComparisonCost(f);
+        comparison_cost +=  ExpressionCostModel<Bit>::getComparisonCost(f);
         comparison_cost += 2; // bookkeeping overhead.  Bit::select (+1), & (+1)
     }
 

@@ -44,10 +44,9 @@ TEST_F(SecureSortTest, tpchQ01Sort) {
     SortDefinition sort_def{ColumnSort(0, SortDirection::ASCENDING),
             ColumnSort(1, SortDirection::ASCENDING)
     };
-    cout << "Collation " << DataUtilities::printSortDefinition(sort_def) << endl;
+
 
     auto input = new SecureSqlInput(db_name_, sql, false);
-//    cout << "Input: " << *input->run()->revealInsecure() << endl;
     Sort<emp::Bit> sort(input, sort_def);
 
     auto sorted = sort.run();
@@ -83,7 +82,7 @@ TEST_F(SecureSortTest, tpchQ03Sort) {
 
 
     auto input = new SecureSqlInput(db_name_, sql, false);
-    cout << "Input: " << *input->run()->revealInsecure() << endl;
+
     Sort<Bit> sort(input, sort_def);
      auto sorted = sort.run();
 
@@ -92,7 +91,6 @@ TEST_F(SecureSortTest, tpchQ03Sort) {
         PlainTable *observed = sorted->reveal();
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_result_sql,false);
         expected->setSortOrder(observed->getSortOrder());
-        cout << "Expected: " << *expected << endl;
 
 
         ASSERT_TRUE(DataUtilities::verifyCollation(observed));
@@ -111,18 +109,16 @@ TEST_F(SecureSortTest, tpchQ05Sort) {
     string sql = "SELECT l_orderkey, l_linenumber, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + "  ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     SortDefinition sort_definition{ColumnSort(2, SortDirection::DESCENDING)};
-    cout << "Collation: " << DataUtilities::printSortDefinition(sort_definition) << endl;
-
 
     auto input = new SecureSqlInput(db_name_, sql, false);
-    cout << "Input: " << *input->run()->revealInsecure() << endl;
+
     Sort<Bit> sort(input, sort_definition);
     auto sorted = sort.run();
     
     if(FLAGS_validation) {
 
         PlainTable *observed  = sorted->revealInsecure();
-        cout << "Sorted: " << *observed << endl;
+
         ASSERT_TRUE(DataUtilities::verifyCollation(observed));
 
         string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY revenue DESC";

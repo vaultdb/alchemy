@@ -111,75 +111,41 @@ namespace vaultdb {
             static PlainField normalizeFloat(const PlainField & field, const SortDirection & dir) {
                 float_t f = field.getValue<float_t>();
                 uint32_t bits;
-            cout << "Normalizing float " << FieldUtilities::printFloat(f) << ": " << endl;
+
             if(dir == SortDirection::DESCENDING) {
                     f = -f;
                 }
-            cout << " after DESC: " << FieldUtilities::printFloat(f) << endl;
 
             memcpy(&bits, &f, sizeof(float_t));
 
 
             const uint32_t sign_bit = bits & 0x80000000ul;
-            cout << " sign bit: " << sign_bit << endl;
 
             if (sign_bit) {
                 bits = (0x7FFFFFF  | 0x80000000ul) - bits;
-                cout << " after flipping bits: " << FieldUtilities::printInt(bits) << endl;
-//                int test = (0x7FFFFFFF | 0x80000000ul)  - bits;
-//                cout << "  Test: " << FieldUtilities::printInt(test) << endl;
-                // stash the sign bit in the last bit - this causes a minor loss in precision for normalized comparisons
-//                cout << "  Bit mask: " << FieldUtilities::printInt(0x80000000ul) << endl;
-//                bits |=  0x00000001ul;
-//                cout << "  After reinstating the sign bit: " << FieldUtilities::printInt(bits) << endl;
             }
 
-            // reverse byte order
-//            int32_t dst;
-//            int8_t *dst_ptr = (int8_t *) &dst;
-//            for(int i = 0; i < 4; ++i) {
-//                *dst_ptr =  ((int8_t *) &bits)[3 - i];
-//                ++dst_ptr;
-//            }
-//            cout << " after reversing bytes: " << FieldUtilities::printInt(dst) << endl;
 
             return PlainField(FieldType::INT, (int32_t) bits);
         }
 
         static PlainField denormalizeFloat(const PlainField & field, const SortDirection & dir) {
             int32_t bits = field.getValue<int32_t>();
-//            cout << "Denorming int: " << FieldUtilities::printInt(bits) << ": " << endl;
-
-//            int32_t tmp = bits;
-//            // reverse byte order
-//            int8_t *bits_ptr = (int8_t *) &bits;
-//            for(int i = 0; i < 4; ++i) {
-//                *bits_ptr =  ((int8_t *) &tmp)[3 - i];
-//                ++bits_ptr;
-//            }
-//
-//            bits = tmp;
-//            cout << "After byte reversal: " << FieldUtilities::printInt(bits) << endl;
-
             const bool sign_bit = (bits & 0x80000000ul); // last bit is 1
-//            cout << " sign bit: " << sign_bit << endl;
-
 
             if (sign_bit) {
-//                bits =  0x7FFFFFF  - bits;
+                // OR with sign bit to retain sign bit
+                // this results in a minor loss of precision for the sort comparisons alone
+                // but it is needed to reverse the process later
                 bits = (0x7FFFFFF  | 0x80000000ul) - bits;
-
-//                cout << " after flipping bits: " << FieldUtilities::printInt(bits) << endl;
             }
 
             float_t dst;
             memcpy(&dst, &bits, sizeof(float_t));
-//            cout << " to float: " << FieldUtilities::printFloat(dst) << endl;
+
             if(dir == SortDirection::DESCENDING) {
                 dst = -dst;
             }
-//            cout << " after DESC: " << FieldUtilities::printFloat(dst) << endl;
-
 
             return PlainField(FieldType::FLOAT, dst);
         }
@@ -187,7 +153,6 @@ namespace vaultdb {
        static PlainField normalizeString(const PlainField & field, const SortDirection & dir) {
             std::string src = field.getValue<std::string>();
             std::string dst = src;
-//            std::reverse(dst.begin(), dst.end());
 
             if (dir == SortDirection::DESCENDING) {
                 // invert bytes with XOR
@@ -246,12 +211,10 @@ namespace vaultdb {
         // same as above, but for secure fields
         static SecureField normalizeFloat(const SecureField & field, const SortDirection & dir) {
             Float f = field.getValue<Float>();
-//            cout << "Normalizing float " << f.reveal<double>() << endl;
 
             if(dir == SortDirection::DESCENDING) {
                 f = -f;
             }
-//            cout << " after DESC: " << FieldUtilities::printFloat(f) << endl;
 
             Bit sign_bit = f[FLOAT_LEN - 1];
             Integer ones(32, 0x7FFFFFF);
@@ -259,51 +222,22 @@ namespace vaultdb {
             memcpy(bits.bits.data(), f.value.data(), FLOAT_LEN * TypeUtilities::getEmpBitSize());
 
             bits = emp::If(sign_bit, ones - bits, bits);
-//            cout << " after flipping bits: " << FieldUtilities::printInt(bits) << endl;
-
-//            vector<Bit> tmp(32);
-//            // reverse byte order
-//            memcpy(tmp.data(), bits.bits.data() + 24, 8 * TypeUtilities::getEmpBitSize());
-//            memcpy(tmp.data() + 8, bits.bits.data() + 16, 8 * TypeUtilities::getEmpBitSize());
-//            memcpy(tmp.data() + 16, bits.bits.data() + 8, 8 * TypeUtilities::getEmpBitSize());
-//            memcpy(tmp.data() + 24, bits.bits.data(), 8 * TypeUtilities::getEmpBitSize());
-//
-//            Integer dst(tmp);
-//            cout << " after reversing bytes: " << FieldUtilities::printInt(dst) << endl;
-//            return SecureField (FieldType::SECURE_INT, dst);
-
-    return SecureField (FieldType::SECURE_INT, bits);
+            return SecureField (FieldType::SECURE_INT, bits);
         }
 
         static SecureField denormalizeFloat(const SecureField & field, const SortDirection & dir) {
             Integer bits = field.getValue<Integer>();
-//            cout << "Denormalizing: " << FieldUtilities::printInt(bits) << endl;
-//            // reverse byte order
-//            vector<Bit> tmp(32);
-//            memcpy(tmp.data(), bits.bits.data() + 24, 8 * TypeUtilities::getEmpBitSize());
-//            memcpy(tmp.data() + 8, bits.bits.data() + 16, 8 * TypeUtilities::getEmpBitSize());
-//            memcpy(tmp.data() + 16, bits.bits.data() + 8, 8 * TypeUtilities::getEmpBitSize());
-//            memcpy(tmp.data() + 24, bits.bits.data(), 8 * TypeUtilities::getEmpBitSize());
-//
-//            bits.bits = tmp;
-//            cout << " after reversing bytes: " << FieldUtilities::printInt(bits) << endl;
-
             const Bit sign_bit = !(bits.bits[FLOAT_LEN - 1]); // first bit is zero
-//            cout << " sign bit: " << sign_bit.reveal() << endl;
 
             Integer ones(32, 0x7FFFFFF);
             bits = emp::If(sign_bit, ones - bits, bits);
-//            cout << " after flipping bits: " << FieldUtilities::printInt(bits) << endl;
-
 
             Float dst;
             memcpy(dst.value.data(), bits.bits.data(), FLOAT_LEN * TypeUtilities::getEmpBitSize());
-//            cout << " to float: " << FieldUtilities::printFloat(dst) << endl;
+
             if(dir == SortDirection::DESCENDING) {
                 dst = -dst;
             }
-//            cout << " after DESC: " << FieldUtilities::printFloat(dst) << endl;
-
 
             return SecureField (FieldType::SECURE_FLOAT, dst);
 
@@ -311,14 +245,6 @@ namespace vaultdb {
 
         static SecureField normalizeString(const SecureField & field, const SortDirection & dir) {
             Integer dst = field.getValue<Integer>();
-//            int8_t *src_ptr, *dst_ptr;
-            // reverse byte order
-//            for(int i = 0; i < src.size()/8; ++i) {
-//                dst_ptr = ((int8_t *) dst.bits.data()) + i * 8 * TypeUtilities::getEmpBitSize();
-//                src_ptr = ((int8_t *) src.bits.data()) + (src.size() - (i + 1) * 8) * TypeUtilities::getEmpBitSize();
-//                memcpy(dst_ptr, src_ptr, 8 * TypeUtilities::getEmpBitSize());
-//            }
-
 
             if (dir == SortDirection::DESCENDING) {
                 // invert the bits

@@ -308,7 +308,7 @@ bool DataUtilities::verifyCollation(PlainTable *sorted) {
 
 
     for(int i = 1; i < no_dummies.getTupleCount(); ++i) {
-        cout << "Comparing row " << no_dummies.getPlainTuple(i-1) << " with " << no_dummies.getPlainTuple(i) << endl;
+//        cout << "Comparing row " << no_dummies.getPlainTuple(i-1) << " with " << no_dummies.getPlainTuple(i) << endl;
         for(auto col_sort : collation) {
                 auto lhs_field = no_dummies.getField(i-1, col_sort.first);
                 auto rhs_field = no_dummies.getField(i, col_sort.first);
