@@ -47,7 +47,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
     string local_db = db_name_;
 
-    cout << " Observed DB : "<< local_db << " - Bit Packed: " << SystemConfiguration::getInstance().bitPackingEnabled() <<  endl;
+//    cout << " Observed DB : "<< local_db << " - Bit Packed: " << SystemConfiguration::getInstance().bitPackingEnabled() <<  endl;
     auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
@@ -62,7 +62,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     PlanParser<Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-    std::cout << root->printTree() << endl;
+//    std::cout << root->printTree() << endl;
 
     SecureTable *result = root->run();
 
@@ -123,7 +123,7 @@ void FullyOptimizedTest::runStubTest(string & sql_plan, string & json_plan, stri
     PlanParser<emp::Bit> parser(local_db, sql_plan, json_plan, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-    std::cout << "Query plan: " << root->printTree() << endl;
+//    std::cout << "Query plan: " << root->printTree() << endl;
 
     SecureTable *result = root->run();
 
