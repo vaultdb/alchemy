@@ -4,7 +4,7 @@
 #include <operators/project.h>
 #include "query_table/table_factory.h"
 
-DEFINE_int32(cutoff, 100, "limit clause for queries");
+DEFINE_int32(cutoff, 100, "limit clause for queries"); // formerly 100
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
@@ -71,9 +71,10 @@ TEST_F(SortTest, tpchQ3Sort) {
 
 TEST_F(SortTest, tpchQ5Sort) {
 
-    string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY  l_comment, l_orderkey LIMIT "  + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the sort cols
+    string sql = "SELECT l_orderkey, l_linenumber, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY  l_comment, l_orderkey LIMIT "  + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the sort cols
 
-    SortDefinition sort_def{ ColumnSort(1, SortDirection::DESCENDING)};
+
+    SortDefinition sort_def{ ColumnSort(2, SortDirection::DESCENDING)};
 
     auto input = new SqlInput(db_name_, sql, false);
     Sort<bool> sorter(input, sort_def);
@@ -81,6 +82,11 @@ TEST_F(SortTest, tpchQ5Sort) {
 
     ASSERT_TRUE(DataUtilities::verifyCollation(observed));
 
+    string expected_sql = "SELECT * FROM (" + sql + ") subquery ORDER BY revenue DESC";
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
+    expected->setSortOrder(observed->getSortOrder());
+    ASSERT_EQ(*expected, *observed);
+    delete expected;
 
 }
 
@@ -119,8 +125,7 @@ TEST_F(SortTest, tpchQ9Sort) {
     string sql = "SELECT o_orderyear, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
                       "  JOIN supplier s ON s_suppkey = l_suppkey"
                       "  JOIN nation on n_nationkey = s_nationkey"
-                      " ORDER BY  l_comment, l_orderkey LIMIT "  + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the sort cols
-
+                      " ORDER BY  l_comment, l_orderkey LIMIT "  + std::to_string(FLAGS_cutoff);
 
     SortDefinition sort_def{ColumnSort(2, SortDirection::ASCENDING), ColumnSort(0, SortDirection::DESCENDING)};
     auto input = new SqlInput(db_name_, sql, false);
@@ -130,6 +135,11 @@ TEST_F(SortTest, tpchQ9Sort) {
     PlainTable *observed = sort.run();
 
     ASSERT_TRUE(DataUtilities::verifyCollation(observed));
+
+    string expected_sql = "SELECT * FROM (" + sql + ") subquery ORDER BY n_name, o_orderyear DESC";
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
+    expected->setSortOrder(observed->getSortOrder());
+    ASSERT_EQ(*expected, *observed);
 
 }
 

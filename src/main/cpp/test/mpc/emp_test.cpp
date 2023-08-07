@@ -142,9 +142,10 @@ TEST_F(EmpTest, emp_test_varchar) {
 }
 
 TEST_F(EmpTest, test_float_normalization) {
-    float f_input = 31713.646484;
-    float g_input = 38269.800781; //  19980.431641;
-
+//    float f_input = 31713.646484;
+//    float g_input = 38269.800781; //  19980.431641, 6941.231934;
+    float_t f_input = 6941.231934;
+    float_t g_input = 17236.36719;
     cout << "f input: " << FieldUtilities::printFloat(f_input) << endl;
     cout << "g input: " << FieldUtilities::printFloat(g_input) << endl << endl;
 
@@ -158,9 +159,10 @@ TEST_F(EmpTest, test_float_normalization) {
     cout << "g norm:  " << FieldUtilities::printInt(g_input_norm.getValue<int32_t>()) << endl << endl;
 
     bool input_lt = (f_input < g_input);
-    bool norm_lt = !(f_input_norm < g_input_norm); // inverting for DESC
-    ASSERT_EQ(input_lt, norm_lt);
-
+    bool norm_geq = (f_input_norm >= g_input_norm); // inverting for DESC
+    cout << "Input LT: " << input_lt << ", Norm geq: " << norm_geq << endl;
+    ASSERT_EQ(input_lt, norm_geq);
+    cout << "Passed in plaintext!" << endl;
 
     Float f(f_input);
     Float g(g_input);
@@ -171,8 +173,6 @@ TEST_F(EmpTest, test_float_normalization) {
     SecureField f_norm = NormalizeFields::normalize(f_prime, SortDirection::DESCENDING);
     SecureField g_norm = NormalizeFields::normalize(g_prime, SortDirection::DESCENDING);
 
-    Integer debug(32, 0);
-    memcpy(debug.bits.data(), f.value.data(), 32 * TypeUtilities::getEmpBitSize());
     cout << "f shared: " << FieldUtilities::printFloat(f) << endl;
     cout << "g shared: " << FieldUtilities::printFloat(g) << endl << endl;
 

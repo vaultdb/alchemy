@@ -286,7 +286,7 @@ string DataUtilities::printByteArray(const int8_t *bytes, const size_t &byte_cnt
     ss << "(";
     for(int i = 0; i < byte_cnt; ++i) {
         ss << (int) bytes[i];
-        if(i < byte_cnt - 1) ss << ", ";
+        if(i < (byte_cnt - 1)) ss << ", ";
     }
     ss << ")";
     return ss.str();
