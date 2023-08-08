@@ -54,7 +54,9 @@ jobs:
         POSTGRES_USER: vaultdb
         POSTGRES_PASSWORD: ''
         POSTGRES_PORT: 5432
-      run: bash ${{github.workspace}}/conf/workload/tpch/generate-and-load-data.sh
+      run: |
+          pg_ctl -D /var/lib/postgresql/data -l logfile start
+          bash ${{github.workspace}}/conf/workload/tpch/generate-and-load-data.sh
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release
