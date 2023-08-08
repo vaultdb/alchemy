@@ -54,9 +54,7 @@ jobs:
         POSTGRES_USER: vaultdb
         POSTGRES_PASSWORD: ''
         POSTGRES_PORT: 5432
-      run: |
-          bash ${{github.workspace}}/conf/workload/testDB/create_test_dbs.sh
-          bash ${{github.workspace}}/conf/workload/tpch/generate-and-load-data.sh
+      run: bash ${{github.workspace}}/conf/workload/tpch/generate-and-load-data.sh
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release
