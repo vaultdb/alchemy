@@ -40,9 +40,9 @@ jobs:
       working-directory: ${{github.workspace}}
       run: | 
           sudo chmod og+X /home /home/runner
-          sudo sed -i s/scram-sha-256/trust/g /etc/postgresql/*/main/pg_hba.conf
           sudo systemctl start postgresql.service
           sudo -u postgres psql -c "create role vaultdb with login password 'vaultdb';"
+          sudo sed -i s/scram-sha-256/trust/g /etc/postgresql/*/main/pg_hba.conf
     - name: Populate DB
       working-directory: ${{github.workspace}}
       run: bash conf/workload/tpch/generate-and-load-data.sh
