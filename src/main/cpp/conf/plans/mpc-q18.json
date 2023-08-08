@@ -18,6 +18,18 @@
           "name": "l_quantity"
         }
       ],
+      "sql": "SELECT l_orderkey, l_quantity FROM lineitem ORDER BY l_quantity, l_orderkey",
+      "collation": [
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "null-direction": "UNSPECIFIED"
+        },
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "null-direction": "UNSPECIFIED"
+        }],
       "tuples": [],
       "inputs": []
     },
@@ -107,6 +119,18 @@
           "name": "L2.l_quantity"
         }
       ],
+      "sql": "SELECT L2.l_orderkey, L2.l_quantity FROM lineitem L2 ORDER BY L2.l_quantity, L2.l_orderkey",
+        "collation": [
+            {
+            "field": 1,
+            "direction": "ASCENDING",
+            "null-direction": "UNSPECIFIED"
+            },
+            {
+            "field": 0,
+            "direction": "ASCENDING",
+            "null-direction": "UNSPECIFIED"
+            }],
       "tuples": [],
       "inputs": []
     },
@@ -185,6 +209,18 @@
           "name": "o_orderdate"
         }
       ],
+      "sql": "SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate FROM orders ORDER BY o_orderkey, o_custkey",
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "null-direction": "UNSPECIFIED"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "null-direction": "UNSPECIFIED"
+        }],
       "tuples": [],
       "inputs": []
     },
@@ -268,6 +304,13 @@
           "name": "c_name"
         }
       ],
+      "sql": "SELECT c_custkey, c_name FROM customer ORDER BY c_custkey",
+        "collation": [
+            {
+            "field": 0,
+            "direction": "ASCENDING",
+            "null-direction": "UNSPECIFIED"
+            }],
       "tuples": [],
       "inputs": []
     },

@@ -17,6 +17,17 @@
           "name": "nation"
         }
       ],
+      "sql": "SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY n_name, s_suppkey",
+      "collation": [
+        {
+          "input": 1,
+          "collation": "ASCENDING"
+        },
+        {
+          "input": 0,
+          "collation": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -43,6 +54,17 @@
           "name": "ps_supplycost"
         }
       ],
+      "sql": "SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%' ORDER BY ps_suppkey, ps_partkey",
+        "collation": [
+            {
+            "input": 1,
+            "collation": "ASCENDING"
+            },
+            {
+            "input": 2,
+            "collation": "ASCENDING"
+            }
+        ],
       "tuples": [],
       "inputs": []
     },
@@ -145,6 +167,21 @@
           "precision": 19,
           "scale": 0,
           "name": "l_discount"
+        }
+      ],
+      "sql": "SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice, l_discount FROM lineitem ORDER BY l_orderkey, l_partkey, l_suppkey",
+      "collation": [
+        {
+          "input": 0,
+          "collation": "ASCENDING"
+        },
+        {
+          "input": 1,
+          "collation": "ASCENDING"
+        },
+        {
+          "input": 2,
+          "collation": "ASCENDING"
         }
       ],
       "tuples": [],
@@ -261,6 +298,13 @@
           "name": "o_orderkey"
         }
       ],
+      "sql": "SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders ORDER BY o_orderkey",
+      "collation": [
+            {
+            "input": 1,
+            "collation": "ASCENDING"
+            }
+        ],
       "tuples": [],
       "inputs": []
     },
