@@ -9,31 +9,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: madduci/docker-ubuntu-cpp:latest
       
     env: 
       working-directory: ${{github.workspace}}/src/main/cpp
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: vaultdb
-          POSTGRES_PASSWORD: vaultdb
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
     steps:
     - uses: actions/checkout@v3
     - name: Install dependencies
       working-directory: ${{github.workspace}}
       run: |
-          apt-get -y update
-          apt-get -y install sudo
+          sudo apt-get -y update
           sudo apt-get -y install libboost-all-dev libgflags-dev
           wget https://raw.githubusercontent.com/emp-toolkit/emp-readme/master/scripts/install.py
           python install.py --deps --tool --ot --zk --sh2pc
@@ -53,22 +37,10 @@ jobs:
       working-directory: ${{env.working-directory}}
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
     - name: Initialize DB
-      env:
-        POSTGRES_HOST: postgres
-        POSTGRES_USER: vaultdb
-        POSTGRES_PASSWORD: ''
-        POSTGRES_PORT: 5432
-      run: |
-          pg_ctl -D /var/lib/postgresql/data -l logfile start
-          bash ${{github.workspace}}/conf/workload/tpch/generate-and-load-data.sh
+      run: bash ${{github.workspace}}/conf/workload/tpch/generate-and-load-data.sh
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release
     - name: Test
       working-directory: ${{env.working-directory}}
-      env:
-        POSTGRES_HOST: postgres
-        POSTGRES_USER: vaultdb
-        POSTGRES_PASSWORD: vaultdb
-        POSTGRES_PORT: 5432
       run: ctest --test-dir build --output-on-failure
