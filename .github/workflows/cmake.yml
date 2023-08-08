@@ -44,6 +44,11 @@ jobs:
       working-directory: ${{env.working-directory}}
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
     - name: Initialize DB
+      env:
+        POSTGRES_HOST: localhost
+        POSTGRES_USER: vaultdb
+        POSTGRES_PASSWORD: ''
+        POSTGRES_PORT: 5432
       run: |
           bash ${{github.workspace}}/conf/workload/testDB/create_test_dbs.sh
           bash ${{github.workspace}}/conf/workload/tpch/generate-and-load-data.sh
@@ -52,4 +57,9 @@ jobs:
       run: cmake --build build --config Release
     - name: Test
       working-directory: ${{env.working-directory}}
+      env:
+        POSTGRES_HOST: localhost
+        POSTGRES_USER: vaultdb
+        POSTGRES_PASSWORD: ''
+        POSTGRES_PORT: 5432
       run: ctest --test-dir build --output-on-failure
