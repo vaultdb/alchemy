@@ -48,4 +48,4 @@ jobs:
       run: cmake --build build --config Release
     - name: Test
       working-directory: ${{env.working-directory}}
-      run: ctest --test-dir build
+      run: ctest --test-dir build --output-on-failure
