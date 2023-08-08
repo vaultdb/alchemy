@@ -1,6 +1,6 @@
-include(../cmake/common.cmake)
+#include(../cmake/common.cmake)
 include(GoogleTest)
-cmake_minimum_required (VERSION 3.11)
+#cmake_minimum_required (VERSION 3.14)
 
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -51,7 +51,6 @@ macro(package_add_test TESTNAME)
 endmacro()
 
 
-#package_add_test(tpch_q1_test tpch_q1_test.cpp)
 #non-private tests
 package_add_test(field_expression_test field_expression_test.cpp plain/plain_base_test.cpp)
 package_add_test(csv_reader_test csv_reader_test.cpp plain/plain_base_test.cpp)
@@ -85,7 +84,6 @@ package_add_test(secure_sort_merge_join_test mpc/secure_sort_merge_join_test.cpp
 package_add_test(secure_scalar_aggregate_test mpc/secure_scalar_aggregate_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_group_by_aggregate_test mpc/secure_group_by_aggregate_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_nested_loop_aggregate_test mpc/secure_nested_loop_aggregate_test.cpp mpc/emp_base_test.cpp)
-#package_add_test(emp_float_to_int mpc/emp_float_to_int_test.cpp mpc/emp_base_test.cpp)
 package_add_test(enrich_test enrich_test.cpp  support/enrich_test_support.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_tpch_test mpc/secure_tpch_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
 package_add_test(baseline_comparison_test mpc/baseline_comparison_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)

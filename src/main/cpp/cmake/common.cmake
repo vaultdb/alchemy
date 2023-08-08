@@ -47,7 +47,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 include_directories(${CMAKE_SOURCE_DIR})
 
-find_package(Boost REQUIRED COMPONENTS date_time system)
+#find_package(Boost REQUIRED COMPONENTS date_time system)
 
 #Compilation flags
 set(CMAKE_C_FLAGS "-pthread   -Wfatal-errors  ")

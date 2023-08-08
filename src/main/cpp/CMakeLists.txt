@@ -22,10 +22,7 @@ if(NOT googletest_POPULATED)
   add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
-
 enable_testing()
-
-
 
 find_package(OpenSSL REQUIRED)
 find_package(GMP REQUIRED)
@@ -43,14 +40,10 @@ find_package(Boost REQUIRED COMPONENTS date_time system program_options)
 
 find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
 
-
-
 include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR})
 
 add_subdirectory(test)
 add_subdirectory(pilot)
-
-
 
 set(sources
 		util/utilities.cpp
