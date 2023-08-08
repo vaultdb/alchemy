@@ -33,6 +33,14 @@ jobs:
           ./configure  --disable-documentation --enable-shared CXXFLAGS="-std=c++17 -O2"
           make 
           sudo make install
+    - name: Set up postgres
+      working-directory: ${{github.workspace}}
+      run: |
+          sudo useradd -ms /usr/bin/bash --password ''  vaultdb
+          pg_lsclusters
+          psql  --command "CREATE USER vaultdb WITH SUPERUSER;"
+          bash conf/workload/testDB/create_test_dbs.sh 
+          bash conf/workload/tpch/generate-and-load-data.sh
     - name: configure cmake
       working-directory: ${{env.working-directory}}
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
