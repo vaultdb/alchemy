@@ -19,7 +19,7 @@ jobs:
           sudo apt-get -y update
           sudo apt-get -y install libboost-all-dev libgflags-dev libpqxx-dev postgresql
           wget https://raw.githubusercontent.com/emp-toolkit/emp-readme/master/scripts/install.py
-          python install.py --deps --tool
+          python install.py --deps --tool --ot --zk
     - name: configure cmake
       working-directory: ${{env.working-directory}}
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
