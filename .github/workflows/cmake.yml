@@ -18,7 +18,7 @@ jobs:
       working-directory: ${{github.workspace}}
       run: |
           sudo apt-get -y update
-          sudo apt-get -y install libboost-all-dev libgflags-dev libpqxx-dev postgresql
+          sudo apt-get -y install libboost-all-dev libgflags-dev postgresql
           wget https://raw.githubusercontent.com/emp-toolkit/emp-readme/master/scripts/install.py
           python install.py --deps --tool --ot --zk
           cd ..
@@ -26,6 +26,12 @@ jobs:
           cd googletest
           cmake .
           make all
+          sudo make install
+          cd ..
+          git clone --branch 7.7.4 https://github.com/jtv/libpqxx.git
+          cd libpqxx
+          ./configure  --disable-documentation --enable-shared CXXFLAGS="-std=c++17 -O2"
+          make 
           sudo make install
     - name: configure cmake
       working-directory: ${{env.working-directory}}
