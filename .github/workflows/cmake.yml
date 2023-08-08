@@ -8,17 +8,24 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     env: 
       working-directory: ${{github.workspace}}/src/main/cpp
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: vaultdb
+          POSTGRES_PASSWORD: ''
+        ports:
+          - 5432:5432
     steps:
     - uses: actions/checkout@v3
     - name: Install dependencies
       working-directory: ${{github.workspace}}
       run: |
           sudo apt-get -y update
-          sudo apt-get -y install libboost-all-dev libgflags-dev postgresql
+          sudo apt-get -y install libboost-all-dev libgflags-dev
           wget https://raw.githubusercontent.com/emp-toolkit/emp-readme/master/scripts/install.py
           python install.py --deps --tool --ot --zk
           cd ..
@@ -33,19 +40,6 @@ jobs:
           ./configure  --disable-documentation --enable-shared CXXFLAGS="-std=c++17 -O2"
           make 
           sudo make install
-    - name: Set up postgres
-      working-directory: ${{github.workspace}}
-      env:
-          POSTGRES_HOST: localhost
-          POSTGRES_USER: vaultdb
-          POSTGRES_PASSWORD: ""
-          POSTGRES_PORT: 5432
-      run: |
-          sudo useradd -ms /usr/bin/bash --password ''  vaultdb
-          sudo pg_ctlcluster 14 main start
-          psql  --command "CREATE USER vaultdb WITH SUPERUSER;"
-          bash conf/workload/testDB/create_test_dbs.sh 
-          bash conf/workload/tpch/generate-and-load-data.sh
     - name: configure cmake
       working-directory: ${{env.working-directory}}
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
