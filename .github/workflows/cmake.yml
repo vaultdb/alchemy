@@ -44,6 +44,7 @@ jobs:
           sudo -u postgres createuser -s vaultdb
           sudo cat /etc/postgresql/*/main/pg_hba.conf
           sudo sed -i s/scram-sha-256/trust/g /etc/postgresql/*/main/pg_hba.conf
+          sudo sed -i s/peer/trust/g /etc/postgresql/*/main/pg_hba.conf
           sudo cat /etc/postgresql/*/main/pg_hba.conf
     - name: Populate DB
       working-directory: ${{github.workspace}}
