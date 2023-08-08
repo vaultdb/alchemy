@@ -36,13 +36,13 @@ jobs:
     - name: Set up postgres
       working-directory: ${{github.workspace}}
       run: |
-          useradd -ms /usr/bin/bash --password ''  vaultdb
-          usermod -aG sudo vaultdb
-          usermod -aG sftp vaultdb
+          sudo useradd -ms /usr/bin/bash --password ''  vaultdb
+          sudo usermod -aG sudo vaultdb
+          sudo usermod -aG sftp vaultdb
           pg_ctl start
           psql  --command "CREATE USER vaultdb WITH SUPERUSER;"
           bash conf/workload/testDB/create_test_dbs.sh 
-          bash  conf/workload/tpch/generate-and-load-data.sh
+          bash conf/workload/tpch/generate-and-load-data.sh
     - name: configure cmake
       working-directory: ${{env.working-directory}}
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
