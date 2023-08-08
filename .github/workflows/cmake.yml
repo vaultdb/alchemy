@@ -1,0 +1,22 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "emp-operators" ]
+  pull_request:
+    branches: [ "emp-operators" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: configure cmake
+      run: cmake -S . -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -Wno-dev
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Release
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: ctest --test-dir ${{github.workspace}}/build
