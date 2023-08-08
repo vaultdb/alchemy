@@ -27,7 +27,7 @@ jobs:
           sudo apt-get -y update
           sudo apt-get -y install libboost-all-dev libgflags-dev
           wget https://raw.githubusercontent.com/emp-toolkit/emp-readme/master/scripts/install.py
-          python install.py --deps --tool --ot --zk
+          python install.py --deps --tool --ot --zk --sh2pc
           cd ..
           git clone --branch v1.13.0 https://github.com/google/googletest.git
           cd googletest
@@ -43,6 +43,10 @@ jobs:
     - name: configure cmake
       working-directory: ${{env.working-directory}}
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
+    - name: Initialize DB
+      run: |
+          bash ${{githib.workspace}}/conf/workload/testDB/create_test_dbs.sh
+          bash ${{github.workspace}}/conf/workload/tpch/generate-and-load-data.sh
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release
