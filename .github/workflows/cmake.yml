@@ -42,7 +42,9 @@ jobs:
           sudo sed -i s/scram-sha-256/trust/g /etc/postgresql/*/main/pg_hba.conf
           sudo systemctl start postgresql.service
           sudo -u postgres createuser --createdb --superuser vaultdb
-          bash conf/workload/tpch/generate-and-load-data.sh
+    - name: Populate DB
+      working-directory: ${{env.working-directory}}
+      run: bash conf/workload/tpch/generate-and-load-data.sh
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release
