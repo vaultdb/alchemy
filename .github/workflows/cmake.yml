@@ -35,6 +35,11 @@ jobs:
           sudo make install
     - name: Set up postgres
       working-directory: ${{github.workspace}}
+      env:
+          POSTGRES_HOST: localhost
+          POSTGRES_USER: vaultdb
+          POSTGRES_PASSWORD: ""
+          POSTGRES_PORT: 5432
       run: |
           sudo useradd -ms /usr/bin/bash --password ''  vaultdb
           sudo pg_ctlcluster 14 main start
