@@ -211,34 +211,43 @@ namespace vaultdb {
         // same as above, but for secure fields
         static SecureField normalizeFloat(const SecureField & field, const SortDirection & dir) {
             Float f = field.getValue<Float>();
-
+//            cout << "Normalizing float "  << FieldUtilities::printFloat(f) << endl;
             if(dir == SortDirection::DESCENDING) {
                 f = -f;
             }
-
+//            cout << "After negation: " << FieldUtilities::printFloat(f) << endl;
             Bit sign_bit = f[FLOAT_LEN - 1];
-            Integer ones(32, 0x7FFFFFF);
+//            cout << "sign bit: " << sign_bit.reveal() << endl;
+
+            Integer ones(32, (0x7FFFFFF  | 0x80000000ul));
             Integer bits(ones);
             memcpy(bits.bits.data(), f.value.data(), FLOAT_LEN * TypeUtilities::getEmpBitSize());
-
+//            cout << "bits: " << FieldUtilities::printInt(bits) << endl;
             bits = emp::If(sign_bit, ones - bits, bits);
+//            cout << " after flipping bits: " << FieldUtilities::printInt(bits) << endl;
+
             return SecureField (FieldType::SECURE_INT, bits);
         }
 
         static SecureField denormalizeFloat(const SecureField & field, const SortDirection & dir) {
             Integer bits = field.getValue<Integer>();
-            const Bit sign_bit = !(bits.bits[FLOAT_LEN - 1]); // first bit is zero
+//            cout << "Denormalizing int: " << FieldUtilities::printInt(bits) << endl;
 
-            Integer ones(32, 0x7FFFFFF);
+            const Bit sign_bit = (bits.bits[FLOAT_LEN - 1]); // first bit is zero
+//            cout << "Sign bit: " << sign_bit.reveal() << endl;
+
+            Integer ones(32, (0x7FFFFFF  | 0x80000000ul));
             bits = emp::If(sign_bit, ones - bits, bits);
+//            cout << "After flipping bits: " << FieldUtilities::printInt(bits) << endl;
 
             Float dst;
             memcpy(dst.value.data(), bits.bits.data(), FLOAT_LEN * TypeUtilities::getEmpBitSize());
-
+//            cout << "To float: " << FieldUtilities::printFloat(dst) << endl;
             if(dir == SortDirection::DESCENDING) {
                 dst = -dst;
             }
 
+//            cout << "After negation: " << FieldUtilities::printFloat(dst) << endl;
             return SecureField (FieldType::SECURE_FLOAT, dst);
 
         }

@@ -41,7 +41,7 @@ protected:
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' l_dummy \n"
                                       "FROM lineitem \n"
                                       "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < " + std::to_string(FLAGS_cutoff) + ")  \n"
-                                                                                                                                          " ORDER BY l_orderkey, revenue ";
+                                      " ORDER BY l_orderkey, revenue ";
     void runCustomerOrdersTest();
     void runLineitemOrdersTest();
     void runLineitemOrdersCustomerTest();
@@ -93,18 +93,26 @@ void SecureSortMergeJoinTest::runLineitemOrdersTest() {
     // get inputs from local oblivious ops
     // first N customers, propagate this constraint up the join tree for the test
     std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), "
-                                                                      "lineitem_cte AS (" + lineitem_sql_ + ") "
-                                                                                                            "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue \n"
-                                                                                                            "FROM orders_cte o JOIN lineitem_cte l ON l_orderkey = o_orderkey \n"
-                                                                                                            "WHERE NOT o_dummy AND NOT l_dummy "
-                                                                                                            "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue";
+                                     "lineitem_cte AS (" + lineitem_sql_ + ") "
+                              "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue \n"
+                              "FROM orders_cte o JOIN lineitem_cte l ON l_orderkey = o_orderkey \n"
+                              "WHERE NOT o_dummy AND NOT l_dummy "
+                              "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue";
 
     PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,  false);
 
-    SortDefinition lineitem_sort = DataUtilities::getDefaultSortDefinition(2);
+    SortDefinition lineitem_sort  = DataUtilities::getDefaultSortDefinition(2);
     SortDefinition orders_sort = DataUtilities::getDefaultSortDefinition(4);
 
     auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true, lineitem_sort);
+//    auto obs = lineitem_input->run()->revealInsecure();
+//
+//    cout << "Lineitem post-merge: " << obs->toString( false) << endl;
+//    auto tmp = DataUtilities::getQueryResults(FLAGS_unioned_db, lineitem_sql_, true);
+//
+//    cout << "Expected: " << tmp->toString(5, false) << endl;
+//    ASSERT_EQ(*expected, *obs);
+
     auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, orders_sort);
 
 

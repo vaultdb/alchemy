@@ -68,14 +68,16 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
 
             if(SystemConfiguration::getInstance().storageModel() == StorageModel::ROW_STORE) {
                 auto dst_sort = dst_table->getSortOrder();
+//                cout << "Input: " << dst_table->revealInsecure()->toString(false) << endl;
                 Sort<Bit> sorter(dst_table, dst_sort);
-
                 auto normalized = sorter.normalizeTable(dst_table);
+//                cout << "Normalized: " << normalized->revealInsecure()->toString(false) << endl;
                 sorter.bitonicMergeNormalized(normalized, sorter.getSortOrder(), 0, normalized->getTupleCount(), true, counter);
-
+//                cout << "Sorted: " <<  normalized->revealInsecure()->toString( false) << endl;
                 auto tmp = sorter.denormalizeTable(normalized);
                 dst_table = tmp;
                 dst_table->setSortOrder(dst_sort);
+//                cout << "Output: " << dst_table->revealInsecure()->toString(false) << endl;
             }
             else {// col store
                 assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COLUMN_STORE);

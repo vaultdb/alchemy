@@ -73,7 +73,7 @@ package_add_test(tpch_test tpch_test.cpp plain/plain_base_test.cpp)
 #EMP-based tests
 package_add_test(emp_test mpc/emp_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_field_expression_test mpc/secure_value_expression_test.cpp mpc/emp_base_test.cpp)
-package_add_test(emp_table_test  mpc/emp_table_test.cpp mpc//emp_base_test.cpp) # port 54324-54325
+package_add_test(emp_table_test  mpc/emp_table_test.cpp mpc/emp_base_test.cpp) # port 54324-54325
 #package_add_test(emp_test_multiple_starts mpc/emp_test_multiple_starts.cpp)
 package_add_test(secure_filter_test mpc/secure_filter_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_sort_test mpc/secure_sort_test.cpp mpc/emp_base_test.cpp)

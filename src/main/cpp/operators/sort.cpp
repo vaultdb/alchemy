@@ -214,7 +214,6 @@ Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_i
     Integer lhs_key(placeholder);
     Integer rhs_key(placeholder);
 
-
     Bit *lhs = (Bit *) (row_table->tuple_data_.data() + row_table->tuple_size_ * lhs_idx);
     Bit *rhs = (Bit *) (row_table->tuple_data_.data() + row_table->tuple_size_ * rhs_idx);
 
@@ -224,7 +223,6 @@ Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_i
     // set MSB to 1 for all to avoid losing MSBs that are zero
     lhs_key[sort_key_width_bits] = 1;
     rhs_key[sort_key_width_bits] = 1;
-
 
     return ((lhs_key > rhs_key) == dir);
 
