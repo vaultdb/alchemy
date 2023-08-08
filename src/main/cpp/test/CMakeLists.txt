@@ -47,7 +47,7 @@ macro(package_add_test TESTNAME)
 			WORKING_DIRECTORY ${PROJECT_DIR}
 			PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_DIR}"
 			DISCOVERY_MODE PRE_TEST)
-	set_target_properties(${TESTNAME} PROPERTIES FOLDER test)
+	set_target_properties(${TESTNAME} PROPERTIES FOLDER bin)
 endmacro()
 
 

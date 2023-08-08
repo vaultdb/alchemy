@@ -1,0 +1,44 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "emp-operators" ]
+  pull_request:
+    branches: [ "emp-operators" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    env: 
+      working-directory: ${{github.workspace}}/src/main/cpp
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      working-directory: ${{github.workspace}}
+      run: |
+          sudo apt-get -y update
+          sudo apt-get -y install libboost-all-dev libgflags-dev postgresql
+          wget https://raw.githubusercontent.com/emp-toolkit/emp-readme/master/scripts/install.py
+          python install.py --deps --tool --ot --zk
+          cd ..
+          git clone --branch v1.13.0 https://github.com/google/googletest.git
+          cd googletest
+          cmake .
+          make all
+          sudo make install
+          cd ..
+          git clone --branch 7.7.4 https://github.com/jtv/libpqxx.git
+          cd libpqxx
+          ./configure  --disable-documentation --enable-shared CXXFLAGS="-std=c++17 -O2"
+          make 
+          sudo make install
+    - name: configure cmake
+      working-directory: ${{env.working-directory}}
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
+    - name: Build
+      working-directory: ${{env.working-directory}}
+      run: cmake --build build --config Release
+    - name: Test
+      working-directory: ${{env.working-directory}}
+      run: ctest --test-dir build
