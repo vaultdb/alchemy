@@ -53,11 +53,11 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
 
     if(!src->getSortOrder().empty()) {
         if (party_ == emp::ALICE) {
-            if(alice_tuple_cnt > 0) secret_share_send(emp::ALICE, src, dst_table, 0, (bob_tuple_cnt > 0)  ? true : false);
+            if(alice_tuple_cnt > 0) secret_share_send(emp::ALICE, src, dst_table, 0, (bob_tuple_cnt > 0));
             if(bob_tuple_cnt > 0) secret_share_recv(bob_tuple_cnt, emp::BOB, dst_table, alice_tuple_cnt, false);
 
         } else { // bob
-            if(alice_tuple_cnt > 0) secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table, 0, (bob_tuple_cnt > 0)  ? true : false);
+            if(alice_tuple_cnt > 0) secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table, 0, (bob_tuple_cnt > 0));
             if(bob_tuple_cnt > 0)  secret_share_send(emp::BOB, src, dst_table, alice_tuple_cnt, false);
         }
 
@@ -65,19 +65,33 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
         int counter = 0;
         // if one is empty, then we are already sorted
         if(alice_tuple_cnt > 0 && bob_tuple_cnt > 0) {
-            Sort<emp::Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true,
-                                         counter);
 
-            float n = dst_table->getTupleCount();
-            float rounds = log2(dst_table->getTupleCount());
+            if(SystemConfiguration::getInstance().storageModel() == StorageModel::ROW_STORE) {
+                auto dst_sort = dst_table->getSortOrder();
+                Sort<Bit> sorter(dst_table, dst_sort);
 
-            float comparisons_per_stage = n / 2;
-            float total_comparisons = rounds * comparisons_per_stage;
-            float relative_error = fabs(total_comparisons - counter) / counter;
-            auto gate_cnt = this->andGateCount();
-            cout << "Estimated comparisons: " << total_comparisons << ", observed=" << counter << ", relative error="
-                 << relative_error << endl;
-            cout << "Gate count: " << gate_cnt << ", avg cost per comparison: " << gate_cnt / total_comparisons << endl;
+                auto normalized = sorter.normalizeTable(dst_table);
+                sorter.bitonicMergeNormalized(normalized, sorter.getSortOrder(), 0, normalized->getTupleCount(), true, counter);
+
+                auto tmp = sorter.denormalizeTable(normalized);
+                dst_table = tmp;
+                dst_table->setSortOrder(dst_sort);
+            }
+            else {// col store
+                assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COLUMN_STORE);
+                Sort<Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true,counter);
+            }
+
+//            float n = dst_table->getTupleCount();
+//            float rounds = log2(dst_table->getTupleCount());
+//
+//            float comparisons_per_stage = n / 2;
+//            float total_comparisons = rounds * comparisons_per_stage;
+//            float relative_error = fabs(total_comparisons - counter) / counter;
+//            auto gate_cnt = this->andGateCount();
+//            cout << "Estimated comparisons: " << total_comparisons << ", observed=" << counter << ", relative error="
+//                 << relative_error << endl;
+//            cout << "Gate count: " << gate_cnt << ", avg cost per comparison: " << gate_cnt / total_comparisons << endl;
         }
     }
     else { // concatenate Alice and Bob

@@ -58,13 +58,12 @@ QueryTable<B> *Sort<B>::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-
     if(SystemConfiguration::getInstance().storageModel() == StorageModel::ROW_STORE) {
-        this->output_ = normalizeTable(input, this->sort_definition_);
+        this->output_ = normalizeTable(input);
         int counter = 0;
         bitonicSortNormalized(0, this->output_->getTupleCount(), true, counter);
 
-        auto tmp = denormalizeTable(this->output_, this->sort_definition_);
+        auto tmp = denormalizeTable(this->output_);
         delete this->output_;
         this->output_ = tmp;
         this->output_->setSortOrder(this->sort_definition_);
@@ -275,17 +274,16 @@ string Sort<B>::getParameters() const {
 
 // project sort key to the front of table and normalize all fields
 template<typename B>
-QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src, SortDefinition &sort_def) {
+QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src) {
     ExpressionMapBuilder<B> builder(src->getSchema());
     int write_cursor = 0;
     sort_key_size_bits_ = 0;
     // if one or more of the sort keys are floats, need to do a projection that creates a new column for sign_bit for each one
     // this is needed so we can reverse the process later
 
-
     vector<int> sort_cols;
-        for(int i = sort_def.size()-1; i >= 0; --i) {
-            auto key = sort_def[i];
+    for(int i = this->sort_definition_.size()-1; i >= 0; --i) {
+            auto key = this->sort_definition_[i];
 
             builder.addMapping(key.first, write_cursor);
 
@@ -297,7 +295,7 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src, SortDefinition &sort_
             sort_key_size_bits_ += src->getSchema().getField(key.first).size();
             ++write_cursor;
         }
-        std::reverse(sort_def.begin(), sort_def.end());
+        std::reverse(this->sort_definition_.begin(), this->sort_definition_.end());
 
     for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
         if(std::find(sort_cols.begin(), sort_cols.end(),i) == sort_cols.end()) {
@@ -316,7 +314,7 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src, SortDefinition &sort_
     // normalize the fields for the sort key
     QuerySchema normed_schema = projected_schema_; // convert floats to int32s
 
-    for(int i = 0; i < sort_def.size(); ++i) {
+    for(int i = 0; i < this->sort_definition_.size(); ++i) {
         QueryFieldDesc f = dst->getSchema().getField(i);
         if(f.getType() == FieldType::FLOAT) {
             f = QueryFieldDesc(f, FieldType::INT);
@@ -330,15 +328,12 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src, SortDefinition &sort_
 
     normed_schema.initializeFieldOffsets();
     dst->setSchema(normed_schema);
-    // TEMP VARS
-    RowTable<B> *rows = (RowTable<B> *) dst;
-    QuerySchema plain_schema = QuerySchema::toPlain(dst->getSchema());
 
     // normalize the fields for the sort key
     for(int i = 0; i < dst->getTupleCount(); ++i) {
-        for(int j = 0; j < sort_def.size(); ++j)  {
+        for(int j = 0; j < this->sort_definition_.size(); ++j)  {
             Field<B> s = projected->getPackedField(i, j);
-            Field<B> d = NormalizeFields::normalize(s, sort_def[j].second, normed_schema.getField(j).bitPacked());
+            Field<B> d = NormalizeFields::normalize(s, this->sort_definition_[j].second, normed_schema.getField(j).bitPacked());
             dst->setPackedField(i, j, d);
 
         }
@@ -350,21 +345,21 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src, SortDefinition &sort_
 
 
 template<typename B>
-QueryTable<B> *Sort<B>::denormalizeTable(QueryTable<B> *src,  SortDefinition &sort_def) {
+QueryTable<B> *Sort<B>::denormalizeTable(QueryTable<B> *src) {
     // denormalize the fields for the sort key
     auto dst = src->clone();
 
     QuerySchema dst_schema = projected_schema_;
     dst->setSchema(dst_schema);
     for(int i = 0; i < src->getTupleCount(); ++i) {
-        for(int j = 0; j < sort_def.size(); ++j)  {
+        for(int j = 0; j < this->sort_definition_.size(); ++j)  {
             Field<B> s = src->getPackedField(i, j);
-            Field<B> d = NormalizeFields::denormalize(s, dst_schema.getField(j).getType(), sort_def[j].second, dst_schema.getField(j).bitPacked());
+            Field<B> d = NormalizeFields::denormalize(s, dst_schema.getField(j).getType(), this->sort_definition_[j].second, dst_schema.getField(j).bitPacked());
             dst->setPackedField(i, j, d);
         }
     }
 
-    std::reverse(sort_def.begin(), sort_def.end());
+    std::reverse(this->sort_definition_.begin(), this->sort_definition_.end());
 
     ExpressionMapBuilder<B> builder(src->getSchema());
     for(auto pos : sort_key_map_) {
