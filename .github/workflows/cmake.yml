@@ -10,13 +10,16 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
+    env: 
+      working-directory: ${{github.workspace}}/src/main/cpp
     steps:
     - uses: actions/checkout@v3
     - name: configure cmake
-      run: cmake -S . -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -Wno-dev
+      working-directory: ${{env.working-directory}}
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config Release
+      working-directory: ${{env.working-directory}}
+      run: cmake --build build --config Release
     - name: Test
-      working-directory: ${{github.workspace}}/build
-      run: ctest --test-dir ${{github.workspace}}/build
+      working-directory: ${{env.working-directory}}
+      run: ctest --test-dir build
