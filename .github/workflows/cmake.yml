@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: madduci/docker-ubuntu-cpp:latest
+      
     env: 
       working-directory: ${{github.workspace}}/src/main/cpp
     services:
@@ -50,7 +53,7 @@ jobs:
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
     - name: Initialize DB
       env:
-        POSTGRES_HOST: localhost
+        POSTGRES_HOST: postgres
         POSTGRES_USER: vaultdb
         POSTGRES_PASSWORD: ''
         POSTGRES_PORT: 5432
@@ -63,7 +66,7 @@ jobs:
     - name: Test
       working-directory: ${{env.working-directory}}
       env:
-        POSTGRES_HOST: localhost
+        POSTGRES_HOST: postgres
         POSTGRES_USER: vaultdb
         POSTGRES_PASSWORD: vaultdb
         POSTGRES_PORT: 5432
