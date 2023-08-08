@@ -37,7 +37,7 @@ jobs:
       working-directory: ${{github.workspace}}
       run: |
           sudo useradd -ms /usr/bin/bash --password ''  vaultdb
-          pg_ctlcluster 14 main start
+          sudo pg_ctlcluster 14 main start
           psql  --command "CREATE USER vaultdb WITH SUPERUSER;"
           bash conf/workload/testDB/create_test_dbs.sh 
           bash conf/workload/tpch/generate-and-load-data.sh
