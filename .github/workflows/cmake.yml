@@ -42,9 +42,9 @@ jobs:
           sudo chmod og+X /home /home/runner
           sudo systemctl start postgresql.service
           sudo -u postgres createuser -s vaultdb
-          cat /etc/postgresql/*/main/pg_hba.conf
+          sudo cat /etc/postgresql/*/main/pg_hba.conf
           sudo sed -i s/scram-sha-256/trust/g /etc/postgresql/*/main/pg_hba.conf
-          cat /etc/postgresql/*/main/pg_hba.conf
+          sudo cat /etc/postgresql/*/main/pg_hba.conf
     - name: Populate DB
       working-directory: ${{github.workspace}}
       run: bash conf/workload/tpch/generate-and-load-data.sh
