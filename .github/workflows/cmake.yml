@@ -43,7 +43,7 @@ jobs:
           sudo systemctl start postgresql.service
           sudo -u postgres createuser --createdb --superuser vaultdb
     - name: Populate DB
-      working-directory: ${{env.working-directory}}
+      working-directory: ${{github.workspace}}
       run: bash conf/workload/tpch/generate-and-load-data.sh
     - name: Build
       working-directory: ${{env.working-directory}}
