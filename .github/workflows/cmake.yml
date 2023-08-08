@@ -18,8 +18,15 @@ jobs:
       working-directory: ${{github.workspace}}
       run: |
           sudo apt-get -y update
-          sudo apt-get -y install libboost-all-dev libgflags-dev postgresql
-          bash setup.sh
+          sudo apt-get -y install libboost-all-dev libgflags-dev libpqxx-dev postgresql
+          wget https://raw.githubusercontent.com/emp-toolkit/emp-readme/master/scripts/install.py
+          python install.py --deps --tool --ot --zk
+          cd ..
+          git clone --branch v1.13.0 https://github.com/google/googletest.git
+          cd googletest
+          cmake .
+          make all
+          sudo make install
     - name: configure cmake
       working-directory: ${{env.working-directory}}
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
