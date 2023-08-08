@@ -45,7 +45,7 @@ jobs:
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
     - name: Initialize DB
       run: |
-          bash ${{githib.workspace}}/conf/workload/testDB/create_test_dbs.sh
+          bash ${{github.workspace}}/conf/workload/testDB/create_test_dbs.sh
           bash ${{github.workspace}}/conf/workload/tpch/generate-and-load-data.sh
     - name: Build
       working-directory: ${{env.working-directory}}
