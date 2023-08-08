@@ -18,7 +18,7 @@ jobs:
       working-directory: ${{env.working-directory}}
       run: |
           sudo apt-get -y update
-          sudo apt-get -y install libboost-dev
+          sudo apt-get -y install libboost-dev libboost-date-time-dev
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
     - name: Build
       working-directory: ${{env.working-directory}}
