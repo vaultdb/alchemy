@@ -314,6 +314,8 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src) {
 
     for(int i = 0; i < this->sort_definition_.size(); ++i) {
         QueryFieldDesc f = dst->getSchema().getField(i);
+        f.setName(f.getTableName(), f.getName() + "_normed"); // to sidestep bit packing metadata
+
         if(f.getType() == FieldType::FLOAT) {
             f = QueryFieldDesc(f, FieldType::INT);
             normed_schema.putField(f);
