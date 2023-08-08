@@ -14,12 +14,15 @@ jobs:
       working-directory: ${{github.workspace}}/src/main/cpp
     steps:
     - uses: actions/checkout@v3
-    - name: configure cmake
-      working-directory: ${{env.working-directory}}
+    - name: Install dependencies
       run: |
           sudo apt-get -y update
-          sudo apt-get -y install libboost-all-dev
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
+          sudo apt-get -y install libboost-all-dev libgflags-dev libpqxx-dev postgresql
+          wget https://raw.githubusercontent.com/emp-toolkit/emp-readme/master/scripts/install.py
+          python install.py --deps --tool
+    - name: configure cmake
+      working-directory: ${{env.working-directory}}
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release
