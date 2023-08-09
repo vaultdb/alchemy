@@ -53,11 +53,6 @@ jobs:
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release
-  test:
-    runs-on: ubuntu-latest
-    env: 
-      working-directory: ${{github.workspace}}/src/main/cpp
-    steps:
     - name: Test
       working-directory: ${{env.working-directory}}
       run: sudo -u vaultdb ctest --test-dir build --output-on-failure
