@@ -49,6 +49,7 @@ namespace vaultdb {
 
         std::map<int, Operator<B> * > operators_; // op ID --> operator instantiation
         std::vector<Operator<B> * > support_ops_; // these ones don't get an operator ID from the JSON plan
+        std::map<int, std::vector<SortDefinition>> scan_sorts_; // op ID --> sort definition
 
         void parseSqlInputs(const std::string & input_file);
         void parseSecurePlan(const std::string & plan_file);
@@ -62,6 +63,7 @@ namespace vaultdb {
         Operator<B> *parseProjection(const int & operator_id, const boost::property_tree::ptree &project_tree);
         Operator<B> *parseSeqScan(const int & operator_id, const boost::property_tree::ptree &seq_scan_tree);
         Operator<B> *parseShrinkwrap(const int & operator_id, const boost::property_tree::ptree &pt);
+        void parseLocalScan(const int & operator_id, const boost::property_tree::ptree &local_scan_tree);
         void calculateAutoAggregate();
 
         bool agg_auto_flag = false;

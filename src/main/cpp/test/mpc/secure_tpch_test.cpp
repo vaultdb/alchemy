@@ -58,6 +58,7 @@ SecureTpcHTest::runTest(const int &test_id, const string & test_name, const Sort
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
 
     PlanParser<Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
+    //PlanParser<Bit> parser(local_db, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
     auto result = root->run();
 
