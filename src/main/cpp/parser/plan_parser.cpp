@@ -38,7 +38,7 @@ PlanParser<B>::PlanParser(const string &db_name, const string & sql_file, const 
 
 // for ZK plans
 template<typename B>
-PlanParser<B>::PlanParser(const string &db_name, const string & json_file, const int &limit) : db_name_(db_name), input_limit_(limit), zk_plan_(true) {
+PlanParser<B>::PlanParser(const string &db_name, const string & json_file, const int &limit) : db_name_(db_name), input_limit_(limit), zk_plan_(false) {
     parseSecurePlan(json_file);
 
     if(getAutoFlag())
@@ -705,15 +705,12 @@ void PlanParser<B>::parseLocalScan(const int & operator_id, const boost::propert
     if(local_scan_tree.count("multiple-sort") > 0)
         multiple_sort_ = local_scan_tree.get_child("multiple-sort").template get_value<bool>();
 
-    boost::property_tree::ptree sort_payload = local_scan_tree.get_child("collation");
-
     if (multiple_sort_) {
         int collationIndex = 1; // Start index for multiple collations
 
         while (true) {
             std::string collationKey = "collation-" + std::to_string(collationIndex);
-            boost::optional<boost::property_tree::ptree&> collationNode = sort_payload.get_child_optional(
-                    collationKey);
+            boost::optional<const boost::property_tree::ptree&> collationNode = local_scan_tree.get_child_optional(collationKey);
 
             if (!collationNode) {
                 break; // No more collations found
@@ -721,11 +718,13 @@ void PlanParser<B>::parseLocalScan(const int & operator_id, const boost::propert
 
             SortDefinition sort_definition; // Define a sort definition for this collation
 
-            ColumnSort cs;
-            cs.first = collationNode->get_child("field").get_value<int>(); // field_idx
-            std::string direction_str = collationNode->get_child("direction").get_value<std::string>();
-            cs.second = (direction_str == "ASCENDING") ? SortDirection::ASCENDING : SortDirection::DESCENDING;
-            sort_definition.push_back(cs); // Push the ColumnSort to the current SortDefinition
+            for (const auto& collationEntry : *collationNode) {
+                ColumnSort cs;
+                cs.first = collationEntry.second.get_child("field").get_value<int>();
+                std::string direction_str = collationEntry.second.get_child("direction").get_value<std::string>();
+                cs.second = (direction_str == "ASCENDING") ? SortDirection::ASCENDING : SortDirection::DESCENDING;
+                sort_definition.push_back(cs); // Push the ColumnSort to the current SortDefinition
+            }
 
             scan_sorts_[operator_id].push_back(sort_definition);
 
@@ -734,6 +733,8 @@ void PlanParser<B>::parseLocalScan(const int & operator_id, const boost::propert
     }
     // If there is only one sort, parse it
     else {
+        boost::property_tree::ptree sort_payload = local_scan_tree.get_child("collation");
+
         SortDefinition sort_definition; // Define a single sort definition
 
         for (ptree::const_iterator it = sort_payload.begin(); it != sort_payload.end(); ++it) {
