@@ -53,19 +53,14 @@ namespace vaultdb {
         int input_limit_ = -1; // to add a limit clause to SQL statements for efficient testing
         bool zk_plan_ = false;
 
-<<<<<<< HEAD
         // plan enumerator state
         map<int, vector<SortDefinition>> interesting_sort_orders_; // TODO: initialize this from JSON plan
         Operator<B> *min_cost_plan_ = nullptr;
         size_t min_plan_cost_ = std::numeric_limits<size_t>::max();
-=======
         std::map<int, Operator<B> * > operators_; // op ID --> operator instantiation
         std::vector<Operator<B> * > support_ops_; // these ones don't get an operator ID from the JSON plan
         std::map<int, std::vector<SortDefinition>> scan_sorts_; // op ID --> sort definition
->>>>>>> 70e66ff7c5e401714e3aac076bca613e205f9756
 
-        std::map<int, Operator<B> *> operators_; // op ID --> operator instantiation
-        std::vector<Operator<B> *> support_ops_; // these ones don't get an operator ID from the JSON plan
 
         void parseSqlInputs(const std::string &input_file);
 
@@ -75,7 +70,6 @@ namespace vaultdb {
         void parseOperator(const int &operator_id, const std::string &op_name, const boost::property_tree::ptree &pt);
 
         Operator<B> *parseSort(const int &operator_id, const boost::property_tree::ptree &pt);
-<<<<<<< HEAD
 
         Operator<B> *parseAggregate(const int &operator_id, const boost::property_tree::ptree &pt);
 
@@ -88,6 +82,7 @@ namespace vaultdb {
         Operator<B> *parseSeqScan(const int &operator_id, const boost::property_tree::ptree &seq_scan_tree);
 
         Operator<B> *parseShrinkwrap(const int &operator_id, const boost::property_tree::ptree &pt);
+        void parseLocalScan(const int & operator_id, const boost::property_tree::ptree &local_scan_tree);
 
         void calculateAutoAggregate();
 
