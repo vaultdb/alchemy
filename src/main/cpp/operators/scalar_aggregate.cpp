@@ -104,23 +104,6 @@ void  ScalarAggregate<B>::setup() {
     this->output_schema_.initializeFieldOffsets();
 }
 
-template<typename B>
-string ScalarAggregate<B>::getOperatorType() const {
-    return "ScalarAggregate";
-}
-
-template<typename B>
-string ScalarAggregate<B>::getParameters() const {
-    stringstream ss;
-    ss << "aggs: (" << aggregate_definitions_[0].toString();
-
-    for(uint32_t i = 1; i < aggregate_definitions_.size(); ++i) {
-        ss << ", " << aggregate_definitions_[i].toString();
-    }
-
-    ss << ")";
-    return ss.str();
-}
 
 
 template class vaultdb::ScalarAggregate<bool>;

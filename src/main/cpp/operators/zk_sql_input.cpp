@@ -44,12 +44,6 @@ void ZkSqlInput::runQuery() {
     plain_input_->setSortOrder(getSortOrder());
 }
 
-string ZkSqlInput::getOperatorType() const {
-    return "ZkSqlInput";
-}
 
-string ZkSqlInput::getParameters() const {
-    return "\"" + input_query_ + "\", tuple_count=" + std::to_string(plain_input_->getTupleCount());
-}
 
 

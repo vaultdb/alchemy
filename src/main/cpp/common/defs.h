@@ -87,6 +87,25 @@ namespace vaultdb {
         OUTSOURCED
     };
 
+    enum class OperatorType {
+        SQL_INPUT,
+        ZK_SQL_INPUT,
+        SECURE_SQL_INPUT,
+        TABLE_INPUT,
+        CSV_INPUT,
+        FILTER,
+        PROJECT,
+        NESTED_LOOP_JOIN,
+        KEYED_NESTED_LOOP_JOIN,
+        SORT_MERGE_JOIN,
+        MERGE_JOIN,
+        SORT,
+        SHRINKWRAP,
+        SCALAR_AGGREGATE,
+        SORT_MERGE_AGGREGATE,
+        NESTED_LOOP_AGGREGATE,
+        UNION
+    };
 
 }
 #endif // _COMMON_DEFS_H

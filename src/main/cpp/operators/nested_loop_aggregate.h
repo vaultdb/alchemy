@@ -6,6 +6,7 @@
 #include <operators/support/aggregate_id.h>
 #include <operators/support/unsorted_aggregate_impl.h>
 #include "operator.h"
+#include "common/defs.h"
 
 namespace vaultdb {
     template<typename B>
@@ -36,12 +37,27 @@ namespace vaultdb {
         }
 
     protected:
-        string OperatorType;
         Expression<B>  *predicate_;
 
         QueryTable<B> *runSelf() override;
-        string getOperatorType() const override;
-        string getParameters() const override;
+        string getOperatorTypeString() const override { return "NestedLoopAggregate"; }
+        string getParameters() const override {
+            stringstream  ss;
+            ss << "group-by: (" << group_by_[0];
+            for(uint32_t i = 1; i < group_by_.size(); ++i)
+                ss << ", " << group_by_[i];
+
+            ss << ") aggs: (" << aggregate_definitions_[0].toString();
+
+            for(uint32_t i = 1; i < aggregate_definitions_.size(); ++i) {
+                ss << ", " << aggregate_definitions_[i].toString();
+            }
+
+            ss << ")";
+            return ss.str();
+
+        }
+        enum OperatorType getOperatorType() const override { return OperatorType::NESTED_LOOP_AGGREGATE; }
 
     private:
 

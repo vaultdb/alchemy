@@ -28,6 +28,7 @@ namespace vaultdb {
 
         Operator<B> *getRoot() const { return root_; }
         Operator<B> *getOperator(const int & op_id);
+        Operator<B> *optmizeTree();
 
         static Operator<B> *parse(const std::string & db_name, const string & sql_file, const string & json_file, const int & limit = -1);
         // for ZK plans
@@ -38,10 +39,9 @@ namespace vaultdb {
         bool getAutoFlag() const { return agg_auto_flag; }
         void setAutoFlag(bool inputFlag) { agg_auto_flag = inputFlag;}
 
-    protected:
+    private:
         std::string db_name_;
         StorageModel storage_model_ = SystemConfiguration::getInstance().storageModel();
-
 
         Operator<B>  *root_;
         int input_limit_ = -1; // to add a limit clause to SQL statements for efficient testing
@@ -81,9 +81,9 @@ namespace vaultdb {
 
 
         // utils
-        Operator<B> * getChildOperator(const int & my_operator_id, const boost::property_tree::ptree &pt) const;
+        Operator<B> *getChildOperator(const int & my_operator_id, const boost::property_tree::ptree &pt) const;
         const std::string truncateInput(const std::string sql) const;
-
+        void optimizeTreeHelper(Operator<B> *child);
 
 
 

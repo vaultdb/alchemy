@@ -28,7 +28,14 @@ namespace  vaultdb {
     protected:
 
         QueryTable<B> *runSelf()  override;
-        string getOperatorType() const override;
+        string getOperatorTypeString() const override {
+            return "Filter";
+        }
+
+        OperatorType getOperatorType() const override {
+            return OperatorType::FILTER;
+        }
+
         string getParameters() const override;
 
 

@@ -60,7 +60,7 @@ QueryTable<B> *Operator<B>::run() {
     runtime_ms_ = time_from(start_time_)/1e3;
 
     if(std::is_same_v<B, Bit> && this->getOperatorId() >= -1) {
-        cout << "Operator #" << this->getOperatorId() << " " << getOperatorType() << " ran for " << runtime_ms_
+        cout << "Operator #" << this->getOperatorId() << " " << getOperatorTypeString() << " ran for " << runtime_ms_
              << " ms, "
              << "gate count: " << gate_cnt_ << " output cardinality: " << output_->getTupleCount() << ", row width="
              << output_schema_.size() << '\n';
@@ -70,7 +70,7 @@ QueryTable<B> *Operator<B>::run() {
         float relative_error = std::fabs(((float) estimated_gates) - ((float) gate_cnt_)) / (float) gate_cnt_ * 100.0;
         cout << "Estimated cost: " << estimated_gates << ", Observed gates: " << gate_cnt_ << ", Error rate(%) : "
              << relative_error << endl;
-//        if(relative_error > 25.0) cout << "***Warning: high cost model error on operator (" << this->getOperatorId() << ") " << this->getOperatorType() << endl;
+//        if(relative_error > 25.0) cout << "***Warning: high cost model error on operator (" << this->getOperatorId() << ") " << this->getOperatorTypeString() << endl;
         }
         //cout << "      Operator desc: " << this->toString() << endl;
     }
@@ -109,7 +109,7 @@ std::string Operator<B>::toString() const {
     stringstream  ss;
 
     string bool_type = (std::is_same_v<B, bool>) ? "bool" : "Bit";
-    ss << "#" <<   operator_id_ << ": " << getOperatorType() << "<" << bool_type << "> ";
+    ss << "#" << operator_id_ << ": " << getOperatorTypeString() << "<" << bool_type << "> ";
 
     string params = getParameters();
     if(!params.empty())

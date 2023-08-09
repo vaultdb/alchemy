@@ -295,7 +295,7 @@ void PlanParser<B>::calculateAutoAggregate() {
                 cur_op->setOutputCardinality(cur_output_cardinality_);
 
                 // Check if Sort after Aggregate, and does not need because it is already sorted by SMA
-                if (cur_op->getOperatorType() == "Sort" && type == SMA) {
+                if (cur_op->getOperatorTypeString() == "Sort" && type == SMA) {
                     SortDefinition cur_sort_order = cur_op->getSortOrder();
                     if (GroupByAggregate<B>::sortCompatible(cur_sort_order, sma->group_by_)) {
                         cur_output_cardinality_ = cur_op->getOutputCardinality();
@@ -420,7 +420,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     // parse the aggregators
     std::vector<int32_t> group_by_ordinals;
     vector<ScalarAggregateDefinition> aggregators;
-    int cardBound = -1;
+    int cardinality_bound = -1;
 
     if(aggregate_json.count("group") > 0) {
         ptree group_by = aggregate_json.get_child("group.");
@@ -433,8 +433,8 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     }
 
     // Parse Cardinality Bound info from JSON
-    if(aggregate_json.count("cardBound") > 0)
-        cardBound = aggregate_json.get_child("cardBound").template get_value<int>();
+    if(aggregate_json.count("cardinality_bound") > 0)
+        cardinality_bound = aggregate_json.get_child("cardinality_bound").template get_value<int>();
 
     bool check_sort = true;
     if(aggregate_json.count("checkSort") > 0) {
@@ -485,7 +485,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
                     for (uint32_t idx: group_by_ordinals) {
                         child_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
                     }
-                    Sort<B>* sort_before_sma = new Sort<B>(child->clone(), child_sort);
+                    Sort<B> *sort_before_sma = new Sort<B>(child->clone(), child_sort);
                     sma = new GroupByAggregate<B>(sort_before_sma->clone(), group_by_ordinals, aggregators, check_sort);
                     sort_vector.push_back(sort_before_sma);
                 }
@@ -493,12 +493,12 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
                     sma = new GroupByAggregate<B>(child->clone(), group_by_ordinals, aggregators, check_sort);
                     sort_vector.push_back(nullptr);
                 }
-                nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, cardBound);
+                nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, cardinality_bound);
             }
             else {
                 sma = new GroupByAggregate<B>(child->clone(), group_by_ordinals, aggregators, check_sort);
                 sort_vector.push_back(nullptr);
-                nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, cardBound);
+                nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, cardinality_bound);
             }
 
             sma_vector.push_back(sma);
@@ -509,8 +509,8 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
             return sma;
         }
 
-        if(cardBound > 0 && (agg_algo == "nested-loop-aggregate" || agg_algo == ""))
-            return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardBound);
+        if(cardinality_bound > 0 && (agg_algo == "nested-loop-aggregate" || agg_algo == ""))
+            return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardinality_bound);
         else if(!check_sort && (agg_algo == "sort-merge-aggregate" || agg_algo == ""))
             return new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort);
         else {
@@ -857,6 +857,29 @@ Operator<B> *PlanParser<B>::getOperator(const int &op_id) {
 }
 
 
+// optimize a left-deep tree with a fixed join order
+// optimize operator implementations and sort placement
+
+// Plan enumerator to iteratively try all potential impls for each operator declared in query plan.
+//  * For leafs/LogicalValues cycle through all interesting sort orders then recurse to next tree layer
+//  * For joins cycle through NLJ vs SMJ (assume no partial sort opt for now)
+//  * For aggs try NLA and SMA (if a card bound exists)
+//  * For SMA check if we need sort before op.
+//  * After SMA assess if we still need any sort that's a parent to it.
+
+template<typename B>
+Operator<B> *PlanParser<B>::optmizeTree() {
+    Operator<B> *leaf = operators_.begin()->second;
+    return nullptr;
+
+}
+
+// helper function for recursing up operator tree
+template<typename B>
+void PlanParser<B>::optimizeTreeHelper(Operator<B> *parent) {
+
+
+}
 
 template class vaultdb::PlanParser<bool>;
 template class vaultdb::PlanParser<emp::Bit>;

@@ -19,6 +19,7 @@
         }
       ],
       "sql": "SELECT l_orderkey, l_quantity FROM lineitem ORDER BY l_quantity, l_orderkey",
+      "dummy-tag": false,
       "collation": [
         {
           "field": 1,
@@ -120,7 +121,8 @@
         }
       ],
       "sql": "SELECT L2.l_orderkey, L2.l_quantity FROM lineitem L2 ORDER BY L2.l_quantity, L2.l_orderkey",
-        "collation": [
+      "dummy-tag": false,
+      "collation": [
             {
             "field": 1,
             "direction": "ASCENDING",
@@ -210,6 +212,7 @@
         }
       ],
       "sql": "SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate FROM orders ORDER BY o_orderkey, o_custkey",
+      "dummy-tag": false,
       "collation": [
         {
           "field": 0,
@@ -305,7 +308,8 @@
         }
       ],
       "sql": "SELECT c_custkey, c_name FROM customer ORDER BY c_custkey",
-        "collation": [
+      "dummy-tag": false,
+      "collation": [
             {
             "field": 0,
             "direction": "ASCENDING",

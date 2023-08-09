@@ -260,11 +260,6 @@ bool Sort<B>::swapTuplesNormalized(const QueryTable<bool> *table, const int &lhs
 
 
 template<typename B>
-string Sort<B>::getOperatorType() const {
-    return "Sort";
-}
-
-template<typename B>
 string Sort<B>::getParameters() const {
     return DataUtilities::printSortDefinition(this->sort_definition_);
 }

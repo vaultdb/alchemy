@@ -51,15 +51,7 @@ QueryTable<B> * Union<B>::runSelf() {
     return this->output_;
 }
 
-template<typename B>
-string Union<B>::getOperatorType() const {
-    return "Union";
-}
 
-template<typename B>
-string Union<B>::getParameters() const {
-    return std::string();
-}
 
 
 template class vaultdb::Union<bool>;

@@ -11,13 +11,13 @@ namespace vaultdb {
     class GroupByAggregate : public Operator<B> {
 
         vector<GroupByAggregateImpl<B> *> aggregators_;
-      // truncated output not yet implemented.  Placeholder member variable below
-         size_t output_cardinality_ = 0; 
 
     public:
         std::vector<ScalarAggregateDefinition> aggregate_definitions_;
         std::vector<int32_t> group_by_;
         bool check_sort_ = true;
+        // truncated output not yet implemented.  Placeholder member variable below
+        size_t output_cardinality_ = 0;
 
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort);
@@ -46,8 +46,31 @@ namespace vaultdb {
 
     protected:
         QueryTable<B> *runSelf() override;
-        string getOperatorType() const override;
-        string getParameters() const override;
+
+        inline string getOperatorTypeString() const override {
+            return "GroupByAggregate";
+        }
+
+        inline OperatorType getOperatorType() const override {
+            return OperatorType::SORT_MERGE_AGGREGATE;
+        }
+
+        inline string getParameters() const override {
+            stringstream  ss;
+            ss << "group-by: (" << group_by_[0];
+            for(uint32_t i = 1; i < group_by_.size(); ++i)
+                ss << ", " << group_by_[i];
+
+            ss << ") aggs: (" << aggregate_definitions_[0].toString();
+
+            for(uint32_t i = 1; i < aggregate_definitions_.size(); ++i) {
+                ss << ", " << aggregate_definitions_[i].toString();
+            }
+
+            ss << ")";
+            return ss.str();
+        }
+
 
     private:
         GroupByAggregateImpl<B> *aggregateFactory(const AggregateId &aggregator_type, const int32_t &ordinal,

@@ -13,11 +13,4 @@ PlainTable *CsvInput::runSelf() {
     return this->output_;
 }
 
-string CsvInput::getOperatorType() const {
-    return "CsvInput";
-}
-
-string CsvInput::getParameters() const {
-    return "filename=" + input_file_;
-}
 

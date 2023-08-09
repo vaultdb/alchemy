@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-      
     env: 
       working-directory: ${{github.workspace}}/src/main/cpp
     steps:
@@ -39,24 +38,22 @@ jobs:
     - name: Setup DB
       working-directory: ${{github.workspace}}
       run: | 
-          sudo chmod og+X /home /home/runner
+          sudo chmod -R 777 /home /home/runner
+          sudo adduser --disabled-password --gecos "" vaultdb
+          sudo usermod -aG sudo vaultdb && sudo passwd -d vaultdb
           sudo systemctl start postgresql.service
           sudo -u postgres createuser -s vaultdb
-          sudo cat /etc/postgresql/*/main/pg_hba.conf
           sudo sed -i s/scram-sha-256/trust/g /etc/postgresql/*/main/pg_hba.conf
           sudo sed -i s/peer/trust/g /etc/postgresql/*/main/pg_hba.conf
-          sudo cat /etc/postgresql/*/main/pg_hba.conf
     - name: Populate DB
       working-directory: ${{github.workspace}}
-      run: bash conf/workload/tpch/generate-and-load-data.sh
-      env:
-        POSTGRES_HOST: 127.0.0.1
-        POSTGRES_USER: vaultdb
-        POSTGRES_PASSWORD: vaultdb
-        POSTGRES_PORT: 5432
+      run: |
+          sudo -u vaultdb bash conf/workload/tpch/generate-and-load-data.sh
+          sudo -u postgres createdb tpch_unioned_150
+          sudo -u vaultdb psql -U vaultdb -d tpch_unioned_150 -a -f ${{github.workspace}}/src/main/cpp/test/support/tpch_unioned_150.sql
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release
     - name: Test
       working-directory: ${{env.working-directory}}
-      run: ctest --test-dir build --output-on-failure
+      run: sudo -u vaultdb ctest --test-dir build --output-on-failure

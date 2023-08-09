@@ -257,28 +257,6 @@ void GroupByAggregate<B>::setup() {
     this->output_cardinality_ = this->getChild(0)->getOutputCardinality();
 }
 
-template<typename B>
-string GroupByAggregate<B>::getOperatorType() const {
-    return "GroupByAggregate";
-}
-
-template<typename B>
-string GroupByAggregate<B>::getParameters() const {
-    stringstream  ss;
-    ss << "group-by: (" << group_by_[0];
-    for(uint32_t i = 1; i < group_by_.size(); ++i)
-        ss << ", " << group_by_[i];
-
-    ss << ") aggs: (" << aggregate_definitions_[0].toString();
-
-    for(uint32_t i = 1; i < aggregate_definitions_.size(); ++i) {
-        ss << ", " << aggregate_definitions_[i].toString();
-    }
-
-    ss << ")";
-    return ss.str();
-}
-
 
 template class vaultdb::GroupByAggregate<bool>;
 template class vaultdb::GroupByAggregate<emp::Bit>;
