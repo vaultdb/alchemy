@@ -49,7 +49,7 @@ jobs:
     - name: Populate DB
       working-directory: ${{github.workspace}}
       run: |
-          sudo adduser vaultdb --disabled-password
+          sudo adduser --disabled-password --gecos "" vaultdb
           sudo usermod -aG sudo vaultdb && passwd -d vaultdb
           sudo -u vaultdb bash conf/workload/tpch/generate-and-load-data.sh
     - name: Build
