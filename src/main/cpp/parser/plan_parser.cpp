@@ -38,8 +38,11 @@ PlanParser<B>::PlanParser(const string &db_name, const string & sql_file, const 
 
 // for ZK plans
 template<typename B>
-PlanParser<B>::PlanParser(const string &db_name, const string & json_file, const int &limit) : db_name_(db_name), input_limit_(limit), zk_plan_(true) {
+PlanParser<B>::PlanParser(const string &db_name, const string & json_file, const int &limit) : db_name_(db_name), input_limit_(limit), zk_plan_(false) {
     parseSecurePlan(json_file);
+
+    if(getAutoFlag())
+        calculateAutoAggregate();
 
 }
 
@@ -149,7 +152,9 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
     if(op_name == "JdbcTableScan")  op = parseSeqScan(operator_id, tree);
     if(op_name == "ShrinkWrap")  op = parseShrinkwrap(operator_id, tree);
 
-    if(op != nullptr) {
+    if(op_name == "LocalScan")
+        parseLocalScan(operator_id, tree) ; // handled in createInput
+    else if(op != nullptr) {
 
         operators_[operator_id] = op;
         operators_.at(operator_id)->setOperatorId(operator_id);
@@ -680,6 +685,75 @@ Operator<B> *PlanParser<B>::parseSeqScan(const int & operator_id, const boost::p
     string sql = "SELECT * FROM " + table_name + " ORDER BY (1), (2), (3) ";
     return createInputOperator(sql, SortDefinition(), B(false), false);
 }
+
+template<typename B>
+void PlanParser<B>::parseLocalScan(const int & operator_id, const boost::property_tree::ptree &local_scan_tree) {
+    string sql = "";
+    int input_party = 0;
+    bool multiple_sort_ = false;
+    B plain_has_dummy_tag = false;
+
+    if(local_scan_tree.count("sql") > 0)
+        sql = local_scan_tree.get_child("sql").template get_value<string>();
+
+    if(local_scan_tree.count("party") > 0)
+        input_party = local_scan_tree.get_child("party").template get_value<int>();
+
+    plain_has_dummy_tag =  (sql.find("dummy_tag") != std::string::npos);
+    bool tmp = (sql.find("dummy_tag") != std::string::npos);
+
+    if(local_scan_tree.count("multiple-sort") > 0)
+        multiple_sort_ = local_scan_tree.get_child("multiple-sort").template get_value<bool>();
+
+    if (multiple_sort_) {
+        int collationIndex = 1; // Start index for multiple collations
+
+        while (true) {
+            std::string collationKey = "collation-" + std::to_string(collationIndex);
+            boost::optional<const boost::property_tree::ptree&> collationNode = local_scan_tree.get_child_optional(collationKey);
+
+            if (!collationNode) {
+                break; // No more collations found
+            }
+
+            SortDefinition sort_definition; // Define a sort definition for this collation
+
+            for (const auto& collationEntry : *collationNode) {
+                ColumnSort cs;
+                cs.first = collationEntry.second.get_child("field").get_value<int>();
+                std::string direction_str = collationEntry.second.get_child("direction").get_value<std::string>();
+                cs.second = (direction_str == "ASCENDING") ? SortDirection::ASCENDING : SortDirection::DESCENDING;
+                sort_definition.push_back(cs); // Push the ColumnSort to the current SortDefinition
+            }
+
+            scan_sorts_[operator_id].push_back(sort_definition);
+
+            collationIndex++; // Move to the next collation index
+        }
+    }
+    // If there is only one sort, parse it
+    else {
+        boost::property_tree::ptree sort_payload = local_scan_tree.get_child("collation");
+
+        SortDefinition sort_definition; // Define a single sort definition
+
+        for (ptree::const_iterator it = sort_payload.begin(); it != sort_payload.end(); ++it) {
+            ColumnSort cs;
+            cs.first = it->second.get_child("field").get_value<int>(); // field_idx
+            std::string direction_str = it->second.get_child("direction").get_value<std::string>();
+            cs.second = (direction_str == "ASCENDING") ? SortDirection::ASCENDING : SortDirection::DESCENDING;
+            sort_definition.push_back(cs); // Push the ColumnSort to the single SortDefinition
+        }
+        scan_sorts_[operator_id].push_back(sort_definition);
+    }
+    if(input_party > 0)
+        operators_[operator_id] = createInputOperator(sql, scan_sorts_[operator_id].front(), input_party, plain_has_dummy_tag, tmp);
+    else
+        operators_[operator_id] = createInputOperator(sql, scan_sorts_[operator_id].front(), plain_has_dummy_tag, tmp);
+    operators_.at(operator_id)->setOperatorId(operator_id);
+    root_ = operators_[operator_id];
+}
+
 
 template<typename B>
 Operator<B> *PlanParser<B>::parseShrinkwrap(const int & operator_id, const boost::property_tree::ptree &pt) {
