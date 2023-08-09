@@ -49,7 +49,7 @@ jobs:
       working-directory: ${{github.workspace}}
       run: |
           sudo -u vaultdb bash conf/workload/tpch/generate-and-load-data.sh
-          sudo -u vaultdb postgres createdb tpch_unioned_150
+          sudo -u postgres createdb tpch_unioned_150
           sudo -u vaultdb psql -U vaultdb -d tpch_unioned_150 -a -f ${{github.workspace}}/src/main/cpp/test/support
     - name: Build
       working-directory: ${{env.working-directory}}
