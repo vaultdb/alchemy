@@ -52,6 +52,7 @@ namespace vaultdb {
         Operator<B> *root_;
         int input_limit_ = -1; // to add a limit clause to SQL statements for efficient testing
         bool zk_plan_ = false;
+        bool json_only_ = false;
 
         // plan enumerator state
         map<int, vector<SortDefinition>> interesting_sort_orders_; // TODO: initialize this from JSON plan

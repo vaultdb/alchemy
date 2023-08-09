@@ -39,6 +39,8 @@ PlanParser<B>::PlanParser(const string &db_name, const string & sql_file, const 
 // for ZK plans
 template<typename B>
 PlanParser<B>::PlanParser(const string &db_name, const string & json_file, const int &limit) : db_name_(db_name), input_limit_(limit), zk_plan_(false) {
+    json_only_ = true;
+
     parseSecurePlan(json_file);
 
     if(getAutoFlag())
@@ -143,7 +145,6 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
 
     Operator<B> *op = nullptr;
 
-    if(op_name == "LogicalValues") return; // handled in createInput
     if(op_name == "LogicalSort")   op = parseSort(operator_id, tree);
     if(op_name == "LogicalAggregate") { op = parseAggregate(operator_id, tree); }
     if(op_name == "LogicalJoin")  op = parseJoin(operator_id, tree);
@@ -152,8 +153,12 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
     if(op_name == "JdbcTableScan")  op = parseSeqScan(operator_id, tree);
     if(op_name == "ShrinkWrap")  op = parseShrinkwrap(operator_id, tree);
 
-    if(op_name == "LocalScan")
-        parseLocalScan(operator_id, tree) ; // handled in createInput
+    if(op_name == "LogicalValues"){
+        if(json_only_)
+            parseLocalScan(operator_id, tree);
+        else
+            return;
+    }
     else if(op != nullptr) {
 
         operators_[operator_id] = op;
@@ -295,7 +300,7 @@ void PlanParser<B>::calculateAutoAggregate() {
                 cur_op->setOutputCardinality(cur_output_cardinality_);
 
                 // Check if Sort after Aggregate, and does not need because it is already sorted by SMA
-                if (cur_op->getTypeString() == "Sort" && type == SMA) {
+                if (cur_op->getOperatorTypeString() == "Sort" && type == SMA) {
                     SortDefinition cur_sort_order = cur_op->getSortOrder();
                     if (GroupByAggregate<B>::sortCompatible(cur_sort_order, sma->group_by_)) {
                         cur_output_cardinality_ = cur_op->getOutputCardinality();
@@ -702,37 +707,35 @@ void PlanParser<B>::parseLocalScan(const int & operator_id, const boost::propert
     plain_has_dummy_tag =  (sql.find("dummy_tag") != std::string::npos);
     bool tmp = (sql.find("dummy_tag") != std::string::npos);
 
-    if(local_scan_tree.count("multiple-sort") > 0)
-        multiple_sort_ = local_scan_tree.get_child("multiple-sort").template get_value<bool>();
+    int collationIndex = 1; // Start index for multiple collations
+    bool foundMultipleSorts = false;
+    while (true) {
+        std::string collationKey = "collation-" + std::to_string(collationIndex);
+        boost::optional<const boost::property_tree::ptree&> collationNode = local_scan_tree.get_child_optional(collationKey);
 
-    if (multiple_sort_) {
-        int collationIndex = 1; // Start index for multiple collations
+        if(collationIndex > 1)// At least two collation entries were found
+            foundMultipleSorts = true;
 
-        while (true) {
-            std::string collationKey = "collation-" + std::to_string(collationIndex);
-            boost::optional<const boost::property_tree::ptree&> collationNode = local_scan_tree.get_child_optional(collationKey);
-
-            if (!collationNode) {
-                break; // No more collations found
-            }
-
-            SortDefinition sort_definition; // Define a sort definition for this collation
-
-            for (const auto& collationEntry : *collationNode) {
-                ColumnSort cs;
-                cs.first = collationEntry.second.get_child("field").get_value<int>();
-                std::string direction_str = collationEntry.second.get_child("direction").get_value<std::string>();
-                cs.second = (direction_str == "ASCENDING") ? SortDirection::ASCENDING : SortDirection::DESCENDING;
-                sort_definition.push_back(cs); // Push the ColumnSort to the current SortDefinition
-            }
-
-            scan_sorts_[operator_id].push_back(sort_definition);
-
-            collationIndex++; // Move to the next collation index
+        if (!collationNode) {
+            break; // No more collations found
         }
+
+        SortDefinition sort_definition; // Define a sort definition for this collation
+
+        for (const auto& collationEntry : *collationNode) {
+            ColumnSort cs;
+            cs.first = collationEntry.second.get_child("field").get_value<int>();
+            std::string direction_str = collationEntry.second.get_child("direction").get_value<std::string>();
+            cs.second = (direction_str == "ASCENDING") ? SortDirection::ASCENDING : SortDirection::DESCENDING;
+            sort_definition.push_back(cs); // Push the ColumnSort to the current SortDefinition
+        }
+
+        scan_sorts_[operator_id].push_back(sort_definition);
+
+        collationIndex++; // Move to the next collation index
     }
     // If there is only one sort, parse it
-    else {
+    if(!foundMultipleSorts){
         boost::property_tree::ptree sort_payload = local_scan_tree.get_child("collation");
 
         SortDefinition sort_definition; // Define a single sort definition
@@ -883,7 +886,7 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
     int id = op->getOperatorId();
 
 
-    switch(op->getType()) {
+    switch(op->getOperatorType()) {
         case OperatorType::SQL_INPUT:
         case OperatorType::SECURE_SQL_INPUT:
         case OperatorType::ZK_SQL_INPUT:
@@ -955,7 +958,7 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
         // recommend doing this in Operator<B> - like adding an updateSortOrder() method that uses the same logic in operator constructor
         recurseNode(join);
 
-        if(join->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN) {
+        if(join->getOperatorType() == OperatorType::KEYED_NESTED_LOOP_JOIN) {
             KeyedJoin<B> *kj = (KeyedJoin<B> *)join;
             SortMergeJoin j(join->getChild(0)->clone(), join->getChild(1)->clone(), kj->foreignKeyChild(), kj->getPredicate());
             recurseNode(&j);
