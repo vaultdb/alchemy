@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-      
     env: 
       working-directory: ${{github.workspace}}/src/main/cpp
     steps:
@@ -40,6 +39,8 @@ jobs:
       working-directory: ${{github.workspace}}
       run: | 
           sudo chmod -R 777 /home /home/runner
+          sudo adduser --disabled-password --gecos "" vaultdb
+          sudo usermod -aG sudo vaultdb && sudo passwd -d vaultdb
           sudo systemctl start postgresql.service
           sudo -u postgres createuser -s vaultdb
           sudo sed -i s/scram-sha-256/trust/g /etc/postgresql/*/main/pg_hba.conf
@@ -47,12 +48,16 @@ jobs:
     - name: Populate DB
       working-directory: ${{github.workspace}}
       run: |
-          sudo adduser --disabled-password --gecos "" vaultdb
-          sudo usermod -aG sudo vaultdb && sudo passwd -d vaultdb
           sudo -u vaultdb bash conf/workload/tpch/generate-and-load-data.sh
+          pg_dump -U vaultdb tpch_unioned_150 > ${{github.workspace}}/src/main/cpp/test/support/tpch_unioned_150-bit_packing.sql
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release
+  test:
+    runs-on: ubuntu-latest
+    env: 
+      working-directory: ${{github.workspace}}/src/main/cpp
+    steps:
     - name: Test
       working-directory: ${{env.working-directory}}
       run: sudo -u vaultdb ctest --test-dir build --output-on-failure
