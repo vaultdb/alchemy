@@ -21,78 +21,125 @@ namespace vaultdb {
     template<typename B>
     class PlanParser {
     public:
-        PlanParser(const string &db_name, const string & sql_file, const string & json_file, const int &limit = -1);
+        PlanParser(const string &db_name, const string &sql_file, const string &json_file, const int &limit = -1);
+
         // for ZK plans
-        PlanParser(const string &db_name, const string & json_file, const int &limit = -1);
+        PlanParser(const string &db_name, const string &json_file, const int &limit = -1);
 
 
         Operator<B> *getRoot() const { return root_; }
-        Operator<B> *getOperator(const int & op_id);
+
+        Operator<B> *getOperator(const int &op_id);
+
         Operator<B> *optmizeTree();
 
-        static Operator<B> *parse(const std::string & db_name, const string & sql_file, const string & json_file, const int & limit = -1);
-        // for ZK plans
-        static Operator <B> *parse(const string &db_name, const string &json_plan, const int &limit = -1);
+        static Operator<B> *
+        parse(const std::string &db_name, const string &sql_file, const string &json_file, const int &limit = -1);
 
-        static tuple<int, SortDefinition, int> parseSqlHeader(const string & header);
+        // for ZK plans
+        static Operator<B> *parse(const string &db_name, const string &json_plan, const int &limit = -1);
+
+        static tuple<int, SortDefinition, int> parseSqlHeader(const string &header);
 
         bool getAutoFlag() const { return agg_auto_flag; }
-        void setAutoFlag(bool inputFlag) { agg_auto_flag = inputFlag;}
+
+        void setAutoFlag(bool inputFlag) { agg_auto_flag = inputFlag; }
 
     private:
         std::string db_name_;
         StorageModel storage_model_ = SystemConfiguration::getInstance().storageModel();
 
-        Operator<B>  *root_;
+        Operator<B> *root_;
         int input_limit_ = -1; // to add a limit clause to SQL statements for efficient testing
         bool zk_plan_ = false;
 
-        std::map<int, Operator<B> * > operators_; // op ID --> operator instantiation
-        std::vector<Operator<B> * > support_ops_; // these ones don't get an operator ID from the JSON plan
+        // plan enumerator state
+        map<int, vector<SortDefinition>> interesting_sort_orders_; // TODO: initialize this from JSON plan
+        Operator<B> *min_cost_plan_ = nullptr;
+        size_t min_plan_cost_ = std::numeric_limits<size_t>::max();
 
-        void parseSqlInputs(const std::string & input_file);
-        void parseSecurePlan(const std::string & plan_file);
+        std::map<int, Operator<B> *> operators_; // op ID --> operator instantiation
+        std::vector<Operator<B> *> support_ops_; // these ones don't get an operator ID from the JSON plan
+
+        void parseSqlInputs(const std::string &input_file);
+
+        void parseSecurePlan(const std::string &plan_file);
 
         // operator parsers
-        void parseOperator(const int & operator_id, const std::string & op_name, const  boost::property_tree::ptree &pt);
+        void parseOperator(const int &operator_id, const std::string &op_name, const boost::property_tree::ptree &pt);
+
         Operator<B> *parseSort(const int &operator_id, const boost::property_tree::ptree &pt);
-        Operator<B> *parseAggregate(const int & operator_id, const boost::property_tree::ptree &pt);
-        Operator<B> *parseJoin(const int & operator_id, const boost::property_tree::ptree &pt);
-        Operator<B> *parseFilter(const int & operator_id, const boost::property_tree::ptree &pt);
-        Operator<B> *parseProjection(const int & operator_id, const boost::property_tree::ptree &project_tree);
-        Operator<B> *parseSeqScan(const int & operator_id, const boost::property_tree::ptree &seq_scan_tree);
-        Operator<B> *parseShrinkwrap(const int & operator_id, const boost::property_tree::ptree &pt);
+
+        Operator<B> *parseAggregate(const int &operator_id, const boost::property_tree::ptree &pt);
+
+        Operator<B> *parseJoin(const int &operator_id, const boost::property_tree::ptree &pt);
+
+        Operator<B> *parseFilter(const int &operator_id, const boost::property_tree::ptree &pt);
+
+        Operator<B> *parseProjection(const int &operator_id, const boost::property_tree::ptree &project_tree);
+
+        Operator<B> *parseSeqScan(const int &operator_id, const boost::property_tree::ptree &seq_scan_tree);
+
+        Operator<B> *parseShrinkwrap(const int &operator_id, const boost::property_tree::ptree &pt);
+
         void calculateAutoAggregate();
 
         bool agg_auto_flag = false;
-        std::vector<GroupByAggregate<B> * > sma_vector;
-        std::vector<NestedLoopAggregate<B> * > nla_vector;
-        std::vector<Sort<B> * > sort_vector;
+        std::vector<GroupByAggregate<B> *> sma_vector;
+        std::vector<NestedLoopAggregate<B> *> nla_vector;
+        std::vector<Sort<B> *> sort_vector;
         std::vector<int> agg_id;
 
 
         // faux template specialization
-        Operator<bool> *createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag, const bool & plain_has_dummy_tag);
-        Operator<emp::Bit> *createInputOperator(const string &sql, const SortDefinition &collation, const emp::Bit &has_dummy_tag, const bool & plain_has_dummy_tag);
-        Operator<bool> *createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party, const bool &has_dummy_tag, const bool & plain_has_dummy_tag);
-        Operator<emp::Bit> *createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party, const emp::Bit &has_dummy_tag, const bool & plain_has_dummy_tag);
+        Operator<bool> *
+        createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag,
+                            const bool &plain_has_dummy_tag);
+
+        Operator<emp::Bit> *
+        createInputOperator(const string &sql, const SortDefinition &collation, const emp::Bit &has_dummy_tag,
+                            const bool &plain_has_dummy_tag);
+
+        Operator<bool> *createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party,
+                                            const bool &has_dummy_tag, const bool &plain_has_dummy_tag);
+
+        Operator<emp::Bit> *
+        createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party,
+                            const emp::Bit &has_dummy_tag, const bool &plain_has_dummy_tag);
 
 
         // utils
-        Operator<B> *getChildOperator(const int & my_operator_id, const boost::property_tree::ptree &pt) const;
+        Operator<B> *getChildOperator(const int &my_operator_id, const boost::property_tree::ptree &pt) const;
+
         const std::string truncateInput(const std::string sql) const;
+
         void optimizeTreeHelper(Operator<B> *child);
 
+        void recurseNode(Operator<B> *op);
+
+        Operator<B> *fetchLeaf(Operator<B> *op);
+
+        void recurseJoin(Operator<B> *join);
+
+        vector<SortDefinition> getCollations(Operator<B> *op) {
+            map<SortDefinition, int> collations; // making a map to eliminate duplicate collations
+            collations[SortDefinition()] = 0; // empty set
+            collations[op->getSortOrder()] = 0; // default sort
+            for (auto collation: interesting_sort_orders_[op->getOperatorId()]) {
+                collations[collation] = 0;
+            }
+
+            vector<SortDefinition> sorts;
+            for (auto collation: collations) {
+                sorts.push_back(collation.first);
+            }
+            return sorts;
+        }
 
 
     };
 
-
-
-
-
 }
-
 
 
 #endif // _PLAN_READER_H

@@ -290,7 +290,7 @@ void PlanParser<B>::calculateAutoAggregate() {
                 cur_op->setOutputCardinality(cur_output_cardinality_);
 
                 // Check if Sort after Aggregate, and does not need because it is already sorted by SMA
-                if (cur_op->getOperatorTypeString() == "Sort" && type == SMA) {
+                if (cur_op->getTypeString() == "Sort" && type == SMA) {
                     SortDefinition cur_sort_order = cur_op->getSortOrder();
                     if (GroupByAggregate<B>::sortCompatible(cur_sort_order, sma->group_by_)) {
                         cur_output_cardinality_ = cur_op->getOutputCardinality();
@@ -803,10 +803,98 @@ Operator<B> *PlanParser<B>::optmizeTree() {
 
 // helper function for recursing up operator tree
 template<typename B>
-void PlanParser<B>::optimizeTreeHelper(Operator<B> *parent) {
+void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
 
+    Operator<B> *node = op->clone();
+    int id = op->getOperatorId();
+
+
+    switch(op->getType()) {
+        case OperatorType::SQL_INPUT:
+        case OperatorType::SECURE_SQL_INPUT:
+        case OperatorType::ZK_SQL_INPUT:
+        case OperatorType::TABLE_INPUT: {
+            // first try with given sort order (if any) and empty set unconditionally
+            auto sorts = getCollations(node);
+            for (auto &sort: sorts) {
+                node->setSortOrder(sort);
+                recurseNode(node);
+            }
+        }
+        case OperatorType::NESTED_LOOP_JOIN:
+        case OperatorType::SORT_MERGE_JOIN: {
+            // for each rhs leaf collation cycle through its collations and then try both SMJ and NLJ with each collation
+            recurseJoin(node);
+        }
+        case OperatorType::NESTED_LOOP_AGGREGATE:
+        case OperatorType::SORT_MERGE_AGGREGATE: {
+            // for each agg try NLA and SMA
+            // for SMA check if we need sort before op, also check if we have any extra sorts that are unneeded?
+            // TODO: recurseAgg(node);
+            throw;
+        }
+        default:
+            throw;
+
+    }
+
+    delete node;
+}
+
+
+template<typename B>
+void PlanParser<B>::recurseNode(Operator<B> *op) {
+    // at the root node
+    if(op->getParent() == nullptr) {
+        size_t plan_cost = op->planCost();
+        if(plan_cost < min_plan_cost_) {
+            min_plan_cost_ = plan_cost;
+            if(min_cost_plan_ != nullptr) {
+                delete min_cost_plan_;
+            }
+            min_cost_plan_ = op->clone();
+        }
+        return;
+    }
+
+    // else recurse up the tree
+    optimizeTreeHelper(op->getParent());
 
 }
+
+
+template<typename B>
+Operator<B> *PlanParser<B>::fetchLeaf(Operator<B> *op) {
+    while(!op->isLeaf()) {
+        op = op->getChild();
+    }
+    return op;
+}
+
+template<typename B>
+void PlanParser<B>::recurseJoin(Operator<B> *join) {
+    auto rhs_leaf = fetchLeaf(join->getChild(1));
+    auto rhs_sorts = getCollations(rhs_leaf);
+    for(auto &sort: rhs_sorts) {
+        rhs_leaf->setSortOrder(sort);
+        // TODO: add method to propagate sort to parent nodes
+        // recommend doing this in Operator<B> - like adding an updateSortOrder() method that uses the same logic in operator constructor
+        recurseNode(join);
+
+        if(join->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN) {
+            KeyedJoin<B> *kj = (KeyedJoin<B> *)join;
+            SortMergeJoin j(join->getChild(0)->clone(), join->getChild(1)->clone(), kj->foreignKeyChild(), kj->getPredicate());
+            recurseNode(&j);
+        }
+        else {
+            SortMergeJoin<B> *smj = (SortMergeJoin<B> *) join;
+            KeyedJoin j(join->getChild(0)->clone(), join->getChild(1)->clone(), smj->foreignKeyChild(), smj->getPredicate());
+            recurseNode(&j);
+        }
+    }
+
+}
+
 
 template class vaultdb::PlanParser<bool>;
 template class vaultdb::PlanParser<emp::Bit>;
