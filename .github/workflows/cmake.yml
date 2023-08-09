@@ -50,7 +50,7 @@ jobs:
       run: |
           sudo -u vaultdb bash conf/workload/tpch/generate-and-load-data.sh
           sudo -u postgres createdb tpch_unioned_150
-          sudo -u vaultdb psql -U vaultdb -d tpch_unioned_150 -a -f ${{github.workspace}}/src/main/cpp/test/support
+          sudo -u vaultdb psql -U vaultdb -d tpch_unioned_150 -a -f ${{github.workspace}}/src/main/cpp/test/support/tpch_unioned_150.sql
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release
