@@ -48,12 +48,10 @@ jobs:
           sudo cat /etc/postgresql/*/main/pg_hba.conf
     - name: Populate DB
       working-directory: ${{github.workspace}}
-      run: bash conf/workload/tpch/generate-and-load-data.sh
-      env:
-        POSTGRES_HOST: 127.0.0.1
-        POSTGRES_USER: vaultdb
-        POSTGRES_PASSWORD: vaultdb
-        POSTGRES_PORT: 5432
+      run: |
+          sudo adduser vaultdb --disabled-password
+          sudo usermod -aG sudo vaultdb && passwd -d vaultdb
+          sudo -u vaultdb bash conf/workload/tpch/generate-and-load-data.sh
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release
