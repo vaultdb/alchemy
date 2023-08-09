@@ -20,9 +20,13 @@ namespace  vaultdb {
     protected:
         SecureTable *runSelf() override;
 
-        string getOperatorType() const override;
-
-        string getParameters() const override;
+        string getOperatorTypeString() const override {     return "SecureSqlInput";  }
+        OperatorType getOperatorType() const override {     return OperatorType::SECURE_SQL_INPUT;  }
+        string getParameters() const override {
+            // N.B., this is the tuple count provided by each party
+            // after secret sharing we expect more than this via the other party
+            return "\"" + input_query_ + "\", tuple_count=" + std::to_string(plain_input_->getTupleCount());
+         }
 
 
     public:

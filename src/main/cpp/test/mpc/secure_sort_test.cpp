@@ -47,7 +47,6 @@ TEST_F(SecureSortTest, tpchQ01Sort) {
 
     auto sorted = sort.run();
 
-
     if(FLAGS_validation) {
 
         auto observed = sorted->reveal();

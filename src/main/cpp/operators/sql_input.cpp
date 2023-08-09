@@ -81,16 +81,7 @@ void SqlInput::runQuery(const int & input_party) {
     output_->setSortOrder(Operator<bool>::sort_definition_);
 }
 
-string SqlInput::getOperatorType() const {
-    return "SqlInput";
-}
 
-string SqlInput::getParameters() const {
-    string str = input_query_;
-    std::replace(str.begin(), str.end(), '\n', ' ');
-    return "\"" + str + "\", tuple_count=" + std::to_string(this->getOutputCardinality());
-
-}
 
 void SqlInput::truncateInput(const size_t &limit) {
     output_->resize(limit);

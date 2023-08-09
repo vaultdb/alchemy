@@ -83,7 +83,8 @@ namespace  vaultdb {
 
 
         }
-        virtual std::string getOperatorType() const  = 0;
+        virtual std::string getOperatorTypeString() const  = 0;
+        virtual OperatorType getOperatorType() const = 0;
 
         inline Operator * getParent() const { return parent_; }
 
@@ -169,8 +170,12 @@ namespace  vaultdb {
         virtual ~TableInput() = default;
 
     protected:
-        string getOperatorType() const override {
+        string getOperatorTypeString() const override {
             return "TableInput";
+        }
+
+        OperatorType getOperatorType() const override {
+            return OperatorType::TABLE_INPUT;
         }
 
         string getParameters() const override {

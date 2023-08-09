@@ -23,7 +23,8 @@ namespace vaultdb {
 
     protected:
         QueryTable<B> *runSelf() override;
-        inline string getOperatorType() const override {     return "BasicJoin"; }
+        inline string getOperatorTypeString() const override {     return "BasicJoin"; }
+        inline OperatorType getOperatorType() const override { return OperatorType::NESTED_LOOP_JOIN; }
 
     };
 }

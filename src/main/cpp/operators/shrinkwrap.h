@@ -19,8 +19,9 @@ namespace vaultdb {
 
     protected:
         QueryTable<B>* runSelf()  override;
-        string getOperatorType() const override {     return "Shrinkwrap"; }
+        string getOperatorTypeString() const override {     return "Shrinkwrap"; }
         string getParameters() const override {  return "cardinality_bound=" + std::to_string(this->output_cardinality_); }
+        OperatorType getOperatorType() const override { return OperatorType::SHRINKWRAP; }
 
 
     };

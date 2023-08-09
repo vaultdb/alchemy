@@ -50,10 +50,6 @@ QueryTable<B> *KeyedJoin<B>::runSelf() {
     return primaryKeyForeignKeyJoin();
 }
 
-template<typename B>
-string KeyedJoin<B>::getOperatorType() const {
-    return "KeyedJoin";
-}
 
 template<typename B>
 QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {

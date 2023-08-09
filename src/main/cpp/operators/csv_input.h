@@ -22,9 +22,17 @@ public:
     ~CsvInput() = default;
 
 protected:
-    string getOperatorType() const override;
+    string getOperatorTypeString() const {
+        return "CsvInput";
+    }
 
-    string getParameters() const override;
+    string getParameters() const {
+        return "filename=" + input_file_;
+    }
+
+    OperatorType getOperatorType() const {
+        return OperatorType::CSV_INPUT;
+    }
 
 };
 

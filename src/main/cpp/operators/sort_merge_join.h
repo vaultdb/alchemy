@@ -39,9 +39,11 @@ namespace  vaultdb {
 
     protected:
         QueryTable<B> *runSelf() override;
-        inline std::string getOperatorType() const override {
+        inline std::string getOperatorTypeString() const override {
             return "SortMergeJoin";
         }
+
+        OperatorType getOperatorType() const override { return OperatorType::SORT_MERGE_JOIN; }
 
     private:
         int alpha_idx_=-1, table_id_idx_ = -1, weight_idx_ = -1, is_new_idx_ = -1; // alpha_2_idx_ = -1,

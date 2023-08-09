@@ -45,10 +45,6 @@ QueryTable<B> *Filter<B>::runSelf() {
 
 }
 
-template<typename B>
-string Filter<B>::getOperatorType() const {
-    return "Filter";
-}
 
 template<typename B>
 string Filter<B>::getParameters() const {

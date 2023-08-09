@@ -32,8 +32,19 @@ namespace vaultdb {
     protected:
 
         QueryTable<B> *runSelf() override;
-        string getOperatorType() const override;
-        string getParameters() const override;
+        string getOperatorTypeString() const override {     return "ScalarAggregate"; }
+        OperatorType getOperatorType() const override {     return OperatorType::SCALAR_AGGREGATE; }
+        string getParameters() const override {
+            stringstream ss;
+            ss << "aggs: (" << aggregate_definitions_[0].toString();
+
+            for(uint32_t i = 1; i < aggregate_definitions_.size(); ++i) {
+                ss << ", " << aggregate_definitions_[i].toString();
+            }
+
+            ss << ")";
+            return ss.str();
+        }
 
     private:
         void setup();

@@ -28,7 +28,15 @@ namespace  vaultdb {
 
     protected:
         QueryTable<B> *runSelf() override;
-        string getOperatorType() const override;
+
+        string getOperatorTypeString() const override {
+            return "KeyedJoin";
+        }
+
+        OperatorType getOperatorType() const override {
+            return OperatorType::KEYED_NESTED_LOOP_JOIN;
+        }
+
         int32_t foreign_key_input_ = 0; // default: lhs = fkey
 
     private:

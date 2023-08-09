@@ -10,7 +10,8 @@
           "name": "c_custkey"
         }
       ],
-      "sql": "SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey                 JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA' ORDER BY c_custkey",
+      "sql": "SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA' ORDER BY c_custkey",
+      "dummy-tag": false,
       "collation": [
         {
           "field": 0,
@@ -41,6 +42,7 @@
         }
       ],
       "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_year, o_orderkey",
+      "dummy-tag": true,
       "collation": [
         {
           "field": 2,
@@ -125,6 +127,7 @@
         }
       ],
       "sql": "SELECT  l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) volume, NOT p_type = 'LARGE ANODIZED STEEL' AS dummy_tag FROM part JOIN lineitem ON p_partkey = l_partkey ORDER BY l_orderkey, l_linenumber",
+      "dummy-tag": true,
       "collation": [
         {
           "field": 0,
@@ -150,7 +153,8 @@
         }
       ],
       "sql": "SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey ORDER BY s_suppkey",
-        "collation": [
+      "dummy-tag": false,
+      "collation": [
             {
             "field": 0,
             "direction": "ASCENDING"

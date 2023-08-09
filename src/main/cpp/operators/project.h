@@ -57,7 +57,8 @@ namespace vaultdb {
         void setup();
 
     protected:
-        inline string getOperatorType() const override {     return "Project"; }
+        inline string getOperatorTypeString() const override {     return "Project"; }
+        inline OperatorType getOperatorType() const override { return OperatorType::PROJECT; }
 
         inline string getParameters() const override {
             stringstream ss;

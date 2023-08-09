@@ -228,27 +228,7 @@ void NestedLoopAggregate<B>::setup() {
 
 }
 
-template<typename B>
-string NestedLoopAggregate<B>::getOperatorType() const {
-    return "NestedLoopAggregate";
-}
 
-template<typename B>
-string NestedLoopAggregate<B>::getParameters() const {
-    stringstream  ss;
-    ss << "group-by: (" << group_by_[0];
-    for(uint32_t i = 1; i < group_by_.size(); ++i)
-        ss << ", " << group_by_[i];
-
-    ss << ") aggs: (" << aggregate_definitions_[0].toString();
-
-    for(uint32_t i = 1; i < aggregate_definitions_.size(); ++i) {
-        ss << ", " << aggregate_definitions_[i].toString();
-    }
-
-    ss << ")";
-    return ss.str();
-}
 
 
 

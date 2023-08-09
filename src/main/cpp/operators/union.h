@@ -26,8 +26,9 @@ namespace  vaultdb {
 
     protected:
         QueryTable<B> *runSelf()  override;
-        string getOperatorType() const override;
-        string getParameters() const override;
+        string getOperatorTypeString() const override { return "Union"; }
+        OperatorType getOperatorType() const override { return OperatorType::UNION; }
+        string getParameters() const override { return ""; }
         void setupScheme() {
 
         }
