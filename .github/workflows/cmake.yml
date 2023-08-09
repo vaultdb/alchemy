@@ -49,7 +49,7 @@ jobs:
       working-directory: ${{github.workspace}}
       run: |
           sudo -u vaultdb bash conf/workload/tpch/generate-and-load-data.sh
-          sudo -u vaultdb pg_dump -U vaultdb tpch_unioned_150 > ${{github.workspace}}/src/main/cpp/test/support/tpch_unioned_150-bit_packing.sql
+          sudo -u vaultdb psql -U vaultdb -d tpch_unioned_150 -a -f ${{github.workspace}}/src/main/cpp/test/support
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release
