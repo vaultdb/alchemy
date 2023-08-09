@@ -39,7 +39,7 @@ jobs:
     - name: Setup DB
       working-directory: ${{github.workspace}}
       run: | 
-          sudo chmod og+X /home /home/runner
+          sudo chmod -R 777 /home /home/runner
           sudo systemctl start postgresql.service
           sudo -u postgres createuser -s vaultdb
           sudo sed -i s/scram-sha-256/trust/g /etc/postgresql/*/main/pg_hba.conf
