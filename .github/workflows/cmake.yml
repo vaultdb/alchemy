@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     env: 
       working-directory: ${{github.workspace}}/src/main/cpp
@@ -18,9 +17,9 @@ jobs:
       working-directory: ${{github.workspace}}
       run: |
           sudo apt-get -y update
-          sudo apt-get -y install libboost-all-dev libgflags-dev postgresql
+          sudo apt-get -y install libboost-all-dev libgflags-dev postgresql postgresql-client
           wget https://raw.githubusercontent.com/emp-toolkit/emp-readme/master/scripts/install.py
-          python install.py --deps --tool --ot --zk
+          python install.py --deps --tool --ot --zk --sh2pc
           cd ..
           git clone --branch v1.13.0 https://github.com/google/googletest.git
           cd googletest
@@ -33,25 +32,28 @@ jobs:
           ./configure  --disable-documentation --enable-shared CXXFLAGS="-std=c++17 -O2"
           make 
           sudo make install
-    - name: Set up postgres
-      working-directory: ${{github.workspace}}
-      env:
-          POSTGRES_HOST: localhost
-          POSTGRES_USER: vaultdb
-          POSTGRES_PASSWORD: ""
-          POSTGRES_PORT: 5432
-      run: |
-          sudo useradd -ms /usr/bin/bash --password ''  vaultdb
-          sudo pg_ctlcluster 14 main start
-          psql  --command "CREATE USER vaultdb WITH SUPERUSER;"
-          bash conf/workload/testDB/create_test_dbs.sh 
-          bash conf/workload/tpch/generate-and-load-data.sh
     - name: configure cmake
       working-directory: ${{env.working-directory}}
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Wno-dev
+    - name: Setup DB
+      working-directory: ${{github.workspace}}
+      run: | 
+          sudo chmod -R 777 /home /home/runner
+          sudo adduser --disabled-password --gecos "" vaultdb
+          sudo usermod -aG sudo vaultdb && sudo passwd -d vaultdb
+          sudo systemctl start postgresql.service
+          sudo -u postgres createuser -s vaultdb
+          sudo sed -i s/scram-sha-256/trust/g /etc/postgresql/*/main/pg_hba.conf
+          sudo sed -i s/peer/trust/g /etc/postgresql/*/main/pg_hba.conf
+    - name: Populate DB
+      working-directory: ${{github.workspace}}
+      run: |
+          sudo -u vaultdb bash conf/workload/tpch/generate-and-load-data.sh
+          sudo -u postgres createdb tpch_unioned_150
+          sudo -u vaultdb psql -U vaultdb -d tpch_unioned_150 -a -f ${{github.workspace}}/src/main/cpp/test/support
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release
     - name: Test
       working-directory: ${{env.working-directory}}
-      run: ctest --test-dir build
+      run: sudo -u vaultdb ctest --test-dir build --output-on-failure
