@@ -50,7 +50,11 @@ jobs:
       run: |
           sudo -u vaultdb bash conf/workload/tpch/generate-and-load-data.sh
           sudo -u postgres createdb tpch_unioned_150
+          sudo -u postgres createdb tpch_alice_150
+          sudo -u postgres createdb tpch_bob_150
           sudo -u vaultdb psql -U vaultdb -d tpch_unioned_150 -a -f ${{github.workspace}}/src/main/cpp/test/support/tpch_unioned_150.sql
+          sudo -u vaultdb psql -U vaultdb -d tpch_alice_150 -a -f ${{github.workspace}}/src/main/cpp/test/support/tpch_alice_150.sql
+          sudo -u vaultdb psql -U vaultdb -d tpch_bob_150 -a -f ${{github.workspace}}/src/main/cpp/test/support/tpch_bob_150.sql
     - name: Copy files
       working-directory: ${{env.working-directory}}
       run: |
