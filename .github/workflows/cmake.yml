@@ -24,13 +24,13 @@ jobs:
           git clone --branch v1.13.0 https://github.com/google/googletest.git
           cd googletest
           cmake .
-          make all
+          make all -j 2
           sudo make install
           cd ..
           git clone --branch 7.7.4 https://github.com/jtv/libpqxx.git
           cd libpqxx
           ./configure  --disable-documentation --enable-shared CXXFLAGS="-std=c++17 -O2"
-          make 
+          make  -j 2
           sudo make install
     - name: configure cmake
       working-directory: ${{env.working-directory}}
@@ -56,4 +56,4 @@ jobs:
       run: cmake --build build --config Release -j 2
     - name: Run tests
       working-directory: ${{env.working-directory}}
-      run: sudo -u vaultdb python3 runner.py 
+      run: sudo -u vaultdb python runner.py 
