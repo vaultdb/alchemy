@@ -102,7 +102,7 @@ package_add_test(fully_optimized_test mpc/fully_optimized_test.cpp  mpc/emp_base
 package_add_test(auto_optimized_test mpc/auto_optimized_test.cpp  mpc/emp_base_test.h mpc/emp_base_test.cpp)
 package_add_test(join_cost_comparison_test mpc/join_cost_comparison_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
 
-set(Labels "LABELS;UnitTest;LABELS;EmpTest;LAEBELS;ZkTest")
+set(Labels "LABELS;UnitTest;LABELS;EmpTest;LABELS;ZkTest")
 
 #ZK experiments - optional
 package_add_test(zk_test zk/zk_test.cpp zk/zk_base_test.cpp)

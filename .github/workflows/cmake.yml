@@ -53,7 +53,12 @@ jobs:
           sudo -u vaultdb psql -U vaultdb -d tpch_unioned_150 -a -f ${{github.workspace}}/src/main/cpp/test/support/tpch_unioned_150.sql
     - name: Build
       working-directory: ${{env.working-directory}}
-      run: cmake --build build --config Release -j
+      run: cmake --build build --config Release -j 2
     - name: Run plain tests
       working-directory: ${{env.working-directory}}
-      run: sudo -u vaultdb ctest --test-dir build --output-on-failure -j -L PlainTest
+      run: sudo -u vaultdb ctest --test-dir build --output-on-failure -L PlainTest -j 2
+
+#plain tests: no process control needed
+#mpc tests: ctest -R {regex} each emp test one at a time with two subprocesses
+#can use ctest -N to list all test names
+#can use ctest --show-only=json-v1 to get labels
