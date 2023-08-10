@@ -69,11 +69,14 @@ package_add_test(merge_join_test plain/merge_join_test.cpp plain/plain_base_test
 package_add_test(serialization_test serialization_test.cpp plain/plain_base_test.cpp ../pilot/src/common/shared_schema.cpp)
 package_add_test(secret_share_generator_test secret_share_generator_test.cpp plain/plain_base_test.cpp)
 package_add_test(plan_parser_test plan_parser_test.cpp plain/plain_base_test.cpp)
+
+unset(Labels)
+set(Labels "LABELS;PlainTest")
+
 package_add_test(tpch_test tpch_test.cpp plain/plain_base_test.cpp)
 
 unset(Labels)
 set(Labels "LABELS;UnitTest;LABELS;EmpTest")
-unset(Labels)
 
 #EMP-based tests
 package_add_test(emp_test mpc/emp_test.cpp mpc/emp_base_test.cpp)
@@ -89,6 +92,10 @@ package_add_test(secure_sort_merge_join_test mpc/secure_sort_merge_join_test.cpp
 package_add_test(secure_scalar_aggregate_test mpc/secure_scalar_aggregate_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_group_by_aggregate_test mpc/secure_group_by_aggregate_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_nested_loop_aggregate_test mpc/secure_nested_loop_aggregate_test.cpp mpc/emp_base_test.cpp)
+
+unset(Labels)
+set(Labels "LABELS;EmpTest")
+
 package_add_test(enrich_test enrich_test.cpp  support/enrich_test_support.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_tpch_test mpc/secure_tpch_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
 package_add_test(baseline_comparison_test mpc/baseline_comparison_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
@@ -102,6 +109,7 @@ package_add_test(fully_optimized_test mpc/fully_optimized_test.cpp  mpc/emp_base
 package_add_test(auto_optimized_test mpc/auto_optimized_test.cpp  mpc/emp_base_test.h mpc/emp_base_test.cpp)
 package_add_test(join_cost_comparison_test mpc/join_cost_comparison_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
 
+unset(Labels)
 set(Labels "LABELS;UnitTest;LABELS;EmpTest;LABELS;ZkTest")
 
 #ZK experiments - optional

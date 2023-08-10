@@ -54,11 +54,6 @@ jobs:
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release -j 2
-    - name: Run plain tests
+    - name: Run tests
       working-directory: ${{env.working-directory}}
-      run: sudo -u vaultdb ctest --test-dir build --output-on-failure -L PlainTest -j 2
-
-#plain tests: no process control needed
-#mpc tests: ctest -R {regex} each emp test one at a time with two subprocesses
-#can use ctest -N to list all test names
-#can use ctest --show-only=json-v1 to get labels
+      run: sudo -u vaultdb python3 runner.py 
