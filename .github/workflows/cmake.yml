@@ -24,13 +24,13 @@ jobs:
           git clone --branch v1.13.0 https://github.com/google/googletest.git
           cd googletest
           cmake .
-          make all -j 2
+          make all -j 4
           sudo make install
           cd ..
           git clone --branch 7.7.4 https://github.com/jtv/libpqxx.git
           cd libpqxx
           ./configure  --disable-documentation --enable-shared CXXFLAGS="-std=c++17 -O2"
-          make  -j 2
+          make  -j 4
           sudo make install
     - name: configure cmake
       working-directory: ${{env.working-directory}}
@@ -53,7 +53,9 @@ jobs:
           sudo -u vaultdb psql -U vaultdb -d tpch_unioned_150 -a -f ${{github.workspace}}/src/main/cpp/test/support/tpch_unioned_150.sql
     - name: Build
       working-directory: ${{env.working-directory}}
-      run: cmake --build build --config Release -j 2
+      run: |
+          cmake --build build --config Release -j 4
+          cp runner.py ${{env.working-directory}}/build
     - name: Run tests
       working-directory: ${{env.working-directory}}/build
       run: sudo -u vaultdb python runner.py 
