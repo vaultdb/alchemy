@@ -55,5 +55,5 @@ jobs:
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release -j 2
     - name: Run tests
-      working-directory: ${{env.working-directory}}
+      working-directory: ${{env.working-directory}}/build
       run: sudo -u vaultdb python runner.py 
