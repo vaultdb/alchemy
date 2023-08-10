@@ -19,7 +19,6 @@
 #include <string>
 #include <operators/support/aggregate_id.h>
 #include <common/defs.h>
-#include <util/logger.h>
 #include <boost/property_tree/ptree.hpp>
 
 

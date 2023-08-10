@@ -39,7 +39,7 @@ std::string Utilities::getCurrentWorkingDirectory() {
 // From Chenkai Li's EMP memory instrumentation
 
 void Utilities::checkMemoryUtilization(const std::string & msg) {
-    Logger::write("Checking memory utilization after " + msg);
+    //Logger::write("Checking memory utilization after " + msg);
     Utilities::checkMemoryUtilization();
 }
 
@@ -54,19 +54,18 @@ void Utilities::checkMemoryUtilization() {
 	if (!getrusage(RUSAGE_SELF, &rusage)) {
         s << "[Linux]Peak resident set size: " << (size_t) rusage.ru_maxrss << " bytes, at epoch " << epoch << " ms"
           << std::endl;
-        Logger::write(s.str());
+        //Logger::write(s.str());
 
     }
-	else
-        Logger::write("[Linux]Query RSS failed");
+        //Logger::write("[Linux]Query RSS failed");
 #elif defined(__APPLE__)
     struct mach_task_basic_info info;
     mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
     if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info, &count) == KERN_SUCCESS) {
         s << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max << " bytes, current memory size: " << (size_t)info.resident_size  <<  " at epoch " << epoch << " ms";
-         Logger::write(s.str());
+         //Logger::write(s.str());
     }
-    else Logger::write("[Mac]Query RSS failed");
+    //else Logger::write("[Mac]Query RSS failed");
 #endif
 
 }

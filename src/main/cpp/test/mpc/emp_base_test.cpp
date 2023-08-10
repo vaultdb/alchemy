@@ -1,6 +1,5 @@
 #include <util/data_utilities.h>
 #include "emp_base_test.h"
-#include <util/logger.h>
 #include <util/system_configuration.h>
 #include "util/field_utilities.h"
 #include "util/emp_manager/sh2pc_manager.h"
@@ -30,7 +29,6 @@ void EmpBaseTest::SetUp()  {
     s.setStorageModel(storage_model_);
 
 
-    Logger::setup(); // write to console
     std::cout << "Received storage flag of " << FLAGS_storage << '\n';
     std::cout << "Connecting to " << FLAGS_alice_host << " on ports " << FLAGS_port  << ", " << FLAGS_ctrl_port <<  " as " << FLAGS_party << std::endl;
 

@@ -53,7 +53,7 @@ jobs:
           sudo -u vaultdb psql -U vaultdb -d tpch_unioned_150 -a -f ${{github.workspace}}/src/main/cpp/test/support/tpch_unioned_150.sql
     - name: Build
       working-directory: ${{env.working-directory}}
-      run: cmake --build build --config Release
+      run: cmake --build build --config Release -j
     - name: Test
       working-directory: ${{env.working-directory}}
-      run: sudo -u vaultdb ctest --test-dir build --output-on-failure
+      run: sudo -u vaultdb ctest --test-dir build --output-on-failure -j

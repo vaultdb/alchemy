@@ -7,6 +7,7 @@
 #include <operators/sort_merge_join.h>
 #include "util/field_utilities.h"
 #include "opt/operator_cost_model.h"
+#include "util/logger.h"
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43455, "port for EMP execution");
@@ -52,7 +53,10 @@ protected:
 };
 
 void SecureSortMergeJoinTest::runCustomerOrdersTest() {
-
+	Logging::start_log("", Logging::Level::ALL);
+	Logging::Logger *log = Logging::get_log();
+	log->write("test", Logging::Level::DEBUG);	
+	
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
                                                                           "orders_cte AS (" + orders_sql_ + ") "
                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "

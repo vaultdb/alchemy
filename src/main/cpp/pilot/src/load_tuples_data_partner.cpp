@@ -4,7 +4,6 @@
 #include <operators/sort.h>
 #include "common/union_hybrid_data.h"
 #include "common/pilot_utilities.h"
-#include "util/logger.h"
 using namespace  std;
 using namespace vaultdb;
 using namespace  emp;
@@ -63,7 +62,7 @@ int main(int argc, char **argv) {
     // expected order: alice, bob, chi
     SecureTable *input_data = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile);
 
-    Logger::write("Done unioning!");
+    //Logger::write("Done unioning!");
     // validate it against the DB for testing
     if(TESTBED) {
         PlainTable *revealed = input_data->reveal();
@@ -74,7 +73,7 @@ int main(int argc, char **argv) {
 	
         validateInputTable(unioned_db_name, query, patientSortDef, revealed);
 
-        Logger::write("Input passed test!");
+        //Logger::write("Input passed test!");
         delete revealed;
     }
 
@@ -82,7 +81,7 @@ int main(int argc, char **argv) {
     delete input_data; // frees inputData
 
     double runtime = time_from(startTime);
-    Logger::write("Read and validated input on " + std::to_string(party)  + " in "  +    std::to_string((runtime+0.0)*1e6*1e-9) + " ms.");
+    //Logger::write("Read and validated input on " + std::to_string(party)  + " in "  +    std::to_string((runtime+0.0)*1e6*1e-9) + " ms.");
 
-    Logger::write("Runtime: " +    std::to_string((runtime+0.0)*1e6*1e-9) + " ms.");
+    //Logger::write("Runtime: " +    std::to_string((runtime+0.0)*1e6*1e-9) + " ms.");
 }
