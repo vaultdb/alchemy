@@ -247,6 +247,7 @@ class Runner:
                 self.run_secure_test_locally(test_suite)
             else:
                 self.run_remote_test(test_suite)
+            time.sleep(1)
         if not self.logfile == "":
             print("logfile: " + self.logfile + ".log")
 
