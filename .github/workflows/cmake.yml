@@ -56,7 +56,7 @@ jobs:
       run: rsync -av --mkpath ${{env.working-directory}} ${{env.working-directory}}/build
     - name: Build
       working-directory: ${{env.working-directory}}/build
-          cmake --build . --config Release -j 2
+      run: cmake --build . --config Release -j 2
     - name: Run tests
       working-directory: ${{env.working-directory}}/build
       run: sudo -u vaultdb python runner.py 
