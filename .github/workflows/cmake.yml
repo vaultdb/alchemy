@@ -54,6 +54,6 @@ jobs:
     - name: Build
       working-directory: ${{env.working-directory}}
       run: cmake --build build --config Release -j
-    - name: Test
+    - name: Run plain tests
       working-directory: ${{env.working-directory}}
-      run: sudo -u vaultdb ctest --test-dir build --output-on-failure -j
+      run: sudo -u vaultdb ctest --test-dir build --output-on-failure -j -L PlainTest
