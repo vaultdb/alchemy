@@ -84,11 +84,12 @@ emp::Float FieldUtilities::toFloat(const emp::Integer &input) {
 
 void FieldUtilities::secret_share_send(const PlainTable *src, const int &src_idx, SecureTable *dst, const int &dst_idx,
                                        const int &party) {
-    size_t field_count = dst->getSchema().getFieldCount();
+    QuerySchema dst_schema = dst->getSchema();
+    size_t field_count = dst_schema.getFieldCount();
 
     for (size_t i = 0; i < field_count; ++i) {
         PlainField src_field = src->getField(src_idx, i);
-        QueryFieldDesc dst_field_desc = dst->getSchema().getField(i);
+        QueryFieldDesc dst_field_desc = dst_schema.getField(i);
         SecureField dst_field = SecureField::secret_share_send(src_field, dst_field_desc, party);
         dst->setField(dst_idx, i, dst_field);
     }
@@ -99,11 +100,11 @@ void FieldUtilities::secret_share_send(const PlainTable *src, const int &src_idx
 }
 
 void FieldUtilities::secret_share_recv(SecureTable *dst, const int & idx, const int &party) {
-
-    size_t field_count = dst->getSchema().getFieldCount();
+    QuerySchema dst_schema = dst->getSchema();
+    size_t field_count = dst_schema.getFieldCount();
 
     for(size_t i = 0;  i < field_count; ++i) {
-        SecureField  dst_field = SecureField::secret_share_recv(dst->getSchema().getField(i), party);
+        SecureField  dst_field = SecureField::secret_share_recv(dst_schema.getField(i), party);
         dst->setPackedField(idx, i, dst_field);
     }
 
@@ -141,7 +142,7 @@ std::string FieldUtilities::printTupleBits(const SecureTuple & s) {
     int bit_size = s.getSchema()->size();
     Integer i(bit_size, 0);
     memcpy(i.bits.data(), s.getData(), bit_size);
-    return  i.reveal<std::string>();
+    return  SystemConfiguration::getInstance().emp_manager_->revealToString(i);
 }
 
 // unioned db name
@@ -201,7 +202,10 @@ string FieldUtilities::printFloat(const Float &f) {
     int32_t i = ii.reveal<int32_t>();
     double tmp = f.reveal<double>();
 
-    ss << std::fixed << std::setprecision(10) << tmp << ": " << ii.reveal<string>() << ", " << DataUtilities::printByteArray((int8_t *) &i, 4);
+    bool bools[32];
+    ii.revealBools(bools, PUBLIC);
+
+    ss << std::fixed << std::setprecision(10) << tmp << ": " << DataUtilities::printBitArray(bools, 32) << ", " << DataUtilities::printByteArray((int8_t *) &i, 4);
     return ss.str();
 }
 
@@ -212,9 +216,17 @@ string FieldUtilities::printInt(const int32_t &i) {
 }
 
 string FieldUtilities::printInt(const Integer &i) {
-    int32_t ii = i.reveal<int32_t>();
+    int bit_cnt = i.size();
+
+    bool *bools = new bool[i.size()];
+    i.revealBools(bools, PUBLIC);
+    int64_t ii = i.reveal<int64_t>();
+
     stringstream ss;
-    ss << ii << ": " << i.reveal<string>() << ", " << DataUtilities::printByteArray((int8_t *) &ii, 4);
+    ss << ii << ": " << DataUtilities::printBitArray(bools, bit_cnt) << ", " << DataUtilities::printByteArray((int8_t *) &ii, ceil(bit_cnt/8.0));
+
+    delete bools;
+
     return ss.str();
 
 }

@@ -23,6 +23,12 @@ namespace vaultdb {
 
         static inline size_t getEmpBitSize() { return  SystemConfiguration::getInstance().emp_bit_size_bytes_; } // byte size
 
+        // for use in strings or other types with potentially > 128 bits for OMPC
+        static inline int packedWireCount(const int & bit_cnt) {
+            return  (bit_cnt / 128) + (bit_cnt % 128 != 0);
+
+        }
+
         // when reading data from ascii sources like csv
         // Moved this to FieldFactory
         // static Field decodeStringValue(const std::string & strValue, const QueryFieldDesc &fieldSpec);
