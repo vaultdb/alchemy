@@ -61,6 +61,7 @@ jobs:
           cp -a ${{env.working-directory}}/conf ${{env.working-directory}}/build
           cp -a ${{env.working-directory}}/test/support ${{env.working-directory}}/build
           cp ${{env.working-directory}}/runner.py ${{env.working-directory}}/build
+          cp ${{env.working-directory}}/run_unit_tests.py ${{env.working-directory}}/build
     - name: Build
       working-directory: ${{env.working-directory}}/build
       run: cmake --build . --config Release -j 4
