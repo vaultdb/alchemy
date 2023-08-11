@@ -1,6 +1,6 @@
 #include "outsourced_mpc_manager.h"
 
-#if __has_include("emp-rescu/emp-rescu.h")
+#ifdef __OMPC_BACKEND__
 #include "emp-rescu/emp-rescu.h"
 #include <query_table/query_table.h>
 #include <query_table/table_factory.h>

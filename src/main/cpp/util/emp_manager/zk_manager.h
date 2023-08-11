@@ -70,6 +70,14 @@ namespace vaultdb {
 
         size_t getTableCardinality(const int & local_cardinality) override;
 
+        void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {
+            memcpy(dst, src, bit_cnt * sizeof(Bit));
+        }
+
+        void unpack(Bit *src, Bit *dst, const int & bit_cnt)  override {
+            memcpy(dst, src, bit_cnt * sizeof(Bit));
+        }
+
     private:
         static void secret_share_send(const int &party, const QueryTable<bool> *src_table, QueryTable<Bit> *dst_table);
         static void secret_share_recv(const size_t &tuple_count, const int &dst_party,
@@ -121,6 +129,12 @@ namespace  vaultdb {
         size_t getTableCardinality(const int & local_cardinality) override {
             throw;
         }
+
+
+        void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {  throw; }
+
+        void unpack(Bit *src, Bit *dst, const int & bit_cnt) override { throw; }
+
     };
 }
 #endif // end if-emp-tool

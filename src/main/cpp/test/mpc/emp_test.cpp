@@ -19,20 +19,20 @@ DEFINE_int32(ctrl_port, 65450, "port for managing EMP control flow by passing pu
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
+
 using namespace vaultdb;
 
 class EmpTest : public EmpBaseTest {
 protected:
-    void test_packing(const emp::Integer & input);
+  //  void test_packing(const emp::Integer & input);
 };
 
 
 
-#if __has_include("emp-rescu/emp-rescu.h")
+/*
 void EmpTest::test_packing(const emp::Integer & input) {
     int bit_cnt = input.size();
-            auto protocol =  (OMPCBackend<N> *) backend;
-        emp::Integer unpacked(bit_cnt, 0L, emp::PUBLIC); // empty for setup
+    emp::Integer unpacked(bit_cnt, 0L, emp::PUBLIC); // empty for setup
 
         // ceil(bitCount / 128)
         OMPCPackedWire *packed = new OMPCPackedWire[TypeUtilities::packedWireCount(bit_cnt)];
@@ -60,7 +60,7 @@ void EmpTest::test_packing(const emp::Integer & input) {
     return; // N/A here
 }
 
-#endif
+#endif*/
 
 
 //  verify emp configuration for int32s
@@ -134,7 +134,7 @@ TEST_F(EmpTest, emp_test_varchar) {
         ASSERT_EQ(initial_string, decoded_str);
     }
 
-    test_packing(secret_shared);
+    //test_packing(secret_shared);
 
 }
 

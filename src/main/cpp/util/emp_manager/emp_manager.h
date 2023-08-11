@@ -18,6 +18,10 @@ namespace vaultdb {
         virtual void flush() = 0;
         virtual QueryTable<Bit> *secretShare(const QueryTable<bool> *src) = 0;
 
+        // for use in OMPC, all others have no-op
+        virtual void pack(Bit *src, Bit *dst, const int & bit_cnt) = 0;
+        virtual void unpack(Bit *src, Bit *dst, const int & bit_cnt) = 0;
+
         virtual void reveal(bool *dst, const int & party, Bit *src, const int & bit_cnt) = 0;
         virtual string revealToString(const emp::Integer & i, const int & party = PUBLIC)  const = 0;
         virtual size_t getTableCardinality(const int & local_cardinality) = 0;
