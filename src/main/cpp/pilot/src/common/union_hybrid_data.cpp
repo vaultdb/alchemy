@@ -27,12 +27,13 @@ Integer UnionHybridData::readEncrypted(int8_t *secret_shared_bits, const size_t 
         Integer result(size_bytes * 8, 0L, dst_party);
 
         int party = SystemConfiguration::getInstance().party_;
-
+        EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
         if(party == dst_party) {
-            ProtocolExecution::prot_exec->feed((block *)result.bits.data(), dst_party, bools, size_bytes * 8);
+            //         virtual void feed(Bit *labels, int party, const bool *b, int bit_cnt) = 0;
+            manager->feed(result.bits.data(), dst_party, bools, size_bytes * 8);
         }
         else {
-            ProtocolExecution::prot_exec->feed((block *)result.bits.data(), dst_party, nullptr, size_bytes * 8);
+            manager->feed(result.bits.data(), dst_party, nullptr, size_bytes * 8);
         }
 
 
@@ -87,15 +88,17 @@ SecureTable *UnionHybridData::readSecretSharedInput(const string &secretSharesFi
     Integer alice(dst_bit_cnt, 0L, emp::PUBLIC);
     Integer bob(dst_bit_cnt, 0L, emp::PUBLIC);
     int party = SystemConfiguration::getInstance().party_;
+    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
+
 
     if(party == ALICE) {
         // feed through Alice's data, then wait for Bob's
-        ProtocolExecution::prot_exec->feed((block *)alice.bits.data(), ALICE, dst_bools, dst_bit_cnt);
-        ProtocolExecution::prot_exec->feed((block *)bob.bits.data(), BOB, nullptr, dst_bit_cnt);
+        manager->feed(alice.bits.data(), ALICE, dst_bools, dst_bit_cnt);
+        manager->feed(bob.bits.data(), BOB, nullptr, dst_bit_cnt);
     }
     else {
-        ProtocolExecution::prot_exec->feed((block *)alice.bits.data(), ALICE, nullptr, dst_bit_cnt);
-        ProtocolExecution::prot_exec->feed((block *)bob.bits.data(), BOB, dst_bools, dst_bit_cnt);
+        manager->feed(alice.bits.data(), ALICE, nullptr, dst_bit_cnt);
+        manager->feed(bob.bits.data(), BOB, dst_bools, dst_bit_cnt);
 
     }
 

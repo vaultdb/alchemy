@@ -280,20 +280,20 @@ PlainField Field<B>::reveal(const int &party) const {
 
 template<typename B>
 std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
-    long bitCount = src.size();
+    long bit_cnt = src.size();
 
-    bool *bools = new bool[bitCount];
-    std::string bitString = src.reveal<std::string>(party);
+    bool *bools = new bool[bit_cnt];
+    std::string bit_string = SystemConfiguration::getInstance().emp_manager_->revealToString(src, party);
 
-    std::string::iterator strPos = bitString.begin();
-    for (int i = 0; i < bitCount; ++i) {
-        bools[i] = (*strPos == '1');
-        ++strPos;
+    std::string::iterator str_pos = bit_string.begin();
+    for (int i = 0; i < bit_cnt; ++i) {
+        bools[i] = (*str_pos == '1');
+        ++str_pos;
     }
 
-    vector<int8_t> decodedBytesVector = Utilities::boolsToBytes(bools, bitCount);
+    vector<int8_t> decoded_bytes_vec = Utilities::boolsToBytes(bools, bit_cnt);
 
-    string dst((char *) decodedBytesVector.data(), decodedBytesVector.size());
+    string dst((char *) decoded_bytes_vec.data(), decoded_bytes_vec.size());
 
 
     std::reverse(dst.begin(), dst.end());
@@ -544,7 +544,7 @@ Field<B> Field<B>::If(const B &choice, const Field &l, const Field &r) {
         case FieldType::SECURE_STRING: {
             emp::Integer lhs =  boost::get<emp::Integer>(l.payload_);
             emp::Integer rhs =  boost::get<emp::Integer>(r.payload_);
-            v = emp::If(choice, lhs, rhs);
+            v = emp::If(Bit(choice), lhs, rhs);
             break;
         }
         case FieldType::SECURE_FLOAT:

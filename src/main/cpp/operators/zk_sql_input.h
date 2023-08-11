@@ -21,8 +21,7 @@ namespace  vaultdb {
     protected:
         SecureTable *runSelf() override;
 
-        string getOperatorTypeString() const override { return "ZkSqlInput";  }
-        OperatorType getOperatorType() const override { return OperatorType::ZK_SQL_INPUT; }
+        OperatorType getType() const override { return OperatorType::ZK_SQL_INPUT; }
         string getParameters() const override {
             return "\"" + input_query_ + "\", tuple_count=" + std::to_string(plain_input_->getTupleCount());
         }

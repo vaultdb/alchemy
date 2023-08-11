@@ -181,7 +181,7 @@ std::string DataUtilities::printFirstBytes(vector<int8_t> &bytes, const int &byt
 std::string DataUtilities::revealAndPrintFirstBytes(vector<Bit> &bits, const int & byteCount) {
     Integer anInt(bits.size(), 0L);
     anInt.bits = bits;
-    std::string bitString = anInt.reveal<std::string>(emp::PUBLIC);
+    std::string bitString = SystemConfiguration::getInstance().emp_manager_->revealToString(anInt);
 
     vector<int8_t> decodedBytes = Utilities::boolsToBytes(bitString);
     return printFirstBytes(decodedBytes, byteCount);

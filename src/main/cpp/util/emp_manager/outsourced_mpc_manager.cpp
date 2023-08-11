@@ -10,8 +10,7 @@
 using namespace vaultdb;
 
 size_t OutsourcedMpcManager::getTableCardinality(const int & local_cardinality)  {
-      int tuple_cnt = src->getTupleCount();
-
+    int tuple_cnt = local_cardinality;
     if(party_ == emp::TP) {
         for(int i = 0; i < emp::N; ++i) {
             ios_ctrl_[i]->send_data(&tuple_cnt, 4);
@@ -42,12 +41,11 @@ QueryTable<Bit> *OutsourcedMpcManager::secretShare(const QueryTable<bool> *src) 
         tpio_ctrl_->flush();
     }
 
-
-
     if(tuple_cnt == 0) throw std::invalid_argument("No tuples to process!");
 
     QuerySchema dst_schema = QuerySchema::toSecure(src->getSchema());
     QueryTable<Bit> *dst = TableFactory<Bit>::getTable(tuple_cnt, dst_schema, src->storageModel(), src->getSortOrder());
+
     if(party_ == emp::TP) {
         for(int i = 0; i < tuple_cnt; ++i) {
             FieldUtilities::secret_share_send(src, i, dst,  i, TP);

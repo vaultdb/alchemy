@@ -47,11 +47,8 @@ namespace vaultdb {
     protected:
         QueryTable<B> *runSelf() override;
 
-        inline string getOperatorTypeString() const override {
-            return "GroupByAggregate";
-        }
 
-        inline OperatorType getOperatorType() const override {
+        inline OperatorType getType() const override {
             return OperatorType::SORT_MERGE_AGGREGATE;
         }
 

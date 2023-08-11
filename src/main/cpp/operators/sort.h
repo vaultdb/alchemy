@@ -30,8 +30,7 @@ namespace  vaultdb {
         QueryTable<B> *denormalizeTable(QueryTable<B> *src);
 
     protected:
-        string getOperatorTypeString() const override {     return "Sort"; }
-        OperatorType getOperatorType() const override { return OperatorType::SORT; }
+        OperatorType getType() const override { return OperatorType::SORT; }
         string getParameters() const override;
 
     private:

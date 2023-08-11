@@ -35,7 +35,7 @@ namespace  vaultdb {
 
     public:
         // size of each tuple in bytes
-        size_t tuple_size_;
+        size_t tuple_size_bytes_;
         size_t tuple_cnt_;
         std::map<int, int> field_sizes_bytes_;
         std::map<int, int> field_offsets_bytes_;
@@ -51,7 +51,7 @@ namespace  vaultdb {
 
 
         // deep copy
-         QueryTable(const QueryTable &src)  : order_by_(src.getSortOrder()), tuple_size_(src.tuple_size_), tuple_cnt_(src.tuple_cnt_) {
+         QueryTable(const QueryTable &src)  : order_by_(src.getSortOrder()), tuple_size_bytes_(src.tuple_size_bytes_), tuple_cnt_(src.tuple_cnt_) {
             setSchema(src.schema_);
         }
 
@@ -66,7 +66,7 @@ namespace  vaultdb {
             schema_ = schema;
 
             if(std::is_same_v<emp::Bit, B>) {
-                tuple_size_ = schema_.size() * TypeUtilities::getEmpBitSize(); // bits, one block per bit
+                tuple_size_bytes_ = schema_.size() * TypeUtilities::getEmpBitSize(); // bits, one block per bit
                 // covers dummy tag as -1
                 for(auto pos : schema_.offsets_) {
                     field_offsets_bytes_[pos.first] = pos.second * TypeUtilities::getEmpBitSize();
@@ -79,7 +79,7 @@ namespace  vaultdb {
             }
 
             // plaintext case
-            tuple_size_ = schema_.size()/8; // bytes for plaintext
+            tuple_size_bytes_ = schema_.size() / 8; // bytes for plaintext
 
             for(auto pos : schema_.offsets_) {
                 field_offsets_bytes_[pos.first] = pos.second / 8;
@@ -111,14 +111,21 @@ namespace  vaultdb {
 
         virtual  Field<B> getField(const int  & row, const int & col)  const  = 0;
         virtual  Field<B> getPackedField(const int  & row, const int & col)  const  = 0;
+        virtual int8_t* getFieldPtr(const int  & row, const int & col)  const  = 0;
 
         virtual  void setField(const int  & row, const int & col, const Field<B> & f) = 0;
 
         virtual  void setPackedField(const int  & row, const int & col, const Field<B> & f) = 0;
 
-        virtual B getDummyTag(const int & row)  const = 0;
+        B getDummyTag(const int & row)  const {
+            B *dummy_tag = (B*) getFieldPtr(row, -1);
+            return *dummy_tag;
+        }
 
-        virtual void setDummyTag(const int & row, const B & val)   = 0;
+        void setDummyTag(const int & row, const B & val) {
+            B *dummy_tag = (B*) getFieldPtr(row, -1);
+            *dummy_tag = val;
+        }
 
         virtual SecureTable *secretShare() = 0;
 

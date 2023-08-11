@@ -6,7 +6,11 @@
 #include "util/type_utilities.h"
 #include "util/field_utilities.h"
 
-// TODO: move this into Field.h/cpp or utils?
+#ifndef FLOAT_LEN
+#define FLOAT_LEN 32
+#endif
+
+// TODO: move this into Field.h/cpp or utils? or Sort.h/cpp?
 namespace vaultdb {
     class NormalizeFields {
     public:

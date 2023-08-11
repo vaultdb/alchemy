@@ -48,8 +48,8 @@ namespace  vaultdb {
         void putTuple(const int &idx, const QueryTuple<B> &tuple) override {
             assert(*tuple.getSchema() == this->schema_);
 
-            size_t tuple_offset = idx * this->tuple_size_;
-            memcpy(tuple_data_.data() + tuple_offset, tuple.getData(), this->tuple_size_);
+            size_t tuple_offset = idx * this->tuple_size_bytes_;
+            memcpy(tuple_data_.data() + tuple_offset, tuple.getData(), this->tuple_size_bytes_);
 
         }
 
@@ -85,15 +85,6 @@ namespace  vaultdb {
             f.serialize(write_ptr, this->schema_.getField(col));
         }
 
-        inline B getDummyTag(const int & row)  const  override{
-            B *tag = (B *) getFieldPtr(row, -1);
-            return *tag;
-        }
-
-        inline void setDummyTag(const int & row, const B & val)  override {
-            B *tag = (B *) getFieldPtr(row, -1);
-            *tag = val;
-        }
 
         SecureTable *secretShare() override;
 
@@ -139,6 +130,12 @@ namespace  vaultdb {
         string toString(const bool &show_dummies = false) const override;
         string toString(const size_t &limit, const bool &show_dummies = false) const override;
 
+        inline int8_t *getFieldPtr(const int & row, const int & col) const override {
+            int8_t *memory_guard = ((int8_t *) this->tuple_data_.data()) + this->tuple_data_.size();
+            int8_t *ptr = ((int8_t *) tuple_data_.data()) + this->tuple_size_bytes_ * row + this->field_offsets_bytes_.at(col);
+            assert(((size_t) ptr) <= (size_t) memory_guard);
+            return ptr;
+        }
 
     protected:
 
@@ -146,9 +143,6 @@ namespace  vaultdb {
 
         string getOstringStream() const override;
 
-        inline int8_t *getFieldPtr(const int & row, const int & col) const {
-            return (int8_t *) (tuple_data_.data() + this->tuple_size_ * row +  this->field_offsets_bytes_.at(col));
-        }
 
     };
 

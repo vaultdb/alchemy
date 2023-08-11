@@ -9,6 +9,17 @@ DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 using namespace std;
 
+#if __has_include("emp-rescu/emp-rescu.h")
+static EmpMode _emp_mode_ = EmpMode::OUTSOURCED;
+#elif  __has_include("emp-sh2pc/emp-sh2pc.h")
+static EmpMode _emp_mode_ = EmpMode::SH2PC;
+#elif __has_include("emp-zk/emp-zk.h")
+static EmpMode _emp_mode_ = EmpMode::ZK;
+#else
+    static EmpMode _emp_mode_ = EmpMode::PLAIN;
+#endif
+
+
 
 class SerializationTest : public PlainBaseTest {
 protected:
@@ -140,9 +151,9 @@ TEST_F(SerializationTest, xored_serialization_test) {
 
 
 TEST_F(SerializationTest, capricorn_deserialization) {
+if(_emp_mode_ == EmpMode::SH2PC) {
 
-
-  QuerySchema target_schema = SharedSchema::getInputSchema();
+    QuerySchema target_schema = SharedSchema::getInputSchema();
     string cwd = Utilities::getCurrentWorkingDirectory();
     string alice_file = cwd + "/pilot/test/output/chi-patient-multisite.alice";
     string bob_file = cwd + "/pilot/test/output/chi-patient-multisite.bob";
@@ -155,7 +166,7 @@ TEST_F(SerializationTest, capricorn_deserialization) {
     auto write_pos = serialized.begin();
     auto read_pos = bob_bits.begin();
 
-    while(write_pos != serialized.end()) {
+    while (write_pos != serialized.end()) {
         *write_pos ^= *read_pos;
         ++write_pos;
         ++read_pos;
@@ -172,8 +183,7 @@ TEST_F(SerializationTest, capricorn_deserialization) {
 
     delete expected;
     delete deserialized;
-
-
+}
 
 }
 

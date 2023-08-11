@@ -3,7 +3,6 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <stdexcept>
-#include <emp-zk/emp-zk.h>
 #include <query_table/query_table.h>
 #include <util/emp_manager/zk_manager.h>
 
@@ -26,8 +25,6 @@ namespace vaultdb {
         ZKManager *manager_ = nullptr;
 
     private:
-//        static void secret_share_recv(const size_t &tuple_count, const int &dst_party,
-//                                      SecureTable *dst_table);
 
 
     };

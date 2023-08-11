@@ -45,7 +45,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-include_directories(${CMAKE_SOURCE_DIR})
+#include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/_deps/emp-rescu)
 
 #find_package(Boost REQUIRED COMPONENTS date_time system)
 

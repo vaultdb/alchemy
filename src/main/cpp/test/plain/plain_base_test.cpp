@@ -9,6 +9,8 @@
 static EmpMode _emp_mode_ = EmpMode::OUTSOURCED;
 #elif  __has_include("emp-sh2pc/emp-sh2pc.h")
 static EmpMode _emp_mode_ = EmpMode::SH2PC;
+#elif __has_include("emp-zk/emp-zk.h")
+static EmpMode _emp_mode_ = EmpMode::ZK;
 #else
     static EmpMode _emp_mode_ = EmpMode::PLAIN;
 #endif

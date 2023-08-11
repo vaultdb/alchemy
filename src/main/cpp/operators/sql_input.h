@@ -41,13 +41,12 @@ namespace  vaultdb {
 
     protected:
         PlainTable *runSelf() override;
-        string getOperatorTypeString() const override {     return "SqlInput"; }
         string getParameters() const override {
             string str = input_query_;
             std::replace(str.begin(), str.end(), '\n', ' ');
             return "\"" + str + "\", tuple_count=" + std::to_string(this->getOutputCardinality());
          }
-        OperatorType getOperatorType() const override { return OperatorType::SQL_INPUT; }
+        OperatorType getType() const override { return OperatorType::SQL_INPUT; }
         size_t tuple_limit_;
 
     };

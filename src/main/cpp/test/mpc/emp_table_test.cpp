@@ -115,7 +115,7 @@ TEST_F(EmpTableTest, bit_packing_test) {
 
     ASSERT_EQ(secret_shared->getTupleCount(),  expected->getTupleCount());
     // tuple_cnt * (5+8+1 (for dummy tag) )*sizeof(emp::Bit)
-    ASSERT_EQ(expected->getTupleCount() * 14 * TypeUtilities::getEmpBitSize(),  secret_shared->getTupleCount() * secret_shared->tuple_size_);
+    ASSERT_EQ(expected->getTupleCount() * 14 * TypeUtilities::getEmpBitSize(),  secret_shared->getTupleCount() * secret_shared->tuple_size_bytes_);
 
     if(FLAGS_validation) {
         PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);

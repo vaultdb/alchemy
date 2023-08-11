@@ -300,7 +300,7 @@ void PlanParser<B>::calculateAutoAggregate() {
                 cur_op->setOutputCardinality(cur_output_cardinality_);
 
                 // Check if Sort after Aggregate, and does not need because it is already sorted by SMA
-                if (cur_op->getOperatorTypeString() == "Sort" && type == SMA) {
+                if (cur_op->getTypeString() == "Sort" && type == SMA) {
                     SortDefinition cur_sort_order = cur_op->getSortOrder();
                     if (GroupByAggregate<B>::sortCompatible(cur_sort_order, sma->group_by_)) {
                         cur_output_cardinality_ = cur_op->getOutputCardinality();
@@ -886,7 +886,7 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
     int id = op->getOperatorId();
 
 
-    switch(op->getOperatorType()) {
+    switch(op->getType()) {
         case OperatorType::SQL_INPUT:
         case OperatorType::SECURE_SQL_INPUT:
         case OperatorType::ZK_SQL_INPUT:
@@ -958,7 +958,7 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
         // recommend doing this in Operator<B> - like adding an updateSortOrder() method that uses the same logic in operator constructor
         recurseNode(join);
 
-        if(join->getOperatorType() == OperatorType::KEYED_NESTED_LOOP_JOIN) {
+        if(join->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN) {
             KeyedJoin<B> *kj = (KeyedJoin<B> *)join;
             SortMergeJoin j(join->getChild(0)->clone(), join->getChild(1)->clone(), kj->foreignKeyChild(), kj->getPredicate());
             recurseNode(&j);

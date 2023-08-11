@@ -96,7 +96,7 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
     QueryTable<B> *rhs_table = Operator<B>::getChild(1)->getOutput(); // foreign key
 
     this->start_time_ = clock_start();
-    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
+    this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
     uint32_t output_tuple_cnt = rhs_table->getTupleCount(); // foreignKeyTable = foreign key
 

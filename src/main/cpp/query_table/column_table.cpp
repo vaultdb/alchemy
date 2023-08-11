@@ -136,7 +136,7 @@ PlainTable *ColumnTable<B>::revealInsecure(const int &party) {
 template <typename B>
 vector<int8_t> ColumnTable<B>::serialize() const {
     // copy out our payload
-    int dst_size = this->tuple_size_ * this->tuple_cnt_ + 1;
+    int dst_size = this->tuple_size_bytes_ * this->tuple_cnt_ + 1;
     vector<int8_t> dst(dst_size);
 
     int8_t *write_ptr = dst.data();

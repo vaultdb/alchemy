@@ -36,39 +36,8 @@ void ZkTest::SetUp() {
 void ZkTest::TearDown() {
 
     manager_->flush();
-    bool cheat = finalize_zk_bool<BoolIO<NetIO>>();
-    ASSERT_FALSE(cheat);
+    ASSERT_FALSE(manager_->finalize());
 
 }
 
 
-//SecureTable *ZkTest::secret_share_input(const string & sql, bool has_dummy_tag, const SortDefinition & order_by)  const {
-//    manager_->flush();
-//
-//
-//    // only alice can secret share in ZK land
-//    if(FLAGS_party == emp::ALICE) {
-//
-//        SqlInput read_db(unioned_db_, sql, false, order_by);
-//        PlainTable *input = read_db.run();
-//        return input->secretShare()->clone();
-//    }
-//    else if(FLAGS_party == emp::BOB){ // BOB
-//        uint32_t tuple_cnt;
-//        ios_[0]->io->recv_data(&tuple_cnt, 4);
-//        ios_[0]->io->flush();
-//
-//        PsqlDataProvider db_wrapper;
-//
-//        shared_ptr<PlainTable> input = db_wrapper.getQueryTable(db_name, sql);
-//        input->setSortOrder(order_by);
-//
-//
-//        // not input, just grabbing schema, maybe send this over the wire later
-//
-//        QuerySchema schema = *input->getSchema();
-//        return PlainTable::secret_share_recv_table(schema, order_by, ios_[0]->io, emp::ALICE);
-//    }
-//
-//    throw std::invalid_argument("Not a valid party for secret sharing!");
-//}

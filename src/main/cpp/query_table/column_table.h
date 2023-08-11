@@ -94,14 +94,10 @@ namespace  vaultdb {
             f.serialize(write_ptr, this->schema_.getField(col));
         }
 
-        inline B getDummyTag(const int & row)  const  override{
-            B *tag = (B *) getFieldPtr(row, -1);
-            return *tag;
-        }
 
-        inline void setDummyTag(const int & row, const B & val)  override {
-            B *tag = (B *) getFieldPtr(row, -1);
-            *tag = val;
+
+        inline int8_t *getFieldPtr(const int & row, const int & col) const {
+            return const_cast<int8_t *>(column_data_.at(col).data() + row * this->field_sizes_bytes_.at(col));
         }
 
         SecureTable *secretShare() override;
@@ -157,9 +153,6 @@ namespace  vaultdb {
 
         string getOstringStream() const override;
 
-        inline int8_t *getFieldPtr(const int & row, const int & col) const {
-            return const_cast<int8_t *>(column_data_.at(col).data() + row * this->field_sizes_bytes_.at(col));
-        }
 
     };
 

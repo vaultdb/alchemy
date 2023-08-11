@@ -24,14 +24,14 @@ DEFINE_bool(validation, true, "run reveal for validation, turn this off for benc
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
-class SecureValueExpressionTest : public EmpBaseTest {
+class SecureFieldExpressionTest : public EmpBaseTest {
 
 };
 
 
 
 // test overload of assignment operator
-TEST_F(SecureValueExpressionTest, test_value_assignment) {
+TEST_F(SecureFieldExpressionTest, test_value_assignment) {
     SecureField src(emp::Bit(true));
     SecureField dst = src;
 
@@ -40,54 +40,67 @@ TEST_F(SecureValueExpressionTest, test_value_assignment) {
 
 }
 
-TEST_F(SecureValueExpressionTest, test_string_compare) {
+TEST_F(SecureFieldExpressionTest, test_string_compare) {
 
-    std::string lhsStr = "EGYPT                    ";
-    std::string rhsStr = "ARGENTINA                ";
+    std::string lhs_str = "EGYPT                    ";
+    std::string rhs_str = "ARGENTINA                ";
 
-    PlainField lhsValue(FieldType::STRING, lhsStr, lhsStr.size());
-    PlainField rhsValue(FieldType::STRING, rhsStr, rhsStr.size());
+    PlainField lhs(FieldType::STRING, lhs_str, lhs_str.size());
+    PlainField rhs(FieldType::STRING, rhs_str, rhs_str.size());
 
-    SecureField  lhsEncrypted, rhsEncrypted;
+    SecureField  lhs_shared, rhs_shared;
     if(FLAGS_party == emp::ALICE) {
-        lhsEncrypted = PlainField::secret_share_send(lhsValue, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, lhsStr.size()), emp::ALICE);
-        rhsEncrypted = PlainField::secret_share_send(rhsValue, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhsStr.size()), emp::ALICE);
+        lhs_shared = PlainField::secret_share_send(lhs, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, lhs_str.size()), emp::ALICE);
+        rhs_shared = PlainField::secret_share_send(rhs, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhs_str.size()), emp::ALICE);
     }
     else {
-        lhsEncrypted = PlainField::secret_share_recv(
-                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, lhsStr.size()), emp::ALICE);
-        rhsEncrypted = PlainField::secret_share_recv(
-                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhsStr.size()), emp::ALICE);
+        lhs_shared = PlainField::secret_share_recv(
+                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, lhs_str.size()), emp::ALICE);
+        rhs_shared = PlainField::secret_share_recv(
+                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhs_str.size()), emp::ALICE);
     }
 
-    emp::Bit gtEncrypted = (lhsEncrypted > rhsEncrypted);
+    emp::Bit gt_shared = (lhs_shared > rhs_shared);
     if(FLAGS_validation) {
-        bool gt =  gtEncrypted.reveal();
+        bool gt =  gt_shared.reveal();
         ASSERT_TRUE(gt);
     }
 }
 
 
-TEST_F(SecureValueExpressionTest, test_emp_int_math) {
+TEST_F(SecureFieldExpressionTest, test_emp_int_math) {
 
+    SecureField lhs, rhs;
+    if(emp_mode_ == EmpMode::SH2PC) {
+        // alice inputs 7, bob inputs 12
+        emp::Integer alice_shared = emp::Integer(32, FLAGS_party == emp::ALICE ? 7 : 0, emp::ALICE);
+        emp::Integer bob_shared = emp::Integer(32, FLAGS_party == emp::ALICE ? 0 : 12, emp::BOB);
 
-    // alice inputs 7, bob inputs 12
-    int32_t inputField =  FLAGS_party == emp::ALICE ? 7 : 12;
+        lhs = SecureField(FieldType::SECURE_INT, alice_shared);
+        rhs = SecureField(FieldType::SECURE_INT, bob_shared);
+    }
+    else if(emp_mode_ == EmpMode::ZK) {
+        Integer lhs_shared(32, FLAGS_party == emp::ALICE ? 7 : 0, emp::ALICE);
+        Integer rhs_shared(32, FLAGS_party == emp::ALICE ? 12 : 0, emp::ALICE);
 
-    emp::Integer aliceSecretShared = emp::Integer(32, FLAGS_party == emp::ALICE ? inputField : 0,   emp::ALICE);
+        lhs = SecureField(FieldType::SECURE_INT, lhs_shared);
+        rhs = SecureField(FieldType::SECURE_INT, rhs_shared);
+    }
+    else { // outsourced
+        Integer lhs_shared(32, FLAGS_party == emp::TP ? 7 : 0, emp::TP);
+        Integer rhs_shared(32, FLAGS_party == emp::TP ? 12 : 0, emp::TP);
 
-    SecureField aliceEncryptedValue(FieldType::SECURE_INT, aliceSecretShared);
+        lhs = SecureField(FieldType::SECURE_INT, lhs_shared);
+        rhs = SecureField(FieldType::SECURE_INT, rhs_shared);
 
-    emp::Integer bobSecretShared = emp::Integer(32, FLAGS_party == emp::ALICE ? 0 : inputField,   emp::BOB);
-    SecureField bobEncryptedValue(FieldType::SECURE_INT, bobSecretShared);
-
+    }
 
     emp::Integer multiplier(32, 2); // set multiplier to two
-    SecureField multiplierValue(FieldType::SECURE_INT, multiplier);
+    SecureField multiplier_field(FieldType::SECURE_INT, multiplier);
 
 
 
-    SecureField result = (aliceEncryptedValue + bobEncryptedValue) * multiplierValue;
+    SecureField result = (lhs + rhs) * multiplier_field;
     if(FLAGS_validation) {
         PlainField revealed = result.reveal(emp::PUBLIC);
         ASSERT_EQ(revealed.getValue<int32_t>(), 19 * 2);
@@ -99,32 +112,45 @@ TEST_F(SecureValueExpressionTest, test_emp_int_math) {
 
 
 
-TEST_F(SecureValueExpressionTest, test_millionaires) {
+TEST_F(SecureFieldExpressionTest, test_millionaires) {
 
-    // alice inputs 7, bob inputs 12
-    int32_t inputField =  FLAGS_party == emp::ALICE ? 7 : 12;
+    SecureField lhs, rhs;
+    if(emp_mode_ == EmpMode::SH2PC) {
+        // alice inputs 7, bob inputs 12
+        emp::Integer alice_shared = emp::Integer(32, FLAGS_party == emp::ALICE ? 7 : 0, emp::ALICE);
+        emp::Integer bob_shared = emp::Integer(32, FLAGS_party == emp::ALICE ? 0 : 12, emp::BOB);
 
+        lhs = SecureField(FieldType::SECURE_INT, alice_shared);
+        rhs = SecureField(FieldType::SECURE_INT, bob_shared);
+    }
+    else if(emp_mode_ == EmpMode::ZK) {
+        Integer lhs_shared(32, FLAGS_party == emp::ALICE ? 7 : 0, emp::ALICE);
+        Integer rhs_shared(32, FLAGS_party == emp::ALICE ? 12 : 0, emp::ALICE);
 
-    emp::Integer aliceSecretShared = emp::Integer(32, FLAGS_party == emp::ALICE ? inputField : 0,   emp::ALICE);
-    SecureField aliceEncryptedValue(FieldType::SECURE_INT, aliceSecretShared);
+        lhs = SecureField(FieldType::SECURE_INT, lhs_shared);
+        rhs = SecureField(FieldType::SECURE_INT, rhs_shared);
+    }
+    else { // outsourced
+        Integer lhs_shared(32, FLAGS_party == emp::TP ? 7 : 0, emp::TP);
+        Integer rhs_shared(32, FLAGS_party == emp::TP ? 12 : 0, emp::TP);
 
-    emp::Integer bobSecretShared = emp::Integer(32, FLAGS_party == emp::ALICE ? 0 : inputField,   emp::BOB);
-    SecureField bobEncryptedValue(FieldType::SECURE_INT, bobSecretShared);
+        lhs = SecureField(FieldType::SECURE_INT, lhs_shared);
+        rhs = SecureField(FieldType::SECURE_INT, rhs_shared);
 
+    }
 
-
-    emp::Bit result = aliceEncryptedValue > bobEncryptedValue;
+    Bit result = (lhs > rhs);
     if(FLAGS_validation) {
 
         PlainField revealed = result.reveal(emp::PUBLIC);
-        ASSERT_EQ(revealed.getValue<bool>(), false);
+        ASSERT_FALSE(revealed.getValue<bool>());
     }
 
 }
 
 
 
-TEST_F(SecureValueExpressionTest, test_char_comparison) {
+TEST_F(SecureFieldExpressionTest, test_char_comparison) {
     char lhs = 'O';
     char rhs = 'F';
 

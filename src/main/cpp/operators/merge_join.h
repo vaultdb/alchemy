@@ -32,8 +32,7 @@ namespace  vaultdb {
     protected:
         bool or_dummy_tags_ = false;
         QueryTable<B> *runSelf() override;
-        inline string getOperatorTypeString() const override {     return "MergeJoin"; }
-        inline OperatorType getOperatorType() const override { return OperatorType::MERGE_JOIN; }
+        inline OperatorType getType() const override { return OperatorType::MERGE_JOIN; }
 
 
     private:

@@ -6,10 +6,6 @@
 using namespace vaultdb;
 
 
-// relies on initializeFieldOffsets()
-size_t QuerySchema::size() const {
-    return tuple_size_;
-}
 
 QuerySchema::QuerySchema(const std::string &schema_spec) {
     string schema_str = schema_spec;

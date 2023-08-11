@@ -1,7 +1,6 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <stdexcept>
-#include <emp-zk/emp-zk.h>
 #include <test/zk/zk_base_test.h>
 
 using namespace emp;

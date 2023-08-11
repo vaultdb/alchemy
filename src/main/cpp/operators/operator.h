@@ -83,8 +83,7 @@ namespace  vaultdb {
 
 
         }
-        virtual std::string getOperatorTypeString() const  = 0;
-        virtual OperatorType getOperatorType() const = 0;
+        virtual OperatorType getType() const = 0;
 
         inline Operator * getParent() const { return parent_; }
 
@@ -113,16 +112,56 @@ namespace  vaultdb {
             return sort_definition_;
         }
 
-        void setSortOrder(const SortDefinition & aSortDefinition) { sort_definition_ = aSortDefinition; }
+        void setSortOrder(const SortDefinition & sort_def) { sort_definition_ = sort_def; }
 
         QuerySchema getOutputSchema() const { return output_schema_; }
-        void setSchema(QuerySchema newSchema) { output_schema_.setSchema(newSchema); }
+        void setSchema(QuerySchema new_schema) { output_schema_.setSchema(new_schema); }
         size_t getOutputCardinality() const { return output_cardinality_; }
-        void setOutputCardinality(size_t inputCardinality) { output_cardinality_ = inputCardinality; }
+        void setOutputCardinality(size_t input_card) { output_cardinality_ = input_card; }
 
         // returns summed cost over this operator (as root) and all of its children
         size_t planCost() const;
 
+        inline string getTypeString() const {
+            switch(this->getType()) {
+                case OperatorType::SQL_INPUT:
+                    return "SqlInput";
+                case OperatorType::ZK_SQL_INPUT:
+                    return "ZkSqlInput";
+                case OperatorType::SECURE_SQL_INPUT:
+                    return "SecureSqlInput";
+                case OperatorType::TABLE_INPUT:
+                        return "TableInput";
+                case OperatorType::CSV_INPUT:
+                        return "CsvInput";
+                case OperatorType::FILTER:
+                        return "Filter";
+                case OperatorType::PROJECT:
+                    return "Project";
+                case OperatorType::NESTED_LOOP_JOIN:
+                    return "BasicJoin";
+                case OperatorType::KEYED_NESTED_LOOP_JOIN:
+                    return "KeyedJoin";
+                case OperatorType::SORT_MERGE_JOIN:
+                    return "SortMergeJoin";
+                case OperatorType::MERGE_JOIN:
+                    return "MergeJoin";
+                case OperatorType::SORT:
+                    return "Sort";
+                case OperatorType::SHRINKWRAP:
+                    return "Shrinkwrap";
+                case OperatorType::SCALAR_AGGREGATE:
+                    return "ScalarAggregate";
+                case OperatorType::SORT_MERGE_AGGREGATE:
+                    return "GroupByAggregate";
+                case OperatorType::NESTED_LOOP_AGGREGATE:
+                    return "NestedLoopAggregate";
+                case OperatorType::UNION:
+                    return "Union";
+                default:
+                    throw;
+            }
+        }
 
     protected:
         // to be implemented by the operator classes, e.g., sort, filter, et cetera
@@ -170,11 +209,7 @@ namespace  vaultdb {
         virtual ~TableInput() = default;
 
     protected:
-        string getOperatorTypeString() const override {
-            return "TableInput";
-        }
-
-        OperatorType getOperatorType() const override {
+        OperatorType getType() const override {
             return OperatorType::TABLE_INPUT;
         }
 

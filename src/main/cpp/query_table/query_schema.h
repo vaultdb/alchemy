@@ -18,18 +18,12 @@ namespace  vaultdb {
 
         std::map<int32_t, QueryFieldDesc> fields_;
         size_t tuple_size_; // in bits
+
     public:
         std::map<int32_t, size_t> offsets_;
 
         QuerySchema()  : tuple_size_(0) {         } // empty setup
-        QuerySchema(const QuerySchema & s) {
-
-            for (size_t i = 0; i < s.getFieldCount(); i++) {
-                fields_[i] = s.getField(i);
-            }
-            initializeFieldOffsets();
-
-        }
+        QuerySchema(const QuerySchema & s) : tuple_size_(s.tuple_size_),  offsets_(s.offsets_), fields_(s.fields_) { }
 
         // parse the CSV schema, e.g.,
         // (field1:INT,field2:float,...,fieldN:varchar(10))
@@ -68,7 +62,7 @@ namespace  vaultdb {
         }
 
         // returns size in bits
-        size_t size() const;
+        size_t size() const { return tuple_size_; }
 
         inline bool   isSecure() const {
             return (fields_.at(0).getType() == TypeUtilities::toSecure(fields_.at(0).getType())); }

@@ -23,7 +23,7 @@ namespace  vaultdb {
             ios_ctrl_ = emp::setup_netio(tpio_ctrl_, hosts, ctrl_port, party_, N);
             emp::backend = new OMPCBackend<N>(ios_, tpio_, party_);
             SystemConfiguration & s = SystemConfiguration::getInstance();
-            s.emp_bit_size_bytes_  =  sizeof(OMPCPackedWire);
+            s.emp_bit_size_bytes_  =  sizeof(Bit);
             s.party_ = party;
         }
 

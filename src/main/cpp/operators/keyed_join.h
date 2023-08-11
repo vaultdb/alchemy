@@ -29,11 +29,7 @@ namespace  vaultdb {
     protected:
         QueryTable<B> *runSelf() override;
 
-        string getOperatorTypeString() const override {
-            return "KeyedJoin";
-        }
-
-        OperatorType getOperatorType() const override {
+        OperatorType getType() const override {
             return OperatorType::KEYED_NESTED_LOOP_JOIN;
         }
 

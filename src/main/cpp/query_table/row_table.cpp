@@ -21,13 +21,15 @@ RowTable<B>::RowTable(const size_t &tuple_cnt, const QuerySchema &schema, const 
     if(tuple_cnt == 0)
         return;
 
-    tuple_data_.resize(tuple_cnt * RowTable<B>::tuple_size_);
-
-      
+    tuple_data_.resize(tuple_cnt * RowTable<B>::tuple_size_bytes_);
 
     std::memset(tuple_data_.data(), 0, tuple_data_.size());
+
+    // initialize dummy tags to true
+    int8_t *write_cursor = tuple_data_.data() + this->field_offsets_bytes_[-1];
     for(int i = 0; i < tuple_cnt; ++i) {
-        setDummyTag(i, true);
+        *((B *)write_cursor) = B(true);
+        write_cursor += this->tuple_size_bytes_;
     }
 
 }
@@ -36,13 +38,9 @@ template <typename B>
 RowTable<B>::RowTable(const QueryTable<B> &src) : QueryTable<B>(src) {
     // only support copy constructor on tables with same storage
     assert(src.storageModel() == StorageModel::ROW_STORE);
-    tuple_data_ = ((RowTable<B> *) &src)->tuple_data_;
+    tuple_data_ = ((RowTable<B>) src).tuple_data_;
 
 }
-
-
-
-
 
 
 template <typename B>
@@ -241,7 +239,7 @@ RowTable<B> *RowTable<B>::deserialize(const QuerySchema &schema, const vector<Bi
 
 template<typename B>
 void RowTable<B>::resize(const size_t &cnt) {
-    this->tuple_data_.resize(cnt * this->tuple_size_);
+    this->tuple_data_.resize(cnt * this->tuple_size_bytes_);
     this->tuple_cnt_ = cnt;
 }
 
@@ -251,7 +249,7 @@ void RowTable<B>::resize(const size_t &cnt) {
 template<typename B>
 PlainTuple RowTable<B>::getPlainTuple(size_t idx) const {
     assert(!this->isEncrypted()); // B == bool
-    int8_t *tuple_pos =  ((int8_t *) this->tuple_data_.data()) + this->tuple_size_ * idx;
+    int8_t *tuple_pos =  ((int8_t *) this->tuple_data_.data()) + this->tuple_size_bytes_ * idx;
     return PlainTuple(const_cast<QuerySchema *>(&this->schema_), tuple_pos);
 }
 
@@ -259,7 +257,7 @@ PlainTuple RowTable<B>::getPlainTuple(size_t idx) const {
 //template<typename B>
 //QueryTuple<Bit> RowTable<B>::getSecureTuple(size_t idx) const  {
 //    assert(this->isEncrypted());
-//    int8_t *tuple_pos =  ((int8_t *) this->tuple_data_.data()) + this->tuple_size_ * idx;
+//    int8_t *tuple_pos =  ((int8_t *) this->tuple_data_.data()) + this->tuple_size_bytes_ * idx;
 //    return SecureTuple(const_cast<QuerySchema *>(&this->schema_), tuple_pos);
 //}
 
@@ -274,8 +272,8 @@ void RowTable<B>::assignField(const int &dst_row, const int &dst_col, const Quer
     assert(s->storageModel() == StorageModel::ROW_STORE);
     RowTable<B> *src = (RowTable<B> *) s;
 
-    int8_t *src_field = (int8_t *) (src->tuple_data_.data() + src->tuple_size_ * src_row + src->field_offsets_bytes_.at(src_col));
-    int8_t *dst_field = (int8_t *) (tuple_data_.data() + this->tuple_size_ * dst_row + this->field_offsets_bytes_.at(dst_col));
+    int8_t *src_field = (int8_t *) (src->tuple_data_.data() + src->tuple_size_bytes_ * src_row + src->field_offsets_bytes_.at(src_col));
+    int8_t *dst_field = (int8_t *) (tuple_data_.data() + this->tuple_size_bytes_ * dst_row + this->field_offsets_bytes_.at(dst_col));
     memcpy(dst_field, src_field, this->field_sizes_bytes_.at(dst_col));
 
 
@@ -291,8 +289,8 @@ RowTable<B>::cloneFields(const int &dst_row, const int &dst_col, const QueryTabl
     RowTable<B> *src = (RowTable<B> *) s;
 
 
-    int8_t *src_ptr = (int8_t *) (src->tuple_data_.data() + src->tuple_size_ * src_row + src->field_offsets_bytes_.at(src_col));
-    int8_t *dst_ptr = (int8_t *) (tuple_data_.data() + this->tuple_size_ * dst_row + this->field_offsets_bytes_.at(dst_col));
+    int8_t *src_ptr = (int8_t *) (src->tuple_data_.data() + src->tuple_size_bytes_ * src_row + src->field_offsets_bytes_.at(src_col));
+    int8_t *dst_ptr = (int8_t *) (tuple_data_.data() + this->tuple_size_bytes_ * dst_row + this->field_offsets_bytes_.at(dst_col));
 
     int write_size = 0;
     int cursor = dst_col;
@@ -323,8 +321,8 @@ RowTable<B>::cloneFields(const int &dst_row, const int &dst_col, const QueryTabl
 //    assert(s->storageModel() == StorageModel::ROW_STORE);
 //    RowTable<B> *src = (RowTable<B> *) s;
 //
-//    Bit *read_ptr = (Bit *) (src->tuple_data_.data() + src->tuple_size_ * src_row + src->field_offsets_bytes_.at(src_col));
-//    Bit *write_ptr = (Bit *) (tuple_data_.data() + this->tuple_size_ * dst_row + this->field_offsets_bytes_.at(dst_col));
+//    Bit *read_ptr = (Bit *) (src->tuple_data_.data() + src->tuple_size_bytes_ * src_row + src->field_offsets_bytes_.at(src_col));
+//    Bit *write_ptr = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * dst_row + this->field_offsets_bytes_.at(dst_col));
 //
 //    int write_bit_cnt = 0;
 //    int cursor = dst_col;
@@ -350,9 +348,9 @@ void RowTable<B>::cloneRow(const int &dst_row, const int &dst_col, const QueryTa
     assert(s->storageModel() == StorageModel::ROW_STORE);
     RowTable<B> *src = (RowTable<B> *) s;
 
-    int8_t *src_ptr = (int8_t *) (src->tuple_data_.data() + src->tuple_size_ * src_row);
-    int8_t *dst_ptr = (int8_t *) (tuple_data_.data() + this->tuple_size_ * dst_row + this->field_offsets_bytes_.at(dst_col));
-    int write_sz = src->tuple_size_ - src->field_sizes_bytes_.at(-1);
+    int8_t *src_ptr = (int8_t *) (src->tuple_data_.data() + src->tuple_size_bytes_ * src_row);
+    int8_t *dst_ptr = (int8_t *) (tuple_data_.data() + this->tuple_size_bytes_ * dst_row + this->field_offsets_bytes_.at(dst_col));
+    int write_sz = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
     memcpy(dst_ptr, src_ptr, write_sz);
 }
 
@@ -370,8 +368,8 @@ void RowTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &dst_
     assert(s->storageModel() == StorageModel::ROW_STORE);
     RowTable<B> *src = (RowTable<B> *) s;
 
-    Bit *read_ptr = (Bit *) (src->tuple_data_.data() + src->tuple_size_ * src_row );
-    Bit *write_ptr = (Bit *) (tuple_data_.data() + this->tuple_size_ * dst_row + this->field_offsets_bytes_.at(dst_col));
+    Bit *read_ptr = (Bit *) (src->tuple_data_.data() + src->tuple_size_bytes_ * src_row );
+    Bit *write_ptr = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * dst_row + this->field_offsets_bytes_.at(dst_col));
 
     size_t write_size = src->schema_.size() - 1;
     for(size_t i = 0; i < write_size; ++i) {
@@ -389,8 +387,8 @@ void RowTable<B>::cloneTable(const int & dst_row, QueryTable<B> *s) {
     assert((s->getTupleCount() + dst_row) <= this->tuple_cnt_);
 
     RowTable<B> *src = (RowTable<B> *) s;
-    int8_t *write_ptr = this->tuple_data_.data() + dst_row * this->tuple_size_;
-    int write_size = s->tuple_cnt_ * s->tuple_size_;
+    int8_t *write_ptr = this->tuple_data_.data() + dst_row * this->tuple_size_bytes_;
+    int write_size = s->tuple_cnt_ * s->tuple_size_bytes_;
 
     memcpy(write_ptr, src->tuple_data_.data(), write_size);
 
@@ -399,11 +397,11 @@ void RowTable<B>::cloneTable(const int & dst_row, QueryTable<B> *s) {
 template<typename B>
 void RowTable<B>::compareSwap(const bool &swap, const int &lhs_row, const int &rhs_row) {
     if(swap) {
-        int8_t *l = tuple_data_.data() + this->tuple_size_ * lhs_row;
-        int8_t *r = tuple_data_.data() + this->tuple_size_ * rhs_row;
+        int8_t *l = tuple_data_.data() + this->tuple_size_bytes_ * lhs_row;
+        int8_t *r = tuple_data_.data() + this->tuple_size_bytes_ * rhs_row;
 
         // swap in place
-        for(int i = 0; i < this->tuple_size_; ++i) {
+        for(int i = 0; i < this->tuple_size_bytes_; ++i) {
             *l = *l ^ *r;
             *r = *r ^ *l;
             *l = *l ^ *r;
@@ -417,8 +415,8 @@ void RowTable<B>::compareSwap(const bool &swap, const int &lhs_row, const int &r
 template<typename B>
 void RowTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) {
 
-    Bit *l = (Bit *) (tuple_data_.data() + this->tuple_size_ * lhs_row );
-    Bit *r = (Bit *) (tuple_data_.data() + this->tuple_size_ * rhs_row);
+    Bit *l = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * lhs_row );
+    Bit *r = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * rhs_row);
 
 
     size_t write_size = this->schema_.size();

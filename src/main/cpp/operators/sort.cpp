@@ -214,8 +214,8 @@ Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_i
     Integer lhs_key(placeholder);
     Integer rhs_key(placeholder);
 
-    Bit *lhs = (Bit *) (row_table->tuple_data_.data() + row_table->tuple_size_ * lhs_idx);
-    Bit *rhs = (Bit *) (row_table->tuple_data_.data() + row_table->tuple_size_ * rhs_idx);
+    Bit *lhs = (Bit *) (row_table->tuple_data_.data() + row_table->tuple_size_bytes_ * lhs_idx);
+    Bit *rhs = (Bit *) (row_table->tuple_data_.data() + row_table->tuple_size_bytes_ * rhs_idx);
 
     memcpy(lhs_key.bits.data(), lhs, sort_key_width_bits * TypeUtilities::getEmpBitSize());
     memcpy(rhs_key.bits.data(), rhs, sort_key_width_bits * TypeUtilities::getEmpBitSize());
@@ -236,8 +236,8 @@ bool Sort<B>::swapTuplesNormalized(const QueryTable<bool> *table, const int &lhs
     RowTable<bool> *row_table = (RowTable<bool> *) table;
 
 
-    int8_t *lhs =  (row_table->tuple_data_.data() + row_table->tuple_size_ * lhs_idx);
-    int8_t *rhs =  (row_table->tuple_data_.data() + row_table->tuple_size_ * rhs_idx);
+    int8_t *lhs =  (row_table->tuple_data_.data() + row_table->tuple_size_bytes_ * lhs_idx);
+    int8_t *rhs =  (row_table->tuple_data_.data() + row_table->tuple_size_bytes_ * rhs_idx);
     int byte_cnt = sort_key_width_bits / 8;
 
     // TODO: streamline this with memcmp over reversed keys

@@ -74,6 +74,13 @@ namespace vaultdb {
         static string printByteArray(const int8_t *bytes, const size_t & byte_cnt);
         static string printBitArray(const int8_t *bits, const size_t & byte_cnt);
 //        static emp::Integer toEmpInteger(const vector<int8_t> & src_bytes);
+        static string printBitArray(const bool* bits, const size_t & bit_cnt) {
+            std::stringstream ss;
+            for(int i = 0; i < bit_cnt; ++i) {
+                ss << (bits[i]) ? "1" : "0";
+            }
+            return ss.str();
+        }
 
        static vector<string> readTextFile(const string & filename);
        static string readTextFileToString(const string & filename);

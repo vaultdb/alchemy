@@ -40,7 +40,6 @@ namespace vaultdb {
         Expression<B>  *predicate_;
 
         QueryTable<B> *runSelf() override;
-        string getOperatorTypeString() const override { return "NestedLoopAggregate"; }
         string getParameters() const override {
             stringstream  ss;
             ss << "group-by: (" << group_by_[0];
@@ -57,7 +56,7 @@ namespace vaultdb {
             return ss.str();
 
         }
-        enum OperatorType getOperatorType() const override { return OperatorType::NESTED_LOOP_AGGREGATE; }
+        enum OperatorType getType() const override { return OperatorType::NESTED_LOOP_AGGREGATE; }
 
     private:
 
