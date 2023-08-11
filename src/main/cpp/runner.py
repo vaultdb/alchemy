@@ -251,7 +251,4 @@ class Runner:
         if not self.logfile == "":
             print("logfile: " + self.logfile + ".log")
 
-config = TestConfig()
-config.add_from_ctest(label="UnitTest",label_exclude="ZkTest")
-runner = Runner(config)
-runner.run_tests()
+
