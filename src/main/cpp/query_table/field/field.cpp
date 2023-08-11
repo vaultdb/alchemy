@@ -467,9 +467,9 @@ SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDes
         case FieldType::LONG: {
             int64_t val = (send) ? boost::get<int64_t>(f.payload_) : 0L;
             int bit_packed_size = src_field_desc.getBitPackedSize();
-            bool bit_packed_dst = (bit_packed_size != src_field_desc.size());
-            if (bit_packed_dst && send) val = val - src_field_desc.getFieldMin();
-            v = emp::Integer(bit_packed_size + bit_packed_dst, val, party);
+            bool bit_packed = src_field_desc.bitPacked();
+            if (bit_packed && send) val = val - src_field_desc.getFieldMin();
+            v = emp::Integer(bit_packed_size + bit_packed, val, party);
             type = FieldType::SECURE_LONG;
             break;
         }
