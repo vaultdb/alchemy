@@ -151,62 +151,50 @@ TEST_F(SecureFieldExpressionTest, test_millionaires) {
 
 
 TEST_F(SecureFieldExpressionTest, test_char_comparison) {
+
+
     char lhs = 'O';
     char rhs = 'F';
 
-    std::string lhsStr("O"), rhsStr("F");
-/*  char lhs = 'N'; // 78
-    char rhs = 'R'; // 82
+    std::string lhs_str("O"), rhs_str("F");
 
-*/
+    bool sending_party = false;
+    int sender_id = ALICE;
 
-    emp::Integer lhsSecretShared(8, (int8_t) (FLAGS_party == emp::ALICE) ?  lhs : 0,
-                                 emp::ALICE);
-
-    emp::Integer rhsSecretShared(8, (int8_t) (FLAGS_party == emp::BOB) ?   rhs : 0,
-                                 emp::BOB);
+    if((emp_mode_ == EmpMode::OUTSOURCED && FLAGS_party == TP) || (emp_mode_ != EmpMode::OUTSOURCED && FLAGS_party == ALICE))
+        sending_party = true;
+    if(emp_mode_ == EmpMode::OUTSOURCED)
+        sender_id = TP;
 
 
-    PlainField lhsField(FieldType::STRING, lhsStr, 1);
-    PlainField rhsField(FieldType::STRING, rhsStr, 1);
 
-    SecureField  lhsPrivateField, rhsPrivateField;
-    if(FLAGS_party == emp::ALICE) {
-        lhsPrivateField = PlainField::secret_share_send(lhsField, QueryFieldDesc(0, "test_col", "test_table", FieldType::STRING, 1), emp::ALICE);
-        rhsPrivateField = PlainField::secret_share_send(rhsField, QueryFieldDesc(0, "test_col", "test_table", FieldType::STRING, 1), emp::ALICE);
+    PlainField lhs_field(FieldType::STRING, lhs_str, 1);
+    PlainField rhs_field(FieldType::STRING, rhs_str, 1);
+
+    SecureField  lhs_shared_field, rhs_shared_field;
+    if(sending_party) {
+        lhs_shared_field = PlainField::secret_share_send(lhs_field, QueryFieldDesc(0, "test_col", "test_table", FieldType::SECURE_STRING, 1), sender_id);
+        rhs_shared_field = PlainField::secret_share_send(rhs_field, QueryFieldDesc(0, "test_col", "test_table", FieldType::SECURE_STRING, 1), sender_id);
     }
     else {
-        lhsPrivateField = PlainField::secret_share_recv(
-                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, 1), emp::ALICE);
-        rhsPrivateField = PlainField::secret_share_recv(
-                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, 1), emp::ALICE);
+        lhs_shared_field = PlainField::secret_share_recv(
+                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, 1), sender_id);
+        rhs_shared_field = PlainField::secret_share_recv(
+                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, 1), sender_id);
     }
 
 
-    // sanity check
-    bool publicEq = (lhs == rhs);
-    emp::Bit privateEqBit = (lhsSecretShared == rhsSecretShared);
-    bool privateEq = privateEqBit.reveal();
-    bool publicGeq = lhs >= rhs;
-    bool privateGeq = (lhsSecretShared >= rhsSecretShared).reveal();
-    bool publicGt = lhsStr > rhsStr;
-    bool privateGt = (lhsSecretShared >= rhsSecretShared).reveal();
+    bool public_eq = (lhs == rhs);
+    bool secure_eq = (lhs_shared_field == rhs_shared_field).reveal();
+    bool public_geq = (lhs >= rhs);
+    bool secure_geq = (lhs_shared_field >= rhs_shared_field).reveal();
+    bool public_gt = (lhs_str > rhs_str);
+    bool secure_gt = (lhs_shared_field >= rhs_shared_field).reveal();
 
 
-    ASSERT_EQ(publicEq, privateEq);
-    ASSERT_EQ(publicGeq, privateGeq);
-    ASSERT_EQ(privateGt, publicGt);
-
-
-    // compare manual emp int to Field one
-    privateEq = (lhsPrivateField == rhsPrivateField).reveal();
-    privateGeq = (lhsPrivateField >= rhsPrivateField).reveal();
-    privateGt = (lhsPrivateField > rhsPrivateField).reveal();
-
-
-    ASSERT_EQ(publicEq, privateEq);
-    ASSERT_EQ(publicGeq, privateGeq);
-    ASSERT_EQ(privateGt, publicGt);
+    ASSERT_EQ(public_eq, secure_eq);
+    ASSERT_EQ(public_geq, secure_geq);
+    ASSERT_EQ(public_gt, secure_gt);
 
 }
 
