@@ -22,39 +22,42 @@ DEFINE_string(filter, "*", "run only the tests passing this filter");
 class SecureMergeJoinTest : public EmpBaseTest {};
 
 TEST_F(SecureMergeJoinTest, merge_q18) {
-    string lhs_sql = " SELECT l_orderkey, COUNT(*) \n"
-                     " FROM lineitem\n"
-                     " GROUP BY l_orderkey\n"
-                     " ORDER BY l_orderkey "
-                     " LIMIT "  + std::to_string(FLAGS_cutoff);
+    // N/A in ZK/OMPC
+    if(emp_mode_ == EmpMode::SH2PC) {
+        string lhs_sql = " SELECT l_orderkey, COUNT(*) \n"
+                         " FROM lineitem\n"
+                         " GROUP BY l_orderkey\n"
+                         " ORDER BY l_orderkey "
+                         " LIMIT " + std::to_string(FLAGS_cutoff);
 
-    string rhs_sql = "SELECT DISTINCT l_orderkey FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(FLAGS_cutoff);
+        string rhs_sql =
+                "SELECT DISTINCT l_orderkey FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(FLAGS_cutoff);
 
-    string expected_sql = " SELECT l_orderkey, COUNT(*), l_orderkey \n"
-                          " FROM lineitem\n"
-                          " GROUP BY l_orderkey\n"
-                          " ORDER BY l_orderkey "
-                          " LIMIT "  + std::to_string(FLAGS_cutoff);
-    ;
+        string expected_sql = " SELECT l_orderkey, COUNT(*), l_orderkey \n"
+                              " FROM lineitem\n"
+                              " GROUP BY l_orderkey\n"
+                              " ORDER BY l_orderkey "
+                              " LIMIT " + std::to_string(FLAGS_cutoff);;
 
-    auto collation = DataUtilities::getDefaultSortDefinition(1);
-    auto *lhs_input = new SecureSqlInput(db_name_, lhs_sql, false, collation);
-    auto *rhs_input = new SecureSqlInput(db_name_, rhs_sql, false, collation);
+        auto collation = DataUtilities::getDefaultSortDefinition(1);
+        auto *lhs_input = new SecureSqlInput(db_name_, lhs_sql, false, collation);
+        auto *rhs_input = new SecureSqlInput(db_name_, rhs_sql, false, collation);
 
-    Expression<Bit> *predicate = FieldUtilities::getEqualityPredicate<Bit>(lhs_input, 0,
-                                                                                              rhs_input, 2);
+        Expression<Bit> *predicate = FieldUtilities::getEqualityPredicate<Bit>(lhs_input, 0,
+                                                                               rhs_input, 2);
 
-    MergeJoin join(lhs_input, rhs_input, predicate, SortDefinition(), false);
-    auto joined = join.run()->reveal();
+        MergeJoin join(lhs_input, rhs_input, predicate, SortDefinition(), false);
+        auto joined = join.run()->reveal();
 
-    // need unioned results to cover a corner case
-    auto expected = DataUtilities::getUnionedResults(FLAGS_alice_db, FLAGS_bob_db, expected_sql, false);
+        // need unioned results to cover a corner case
+        auto expected = DataUtilities::getUnionedResults(FLAGS_alice_db, FLAGS_bob_db, expected_sql, false);
 
-    Sort sorter(expected, collation);
-    expected = sorter.run();
-    ASSERT_EQ(*expected, *joined);
+        Sort sorter(expected, collation);
+        expected = sorter.run();
+        ASSERT_EQ(*expected, *joined);
 
-    delete joined;
+        delete joined;
+    }
 
 }
 
