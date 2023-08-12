@@ -92,16 +92,16 @@ std::vector<int8_t> Utilities::boolsToBytes( std::string &bitString) {
     return decodedBytesVector;
 }
 
-std::vector<int8_t> Utilities::boolsToBytes(const bool *const src, const uint32_t &bitCount) {
-    int byteCount = bitCount / 8;
-    assert(bitCount % 8 == 0); // no partial bytes supported
+std::vector<int8_t> Utilities::boolsToBytes(const bool *const src, const uint32_t &bit_cnt) {
+    int byte_cnt = bit_cnt / 8;
+    assert(bit_cnt % 8 == 0); // no partial bytes supported
 
     std::vector<int8_t> result;
-    result.resize(byteCount);
+    result.resize(byte_cnt);
 
     bool *cursor = const_cast<bool*>(src);
 
-    for(int i = 0; i < byteCount; ++i) {
+    for(int i = 0; i < byte_cnt; ++i) {
         result[i] = Utilities::boolsToByte(cursor);
         cursor += 8;
     }

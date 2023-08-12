@@ -10,32 +10,22 @@
 #include <sstream>
 #include <emp-tool/emp-tool.h>
 
-#if __has_include("emp-rescu/emp-rescu.h")
-#include "emp-rescu/emp-rescu.h"
 
-namespace  emp {
-    using Integer = Integer_T<OMPCBackend<N>::wire_t>;
-    using Float = Float_T<OMPCBackend<N>::wire_t>;
-    using Bit = Bit_T<OMPCBackend<N>::wire_t>;
-}
-#else
+#if  __has_include("emp-sh2pc/emp-sh2pc.h")
+#include <emp-sh2pc/emp-sh2pc.h>
 namespace emp {
     const static int TP = 10086;
     const static int N = 3;
 
 }
-#endif
-
-#if __has_include("emp-sh2pc/emp-sh2pc.h")
-#include <emp-sh2pc/emp-sh2pc.h>
-#endif
-
-
-#if __has_include("emp-zk/emp-zk.h")
+#elif __has_include("emp-zk/emp-zk.h")
 #include <emp-zk/emp-zk.h>
-#endif
+namespace emp {
+    const static int TP = 10086;
+    const static int N = 3;
 
-#if __has_include("emp-rescu/emp-rescu.h")
+}
+#elif __has_include("emp-rescu/emp-rescu.h")
 #include "emp-rescu/emp-rescu.h"
 
 namespace  emp {

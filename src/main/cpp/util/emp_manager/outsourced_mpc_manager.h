@@ -4,9 +4,60 @@
 #include "emp_manager.h"
 #include <util/system_configuration.h>
 
-#if __has_include("emp-rescu/emp-rescu.h")
-#include <emp-rescu/emp-rescu.h>
+#if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/zk.h")
+namespace  vaultdb {
+    // placeholder to make this build
+    class OutsourcedMpcManager : public EmpManager {
 
+    public:
+
+        OutsourcedMpcManager(string hosts[], int party, int comm_port, int ctrl_port) {
+            throw;
+        }
+
+        OutsourcedMpcManager() {
+            throw;
+        }
+
+        size_t andGateCount() const override { return 0; }
+
+        void  feed(Bit *labels, int party, const bool *b, int bit_cnt) override  {
+            throw;
+        }
+
+        void flush()  override{ throw; }
+
+        ~OutsourcedMpcManager() = default;
+
+        QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override {
+            throw;
+        }
+
+        void reveal(bool *dst, const int & party, Bit *src, const int & bit_cnt) override {
+            throw;
+        }
+
+        string revealToString(const emp::Integer & i, const int & party = PUBLIC)  const override {
+            throw;
+        }
+
+        size_t getTableCardinality(const int & local_cardinality) override {
+            throw;
+        }
+
+
+        void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {  throw; }
+
+        void unpack(Bit *src, Bit *dst, const int & bit_cnt) override { throw; }
+
+
+    };
+}
+
+#else
+
+#include <emp-rescu/emp-rescu.h>
+#define __OMPC_BACKEND__ 1
 namespace  vaultdb {
     class OutsourcedMpcManager : public EmpManager {
 
@@ -75,53 +126,18 @@ namespace  vaultdb {
 
         size_t getTableCardinality(const int & local_cardinality) override;
 
-    };
-}
-
-#else
-
-namespace  vaultdb {
-    // placeholder to make this build
-    class OutsourcedMpcManager : public EmpManager {
-
-    public:
-
-        OutsourcedMpcManager(string hosts[], int party, int comm_port, int ctrl_port) {
-            throw;
+        void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {
+            auto protocol = ((OMPCBackend<N> *) emp::backend);
+            protocol->pack(src, (OMPCPackedWire *) dst, bit_cnt);
         }
-
-        OutsourcedMpcManager() {
-            throw;
-        }
-
-        size_t andGateCount() const override { return 0; }
-
-        void  feed(Bit *labels, int party, const bool *b, int bit_cnt) override  {
-            throw;
-        }
-
-        void flush()  override{ throw; }
-
-        ~OutsourcedMpcManager() = default;
-
-        QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override {
-            throw;
-        }
-
-        void reveal(bool *dst, const int & party, Bit *src, const int & bit_cnt) override {
-            throw;
-        }
-
-        string revealToString(const emp::Integer & i, const int & party = PUBLIC)  const override {
-            throw;
-        }
-
-        size_t getTableCardinality(const int & local_cardinality) override {
-            throw;
+        void unpack(Bit *src, Bit *dst, const int & bit_cnt) override {
+            auto protocol = ((OMPCBackend<N> *) emp::backend);
+            protocol->unpack(dst, (OMPCPackedWire *) src, bit_cnt);
         }
 
     };
 }
-#endif // end if-emp-tool
+
+#endif // end if emp-sh2pc||emp-zk
 
 #endif // end OUTSOURCE_MANAGER

@@ -131,13 +131,10 @@ TEST_F(EmpTableTest, bit_packing_test) {
 
 void EmpTableTest::secretShareAndValidate(const std::string & sql, const SortDefinition & sort) {
 
-//    cout << "DB Name: " << db_name_ << endl;
     PlainTable *input = DataUtilities::getQueryResults(db_name_, sql, false);
-//    cout << "Local input: " << input->toString() << endl;
 
     input->setSortOrder(sort);
     SecureTable *secret_shared = input->secretShare();
-    manager_->flush();
 
     if(FLAGS_validation) {
         PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);

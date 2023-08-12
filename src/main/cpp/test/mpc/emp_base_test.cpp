@@ -7,11 +7,12 @@
 #include "query_table/secure_tuple.h" // for use in child classes
 #include "query_table/plain_tuple.h"
 
-
-#if __has_include("emp-rescu/emp-rescu.h")
-static EmpMode _emp_mode_ = EmpMode::OUTSOURCED;
-#elif  __has_include("emp-sh2pc/emp-sh2pc.h")
-static EmpMode _emp_mode_ = EmpMode::SH2PC;
+#if  __has_include("emp-sh2pc/emp-sh2pc.h")
+    static EmpMode _emp_mode_ = EmpMode::SH2PC;
+#elif __has_include("emp-zk/emp-zk.h")
+    static EmpMode _emp_mode_ = EmpMode::ZK;
+#elif __has_include("emp-rescu/emp-rescu.h")
+    static EmpMode _emp_mode_ = EmpMode::OUTSOURCED;
 #else
     static EmpMode _emp_mode_ = EmpMode::PLAIN;
 #endif

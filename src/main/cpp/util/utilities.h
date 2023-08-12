@@ -37,7 +37,7 @@ namespace vaultdb {
 
         static bool *bytesToBool(int8_t *bytes, const int &  byteCount);
 
-        static std::vector<int8_t> boolsToBytes(const bool *const src, const uint32_t &bitCount);
+        static std::vector<int8_t> boolsToBytes(const bool *const src, const uint32_t &bit_cnt);
 
         static std::vector<int8_t> boolsToBytes( std::string & src); // for the output of Integer::reveal<string>()
 

@@ -70,7 +70,6 @@ PlainTable *RowTable<B>::reveal(const int & party)   {
     auto dst_table = new RowTable<bool>(this->tuple_cnt_, dst_schema, collation);
     int write_cursor = 0;
 
-
     for(uint32_t i = 0; i < table->tuple_cnt_; ++i)  {
         bool dummy_tag = table->getDummyTag(i).reveal();
         if(!dummy_tag) { // if real tuple (not a dummy), reveal it

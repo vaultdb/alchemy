@@ -124,7 +124,7 @@ void SH2PCManager::secret_share_recv(const size_t &tuple_count, const int &party
         for(int32_t i = tuple_count - 1; i >= 0; --i) {
             for(int j = 0; j < dst_table->getSchema().getFieldCount(); ++j) {
                 PlainField placeholder = src_tuple.getField(j);
-                auto field_desc = src_schema.getField(j);
+                auto field_desc = dst_schema.getField(j);
                 auto dst_field = SecureField::secretShareHelper(placeholder, field_desc, party, false);
                 dst_table->setPackedField(cursor, j, dst_field);
             }
@@ -140,7 +140,7 @@ void SH2PCManager::secret_share_recv(const size_t &tuple_count, const int &party
     for(size_t i = 0; i < tuple_count; ++i) {
         for(int j = 0; j < dst_table->getSchema().getFieldCount(); ++j) {
             PlainField placeholder = src_tuple.getField(j);
-            auto field_desc = src_schema.getField(j);
+            auto field_desc = dst_schema.getField(j);
             auto dst_field = SecureField::secretShareHelper(placeholder, field_desc, party, false);
             dst_table->setPackedField(cursor, j, dst_field);
         }
@@ -163,13 +163,14 @@ SH2PCManager::secret_share_send(const int &party,const PlainTable *src_table, Se
 
     int cursor = (int) write_offset;
     auto src_schema = src_table->getSchema();
+    auto dst_schema = dst_table->getSchema();
 
 
     if(reverse_read_order) {
         for(int i = src_table->getTupleCount() - 1; i >= 0; --i) {
             for(int j = 0; j < src_table->getSchema().getFieldCount(); ++j) {
                 auto src_field = src_table->getField(i, j);
-                auto field_desc = src_schema.getField(j);
+                auto field_desc = dst_schema.getField(j);
 
                 auto dst_field = SecureField::secretShareHelper(src_field, field_desc, party, true);
                 dst_table->setPackedField(cursor, j, dst_field);
@@ -186,7 +187,7 @@ SH2PCManager::secret_share_send(const int &party,const PlainTable *src_table, Se
     for(size_t i = 0; i < src_table->getTupleCount(); ++i) {
         for(int j = 0; j < src_table->getSchema().getFieldCount(); ++j) {
             auto src_field = src_table->getField(i, j);
-            auto field_desc = src_schema.getField(j);
+            auto field_desc = dst_schema.getField(j);
             auto dst_field = SecureField::secretShareHelper(src_field, field_desc, party, true);
             dst_table->setPackedField(cursor, j, dst_field);
         }

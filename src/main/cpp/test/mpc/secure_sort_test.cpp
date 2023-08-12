@@ -84,10 +84,10 @@ TEST_F(SecureSortTest, tpchQ03Sort) {
     if(FLAGS_validation) {
 
         PlainTable *observed = sorted->reveal();
-        string expected_result_sql = "WITH input AS (" + sql + ") SELECT l_orderkey, l_linenumber, revenue, o_shippriority, " + DataUtilities::queryDatetime("o_orderdate") + " FROM input ORDER BY revenue DESC, o_orderdate";
+        string expected_sql = "WITH input AS (" + sql + ") SELECT l_orderkey, l_linenumber, revenue, o_shippriority, " + DataUtilities::queryDatetime("o_orderdate") + " FROM input ORDER BY revenue DESC, o_orderdate";
 
-        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_result_sql,false);
-        expected->setSortOrder(observed->getSortOrder());
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
+        expected->setSortOrder(sort_def);
 
 //     commented out because of floating point comparison issues, validating with *expected instead
 //        ASSERT_TRUE(DataUtilities::verifyCollation(observed));
@@ -165,14 +165,13 @@ TEST_F(SecureSortTest, tpchQ08Sort) {
 
 // this test is intentionally set to a large input size to test join scaling
 // outside of cutoff
-// join scale up has surfaced many bugs in the past, thus having it larger than most.
+// sort scale up has surfaced many bugs in the past, thus having it larger than most.
 TEST_F(SecureSortTest, tpchQ09Sort) {
 
     std::string sql = "SELECT o_orderyear, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
                       "  JOIN supplier s ON s_suppkey = l_suppkey"
                       "  JOIN nation on n_nationkey = s_nationkey"
-                      " ORDER BY l_comment LIMIT " + std::to_string(FLAGS_cutoff); //  order by to ensure order is reproducible and not sorted on the sort cols
-
+                      " ORDER BY l_comment LIMIT 1000";
     SortDefinition sort_definition{ColumnSort(2, SortDirection::ASCENDING),
                                    ColumnSort(0, SortDirection::DESCENDING)};
 

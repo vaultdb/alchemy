@@ -91,7 +91,7 @@ void FieldUtilities::secret_share_send(const PlainTable *src, const int &src_idx
         PlainField src_field = src->getField(src_idx, i);
         QueryFieldDesc dst_field_desc = dst_schema.getField(i);
         SecureField dst_field = SecureField::secret_share_send(src_field, dst_field_desc, party);
-        dst->setField(dst_idx, i, dst_field);
+        dst->setPackedField(dst_idx, i, dst_field);
     }
 
     emp::Bit b(src->getDummyTag(src_idx), party);

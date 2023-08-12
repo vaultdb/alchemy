@@ -1,6 +1,6 @@
 #include "outsourced_mpc_manager.h"
 
-#if __has_include("emp-rescu/emp-rescu.h")
+#ifdef __OMPC_BACKEND__
 #include "emp-rescu/emp-rescu.h"
 #include <query_table/query_table.h>
 #include <query_table/table_factory.h>
@@ -34,7 +34,6 @@ QueryTable<Bit> *OutsourcedMpcManager::secretShare(const QueryTable<bool> *src) 
             ios_ctrl_[i]->send_data(&tuple_cnt, 4);
             ios_ctrl_[i]->flush();
         }
-
     }
     else {
         tpio_ctrl_->recv_data(&tuple_cnt, 4);
@@ -42,8 +41,8 @@ QueryTable<Bit> *OutsourcedMpcManager::secretShare(const QueryTable<bool> *src) 
     }
 
     if(tuple_cnt == 0) throw std::invalid_argument("No tuples to process!");
-
-    QuerySchema dst_schema = QuerySchema::toSecure(src->getSchema());
+    QuerySchema plain_schema = src->getSchema();
+    QuerySchema dst_schema = QuerySchema::toSecure(plain_schema);
     QueryTable<Bit> *dst = TableFactory<Bit>::getTable(tuple_cnt, dst_schema, src->storageModel(), src->getSortOrder());
 
     if(party_ == emp::TP) {
@@ -54,6 +53,7 @@ QueryTable<Bit> *OutsourcedMpcManager::secretShare(const QueryTable<bool> *src) 
     else { // computing parties
         for(int i = 0; i < tuple_cnt; ++i) {
             FieldUtilities::secret_share_recv(dst, i, TP);
+
         }
     }
 

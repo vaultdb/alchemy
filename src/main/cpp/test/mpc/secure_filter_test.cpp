@@ -54,9 +54,6 @@ TEST_F(SecureFilterTest, test_table_scan) {
 
 }
 
-
-
-
 // Testing for selecting l_linenumber=1
 
 TEST_F(SecureFilterTest, test_filter) {

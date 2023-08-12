@@ -281,23 +281,23 @@ PlainField Field<B>::reveal(const int &party) const {
 template<typename B>
 std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
     long bit_cnt = src.size();
+    long byte_cnt = bit_cnt / 8;
 
     bool *bools = new bool[bit_cnt];
-    std::string bit_string = SystemConfiguration::getInstance().emp_manager_->revealToString(src, party);
-
-    std::string::iterator str_pos = bit_string.begin();
-    for (int i = 0; i < bit_cnt; ++i) {
-        bools[i] = (*str_pos == '1');
-        ++str_pos;
+    for(int i = 0; i < bit_cnt; ++i) {
+        bools[i] = src[i].reveal(party);
     }
 
-    vector<int8_t> decoded_bytes_vec = Utilities::boolsToBytes(bools, bit_cnt);
+    bool *byte_cursor = bools;
+    string dst;
 
-    string dst((char *) decoded_bytes_vec.data(), decoded_bytes_vec.size());
-
+    for(int i = 0; i < byte_cnt; ++i) {
+        char byte = Utilities::boolsToByte(byte_cursor);
+        dst = dst + byte;
+        byte_cursor += 8;
+    }
 
     std::reverse(dst.begin(), dst.end());
-
 
     delete[] bools;
     return dst;
@@ -457,19 +457,19 @@ SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDes
         case FieldType::INT: {
             int32_t val = (send) ? boost::get<int32_t>(f.payload_) : 0;
             int bit_packed_size = src_field_desc.getBitPackedSize();
-            bool bit_packed_dst = (bit_packed_size != src_field_desc.size());
-            if (bit_packed_dst && send) val = val - src_field_desc.getFieldMin();
-            // + bit_packed_dst to add one bit if we are padding it for two's complement
-            v = emp::Integer(bit_packed_size + bit_packed_dst, val, party);
+            bool bit_packed = src_field_desc.bitPacked();
+            if (bit_packed && send) val = val - src_field_desc.getFieldMin();
+            // + bit_packed to add one bit if we are padding it for two's complement
+            v = emp::Integer(bit_packed_size + bit_packed, val, party);
             type = FieldType::SECURE_INT;
             break;
         }
         case FieldType::LONG: {
             int64_t val = (send) ? boost::get<int64_t>(f.payload_) : 0L;
             int bit_packed_size = src_field_desc.getBitPackedSize();
-            bool bit_packed_dst = (bit_packed_size != src_field_desc.size());
-            if (bit_packed_dst && send) val = val - src_field_desc.getFieldMin();
-            v = emp::Integer(bit_packed_size + bit_packed_dst, val, party);
+            bool bit_packed = src_field_desc.bitPacked();
+            if (bit_packed && send) val = val - src_field_desc.getFieldMin();
+            v = emp::Integer(bit_packed_size + bit_packed, val, party);
             type = FieldType::SECURE_LONG;
             break;
         }
@@ -497,20 +497,19 @@ emp::Integer Field<B>::secretShareString(const string &s, const bool &to_send, c
     size_t string_bit_count = str_length * 8;
 
     emp::Integer payload = emp::Integer(string_bit_count, 0L, party);
-    SystemConfiguration & conf = SystemConfiguration::getInstance();
+    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
 
 
     if (to_send) {
         std::string input = s;
         std::reverse(input.begin(), input.end());
         bool *bools = Utilities::bytesToBool((int8_t *) input.c_str(), str_length);
-
-        conf.emp_manager_->feed( payload.bits.data(), party, bools,
+        manager->feed( payload.bits.data(), party, bools,
                                                 string_bit_count);
         delete[] bools;
 
     } else {
-        conf.emp_manager_->feed( payload.bits.data(), party, nullptr,
+        manager->feed( payload.bits.data(), party, nullptr,
                                                 string_bit_count);
     }
 
