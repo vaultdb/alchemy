@@ -43,6 +43,8 @@ PlanParser<B>::PlanParser(const string &db_name, const string & json_file, const
 
     parseSecurePlan(json_file);
 
+    optmizeTree();
+
     if(getAutoFlag())
         calculateAutoAggregate();
 
@@ -168,7 +170,6 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
     }
     else
         throw std::invalid_argument("Unknown operator type: " + op_name);
-
 
 
 }
@@ -349,6 +350,7 @@ void PlanParser<B>::calculateAutoAggregate() {
             bool check_sort = sma_vector[i]->check_sort_;
 
             GroupByAggregate<B> *real_sma = new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort);
+            real_sma->setOutputCardinality( sma_vector[i]->getJsonOutputCardinality());
             child->setParent(real_sma);
             real_sma->setChild(child);
             operators_[agg_id[i]] = real_sma;
@@ -438,8 +440,8 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     }
 
     // Parse Cardinality Bound info from JSON
-    if(aggregate_json.count("cardinality_bound") > 0)
-        cardinality_bound = aggregate_json.get_child("cardinality_bound").template get_value<int>();
+    if(aggregate_json.count("cardBound") > 0)
+        cardinality_bound = aggregate_json.get_child("cardBound").template get_value<int>();
 
     bool check_sort = true;
     if(aggregate_json.count("checkSort") > 0) {
@@ -506,6 +508,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
                 nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, cardinality_bound);
             }
 
+            sma->setJsonOutputCardinality(cardinality_bound);
             sma_vector.push_back(sma);
             nla_vector.push_back(nla);
             setAutoFlag(true);
@@ -517,7 +520,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
         if(cardinality_bound > 0 && (agg_algo == "nested-loop-aggregate" || agg_algo == ""))
             return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardinality_bound);
         else if(!check_sort && (agg_algo == "sort-merge-aggregate" || agg_algo == ""))
-            return new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort);
+            return new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort, cardinality_bound);
         else {
             // if sort not aligned, insert a sort op
             SortDefinition child_sort = child->getSortOrder();
@@ -530,7 +533,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
                 child = new Sort<B>(child, child_sort);
                 support_ops_.template emplace_back(child);
             }
-            return new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort);
+            return new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort, cardinality_bound);
         }
     }
     else {
@@ -730,7 +733,7 @@ void PlanParser<B>::parseLocalScan(const int & operator_id, const boost::propert
             sort_definition.push_back(cs); // Push the ColumnSort to the current SortDefinition
         }
 
-        scan_sorts_[operator_id].push_back(sort_definition);
+        interesting_sort_orders_[operator_id].push_back(sort_definition);
 
         collationIndex++; // Move to the next collation index
     }
@@ -747,12 +750,12 @@ void PlanParser<B>::parseLocalScan(const int & operator_id, const boost::propert
             cs.second = (direction_str == "ASCENDING") ? SortDirection::ASCENDING : SortDirection::DESCENDING;
             sort_definition.push_back(cs); // Push the ColumnSort to the single SortDefinition
         }
-        scan_sorts_[operator_id].push_back(sort_definition);
+        interesting_sort_orders_[operator_id].push_back(sort_definition);
     }
     if(input_party > 0)
-        operators_[operator_id] = createInputOperator(sql, scan_sorts_[operator_id].front(), input_party, plain_has_dummy_tag, tmp);
+        operators_[operator_id] = createInputOperator(sql, interesting_sort_orders_[operator_id].front(), input_party, plain_has_dummy_tag, tmp);
     else
-        operators_[operator_id] = createInputOperator(sql, scan_sorts_[operator_id].front(), plain_has_dummy_tag, tmp);
+        operators_[operator_id] = createInputOperator(sql, interesting_sort_orders_[operator_id].front(), plain_has_dummy_tag, tmp);
     operators_.at(operator_id)->setOperatorId(operator_id);
     root_ = operators_[operator_id];
 }
@@ -874,6 +877,7 @@ Operator<B> *PlanParser<B>::getOperator(const int &op_id) {
 template<typename B>
 Operator<B> *PlanParser<B>::optmizeTree() {
     Operator<B> *leaf = operators_.begin()->second;
+    optimizeTreeHelper(leaf);
     return nullptr;
 
 }
@@ -883,6 +887,7 @@ template<typename B>
 void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
 
     Operator<B> *node = op->clone();
+    node->setParent(op->getParent());
     int id = op->getOperatorId();
 
 
@@ -898,7 +903,7 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
                 recurseNode(node);
             }
         }
-        case OperatorType::NESTED_LOOP_JOIN:
+        case OperatorType::KEYED_NESTED_LOOP_JOIN:
         case OperatorType::SORT_MERGE_JOIN: {
             // for each rhs leaf collation cycle through its collations and then try both SMJ and NLJ with each collation
             recurseJoin(node);
@@ -907,8 +912,7 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
         case OperatorType::SORT_MERGE_AGGREGATE: {
             // for each agg try NLA and SMA
             // for SMA check if we need sort before op, also check if we have any extra sorts that are unneeded?
-            // TODO: recurseAgg(node);
-            throw;
+            recurseAgg(node);
         }
         default:
             throw;
@@ -969,7 +973,38 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             recurseNode(&j);
         }
     }
+}
 
+template<typename B>
+void PlanParser<B>::recurseAgg(Operator<B> *agg) {
+
+    if (agg->getType() == OperatorType::NESTED_LOOP_AGGREGATE) {
+        NestedLoopAggregate<B> *nla = (NestedLoopAggregate<B> *) agg;
+        Operator<B> *child = agg->getChild();
+        std::vector<int32_t> group_by_ordinals = nla->group_by_;
+        // if sort not aligned, insert a sort op
+        SortDefinition child_sort = child->getSortOrder();
+        if (!GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals)) {
+            // insert sort
+            SortDefinition child_sort;
+            for (uint32_t idx: group_by_ordinals) {
+                child_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
+            }
+            Sort<B> *sort_before_sma = new Sort<B>(child->clone(), child_sort);
+
+            GroupByAggregate a(sort_before_sma->clone(), group_by_ordinals, nla->aggregate_definitions_,
+                               true);
+            recurseNode(&a);
+        } else {
+            GroupByAggregate a(child->clone(), group_by_ordinals, nla->aggregate_definitions_, true);
+            recurseNode(&a);
+        }
+    } else {
+        GroupByAggregate<B> *sma = (GroupByAggregate<B> *) agg;
+        NestedLoopAggregate a(agg->getChild()->clone(), sma->group_by_, sma->aggregate_definitions_,
+                              sma->getJsonOutputCardinality());
+        recurseNode(&a);
+    }
 }
 
 

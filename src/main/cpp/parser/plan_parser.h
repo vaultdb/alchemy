@@ -123,6 +123,7 @@ namespace vaultdb {
         Operator<B> *fetchLeaf(Operator<B> *op);
 
         void recurseJoin(Operator<B> *join);
+        void recurseAgg(Operator<B> *agg);
 
         vector<SortDefinition> getCollations(Operator<B> *op) {
             map<SortDefinition, int> collations; // making a map to eliminate duplicate collations
