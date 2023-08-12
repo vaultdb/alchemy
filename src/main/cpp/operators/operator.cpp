@@ -6,8 +6,8 @@
 #include "opt/operator_cost_model.h"
 #include <cmath>
 
-
 using namespace vaultdb;
+using namespace Logging;
 
 template<typename B>
 Operator<B>::Operator(QueryTable<B> *lhs, const SortDefinition & sorted_on)
@@ -60,16 +60,20 @@ QueryTable<B> *Operator<B>::run() {
     runtime_ms_ = time_from(start_time_)/1e3;
 
     if(std::is_same_v<B, Bit> && this->getOperatorId() >= -1) {
-        cout << "Operator #" << this->getOperatorId() << " " << getTypeString() << " ran for " << runtime_ms_
-             << " ms, "
-             << "gate count: " << gate_cnt_ << " output cardinality: " << output_->getTupleCount() << ", row width="
-             << output_schema_.size() << '\n';
+		Logger* log = get_log();
+
+        log->write("Operator #" + std::to_string(this->getOperatorId()) + " " + getTypeString() + 
+				" ran for " + std::to_string(runtime_ms_) + " ms, " + 
+				"gate count: " + std::to_string(gate_cnt_) + 
+				" output cardinality: " + std::to_string(output_->getTupleCount()) + 
+				", row width=" + std::to_string(output_schema_.size()) + "\n", Level::DEBUG);
 
         if (gate_cnt_ > 0) {
         size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
         float relative_error = std::fabs(((float) estimated_gates) - ((float) gate_cnt_)) / (float) gate_cnt_ * 100.0;
-        cout << "Estimated cost: " << estimated_gates << ", Observed gates: " << gate_cnt_ << ", Error rate(%) : "
-             << relative_error << endl;
+        log->write("Estimated cost: " + std::to_string(estimated_gates) + 
+				", Observed gates: " + std::to_string(gate_cnt_) + 
+				", Error rate(%) : " + std::to_string(relative_error) + "\n", Level::DEBUG);
 //        if(relative_error > 25.0) cout << "***Warning: high cost model error on operator (" << this->getOperatorId() << ") " << this->getTypeString() << endl;
         }
         //cout << "      Operator desc: " << this->toString() << endl;

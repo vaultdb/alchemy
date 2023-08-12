@@ -72,7 +72,12 @@ class TestSuite:
                     if flag.name == "flagfile":
                         self.read_from_flagfile(flag.value)
                     else:
-                        self.flags.append(flag)
+                        existing_flag = self.find_flag_by_name(flag.name)
+                        if existing_flag.name == "":
+                            self.flags.append(flag)
+                        else:
+                            self.edit_flag(flag.name, flag.value)
+                        
 
     def read_from_gflags(self):
         args = [self.exe_path,"--helpshort"]
@@ -149,19 +154,12 @@ class TestConfig:
      
 #note: party flags are constructed automatically, and can be omitted from configs
 class Runner:
-    def __init__(self,config,logfile="",verbose=True):
+    def __init__(self,config,verbose=True):
         self.config=config
         self.is_host=True
         self.run_local=True     #running secure test cases locally?
-        if logfile == "":
-            self.logfile = ""
-        else:
-            self.logfile=os.path.join(logfile_path, logfile)
         self.verbose = verbose
         self.procs=[]
-
-    def set_logfile(self,logfile):
-        self.logfile=os.path.join(logfile_path, logfile)
 
     def build_args(self,test_suite):
         test_exe_path = os.path.join(bin_path, test_suite.exe_path)
@@ -175,21 +173,12 @@ class Runner:
 
     def fork_test_process(self,test_suite):
         args = self.build_args(test_suite)
-        if self.logfile == "":
-            subprocess.run(args)
-        else:
-            with open(self.logfile + ".log", "a") as outfile:            
-               subprocess.run(args, stdout=outfile)            
-
+        subprocess.run(args)
+          
     def fork_background_test_process(self,test_suite):
         args = self.build_args(test_suite)
-        if self.logfile == "":
-            proc = subprocess.Popen(args)
-            self.procs.append(proc) 
-        else:            
-            with open(self.logfile + ".log", "a") as outfile:            
-                proc = subprocess.Popen(args, stdout=outfile)
-                self.procs.append(proc)
+        proc = subprocess.Popen(args)
+        self.procs.append(proc) 
 
     def background_processes_done(self):
         for proc in self.procs:
@@ -248,7 +237,5 @@ class Runner:
             else:
                 self.run_remote_test(test_suite)
             time.sleep(1)
-        if not self.logfile == "":
-            print("logfile: " + self.logfile + ".log")
 
 

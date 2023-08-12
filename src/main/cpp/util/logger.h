@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <gflags/gflags.h>
 //#include <boost/move/utility.hpp>
 //#include <boost/log/sources/logger.hpp>
 //#include <boost/log/sources/record_ostream.hpp>
@@ -30,44 +31,29 @@
 //BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(vaultdb_logger, src::logger_mt)
 namespace Logging {
 	enum class Level {
-		ALL = 0, DEBUG, WARN, ERROR, OFF
+	ALL = 0,
+		DEBUG = 1,
+		INFO = 2,
+		WARN = 3,
+		ERROR = 4,
+		FATAL = 5,
+		OFF = 6
 	};	
 
 	class Logger {
 
 	public:
-		void setup(const std::string & logfile_, Level log_level_ = Level::DEBUG) {
-			if(!logfile_.empty()) {
-				logfile.open(logfile_);
-			}
-			log_level = log_level_;
-		}
 		
-		void write(const std::string & msg, Level request_level_ = Level::DEBUG) {
-			if(request_level_ >= log_level) {
-				std::cout << msg << '\n';
-				if(logfile.is_open()) {
-					logfile << msg << "\n";
-				}
-			}
-		}
+		void write(const std::string & msg, Level request_level_ = Level::DEBUG); 
 
 		~Logger() {
-			logfile.close();
-	}
-	private:
-		std::ofstream logfile;
-		Level log_level;
+		}
 	};
+
 
 	inline Logger *get_log() {
 		static std::unique_ptr<Logger> log = std::make_unique<Logger>();
 		return log.get();
-	}
-
-	inline void start_log(const::std::string & logfile_, Level log_level_) {
-		Logger *log = get_log();
-		log->setup(logfile_, log_level_);
 	}
 }
 

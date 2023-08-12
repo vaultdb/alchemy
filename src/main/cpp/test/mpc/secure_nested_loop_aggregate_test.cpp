@@ -12,6 +12,7 @@
 
 using namespace emp;
 using namespace vaultdb;
+using namespace Logging;
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43440, "port for EMP execution");
@@ -24,6 +25,7 @@ DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65462, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
+
 
 
 class SecureNestedLoopAggregateTest : public EmpBaseTest {
@@ -389,6 +391,66 @@ TEST_F(SecureNestedLoopAggregateTest, tpch_q1) {
 
     //delete aggregate;
 
+}
+
+TEST_F(SecureNestedLoopAggregateTest, tpch_q5) {
+	string input_rows =	"SELECT\n"
+						"n_name,\n"
+						"l_extendedprice * (1 - l_discount) AS disc_price,\n"
+						"o_orderdate >= date '1994-01-01'\n"
+						"AND o_orderdate < date '1995-01-01' AS dummy\n"
+						"FROM\n"
+						"customer,\n"
+						"orders,\n"
+						"lineitem,\n"
+						"supplier,\n"
+						"nation,\n"
+						"region\n"
+						"WHERE\n"
+						"c_custkey = o_custkey\n"
+						"AND l_orderkey = o_orderkey\n"
+						"AND l_suppkey = s_suppkey\n"
+						"AND c_nationkey = s_nationkey\n"
+						"AND s_nationkey = n_nationkey\n"
+						"AND n_regionkey = r_regionkey\n"
+						"AND r_name = 'ASIA'\n"
+						"AND c_custkey <= " + std::to_string(FLAGS_cutoff) + "\n";
+
+	string expected_sql = "SELECT n_name, sum(disc_price) as revenue\n" 
+						"FROM (" + input_rows + ") input\n"
+						"WHERE NOT dummy\n"
+						"GROUP BY\n"
+						"n_name\n"
+						"ORDER BY\n"
+						"revenue desc";
+
+	std::vector<int32_t> group_bys{0};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(1, vaultdb::AggregateId::SUM, "revenue")};
+
+	SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
+    auto input = new SecureSqlInput(db_name_, input_rows, true, sort_def);
+
+	NestedLoopAggregate aggregate(input, group_bys, aggregators, 5);
+    auto aggregated = aggregate.run();
+
+	SortDefinition revenue_sort{ColumnSort(1, SortDirection::DESCENDING)};
+	Sort<Bit> sort(aggregated, revenue_sort);
+	auto sorted = sort.run();
+
+	Logger* log = get_log();	
+
+    log->write("Predicted gate count: " + std::to_string(OperatorCostModel::operatorCost(&aggregate)), Level::INFO);
+	log->write("Observed gate count: " + std::to_string(aggregate.getGateCount()), Level::INFO);
+	log->write("Runtime: " + std::to_string(aggregate.getRuntimeMs()), Level::INFO);
+
+	if(FLAGS_validation) {
+        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 2);
+        auto revealed = sorted->reveal(PUBLIC);
+        ASSERT_EQ(*expected, *revealed);
+        delete revealed;
+        delete expected;
+    }
 }
 
 
