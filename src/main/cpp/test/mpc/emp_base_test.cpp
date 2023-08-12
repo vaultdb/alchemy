@@ -30,7 +30,22 @@ void EmpBaseTest::SetUp()  {
     s.setStorageModel(storage_model_);
 
 
-    std::cout << "Received storage flag of " << FLAGS_storage << '\n';
+    std::cout << "Received storage flag of " << FLAGS_storage << ", emp mode: ";
+    switch(emp_mode_) {
+        case EmpMode::PLAIN:
+            std::cout << "plain" << std::endl;
+            break;
+        case EmpMode::SH2PC:
+            std::cout << "sh2pc" << std::endl;
+            break;
+        case EmpMode::ZK:
+            std::cout << "zk" << std::endl;
+            break;
+        case EmpMode::OUTSOURCED:
+            std::cout << "outsourced" << std::endl;
+            break;
+    }
+
     std::cout << "Connecting to " << FLAGS_alice_host << " on ports " << FLAGS_port  << ", " << FLAGS_ctrl_port <<  " as " << FLAGS_party << std::endl;
 
     if(_emp_mode_ == EmpMode::OUTSOURCED) {
