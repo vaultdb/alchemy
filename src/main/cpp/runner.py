@@ -202,13 +202,17 @@ class Runner:
     def run_secure_test_locally(self,test_suite):
         print("running secure test suite " + test_suite.name + " locally ")
 
+        log_level = test_suite.get_flag_by_name("log_level") 
+
         alice_flag=Flag("party","1",True)
         test_suite.flags.append(alice_flag)
+        test_suite.edit_flags("log_level", 6)
         self.fork_background_test_process(test_suite)
         test_suite.flags.pop()
 
         bob_flag=Flag("party","2",True)
         test_suite.flags.append(bob_flag)
+        test_suite.edit_flags("log_level", log_level)
         self.fork_test_process(test_suite)
         test_suite.flags.pop()
 
