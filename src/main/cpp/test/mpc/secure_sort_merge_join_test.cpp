@@ -53,9 +53,6 @@ protected:
 };
 
 void SecureSortMergeJoinTest::runCustomerOrdersTest() {
-	Logging::start_log("", Logging::Level::ALL);
-	Logging::Logger *log = Logging::get_log();
-	log->write("test", Logging::Level::DEBUG);	
 	
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
                                                                           "orders_cte AS (" + orders_sql_ + ") "

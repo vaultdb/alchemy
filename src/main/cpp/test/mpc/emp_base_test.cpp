@@ -17,9 +17,9 @@
     static EmpMode _emp_mode_ = EmpMode::PLAIN;
 #endif
 
-
-
 const std::string EmpBaseTest::empty_db_ = "tpch_empty";
+
+using namespace Logging;
 
 void EmpBaseTest::SetUp()  {
     assert(FLAGS_storage == "row" || FLAGS_storage == "column");
@@ -29,27 +29,30 @@ void EmpBaseTest::SetUp()  {
     emp_mode_ = _emp_mode_;
     s.setStorageModel(storage_model_);
 
+	Logger* log = get_log();	
 
-    std::cout << "Received storage flag of " << FLAGS_storage << ", emp mode: ";
+    std::stringstream ss;
+
+    ss << "Received storage flag of " << FLAGS_storage << ", emp mode: ";
     switch(emp_mode_) {
         case EmpMode::PLAIN:
-            std::cout << "plain" << std::endl;
+            ss << "plain" << std::endl;
             break;
         case EmpMode::SH2PC:
-            std::cout << "sh2pc" << std::endl;
+            ss << "sh2pc" << std::endl;
             break;
         case EmpMode::ZK:
-            std::cout << "zk" << std::endl;
+            ss << "zk" << std::endl;
             break;
         case EmpMode::OUTSOURCED:
-            std::cout << "outsourced" << std::endl;
+            ss << "outsourced" << std::endl;
             break;
     }
 
-    std::cout << "Connecting to " << FLAGS_alice_host << " on ports " << FLAGS_port  << ", " << FLAGS_ctrl_port <<  " as " << FLAGS_party << std::endl;
+    log->write("Received storage flag of " + FLAGS_storage + ss.str(), Level::INFO);
+    log->write("Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party) + "\n", Level::INFO);
 
-    if(_emp_mode_ == EmpMode::OUTSOURCED) {
-        // host_list = {alice, bob, carol, trusted party}
+    if(_emp_mode_ == EmpMode::OUTSOURCED) { // host_list = {alice, bob, carol, trusted party}
         string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
         manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
         db_name_ = (FLAGS_party == emp::TP) ? FLAGS_unioned_db : empty_db_;
@@ -61,6 +64,7 @@ void EmpBaseTest::SetUp()  {
         db_name_ = (FLAGS_party == emp::ALICE) ? FLAGS_alice_db : FLAGS_bob_db;
         // increment the port for each new test
         ++FLAGS_port;
+		++FLAGS_ctrl_port;
     }
     else {
         throw std::runtime_error("No EMP backend found.");
