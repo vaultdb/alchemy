@@ -44,8 +44,8 @@ void SecureNestedLoopAggregateTest::runTest(const string &expected_sql,
 
 
     // run secure query
-    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1); // actually 2
-    auto input = new SecureSqlInput(db_name_, query, false, sort_def);
+    //SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1); // actually 2
+    auto input = new SecureSqlInput(db_name_, query, false, SortDefinition());
 
 
     std::vector<int32_t> group_bys{0};
@@ -58,12 +58,13 @@ void SecureNestedLoopAggregateTest::runTest(const string &expected_sql,
     cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
-        Sort sort(aggregated->reveal(), SortDefinition{ColumnSort {0, SortDirection::ASCENDING}});
-        auto observed = sort.run();
+        aggregated->setSortOrder(DataUtilities::getDefaultSortDefinition(1));
+        auto observed = aggregated->reveal(); // reveal will sort the results
         PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 1);
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
+        delete observed;
     }
 }
 
@@ -75,8 +76,8 @@ void SecureNestedLoopAggregateTest::runDummiesTest(const string &expected_sql,
 
 
     // configure and run test
-    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
-    auto input = new SecureSqlInput(db_name_, query, true, sort_def);
+//    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
+    auto input = new SecureSqlInput(db_name_, query, true, SortDefinition());
 
 
     std::vector<int32_t> group_bys;
@@ -91,12 +92,13 @@ void SecureNestedLoopAggregateTest::runDummiesTest(const string &expected_sql,
     cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
-        Sort sort(aggregated->reveal(), SortDefinition{ColumnSort {0, SortDirection::ASCENDING}});
-        auto observed = sort.run();
+        aggregated->setSortOrder(DataUtilities::getDefaultSortDefinition(1));
+        auto observed = aggregated->reveal(); // reveal will sort the results
         PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 1);
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
+        delete observed;
     }
 
 }
@@ -211,10 +213,10 @@ TEST_F(SecureNestedLoopAggregateTest, test_max_dummies) {
 // // brings in about 200 tuples
 TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_sums) {
 
-    string inputTuples = "SELECT * FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY l_orderkey, l_linenumber";
+    string input_tuples = "SELECT * FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY l_orderkey, l_linenumber";
     string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1.0 - l_discount) AS disc_price, l_extendedprice * (1.0 - l_discount) * (1.0 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
-                        " FROM (" + inputTuples + ") selection \n"
+                        " FROM (" + input_tuples + ") selection \n"
                         " ORDER BY  l_returnflag, l_linestatus";
 
 
@@ -327,10 +329,10 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
 //Operator #-1 NestedLoopAggregate ran for 11.5446 seconds,  gate count: 14403840 output cardinality: 6, row width=248
 TEST_F(SecureNestedLoopAggregateTest, tpch_q1) {
 
-    string inputTuples = "SELECT * FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + "  ORDER BY l_orderkey, l_linenumber";
+    string input_tuples = "SELECT * FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + "  ORDER BY l_orderkey, l_linenumber";
     string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
-                        " FROM (" + inputTuples + ") selection \n"
+                        " FROM (" + input_tuples + ") selection \n"
                                                   " ORDER BY l_returnflag, l_linestatus";
 
     string expected_sql =  "select \n"
@@ -344,7 +346,7 @@ TEST_F(SecureNestedLoopAggregateTest, tpch_q1) {
                                   "  avg(l_extendedprice) as avg_price, \n"
                                   "  avg(l_discount) as avg_disc, \n"
                                   "  count(*)::BIGINT as count_order \n"
-                                  "from (" + inputTuples + ") input "
+                                  "from (" + input_tuples + ") input "
                                                            " where  l_shipdate <= date '1998-08-03'  "
                                                            "group by \n"
                                                            "  l_returnflag, \n"
@@ -393,6 +395,7 @@ TEST_F(SecureNestedLoopAggregateTest, tpch_q1) {
 
 }
 
+
 TEST_F(SecureNestedLoopAggregateTest, DISABLED_tpch_q5) {
 	string input_rows =	"SELECT\n"
 						"n_name,\n"
@@ -416,36 +419,35 @@ TEST_F(SecureNestedLoopAggregateTest, DISABLED_tpch_q5) {
 						"AND r_name = 'ASIA'\n"
 						"AND c_custkey <= " + std::to_string(FLAGS_cutoff) + "\n";
 
-	string expected_sql = "SELECT n_name, sum(disc_price) as revenue\n" 
+
+	string expected_sql = "SELECT n_name, sum(disc_price) as revenue\n"
 						"FROM (" + input_rows + ") input\n"
-						"WHERE NOT dummy\n"
-						"GROUP BY\n"
-						"n_name\n"
-						"ORDER BY\n"
-						"revenue desc";
+						"WHERE NOT dummy_tag\n"
+						"GROUP BY n_name\n"
+						"ORDER BY revenue DESC";
 
 	std::vector<int32_t> group_bys{0};
     std::vector<ScalarAggregateDefinition> aggregators{
             ScalarAggregateDefinition(1, vaultdb::AggregateId::SUM, "revenue")};
 
-	SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
-    auto input = new SecureSqlInput(db_name_, input_rows, true, sort_def);
+    auto input = new SecureSqlInput(db_name_, input_rows, true, SortDefinition());
 
-	NestedLoopAggregate aggregate(input, group_bys, aggregators, 5);
-    auto aggregated = aggregate.run();
+	auto aggregate = new NestedLoopAggregate (input, group_bys, aggregators, 5);
+    //auto aggregated = aggregate->run();
 
 	SortDefinition revenue_sort{ColumnSort(1, SortDirection::DESCENDING)};
-	Sort<Bit> sort(aggregated, revenue_sort);
+	Sort<Bit> sort(aggregate, revenue_sort);
 	auto sorted = sort.run();
 
 	Logger* log = get_log();	
 
-    log->write("Predicted gate count: " + std::to_string(OperatorCostModel::operatorCost(&aggregate)), Level::INFO);
-	log->write("Observed gate count: " + std::to_string(aggregate.getGateCount()), Level::INFO);
-	log->write("Runtime: " + std::to_string(aggregate.getRuntimeMs()), Level::INFO);
+    log->write("Predicted gate count: " + std::to_string(OperatorCostModel::operatorCost(aggregate)), Level::INFO);
+	log->write("Observed gate count: " + std::to_string(aggregate->getGateCount()), Level::INFO);
+	log->write("Runtime: " + std::to_string(aggregate->getRuntimeMs()), Level::INFO);
 
 	if(FLAGS_validation) {
-        PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 2);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
+        expected->setSortOrder(revenue_sort);
         auto revealed = sorted->reveal(PUBLIC);
         ASSERT_EQ(*expected, *revealed);
         delete revealed;
