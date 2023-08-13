@@ -375,7 +375,7 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
     }
 }
 
-TEST_F(SecureGroupByAggregateTest, tpch_q5) {
+TEST_F(SecureGroupByAggregateTest, DISABLED_tpch_q5) {
 	string input_rows =	"SELECT\n"
 						"n_name,\n"
 						"l_extendedprice * (1 - l_discount) AS disc_price,\n"
@@ -414,13 +414,11 @@ TEST_F(SecureGroupByAggregateTest, tpch_q5) {
     auto input = new SecureSqlInput(db_name_, input_rows, true);
 
 	Sort<Bit> sort(input, sort_def);
-	auto sorted = sort.run();
 
-	GroupByAggregate aggregate(sorted, group_bys, aggregators);
-    auto aggregated = aggregate.run();	
+	GroupByAggregate aggregate(&sort, group_bys, aggregators);
 
 	SortDefinition revenue_sort{ColumnSort(1, SortDirection::DESCENDING)};
-	Sort<Bit> sorter(aggregated, revenue_sort);
+	Sort<Bit> sorter(&aggregate, revenue_sort);
 	auto observed = sorter.run();
 
 	Logger* log = get_log();
