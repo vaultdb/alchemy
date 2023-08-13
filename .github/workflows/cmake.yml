@@ -59,6 +59,7 @@ jobs:
       working-directory: ${{env.working-directory}}
       run: |
           cp -a ${{env.working-directory}}/conf ${{env.working-directory}}/build
+          sudo -u vaultdb bash ${{env.working-directory}}/test/support/setup-csv.sh
           rsync -av ${{env.working-directory}}/test ${{env.working-directory}}/build
           cp ${{env.working-directory}}/runner.py ${{env.working-directory}}/build
           cp ${{env.working-directory}}/run_unit_tests.py ${{env.working-directory}}/build
