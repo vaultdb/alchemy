@@ -178,7 +178,7 @@ class Runner:
         exit_status = proc.returncode
         if exit_status != 0:
             print("Test suite " + test_suite.name + " failed. Exit status: " + str(exit_status))
-            #sys.exit(exit_status)
+            sys.exit(exit_status)
           
     def fork_background_test_process(self,test_suite):
         args = self.build_args(test_suite)
