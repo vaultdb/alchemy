@@ -396,7 +396,7 @@ TEST_F(SecureNestedLoopAggregateTest, tpch_q1) {
 }
 
 
-TEST_F(SecureNestedLoopAggregateTest, DISABLED_tpch_q5) {
+TEST_F(SecureNestedLoopAggregateTest, tpch_q5) { // DISABLED_tpch_q5
 	string input_rows =	"SELECT\n"
 						"n_name,\n"
 						"l_extendedprice * (1 - l_discount) AS disc_price,\n"
