@@ -1,7 +1,4 @@
 project(capricorn-pilot)
-#include(../cmake/common.cmake)
-#cmake_minimum_required (VERSION 3.14)
-#set(CMAKE_CXX_STANDARD 17)
 set(NAME "capricorn-pilot")
 
 

@@ -1,6 +1,4 @@
-#include(../cmake/common.cmake)
 include(GoogleTest)
-#cmake_minimum_required (VERSION 3.14)
 
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
