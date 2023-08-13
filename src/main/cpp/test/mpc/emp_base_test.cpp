@@ -36,21 +36,21 @@ void EmpBaseTest::SetUp()  {
     ss << "Received storage flag of " << FLAGS_storage << ", emp mode: ";
     switch(emp_mode_) {
         case EmpMode::PLAIN:
-            ss << "plain" << std::endl;
+            ss << "plain";
             break;
         case EmpMode::SH2PC:
-            ss << "sh2pc" << std::endl;
+            ss << "sh2pc";
             break;
         case EmpMode::ZK:
-            ss << "zk" << std::endl;
+            ss << "zk";
             break;
         case EmpMode::OUTSOURCED:
-            ss << "outsourced" << std::endl;
+            ss << "outsourced";
             break;
     }
 
     log->write("Received storage flag of " + FLAGS_storage + ss.str(), Level::INFO);
-    log->write("Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party) + "\n", Level::INFO);
+    log->write("Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party), Level::INFO);
 
     if(_emp_mode_ == EmpMode::OUTSOURCED) { // host_list = {alice, bob, carol, trusted party}
         string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
