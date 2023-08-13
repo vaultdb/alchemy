@@ -125,7 +125,7 @@ TEST_F(SecureTpcHTest, tpch_q09) {
 }
 // passes in ~2.5 mins
 TEST_F(SecureTpcHTest, tpch_q18) {
-    input_tuple_limit_ = 200;
+    input_tuple_limit_ = (emp_mode_ == EmpMode::SH2PC) ? 200 : 400;
 
     // -1 ASC, $4 DESC, $3 ASC
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
