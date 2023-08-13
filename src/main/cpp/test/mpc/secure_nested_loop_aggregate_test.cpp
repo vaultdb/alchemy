@@ -413,7 +413,6 @@ TEST_F(SecureNestedLoopAggregateTest, tpch_q5) {
     auto input = new SecureSqlInput(db_name_, input_rows, true, SortDefinition());
 
 	auto aggregate = new NestedLoopAggregate (input, group_bys, aggregators, 5);
-    //auto aggregated = aggregate->run();
 
 	SortDefinition revenue_sort{ColumnSort(1, SortDirection::DESCENDING)};
 	Sort<Bit> sort(aggregate, revenue_sort);
