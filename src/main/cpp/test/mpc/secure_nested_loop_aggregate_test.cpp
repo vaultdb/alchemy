@@ -396,35 +396,16 @@ TEST_F(SecureNestedLoopAggregateTest, tpch_q1) {
 }
 
 
-TEST_F(SecureNestedLoopAggregateTest, tpch_q5) { // DISABLED_tpch_q5
-	string input_rows =	"SELECT\n"
-						"n_name,\n"
-						"l_extendedprice * (1 - l_discount) AS disc_price,\n"
-						"o_orderdate >= date '1994-01-01'\n"
-						"AND o_orderdate < date '1995-01-01' AS dummy\n"
-						"FROM\n"
-						"customer,\n"
-						"orders,\n"
-						"lineitem,\n"
-						"supplier,\n"
-						"nation,\n"
-						"region\n"
-						"WHERE\n"
-						"c_custkey = o_custkey\n"
-						"AND l_orderkey = o_orderkey\n"
-						"AND l_suppkey = s_suppkey\n"
-						"AND c_nationkey = s_nationkey\n"
-						"AND s_nationkey = n_nationkey\n"
-						"AND n_regionkey = r_regionkey\n"
-						"AND r_name = 'ASIA'\n"
-						"AND c_custkey <= " + std::to_string(FLAGS_cutoff) + "\n";
+TEST_F(SecureNestedLoopAggregateTest, DISABLED_tpch_q5) {
+    string input_rows =	"SELECT  n_name,  l_extendedprice * (1 - l_discount) AS disc_price, o_orderdate >= date '1994-01-01'  AND o_orderdate < date '1995-01-01' AS dummy_tag\n"
+                           "FROM customer, orders, lineitem,  supplier, nation,  region \n"
+                           "WHERE c_custkey = o_custkey  AND l_orderkey = o_orderkey  AND l_suppkey = s_suppkey  AND c_nationkey = s_nationkey  AND s_nationkey = n_nationkey  AND n_regionkey = r_regionkey  AND r_name = 'EUROPE'  AND c_custkey <= " + std::to_string(FLAGS_cutoff);
 
-
-	string expected_sql = "SELECT n_name, sum(disc_price) as revenue\n"
-						"FROM (" + input_rows + ") input\n"
-						"WHERE NOT dummy_tag\n"
-						"GROUP BY n_name\n"
-						"ORDER BY revenue DESC";
+    string expected_sql = "SELECT n_name, sum(disc_price) as revenue\n"
+                          "FROM (" + input_rows + ") input\n"
+                                                  "WHERE NOT dummy_tag\n"
+                                                  "GROUP BY n_name\n"
+                                                  "ORDER BY revenue DESC";
 
 	std::vector<int32_t> group_bys{0};
     std::vector<ScalarAggregateDefinition> aggregators{
