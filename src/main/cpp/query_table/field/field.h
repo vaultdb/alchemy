@@ -106,12 +106,11 @@ namespace vaultdb {
         // keep the field as its in-table representation.  If packed, don't unpack to its logical size
         static Field<B> deserializePacked(const QueryFieldDesc &desc, const int8_t *src);
 
+        static std::string revealString(const emp::Integer & src, const int & party = PUBLIC);
+        static emp::Integer
+        secretShareString(const string &s, const bool &to_send, const int &src_party, const int &str_length);
 
         private:
-            static std::string revealString(const emp::Integer & src, const int & party);
-            static emp::Integer secretShareString(const std::string & s, const bool & to_send, const size_t &
-            str_length,
-                                                  const int & party);
 
         template<typename T>
         static inline void swap(Value * lhs, Value * rhs) {

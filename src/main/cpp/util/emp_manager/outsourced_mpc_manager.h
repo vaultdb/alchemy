@@ -87,14 +87,20 @@ namespace  vaultdb {
            return  ((OMPCBackend<N> *) backend)->num_and();
         }
 
-        void  feed(Bit *labels, int party, const bool *b, int byte_count) override {
-            ((OMPCBackend<N> *) backend)->feed((Bit *) labels, party, b, byte_count);
+
+        void  feed(Bit *labels, int party, const bool *b, int bit_cnt) override {
+            ((OMPCBackend<N> *) backend)->feed(labels, party, b, bit_cnt);
         }
 
         void flush() override {
             if(tpio_ != nullptr) tpio_->flush();
 
             for(NetIO *io : ios_) {
+                if(io != nullptr) io->flush();
+            }
+
+            if(tpio_ctrl_ != nullptr) tpio_ctrl_->flush();
+            for(NetIO *io : ios_ctrl_) {
                 if(io != nullptr) io->flush();
             }
         }
@@ -129,10 +135,12 @@ namespace  vaultdb {
         void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {
             auto protocol = ((OMPCBackend<N> *) emp::backend);
             protocol->pack(src, (OMPCPackedWire *) dst, bit_cnt);
+//            flush();
         }
         void unpack(Bit *src, Bit *dst, const int & bit_cnt) override {
             auto protocol = ((OMPCBackend<N> *) emp::backend);
             protocol->unpack(dst, (OMPCPackedWire *) src, bit_cnt);
+//            flush();
         }
 
     };

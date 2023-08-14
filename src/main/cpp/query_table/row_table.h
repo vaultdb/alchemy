@@ -77,6 +77,7 @@ namespace  vaultdb {
 
         inline void setPackedField(const int  & row, const int & col, const Field<B> & f)  override {
             int8_t *write_ptr = getFieldPtr(row, col);
+
             if(SystemConfiguration::getInstance().bitPackingEnabled()) {
                 f.serializePacked(write_ptr, this->schema_.getField(col));
                 return;
@@ -123,6 +124,7 @@ namespace  vaultdb {
 
         void compareSwap(const bool & swap, const int  & lhs_row, const int & rhs_row)  override;
         void compareSwap(const Bit & swap, const int  & lhs_row, const int & rhs_row)  override;
+        void compareSwapOmpc(const Bit &swap, const int & lhs_idx, const int & rhs_idx);
 
         inline virtual StorageModel storageModel() const override { return StorageModel::ROW_STORE; }
 

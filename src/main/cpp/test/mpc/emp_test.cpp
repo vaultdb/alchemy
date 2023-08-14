@@ -6,10 +6,11 @@
 #include "query_table/table_factory.h"
 #include "operators/support/normalize_fields.h"
 #include "util/field_utilities.h"
+#include "operators/sort.h"
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 54335, "port for EMP execution");
+DEFINE_int32(port, 54345, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
@@ -22,45 +23,7 @@ DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 using namespace vaultdb;
 
-class EmpTest : public EmpBaseTest {
-protected:
-  //  void test_packing(const emp::Integer & input);
-};
-
-
-
-/*
-void EmpTest::test_packing(const emp::Integer & input) {
-    int bit_cnt = input.size();
-    emp::Integer unpacked(bit_cnt, 0L, emp::PUBLIC); // empty for setup
-
-        // ceil(bitCount / 128)
-        OMPCPackedWire *packed = new OMPCPackedWire[TypeUtilities::packedWireCount(bit_cnt)];
-        protocol->pack(input.bits.data(), packed, bit_cnt);
-        protocol->unpack(unpacked.bits.data(), packed, unpacked.size());
-
-        // the standard reveal method converts this to decimal.  Need to reveal it bitwise
-        if(FLAGS_validation) {
-            bool *bools = new bool[bit_cnt];
-            protocol->reveal(bools, emp::PUBLIC, unpacked.bits.data(),  bit_cnt);
-            delete [] packed;
-
-            vector<int8_t> decoded_bytes =  Utilities::boolsToBytes(bools, bit_cnt);
-            decoded_bytes.resize(bit_cnt + 1);
-            decoded_bytes[bit_cnt+1] = '\0';
-
-            std::string decoded_string((char *) decoded_bytes.data());
-            delete [] bools;
-
-            ASSERT_EQ("lithely regular deposits. fluffily          ", decoded_string);
-        }
-}
-#else
-void EmpTest::test_packing(const emp::Integer & input) {
-    return; // N/A here
-}
-
-#endif*/
+class EmpTest : public EmpBaseTest {};
 
 
 //  verify emp configuration for int32s
@@ -105,37 +68,30 @@ TEST_F(EmpTest, emp_test_varchar) {
         initial_string += " ";
     }
 
-    bool *bools = Utilities::bytesToBool((int8_t *) initial_string.c_str(), len);
 
     int send_party = (this->emp_mode_ == EmpMode::SH2PC) ? emp::ALICE : emp::TP;
+    bool sender = (FLAGS_party == send_party);
 
-    // encrypting as _sender
-    emp::Integer secret_shared(bit_cnt, 0L, send_party);
-
-    if(FLAGS_party == send_party)
-        manager_->feed(secret_shared.bits.data(), send_party, bools, bit_cnt);
-    else
-        manager_->feed(secret_shared.bits.data(), send_party, nullptr, bit_cnt);
-
-    manager_->flush();
-    delete [] bools;
+    Integer secret_shared = Field<Bit>::secretShareString(sender ? initial_string : "", sender, send_party,len);
 
     if(FLAGS_validation) {
-
-        // the standard reveal method converts this to decimal.  Need to reveal it bitwise
-        bools = new bool[bit_cnt];
-        manager_->reveal(bools, PUBLIC, secret_shared.bits.data(), bit_cnt);
-
-        vector<int8_t> decoded_bytes = Utilities::boolsToBytes(bools, bit_cnt);
-        decoded_bytes.resize(len + 1);
-        decoded_bytes[len + 1] = '\0';
-        std::string decoded_str((char *) decoded_bytes.data());
-        delete[] bools;
+        string decoded_str = Field<Bit>::revealString(secret_shared);
         ASSERT_EQ(initial_string, decoded_str);
     }
 
-    //test_packing(secret_shared);
 
+    OMPCPackedWire *packed[bit_cnt];
+
+    emp::Integer unpacked(bit_cnt, 0L, emp::PUBLIC);
+
+    manager_->pack((Bit *) secret_shared.bits.data(), (Bit *) packed, bit_cnt);
+    manager_->unpack((Bit *) packed, (Bit *) unpacked.bits.data(), bit_cnt);
+
+    // the standard reveal method converts this to decimal.  Need to reveal it bitwise
+    if(FLAGS_validation) {
+        string revealed = Field<Bit>::revealString(unpacked);
+        ASSERT_EQ(initial_string, revealed);
+    }
 }
 
 TEST_F(EmpTest, test_float_normalization) {
@@ -229,68 +185,63 @@ TEST_F(EmpTest, secret_share_table_one_column) {
 
 
 TEST_F(EmpTest, sort_and_share_table_one_column) {
-    uint32_t in_tuple_cnt = 10;
+    uint32_t tuple_cnt = 10;
     vector<int32_t> alice_input{1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
     vector<int32_t> bob_input{4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
+
+//    size_t tuple_cnt = 4;
+//    vector<int32_t> alice_input{1, 3, 4, 7};
+//    vector<int32_t> bob_input{2, 5, 6, 8};
+
     vector<int32_t> all_input(alice_input);
     all_input.insert(all_input.end(), bob_input.begin(), bob_input.end());
     int32_t *input;
 
-
-//    const size_t tuple_cnt = 4;
-//    vector<int32_t> alice_input{1, 3, 4, 7};
-//    vector<int32_t> bob_input{2, 5, 6, 8};
-
-if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED) {
-input = all_input.data();
-in_tuple_cnt = (FLAGS_party == TP) ? all_input.size() : 0;
-}
-else {
-input = (FLAGS_party == emp::ALICE) ? alice_input.data() : bob_input.data();
-}
+    if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED) {
+        input = all_input.data();
+        tuple_cnt = (FLAGS_party == TP) ? all_input.size() : 0;
+    }
+    else {
+        input = (FLAGS_party == emp::ALICE) ? alice_input.data() : bob_input.data();
+    }
 
 
-QuerySchema schema;
-schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
-schema.initializeFieldOffsets();
+    QuerySchema schema;
+    schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
+    schema.initializeFieldOffsets();
 
-SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
-PlainTable *input_table = TableFactory<bool>::getTable(in_tuple_cnt, schema, storage_model_, sort_def);
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
+    PlainTable *input_table = TableFactory<bool>::getTable(tuple_cnt, schema, storage_model_, sort_def);
 
-for(uint32_t i = 0; i < in_tuple_cnt; ++i) {
-Field<bool> val(FieldType::INT, input[i]);
-input_table->setField(i, 0, val);
-input_table->setDummyTag(i, false);
-}
+    for(uint32_t i = 0; i < tuple_cnt; ++i) {
+        Field<bool> val(FieldType::INT, input[i]);
+        input_table->setField(i, 0, val);
+        input_table->setDummyTag(i, false);
+    }
 
-// tests bitonic merge in 2PC case
-SecureTable *secret_shared = input_table->secretShare();
+    // tests bitonic merge in 2PC case
+    SecureTable *secret_shared = input_table->secretShare();
+    PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
 
-
-PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
-
-// set up expected result
-std::sort(all_input.begin(), all_input.end());
+    // set up expected result
+    std::sort(all_input.begin(), all_input.end());
 
 
-PlainTable *expected = TableFactory<bool>::getTable(all_input.size(), schema, storage_model_, sort_def);
+    PlainTable *expected = TableFactory<bool>::getTable(all_input.size(), schema, storage_model_, sort_def);
 
-for(uint32_t i = 0; i < expected->getTupleCount(); ++i) {
-Field<bool> val(FieldType::INT, all_input[i]);
-expected->setField(i, 0, val);
-expected->setDummyTag(i, false);
+    for(uint32_t i = 0; i < expected->getTupleCount(); ++i) {
+        Field<bool> val(FieldType::INT, all_input[i]);
+        expected->setField(i, 0, val);
+        expected->setDummyTag(i, false);
+    }
 
-}
+    //verify output
+    ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
 
-//verify output
-ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
-
-delete secret_shared;
-delete revealed;
-delete expected;
-delete input_table;
-
-
+    delete secret_shared;
+    delete revealed;
+    delete expected;
+    delete input_table;
 }
 
 

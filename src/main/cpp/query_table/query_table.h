@@ -118,13 +118,16 @@ namespace  vaultdb {
         virtual  void setPackedField(const int  & row, const int & col, const Field<B> & f) = 0;
 
         B getDummyTag(const int & row)  const {
-            B *dummy_tag = (B*) getFieldPtr(row, -1);
-            return *dummy_tag;
+            int8_t *dummy_tag =  getFieldPtr(row, -1);
+            Field<B> res = Field<B>::deserialize(schema_.getField(-1), dummy_tag);
+            return res.template getValue<B>();
         }
 
         void setDummyTag(const int & row, const B & val) {
-            B *dummy_tag = (B*) getFieldPtr(row, -1);
-            *dummy_tag = val;
+            int8_t *write_ptr = getFieldPtr(row, -1);
+            QueryFieldDesc desc = schema_.getField(-1);
+            Field<B> f(desc.getType(), val);
+            f.serialize(write_ptr, desc);
         }
 
         virtual SecureTable *secretShare() = 0;

@@ -110,13 +110,13 @@ std::vector<int8_t> Utilities::boolsToBytes(const bool *const src, const uint32_
 
 }
 
-bool *Utilities::bytesToBool(int8_t *bytes, const int & byteCount) {
-    bool *ret = new bool[byteCount * 8];
+bool *Utilities::bytesToBool(int8_t *bytes, const int & byte_cnt) {
+    bool *ret = new bool[byte_cnt * 8];
 
 
     bool *writePos = ret;
 
-    for(int i = 0; i < byteCount; ++i) {
+    for(int i = 0; i < byte_cnt; ++i) {
         uint8_t b = bytes[i];
         for(int j = 0; j < 8; ++j) {
             *writePos = ((b & (1<<j)) != 0);

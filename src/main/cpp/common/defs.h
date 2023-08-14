@@ -23,6 +23,7 @@ namespace emp {
 namespace emp {
     const static int TP = 10086;
     const static int N = 3;
+    using OMPCPackedWire = Bit;
 
 }
 #elif __has_include("emp-rescu/emp-rescu.h")

@@ -53,13 +53,16 @@ Sort<B>::Sort(QueryTable<B> *child, const SortDefinition &sort_def, const int & 
 
 template<typename B>
 QueryTable<B> *Sort<B>::runSelf() {
-    QueryTable<B> *input = Operator<B>::getChild()->getOutput();;
+    QueryTable<B> *input = this->getChild()->getOutput();;
+    cout << "Sorting on " << DataUtilities::printSortDefinition(this->sort_definition_) << endl;
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
     if(SystemConfiguration::getInstance().storageModel() == StorageModel::ROW_STORE) {
         this->output_ = normalizeTable(input);
+        this->output_->setSortOrder(this->sort_definition_);
+
         int counter = 0;
         bitonicSortNormalized(0, this->output_->getTupleCount(), true, counter);
 
@@ -73,6 +76,7 @@ QueryTable<B> *Sort<B>::runSelf() {
         int counter = 0;
         bitonicSort(0, this->output_->getTupleCount(), true, counter);
     }
+
     // implement LIMIT
     if(limit_ > 0) {
         size_t cutoff = limit_;
@@ -161,7 +165,8 @@ void Sort<B>::bitonicMergeNormalized( QueryTable<B> *table, const SortDefinition
     if (n > 1) {
         int m = powerOfTwoLessThan(n);
         for (int i = lo; i < lo + n - m; ++i) {
-            B to_swap = swapTuplesNormalized(table, i, i+m, dir, sort_key_size_bits_);
+
+            B to_swap =   swapTuplesNormalized(table, i, i+m, dir, sort_key_size_bits_);
             table->compareSwap(to_swap, i, i+m);
             ++counter;
         }
@@ -204,9 +209,10 @@ B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int 
 template <typename B>
 Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir, const int & sort_key_width_bits) {
 
-  //    assert(table->storageModel() == StorageModel::ROW_STORE);
-    QuerySchema dst_tmp = QuerySchema::toPlain(table->getSchema());
-
+    if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED) {
+        return swapTuplesNormalizedOmpc(table, lhs_idx, rhs_idx, dir, sort_key_width_bits);
+    }
+    // caution: only works with row store
     RowTable<Bit> *row_table = (RowTable<Bit> *) table;
 
     vector<Bit> placeholder(sort_key_width_bits+1); // +1 for sign bit in case it is packed
@@ -228,12 +234,63 @@ Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_i
 
 }
 
+template <typename B>
+Bit Sort<B>::swapTuplesNormalizedOmpc(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir, const int & sort_key_width_bits) {
+
+    //    assert(table->storageModel() == StorageModel::ROW_STORE);
+    QuerySchema tmp = QuerySchema::toPlain(table->getSchema());
+
+//    cout << "Swap tuples for (" << lhs_idx << ", " << rhs_idx << ")" << endl;
+//    cout << "LHS: " << table->revealRow(lhs_idx, tmp).toString(true) << endl;
+//    cout << "RHS: " << table->revealRow(rhs_idx, tmp).toString(true) << endl;
+
+    vector<Bit> placeholder(sort_key_width_bits+1); // +1 for sign bit in case it is packed
+    // placeholder to avoid initializing public value for Integer
+    Integer lhs_key(placeholder);
+    Integer rhs_key(placeholder);
+
+    int sort_col_cnt = table->getSortOrder().size();
+
+    Bit *lhs_key_cursor = lhs_key.bits.data();
+    Bit *rhs_key_cursor = rhs_key.bits.data();
+    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
+
+    for(int i = 0; i < sort_col_cnt; ++i) {
+        QueryFieldDesc desc = table->getSchema().getField(i);
+//        cout << "Deserializing field " << desc << " with an int of size: " << (desc.size() + desc.bitPacked()) << endl;
+        emp::Integer l_payload(desc.size() + desc.bitPacked(), 0);
+        int8_t *lhs = table->getFieldPtr(lhs_idx, i);
+        manager->unpack((Bit *) lhs, l_payload.bits.data(), desc.size());
+//        cout << "LHS unpacked " << l_payload.reveal<int32_t>() << endl;
+
+        memcpy(lhs_key_cursor, l_payload.bits.data(), desc.size() * TypeUtilities::getEmpBitSize());
+
+        lhs_key_cursor += desc.size();
+
+        emp::Integer r_payload(desc.size() + desc.bitPacked(), 0);
+        int8_t *rhs = table->getFieldPtr(rhs_idx, i);
+        manager->unpack((Bit *) rhs, r_payload.bits.data(), desc.size());
+//        cout << "RHS unpacked " << r_payload.reveal<int32_t>() << endl;
+        memcpy(rhs_key_cursor, r_payload.bits.data(), desc.size()*TypeUtilities::getEmpBitSize());
+        rhs_key_cursor += desc.size();
+    }
+
+
+    // set MSB to 1 for all to avoid losing MSBs that are zero
+    lhs_key[sort_key_width_bits] = 1;
+    rhs_key[sort_key_width_bits] = 1;
+//    cout << "LHS key: " << FieldUtilities::printInt(lhs_key) << endl;
+//    cout << "RHS key: " << FieldUtilities::printInt(rhs_key) << endl;
+
+    return ((lhs_key > rhs_key) == dir);
+
+}
 
 template<typename B>
 bool Sort<B>::swapTuplesNormalized(const QueryTable<bool> *table, const int &lhs_idx, const int &rhs_idx,
                                    const bool &dir, const int &sort_key_width_bits) {
     assert(table->storageModel() == StorageModel::ROW_STORE);
-    RowTable<bool> *row_table = (RowTable<bool> *) table;
+    auto row_table = (RowTable<bool> *) table;
 
 
     int8_t *lhs =  (row_table->tuple_data_.data() + row_table->tuple_size_bytes_ * lhs_idx);
@@ -254,7 +311,6 @@ bool Sort<B>::swapTuplesNormalized(const QueryTable<bool> *table, const int &lhs
         break;
     }
 
-//    int res =  std::memcmp(lhs, rhs, sort_key_width_bits/8);
     return  (lhs_gt == dir);
 }
 

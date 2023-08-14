@@ -105,9 +105,8 @@ PlainTable *RowTable<B>::revealInsecure(const int &party) {
     auto dst_table = new RowTable<bool>(this->tuple_cnt_, dst_schema, this->getSortOrder());
 
     for(uint32_t i = 0; i < this->tuple_cnt_; ++i)  {
-            const SecureTuple tuple(&this->schema_, this->getFieldPtr(i, 0));
-            PlainTuple dst_tuple = tuple.revealInsecure(&dst_schema, party);
-            dst_table->putTuple(i, dst_tuple);
+            PlainTuple t = table->revealRow(i, dst_schema, party);
+            dst_table->putTuple(i, t);
     }
     return dst_table;
 
@@ -272,7 +271,8 @@ void RowTable<B>::assignField(const int &dst_row, const int &dst_col, const Quer
     RowTable<B> *src = (RowTable<B> *) s;
 
     int8_t *src_field = (int8_t *) (src->tuple_data_.data() + src->tuple_size_bytes_ * src_row + src->field_offsets_bytes_.at(src_col));
-    int8_t *dst_field = (int8_t *) (tuple_data_.data() + this->tuple_size_bytes_ * dst_row + this->field_offsets_bytes_.at(dst_col));
+
+    int8_t *dst_field = getFieldPtr(dst_row, dst_col);
     memcpy(dst_field, src_field, this->field_sizes_bytes_.at(dst_col));
 
 
@@ -417,6 +417,11 @@ void RowTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int &rh
     Bit *l = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * lhs_row );
     Bit *r = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * rhs_row);
 
+    if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED && this->isEncrypted()) {
+        compareSwapOmpc(swap, lhs_row, rhs_row);
+        return;
+    }
+
 
     size_t write_size = this->schema_.size();
     for(size_t i = 0; i < write_size; ++i) {
@@ -425,13 +430,38 @@ void RowTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int &rh
         *l ^= o;
         *r ^= o;
 
-
         ++l;
         ++r;
     }
 
 }
 
+template<typename B>
+void RowTable<B>::compareSwapOmpc(const Bit &swap, const int & lhs_idx, const int & rhs_idx) {
+    assert(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED);
+    int field_cnt = this->getSchema().getFieldCount();
+
+    QueryFieldDesc desc;
+    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
+
+    //  need to go 1 attr at a time because otherwise we won't unpack in the right increments
+    for(auto pos : this->field_offsets_bytes_) {
+        int col_idx = pos.first;
+        desc = this->schema_.getField(col_idx);
+        int8_t *l_cursor = getFieldPtr(lhs_idx, col_idx);
+        SecureField l = SecureField::deserializePacked(desc,  l_cursor);
+
+        int8_t *r_cursor = getFieldPtr(rhs_idx, col_idx);
+        SecureField r = SecureField::deserializePacked(desc, r_cursor);
+
+        SecureField::compareAndSwap(swap, l, r);
+
+        l.serializePacked( l_cursor, desc);
+        r.serializePacked(r_cursor, desc);
+
+    }
+
+}
 
 //std::ostream &operator<<(std::ostream &os, RowTable<bool> &table) {
 //    os << table.getSchema() << " isEncrypted? " << table.isEncrypted() <<  " order by: " << DataUtilities::printSortDefinition(table.getSortOrder()) << std::endl;

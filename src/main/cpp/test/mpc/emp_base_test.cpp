@@ -49,7 +49,7 @@ void EmpBaseTest::SetUp()  {
             break;
     }
 
-    log->write("Received storage flag of " + FLAGS_storage + ss.str(), Level::INFO);
+    log->write(ss.str(), Level::INFO);
     log->write("Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party), Level::INFO);
 
     if(_emp_mode_ == EmpMode::OUTSOURCED) { // host_list = {alice, bob, carol, trusted party}
