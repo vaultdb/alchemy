@@ -1,6 +1,4 @@
-#include(../cmake/common.cmake)
 include(GoogleTest)
-#cmake_minimum_required (VERSION 3.14)
 
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -66,13 +64,13 @@ package_add_test(sort_merge_join_test plain/sort_merge_join_test.cpp plain/plain
 package_add_test(nested_loop_aggregate_test plain/nested_loop_aggregate_test.cpp plain/plain_base_test.cpp)
 package_add_test(merge_join_test plain/merge_join_test.cpp plain/plain_base_test.cpp)
 
-package_add_test(serialization_test serialization_test.cpp plain/plain_base_test.cpp ../pilot/src/common/shared_schema.cpp)
 package_add_test(secret_share_generator_test secret_share_generator_test.cpp plain/plain_base_test.cpp)
 package_add_test(plan_parser_test plan_parser_test.cpp plain/plain_base_test.cpp)
 
 unset(Labels)
 set(Labels "LABELS;PlainTest")
 
+package_add_test(serialization_test serialization_test.cpp plain/plain_base_test.cpp ../pilot/src/common/shared_schema.cpp)
 package_add_test(tpch_test tpch_test.cpp plain/plain_base_test.cpp)
 
 unset(Labels)

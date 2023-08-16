@@ -40,12 +40,14 @@ namespace  vaultdb {
         static B swapTuples(const QueryTable<B> *table, const int & lhs_idx, const int & rhs_idx, const SortDefinition  & sort_definition, const bool & dir);
         static Bit swapTuplesNormalized(const QueryTable<Bit> *table, const int & lhs_idx, const int & rhs_idx, const bool & dir, const int & sort_key_width_bits);
         static bool swapTuplesNormalized(const QueryTable<bool> *table, const int & lhs_idx, const int & rhs_idx, const bool & dir, const int & sort_key_width_bits);
-
+        static Bit swapTuplesNormalizedOmpc(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir,
+                                            const int &sort_key_width_bits);
 
         int limit_; // -1 means no LIMIT op
         map<int, int> sort_key_map_;
         int sort_key_size_bits_ = 0;
         QuerySchema projected_schema_;
+
 
 
     };

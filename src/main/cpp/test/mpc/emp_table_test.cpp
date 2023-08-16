@@ -63,7 +63,6 @@ TEST_F(EmpTableTest, secret_share_table) {
                                "ORDER BY l_orderkey, l_linenumber ";
     secretShareAndValidate(sql, DataUtilities::getDefaultSortDefinition(2));
 
-
 }
 
 
@@ -115,7 +114,10 @@ TEST_F(EmpTableTest, bit_packing_test) {
 
     ASSERT_EQ(secret_shared->getTupleCount(),  expected->getTupleCount());
     // tuple_cnt * (5+8+1 (for dummy tag) )*sizeof(emp::Bit)
-    ASSERT_EQ(expected->getTupleCount() * 14 * TypeUtilities::getEmpBitSize(),  secret_shared->getTupleCount() * secret_shared->tuple_size_bytes_);
+    if(emp_mode_ == vaultdb::EmpMode::SH2PC)
+        ASSERT_EQ(expected->getTupleCount() * 14 * TypeUtilities::getEmpBitSize(),  secret_shared->getTupleCount() * secret_shared->tuple_size_bytes_);
+    if(emp_mode_ == vaultdb::EmpMode::OUTSOURCED)
+        ASSERT_EQ(expected->getTupleCount() * 3 * TypeUtilities::getEmpBitSize(),  secret_shared->getTupleCount() * secret_shared->tuple_size_bytes_);
 
     if(FLAGS_validation) {
         PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);

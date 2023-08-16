@@ -7,6 +7,7 @@
 #include "util/field_utilities.h"
 #include "query_table/field/field_factory.h"
 #include "util/system_configuration.h"
+#include "operators/union.h"
 
 using namespace vaultdb;
 
@@ -212,7 +213,7 @@ QuerySchema SortMergeJoin<B>::getAugmentedSchema() {
     }
     else {
         QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_);
-	int max_alpha =  lhs->getTupleCount() + rhs->getTupleCount();
+	    int max_alpha =  lhs->getTupleCount() + rhs->getTupleCount();
         if(bit_packed_) alpha.initializeFieldSizeWithCardinality(max_alpha);	
 
         augmented_schema.putField(alpha);
@@ -233,8 +234,6 @@ template<typename B>
 pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
     assert(lhs->storageModel() == rhs->storageModel());
     storage_model_ = lhs->storageModel();
-    // cout << "Augment tables, start AND gates: " << this->system_conf_.andGateCount() << endl;
-	size_t start_gates = this->system_conf_.andGateCount();
 
     // only support row store for now - col store won't easily "stripe" the bits of the smaller relation over different schema
     assert(storage_model_ == StorageModel::ROW_STORE);
@@ -246,12 +245,16 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 	table_id_idx_ = augmented_schema.getFieldCount() - 1;
     alpha_idx_ = augmented_schema.getFieldCount() - 2;
 
-    //auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
+
+//    cout << "Inputs.  lhs: " << this->getChild(0)->getOutput()->toString(true) << " rhs_prime: " << this->getChild(1)->getOutput()->toString(true) << endl;
+//    auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
     auto sorted = unionAndSortTables();
 
+
+//    cout << "Sorted on join key, putting fkey reln first: " << sorted->revealInsecure()->toString(true) << endl;
     if(is_secure_ && bit_packed_) initializeAlphasPacked(sorted);
     else initializeAlphas(sorted);
-
+//    cout << "After initialize alphas: " << sorted->toString(true) << endl;
 
 
     SortDefinition sort_def;
@@ -293,39 +296,107 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
-    int output_cursor = 0;
+    int cursor = 0;
     QuerySchema augmented_schema = deriveAugmentedSchema();
     int unioned_len = lhs_prime_->getTupleCount() + rhs_prime_->getTupleCount();
-    QueryTable<B> *unioned = TableFactory<B>::getTable(unioned_len, augmented_schema, storage_model_);
+
+    QueryTable<B> *unioned =   TableFactory<B>::getTable(unioned_len, augmented_schema, storage_model_);
 
     for(int i = 0; i < lhs_prime_->getTupleCount(); ++i) {
-        unioned->cloneRow(output_cursor, 0, lhs_prime_, i);
-        unioned->setDummyTag(output_cursor, lhs_prime_->getDummyTag(i));
-        ++output_cursor;
-
+        unioned->cloneRow(cursor, 0, lhs_prime_, i);
+        unioned->setDummyTag(cursor, lhs_prime_->getDummyTag(i));
+        ++cursor;
     }
 
     for(int i = 0; i < rhs_prime_->getTupleCount(); ++i) {
-        unioned->cloneRow(output_cursor, 0, rhs_prime_, i);
-        unioned->setDummyTag(output_cursor, rhs_prime_->getDummyTag(i));
-        unioned->setField(output_cursor, table_id_idx_, table_id_field_);
-        ++output_cursor;
+        unioned->cloneRow(cursor, 0, rhs_prime_, i);
+        unioned->setDummyTag(cursor, rhs_prime_->getDummyTag(i));
+        unioned->setField(cursor, table_id_idx_, table_id_field_);
+        ++cursor;
     }
 
     delete lhs_prime_;
     delete rhs_prime_;
 
     SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
-    // sort s.t. fkey entries are first, pkey entries are second
-    sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
+
+//    sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
 
     bool lhs_is_foreign_key = (foreign_key_input_ == 0);
+    // sort s.t. fkey entries are first, pkey entries are second
     sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
 
     Sort<B> sorter(unioned, sort_def);
     sorter.setOperatorId(-2);
 
    return sorter.run()->clone();
+}
+
+template<typename B>
+QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
+    int cursor = 0;
+    QuerySchema augmented_schema = deriveAugmentedSchema();
+    int unioned_len = lhs_prime_->getTupleCount() + rhs_prime_->getTupleCount();
+    bool lhs_is_foreign_key = (foreign_key_input_ == 0);
+
+
+    QueryTable<B> *unioned =   TableFactory<B>::getTable(unioned_len, augmented_schema, storage_model_);
+    //     sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
+    // if lhs_is_fk then table_id is ASC otherwise DESC
+    // we always set RHS table_id field to true (if RHS is PK, then ASC, then we want RHS to be last)
+    // if(lhs_is_fk, then add them lhs --> rhs
+    // else add them rhs --> lhs
+
+    if(lhs_is_foreign_key) {
+        for(int i = 0; i < lhs_prime_->getTupleCount(); ++i) {
+            unioned->cloneRow(cursor, 0, lhs_prime_, i);
+            unioned->setDummyTag(cursor, lhs_prime_->getDummyTag(i));
+            ++cursor;
+        }
+
+        for(int i = 0; i < rhs_prime_->getTupleCount(); ++i) {
+            unioned->cloneRow(cursor, 0, rhs_prime_, i);
+            unioned->setDummyTag(cursor, rhs_prime_->getDummyTag(i));
+            unioned->setField(cursor, table_id_idx_, table_id_field_);
+            ++cursor;
+        }
+    }
+    else {
+
+        for(int i = 0; i < rhs_prime_->getTupleCount(); ++i) {
+            unioned->cloneRow(cursor, 0, rhs_prime_, i);
+            unioned->setDummyTag(cursor, rhs_prime_->getDummyTag(i));
+            ++cursor;
+        }
+
+        for(int i = 0; i < lhs_prime_->getTupleCount(); ++i) {
+            unioned->cloneRow(cursor, 0, lhs_prime_, i);
+            unioned->setDummyTag(cursor, lhs_prime_->getDummyTag(i));
+            unioned->setField(cursor, table_id_idx_, table_id_field_);
+            ++cursor;
+        }
+    }
+
+    delete lhs_prime_;
+    delete rhs_prime_;
+
+    // do bitonic merge instead of full sort
+
+    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
+    // sort s.t. fkey entries are first, pkey entries are second
+   // sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
+
+    sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
+    Sort<B> sorter(unioned, sort_def);
+    sorter.setOperatorId(-1);
+    auto normalized = sorter.normalizeTable(unioned); // normalize to move up table_id field
+
+    int counter = 0;
+    sorter.bitonicMergeNormalized(normalized, sorter.getSortOrder(), 0, normalized->getTupleCount(), true, counter);
+    unioned =  sorter.denormalizeTable(normalized);
+    unioned->setSortOrder(sort_def);
+    return unioned;
+
 }
 
 template<typename B>
@@ -366,34 +437,47 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 	Field<B> one_b(bool_field_type_, B(true)), zero_b(bool_field_type_, B(false));
 
 	Field<B> table_id = dst->getField(0, table_id_idx_);
-	Field<B> prev_table_id = table_id;
 
 	B is_foreign_key = table_id == (foreign_key_input_ == 0 ? zero_b : one_b);
 
 	for(int i = 0; i < dst->getTupleCount(); i++) {
+//        cout << "Examining tuple " << dst->getPlainTuple(i).toString(true) << ", a1=" << alpha_1 << ", a2=" << alpha_2 << endl;
 		table_id = dst->getPackedField(i, table_id_idx_);
 		is_foreign_key = table_id == (foreign_key_input_ == 0 ? zero_b : one_b);
+        B dummy = dst->getDummyTag(i);
+//        is_foreign_key = Utilities::If(is_dummy, B(false), is_foreign_key);
 
 		B same_group = joinMatch(dst, (i==0 ? i : i-1), i);
-		
-		alpha_1 = Field<B>::If(same_group, Field<B>::If(is_foreign_key, alpha_1 + one_, alpha_1), Field<B>::If(is_foreign_key, one_, zero_));
-		alpha_2 = Field<B>::If(same_group, Field<B>::If(!is_foreign_key, alpha_2 + one_, zero_), Field<B>::If(!is_foreign_key, one_, zero_));
+		alpha_1 = Field<B>::If(same_group, Field<B>::If(is_foreign_key & !dummy, alpha_1 + one_, alpha_1),
+                               Field<B>::If(is_foreign_key & !dummy, one_, zero_));
+		alpha_2 = Field<B>::If(same_group, Field<B>::If(!is_foreign_key, alpha_2 + one_, zero_),
+                               Field<B>::If(!is_foreign_key, one_, zero_));
 
 		dst->setPackedField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_2, alpha_1));
+//        cout << "After: " << dst->getPlainTuple(i).toString(true) << ", a1=" << alpha_1 << ", a2=" << alpha_2 << endl;
 
-		prev_table_id = table_id;	
 	}
 
-	for(int i = dst->getTupleCount() - 2; i >= 0; i--) {
-		table_id = dst->getPackedField(i, table_id_idx_);
+//    cout << "After first pass, have: " << dst->toString(true) << endl;
+
+	for(int i = dst->getTupleCount() - 1; i >= 0; i--) {
+//        cout << "Examining tuple " << dst->getPlainTuple(i).toString(true) << ", a1=" << alpha_1 << ", a2=" << alpha_2 << endl;
+
+        table_id = dst->getPackedField(i, table_id_idx_);
 		is_foreign_key = table_id == (foreign_key_input_ == 0 ? zero_b : one_b);
+        // if PK, then alpha_1 = 0
+
 		
 		B same_group = joinMatch(dst, i+1, i);
-
-		alpha_1 = Field<B>::If(is_foreign_key & same_group, alpha_1, Field<B>::If(!is_foreign_key, one_, zero_));
+        B dummy = dst->getDummyTag(i);
+		alpha_1 = Field<B>::If(is_foreign_key & same_group, alpha_1, Field<B>::If(!is_foreign_key & !dummy, one_, zero_));
+        // if fk
 		dst->setPackedField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getPackedField(i, alpha_idx_)));
+        // if a dummy, it goes to zero unconditionally
 		dst->setPackedField(i, alpha_idx_, Field<B>::If(dst->getDummyTag(i), zero_, dst->getPackedField(i, alpha_idx_)));
-	}
+//        cout << "After: " << dst->getPlainTuple(i).toString(true) << ", a1=" << alpha_1 << ", a2=" << alpha_2 << endl;
+
+    }
 }
 
 template<>
@@ -551,7 +635,6 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
 
     if(is_secure_ && bit_packed_) return obliviousExpandPacked(input, is_lhs);
 
-    //cout << "Starting initialize  in obliviousExpand with and gates: " << this->system_conf_.andGateCount() << endl;
 
     QuerySchema schema = input->getSchema();
 

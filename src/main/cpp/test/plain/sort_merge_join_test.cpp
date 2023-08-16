@@ -16,7 +16,7 @@
 
 
 
-DEFINE_int32(cutoff, 10, "limit clause for queries");
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
@@ -32,16 +32,26 @@ protected:
                                       " ORDER BY c_custkey";
 
 
-    const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' o_dummy \n"
+    const std::string orders_cust_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' o_dummy \n"
                                     "FROM orders \n"
                                     "WHERE o_custkey <=  " + std::to_string(FLAGS_cutoff) +
-                                    " ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, o_dummy";
+                                    " ORDER BY o_custkey, o_orderkey";
+
+    const std::string orders_lineitem_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' o_dummy \n"
+                                         "FROM orders \n"
+                                         "WHERE o_custkey <=  " + std::to_string(FLAGS_cutoff) +
+                                         " ORDER BY o_orderkey";
+
 
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' l_dummy \n"
                                       "FROM lineitem \n"
                                       "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= " + std::to_string(FLAGS_cutoff) + ")  \n"
                                      " ORDER BY l_orderkey, revenue, l_dummy ";
 
+    SortDefinition customer_sort_ = DataUtilities::getDefaultSortDefinition(1);
+    SortDefinition orders_cust_sort_{ColumnSort (1, SortDirection::ASCENDING), ColumnSort (0, SortDirection::ASCENDING)};
+    SortDefinition orders_lineitem_sort_{ColumnSort (0, SortDirection::ASCENDING)};
+    SortDefinition lineitem_sort_ = DataUtilities::getDefaultSortDefinition(2);
 
 	void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 
@@ -53,8 +63,6 @@ protected:
 		string local_db = FLAGS_unioned_db;
 		//boost::replace_first(local_db, "unioned", party_name.c_str());
 
-		cout << " Observed DB : "<< local_db << " - Bit Packed" << endl;
-		cout << "expected query: " << expected_query << "\n";
 		PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
 		expected->setSortOrder(expected_sort);
 
@@ -139,17 +147,17 @@ protected:
 TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders) {
 
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
-                                          "orders_cte AS (" + orders_sql_ + ") "
+                                          "orders_cte AS (" + orders_cust_sql_ + ") "
                                    "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
                                    "FROM  orders_cte JOIN customer_cte ON c_custkey = o_custkey "
                                    "WHERE NOT o_dummy AND NOT c_dummy "
-                                    "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
+                                    "ORDER BY o_orderkey ";
 
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
-    auto *customer_input = new SqlInput(db_name_, customer_sql_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
+    auto *customer_input = new SqlInput(db_name_, customer_sql_, true, customer_sort_);
+    auto *orders_input = new SqlInput(db_name_, orders_cust_sql_, true, orders_cust_sort_);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
@@ -157,7 +165,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders) {
 
     auto join = new SortMergeJoin(orders_input, customer_input,  predicate);
     Sort sorter(join, DataUtilities::getDefaultSortDefinition(2));
-    PlainTable *observed = sorter.run();
+    PlainTable *observed = sorter.run(); // need sort because otherwise output order isn't deterministic
     expected->setSortOrder(observed->getSortOrder());
     DataUtilities::removeDummies(observed);
 
@@ -171,7 +179,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders) {
 
 TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders) {
 
-    std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), "
+    std::string expected_sql = "WITH orders_cte AS (" + orders_lineitem_sql_ + "), "
                                                                          "lineitem_cte AS (" + lineitem_sql_ + "), "
                                                                                                              "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, (o_orderkey=l_orderkey) matched, (o_dummy OR l_dummy) dummy \n"
                                                                                                              "FROM lineitem_cte, orders_cte \n"
@@ -183,11 +191,9 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders) {
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
 
-    SortDefinition lineitem_sort = DataUtilities::getDefaultSortDefinition(2);
-    SortDefinition orders_sort = DataUtilities::getDefaultSortDefinition(4);
 
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true, lineitem_sort);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true, orders_sort);
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true, lineitem_sort_);
+    auto *orders_input = new SqlInput(db_name_, orders_lineitem_sql_, true, orders_lineitem_sort_);
 
     // output schema: lineitem, orders
     // l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -213,7 +219,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders) {
 TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
-    std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
+    std::string expected_sql = "WITH orders_cte AS (" + orders_cust_sql_ + "), \n"
 									"lineitem_cte AS (" + lineitem_sql_ + "), \n"
                                     "customer_cte AS (" + customer_sql_ + "),\n "
                                     "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,  (o_orderkey=l_orderkey AND c_custkey = o_custkey) matched, (o_dummy OR l_dummy OR c_dummy) dummy \n"
@@ -227,12 +233,10 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
 
-    SortDefinition lineitem_sort = DataUtilities::getDefaultSortDefinition(2);
-    SortDefinition orders_sort = DataUtilities::getDefaultSortDefinition(4);
 
-    auto *customer_input = new SqlInput(db_name_, customer_sql_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true, orders_sort);
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true, lineitem_sort);
+    auto *customer_input = new SqlInput(db_name_, customer_sql_, true, customer_sort_);
+    auto *orders_input = new SqlInput(db_name_, orders_cust_sql_, true, orders_cust_sort_);
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true, lineitem_sort_);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
@@ -274,7 +278,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
 TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders_reversed) {
 
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
-                                                                             "orders_cte AS (" + orders_sql_ + ") "
+                                                                             "orders_cte AS (" + orders_cust_sql_ + ") "
                                                                                                              "SELECT c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority,(c_dummy OR o_dummy) dummy "
                                                                                                              "FROM  orders_cte JOIN customer_cte ON c_custkey = o_custkey "
                                                                                                              "WHERE NOT c_dummy AND NOT o_dummy "
@@ -283,8 +287,8 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders_reversed) {
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
 
-    auto *customer_input = new SqlInput(db_name_, customer_sql_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
+    auto *customer_input = new SqlInput(db_name_, customer_sql_, true, customer_sort_);
+    auto *orders_input = new SqlInput(db_name_, orders_cust_sql_, true, orders_cust_sort_);
 
     // join output schema: (orders, customer)
     // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -308,7 +312,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders_reversed) {
 
 TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_reversed) {
 
-    std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), "
+    std::string expected_sql = "WITH orders_cte AS (" + orders_lineitem_sql_ + "), "
                                                      "lineitem_cte AS (" + lineitem_sql_ + ") "
                                                      " SELECT  o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue "
                                                      " FROM orders_cte JOIN lineitem_cte ON l_orderkey = o_orderkey "
@@ -318,11 +322,9 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_reversed) {
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
-    SortDefinition lineitem_sort = DataUtilities::getDefaultSortDefinition(2);
-    SortDefinition orders_sort = DataUtilities::getDefaultSortDefinition(4);
 
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true, lineitem_sort);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true, orders_sort);
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true, lineitem_sort_);
+    auto *orders_input = new SqlInput(db_name_, orders_lineitem_sql_, true, orders_lineitem_sort_);
 
 
     // output schema:  orders, lineitem
@@ -350,7 +352,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_reversed) {
 TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
 
 
-    std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
+    std::string expected_sql = "WITH orders_cte AS (" + orders_cust_sql_ + "), \n"
 									"lineitem_cte AS (" + lineitem_sql_ + "), \n"
                                     "customer_cte AS (" + customer_sql_ + "),\n "
                                     "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,  (o_orderkey=l_orderkey AND c_custkey = o_custkey) matched, (o_dummy OR l_dummy OR c_dummy) dummy \n"
@@ -364,12 +366,10 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
 
-    SortDefinition lineitem_sort = DataUtilities::getDefaultSortDefinition(2);
-    SortDefinition orders_sort = DataUtilities::getDefaultSortDefinition(4);
 
-    auto *customer_input = new SqlInput(db_name_, customer_sql_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true, orders_sort);
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true, lineitem_sort);
+    auto *customer_input = new SqlInput(db_name_, customer_sql_, true, customer_sort_);
+    auto *orders_input = new SqlInput(db_name_, orders_cust_sql_, true, orders_cust_sort_);
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true, lineitem_sort_);
 
     // join output schema: (orders, customer)
     // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority

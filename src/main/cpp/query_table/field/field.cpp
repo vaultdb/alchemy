@@ -352,6 +352,7 @@ void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
     emp::Integer si;
     emp::Float sf;
     emp::Bit sb;
+    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
 
     switch (type_) {
         case FieldType::BOOL:
@@ -374,7 +375,7 @@ void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
 
         case FieldType::SECURE_BOOL:
             sb = boost::get<emp::Bit>(payload_);
-            memcpy(dst, (int8_t *) &(sb.bit), TypeUtilities::getEmpBitSize());
+            manager->pack(&sb, (Bit *) dst, 1);
             break;
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
@@ -383,11 +384,11 @@ void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
             if(schema.bitPacked() && schema.getFieldMin() != 0) {
                 si = si - schema.getSecureFieldMin();
             }
-            memcpy(dst, (int8_t *) si.bits.data(), schema.size() * TypeUtilities::getEmpBitSize());
+            manager->pack(si.bits.data(), (Bit *) dst, schema.size());
             break;
         case FieldType::SECURE_FLOAT:
             sf = boost::get<emp::Float>(payload_);
-            memcpy(dst, (int8_t *) sf.value.data(), 32* TypeUtilities::getEmpBitSize());
+            manager->pack(sf.value.data(), (Bit *) dst, 32);
             break;
         default:
             throw;
@@ -402,6 +403,8 @@ void Field<B>::serializePacked(int8_t *dst, const QueryFieldDesc &schema) const 
     emp::Integer si;
     emp::Float sf;
     emp::Bit sb;
+    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
+
 
     switch (type_) {
         case FieldType::BOOL:
@@ -424,17 +427,17 @@ void Field<B>::serializePacked(int8_t *dst, const QueryFieldDesc &schema) const 
 
         case FieldType::SECURE_BOOL:
             sb = boost::get<emp::Bit>(payload_);
-            memcpy(dst, (int8_t *) &(sb.bit), TypeUtilities::getEmpBitSize());
+            manager->pack(&sb, (Bit *) dst, 1);
             break;
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING:
             si = boost::get<emp::Integer>(payload_);
-            memcpy(dst, (int8_t *) si.bits.data(), schema.size() * TypeUtilities::getEmpBitSize());
+            manager->pack(si.bits.data(), (Bit *) dst, schema.size());
             break;
         case FieldType::SECURE_FLOAT:
             sf = boost::get<emp::Float>(payload_);
-            memcpy(dst, (int8_t *) sf.value.data(), 32* TypeUtilities::getEmpBitSize());
+            manager->pack(sf.value.data(), (Bit *) dst, 32);
             break;
         default:
             throw;
@@ -474,7 +477,7 @@ SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDes
             break;
         }
         case FieldType::STRING: {
-            v = secretShareString(boost::get<string>(f.payload_), send, f.string_length_, party);
+            v = secretShareString(boost::get<string>(f.payload_), send, party, f.string_length_);
             type = FieldType::SECURE_STRING;
             break;
         }
@@ -490,13 +493,13 @@ SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDes
 }
 
 template<typename B>
-emp::Integer Field<B>::secretShareString(const string &s, const bool &to_send, const size_t &str_length, const int
-&party) {
-    assert(str_length > 0);
+emp::Integer
+Field<B>::secretShareString(const string &s, const bool &to_send, const int &src_party, const int &str_length) {
+    assert(str_length > 0); // true length, s passed in might be empty for non-sending parties
 
-    size_t string_bit_count = str_length * 8;
+    size_t bit_cnt = str_length * 8;
 
-    emp::Integer payload = emp::Integer(string_bit_count, 0L, party);
+    emp::Integer payload = emp::Integer(bit_cnt, 0L, src_party);
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
 
 
@@ -504,13 +507,14 @@ emp::Integer Field<B>::secretShareString(const string &s, const bool &to_send, c
         std::string input = s;
         std::reverse(input.begin(), input.end());
         bool *bools = Utilities::bytesToBool((int8_t *) input.c_str(), str_length);
-        manager->feed( payload.bits.data(), party, bools,
-                                                string_bit_count);
+        manager->feed(payload.bits.data(), src_party, bools, bit_cnt);
+//        manager->flush();
         delete[] bools;
 
     } else {
-        manager->feed( payload.bits.data(), party, nullptr,
-                                                string_bit_count);
+        manager->feed(payload.bits.data(), src_party, nullptr, bit_cnt);
+//        manager->flush();
+
     }
 
 
@@ -887,6 +891,7 @@ B Field<B>::operator||(const Field &cmp) const {
 template<typename B>
 Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
     FieldType type = desc.getType();
+    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
 
     switch (type) {
         case FieldType::BOOL: {
@@ -915,16 +920,17 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
 
         }
         case FieldType::SECURE_BOOL: {
-            emp::Bit my_bit = *((Bit *)src);
+            emp::Bit my_bit(0, PUBLIC);
+            manager->unpack((Bit *) src,  &my_bit, 1);
             return Field<B>(type, my_bit);
         }
         case FieldType::SECURE_INT: {
             // add one more bit for two's complement
             emp::Integer payload(desc.size() + desc.bitPacked(), 0);
-            memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
+            manager->unpack((Bit *) src, payload.bits.data(), desc.size());
             if(desc.bitPacked()) {
                 payload.resize(32);
-                emp::Integer unpacked(32, desc.getFieldMin(), PUBLIC); // secure_int = 32 bits
+                emp::Integer unpacked = desc.getSecureFieldMin();
                 unpacked = unpacked + payload;
                 return Field<B>(type, unpacked);
             }
@@ -932,10 +938,10 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
         }
         case FieldType::SECURE_LONG: {
             emp::Integer payload(desc.size() + desc.bitPacked(), 0);
-            memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
+            manager->unpack((Bit *) src, payload.bits.data(), desc.size());
             if(desc.bitPacked()) {
                 payload.resize(64);
-                emp::Integer unpacked(64, desc.getFieldMin(), PUBLIC); // secure_long = 64 bits
+                emp::Integer unpacked = desc.getSecureFieldMin(); // secure_long = 64 bits
                 unpacked = unpacked + payload;
                 return Field<B>(type, unpacked);
             }
@@ -943,16 +949,15 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
         }
         case FieldType::SECURE_FLOAT: {
             emp::Float v(0, emp::PUBLIC);
-            memcpy(v.value.data(), src, 32*TypeUtilities::getEmpBitSize() );
+            manager->unpack((Bit *) src, v.value.data(), desc.size());
             return Field<B>(type, v);
         }
 
         case FieldType::SECURE_STRING: {
-            size_t bitCount = desc.getStringLength() * 8;
-
-            emp::Integer v(bitCount, 0, emp::PUBLIC);
-            memcpy(v.bits.data(), src, TypeUtilities::getEmpBitSize()*bitCount);
-            return Field<B>(type, v, bitCount / 8);
+            size_t bit_cnt = desc.getStringLength() * 8;
+            emp::Integer v(bit_cnt, 0, emp::PUBLIC);
+            manager->unpack((Bit *) src, v.bits.data(), bit_cnt);
+            return Field<B>(type, v, desc.getStringLength());
 
         }
         default:
@@ -965,6 +970,8 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
 template<typename B>
 Field<B> Field<B>::deserializePacked(const QueryFieldDesc &desc, const int8_t *src) {
     FieldType type = desc.getType();
+    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
+
 
     switch (type) {
         case FieldType::BOOL: {
@@ -993,32 +1000,28 @@ Field<B> Field<B>::deserializePacked(const QueryFieldDesc &desc, const int8_t *s
 
         }
         case FieldType::SECURE_BOOL: {
-            emp::Bit my_bit = *((Bit *)src);
+            emp::Bit my_bit(0, PUBLIC);
+            manager->unpack((Bit *) src,  &my_bit, 1);
             return Field<B>(type, my_bit);
         }
-        case FieldType::SECURE_INT: {
+        case FieldType::SECURE_INT:
+        case FieldType::SECURE_LONG: {
             // add one more bit for two's complement
             emp::Integer payload(desc.size() + desc.bitPacked(), 0);
-            memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
-            return Field<B>(type, payload);
-        }
-        case FieldType::SECURE_LONG: {
-            emp::Integer payload(desc.size() + desc.bitPacked(), 0);
-            memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
+            manager->unpack((Bit *) src, payload.bits.data(), desc.size());
             return Field<B>(type, payload);
         }
         case FieldType::SECURE_FLOAT: {
             emp::Float v(0, emp::PUBLIC);
-            memcpy(v.value.data(), src, 32*TypeUtilities::getEmpBitSize() );
+            manager->unpack((Bit *) src, v.value.data(), 32);
             return Field<B>(type, v);
         }
 
         case FieldType::SECURE_STRING: {
-            size_t bitCount = desc.getStringLength() * 8;
-
-            emp::Integer v(bitCount, 0, emp::PUBLIC);
-            memcpy(v.bits.data(), src, TypeUtilities::getEmpBitSize()*bitCount);
-            return Field<B>(type, v, bitCount / 8);
+            size_t bit_cnt = desc.getStringLength() * 8;
+            emp::Integer v(bit_cnt, 0, emp::PUBLIC);
+            manager->unpack((Bit *) src, v.bits.data(), bit_cnt);
+            return Field<B>(type, v,  desc.getStringLength());
 
         }
         default:

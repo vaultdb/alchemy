@@ -25,7 +25,9 @@ namespace  vaultdb {
         int64_t field_min_ = 0; // if bits are packed and min != 0
         emp::Integer secure_field_min_;
         int bit_packed_size_ = 0;
-        
+        int packed_wires_ = 1;
+
+
     public:
 
         inline QueryFieldDesc() : type_(FieldType::INVALID) { }
@@ -49,7 +51,7 @@ namespace  vaultdb {
 
         QueryFieldDesc(const QueryFieldDesc &f, const int & col_num);
 
-        QueryFieldDesc(const int & ordinal, const std::string &field_name, const std::string &table, const FieldType &type, const size_t & str_len = 0);
+        QueryFieldDesc(const int & ordinal, const std::string &col_name, const std::string &table_name, const FieldType &type, const size_t & str_len = 0);
         QueryFieldDesc(const int & ordinal, const string & field_spec);
 
         inline void setStringLength(size_t len) {   string_length_ = len;
@@ -86,6 +88,8 @@ namespace  vaultdb {
         void initializeFieldSizeWithCardinality(int cardinality);
         string prettyPrint() const;
         inline int getBitPackedSize() const { return bit_packed_size_; }
+        int packedWires() const { return packed_wires_; }
+
     private:
         void initializeFieldSize();
 

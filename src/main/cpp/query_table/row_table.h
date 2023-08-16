@@ -77,6 +77,7 @@ namespace  vaultdb {
 
         inline void setPackedField(const int  & row, const int & col, const Field<B> & f)  override {
             int8_t *write_ptr = getFieldPtr(row, col);
+
             if(SystemConfiguration::getInstance().bitPackingEnabled()) {
                 f.serializePacked(write_ptr, this->schema_.getField(col));
                 return;
@@ -123,6 +124,7 @@ namespace  vaultdb {
 
         void compareSwap(const bool & swap, const int  & lhs_row, const int & rhs_row)  override;
         void compareSwap(const Bit & swap, const int  & lhs_row, const int & rhs_row)  override;
+        void compareSwapOmpc(const Bit &swap, const int & lhs_idx, const int & rhs_idx);
 
         inline virtual StorageModel storageModel() const override { return StorageModel::ROW_STORE; }
 
@@ -131,10 +133,7 @@ namespace  vaultdb {
         string toString(const size_t &limit, const bool &show_dummies = false) const override;
 
         inline int8_t *getFieldPtr(const int & row, const int & col) const override {
-            int8_t *memory_guard = ((int8_t *) this->tuple_data_.data()) + this->tuple_data_.size();
-            int8_t *ptr = ((int8_t *) tuple_data_.data()) + this->tuple_size_bytes_ * row + this->field_offsets_bytes_.at(col);
-            assert(((size_t) ptr) <= (size_t) memory_guard);
-            return ptr;
+           return  ((int8_t *) tuple_data_.data()) + this->tuple_size_bytes_ * row + this->field_offsets_bytes_.at(col);
         }
 
     protected:

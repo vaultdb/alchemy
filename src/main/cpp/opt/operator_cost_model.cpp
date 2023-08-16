@@ -166,7 +166,7 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 
 	//std::cout << "Predicted cost of obliviousDistribute (distribute step only): " << distribute_cost << "\n";
 
-    cost += distribute_cost;
+    cost += 2 * distribute_cost;
 	
 	//cost of conditional write step from obliviousExpand
 	InputReference<Bit> read_field(is_new_idx, augmented_schema);
@@ -181,7 +181,7 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 
 	//std::cout << "Predicted cost of conditional write step: " << conditional_write_cost << "\n";
 
-	cost += conditional_write_cost;
+	cost += 2 * conditional_write_cost;
 	
     return cost;
 }

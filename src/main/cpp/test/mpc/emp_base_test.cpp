@@ -31,11 +31,28 @@ void EmpBaseTest::SetUp()  {
 
 	Logger* log = get_log();	
 
-    log->write("Received storage flag of " + FLAGS_storage + "\n", Level::INFO);
-    log->write("Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party) + "\n", Level::INFO);
+    std::stringstream ss;
 
-    if(_emp_mode_ == EmpMode::OUTSOURCED) {
-        // host_list = {alice, bob, carol, trusted party}
+    ss << "Received storage flag of " << FLAGS_storage << ", emp mode: ";
+    switch(emp_mode_) {
+        case EmpMode::PLAIN:
+            ss << "plain";
+            break;
+        case EmpMode::SH2PC:
+            ss << "sh2pc";
+            break;
+        case EmpMode::ZK:
+            ss << "zk";
+            break;
+        case EmpMode::OUTSOURCED:
+            ss << "outsourced";
+            break;
+    }
+
+    log->write(ss.str(), Level::INFO);
+    log->write("Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party), Level::INFO);
+
+    if(_emp_mode_ == EmpMode::OUTSOURCED) { // host_list = {alice, bob, carol, trusted party}
         string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
         manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
         db_name_ = (FLAGS_party == emp::TP) ? FLAGS_unioned_db : empty_db_;

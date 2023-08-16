@@ -35,7 +35,7 @@ namespace vaultdb {
 
         static std::string getStackTrace();
 
-        static bool *bytesToBool(int8_t *bytes, const int &  byteCount);
+        static bool *bytesToBool(int8_t *bytes, const int &  byte_cnt);
 
         static std::vector<int8_t> boolsToBytes(const bool *const src, const uint32_t &bit_cnt);
 

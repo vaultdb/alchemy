@@ -195,6 +195,137 @@ namespace vaultdb {
 
         }
 
+        static Integer unpackRow(const QueryTable<Bit> *table, const int & row, const int & col_cnt, const int & selection_length_bits) {
+            QuerySchema schema = table->getSchema();
+//            cout << "*****Malloc'ing " << selection_length_bits << " bits for row " << row << ": " << table->revealRow(row) << endl;
+            Integer dst(selection_length_bits, 0, PUBLIC);
+
+
+            Bit *cursor = dst.bits.data();
+            Bit *start = cursor;
+            for(int i = 0; i < col_cnt; ++i) {
+//                cout << "  Deserializing column " << i << ": " << schema.getField(i) << endl;
+                SecureField f = table->getPackedField(row, i);
+                QueryFieldDesc desc = schema.getField(i);
+
+                switch(f.getType()) {
+                    case FieldType::SECURE_BOOL: {
+                        Bit b = f.getValue<emp::Bit>();
+//                        cout << "    Reading bit and writing to offset " << (cursor - start) << " with " << b.reveal() << endl;
+                        *cursor = b;
+                        break;
+                    }
+                    case FieldType::SECURE_INT:
+                    case FieldType::SECURE_LONG:
+                    case FieldType::SECURE_STRING: {
+                        Integer i_field = f.getValue<Integer>();
+                        memcpy(cursor, i_field.bits.data(), desc.size() * sizeof(Bit));
+                        break;
+                    }
+                    case FieldType::SECURE_FLOAT: {
+                        Float f_field = f.getValue<Float>();
+                        memcpy(cursor, f_field.value.data(), desc.size() * sizeof(Bit));
+                        break;
+                    }
+                    default:
+                        throw;
+
+                }
+                cursor += desc.size();
+            }
+            return dst;
+        }
+
+        // serialize all of row's Bits to a single Integer
+    static Integer unpackRow(const QueryTable<Bit> *table, const int & row) {
+        QuerySchema schema = table->getSchema();
+        int schema_len_bits = 0;
+        for(int i = 0; i < schema.getFieldCount(); ++i) {
+            schema_len_bits += schema.getField(i).size();
+        }
+        schema_len_bits += 1; // dummy_tag
+
+        Integer dst(schema_len_bits, 0, PUBLIC);
+        Bit *cursor = dst.bits.data();
+
+        for(int i = 0; i < schema.getFieldCount(); ++i) {
+            SecureField f = table->getPackedField(row, i);
+            QueryFieldDesc desc = schema.getField(i);
+
+            switch(f.getType()) {
+                case FieldType::SECURE_BOOL: {
+                    Bit b = f.getValue<emp::Bit>();
+                    *cursor = b;
+                    break;
+                }
+                case FieldType::SECURE_INT:
+                case FieldType::SECURE_LONG:
+                case FieldType::SECURE_STRING: {
+                    Integer i_field = f.getValue<Integer>();
+                    memcpy(cursor, i_field.bits.data(), desc.size() * sizeof(Bit));
+                    break;
+                }
+                case FieldType::SECURE_FLOAT: {
+                    Float f_field = f.getValue<Float>();
+                    memcpy(cursor, f_field.value.data(), desc.size() * sizeof(Bit));
+                    break;
+                }
+                default:
+                    throw;
+
+            }
+            cursor += desc.size();
+        }
+
+        // do dummy tag last
+        SecureField b_field = table->getDummyTag(row);
+        Bit b = b_field.getValue<emp::Bit>();
+        *cursor = b;
+        return dst;
+
+    }
+
+        static void packRow( QueryTable<Bit> *table, const int & row, Integer src) {
+            QuerySchema schema = table->getSchema();
+            Bit *cursor = src.bits.data();
+
+            for(int i = 0; i < schema.getFieldCount(); ++i) {
+                QueryFieldDesc desc = schema.getField(i);
+                switch(desc.getType()) {
+                    case FieldType::SECURE_BOOL: {
+                        Bit b = *cursor;
+                        SecureField f(desc.getType(), b);
+                        table->setPackedField(row, i, f);
+                        break;
+                    }
+                    case FieldType::SECURE_INT:
+                    case FieldType::SECURE_LONG:
+                    case FieldType::SECURE_STRING: {
+                        Integer i_field(desc.size() + desc.bitPacked(), 0, PUBLIC);
+                        memcpy(i_field.bits.data(), cursor, desc.size() * sizeof(Bit));
+                        SecureField f(desc.getType(), i_field, desc.getStringLength());
+                        table->setPackedField(row, i, f);
+                        break;
+                    }
+                    case FieldType::SECURE_FLOAT: {
+                        Float f_field;
+                        memcpy(f_field.value.data(), cursor, desc.size() * sizeof(Bit));
+                        SecureField f(desc.getType(), f_field);
+                        table->setPackedField(row, i, f);
+                        break;
+                    }
+                    default:
+                        throw;
+
+                }
+                cursor += desc.size();
+
+            }
+
+            // do dummy tag last
+            Bit dummy_tag = *cursor;
+            table->setDummyTag(row, dummy_tag);
+        }
 
     };
 

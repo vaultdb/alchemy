@@ -5,6 +5,7 @@ import time
 import datetime
 import re
 import json
+import sys
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 bin_path = os.path.join(dir_path, 'bin')
@@ -173,7 +174,11 @@ class Runner:
 
     def fork_test_process(self,test_suite):
         args = self.build_args(test_suite)
-        subprocess.run(args)
+        proc = subprocess.run(args)
+        exit_status = proc.returncode
+        if exit_status != 0:
+            print("Test suite " + test_suite.name + " failed. Exit status: " + str(exit_status))
+            sys.exit(exit_status)
           
     def fork_background_test_process(self,test_suite):
         args = self.build_args(test_suite)
@@ -202,17 +207,19 @@ class Runner:
     def run_secure_test_locally(self,test_suite):
         print("running secure test suite " + test_suite.name + " locally ")
 
-        log_level = test_suite.find_flag_by_name("log_level") 
-
+        log_level = (test_suite.find_flag_by_name("log_level")).value
+ 
+        test_suite.edit_flag("log_level", "6")
         alice_flag=Flag("party","1",True)
         test_suite.flags.append(alice_flag)
-        test_suite.edit_flag("log_level", 6)
+
         self.fork_background_test_process(test_suite)
         test_suite.flags.pop()
 
+        test_suite.edit_flag("log_level",log_level)
         bob_flag=Flag("party","2",True)
-        test_suite.flags.append(bob_flag)
-        test_suite.edit_flag("log_level", log_level)
+        test_suite.flags.append(bob_flag) 
+
         self.fork_test_process(test_suite)
         test_suite.flags.pop()
 
