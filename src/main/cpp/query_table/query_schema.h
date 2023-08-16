@@ -20,6 +20,9 @@ namespace  vaultdb {
         size_t tuple_size_; // in bits
 
     public:
+        // offsets are used to jump to the specified field in memory
+        // In OMPC the unit of offsets is packed wires
+        // In all others, it is bits
         std::map<int32_t, size_t> offsets_;
 
         QuerySchema()  : tuple_size_(0) {         } // empty setup
@@ -62,7 +65,7 @@ namespace  vaultdb {
         }
 
         // returns size in bits
-        size_t size() const { return tuple_size_; }
+        inline size_t size() const { return tuple_size_; }
 
         inline bool   isSecure() const {
             return (fields_.at(0).getType() == TypeUtilities::toSecure(fields_.at(0).getType())); }

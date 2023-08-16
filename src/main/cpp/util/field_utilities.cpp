@@ -206,6 +206,7 @@ string FieldUtilities::printFloat(const Float &f) {
     ii.revealBools(bools, PUBLIC);
 
     ss << std::fixed << std::setprecision(10) << tmp << ": " << DataUtilities::printBitArray(bools, 32) << ", " << DataUtilities::printByteArray((int8_t *) &i, 4);
+
     return ss.str();
 }
 
@@ -225,7 +226,7 @@ string FieldUtilities::printInt(const Integer &i) {
     stringstream ss;
     ss << ii << ": " << DataUtilities::printBitArray(bools, bit_cnt) << ", " << DataUtilities::printByteArray((int8_t *) &ii, ceil(bit_cnt/8.0));
 
-    delete bools;
+    delete[] bools;
 
     return ss.str();
 

@@ -133,10 +133,7 @@ namespace  vaultdb {
         string toString(const size_t &limit, const bool &show_dummies = false) const override;
 
         inline int8_t *getFieldPtr(const int & row, const int & col) const override {
-            int8_t *memory_guard = ((int8_t *) this->tuple_data_.data()) + this->tuple_data_.size();
-            int8_t *ptr = ((int8_t *) tuple_data_.data()) + this->tuple_size_bytes_ * row + this->field_offsets_bytes_.at(col);
-            assert(((size_t) ptr) <= (size_t) memory_guard);
-            return ptr;
+           return  ((int8_t *) tuple_data_.data()) + this->tuple_size_bytes_ * row + this->field_offsets_bytes_.at(col);
         }
 
     protected:

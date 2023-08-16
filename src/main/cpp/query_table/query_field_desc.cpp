@@ -11,7 +11,7 @@ using namespace vaultdb;
 QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, const FieldType &type)
         : field_name_(f.field_name_), table_name_(f.table_name_),
           string_length_(f.getStringLength()),
-          type_(type), ordinal_(f.ordinal_), bit_packed_size_(f.bit_packed_size_), field_min_(f.field_min_), secure_field_min_(f.secure_field_min_) { // carry over bit packed size
+          type_(type), ordinal_(f.ordinal_), bit_packed_size_(f.bit_packed_size_), field_min_(f.field_min_), secure_field_min_(f.secure_field_min_), packed_wires_(f.packed_wires_)  { // carry over bit packed size
     initializeFieldSize();
 }
 
@@ -24,13 +24,13 @@ QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, const int &  col_num)
         field_size_(f.field_size_),
         bit_packed_size_(f.field_size_),
         field_min_(f.field_min_),
-        secure_field_min_(f.secure_field_min_) {
+        secure_field_min_(f.secure_field_min_), packed_wires_(f.packed_wires_)  {
 }
 
-QueryFieldDesc::QueryFieldDesc(const int & anOrdinal, const string &n, const string &tab, const FieldType &aType,
-                               const size_t &stringLength)
-        : field_name_(n),
-          table_name_(tab), string_length_(stringLength), type_(aType), ordinal_(anOrdinal) {
+QueryFieldDesc::QueryFieldDesc(const int & ordinal, const string &col_name, const string &table_name, const FieldType &type,
+                               const size_t &str_len)
+        : field_name_(col_name),
+          table_name_(table_name), string_length_(str_len), type_(type), ordinal_(ordinal) {
     // since we convert DATEs to int32_t in both operator land and in our verification pipeline,
     // i.e., we compare the output of our queries to SELECT EXTRACT(EPOCH FROM date_)
     // fields of type date have no source table
@@ -101,6 +101,8 @@ QueryFieldDesc& QueryFieldDesc::operator=(const QueryFieldDesc& src)  {
     this->bit_packed_size_ = src.bit_packed_size_;
     this->field_min_ = src.field_min_;
     this->secure_field_min_ = src.secure_field_min_;
+    this->packed_wires_ = src.packed_wires_;
+
 
     return *this;
 }
@@ -165,6 +167,7 @@ void QueryFieldDesc::initializeFieldSize() {
 
     if(QueryFieldDesc::type_ == FieldType::STRING || QueryFieldDesc::type_ == FieldType::SECURE_STRING )  {
         field_size_ *= string_length_;
+        packed_wires_ = TypeUtilities::packedWireCount(field_size_);
     }
 }
 

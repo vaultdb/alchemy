@@ -74,7 +74,7 @@ namespace  vaultdb {
             ios_ctrl_ = emp::setup_netio(tpio_ctrl_, hosts, ctrl_port, party_, N);
             emp::backend = new OMPCBackend<N>(ios_, tpio_, party_);
             SystemConfiguration & s = SystemConfiguration::getInstance();
-            s.emp_bit_size_bytes_  =  sizeof(Bit);
+            s.emp_bit_size_bytes_  =  sizeof(OMPCPackedWire);
             s.party_ = party;
         }
 
@@ -135,12 +135,12 @@ namespace  vaultdb {
         void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {
             auto protocol = ((OMPCBackend<N> *) emp::backend);
             protocol->pack(src, (OMPCPackedWire *) dst, bit_cnt);
-//            flush();
+            flush();
         }
         void unpack(Bit *src, Bit *dst, const int & bit_cnt) override {
             auto protocol = ((OMPCBackend<N> *) emp::backend);
             protocol->unpack(dst, (OMPCPackedWire *) src, bit_cnt);
-//            flush();
+            flush();
         }
 
     };

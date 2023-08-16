@@ -65,18 +65,23 @@ namespace  vaultdb {
         void setSchema(const QuerySchema &schema) {
             schema_ = schema;
 
-            if(std::is_same_v<emp::Bit, B>) {
-                tuple_size_bytes_ = schema_.size() * TypeUtilities::getEmpBitSize(); // bits, one block per bit
+            if(this->isEncrypted()) {
                 // covers dummy tag as -1
+                tuple_size_bytes_ = 0;
+                QueryFieldDesc desc;
+                EmpMode mode = SystemConfiguration::getInstance().emp_mode_;
+                int field_size_bytes;
                 for(auto pos : schema_.offsets_) {
+                    desc = schema_.getField(pos.first);
+                    field_size_bytes = (mode == EmpMode::OUTSOURCED) ? desc.packedWires() * TypeUtilities::getEmpBitSize() : desc.size() * TypeUtilities::getEmpBitSize();
+                    tuple_size_bytes_ += field_size_bytes;
+                    // offset units are packed wires for OMPC (Bits o.w.)
                     field_offsets_bytes_[pos.first] = pos.second * TypeUtilities::getEmpBitSize();
-                    field_sizes_bytes_[pos.first] = schema_.getField(pos.first).size() * TypeUtilities::getEmpBitSize();
+                    field_sizes_bytes_[pos.first] = field_size_bytes;
                 }
-
-
                 return;
-
             }
+
 
             // plaintext case
             tuple_size_bytes_ = schema_.size() / 8; // bytes for plaintext
@@ -165,6 +170,11 @@ namespace  vaultdb {
 
             return count;
 
+        }
+
+        inline PlainTuple revealRow(const int & row) const {
+            QuerySchema plain_schema = QuerySchema::toPlain(schema_);
+            return revealRow(row, plain_schema);
         }
 
         inline PlainTuple revealRow(const int & row,  QuerySchema & dst_schema, const int & party = PUBLIC) const  {

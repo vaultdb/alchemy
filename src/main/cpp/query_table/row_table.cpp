@@ -21,15 +21,15 @@ RowTable<B>::RowTable(const size_t &tuple_cnt, const QuerySchema &schema, const 
     if(tuple_cnt == 0)
         return;
 
-    tuple_data_.resize(tuple_cnt * RowTable<B>::tuple_size_bytes_);
+    tuple_data_.resize(tuple_cnt * this->tuple_size_bytes_);
 
     std::memset(tuple_data_.data(), 0, tuple_data_.size());
 
     // initialize dummy tags to true
-    int8_t *write_cursor = tuple_data_.data() + this->field_offsets_bytes_[-1];
+    B d = B(true);
+    Field<B> dummy_tag(std::is_same_v<B, Bit> ? FieldType::SECURE_BOOL : FieldType::BOOL, d);
     for(int i = 0; i < tuple_cnt; ++i) {
-        *((B *)write_cursor) = B(true);
-        write_cursor += this->tuple_size_bytes_;
+        this->setField(i, -1, dummy_tag);
     }
 
 }
@@ -414,14 +414,14 @@ void RowTable<B>::compareSwap(const bool &swap, const int &lhs_row, const int &r
 template<typename B>
 void RowTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) {
 
-    Bit *l = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * lhs_row );
-    Bit *r = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * rhs_row);
 
     if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED && this->isEncrypted()) {
         compareSwapOmpc(swap, lhs_row, rhs_row);
         return;
     }
 
+    Bit *l = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * lhs_row );
+    Bit *r = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * rhs_row);
 
     size_t write_size = this->schema_.size();
     for(size_t i = 0; i < write_size; ++i) {
@@ -439,27 +439,13 @@ void RowTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int &rh
 template<typename B>
 void RowTable<B>::compareSwapOmpc(const Bit &swap, const int & lhs_idx, const int & rhs_idx) {
     assert(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED);
-    int field_cnt = this->getSchema().getFieldCount();
+    Integer lhs = FieldUtilities::unpackRow((RowTable<Bit> *) this, lhs_idx);
+    Integer rhs = FieldUtilities::unpackRow((RowTable<Bit> *) this, rhs_idx);
 
-    QueryFieldDesc desc;
-    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
+    emp::swap(swap, lhs, rhs);
 
-    //  need to go 1 attr at a time because otherwise we won't unpack in the right increments
-    for(auto pos : this->field_offsets_bytes_) {
-        int col_idx = pos.first;
-        desc = this->schema_.getField(col_idx);
-        int8_t *l_cursor = getFieldPtr(lhs_idx, col_idx);
-        SecureField l = SecureField::deserializePacked(desc,  l_cursor);
-
-        int8_t *r_cursor = getFieldPtr(rhs_idx, col_idx);
-        SecureField r = SecureField::deserializePacked(desc, r_cursor);
-
-        SecureField::compareAndSwap(swap, l, r);
-
-        l.serializePacked( l_cursor, desc);
-        r.serializePacked(r_cursor, desc);
-
-    }
+    FieldUtilities::packRow((RowTable<Bit> *) this, lhs_idx, lhs);
+    FieldUtilities::packRow((RowTable<Bit> *) this, rhs_idx, rhs);
 
 }
 

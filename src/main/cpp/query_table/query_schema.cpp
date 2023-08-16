@@ -130,15 +130,20 @@ void QuerySchema::initializeFieldOffsets()  {
     // populate ordinal --> offset mapping
 
     size_t running_offset = 0L;
+    bool is_secure = TypeUtilities::isEncrypted(fields_[0].getType());
+    // empty query table
+    EmpMode mode = SystemConfiguration::getInstance().emp_mode_;
+
     // empty query table
     if(fields_.empty()) return;
 
     size_t col_count = fields_.size();
     if(fields_.find(-1) != fields_.end()) --col_count;
+
     for(int i = 0; i < col_count; ++i) {
         QueryFieldDesc fd = fields_.at(i);
         offsets_[i] = running_offset;
-        running_offset += fd.size();
+        running_offset += (mode == EmpMode::OUTSOURCED && is_secure) ? fd.packedWires() : fd.size();
 
     }
     // dummy tag at end

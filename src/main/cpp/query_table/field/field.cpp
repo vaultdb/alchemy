@@ -1004,16 +1004,11 @@ Field<B> Field<B>::deserializePacked(const QueryFieldDesc &desc, const int8_t *s
             manager->unpack((Bit *) src,  &my_bit, 1);
             return Field<B>(type, my_bit);
         }
-        case FieldType::SECURE_INT: {
+        case FieldType::SECURE_INT:
+        case FieldType::SECURE_LONG: {
             // add one more bit for two's complement
             emp::Integer payload(desc.size() + desc.bitPacked(), 0);
             manager->unpack((Bit *) src, payload.bits.data(), desc.size());
-            return Field<B>(type, payload);
-        }
-        case FieldType::SECURE_LONG: {
-            emp::Integer payload(desc.size() + desc.bitPacked(), 0);
-            manager->unpack((Bit *) src, payload.bits.data(), desc.size());
-            memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
             return Field<B>(type, payload);
         }
         case FieldType::SECURE_FLOAT: {
