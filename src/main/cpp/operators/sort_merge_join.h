@@ -33,6 +33,7 @@ namespace  vaultdb {
         }
 
         QueryTable<B> *unionAndSortTables();
+        QueryTable<B> *unionAndMergeTables();
 
 		int foreignKeyChild() const { return foreign_key_input_; }
         QuerySchema deriveAugmentedSchema() const;
