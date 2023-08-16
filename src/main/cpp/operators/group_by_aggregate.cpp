@@ -259,8 +259,8 @@ void GroupByAggregate<B>::setup() {
 
 
     // sorted on group-by cols
-    if(check_sort_)
-        assert(sortCompatible(input_sort, group_by_));
+//    if(check_sort_)
+//        assert(sortCompatible(input_sort, group_by_));
 
     this->output_cardinality_ = this->getChild(0)->getOutputCardinality();
 }

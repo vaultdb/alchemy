@@ -887,8 +887,11 @@ template<typename B>
 void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
 
     Operator<B> *node = op->clone();
-    node->setParent(op->getParent());
-    int id = op->getOperatorId();
+    Operator<B> *parent = op->getParent();
+    node->setParent(parent);
+
+    node->setSortOrder(op->getSortOrder());
+    node->setOperatorId(op->getOperatorId());
 
 
     switch(op->getType()) {
@@ -900,23 +903,65 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
             auto sorts = getCollations(node);
             for (auto &sort: sorts) {
                 node->setSortOrder(sort);
+                std::cout << "Input :  Order by: " << DataUtilities::printSortDefinition(node->getSortOrder())  << ", ";
+
+                if(parent->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN || parent->getType() == OperatorType::SORT_MERGE_JOIN){
+                    if(parent->getChild(0)->getOperatorId() == node->getOperatorId())
+                        parent->setChild(node, 0);
+                    else
+                        parent->setChild(node, 1);
+                }
+                else
+                    parent->setChild(node);
+
                 recurseNode(node);
             }
+            break;
         }
         case OperatorType::KEYED_NESTED_LOOP_JOIN:
         case OperatorType::SORT_MERGE_JOIN: {
+
+            parent->setChild(node);
+
             // for each rhs leaf collation cycle through its collations and then try both SMJ and NLJ with each collation
             recurseJoin(node);
+            break;
         }
         case OperatorType::NESTED_LOOP_AGGREGATE:
         case OperatorType::SORT_MERGE_AGGREGATE: {
             // for each agg try NLA and SMA
             // for SMA check if we need sort before op, also check if we have any extra sorts that are unneeded?
+            node->setSortOrder(node->getChild()->getSortOrder());
+
+            std::cout << "Agg :  Order by: " << DataUtilities::printSortDefinition(node->getSortOrder())  << ", ";
+            if(parent != nullptr) {
+                if (parent->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN ||
+                    parent->getType() == OperatorType::SORT_MERGE_JOIN) {
+                    if (parent->getChild(0)->getOperatorId() == node->getOperatorId())
+                        parent->setChild(node, 0);
+                    else
+                        parent->setChild(node, 1);
+                } else
+                    parent->setChild(node);
+            }
             recurseAgg(node);
+            break;
         }
         default:
-            throw;
+            node->setSortOrder(node->getChild()->getSortOrder());
 
+            if(parent != nullptr) {
+                if (parent->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN ||
+                    parent->getType() == OperatorType::SORT_MERGE_JOIN) {
+                    if (parent->getChild(0)->getOperatorId() == node->getOperatorId())
+                        parent->setChild(node, 0);
+                    else
+                        parent->setChild(node, 1);
+                } else
+                    parent->setChild(node);
+            }
+            recurseNode(node);
+            break;
     }
 
     delete node;
@@ -925,9 +970,13 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
 
 template<typename B>
 void PlanParser<B>::recurseNode(Operator<B> *op) {
+
     // at the root node
     if(op->getParent() == nullptr) {
         size_t plan_cost = op->planCost();
+        std::cout << op->printTree() << endl;
+        std::cout << "Cost : " << std::to_string(plan_cost) << "\n" << "----------------------------" << std::endl;
+
         if(plan_cost < min_plan_cost_) {
             min_plan_cost_ = plan_cost;
             if(min_cost_plan_ != nullptr) {
@@ -978,9 +1027,9 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
 template<typename B>
 void PlanParser<B>::recurseAgg(Operator<B> *agg) {
 
+    Operator<B> *child = agg->getChild();
     if (agg->getType() == OperatorType::NESTED_LOOP_AGGREGATE) {
         NestedLoopAggregate<B> *nla = (NestedLoopAggregate<B> *) agg;
-        Operator<B> *child = agg->getChild();
         std::vector<int32_t> group_by_ordinals = nla->group_by_;
         // if sort not aligned, insert a sort op
         SortDefinition child_sort = child->getSortOrder();
@@ -991,18 +1040,48 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
                 child_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
             }
             Sort<B> *sort_before_sma = new Sort<B>(child->clone(), child_sort);
-
             GroupByAggregate a(sort_before_sma->clone(), group_by_ordinals, nla->aggregate_definitions_,
                                true);
+            child->setParent(sort_before_sma);
+            sort_before_sma->setChild(child);
+            sort_before_sma->setParent(&a);
+            a.setChild(sort_before_sma);
             recurseNode(&a);
         } else {
             GroupByAggregate a(child->clone(), group_by_ordinals, nla->aggregate_definitions_, true);
             recurseNode(&a);
         }
+        recurseNode(nla);
     } else {
         GroupByAggregate<B> *sma = (GroupByAggregate<B> *) agg;
-        NestedLoopAggregate a(agg->getChild()->clone(), sma->group_by_, sma->aggregate_definitions_,
+
+        SortDefinition cur_sort = sma->getSortOrder();
+        std::vector<int32_t> group_by_ordinals = sma->group_by_;
+        if (!GroupByAggregate<B>::sortCompatible(cur_sort, group_by_ordinals)) {
+            // insert sort
+            SortDefinition sort_order;
+            for (uint32_t idx: group_by_ordinals) {
+                sort_order.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
+            }
+            Sort<B> *sort_before_sma = new Sort<B>(child->clone(), sort_order);
+            child->setParent(sort_before_sma);
+            sort_before_sma->setChild(child);
+            sort_before_sma->setParent(sma);
+            sma->setChild(sort_before_sma);
+        }
+
+
+        recurseNode(sma);
+        NestedLoopAggregate a(child->clone(), sma->group_by_, sma->aggregate_definitions_,
                               sma->getJsonOutputCardinality());
+
+        // In NestedLoop, child's sort is not remained,
+        // TODO : need to change this part of setting sort order.
+        a.setSortOrder(child->getSortOrder());
+        a.setOperatorId(sma->getOperatorId());
+
+        //TODO : check if we need to add sort order to parent. Need Expected Sort
+
         recurseNode(&a);
     }
 }
