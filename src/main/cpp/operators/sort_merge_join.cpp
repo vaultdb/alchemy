@@ -246,9 +246,9 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     alpha_idx_ = augmented_schema.getFieldCount() - 2;
 
 
-//    cout << "Inputs.  lhs: " << this->getChild(0)->getOutput()->toString(true) << " rhs_prime: " << this->getChild(1)->getOutput()->toString(true) << endl;
-//    auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
-    auto sorted = unionAndSortTables();
+//    cout << "Inputs.  lhs: " << this->getChild(0)->getOutput()->toString(true) << " rhs: " << this->getChild(1)->getOutput()->toString(true) << endl;
+    auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
+//    auto sorted = unionAndSortTables();
 
 
 //    cout << "Sorted on join key, putting fkey reln first: " << sorted->revealInsecure()->toString(true) << endl;
@@ -338,7 +338,7 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
     QuerySchema augmented_schema = deriveAugmentedSchema();
     int unioned_len = lhs_prime_->getTupleCount() + rhs_prime_->getTupleCount();
     bool lhs_is_foreign_key = (foreign_key_input_ == 0);
-
+    cout << "Performing union and merge!" << endl;
 
     QueryTable<B> *unioned =   TableFactory<B>::getTable(unioned_len, augmented_schema, storage_model_);
     //     sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
@@ -348,12 +348,14 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
     // else add them rhs --> lhs
 
     if(lhs_is_foreign_key) {
-        for(int i = 0; i < lhs_prime_->getTupleCount(); ++i) {
+        // always FK --> PK
+        cout << "LHS --> RHS" << endl;
+        for(int i = lhs_prime_->getTupleCount() - 1; i >= 0; --i) {
+//            for(int i = 0; i < lhs_prime_->getTupleCount(); ++i) {
             unioned->cloneRow(cursor, 0, lhs_prime_, i);
             unioned->setDummyTag(cursor, lhs_prime_->getDummyTag(i));
             ++cursor;
         }
-
         for(int i = 0; i < rhs_prime_->getTupleCount(); ++i) {
             unioned->cloneRow(cursor, 0, rhs_prime_, i);
             unioned->setDummyTag(cursor, rhs_prime_->getDummyTag(i));
@@ -362,17 +364,19 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
         }
     }
     else {
-
-        for(int i = 0; i < rhs_prime_->getTupleCount(); ++i) {
+        cout << "RHS --> LHS" << endl;
+        for(int i = rhs_prime_->getTupleCount() - 1; i >= 0; --i) {
+//        for(int i = 0; i < rhs_prime_->getTupleCount(); ++i) {
             unioned->cloneRow(cursor, 0, rhs_prime_, i);
             unioned->setDummyTag(cursor, rhs_prime_->getDummyTag(i));
+            unioned->setField(cursor, table_id_idx_, table_id_field_);
             ++cursor;
         }
 
         for(int i = 0; i < lhs_prime_->getTupleCount(); ++i) {
+//       for(int i = lhs_prime_->getTupleCount()-1; i >= 0; --i) {
             unioned->cloneRow(cursor, 0, lhs_prime_, i);
             unioned->setDummyTag(cursor, lhs_prime_->getDummyTag(i));
-            unioned->setField(cursor, table_id_idx_, table_id_field_);
             ++cursor;
         }
     }
@@ -380,15 +384,18 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
     delete lhs_prime_;
     delete rhs_prime_;
 
-    // do bitonic merge instead of full sort
+//    cout << "Bitonic sequence: " << unioned->toString(true) << endl;
 
+    // do bitonic merge instead of full sort
     SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
     // sort s.t. fkey entries are first, pkey entries are second
    // sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
 
     sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
+//    cout << "Merging on " << DataUtilities::printSortDefinition(sort_def) << endl;
+
     Sort<B> sorter(unioned, sort_def);
-    sorter.setOperatorId(-1);
+    sorter.setOperatorId(-2);
     auto normalized = sorter.normalizeTable(unioned); // normalize to move up table_id field
 
     int counter = 0;

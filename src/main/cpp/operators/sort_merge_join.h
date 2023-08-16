@@ -95,14 +95,12 @@ namespace  vaultdb {
             if(lhs_sort.size() < join_idxs_.size() || rhs_sort.size() < join_idxs_.size())
                 return false;
 
-            bool sort_compatible = true;
             for(int i = 0; i < join_idxs_.size(); ++i) {
                 if(lhs_sort[i].first != i || rhs_sort[i].first != i) {
-                    sort_compatible = false;
-                    break;
+                   return false;
                 }
             }
-            return sort_compatible;
+            return true;
         }
 
         void setup();
