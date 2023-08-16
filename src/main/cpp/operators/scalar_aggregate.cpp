@@ -87,7 +87,7 @@ void  ScalarAggregate<B>::setup() {
 
 
 
-    this->output_schema_ = QuerySchema(); // reset it
+    this->output_schema_.reset(); // clear it
 
     // generate output schema
     for(size_t i = 0; i < aggregators_.size(); ++i) {
