@@ -225,7 +225,7 @@ namespace vaultdb {
 
             Integer ones(32, (0x7FFFFFF  | 0x80000000ul));
             Integer bits(ones);
-            memcpy(bits.bits.data(), f.value.data(), FLOAT_LEN * TypeUtilities::getEmpBitSize());
+            memcpy(bits.bits.data(), f.value.data(), FLOAT_LEN * sizeof(Bit)); // sizeof Bit for in-memory representation instead of serialized one
 //            cout << "bits: " << FieldUtilities::printInt(bits) << endl;
             bits = emp::If(sign_bit, ones - bits, bits);
 //            cout << " after flipping bits: " << FieldUtilities::printInt(bits) << endl;
@@ -245,7 +245,7 @@ namespace vaultdb {
 //            cout << "After flipping bits: " << FieldUtilities::printInt(bits) << endl;
 
             Float dst;
-            memcpy(dst.value.data(), bits.bits.data(), FLOAT_LEN * TypeUtilities::getEmpBitSize());
+            memcpy(dst.value.data(), bits.bits.data(), FLOAT_LEN * sizeof(Bit)); // sizeof Bit for in-memory representation instead of serialized one
 //            cout << "To float: " << FieldUtilities::printFloat(dst) << endl;
             if(dir == SortDirection::DESCENDING) {
                 dst = -dst;

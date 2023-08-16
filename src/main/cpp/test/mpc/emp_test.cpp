@@ -19,7 +19,6 @@ DEFINE_int32(ctrl_port, 65455, "port for managing EMP control flow by passing pu
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
-
 using namespace vaultdb;
 
 class EmpTest : public EmpBaseTest {};
@@ -96,6 +95,8 @@ TEST_F(EmpTest, emp_test_varchar) {
 TEST_F(EmpTest, test_float_normalization) {
     float_t f_input = 6941.231934;
     float_t g_input = 17236.36719;
+    cout << "F: " << FieldUtilities::printFloat(f_input) << endl;
+    cout << "G: " << FieldUtilities::printFloat(g_input) << endl;
 
     PlainField f_input_prime = PlainField(FieldType::FLOAT, f_input);
     PlainField g_input_prime = PlainField(FieldType::FLOAT, g_input);
@@ -108,21 +109,22 @@ TEST_F(EmpTest, test_float_normalization) {
 
     ASSERT_EQ(input_lt, norm_geq);
 
-    Float f(f_input);
-    Float g(g_input);
+    Float f(f_input, PUBLIC);
+    Float g(g_input, PUBLIC);
+    cout << "Secret shared f: " << FieldUtilities::printFloat(f) << endl;
+    cout << "Secret shared g: " << FieldUtilities::printFloat(g) << endl;
 
     SecureField f_prime(FieldType::SECURE_FLOAT, f);
     SecureField g_prime(FieldType::SECURE_FLOAT, g);
 
     SecureField f_norm = NormalizeFields::normalize(f_prime, SortDirection::DESCENDING);
     SecureField g_norm = NormalizeFields::normalize(g_prime, SortDirection::DESCENDING);
-
+    cout << "Normalized f: " << FieldUtilities::printField(f_norm) << endl;
+    cout << "Normalized g: " << FieldUtilities::printField(g_norm) << endl;
 
     Bit orig = (f_prime < g_prime);
     Bit norm = !(f_norm < g_norm);
-    // TODO: debug this on OMPC
-    if(emp_mode_ == vaultdb::EmpMode::SH2PC)
-        ASSERT_EQ(orig.reveal(), norm.reveal());
+    ASSERT_EQ(orig.reveal(), norm.reveal());
 }
 
 

@@ -197,10 +197,11 @@ string FieldUtilities::printFloat(const float_t &f) {
 
 string FieldUtilities::printFloat(const Float &f) {
     stringstream ss;
-    Integer ii(32, 0);
-    memcpy(ii.bits.data(), f.value.data(), 32*TypeUtilities::getEmpBitSize());
-    int32_t i = ii.reveal<int32_t>();
     double tmp = f.reveal<double>();
+
+    Integer ii(32, 0);
+    memcpy(ii.bits.data(), f.value.data(), 32*sizeof(Bit)); // sizeof Bit for in-memory representation instead of serialized one
+    int32_t i = ii.reveal<int32_t>();
 
     bool bools[32];
     ii.revealBools(bools, PUBLIC);
