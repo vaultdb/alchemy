@@ -28,16 +28,19 @@ namespace vaultdb {
 
         NestedLoopAggregate(QueryTable<B>  *child, const vector<int32_t> &groupBys,
                             const vector<ScalarAggregateDefinition> &aggregates, const int & output_card = 0);
-        ~NestedLoopAggregate(){
-            //if(predicate_ != nullptr) delete predicate_;
+        NestedLoopAggregate(const NestedLoopAggregate & src) : Operator<B>(src), aggregate_definitions_(src.aggregate_definitions_),
+                group_by_(src.group_by_) {
+            setup();
         }
-        Expression<B> *getPredicate() const { return predicate_; }
+
+        ~NestedLoopAggregate(){ }
+
+
         Operator<B> *clone() const override {
-            return new NestedLoopAggregate<B>(this->lhs_child_->clone(), this->group_by_, this->aggregate_definitions_, this->sort_definition_, this->output_cardinality_);
+            return new NestedLoopAggregate<B>(*this);
         }
 
     protected:
-        Expression<B>  *predicate_;
 
         QueryTable<B> *runSelf() override;
         string getParameters() const override {

@@ -27,9 +27,13 @@ namespace  vaultdb {
 
         SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
+        SortMergeJoin(const SortMergeJoin & src) : Join<B>(src) {
+            foreign_key_input_ = src.foreignKeyChild();
+            setup();
+        }
 
         Operator<B> *clone() const override {
-            return new SortMergeJoin<B>(this->lhs_child_->clone(), this->rhs_child_->clone(), this->foreign_key_input_, this->predicate_->clone(), this->sort_definition_);
+            return new SortMergeJoin<B>(*this);
         }
 
         QueryTable<B> *unionAndSortTables();
@@ -61,6 +65,7 @@ namespace  vaultdb {
 		QueryTable<B> *lhs_prime_;
 		QueryTable<B> *rhs_prime_;
 		Field<B> table_id_field_;
+
         pair<QueryTable<B> *, QueryTable<B> *> augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs);
         QueryTable<B> *obliviousDistribute(QueryTable<B> *input, size_t target_size);
         QueryTable<B> *obliviousExpand(QueryTable<B> *input, bool is_lhs);

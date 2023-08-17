@@ -15,6 +15,7 @@ namespace  vaultdb {
     public:
         Join(Operator<B> *lhs, Operator<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
         Join(QueryTable<B> *lhs, QueryTable<B> *rhs,  Expression<B> * predicate, const SortDefinition & sort = SortDefinition());
+        Join(const Join<B> & src) : Operator<B>(src), predicate_(src.predicate_->clone()) {}
         ~Join() { if(predicate_ != nullptr) delete predicate_; }
 
         // if B write is true, then write to the left side of an output tuple with src_tuple

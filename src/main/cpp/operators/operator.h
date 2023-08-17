@@ -45,10 +45,7 @@ namespace  vaultdb {
 
     public:
 
-        Operator(const SortDefinition & sorted_on = SortDefinition()) : sort_definition_(sorted_on), system_conf_(SystemConfiguration::getInstance()) {
-
-
-        }
+        Operator(const SortDefinition & sorted_on = SortDefinition()) : sort_definition_(sorted_on), system_conf_(SystemConfiguration::getInstance()) {}
 
         virtual ~Operator() {
             if(output_ != nullptr)  delete output_;
@@ -61,7 +58,18 @@ namespace  vaultdb {
 
         Operator(Operator *child, const SortDefinition & sorted_on = SortDefinition());
         Operator(Operator *lhs, Operator *rhs, const SortDefinition & sorted_on = SortDefinition());
+        // cloning children, omitting parent so as to not copy entire tree
+        Operator(const Operator &o) :
+            sort_definition_(o.sort_definition_), system_conf_(SystemConfiguration::getInstance()), output_schema_(o.output_schema_),
+            operator_executed_(o.operator_executed_), output_cardinality_(o.output_cardinality_), operator_id_(o.operator_id_)  {
+
+            if(o.lhs_child_ != nullptr) lhs_child_ = o.lhs_child_->clone();
+            if(o.rhs_child_ != nullptr) rhs_child_ = o.rhs_child_->clone();
+            if(o.output_ != nullptr) output_ = o.output_->clone();
+        }
+
         virtual Operator<B> *clone() const = 0;
+
 
 //        QueryTable<B> sortByDummyTag(QueryTable<B> & table);
 //        QueryTable<B> shrinkwrapToTrueCardinality(QueryTable<B> & table, bool isSorted);
@@ -182,7 +190,10 @@ namespace  vaultdb {
 
             operator_executed_ = false;
         }
-
+        // verify that collation is correct wrt child nodes
+        // in many cases this won't do anything,
+        // but is necessary for operators like join, filter, and project
+//        virtual void updateCollation() = 0;
 
     private:
         std::string printHelper(const std::string & prefix) const;

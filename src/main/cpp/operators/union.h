@@ -17,8 +17,10 @@ namespace  vaultdb {
 
         Union(QueryTable<B> *lhs, QueryTable<B> *rhs);
 
+        Union(const Union & src) : Operator<B>(src) { }
+
         Operator<B> *clone() const override {
-            return new Union<B>(this->lhs_child_->clone(), this->rhs_child_->clone());
+            return new Union<B>(*this);
         }
 
         virtual ~Union() = default;
@@ -28,9 +30,7 @@ namespace  vaultdb {
         QueryTable<B> *runSelf()  override;
         OperatorType getType() const override { return OperatorType::UNION; }
         string getParameters() const override { return ""; }
-        void setupScheme() {
 
-        }
 
 
     };

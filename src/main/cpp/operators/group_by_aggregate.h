@@ -35,8 +35,13 @@ namespace vaultdb {
         GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates);
 
+        GroupByAggregate(const GroupByAggregate<B> & src) : Operator<B>(src), aggregate_definitions_(src.aggregate_definitions_),
+                check_sort_(src.check_sort_), group_by_(src.group_by_), json_cardinality_(src.json_cardinality_) {
+            setup();
+        }
+
         Operator<B> *clone() const override {
-            return new GroupByAggregate<B>(this->lhs_child_->clone(), this->group_by_, this->aggregate_definitions_, this->check_sort_, this->json_cardinality_);
+            return new GroupByAggregate<B>(*this);
         }
 
         virtual ~GroupByAggregate()  {

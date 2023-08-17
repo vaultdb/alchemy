@@ -15,12 +15,17 @@ public:
         output_schema_ = srcSchema;
 
     }
-
+    CsvInput(const CsvInput &src) : Operator<bool>(src) {
+        input_file_ = src.input_file_;
+    }
 
     PlainTable *runSelf() override;
 
     ~CsvInput() = default;
 
+    Operator<bool> *clone() const override {
+        return new CsvInput(*this);
+    }
 protected:
 
     string getParameters() const {

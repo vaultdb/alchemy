@@ -25,8 +25,13 @@ namespace  vaultdb {
         MergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition(), bool or_dummy_tags = false) : Join<B>(lhs, rhs, predicate, sort), or_dummy_tags_(or_dummy_tags)  {
             setup();
             }
+
+       MergeJoin(const MergeJoin & src) : Join<B>(src) {
+                or_dummy_tags_ = src.or_dummy_tags_;
+       }
+
         Operator<B> *clone() const override {
-             return new MergeJoin<B>(this->lhs_child_->clone(), this->rhs_child_->clone(), this->predicate_->clone(), this->sort_definition_, this->or_dummy_tags_);
+             return new MergeJoin<B>(*this);
         }
 
     protected:

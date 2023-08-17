@@ -33,13 +33,16 @@ namespace vaultdb {
 
         }
 
-        Operator<B> *clone() const override {
-            map<uint32_t, Expression<B> * > expressions_clone;
-            for(auto pos : expressions_) {
-                expressions_clone[pos.first] = pos.second->clone();
+        Project(const Project<B> & src) : Operator<B>(src) {
+            for(auto pos : src.expressions_) {
+                expressions_[pos.first] = pos.second->clone();
             }
 
-            return new Project<B>(this->lhs_child_->clone(), expressions_clone, this->sort_definition_);
+            setup();
+        }
+
+        Operator<B> *clone() const override {
+            return new Project<B>(*this);
         }
 
         ~Project() {
