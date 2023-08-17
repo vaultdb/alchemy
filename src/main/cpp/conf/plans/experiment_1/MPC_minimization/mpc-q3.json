@@ -48,7 +48,7 @@
       "relOp": "LogicalJoin",
       "joinOn" : "o_custkey = c_custkey",
       "outputFields": "o_orderkey (#0), o_custkey (#1), o_orderdate (#2), o_shippriority (#3), c_custkey (#4)",
-      "operator-algorithm" : "nested-loop-join",
+      "operator-algorithm" : "auto",
       "condition": {
         "op": {
           "name": "=",
@@ -123,7 +123,7 @@
       "relOp": "LogicalJoin",
       "joinOn" : "o_orderkey = l_orderkey",
       "outputFields": "o_orderkey (#0), o_orderdate (#1), o_shippriority (#2), l_orderkey (#3), revenue (#4)",
-      "operator-algorithm" : "nested-loop-join",
+      "operator-algorithm" : "auto",
       "condition": {
         "op": {
           "name": "=",

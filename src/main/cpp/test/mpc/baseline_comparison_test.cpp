@@ -8,7 +8,7 @@
 #include <test/support/tpch_queries.h>
 #include <boost/algorithm/string/replace.hpp>
 #include <parser/plan_parser.h>
-
+#include <util/logger.h>
 
 using namespace emp;
 using namespace vaultdb;
@@ -27,7 +27,7 @@ DEFINE_string(dbname, "tpch_unioned_150", "db name for baseline comparison test"
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(bitpacking, "packed", "bit packed or non-bit packed");
 
-
+using namespace Logging;
 
 class BaselineComparisonTest : public EmpBaseTest {
 
@@ -61,40 +61,37 @@ BaselineComparisonTest::controlBitPacking(const string &db_name) {
 void
 BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 
-    controlBitPacking(FLAGS_dbname);
+    controlBitPacking(FLAGS_unioned_db);
 
     string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_dbname);
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
-    string local_db = FLAGS_dbname;
+    string local_db = FLAGS_unioned_db;
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
     cout << " Observed DB : "<< local_db << endl;
 
-    PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_dbname, expected_query, false, 0);
+    PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
 
     //ASSERT_TRUE(!expected->empty()); // want all tests to produce output
-
-    time_point<high_resolution_clock> startTime = clock_start();
-    clock_t secureStartClock = clock();
 
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/" + "baseline/baseline-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/" + "baseline/baseline-" + test_name + ".json";
 
     PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
-    SecureOperator *root = parser.getRoot();
-
-    std:cout << root->printTree() << endl;
+    SecureOperator *root = parser.getRoot();	
 
     SecureTable *result = root->run();
 
-    double secureClockTicks = (double) (clock() - secureStartClock);
-    double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
-    double duration = time_from(startTime) / 1e6;
-
     cout << "Baseline : \n";
-    cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
-    
+
+	Logger* log = get_log();	
+    log->write(root->printTree(), Level::DEBUG);
+	
+
+    log->write("Predicted gate count: " + std::to_string(root->planCost()), Level::INFO);	
+	log->write("Observed gate count: " + std::to_string(root->planGateCount()), Level::INFO);
+	log->write("Runtime: " + std::to_string(root->planRuntime()), Level::INFO);
 
     if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
@@ -111,38 +108,34 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
 void
 BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 
-    controlBitPacking(FLAGS_dbname);
+    controlBitPacking(FLAGS_unioned_db);
 
     string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_dbname);
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
-    string local_db = FLAGS_dbname;
+    string local_db = FLAGS_unioned_db;
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
     cout << " Observed DB : "<< local_db << endl;
 
-    PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_dbname, expected_query, false, 0);
+    PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
 
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/queries-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/mpc-"  + test_name + ".json";
 
-    time_point<high_resolution_clock> startTime = clock_start();
-    clock_t secureStartClock = clock();
-
     PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-    std:cout << root->printTree() << endl;
-
     SecureTable *result = root->run();
 
-    double secureClockTicks = (double) (clock() - secureStartClock);
-    double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
-    double duration = time_from(startTime) / 1e6;
-
     cout << "Handcode : \n";
-    cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
 
+	Logger* log = get_log();	
+    log->write(root->printTree(), Level::DEBUG);	
+
+    log->write("Predicted gate count: " + std::to_string(root->planCost()), Level::INFO);	
+	log->write("Observed gate count: " + std::to_string(root->planGateCount()), Level::INFO);
+	log->write("Runtime: " + std::to_string(root->planRuntime()), Level::INFO);
 
     if(FLAGS_validation) {
         PlainTable *observed = result->reveal();

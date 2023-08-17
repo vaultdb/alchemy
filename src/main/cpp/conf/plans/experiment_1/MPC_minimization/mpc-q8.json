@@ -189,7 +189,7 @@
       "id": "8",
       "joinOn" : "s_suppkey = l_suppkey",
       "outputFields": "o_year (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check (#4)",
-      "operator-algorithm" : "nested-loop-join",
+      "operator-algorithm" : "auto",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
