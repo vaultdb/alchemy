@@ -8,8 +8,10 @@
 #include "query_table/field/field_factory.h"
 #include "util/system_configuration.h"
 #include "operators/union.h"
+#include "util/logger.h"
 
 using namespace vaultdb;
+using namespace Logging;
 
 // lhs assumed to be fkey
 template<typename B>
@@ -57,6 +59,7 @@ void SortMergeJoin<B>::setup() {
     auto p = (GenericExpression<B> *) this->predicate_;
     JoinEqualityConditionVisitor<B> join_visitor(p->root_);
     join_idxs_  = join_visitor.getEqualities();
+
     lhs_smaller_ = (this->getChild(0)->getOutputSchema().size() < this->getChild(1)->getOutputSchema().size());
 
     one_ = FieldFactory<B>::getOne(int_field_type_);
