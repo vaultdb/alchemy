@@ -1,10 +1,9 @@
 #include <iostream>
 #include <query_table/query_schema.h>
-#include <pilot/src/common/shared_schema.h>
 #include <util/data_utilities.h>
 #include <sstream>
 #include <query_table/row_table.h>
-
+#include <pilot/src/common/pilot_utilities.h>
 
 using namespace std;
 using namespace vaultdb;
@@ -41,7 +40,6 @@ void revealRollup(const std::string & rollup_name) {
 
     QuerySchema rollup_schema = QuerySchema::fromFile(schema_file);
     rollup_schema = QuerySchema::toPlain(rollup_schema);
-
     PlainTable *result = RowTable<bool>::deserialize(rollup_schema, revealed);
 
 
@@ -79,6 +77,7 @@ int main(int argc, char **argv) {
 
     src_path +=  argv[1];
     dst_path += argv[2];
+    PilotUtilities::setupSystemConfiguration();
 
     Utilities::mkdir(dst_path);
 
