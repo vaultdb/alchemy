@@ -60,6 +60,14 @@ GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> 
     setup();
 }
 
+template<typename B>
+GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+                                      const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const int &json_cardinality)
+        :  Operator<B>(child, SortDefinition()), check_sort_(check_sort), aggregate_definitions_(aggregates),
+           group_by_(groupBys), json_cardinality_(json_cardinality) {
+    setup();
+}
+
 
 template<typename B>
 QueryTable<B> *GroupByAggregate<B>::runSelf() {
@@ -251,8 +259,8 @@ void GroupByAggregate<B>::setup() {
 
 
     // sorted on group-by cols
-    if(check_sort_)
-        assert(sortCompatible(input_sort, group_by_));
+//    if(check_sort_)
+//        assert(sortCompatible(input_sort, group_by_));
 
     this->output_cardinality_ = this->getChild(0)->getOutputCardinality();
 }

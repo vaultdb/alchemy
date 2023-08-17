@@ -26,6 +26,8 @@ namespace vaultdb {
 
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort);
+        GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
+                         const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const int &json_cardinality);
 
         GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort);
@@ -34,7 +36,7 @@ namespace vaultdb {
                          const vector<ScalarAggregateDefinition> &aggregates);
 
         Operator<B> *clone() const override {
-            return new GroupByAggregate<B>(this->lhs_child_->clone(), this->group_by_, this->aggregate_definitions_, this->check_sort_);
+            return new GroupByAggregate<B>(this->lhs_child_->clone(), this->group_by_, this->aggregate_definitions_, this->check_sort_, this->json_cardinality_);
         }
 
         virtual ~GroupByAggregate()  {
@@ -43,8 +45,13 @@ namespace vaultdb {
             }
         }
         static bool sortCompatible(const SortDefinition & lhs, const vector<int32_t> &group_by_idxs);
+        void setJsonOutputCardinality(size_t cardinality) { json_cardinality_ = cardinality; }
+        size_t getJsonOutputCardinality() const { return json_cardinality_; }
+
+
 
     protected:
+        size_t json_cardinality_ = 0;
         QueryTable<B> *runSelf() override;
 
 
