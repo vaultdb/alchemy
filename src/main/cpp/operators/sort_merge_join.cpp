@@ -242,8 +242,8 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 
 
 
-//    auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
-    auto sorted = unionAndSortTables();
+    auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
+//    auto sorted = unionAndSortTables();
 
 
     if(is_secure_ && bit_packed_) initializeAlphasPacked(sorted);
@@ -311,8 +311,6 @@ QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
 
     SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
 
-//    sort_def.insert(sort_def.begin(), std::make_pair(-1, SortDirection::ASCENDING));
-
     bool lhs_is_foreign_key = (foreign_key_input_ == 0);
     // sort s.t. fkey entries are first, pkey entries are second
     sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
@@ -331,11 +329,6 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
     bool lhs_is_foreign_key = (foreign_key_input_ == 0);
 
     QueryTable<B> *unioned =   TableFactory<B>::getTable(unioned_len, augmented_schema, storage_model_);
-    //     sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
-    // if lhs_is_fk then table_id is ASC otherwise DESC
-    // we always set RHS table_id field to true (if RHS is PK, then ASC, then we want RHS to be last)
-    // if(lhs_is_fk, then add them lhs --> rhs
-    // else add them rhs --> lhs
 
     if(lhs_is_foreign_key) {
         // always FK --> PK
