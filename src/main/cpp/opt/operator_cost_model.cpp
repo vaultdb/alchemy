@@ -125,7 +125,19 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 	sort_def.emplace_back(table_id_idx, SortDirection::ASCENDING);
 
 	size_t augment_cost = 0;
-	augment_cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());	
+	if(join->sortCompatible()) {
+		float n =  lhs->getOutputCardinality() + rhs->getOutputCardinality();
+		float rounds = log2(n);
+
+		float comparisons_per_stage = n /2;
+		float comparison_cnt = rounds * comparisons_per_stage;
+
+		size_t c_and_s_cost = compareSwapCost(augmented_schema, sort_def, n);
+		augment_cost += comparison_cnt * c_and_s_cost;
+	}
+	else {
+		augment_cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());
+	}
 
 	sort_def.clear();
     sort_def.emplace_back(table_id_idx, SortDirection::ASCENDING);

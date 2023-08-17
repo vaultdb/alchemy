@@ -6,6 +6,8 @@ import argparse
 def run_tests(regex_="*",label_="UnitTest",regex_exclude_="a^",label_exclude_="ZkTest"):
     config = TestConfig()
     config.add_from_ctest(regex=regex_,label=label_,regex_exclude=regex_exclude_,label_exclude=label_exclude_)
+    for test_suite in config.test_suites:
+        test_suite.add_flag("log_level", "2", True)
     runner = Runner(config)
     runner.run_tests()
 
