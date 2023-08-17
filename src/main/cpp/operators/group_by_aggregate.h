@@ -16,8 +16,7 @@ namespace vaultdb {
         std::vector<ScalarAggregateDefinition> aggregate_definitions_;
         std::vector<int32_t> group_by_;
         bool check_sort_ = true;
-        // truncated output not yet implemented.  Placeholder member variable below
-        size_t output_cardinality_ = 0;
+        SortDefinition effective_sort_; // TODO: populate this with JSON inputs
 
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort);
@@ -42,6 +41,25 @@ namespace vaultdb {
 
         Operator<B> *clone() const override {
             return new GroupByAggregate<B>(*this);
+        }
+
+        void updateCollation() override {
+            // for now regarding group_by as sort order
+            // TODO: work in effective_sort to cover functional dependencies
+            this->getChild(0)->updateCollation();
+            if(!check_sort_) return;
+
+            SortDefinition  child_sort = this->getChild(0)->getSortOrder();
+            assert(sortCompatible(child_sort, group_by_));
+
+            SortDefinition  sort_def;
+            // map sort order to that of child
+            for(size_t idx = 0; idx < group_by_.size(); ++idx) {
+                // projecting the attribute in group_by_[idx] to the ith position in output
+                sort_def.emplace_back(idx, child_sort[group_by_[idx]].second);
+            }
+
+            this->sort_definition_ = sort_def;
         }
 
         virtual ~GroupByAggregate()  {

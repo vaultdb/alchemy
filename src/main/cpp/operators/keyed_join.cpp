@@ -15,6 +15,7 @@ template<typename B>
 KeyedJoin<B>::KeyedJoin(Operator<B> *foreign_key, Operator<B> *primary_key, Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(foreign_key, primary_key, predicate, sort) {
             this->output_cardinality_ = foreign_key->getOutputCardinality();
+            this->updateCollation();
         }
 
 
@@ -24,19 +25,23 @@ KeyedJoin<B>::KeyedJoin(Operator<B> * lhs, Operator<B> * rhs, const int & fkey, 
         : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey) {
     assert(fkey == 0 || fkey == 1);
     this->output_cardinality_ = (fkey == 0) ? lhs->getOutputCardinality() : rhs->getOutputCardinality();
+    this->updateCollation();
 }
 
 template<typename B>
 KeyedJoin<B>::KeyedJoin(QueryTable<B> *foreign_key, QueryTable<B> *primary_key, Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(foreign_key, primary_key, predicate, sort) {
+
             this->output_cardinality_ = foreign_key->getTupleCount();
-        }
+            this->updateCollation();
+}
 
 template<typename B>
 KeyedJoin<B>::KeyedJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey) {
     assert(fkey == 0 || fkey == 1);
     this->output_cardinality_ = (fkey == 0) ? lhs->getTupleCount() : rhs->getTupleCount();
+    this->updateCollation();
 }
 
 

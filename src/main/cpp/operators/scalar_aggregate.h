@@ -27,6 +27,9 @@ namespace vaultdb {
             return new ScalarAggregate<B>(*this);
         }
 
+        // no collation needed
+        void updateCollation() override {}
+
         virtual ~ScalarAggregate() {
             for(auto agg : aggregators_) {
                 delete agg;

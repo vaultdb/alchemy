@@ -40,6 +40,23 @@ namespace vaultdb {
             return new NestedLoopAggregate<B>(*this);
         }
 
+        // if group-by cols are sorted, then they will be emitted in the order in which they were first visited in NLA
+        void updateCollation() override {
+            this->getChild(0)->updateCollation();
+            auto child_sort = this->getChild(0)->getSortOrder();
+            SortDefinition  output_sort;
+
+            for(int i = 0; i < group_by_.size(); ++i) {
+                if(child_sort.size() <= (i+1)) break; // nothing to match
+                if(group_by_[i] == child_sort[i].first) {
+                    output_sort.push_back(child_sort[i]);
+                } else {
+                    break;
+                }
+            }
+            this->sort_definition_ = output_sort;
+       }
+
     protected:
 
         QueryTable<B> *runSelf() override;

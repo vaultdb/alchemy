@@ -18,6 +18,19 @@ namespace vaultdb {
 
         ~Shrinkwrap() = default;
 
+        void updateCollation() override {
+            this->getChild()->updateCollation();
+
+            SortDefinition src_sort = this->getChild()->getSortOrder();
+            SortDefinition  dst_sort;
+            if(!src_sort.empty() && src_sort[0].first != -1)
+                dst_sort.push_back(ColumnSort(-1, SortDirection::ASCENDING));  // not-dummies go first
+            for(ColumnSort c : src_sort) {
+                dst_sort.push_back(c);
+            }
+            this->sort_definition_ = dst_sort;
+        }
+
     protected:
         QueryTable<B>* runSelf()  override;
         string getParameters() const override {  return "cardinality_bound=" + std::to_string(this->output_cardinality_); }

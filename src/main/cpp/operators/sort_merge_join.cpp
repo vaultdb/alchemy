@@ -63,14 +63,7 @@ void SortMergeJoin<B>::setup() {
     zero_ = FieldFactory<B>::getZero(int_field_type_);
     bit_packed_ = SystemConfiguration::getInstance().bitPackingEnabled();
 
-    // just taking the first instance of equi-join key
-    // TODO: refine sort order in optimizer
-    SortDefinition sort_def;
-    for(auto &pos : join_idxs_) {
-        sort_def.push_back(ColumnSort (pos.first, SortDirection::ASCENDING));
-    }
-    this->setSortOrder(sort_def);
-
+    updateCollation();
 }
 
 template<typename B>
@@ -123,6 +116,7 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     delete lhs_reverted;
     delete rhs_reverted;
 
+    this->output_->setSortOrder(this->sort_definition_);
     return this->output_;
 
 
@@ -239,8 +233,6 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 
 	table_id_idx_ = augmented_schema.getFieldCount() - 1;
     alpha_idx_ = augmented_schema.getFieldCount() - 2;
-
-
 
     auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
 //    auto sorted = unionAndSortTables();

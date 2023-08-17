@@ -74,7 +74,7 @@ QueryTable<B> *Operator<B>::run() {
         log->write("Estimated cost: " + std::to_string(estimated_gates) + 
 				", Observed gates: " + std::to_string(gate_cnt_) + 
 				", Error rate(%) : " + std::to_string(relative_error) + "\n", Level::DEBUG);
-//        if(relative_error > 25.0) cout << "***Warning: high cost model error on operator (" << this->getOperatorId() << ") " << this->getTypeString() << endl;
+//        if(relative_error > 25.0) cout << "***Warning: high cost model delta on operator (" << this->getOperatorId() << ") " << this->getTypeString() << endl;
         }
     }
 

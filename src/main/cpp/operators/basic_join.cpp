@@ -8,13 +8,16 @@ template<typename B>
 BasicJoin<B>::BasicJoin(Operator<B> *lhs, Operator<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(lhs, rhs, predicate, sort) {
             this->output_cardinality_ = lhs->getOutputCardinality() * rhs->getOutputCardinality();
+            this->updateCollation();
         }
 
 template<typename B>
 BasicJoin<B>::BasicJoin(QueryTable<B> *lhs, QueryTable<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(lhs, rhs, predicate, sort) {
             this->output_cardinality_ = lhs->getTupleCount() * rhs->getTupleCount();
-        }
+
+        this->updateCollation();
+}
 
 template<typename B>
 QueryTable<B> *BasicJoin<B>::runSelf() {
@@ -28,14 +31,10 @@ QueryTable<B> *BasicJoin<B>::runSelf() {
 
     assert(lhs->isEncrypted() == rhs->isEncrypted()); // only support all plaintext or all MPC
 
-    SortDefinition concat_sorts;
-    concat_sorts = lhs->getSortOrder();
-    SortDefinition  rhs_sort = rhs->getSortOrder();
-    concat_sorts.insert(concat_sorts.end(),  rhs_sort.begin(), rhs_sort.end());
 
     B selected, dst_dummy_tag, lhs_dummy_tag;
     // output size, colCount, is_encrypted
-    this->output_ = TableFactory<B>::getTable(lhs->getTupleCount() * rhs->getTupleCount(), this->output_schema_, lhs->storageModel(), concat_sorts);
+    this->output_ = TableFactory<B>::getTable(lhs->getTupleCount() * rhs->getTupleCount(), this->output_schema_, lhs->storageModel(), this->sort_definition_);
     int cursor = 0;
 
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {

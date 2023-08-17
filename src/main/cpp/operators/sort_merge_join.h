@@ -36,8 +36,20 @@ namespace  vaultdb {
             return new SortMergeJoin<B>(*this);
         }
 
-        QueryTable<B> *unionAndSortTables();
-        QueryTable<B> *unionAndMergeTables();
+        void updateCollation() override {
+            // just taking the first instance of equi-join key
+            // TODO: refine sort order in optimizer
+            this->getChild()->updateCollation();
+            this->getChild(1)->updateCollation();
+
+            SortDefinition sort_def;
+            for(auto &pos : join_idxs_) {
+                sort_def.push_back(ColumnSort (pos.first, SortDirection::ASCENDING));
+            }
+            this->setSortOrder(sort_def);
+
+        }
+
 
 		int foreignKeyChild() const { return foreign_key_input_; }
         QuerySchema deriveAugmentedSchema() const;
@@ -81,6 +93,8 @@ namespace  vaultdb {
         void initializeAlphas(QueryTable<B> *dst); // update in place
         void initializeAlphasPacked(QueryTable<B> *dst); // update in place
 
+        QueryTable<B> *unionAndSortTables();
+        QueryTable<B> *unionAndMergeTables();
 
         inline B joinMatch(QueryTable<B> *t, int lhs_row, int rhs_row) {
             // previous alignment step will make join keys in first n columns
