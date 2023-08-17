@@ -433,28 +433,28 @@
             }
           ]
         },
+        {
+          "op": {
+            "name": "+",
+            "kind": "PLUS",
+            "syntax": "BINARY"
+          },
+          "operands": [
             {
-              "op": {
-                "name": "+",
-                "kind": "PLUS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 12,
-                  "name": "$12",
-                  "input_name": "cnt"
-                },
-                {
-                  "input": 25,
-                  "name": "$25",
-                  "input_name": "cnt"
-                }
-              ]
+              "input": 12,
+              "name": "$12",
+              "input_name": "cnt"
+            },
+            {
+              "input": 25,
+              "name": "$25",
+              "input_name": "cnt"
             }
           ]
+        }
+      ]
     }
-   ]
+  ]
 }
 
 

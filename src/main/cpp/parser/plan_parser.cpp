@@ -43,8 +43,6 @@ PlanParser<B>::PlanParser(const string &db_name, const string & json_file, const
 
     parseSecurePlan(json_file);
 
-    optmizeTree();
-
     if(getAutoFlag())
         calculateAutoAggregate();
 
@@ -873,9 +871,11 @@ Operator<B> *PlanParser<B>::getOperator(const int &op_id) {
 //  * For aggs try NLA and SMA (if a card bound exists)
 //  * For SMA check if we need sort before op.
 //  * After SMA assess if we still need any sort that's a parent to it.
+//  * Important : Since we get leaf from operators_.begin, json file needs to be in the increasing order
+//  * For example, if OP#0, OP#1 are logical values, OP#2 join should have lhs as 0, and rhs as 1, not vice versa.
 
 template<typename B>
-Operator<B> *PlanParser<B>::optmizeTree() {
+Operator<B> *PlanParser<B>::optimizeTree() {
     Operator<B> *leaf = operators_.begin()->second;
     optimizeTreeHelper(leaf);
     return nullptr;
@@ -887,12 +887,6 @@ template<typename B>
 void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
 
     Operator<B> *node = op->clone();
-    Operator<B> *parent = op->getParent();
-    node->setParent(parent);
-
-    node->setSortOrder(op->getSortOrder());
-    node->setOperatorId(op->getOperatorId());
-
 
     switch(op->getType()) {
         case OperatorType::SQL_INPUT:
@@ -903,25 +897,15 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
             auto sorts = getCollations(node);
             for (auto &sort: sorts) {
                 node->setSortOrder(sort);
-                std::cout << "Input :  Order by: " << DataUtilities::printSortDefinition(node->getSortOrder())  << ", ";
+                optimizeTree_operators_[node->getOperatorId()] = node;
 
-                if(parent->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN || parent->getType() == OperatorType::SORT_MERGE_JOIN){
-                    if(parent->getChild(0)->getOperatorId() == node->getOperatorId())
-                        parent->setChild(node, 0);
-                    else
-                        parent->setChild(node, 1);
-                }
-                else
-                    parent->setChild(node);
-
+                std::cout << node->toString() << endl;
                 recurseNode(node);
             }
             break;
         }
         case OperatorType::KEYED_NESTED_LOOP_JOIN:
         case OperatorType::SORT_MERGE_JOIN: {
-
-            parent->setChild(node);
 
             // for each rhs leaf collation cycle through its collations and then try both SMJ and NLJ with each collation
             recurseJoin(node);
@@ -934,32 +918,20 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
             node->setSortOrder(node->getChild()->getSortOrder());
 
             std::cout << "Agg :  Order by: " << DataUtilities::printSortDefinition(node->getSortOrder())  << ", ";
-            if(parent != nullptr) {
-                if (parent->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN ||
-                    parent->getType() == OperatorType::SORT_MERGE_JOIN) {
-                    if (parent->getChild(0)->getOperatorId() == node->getOperatorId())
-                        parent->setChild(node, 0);
-                    else
-                        parent->setChild(node, 1);
-                } else
-                    parent->setChild(node);
-            }
             recurseAgg(node);
             break;
         }
+        case OperatorType::SORT:
+            // Sort is always same with sort order
+            node->setSortOrder(op->getSortOrder());
+            recurseNode(node);
+            break;
         default:
+            // Same with child's sort order
             node->setSortOrder(node->getChild()->getSortOrder());
+            optimizeTree_operators_[node->getOperatorId()] = node;
 
-            if(parent != nullptr) {
-                if (parent->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN ||
-                    parent->getType() == OperatorType::SORT_MERGE_JOIN) {
-                    if (parent->getChild(0)->getOperatorId() == node->getOperatorId())
-                        parent->setChild(node, 0);
-                    else
-                        parent->setChild(node, 1);
-                } else
-                    parent->setChild(node);
-            }
+            std::cout << node->toString() << endl;
             recurseNode(node);
             break;
     }
@@ -971,8 +943,10 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
 template<typename B>
 void PlanParser<B>::recurseNode(Operator<B> *op) {
 
+    auto original = operators_.at(op->getOperatorId());
+    auto parent = original->getParent();
     // at the root node
-    if(op->getParent() == nullptr) {
+    if(parent == nullptr) {
         size_t plan_cost = op->planCost();
         std::cout << op->printTree() << endl;
         std::cout << "Cost : " << std::to_string(plan_cost) << "\n" << "----------------------------" << std::endl;
@@ -988,7 +962,7 @@ void PlanParser<B>::recurseNode(Operator<B> *op) {
     }
 
     // else recurse up the tree
-    optimizeTreeHelper(op->getParent());
+    optimizeTreeHelper(parent);
 
 }
 
@@ -1007,13 +981,37 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
     auto rhs_sorts = getCollations(rhs_leaf);
     for(auto &sort: rhs_sorts) {
         rhs_leaf->setSortOrder(sort);
+        optimizeTree_operators_[rhs_leaf->getOperatorId()] = rhs_leaf;
+
+        std::cout << rhs_leaf->toString() << endl;
+        // TODO : If there is more than one op in rhs, we need to set sort order for all of them.
+
         // TODO: add method to propagate sort to parent nodes
         // recommend doing this in Operator<B> - like adding an updateSortOrder() method that uses the same logic in operator constructor
-        recurseNode(join);
+        //recurseNode(join);
 
         if(join->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN) {
+            // For KeyedJoin, sort order is same with foreign key's sort order
             KeyedJoin<B> *kj = (KeyedJoin<B> *)join;
+
+            // Childs are pointing original parent, Need to fix those to point new parent.
+            kj->setChild(optimizeTree_operators_.at(kj->getChild(0)->getOperatorId()));
+            kj->setChild(optimizeTree_operators_.at(kj->getChild(1)->getOperatorId()), 1);
+            optimizeTree_operators_.at(kj->getChild(0)->getOperatorId())->setParent(kj);
+            optimizeTree_operators_.at(kj->getChild(1)->getOperatorId())->setParent(kj);
+
+
+            kj->setSortOrder(join->getChild(kj->foreignKeyChild())->getSortOrder());
+
+            std::cout << kj->toString() << endl;
+
+            recurseNode(kj);
+
+            // For SMJ, sort order is same with sort key's order
             SortMergeJoin j(join->getChild(0)->clone(), join->getChild(1)->clone(), kj->foreignKeyChild(), kj->getPredicate());
+
+            std::cout << j.toString() << endl;
+
             recurseNode(&j);
         }
         else {

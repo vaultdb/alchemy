@@ -51,19 +51,16 @@
       ],
       "sql": "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_orderkey, o_orderdate, o_shippriority",
       "dummy-tag": true,
-      "collation": [
+      "collation-1": [
         {
           "field": 0,
           "direction": "ASCENDING",
           "nulls": "FIRST"
-        },
+        }
+      ],
+      "collation-2": [
         {
-          "field": 2,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        },
-        {
-          "field": 3,
+          "field": 1,
           "direction": "ASCENDING",
           "nulls": "FIRST"
         }
