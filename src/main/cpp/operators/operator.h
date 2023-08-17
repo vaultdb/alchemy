@@ -122,6 +122,12 @@ namespace  vaultdb {
         // returns summed cost over this operator (as root) and all of its children
         size_t planCost() const;
 
+		//returns sum of real gate costs
+		size_t planGateCount() const;
+
+		//returns total runtime of this operator and its children
+		double planRuntime() const;
+
         inline string getTypeString() const {
             switch(this->getType()) {
                 case OperatorType::SQL_INPUT:

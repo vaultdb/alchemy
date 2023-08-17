@@ -192,7 +192,32 @@ size_t Operator<B>::planCost() const {
     return summed_cost;
 }
 
+template<typename B>
+size_t Operator<B>::planGateCount() const {
+	size_t summed_cost = 0L;
+	if(std::is_same_v<bool, B>) return summed_cost;
 
+	if(lhs_child_ != nullptr)
+		summed_cost += lhs_child_->planGateCount();
+	if(rhs_child_ != nullptr)
+		summed_cost += rhs_child_->planGateCount();
+
+	summed_cost += this->getGateCount();
+	return summed_cost;
+}
+
+template<typename B>
+double Operator<B>::planRuntime() const {
+	double summed_cost = 0;
+	
+	if(lhs_child_ != nullptr)
+		summed_cost += lhs_child_->planRuntime();
+	if(rhs_child_ != nullptr)
+		summed_cost += rhs_child_->planRuntime();
+
+	summed_cost += this->getRuntimeMs();
+	return summed_cost;
+}
 
 template class vaultdb::Operator<bool>;
 template class vaultdb::Operator<emp::Bit>;
