@@ -106,7 +106,7 @@ PlainTable *ColumnTable<B>::reveal(const int & party)   {
 
 
 template<typename B>
-PlainTable *ColumnTable<B>::revealInsecure(const int &party) {
+PlainTable *ColumnTable<B>::revealInsecure(const int &party) const {
     assert(this->storageModel() == StorageModel::COLUMN_STORE);
 
     if(!this->isEncrypted()) { return (ColumnTable<bool> *) this;  }

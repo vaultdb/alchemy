@@ -144,7 +144,7 @@ namespace  vaultdb {
 
         virtual PlainTable *reveal(const int & party = emp::PUBLIC) = 0;
         // holds onto dummy rows
-        virtual PlainTable *revealInsecure(const int & party = emp::PUBLIC) = 0;
+        virtual PlainTable *revealInsecure(const int & party = emp::PUBLIC) const = 0;
 
         virtual QueryTable<B> &operator=(const QueryTable<B> &src) = 0;
 

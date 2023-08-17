@@ -241,17 +241,13 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     alpha_idx_ = augmented_schema.getFieldCount() - 2;
 
 
-//    cout << "Inputs.  lhs: " << DataUtilities::printTable(this->getChild(0)->getOutput())
-//    << " rhs: " << DataUtilities::printTable(this->getChild(1)->getOutput()) << endl;
 
 //    auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
     auto sorted = unionAndSortTables();
 
 
-//    cout << "Sorted on join key, putting fkey reln first: " << DataUtilities::printTable(sorted) << endl;
     if(is_secure_ && bit_packed_) initializeAlphasPacked(sorted);
     else initializeAlphas(sorted);
-//    cout << "After initialize alphas: " << DataUtilities::printTable(sorted) << endl;
 
 
     SortDefinition sort_def;
@@ -379,7 +375,6 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
     delete lhs_prime_;
     delete rhs_prime_;
 
-//    cout << "Bitonic sequence: " << unioned->toString(true) << endl;
 
     // do bitonic merge instead of full sort
     SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
@@ -555,12 +550,12 @@ void SortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_t target_size) {
     QuerySchema schema = input->getSchema();
-    cout << "Initial input: " << DataUtilities::printTable(input) << endl;
+
     SortDefinition sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
     Sort<B> sorted(input, sort_def);
     sorted.setOperatorId(-2);
     auto input2 = sorted.run();
-    cout << "Input2: " << DataUtilities::printTable(input2) << endl;
+
     QueryTable<B> *dst_table = TableFactory<B>::getTable(target_size, schema, storage_model_);
 
     for(int i = 0; i < input2->getTupleCount(); i++) {
@@ -710,13 +705,13 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
         intermediate_table->setDummyTag(i, input->getDummyTag(i) | result);
         s = s + cnt;
     }
-    cout << "After setup: " << DataUtilities::printTable(intermediate_table) << endl;
+//    cout << "After setup: " << DataUtilities::printTable(intermediate_table) << endl;
 
     // cout << "Calling obliviousDistribute with and gate count: " << this->system_conf_.andGateCount() << endl;
     SecureTable *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
     // cout << "Exited obliviousDistribute with and gate count: " << this->system_conf_.andGateCount() << endl;
 
-    cout << "After distribute: " << DataUtilities::printTable(dst_table) << endl;
+//    cout << "After distribute: " << DataUtilities::printTable(dst_table) << endl;
 
     schema = dst_table->getSchema();
 
@@ -747,8 +742,6 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
 		//dst_table->setDummyTag(i, FieldUtilities::select(result, tmp.getDummyTag(), dst_table->getDummyTag(i)));
     }
 
-    // cout << "Ending obliviousExpand with and gates: " << this->system_conf_.andGateCount() << endl;
-	//std::cout << "Observed cost of conditional write step: " << this->system_conf_.andGateCount() - start_gates << "\n";
 
     return dst_table;
 }

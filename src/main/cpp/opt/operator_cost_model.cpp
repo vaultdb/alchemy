@@ -8,6 +8,7 @@ using namespace vaultdb;
 
 size_t OperatorCostModel::operatorCost(const SecureOperator *op) {
     string operator_type = op->getTypeString();
+   // TODO repalce with Operator::getType()
     if(operator_type == "Filter")
         return filterCost((Filter<Bit> *) op);
     else if(operator_type == "SecureSqlInput")
