@@ -118,6 +118,9 @@ namespace vaultdb {
             }
     }
 
+    static string printTable(const SecureTable *table);
+    static string printTable(const PlainTable *table);
+
     };
 }
 

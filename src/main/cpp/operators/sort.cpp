@@ -387,7 +387,7 @@ QueryTable<B> *Sort<B>::denormalizeTable(QueryTable<B> *src) {
     for(auto pos : sort_key_map_) {
         builder.addMapping(pos.first, pos.second);
     }
-    Project<B> projection(dst->clone(), builder.getExprs());
+    Project<B> projection(dst, builder.getExprs());
     projection.setOperatorId(-2);
     return projection.run()->clone();
 

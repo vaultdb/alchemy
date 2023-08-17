@@ -72,8 +72,8 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
                 auto normalized = sorter.normalizeTable(dst_table);
 
                 sorter.bitonicMergeNormalized(normalized, sorter.getSortOrder(), 0, normalized->getTupleCount(), true, counter);
-                auto tmp = sorter.denormalizeTable(normalized);
-                dst_table = tmp;
+                dst_table = sorter.denormalizeTable(normalized);
+                delete normalized;
                 dst_table->setSortOrder(dst_sort);
              }
             else {// col store

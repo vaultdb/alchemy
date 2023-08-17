@@ -348,3 +348,17 @@ string DataUtilities::printBitArray(const int8_t *bits, const size_t &byte_cnt) 
     }
     return s.str();
 }
+
+string DataUtilities::printTable(const SecureTable *table) {
+    auto tmp = table->revealInsecure();
+    stringstream  ss;
+    ss << tmp->toString(true);
+    delete tmp;
+    return ss.str();
+}
+
+string DataUtilities::printTable(const PlainTable *table) {
+    stringstream  ss;
+    ss << table->toString(true);
+    return ss.str();
+}

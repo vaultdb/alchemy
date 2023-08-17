@@ -76,7 +76,6 @@ QueryTable<B> *Operator<B>::run() {
 				", Error rate(%) : " + std::to_string(relative_error) + "\n", Level::DEBUG);
 //        if(relative_error > 25.0) cout << "***Warning: high cost model error on operator (" << this->getOperatorId() << ") " << this->getTypeString() << endl;
         }
-        //cout << "      Operator desc: " << this->toString() << endl;
     }
 
     operator_executed_ = true;

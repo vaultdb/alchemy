@@ -96,21 +96,18 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     foreign_key_cardinality_ = foreign_key_input_ ? rhs->getTupleCount() : lhs->getTupleCount();
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
-
     QueryTable<B> *s1, *s2;
 
 	s1 = obliviousExpand(augmented.first, true);
 	s2 = obliviousExpand(augmented.second, false);
 
-	
-	delete augmented.first;
+    delete augmented.first;
 	delete augmented.second;
 
 
     this->output_ = TableFactory<B>::getTable(foreign_key_cardinality_, out_schema, storage_model_);
 
     size_t lhs_field_cnt = lhs_schema.getFieldCount();
-
     QueryTable<B> *lhs_reverted = revertProjection(s1, lhs_field_mapping_, true);
     QueryTable<B> *rhs_reverted = revertProjection(s2, rhs_field_mapping_, false);
 
@@ -126,9 +123,7 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     delete lhs_reverted;
     delete rhs_reverted;
 
-	//std::cout << "Output of (" << this->getOperatorId() << "): " << Join<B>::output_->revealInsecure()->toString() << "\n";
-
-    return Join<B>::output_;
+    return this->output_;
 
 
 }
@@ -246,15 +241,17 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     alpha_idx_ = augmented_schema.getFieldCount() - 2;
 
 
-//    cout << "Inputs.  lhs: " << this->getChild(0)->getOutput()->toString(true) << " rhs: " << this->getChild(1)->getOutput()->toString(true) << endl;
-    auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
-//    auto sorted = unionAndSortTables();
+//    cout << "Inputs.  lhs: " << DataUtilities::printTable(this->getChild(0)->getOutput())
+//    << " rhs: " << DataUtilities::printTable(this->getChild(1)->getOutput()) << endl;
+
+//    auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
+    auto sorted = unionAndSortTables();
 
 
-//    cout << "Sorted on join key, putting fkey reln first: " << sorted->revealInsecure()->toString(true) << endl;
+//    cout << "Sorted on join key, putting fkey reln first: " << DataUtilities::printTable(sorted) << endl;
     if(is_secure_ && bit_packed_) initializeAlphasPacked(sorted);
     else initializeAlphas(sorted);
-//    cout << "After initialize alphas: " << sorted->toString(true) << endl;
+//    cout << "After initialize alphas: " << DataUtilities::printTable(sorted) << endl;
 
 
     SortDefinition sort_def;
@@ -280,14 +277,12 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     }
 
     for (int i = 0; i < rhs->getTupleCount(); i++) {
- s2->cloneRow(i, 0, sort_table, read_cursor);
+        s2->cloneRow(i, 0, sort_table, read_cursor);
         s2->setDummyTag(i, sort_table->getDummyTag(read_cursor));
         ++read_cursor;
     }
     output.first = s1;
     output.second = s2;
-
-	//std::cout << "Observed cost of augmentTables: " << this->system_conf_.andGateCount() - start_gates << "\n"; 
 
 
     return output;
@@ -402,6 +397,7 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
     sorter.bitonicMergeNormalized(normalized, sorter.getSortOrder(), 0, normalized->getTupleCount(), true, counter);
     unioned =  sorter.denormalizeTable(normalized);
     unioned->setSortOrder(sort_def);
+    delete normalized;
     return unioned;
 
 }
@@ -444,15 +440,15 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 	Field<B> one_b(bool_field_type_, B(true)), zero_b(bool_field_type_, B(false));
 
 	Field<B> table_id = dst->getField(0, table_id_idx_);
+    auto fkey_check = (foreign_key_input_ == 0 ? zero_b : one_b);
 
-	B is_foreign_key = table_id == (foreign_key_input_ == 0 ? zero_b : one_b);
+	B is_foreign_key = (table_id == fkey_check);
 
 	for(int i = 0; i < dst->getTupleCount(); i++) {
 //        cout << "Examining tuple " << dst->getPlainTuple(i).toString(true) << ", a1=" << alpha_1 << ", a2=" << alpha_2 << endl;
 		table_id = dst->getPackedField(i, table_id_idx_);
-		is_foreign_key = table_id == (foreign_key_input_ == 0 ? zero_b : one_b);
+		is_foreign_key = (table_id == fkey_check);
         B dummy = dst->getDummyTag(i);
-//        is_foreign_key = Utilities::If(is_dummy, B(false), is_foreign_key);
 
 		B same_group = joinMatch(dst, (i==0 ? i : i-1), i);
 		alpha_1 = Field<B>::If(same_group, Field<B>::If(is_foreign_key & !dummy, alpha_1 + one_, alpha_1),
@@ -466,21 +462,15 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 	}
 
 //    cout << "After first pass, have: " << dst->toString(true) << endl;
-
-	for(int i = dst->getTupleCount() - 1; i >= 0; i--) {
+    int cutoff = dst->getTupleCount() - 1;
+	for(int i = cutoff; i >= 0; i--) {
 //        cout << "Examining tuple " << dst->getPlainTuple(i).toString(true) << ", a1=" << alpha_1 << ", a2=" << alpha_2 << endl;
-
         table_id = dst->getPackedField(i, table_id_idx_);
-		is_foreign_key = table_id == (foreign_key_input_ == 0 ? zero_b : one_b);
-        // if PK, then alpha_1 = 0
-
-		
-		B same_group = joinMatch(dst, i+1, i);
+		is_foreign_key = (table_id == fkey_check);
+		B same_group = joinMatch(dst, (i == cutoff) ? i : i+1, i);
         B dummy = dst->getDummyTag(i);
 		alpha_1 = Field<B>::If(is_foreign_key & same_group, alpha_1, Field<B>::If(!is_foreign_key & !dummy, one_, zero_));
-        // if fk
 		dst->setPackedField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getPackedField(i, alpha_idx_)));
-        // if a dummy, it goes to zero unconditionally
 		dst->setPackedField(i, alpha_idx_, Field<B>::If(dst->getDummyTag(i), zero_, dst->getPackedField(i, alpha_idx_)));
 //        cout << "After: " << dst->getPlainTuple(i).toString(true) << ", a1=" << alpha_1 << ", a2=" << alpha_2 << endl;
 
@@ -503,85 +493,57 @@ void SortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
 	Bit one_b(true), zero_b(false);
 
 	Bit table_id = dst->getField(0, table_id_idx_).template getValue<Bit>();
-	Bit prev_table_id = table_id;
-
-	Bit is_foreign_key = table_id == (foreign_key_input_ == 0 ? zero_b : one_b);
+    Bit fkey_check = (foreign_key_input_ == 0 ? zero_b : one_b);
+	Bit is_foreign_key = (table_id == fkey_check);
 
 	for(int i = 0; i < dst->getTupleCount(); i++) {
 		table_id = dst->getPackedField(i, table_id_idx_).template getValue<Bit>();
-		is_foreign_key = table_id == (foreign_key_input_ == 0 ? zero_b : one_b);
-
+		is_foreign_key = (table_id == fkey_check);
 		Bit same_group = joinMatch(dst, (i==0 ? i : i-1), i);
-		
-		alpha_1 = emp::If(same_group, emp::If(is_foreign_key, alpha_1 + one, alpha_1), emp::If(is_foreign_key, one, zero));
+		Bit dummy = dst->getDummyTag(i);
+		alpha_1 = emp::If(same_group, emp::If(is_foreign_key & !dummy, alpha_1 + one, alpha_1),
+                          emp::If(is_foreign_key & !dummy, one, zero));
+
 		alpha_2 = emp::If(same_group, emp::If(!is_foreign_key, alpha_2 + one, zero), emp::If(!is_foreign_key, one, zero));
 
 		Integer to_write = emp::If(is_foreign_key, alpha_2, alpha_1);
 		dst->setPackedField(i, alpha_idx_, SecureField(int_field_type_, to_write));
 
-		prev_table_id = table_id;	
+        // 	table_id = dst->getPackedField(i, table_id_idx_);
+        //		is_foreign_key = (table_id == fkey_check);
+        //        B dummy = dst->getDummyTag(i);
+        //
+        //		B same_group = joinMatch(dst, (i==0 ? i : i-1), i);
+        //		alpha_1 = Field<B>::If(same_group, Field<B>::If(is_foreign_key & !dummy, alpha_1 + one_, alpha_1),
+        //                               Field<B>::If(is_foreign_key & !dummy, one_, zero_));
+        //		alpha_2 = Field<B>::If(same_group, Field<B>::If(!is_foreign_key, alpha_2 + one_, zero_),
+        //                               Field<B>::If(!is_foreign_key, one_, zero_));
+        //
+        //		dst->setPackedField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_2, alpha_1));
 	}
 
-	for(int i = dst->getTupleCount() - 2; i >= 0; i--) {
+    int cutoff = dst->getTupleCount() -1;
+	for(int i = cutoff; i >= 0; i--) {
 		table_id = dst->getPackedField(i, table_id_idx_).template getValue<Bit>();
-		is_foreign_key = table_id == (foreign_key_input_ == 0 ? zero_b : one_b);
-		
-		Bit same_group = joinMatch(dst, i+1, i);
-
-		alpha_1 = emp::If(is_foreign_key & same_group, alpha_1, emp::If(!is_foreign_key, one, zero));
+		is_foreign_key = (table_id == fkey_check);
+		Bit same_group = joinMatch(dst, (i == cutoff) ? i : i+1, i);
+        Bit dummy = dst->getDummyTag(i);
+		alpha_1 = emp::If(is_foreign_key & same_group, alpha_1, emp::If(!is_foreign_key & !dummy, one, zero));
 
 		Integer to_write = emp::If(is_foreign_key, alpha_1, dst->getPackedField(i, alpha_idx_).template getValue<Integer>());
 		dst->setPackedField(i, alpha_idx_, SecureField(int_field_type_, to_write));
 		to_write = emp::If(dst->getDummyTag(i), zero, dst->getPackedField(i, alpha_idx_).template getValue<Integer>());
 		dst->setPackedField(i, alpha_idx_, SecureField(int_field_type_, to_write));
+
+        //         table_id = dst->getPackedField(i, table_id_idx_);
+        //		is_foreign_key = (table_id == fkey_check);
+        //		B same_group = joinMatch(dst, i+1, i);
+        //        B dummy = dst->getDummyTag(i);
+        //		alpha_1 = Field<B>::If(is_foreign_key & same_group, alpha_1, Field<B>::If(!is_foreign_key & !dummy, one_, zero_));
+        //		dst->setPackedField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getPackedField(i, alpha_idx_)));
+        //		dst->setPackedField(i, alpha_idx_, Field<B>::If(dst->getDummyTag(i), zero_, dst->getPackedField(i, alpha_idx_)));
 	}
-    // cout << "initialize alphas start gates: " << this->system_conf_.andGateCount() << endl;
-    /*Integer prev_alpha = zero_.getValue<Integer>();
 
-    Bit prev_table_id =  dst->getField(0, table_id_idx_).template getValue<Bit>();
-    Bit table_id = prev_table_id;
-
-
-    Bit fkey = Bit(foreign_key_input_);
-
-    // set correct alpha to 1 for first row
-    // if table ID is false, update alpha 1
-    Integer prev_count;
-    Integer one = one_.getValue<Integer>();
-    Integer zero = zero_.getValue<Integer>();
-
-    Integer count = emp::If(fkey == table_id, one, zero);
-
-    // cache last fkey row count for this join key
-    prev_count = count;
-    dst->setField(0, alpha_idx_, SecureField(int_field_type_, count));
-
-    for (int i = 1; i < dst->getTupleCount(); i++) {
-        table_id = dst->getPackedField(i, table_id_idx_).template getValue<Bit>();
-        Bit is_foreign_key = (table_id == fkey); // ~ 3 gates
-        Bit same_group = joinMatch(dst, i-1, i); // ~ |join keys| gates
-        Bit same_group_table = ((table_id == prev_table_id) & same_group); // ~ 3 gates
-
-        count = emp::If(same_group_table, count + one, one); // ~ 32 gates
-        // if pkey entry and not matched, reset prev_count to zero
-        Bit no_match = !same_group & !is_foreign_key; // ~ 3 gates
-        prev_count = emp::If(no_match, zero, prev_count); // ~ 32 gates
-        Integer to_write = emp::If(is_foreign_key, count, prev_count); // ~ 32 gates
-
-        dst->setPackedField(i, alpha_idx_, SecureField(int_field_type_, to_write));
-        prev_table_id = table_id;
-        prev_count = emp::If(is_foreign_key, count, prev_count); // carry over previous count, ~ 32 gates
-    }
-
-    prev_alpha = dst->getPackedField(dst->getTupleCount()-1, alpha_idx_).getValue<Integer>();
-
-    for (int i = dst->getTupleCount() - 2; i >= 0; i--) {
-        count = dst->getPackedField(i, alpha_idx_).getValue<Integer>();
-        Bit same_group = joinMatch(dst, i, i+1);
-        Integer to_write = emp::If(same_group, prev_alpha, count);
-        dst->setPackedField(i, alpha_idx_, SecureField(int_field_type_, to_write));
-        prev_alpha = to_write;
-    }*/
 
 
 }
@@ -592,34 +554,32 @@ void SortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_t target_size) {
-	size_t start_gates = this->system_conf_.andGateCount();
     QuerySchema schema = input->getSchema();
-
+    cout << "Initial input: " << DataUtilities::printTable(input) << endl;
     SortDefinition sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
     Sort<B> sorted(input, sort_def);
     sorted.setOperatorId(-2);
-    input = sorted.run();
-
+    auto input2 = sorted.run();
+    cout << "Input2: " << DataUtilities::printTable(input2) << endl;
     QueryTable<B> *dst_table = TableFactory<B>::getTable(target_size, schema, storage_model_);
 
-    for(int i = 0; i < input->getTupleCount(); i++) {
-        dst_table->cloneRow(i, 0, input, i);
-        dst_table->setDummyTag(i, input->getDummyTag(i));
+    for(int i = 0; i < input2->getTupleCount(); i++) {
+        dst_table->cloneRow(i, 0, input2, i);
+        dst_table->setDummyTag(i, input2->getDummyTag(i));
 
     }
-	//std::cout << "Observed cost of sorting in obliviousDistribute: " << this->system_conf_.andGateCount() - start_gates << "\n";
-	start_gates = this->system_conf_.andGateCount();
 
-    Field<B> table_idx = input->getField(0, table_id_idx_);
+    Field<B> table_idx = input2->getField(0, table_id_idx_);
     Field<B> one_b(bool_field_type_, B(true));
 
-    for(int i = input->getTupleCount(); i < target_size; i++) {
+    for(int i = input2->getTupleCount(); i < target_size; i++) {
         dst_table->setField(i, is_new_idx_, one_b);
         dst_table->setField(i, table_id_idx_, table_idx);
     }
 
     int j = Sort<B>::powerOfTwoLessThan(target_size);
     int weight_width = (is_secure_ && bit_packed_) ? zero_.template getValue<Integer>().size() : 32;
+
 
     while(j >= 1) {
         for(int i = target_size - j - 1; i >= 0; i--) {
@@ -628,10 +588,11 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
 
             B result = weight >= FieldFactory<B>::getInt(i + j + 1, weight_width);
             dst_table->compareSwap(result, i, i+j);
+
         }
         j = j/2;
     }
-	//std::cout << "Observed cost of obliviousDistribute (distribute step only): " << this->system_conf_.andGateCount() - start_gates << "\n";
+
     return dst_table;
 
 }
@@ -670,18 +631,14 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
         intermediate_table->setDummyTag(i, input->getDummyTag(i) | result);
 		s = s + cnt;
     }	
-    // cout << "Calling obliviousDistribute with and gate count: " << this->system_conf_.andGateCount() << endl;
 
     QueryTable<B> *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
-    // cout << "Exited obliviousDistribute with and gate count: " << this->system_conf_.andGateCount() << endl;
 
     schema = dst_table->getSchema();
 
     QueryTuple<B> tmp(&schema);
 
     tmp.setField(is_new_idx_, one_b);
-
-	size_t start_gates = this->system_conf_.andGateCount();
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
 
@@ -753,9 +710,13 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
         intermediate_table->setDummyTag(i, input->getDummyTag(i) | result);
         s = s + cnt;
     }
+    cout << "After setup: " << DataUtilities::printTable(intermediate_table) << endl;
+
     // cout << "Calling obliviousDistribute with and gate count: " << this->system_conf_.andGateCount() << endl;
     SecureTable *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
     // cout << "Exited obliviousDistribute with and gate count: " << this->system_conf_.andGateCount() << endl;
+
+    cout << "After distribute: " << DataUtilities::printTable(dst_table) << endl;
 
     schema = dst_table->getSchema();
 
