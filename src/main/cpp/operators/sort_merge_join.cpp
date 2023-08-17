@@ -329,7 +329,6 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
     QuerySchema augmented_schema = deriveAugmentedSchema();
     int unioned_len = lhs_prime_->getTupleCount() + rhs_prime_->getTupleCount();
     bool lhs_is_foreign_key = (foreign_key_input_ == 0);
-    cout << "Performing union and merge!" << endl;
 
     QueryTable<B> *unioned =   TableFactory<B>::getTable(unioned_len, augmented_schema, storage_model_);
     //     sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
@@ -340,7 +339,7 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
 
     if(lhs_is_foreign_key) {
         // always FK --> PK
-        cout << "LHS --> RHS" << endl;
+
         for(int i = lhs_prime_->getTupleCount() - 1; i >= 0; --i) {
 //            for(int i = 0; i < lhs_prime_->getTupleCount(); ++i) {
             unioned->cloneRow(cursor, 0, lhs_prime_, i);
@@ -355,7 +354,6 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
         }
     }
     else {
-        cout << "RHS --> LHS" << endl;
         for(int i = rhs_prime_->getTupleCount() - 1; i >= 0; --i) {
 //        for(int i = 0; i < rhs_prime_->getTupleCount(); ++i) {
             unioned->cloneRow(cursor, 0, rhs_prime_, i);
