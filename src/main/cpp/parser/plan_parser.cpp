@@ -1000,7 +1000,6 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             optimizeTree_operators_.at(kj->getChild(0)->getOperatorId())->setParent(kj);
             optimizeTree_operators_.at(kj->getChild(1)->getOperatorId())->setParent(kj);
 
-
             kj->setSortOrder(join->getChild(kj->foreignKeyChild())->getSortOrder());
 
             std::cout << kj->toString() << endl;
@@ -1016,6 +1015,18 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
         }
         else {
             SortMergeJoin<B> *smj = (SortMergeJoin<B> *) join;
+
+            // Childs are pointing original parent, Need to fix those to point new parent.
+            smj->setChild(optimizeTree_operators_.at(smj->getChild(0)->getOperatorId()));
+            smj->setChild(optimizeTree_operators_.at(smj->getChild(1)->getOperatorId()), 1);
+            optimizeTree_operators_.at(smj->getChild(0)->getOperatorId())->setParent(smj);
+            optimizeTree_operators_.at(smj->getChild(1)->getOperatorId())->setParent(smj);
+
+//            smj->setSortOrder(join->getChild(smj->foreignKeyChild())->getSortOrder());
+            std::cout << smj->toString() << endl;
+            recurseNode(smj);
+
+
             KeyedJoin j(join->getChild(0)->clone(), join->getChild(1)->clone(), smj->foreignKeyChild(), smj->getPredicate());
             recurseNode(&j);
         }
