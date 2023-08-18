@@ -928,7 +928,7 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
             break;
         default:
             // Same with child's sort order
-            node->setSortOrder(node->getChild()->getSortOrder());
+            node->updateCollation();
             optimizeTree_operators_[node->getOperatorId()] = node;
 
             std::cout << node->toString() << endl;
@@ -1000,17 +1000,21 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             optimizeTree_operators_.at(kj->getChild(0)->getOperatorId())->setParent(kj);
             optimizeTree_operators_.at(kj->getChild(1)->getOperatorId())->setParent(kj);
 
-            kj->setSortOrder(join->getChild(kj->foreignKeyChild())->getSortOrder());
-
+            kj->updateCollation();
             std::cout << kj->toString() << endl;
-
             recurseNode(kj);
 
             // For SMJ, sort order is same with sort key's order
             SortMergeJoin j(join->getChild(0)->clone(), join->getChild(1)->clone(), kj->foreignKeyChild(), kj->getPredicate());
 
-            std::cout << j.toString() << endl;
+            // Childs are pointing original parent, Need to fix those to point new parent.
+            j.setChild(optimizeTree_operators_.at(j.getChild(0)->getOperatorId()));
+            j.setChild(optimizeTree_operators_.at(j.getChild(1)->getOperatorId()), 1);
+            optimizeTree_operators_.at(j.getChild(0)->getOperatorId())->setParent(&j);
+            optimizeTree_operators_.at(j.getChild(1)->getOperatorId())->setParent(&j);
 
+            j.updateCollation();
+            std::cout << j.toString() << endl;
             recurseNode(&j);
         }
         else {
@@ -1022,12 +1026,20 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             optimizeTree_operators_.at(smj->getChild(0)->getOperatorId())->setParent(smj);
             optimizeTree_operators_.at(smj->getChild(1)->getOperatorId())->setParent(smj);
 
-//            smj->setSortOrder(join->getChild(smj->foreignKeyChild())->getSortOrder());
+            smj->updateCollation();
             std::cout << smj->toString() << endl;
             recurseNode(smj);
 
-
             KeyedJoin j(join->getChild(0)->clone(), join->getChild(1)->clone(), smj->foreignKeyChild(), smj->getPredicate());
+
+            // Childs are pointing original parent, Need to fix those to point new parent.
+            j.setChild(optimizeTree_operators_.at(j.getChild(0)->getOperatorId()));
+            j.setChild(optimizeTree_operators_.at(j.getChild(1)->getOperatorId()), 1);
+            optimizeTree_operators_.at(j.getChild(0)->getOperatorId())->setParent(&j);
+            optimizeTree_operators_.at(j.getChild(1)->getOperatorId())->setParent(&j);
+
+            j.updateCollation();
+            std::cout << j.toString() << endl;
             recurseNode(&j);
         }
     }
