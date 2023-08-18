@@ -26,8 +26,7 @@ protected:
 
 // most of these runs are not meaningful for diffing the results because they produce no tuples - joins are too sparse.
 // This isn't relevant to the parser so work on this elsewhere.
-void
-PlanParserTest::runTest(const int &test_id, const SortDefinition &expected_sort, const std::string &expected_plan) {
+void PlanParserTest::runTest(const int &test_id, const SortDefinition &expected_sort, const std::string &expected_plan) {
     string test_name = "q" + std::to_string(test_id);
     string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + test_name + ".sql";
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
@@ -59,16 +58,16 @@ TEST_F(PlanParserTest, tpch_q03) {
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
-           string expected_plan =   "#9: Project<bool> ((<0, $0 int32>, <1, $3 float>, <2, $1 int64>, <3, $2 int32>)) : (#0 int32 orders.l_orderkey, #1 float revenue, #2 int64 orders.o_orderdate, #3 int32 orders.o_shippriority) order by: {<-1, ASC> , <1, DESC> , <2, ASC> }\n"
-      "    #8: Sort<bool> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority, #3 float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }\n"
-      "        #7: GroupByAggregate<bool> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority, #3 float revenue) order by: {}\n"
-      "            #6: Project<bool> ((<0, $0 int32>, <1, $1 int64>, <2, $2 int32>, <3, $4 float>)) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority, #3 float revenue) order by: {}\n"
-      "                #5: KeyedJoin<bool> ($0 == $3) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority, #3 int32 lineitem.l_orderkey, #4 float revenue) order by: {<3, ASC> }\n"
-      "                    #3: Project<bool> ((<0, $0 int32>, <1, $2 int64>, <2, $3 int32>)) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority) order by: {<0, ASC> , <1, ASC> , <2, ASC> }\n"
-      "                        #2: KeyedJoin<bool> ($1 == $4) : (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 orders.o_orderdate, #3 int32 orders.o_shippriority, #4 int32 customer.c_custkey) order by: {<0, ASC> , <2, ASC> , <3, ASC> }\n"
-      "                            #1: SqlInput<bool> (\"SELECT * FROM (SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_orderkey, o_orderdate, o_shippriority ) input LIMIT 10\", tuple_count=10) : (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 orders.o_orderdate, #3 int32 orders.o_shippriority) order by: {<0, ASC> , <2, ASC> , <3, ASC> }\n"
-      "                            #0: SqlInput<bool> (\"SELECT * FROM (SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD ' AS dummy_tag FROM customer ORDER BY c_custkey ) input LIMIT 10\", tuple_count=10) : (#0 int32 customer.c_custkey) order by: {<0, ASC> }\n"
-      "                    #4: SqlInput<bool> (\"SELECT * FROM (SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey ) input LIMIT 10\", tuple_count=10) : (#0 int32 lineitem.l_orderkey, #1 float revenue) order by: {<0, ASC> }\n";
+           string expected_plan =   "#9: Project<bool> ((<0, $0 int32>, <1, $3 float>, <2, $1 int32>, <3, $2 int64>)) : (#0 int32 customer.l_orderkey, #1 float revenue, #2 int32 orders.o_orderdate, #3 int64 orders.o_shippriority) order by: {<-1, ASC> , <1, DESC> , <2, ASC> }\n"
+                 "    #8: Sort<bool> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 int32 customer.o_orderkey, #1 int32 orders.o_orderdate, #2 int64 orders.o_shippriority, #3 float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }\n"
+                "        #7: GroupByAggregate<bool> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 int32 customer.o_orderkey, #1 int32 orders.o_orderdate, #2 int64 orders.o_shippriority, #3 float revenue) order by: {}\n"
+                "            #6: Project<bool> ((<0, $0 int32>, <1, $1 int32>, <2, $2 int64>, <3, $4 float>)) : (#0 int32 customer.o_orderkey, #1 int32 orders.o_orderdate, #2 int64 orders.o_shippriority, #3 float revenue) order by: {}\n"
+               "                #5: KeyedJoin<bool> ($0 == $3) : (#0 int32 customer.o_orderkey, #1 int32 orders.o_orderdate, #2 int64 orders.o_shippriority, #3 int32 lineitem.l_orderkey, #4 float revenue) order by: {<3, ASC> }\n"
+               "                    #3: Project<bool> ((<0, $0 int32>, <1, $2 int32>, <2, $3 int64>)) : (#0 int32 customer.o_orderkey, #1 int32 orders.o_orderdate, #2 int64 orders.o_shippriority) order by: {<0, ASC> }\n"
+               "                        #2: KeyedJoin<bool> ($1 == $4) : (#0 int32 customer.c_custkey, #1 int32 orders.o_orderkey, #2 int32 orders.o_custkey, #3 int64 orders.o_orderdate, #4 int32 orders.o_shippriority) order by: {<0, ASC> }\n"
+                 "                            #0: SqlInput<bool> (\"SELECT * FROM (SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD ' AS dummy_tag FROM customer ORDER BY c_custkey ) input LIMIT 10\", tuple_count=10) : (#0 int32 customer.c_custkey) order by: {<0, ASC> }\n"
+                "                            #1: SqlInput<bool> (\"SELECT * FROM (SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_orderkey, o_orderdate, o_shippriority ) input LIMIT 10\", tuple_count=10) : (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 orders.o_orderdate, #3 int32 orders.o_shippriority) order by: {<0, ASC> , <2, ASC> , <3, ASC> }\n"
+                 "                    #4: SqlInput<bool> (\"SELECT * FROM (SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey ) input LIMIT 10\", tuple_count=10) : (#0 int32 lineitem.l_orderkey, #1 float revenue) order by: {<0, ASC> }\n";
            runTest(3, expected_sort, expected_plan);
 }
 

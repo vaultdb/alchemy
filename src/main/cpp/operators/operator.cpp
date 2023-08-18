@@ -69,17 +69,17 @@ QueryTable<B> *Operator<B>::run() {
 				", row width=" + std::to_string(output_schema_.size()) + "\n", Level::DEBUG);
 
         if (gate_cnt_ > 0) {
-        size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
-        float relative_error = std::fabs(((float) estimated_gates) - ((float) gate_cnt_)) / (float) gate_cnt_ * 100.0;
-        log->write("Estimated cost: " + std::to_string(estimated_gates) + 
-				", Observed gates: " + std::to_string(gate_cnt_) + 
-				", Error rate(%) : " + std::to_string(relative_error) + "\n", Level::DEBUG);
-//        if(relative_error > 25.0) cout << "***Warning: high cost model delta on operator (" << this->getOperatorId() << ") " << this->getTypeString() << endl;
+            size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
+            float relative_error = std::fabs(((float) estimated_gates) - ((float) gate_cnt_)) / (float) gate_cnt_ * 100.0;
+            log->write("Estimated cost: " + std::to_string(estimated_gates) +
+                    ", Observed gates: " + std::to_string(gate_cnt_) +
+                    ", Error rate(%) : " + std::to_string(relative_error) + "\n", Level::DEBUG);
+    //        if(relative_error > 25.0) cout << "***Warning: high cost model delta on operator (" << this->getOperatorId() << ") " << this->getTypeString() << endl;
         }
     }
 
     operator_executed_ = true;
-    sort_definition_ = output_->getSortOrder(); // update this if needed
+    sort_definition_ = output_->getSortOrder(); // update this if needed, JMR: this should not be needed
 
     if(lhs_child_)     lhs_child_->reset();
     if(rhs_child_)     rhs_child_->reset();
@@ -121,7 +121,7 @@ std::string Operator<B>::toString() const {
     ss << ": " <<  output_schema_ <<    " order by: " << DataUtilities::printSortDefinition(sort_definition_);
     if(std::is_same_v<B, Bit>) {
         size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
-        ss << " Estimated cost: " << estimated_gates;
+        ss << ", cost est: " << estimated_gates;
     }
     return ss.str();
 

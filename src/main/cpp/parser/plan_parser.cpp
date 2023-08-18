@@ -36,17 +36,16 @@ PlanParser<B>::PlanParser(const string &db_name, const string & sql_file, const 
         calculateAutoAggregate();
 }
 
-// for ZK plans
 template<typename B>
 PlanParser<B>::PlanParser(const string &db_name, const string & json_file, const int &limit) : db_name_(db_name), input_limit_(limit), zk_plan_(false) {
     json_only_ = true;
 
     parseSecurePlan(json_file);
 
-    optmizeTree();
+//    optimizeTree();
 
-    if(getAutoFlag())
-        calculateAutoAggregate();
+//    if(getAutoFlag())
+//        calculateAutoAggregate();
 
 }
 
@@ -887,12 +886,6 @@ template<typename B>
 void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
 
     Operator<B> *node = op->clone();
-    Operator<B> *parent = op->getParent();
-    node->setParent(parent);
-
-    node->setSortOrder(op->getSortOrder());
-    node->setOperatorId(op->getOperatorId());
-
 
     switch(op->getType()) {
         case OperatorType::SQL_INPUT:
@@ -900,28 +893,16 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
         case OperatorType::ZK_SQL_INPUT:
         case OperatorType::TABLE_INPUT: {
             // first try with given sort order (if any) and empty set unconditionally
-            auto sorts = getCollations(node);
+            auto sorts = getCollations(op);
             for (auto &sort: sorts) {
                 node->setSortOrder(sort);
                 std::cout << "Input :  Order by: " << DataUtilities::printSortDefinition(node->getSortOrder())  << ", ";
-
-                if(parent->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN || parent->getType() == OperatorType::SORT_MERGE_JOIN){
-                    if(parent->getChild(0)->getOperatorId() == node->getOperatorId())
-                        parent->setChild(node, 0);
-                    else
-                        parent->setChild(node, 1);
-                }
-                else
-                    parent->setChild(node);
-
                 recurseNode(node);
             }
             break;
         }
         case OperatorType::KEYED_NESTED_LOOP_JOIN:
         case OperatorType::SORT_MERGE_JOIN: {
-
-            parent->setChild(node);
 
             // for each rhs leaf collation cycle through its collations and then try both SMJ and NLJ with each collation
             recurseJoin(node);
@@ -934,32 +915,11 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
             node->setSortOrder(node->getChild()->getSortOrder());
 
             std::cout << "Agg :  Order by: " << DataUtilities::printSortDefinition(node->getSortOrder())  << ", ";
-            if(parent != nullptr) {
-                if (parent->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN ||
-                    parent->getType() == OperatorType::SORT_MERGE_JOIN) {
-                    if (parent->getChild(0)->getOperatorId() == node->getOperatorId())
-                        parent->setChild(node, 0);
-                    else
-                        parent->setChild(node, 1);
-                } else
-                    parent->setChild(node);
-            }
             recurseAgg(node);
             break;
         }
         default:
             node->setSortOrder(node->getChild()->getSortOrder());
-
-            if(parent != nullptr) {
-                if (parent->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN ||
-                    parent->getType() == OperatorType::SORT_MERGE_JOIN) {
-                    if (parent->getChild(0)->getOperatorId() == node->getOperatorId())
-                        parent->setChild(node, 0);
-                    else
-                        parent->setChild(node, 1);
-                } else
-                    parent->setChild(node);
-            }
             recurseNode(node);
             break;
     }
@@ -970,9 +930,11 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
 
 template<typename B>
 void PlanParser<B>::recurseNode(Operator<B> *op) {
+    int op_id = op->getOperatorId();
+    Operator<B> *parent = operators_[op_id]->getParent();
 
     // at the root node
-    if(op->getParent() == nullptr) {
+    if(parent == nullptr) {
         size_t plan_cost = op->planCost();
         std::cout << op->printTree() << endl;
         std::cout << "Cost : " << std::to_string(plan_cost) << "\n" << "----------------------------" << std::endl;

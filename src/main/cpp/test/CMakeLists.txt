@@ -91,8 +91,8 @@ package_add_test(secure_sort_merge_join_test mpc/secure_sort_merge_join_test.cpp
 package_add_test(secure_scalar_aggregate_test mpc/secure_scalar_aggregate_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_group_by_aggregate_test mpc/secure_group_by_aggregate_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_nested_loop_aggregate_test mpc/secure_nested_loop_aggregate_test.cpp mpc/emp_base_test.cpp)
-package_add_test(secure_tpch_test mpc/secure_tpch_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
-
+package_add_test(secure_tpch_test mpc/secure_tpch_test.cpp mpc/emp_base_test.cpp)
+package_add_test(secure_plan_enumerator_test mpc/secure_plan_enumerator_test.cpp  mpc/emp_base_test.cpp)
 unset(Labels)
 set(Labels "LABELS;EmpTest")
 

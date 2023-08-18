@@ -44,7 +44,7 @@ namespace vaultdb {
         bool getAutoFlag() const { return agg_auto_flag; }
 
         void setAutoFlag(bool inputFlag) { agg_auto_flag = inputFlag; }
-
+        map<int, vector<SortDefinition>> getInterestingSortOrders() { return interesting_sort_orders_; }
     private:
         std::string db_name_;
         StorageModel storage_model_ = SystemConfiguration::getInstance().storageModel();
@@ -55,7 +55,7 @@ namespace vaultdb {
         bool json_only_ = false;
 
         // plan enumerator state
-        map<int, vector<SortDefinition>> interesting_sort_orders_; // TODO: initialize this from JSON plan
+        map<int, vector<SortDefinition>> interesting_sort_orders_;
         Operator<B> *min_cost_plan_ = nullptr;
         size_t min_plan_cost_ = std::numeric_limits<size_t>::max();
         std::map<int, Operator<B> * > operators_; // op ID --> operator instantiation

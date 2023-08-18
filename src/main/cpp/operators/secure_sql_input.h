@@ -15,6 +15,7 @@ namespace  vaultdb {
         bool has_dummy_tag_;
         StorageModel storage_model_;
         int input_party_ = 0;
+        string original_input_query_; // no modifications for limit or sort
 
 
     protected:
@@ -36,7 +37,7 @@ namespace  vaultdb {
         SecureSqlInput(const string & db, const string & sql, const bool & dummy_tag, const int & input_party, const size_t & input_tuple_cnt, const SortDefinition & def);
 
         SecureSqlInput(const string &db, const string & sql, const bool &dummy_tag, const size_t & input_tuple_cnt = 0);
-        SecureSqlInput(const SecureSqlInput & src) : Operator<Bit>(src), input_query_(src.input_query_), db_name_(src.db_name_), has_dummy_tag_(src.has_dummy_tag_), input_party_(src.input_party_), input_tuple_limit_(src.input_tuple_limit_) {
+        SecureSqlInput(const SecureSqlInput & src) : Operator<Bit>(src), input_query_(src.input_query_), db_name_(src.db_name_), has_dummy_tag_(src.has_dummy_tag_), input_party_(src.input_party_), input_tuple_limit_(src.input_tuple_limit_), original_input_query_(src.original_input_query_) {
             if(src.plain_input_ != nullptr)  {
                 plain_input_ = src.plain_input_->clone();
             }
@@ -47,7 +48,28 @@ namespace  vaultdb {
         }
 
         void updateCollation() override {
-            // no-op
+            // take current sql and wrap it in ORDER BY
+            if(this->sort_definition_.empty())  {
+                plain_input_->setSortOrder(this->sort_definition_); // if sort is empty it does not really matter how it is stored now
+                return;
+            }
+
+            auto collation = this->sort_definition_;
+            if((plain_input_ != nullptr && plain_input_ ->getSortOrder() != collation)  || (plain_input_ == nullptr)){
+                // update collation
+                string sql = "SELECT * FROM (" + original_input_query_ + ") to_sort ORDER BY ";
+                sql += "(" + std::to_string(collation[0].first + 1) + ") "
+                       + ((collation[0].second == SortDirection::DESCENDING) ? " DESC " : " ASC ");
+                for (int i = 1; i < collation.size(); ++i) {
+                    sql += ", (" + std::to_string(collation[i].first + 1) + ") "
+                           + ((collation[i].second == SortDirection::DESCENDING) ? " DESC " : " ASC ");
+                }
+                this->input_query_ = sql;
+
+                if (plain_input_ != nullptr) delete plain_input_;
+                if (input_party_ > 0) runQuery(input_party_);
+                else runQuery();
+            }
         }
 
          ~SecureSqlInput() {
