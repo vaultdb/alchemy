@@ -46,6 +46,10 @@ namespace  vaultdb {
             return new SecureSqlInput(*this);
         }
 
+        void updateCollation() override {
+            // no-op
+        }
+
          ~SecureSqlInput() {
              if(plain_input_ != nullptr) {
                  delete plain_input_;

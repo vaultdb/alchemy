@@ -27,6 +27,11 @@ namespace  vaultdb {
                  if(predicate_ != nullptr) delete predicate_;
             }
 
+            void updateCollation() override {
+                this->getChild(0)->updateCollation();
+                this->sort_definition_ = this->getChild(0)->getSortOrder();
+            }
+
 
     protected:
 

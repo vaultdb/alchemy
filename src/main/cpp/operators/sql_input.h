@@ -32,6 +32,10 @@ namespace  vaultdb {
             return new SqlInput(*this);
         }
 
+        void updateCollation() override {
+            // no-op
+        }
+
         virtual ~SqlInput() {
         }
 

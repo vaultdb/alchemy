@@ -41,6 +41,10 @@ namespace  vaultdb {
             return new ZkSqlInput(*this);
         }
 
+        void updateCollation() override {
+            // no-op
+        }
+
          ~ZkSqlInput() {
              if(plain_input_) {
                  delete plain_input_;

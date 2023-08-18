@@ -44,7 +44,6 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     this->initializeBitPacking(FLAGS_unioned_db);
 
     string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_unioned_db);
-    string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
     string local_db = db_name_;
 
 //    cout << " Observed DB : "<< local_db << " - Bit Packed: " << SystemConfiguration::getInstance().bitPackingEnabled() <<  endl;
@@ -62,7 +61,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     PlanParser<Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-//    std::cout << root->printTree() << endl;
+//    std::cout << "Query tree: " << root->printTree() << endl;
 
     SecureTable *result = root->run();
 

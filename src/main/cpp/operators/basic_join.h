@@ -15,7 +15,7 @@ namespace vaultdb {
     public:
         BasicJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
         BasicJoin(QueryTable<B> *lhs, QueryTable<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
-        BasicJoin(const BasicJoin<B> & src) : Join<B>(src) {}
+        BasicJoin(const BasicJoin<B> & src) : Join<B>(src) { this->updateCollation(); }
 
         Operator<B> *clone() const override {
             return new BasicJoin<B>(*this);
@@ -23,9 +23,20 @@ namespace vaultdb {
 
         ~BasicJoin() = default;
 
+        void updateCollation() override {
+            this->getChild(0)->updateCollation();
+            this->getChild(1)->updateCollation();
+
+            // concat lhs collation with rhs one
+            this->sort_definition_.clear();
+            this->sort_definition_ = this->getChild(0)->getSortOrder();
+            SortDefinition  rhs_sort = this->getChild(1)->getSortOrder();
+            this->sort_definition_.insert(this->sort_definition_.end(),  rhs_sort.begin(), rhs_sort.end());
+        }
     protected:
         QueryTable<B> *runSelf() override;
         inline OperatorType getType() const override { return OperatorType::NESTED_LOOP_JOIN; }
+
 
     };
 }

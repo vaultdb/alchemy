@@ -40,9 +40,7 @@ void MergeJoin<B>::setup() {
     auto lhs = this->getChild(0);
     auto rhs = this->getChild(1);
 
-    // just use lhs sort order for now, can use one or sides' since they are equivalent for equi-join
-    this->sort_definition_ = lhs->getSortOrder();
-
+    updateCollation();
     assert(lhs->getOutputCardinality() == rhs->getOutputCardinality());
 
     this->output_cardinality_ = lhs->getOutputCardinality();

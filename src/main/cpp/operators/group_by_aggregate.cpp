@@ -102,28 +102,11 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
             aggregators_.push_back(agg_impl);
             ++output_cursor;
         }
+    this->setOutputCardinality(input->getTupleCount());
 
-
-    if(output_cardinality_ == 0) { // naive case - go full oblivious
-        output_cardinality_ = input->getTupleCount();
-    }
-
-
-    SortDefinition input_sort = input->getSortOrder();
-    SortDefinition output_sort;
-    // TODO: shift over output collation to align with new column ordinals
-    if(input_sort.size() >= group_by_.size()) {
-        // output sort order equal to first group-by-col-count entries in input sort order
-        output_sort = vector<ColumnSort>(input_sort.begin(), input_sort.begin() + group_by_.size());
-
-    } else {
-        // using FDs, hold onto initial collation
-        output_sort = input_sort;
-    }
-
-    this->output_ = TableFactory<B>::getTable(input->getTupleCount(), Operator<B>::output_schema_, input->storageModel(), output_sort);
+    this->output_ = TableFactory<B>::getTable(input->getTupleCount(), Operator<B>::output_schema_, input->storageModel(), this->sort_definition_);
     QueryTable<B> *output = this->output_; // shorthand
-    // SMA: if all dummies at the end, this would be simpler.  But we can't really do that if there are MPC joins, filters, etc before this op because they will sprinkle dummies throughout the table
+    // SMA: if all dummies at the end, this would be simpler.  But we can't do that if there are MPC joins, filters, etc before this op because they will sprinkle dummies throughout the table
     for(int j = 0; j < group_by_.size(); ++j) {
         output->assignField(0, j, input, 0, group_by_[j]); //memcpy the input values
     }
@@ -236,6 +219,9 @@ QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & input_
 
 template<typename B>
 bool GroupByAggregate<B>::sortCompatible(const SortDefinition & sorted_on, const vector<int32_t> &group_by_idxs) {
+    // TODO: incorporate effective_sort for functional dependencies
+    // then delete check_sort flag - this will be covered with effective_sort
+
     if(sorted_on.size() < group_by_idxs.size())
         return false;
 
@@ -257,12 +243,15 @@ void GroupByAggregate<B>::setup() {
 
     Operator<B>::output_schema_ = generateOutputSchema(input_schema);
 
-
     // sorted on group-by cols
     if(check_sort_)
-        assert(sortCompatible(input_sort, group_by_));
+        if(effective_sort_.size() > 0)
+            assert(sortCompatible(effective_sort_, group_by_));
+        else
+            assert(sortCompatible(input_sort, group_by_));
 
-    this->output_cardinality_ = this->getChild(0)->getOutputCardinality();
+    this->setOutputCardinality(this->getChild()->getOutputCardinality());
+    updateCollation();
 }
 
 

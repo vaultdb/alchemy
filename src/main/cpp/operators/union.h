@@ -23,6 +23,11 @@ namespace  vaultdb {
             return new Union<B>(*this);
         }
 
+        void updateCollation() override {
+            this->getChild()->updateCollation();
+            this->getChild(1)->updateCollation();
+        }
+
         virtual ~Union() = default;
 
 

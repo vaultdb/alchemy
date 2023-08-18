@@ -1,0 +1,1300 @@
+-- Build type: Release
+-- CXX release flags: -pthread   -Wfatal-errors  -Wno-ignored-attributes   -fPIC -pthread   -Wfatal-errors  -Wno-ignored-attributes  -march=native -maes -mrdseed  -O2
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp
+[  1%] Built target generate_enrich_data
+[  1%] Built target gtest
+[  2%] Built target gtest_main
+[  3%] Built target gmock
+[ 26%] Built target vaultdb-emp
+[ 27%] Built target project_test
+[ 30%] Built target keyed_join_test
+[ 30%] Built target csv_reader_test
+[ 31%] Built target basic_join_test
+[ 32%] Built target filter_test
+[ 33%] Built target sort_test
+[ 34%] Built target field_expression_test
+[ 35%] Built target scalar_aggregate_test
+[ 37%] Built target group_by_aggregate_test
+[ 38%] Built target sort_merge_join_test
+[ 39%] Built target nested_loop_aggregate_test
+[ 40%] Built target secret_share_generator_test
+[ 42%] Built target tpch_test
+[ 44%] Built target plan_parser_test
+[ 45%] Built target secure_sort_test
+[ 47%] Built target serialization_test
+[ 48%] Built target secure_keyed_join_test
+[ 50%] Built target true_cardinality_test
+[ 50%] Built target secure_scalar_aggregate_test
+[ 52%] Built target secure_nested_loop_aggregate_test
+[ 53%] Built target secure_basic_join_test
+[ 54%] Built target merge_join_test
+[ 55%] Built target secure_sort_merge_join_test
+[ 56%] Built target join_cost_comparison_test
+[ 58%] Built target expression_cost_model_test
+[ 59%] Built target secure_filter_test
+[ 60%] Built target secure_field_expression_test
+[ 61%] Built target emp_test
+[ 62%] Built target secure_merge_join_test
+[ 64%] Built target secure_group_by_aggregate_test
+[ 64%] Built target plan_cost_test
+[ 66%] Built target emp_table_test
+[ 68%] Built target secure_bit_packing_test
+[ 69%] Built target secure_tpch_test
+[ 70%] Built target baseline_comparison_test
+[ 72%] Built target enrich_test
+[ 72%] Built target secure_aggregate_comparison_test
+[ 73%] Built target operator_cost_model_test
+[ 74%] Built target zk_filter_test
+[ 75%] Built target zk_sort_test
+[ 76%] Built target auto_optimized_test
+[ 77%] Built target fully_optimized_test
+[ 78%] Built target zk_test
+[ 79%] Built target generate_enrich_data_three_parties
+[ 80%] Built target zk_basic_join_test
+[ 81%] Built target zk_scalar_aggregate_test
+[ 83%] Built target zk_group_by_aggregate_test
+[ 85%] Built target zk_tpch_test
+[ 86%] Built target secret_share_batch_from_query
+[ 88%] Built target secret_share_csv
+[ 89%] Built target assemble_secret_shares
+[ 90%] Built target secret_share_from_query
+[ 91%] Built target zk_keyed_join_test
+[ 93%] Built target load_tuples_data_partner
+[ 95%] Built target run_data_partner_aggregation
+[ 97%] Built target run_data_partner
+[100%] Built target run_data_partner_batch
+[  0%] Built target gtest
+[  3%] Built target gtest_main
+[  7%] Built target gmock
+[ 96%] Built target vaultdb-emp
+[100%] Built target generate_enrich_data_three_parties
+[  0%] Built target gtest
+[  3%] Built target gtest_main
+[  7%] Built target gmock
+[ 96%] Built target vaultdb-emp
+[100%] Built target secret_share_from_query
+[  0%] Built target gtest
+[  3%] Built target gtest_main
+[  7%] Built target gmock
+[ 96%] Built target vaultdb-emp
+[100%] Built target secret_share_batch_from_query
+Finished generating 1000 patients per host!
+DROP TABLE
+CREATE TABLE
+COPY 1000
+COPY 1000
+COPY 1000
+UPDATE 1835
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+CREATE EXTENSION
+ALTER TABLE
+UPDATE 3000
+COPY 1000
+COPY 1000
+COPY 1000
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_chi" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+Writing multisite tables!
+preparing for aggregate-only test
+Setting up semi-join optimization
+finished generating 100 patients per host!
+You are now connected to database "enrich_htn_test_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_test_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_unioned" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from CsvReaderTest
+[ RUN      ] CsvReaderTest.lineitemTest
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] CsvReaderTest.lineitemTest (230 ms)
+[ RUN      ] CsvReaderTest.quotedStringTest
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] CsvReaderTest.quotedStringTest (180 ms)
+[ RUN      ] CsvReaderTest.customerTest
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] CsvReaderTest.customerTest (200 ms)
+[ RUN      ] CsvReaderTest.ordersTest
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] CsvReaderTest.ordersTest (144 ms)
+[----------] 4 tests from CsvReaderTest (756 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (756 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from FieldExpressionTest
+[ RUN      ] FieldExpressionTest.test_int32
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] FieldExpressionTest.test_int32 (65 ms)
+[ RUN      ] FieldExpressionTest.test_int32_comparator
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] FieldExpressionTest.test_int32_comparator (63 ms)
+[ RUN      ] FieldExpressionTest.test_int32_expr
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] FieldExpressionTest.test_int32_expr (71 ms)
+[ RUN      ] FieldExpressionTest.cmp_swap
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] FieldExpressionTest.cmp_swap (284 ms)
+[----------] 4 tests from FieldExpressionTest (484 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (484 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from FilterTest
+[ RUN      ] FilterTest.test_table_scan
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] FilterTest.test_table_scan (140 ms)
+[ RUN      ] FilterTest.test_filter
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] FilterTest.test_filter (139 ms)
+[----------] 2 tests from FilterTest (280 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (280 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ProjectionTest
+[ RUN      ] ProjectionTest.q3Lineitem
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ProjectionTest.q3Lineitem (244 ms)
+[----------] 1 test from ProjectionTest (244 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (244 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from BasicJoinTest
+[ RUN      ] BasicJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] BasicJoinTest.test_tpch_q3_customer_orders (133 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders (309 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer (818 ms)
+[----------] 3 tests from BasicJoinTest (1262 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (1262 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from KeyedJoinTest
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders (282 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders (8459 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer (9626 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed (168 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed (1826 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (1774 ms)
+[----------] 6 tests from KeyedJoinTest (22138 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (22138 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SortMergeJoinTest
+[ RUN      ] SortMergeJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeJoinTest.test_tpch_q3_customer_orders (207 ms)
+[ RUN      ] SortMergeJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeJoinTest.test_tpch_q3_lineitem_orders (713 ms)
+[ RUN      ] SortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (1011 ms)
+[ RUN      ] SortMergeJoinTest.test_tpch_q3_customer_orders_reversed
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeJoinTest.test_tpch_q3_customer_orders_reversed (212 ms)
+[ RUN      ] SortMergeJoinTest.test_tpch_q3_lineitem_orders_reversed
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeJoinTest.test_tpch_q3_lineitem_orders_reversed (991 ms)
+[ RUN      ] SortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (880 ms)
+[----------] 6 tests from SortMergeJoinTest (4016 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (4016 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MergeJoinTest
+[ RUN      ] MergeJoinTest.merge_q18
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] MergeJoinTest.merge_q18 (105 ms)
+[----------] 1 test from MergeJoinTest (105 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (105 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from SortTest
+[ RUN      ] SortTest.testSingleIntColumn
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.testSingleIntColumn (81 ms)
+[ RUN      ] SortTest.tpchQ1Sort
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.tpchQ1Sort (218 ms)
+[ RUN      ] SortTest.tpchQ3Sort
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.tpchQ3Sort (96 ms)
+[ RUN      ] SortTest.tpchQ5Sort
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.tpchQ5Sort (118 ms)
+[ RUN      ] SortTest.tpchQ8Sort
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.tpchQ8Sort (109 ms)
+[ RUN      ] SortTest.tpchQ9Sort
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.tpchQ9Sort (189 ms)
+[ RUN      ] SortTest.tpchQ18Sort
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.tpchQ18Sort (125 ms)
+[ RUN      ] SortTest.sort_and_encrypt_table_one_column
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.sort_and_encrypt_table_one_column (54 ms)
+[----------] 8 tests from SortTest (993 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (993 ms total)
+[  PASSED  ] 8 tests.
+[==========] Running 12 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 12 tests from ScalarAggregateTest
+[ RUN      ] ScalarAggregateTest.test_count
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_count (78 ms)
+[ RUN      ] ScalarAggregateTest.test_count_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_count_dummies (89 ms)
+[ RUN      ] ScalarAggregateTest.test_min
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_min (83 ms)
+[ RUN      ] ScalarAggregateTest.test_max
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_max (82 ms)
+[ RUN      ] ScalarAggregateTest.test_sum
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_sum (80 ms)
+[ RUN      ] ScalarAggregateTest.test_sum_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_sum_dummies (81 ms)
+[ RUN      ] ScalarAggregateTest.test_avg
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_avg (85 ms)
+[ RUN      ] ScalarAggregateTest.test_avg_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_avg_dummies (116 ms)
+[ RUN      ] ScalarAggregateTest.test_all_sum_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_all_sum_dummies (117 ms)
+[ RUN      ] ScalarAggregateTest.test_all_avg_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_all_avg_dummies (102 ms)
+[ RUN      ] ScalarAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_tpch_q1_avg_cnt (151 ms)
+[ RUN      ] ScalarAggregateTest.test_all_aggs_tpch_q1
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_all_aggs_tpch_q1 (192 ms)
+[----------] 12 tests from ScalarAggregateTest (1263 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (1263 ms total)
+[  PASSED  ] 12 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from GroupByAggregateTest
+[ RUN      ] GroupByAggregateTest.test_count
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] GroupByAggregateTest.test_count (112 ms)
+[ RUN      ] GroupByAggregateTest.test_count_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] GroupByAggregateTest.test_count_dummies (116 ms)
+[ RUN      ] GroupByAggregateTest.test_sum
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] GroupByAggregateTest.test_sum (118 ms)
+[ RUN      ] GroupByAggregateTest.test_sum_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] GroupByAggregateTest.test_sum_dummies (124 ms)
+[ RUN      ] GroupByAggregateTest.test_avg
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] GroupByAggregateTest.test_avg (119 ms)
+[ RUN      ] GroupByAggregateTest.test_avg_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] GroupByAggregateTest.test_avg_dummies (105 ms)
+[ RUN      ] GroupByAggregateTest.test_min
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] GroupByAggregateTest.test_min (107 ms)
+[ RUN      ] GroupByAggregateTest.test_min_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] GroupByAggregateTest.test_min_dummies (120 ms)
+[ RUN      ] GroupByAggregateTest.test_max
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] GroupByAggregateTest.test_max (106 ms)
+[ RUN      ] GroupByAggregateTest.test_max_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] GroupByAggregateTest.test_max_dummies (102 ms)
+[ RUN      ] GroupByAggregateTest.test_tpch_q1_sums
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] GroupByAggregateTest.test_tpch_q1_sums (231 ms)
+[ RUN      ] GroupByAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] GroupByAggregateTest.test_tpch_q1_avg_cnt (224 ms)
+[ RUN      ] GroupByAggregateTest.tpch_q1
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] GroupByAggregateTest.tpch_q1 (226 ms)
+[----------] 13 tests from GroupByAggregateTest (1816 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (1816 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from NestedLoopAggregateTest
+[ RUN      ] NestedLoopAggregateTest.test_count
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_count (154 ms)
+[ RUN      ] NestedLoopAggregateTest.test_count_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_count_dummies (136 ms)
+[ RUN      ] NestedLoopAggregateTest.test_sum
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_sum (149 ms)
+[ RUN      ] NestedLoopAggregateTest.test_sum_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_sum_dummies (189 ms)
+[ RUN      ] NestedLoopAggregateTest.test_avg
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_avg (165 ms)
+[ RUN      ] NestedLoopAggregateTest.test_avg_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_avg_dummies (139 ms)
+[ RUN      ] NestedLoopAggregateTest.test_min
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_min (174 ms)
+[ RUN      ] NestedLoopAggregateTest.test_min_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_min_dummies (157 ms)
+[ RUN      ] NestedLoopAggregateTest.test_max
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_max (158 ms)
+[ RUN      ] NestedLoopAggregateTest.test_max_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_max_dummies (171 ms)
+[ RUN      ] NestedLoopAggregateTest.test_tpch_q1_sums
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_tpch_q1_sums (214 ms)
+[ RUN      ] NestedLoopAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_tpch_q1_avg_cnt (219 ms)
+[ RUN      ] NestedLoopAggregateTest.tpch_q1
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.tpch_q1 (233 ms)
+[----------] 13 tests from NestedLoopAggregateTest (2264 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (2264 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecretShareGeneratorTest
+[ RUN      ] SecretShareGeneratorTest.lineitem_sample
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SecretShareGeneratorTest.lineitem_sample (118 ms)
+[ RUN      ] SecretShareGeneratorTest.lineitem_dummy_tag_sample
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SecretShareGeneratorTest.lineitem_dummy_tag_sample (133 ms)
+[----------] 2 tests from SecretShareGeneratorTest (252 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (252 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from SerializationTest
+[ RUN      ] SerializationTest.typesTest
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SerializationTest.typesTest (159 ms)
+[ RUN      ] SerializationTest.capricorn_test
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SerializationTest.capricorn_test (70 ms)
+[ RUN      ] SerializationTest.xored_serialization_test
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SerializationTest.xored_serialization_test (68 ms)
+[ RUN      ] SerializationTest.capricorn_deserialization
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SerializationTest.capricorn_deserialization (179 ms)
+[----------] 4 tests from SerializationTest (478 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (478 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from PlanParserTest
+[ RUN      ] PlanParserTest.tpch_q01
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] PlanParserTest.tpch_q01 (145 ms)
+[ RUN      ] PlanParserTest.tpch_q03
+Received storage flag of row, emp_mode: sh2pc
+smj cost : 109612, nlj cost : 4200, join type : nested-loop-join
+smj cost : 81457, nlj cost : 13800, join type : nested-loop-join
+[       OK ] PlanParserTest.tpch_q03 (113 ms)
+[ RUN      ] PlanParserTest.tpch_q05
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] PlanParserTest.tpch_q05 (160 ms)
+[ RUN      ] PlanParserTest.tpch_q08
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] PlanParserTest.tpch_q08 (171 ms)
+[ RUN      ] PlanParserTest.tpch_q09
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] PlanParserTest.tpch_q09 (182 ms)
+[ RUN      ] PlanParserTest.tpch_q18
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] PlanParserTest.tpch_q18 (163 ms)
+[----------] 6 tests from PlanParserTest (936 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (936 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from TpcHTest
+[ RUN      ] TpcHTest.tpch_q01
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] TpcHTest.tpch_q01 (404 ms)
+[ RUN      ] TpcHTest.tpch_q03
+Received storage flag of row, emp_mode: sh2pc
+smj cost : 38882222, nlj cost : 9450000, join type : nested-loop-join
+smj cost : 161420467, nlj cost : 1243035000, join type : sort-merge-join
+[       OK ] TpcHTest.tpch_q03 (1142 ms)
+[ RUN      ] TpcHTest.tpch_q05
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] TpcHTest.tpch_q05 (3647 ms)
+[ RUN      ] TpcHTest.tpch_q08
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] TpcHTest.tpch_q08 (3685 ms)
+[ RUN      ] TpcHTest.tpch_q09
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] TpcHTest.tpch_q09 (15512 ms)
+[ RUN      ] TpcHTest.tpch_q18
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] TpcHTest.tpch_q18 (53299 ms)
+[----------] 6 tests from TpcHTest (77691 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (77691 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from EmpTest
+[ RUN      ] EmpTest.emp_test_int
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54345, 65455 as 1
+connected
+[       OK ] EmpTest.emp_test_int (3268 ms)
+[ RUN      ] EmpTest.emp_test_varchar
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54346, 65456 as 1
+connected
+[       OK ] EmpTest.emp_test_varchar (180 ms)
+[ RUN      ] EmpTest.test_float_normalization
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54347, 65457 as 1
+connected
+[       OK ] EmpTest.test_float_normalization (187 ms)
+[ RUN      ] EmpTest.secret_share_table_one_column
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54348, 65458 as 1
+connected
+[       OK ] EmpTest.secret_share_table_one_column (193 ms)
+[ RUN      ] EmpTest.sort_and_share_table_one_column
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54349, 65459 as 1
+connected
+[       OK ] EmpTest.sort_and_share_table_one_column (203 ms)
+[----------] 5 tests from EmpTest (4033 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (4033 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from SecureFieldExpressionTest
+[ RUN      ] SecureFieldExpressionTest.test_value_assignment
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54323, 65482 as 1
+connected
+[       OK ] SecureFieldExpressionTest.test_value_assignment (171 ms)
+[ RUN      ] SecureFieldExpressionTest.test_string_compare
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54324, 65483 as 1
+connected
+[       OK ] SecureFieldExpressionTest.test_string_compare (185 ms)
+[ RUN      ] SecureFieldExpressionTest.test_emp_int_math
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54325, 65484 as 1
+connected
+[       OK ] SecureFieldExpressionTest.test_emp_int_math (184 ms)
+[ RUN      ] SecureFieldExpressionTest.test_millionaires
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54326, 65485 as 1
+connected
+[       OK ] SecureFieldExpressionTest.test_millionaires (185 ms)
+[ RUN      ] SecureFieldExpressionTest.test_char_comparison
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54327, 65486 as 1
+connected
+[       OK ] SecureFieldExpressionTest.test_char_comparison (188 ms)
+[----------] 5 tests from SecureFieldExpressionTest (915 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (915 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from EmpTableTest
+[ RUN      ] EmpTableTest.secret_share_table_one_column
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54334, 65428 as 1
+connected
+[       OK ] EmpTableTest.secret_share_table_one_column (196 ms)
+[ RUN      ] EmpTableTest.secret_share_table_varchar
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54335, 65429 as 1
+connected
+[       OK ] EmpTableTest.secret_share_table_varchar (323 ms)
+[ RUN      ] EmpTableTest.secret_share_table
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54336, 65430 as 1
+connected
+[       OK ] EmpTableTest.secret_share_table (398 ms)
+[ RUN      ] EmpTableTest.secret_share_table_dummy_tag
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54337, 65431 as 1
+connected
+[       OK ] EmpTableTest.secret_share_table_dummy_tag (371 ms)
+[ RUN      ] EmpTableTest.bit_packing_test
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54338, 65432 as 1
+connected
+[       OK ] EmpTableTest.bit_packing_test (243 ms)
+[----------] 5 tests from EmpTableTest (1533 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (1534 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecureFilterTest
+[ RUN      ] SecureFilterTest.test_table_scan
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54325, 65454 as 1
+connected
+[       OK ] SecureFilterTest.test_table_scan (259 ms)
+[ RUN      ] SecureFilterTest.test_filter
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54326, 65455 as 1
+connected
+[       OK ] SecureFilterTest.test_filter (362 ms)
+[----------] 2 tests from SecureFilterTest (622 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (622 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureSortTest
+[ RUN      ] SecureSortTest.tpchQ01Sort
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54333, 65475 as 1
+connected
+[       OK ] SecureSortTest.tpchQ01Sort (286 ms)
+[ RUN      ] SecureSortTest.tpchQ03Sort
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54334, 65476 as 1
+connected
+[       OK ] SecureSortTest.tpchQ03Sort (327 ms)
+[ RUN      ] SecureSortTest.tpchQ05Sort
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54335, 65477 as 1
+connected
+[       OK ] SecureSortTest.tpchQ05Sort (276 ms)
+[ RUN      ] SecureSortTest.tpchQ08Sort
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54336, 65478 as 1
+connected
+[       OK ] SecureSortTest.tpchQ08Sort (231 ms)
+[ RUN      ] SecureSortTest.tpchQ09Sort
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54337, 65479 as 1
+connected
+[       OK ] SecureSortTest.tpchQ09Sort (7875 ms)
+[ RUN      ] SecureSortTest.tpchQ18Sort
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54338, 65480 as 1
+connected
+[       OK ] SecureSortTest.tpchQ18Sort (249 ms)
+[----------] 6 tests from SecureSortTest (9246 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (9246 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureBasicJoinTest
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43443, 65450 as 1
+connected
+[       OK ] SecureBasicJoinTest.test_tpch_q3_customer_orders (308 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43444, 65451 as 1
+connected
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders (482 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43445, 65452 as 1
+connected
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer (1108 ms)
+[----------] 3 tests from SecureBasicJoinTest (1900 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (1900 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureKeyedJoinTest
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43442, 65458 as 1
+connected
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_customer_orders (1036 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43443, 65459 as 1
+connected
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders (69371 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43444, 65460 as 1
+connected
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer (79634 ms)
+[----------] 3 tests from SecureKeyedJoinTest (150042 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (150042 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureSortMergeJoinTest
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43455, 65470 as 1
+connected
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_customer_orders (2368 ms)
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43456, 65471 as 1
+connected
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders (14437 ms)
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43457, 65472 as 1
+connected
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (20874 ms)
+[----------] 3 tests from SecureSortMergeJoinTest (37680 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (37680 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SecureMergeJoinTest
+[ RUN      ] SecureMergeJoinTest.merge_q18
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43450, 65458 as 1
+connected
+[       OK ] SecureMergeJoinTest.merge_q18 (707 ms)
+[----------] 1 test from SecureMergeJoinTest (707 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (707 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureScalarAggregateTest
+[ RUN      ] SecureScalarAggregateTest.test_count
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54312, 65466 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 525 observed gates: 552
+[       OK ] SecureScalarAggregateTest.test_count (208 ms)
+[ RUN      ] SecureScalarAggregateTest.test_count_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54313, 65467 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber, #2 shared-float lineitem.l_extendedprice)
+Estimated cost: 525 observed gates: 552
+[       OK ] SecureScalarAggregateTest.test_count_dummies (230 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54314, 65468 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 450 observed gates: 452
+[       OK ] SecureScalarAggregateTest.test_min (226 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54315, 65469 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber, #2 shared-float lineitem.l_extendedprice)
+Estimated cost: 450 observed gates: 452
+[       OK ] SecureScalarAggregateTest.test_min_dummies (227 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54316, 65470 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 450 observed gates: 452
+[       OK ] SecureScalarAggregateTest.test_max (220 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54317, 65471 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber, #2 shared-float lineitem.l_extendedprice)
+Estimated cost: 450 observed gates: 452
+[       OK ] SecureScalarAggregateTest.test_max_dummies (229 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54318, 65472 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 3275 observed gates: 3276
+[       OK ] SecureScalarAggregateTest.test_sum (221 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54319, 65473 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber, #2 shared-float lineitem.l_extendedprice)
+Estimated cost: 3275 observed gates: 3276
+[       OK ] SecureScalarAggregateTest.test_sum_dummies (232 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54320, 65474 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 34350 observed gates: 34376
+[       OK ] SecureScalarAggregateTest.test_avg (235 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54321, 65475 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber, #2 shared-float lineitem.l_extendedprice)
+Estimated cost: 34350 observed gates: 34376
+[       OK ] SecureScalarAggregateTest.test_avg_dummies (249 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_baseprice_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54322, 65476 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber, #2 shared-float lineitem.l_extendedprice)
+Estimated cost: 27150 observed gates: 26376
+[       OK ] SecureScalarAggregateTest.test_sum_baseprice_dummies (248 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_lineno_baseprice
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54323, 65477 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber, #2 shared-float lineitem.l_extendedprice)
+Estimated cost: 30425 observed gates: 29652
+[       OK ] SecureScalarAggregateTest.test_sum_lineno_baseprice (242 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_sums
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54324, 65478 as 1
+connected
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 477840 observed gates: 464200
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_sums (471 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54325, 65479 as 1
+connected
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 3569946 observed gates: 3551968
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt (1326 ms)
+[ RUN      ] SecureScalarAggregateTest.tpch_q1
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 54326, 65480 as 1
+connected
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 2421540 observed gates: 2398112
+[       OK ] SecureScalarAggregateTest.tpch_q1 (965 ms)
+[----------] 15 tests from SecureScalarAggregateTest (5537 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (5537 ms total)
+[  PASSED  ] 15 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from SecureGroupByAggregateTest
+[ RUN      ] SecureGroupByAggregateTest.test_count
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43440, 65454 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 5170 observed gates: 5232
+[       OK ] SecureGroupByAggregateTest.test_count (226 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_count_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43441, 65455 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 5170 observed gates: 5232
+[       OK ] SecureGroupByAggregateTest.test_count_dummies (224 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_sum
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43442, 65456 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 17490 observed gates: 17396
+[       OK ] SecureGroupByAggregateTest.test_sum (234 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_sum_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43443, 65457 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 17490 observed gates: 17396
+[       OK ] SecureGroupByAggregateTest.test_sum_dummies (238 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_avg
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43444, 65458 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 154220 observed gates: 161100
+[       OK ] SecureGroupByAggregateTest.test_avg (275 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_avg_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43445, 65459 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 154220 observed gates: 161100
+[       OK ] SecureGroupByAggregateTest.test_avg_dummies (259 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_min
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43446, 65460 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 5500 observed gates: 5564
+[       OK ] SecureGroupByAggregateTest.test_min (239 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_min_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43447, 65461 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 5500 observed gates: 5564
+[       OK ] SecureGroupByAggregateTest.test_min_dummies (233 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_max
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43448, 65462 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 5500 observed gates: 5564
+[       OK ] SecureGroupByAggregateTest.test_max (235 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_max_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43449, 65463 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 5500 observed gates: 5564
+[       OK ] SecureGroupByAggregateTest.test_max_dummies (237 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_tpch_q1_sums
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43450, 65464 as 1
+connected
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 491920 observed gates: 462068
+[       OK ] SecureGroupByAggregateTest.test_tpch_q1_sums (488 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43451, 65465 as 1
+connected
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 1956900 observed gates: 1949640
+[       OK ] SecureGroupByAggregateTest.test_tpch_q1_avg_cnt (886 ms)
+[ RUN      ] SecureGroupByAggregateTest.tpch_q1
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43452, 65466 as 1
+connected
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 2448820 observed gates: 2407568
+[       OK ] SecureGroupByAggregateTest.tpch_q1 (996 ms)
+[ DISABLED ] SecureGroupByAggregateTest.DISABLED_tpch_q5
+[----------] 13 tests from SecureGroupByAggregateTest (4777 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (4777 ms total)
+[  PASSED  ] 13 tests.
+
+  YOU HAVE 1 DISABLED TEST
+
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureNestedLoopAggregateTest
+[ RUN      ] SecureNestedLoopAggregateTest.test_count
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43440, 65462 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 605000 observed gates: 660000
+[       OK ] SecureNestedLoopAggregateTest.test_count (433 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_count_no_bit_packing
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43441, 65463 as 1
+connected
+Input schema: (#0 shared-int32 lineitem.l_orderkey, #1 shared-int32 lineitem.l_linenumber)
+Estimated cost: 2849000 observed gates: 2904000
+[       OK ] SecureNestedLoopAggregateTest.test_count_no_bit_packing (1006 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_count_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43442, 65464 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 605000 observed gates: 660000
+[       OK ] SecureNestedLoopAggregateTest.test_count_dummies (402 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_sum
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43443, 65465 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 2101000 observed gates: 1793000
+[       OK ] SecureNestedLoopAggregateTest.test_sum (691 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_sum_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43444, 65466 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 2101000 observed gates: 1793000
+[       OK ] SecureNestedLoopAggregateTest.test_sum_dummies (705 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_avg
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43445, 65467 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 15422000 observed gates: 15477000
+[       OK ] SecureNestedLoopAggregateTest.test_avg (4639 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_avg_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43446, 65468 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 15422000 observed gates: 15477000
+[       OK ] SecureNestedLoopAggregateTest.test_avg_dummies (4511 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43447, 65469 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 550000 observed gates: 550000
+[       OK ] SecureNestedLoopAggregateTest.test_min (431 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min_no_bit_packing
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43448, 65470 as 1
+connected
+Input schema: (#0 shared-int32 lineitem.l_orderkey, #1 shared-int32 lineitem.l_linenumber)
+Estimated cost: 1870000 observed gates: 1870000
+[       OK ] SecureNestedLoopAggregateTest.test_min_no_bit_packing (881 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43449, 65471 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 550000 observed gates: 550000
+[       OK ] SecureNestedLoopAggregateTest.test_min_dummies (418 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_max
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43450, 65472 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 550000 observed gates: 550000
+[       OK ] SecureNestedLoopAggregateTest.test_max (450 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_max_dummies
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43451, 65473 as 1
+connected
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 550000 observed gates: 550000
+[       OK ] SecureNestedLoopAggregateTest.test_max_dummies (421 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_tpch_q1_sums
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43452, 65474 as 1
+connected
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 3036000 observed gates: 2805660
+[       OK ] SecureNestedLoopAggregateTest.test_tpch_q1_sums (1101 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43453, 65475 as 1
+connected
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 11746680 observed gates: 11623920
+[       OK ] SecureNestedLoopAggregateTest.test_tpch_q1_avg_cnt (3521 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.tpch_q1
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 43454, 65476 as 1
+connected
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 14782680 observed gates: 14403840
+[       OK ] SecureNestedLoopAggregateTest.tpch_q1 (4268 ms)
+[ DISABLED ] SecureNestedLoopAggregateTest.DISABLED_tpch_q5
+[----------] 15 tests from SecureNestedLoopAggregateTest (23884 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (23884 ms total)
+[  PASSED  ] 15 tests.
+
+  YOU HAVE 1 DISABLED TEST
+
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureTpcHTest
+[ RUN      ] SecureTpcHTest.tpch_q01
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7654, 65478 as 1
+connected
+[       OK ] SecureTpcHTest.tpch_q01 (2412 ms)
+[ RUN      ] SecureTpcHTest.tpch_q03
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7655, 65479 as 1
+connected
+smj cost : 9839324, nlj cost : 3000000, join type : nested-loop-join
+smj cost : 20231819, nlj cost : 59000000, join type : sort-merge-join
+[       OK ] SecureTpcHTest.tpch_q03 (6170 ms)
+[ RUN      ] SecureTpcHTest.tpch_q05
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7656, 65480 as 1
+connected
+[       OK ] SecureTpcHTest.tpch_q05 (13115 ms)
+[ RUN      ] SecureTpcHTest.tpch_q08
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7657, 65481 as 1
+connected
+[       OK ] SecureTpcHTest.tpch_q08 (13567 ms)
+[ RUN      ] SecureTpcHTest.tpch_q09
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7658, 65482 as 1
+connected
+[       OK ] SecureTpcHTest.tpch_q09 (5624 ms)
+[ RUN      ] SecureTpcHTest.tpch_q18
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7659, 65483 as 1
+connected
+[       OK ] SecureTpcHTest.tpch_q18 (12456 ms)
+[----------] 6 tests from SecureTpcHTest (53348 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (53348 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from FullyOptimizedTest
+[ RUN      ] FullyOptimizedTest.tpch_q1
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7654, 65482 as 1
+connected
+Querying db:  tpch_alice_150
+Time: 0.290386 sec, CPU clock ticks: 38964,CPU clock ticks per second: 0.038964
+End-to-end estimated gates: 169536. observed gates: 128112 gates, relative error (%)=32.3342
+[       OK ] FullyOptimizedTest.tpch_q1 (722 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q3
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7655, 65483 as 1
+connected
+smj cost : 15310932, nlj cost : 4500000, join type : nested-loop-join
+smj cost : 101205766, nlj cost : 531442500, join type : sort-merge-join
+Cost : 44090192, combination : 0
+Cost : 43597538512, combination : 1
+Time: 39.0172 sec, CPU clock ticks: 2.52121e+07,CPU clock ticks per second: 25.2121
+End-to-end estimated gates: 1.52133e+08. observed gates: 138238648 gates, relative error (%)=10.0507
+[       OK ] FullyOptimizedTest.tpch_q3 (39415 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q5
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7656, 65484 as 1
+connected
+smj cost : 34434102, nlj cost : 9112500, join type : nested-loop-join
+smj cost : 259975444, nlj cost : 2116762500, join type : sort-merge-join
+smj cost : 200939124, nlj cost : 216180, join type : nested-loop-join
+Cost : 188714280, combination : 0
+Cost : 45640583, combination : 1
+Time: 91.8317 sec, CPU clock ticks: 5.75493e+07,CPU clock ticks per second: 57.5493
+End-to-end estimated gates: 3.14945e+08. observed gates: 332149692 gates, relative error (%)=5.17989
+[       OK ] FullyOptimizedTest.tpch_q5 (92243 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q8
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7657, 65485 as 1
+connected
+smj cost : 11021855, nlj cost : 870000, join type : nested-loop-join
+smj cost : 104876740, nlj cost : 558465000, join type : sort-merge-join
+smj cost : 81570214, nlj cost : 780650, join type : nested-loop-join
+Cost : 70393077, combination : 0
+Cost : 28399358, combination : 1
+Time: 36.3027 sec, CPU clock ticks: 2.4952e+07,CPU clock ticks per second: 24.952
+End-to-end estimated gates: 1.38057e+08. observed gates: 125396808 gates, relative error (%)=10.0958
+[       OK ] FullyOptimizedTest.tpch_q8 (36672 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q9
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7658, 65486 as 1
+connected
+smj cost : 568804, nlj cost : 118720, join type : nested-loop-join
+smj cost : 206514596, nlj cost : 91468160, join type : nested-loop-join
+smj cost : 372857928, nlj cost : 558465000, join type : sort-merge-join
+Cost : 9319760, combination : 0
+Cost : 1664586000, combination : 1
+Time: 192.708 sec, CPU clock ticks: 1.22402e+08,CPU clock ticks per second: 122.402
+End-to-end estimated gates: 7.11684e+08. observed gates: 687844248 gates, relative error (%)=3.46585
+[       OK ] FullyOptimizedTest.tpch_q9 (193137 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q18
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7659, 65487 as 1
+connected
+smj cost : 37514056, nlj cost : 49500000, join type : sort-merge-join
+Time: 17.0482 sec, CPU clock ticks: 1.07507e+07,CPU clock ticks per second: 10.7507
+End-to-end estimated gates: 5.92288e+07. observed gates: 61326124 gates, relative error (%)=3.42
+[       OK ] FullyOptimizedTest.tpch_q18 (17525 ms)
+[----------] 6 tests from FullyOptimizedTest (379725 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (379725 ms total)
+[  PASSED  ] 6 tests.

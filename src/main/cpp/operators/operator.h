@@ -70,6 +70,10 @@ namespace  vaultdb {
 
         virtual Operator<B> *clone() const = 0;
 
+        // align collation  wrt child nodes
+        // operator-specific logic
+        virtual void updateCollation() = 0;
+
 
 //        QueryTable<B> sortByDummyTag(QueryTable<B> & table);
 //        QueryTable<B> shrinkwrapToTrueCardinality(QueryTable<B> & table, bool isSorted);
@@ -190,10 +194,6 @@ namespace  vaultdb {
 
             operator_executed_ = false;
         }
-        // verify that collation is correct wrt child nodes
-        // in many cases this won't do anything,
-        // but is necessary for operators like join, filter, and project
-//        virtual void updateCollation() = 0;
 
     private:
         std::string printHelper(const std::string & prefix) const;
@@ -221,6 +221,10 @@ namespace  vaultdb {
 
         Operator<B> *clone() const override {
             return new TableInput<B>(this->output_->clone());
+        }
+
+        void updateCollation() override {
+            this->sort_definition_ = this->output_->getSortOrder();
         }
 
         virtual ~TableInput() = default;

@@ -34,6 +34,15 @@ namespace  vaultdb {
              return new MergeJoin<B>(*this);
         }
 
+        void updateCollation() override {
+            this->getChild(0)->updateCollation();
+            this->getChild(1)->updateCollation();
+
+            // just use lhs sort order for now, can use one or sides' since they are equivalent for equi-join
+            this->sort_definition_ = this->getChild()->getSortOrder();
+        }
+
+
     protected:
         bool or_dummy_tags_ = false;
         QueryTable<B> *runSelf() override;

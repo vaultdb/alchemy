@@ -26,6 +26,9 @@ public:
     Operator<bool> *clone() const override {
         return new CsvInput(*this);
     }
+
+    void updateCollation() override {}
+
 protected:
 
     string getParameters() const {

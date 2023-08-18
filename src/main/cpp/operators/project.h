@@ -45,6 +45,8 @@ namespace vaultdb {
             return new Project<B>(*this);
         }
 
+        void updateCollation() override;
+
         ~Project() {
             for(auto pos : expressions_) {
                 if(pos.second != nullptr) delete pos.second;
@@ -79,6 +81,36 @@ namespace vaultdb {
 
         }
     };
+
+    template<typename B>
+    void Project<B>::updateCollation() {
+        SortDefinition  dst_sort;
+
+        this->getChild()->updateCollation();
+        SortDefinition  src_sort_order = this->getChild()->getSortOrder();
+
+        // *** Check to see if order-by carries over
+        for(ColumnSort sort : src_sort_order) {
+            int32_t src_ordinal = sort.first;
+            bool found = false;
+            if(src_ordinal == -1) {
+                found = true; // dummy tag automatically carries over
+                dst_sort.push_back(sort);
+            }
+            for(ProjectionMapping mapping : column_mappings_) {
+                if(mapping.first == src_ordinal) {
+                    dst_sort.push_back(ColumnSort (mapping.second, sort.second));
+                    found = true;
+                    break;
+                }
+            } // end search for mapping
+            if(!found) {
+                break;
+            } // broke the sequence of mappings
+        }
+
+        this->sort_definition_ = dst_sort;
+    }
 
     // to create projections with simple 1:1 mappings
     template<typename B>

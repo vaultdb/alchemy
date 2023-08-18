@@ -36,11 +36,39 @@ namespace  vaultdb {
             return new SortMergeJoin<B>(*this);
         }
 
-        QueryTable<B> *unionAndSortTables();
-        QueryTable<B> *unionAndMergeTables();
+        void updateCollation() override {
+            // just taking the first instance of equi-join key
+            // TODO: refine sort order in optimizer
+            this->getChild()->updateCollation();
+            this->getChild(1)->updateCollation();
+
+            SortDefinition sort_def;
+            for(auto &pos : join_idxs_) {
+                sort_def.push_back(ColumnSort (pos.first, SortDirection::ASCENDING));
+            }
+            this->setSortOrder(sort_def);
+
+        }
+
 
 		int foreignKeyChild() const { return foreign_key_input_; }
         QuerySchema deriveAugmentedSchema() const;
+
+		inline bool sortCompatible() {
+            auto lhs_sort = Operator<B>::lhs_child_->getSortOrder();
+            auto rhs_sort = Operator<B>::rhs_child_->getSortOrder();
+			auto lhs_schema = Operator<B>::lhs_child_->getOutputSchema();
+			if(lhs_sort.size() < join_idxs_.size() || rhs_sort.size() < join_idxs_.size())
+                return false;
+
+            for(int i = 0; i < join_idxs_.size(); ++i) {
+                if(lhs_sort[i].first != join_idxs_[i].first || rhs_sort[i].first + lhs_schema.getFieldCount() != join_idxs_[i].second) {
+					return false;
+                }
+            }
+            return true;
+        }
+
 
     protected:
         QueryTable<B> *runSelf() override;
@@ -81,6 +109,8 @@ namespace  vaultdb {
         void initializeAlphas(QueryTable<B> *dst); // update in place
         void initializeAlphasPacked(QueryTable<B> *dst); // update in place
 
+        QueryTable<B> *unionAndSortTables();
+        QueryTable<B> *unionAndMergeTables();
 
         inline B joinMatch(QueryTable<B> *t, int lhs_row, int rhs_row) {
             // previous alignment step will make join keys in first n columns
@@ -91,23 +121,7 @@ namespace  vaultdb {
             }
             return match;
         }
-
-        // to be run after getAugmentedSchema so lhs_prime_ and rhs_prime_ are initialized
-        inline bool sortCompatible() {
-            auto lhs_sort = lhs_prime_->getSortOrder();
-            auto rhs_sort = rhs_prime_->getSortOrder();
-
-            if(lhs_sort.size() < join_idxs_.size() || rhs_sort.size() < join_idxs_.size())
-                return false;
-
-            for(int i = 0; i < join_idxs_.size(); ++i) {
-                if(lhs_sort[i].first != i || rhs_sort[i].first != i) {
-                   return false;
-                }
-            }
-            return true;
-        }
-
+ 
         void setup();
     };
 

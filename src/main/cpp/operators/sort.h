@@ -31,10 +31,12 @@ namespace  vaultdb {
         QueryTable<B> *normalizeTable(QueryTable<B> *src);
         QueryTable<B> *denormalizeTable(QueryTable<B> *src);
 
+        void updateCollation() override {}
+
     protected:
         OperatorType getType() const override { return OperatorType::SORT; }
         string getParameters() const override;
-//        void updateCollation() override {}
+
         int limit_; // -1 means no LIMIT op
         map<int, int> sort_key_map_;
         int sort_key_size_bits_ = 0;

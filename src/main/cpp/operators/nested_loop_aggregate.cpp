@@ -133,7 +133,7 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
         }
     }
 
-    return Operator<B>::output_;
+    return this->output_;
 
 }
 

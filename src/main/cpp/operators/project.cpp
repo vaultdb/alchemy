@@ -112,33 +112,9 @@ void Project<B>::setup() {
     }
 
 
-    SortDefinition  dst_sort;
-
-    // *** Check to see if order-by carries over
-    for(ColumnSort sort : src_sort_order) {
-        int32_t src_ordinal = sort.first;
-        bool found = false;
-        if(src_ordinal == -1) {
-            found = true; // dummy tag automatically carries over
-            dst_sort.push_back(sort);
-        }
-        for(ProjectionMapping mapping : column_mappings_) {
-            if(mapping.first == src_ordinal) {
-                dst_sort.push_back(ColumnSort (mapping.second, sort.second));
-                found = true;
-                break;
-            }
-        } // end search for mapping
-        if(!found) {
-            break;
-        } // broke the sequence of mappings
-    }
 
     Operator<B>::output_schema_ = dst_schema;
-    Operator<B>::setSortOrder(dst_sort);
-
-
-
+    updateCollation();
 }
 
 
