@@ -3,29 +3,6 @@
     {
       "id": "0",
       "relOp": "LogicalValues",
-      "outputFields": "c_custkey (#0)",
-      "type": [
-        {
-          "type": "INTEGER",
-          "nullable": false,
-          "name": "c_custkey"
-        }
-      ],
-      "sql": "SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD ' AS dummy_tag FROM customer ORDER BY c_custkey",
-      "dummy-tag": true,
-      "collation":  [
-        {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
-      ],
-      "tuples": [],
-      "inputs": []
-    },
-    {
-      "id": "1",
-      "relOp": "LogicalValues",
       "outputFields": "o_orderkey (#0), o_custkey (#1), o_orderdate (#2), o_shippriority (#3)",
       "type": [
         {
@@ -54,6 +31,7 @@
       "collation-1": [
         {
           "field": 0,
+          "name": "o_orderkey",
           "direction": "ASCENDING",
           "nulls": "FIRST"
         }
@@ -61,6 +39,31 @@
       "collation-2": [
         {
           "field": 1,
+          "name": "o_custkey",
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
+
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "outputFields": "c_custkey (#0)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "c_custkey"
+        }
+      ],
+      "sql": "SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD ' AS dummy_tag FROM customer ORDER BY c_custkey",
+      "dummy-tag": true,
+      "collation":  [
+        {
+          "field": 0,
           "direction": "ASCENDING",
           "nulls": "FIRST"
         }
@@ -94,8 +97,8 @@
       "joinType": "inner",
       "foreignKey": 0,
       "inputs": [
-        "1",
-        "0"
+        "0",
+        "1"
       ]
     },
     {
@@ -151,9 +154,10 @@
       ],
       "sql": "SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey",
       "dummy-tag": true,
-      "collation": [
+      "collation-1": [
         {
           "field": 0,
+          "name": "l_orderkey",
           "direction": "ASCENDING",
           "nulls": "FIRST"
         }

@@ -21,10 +21,11 @@
 #include <operators/project.h>
 #include <parser/expression_parser.h>
 #include <operators/shrinkwrap.h>
+#include <util/logger.h>
 
 using namespace vaultdb;
 using boost::property_tree::ptree;
-
+using namespace Logging;
 
 template<typename B>
 PlanParser<B>::PlanParser(const string &db_name, const string & sql_file, const string & json_file,
@@ -36,7 +37,6 @@ PlanParser<B>::PlanParser(const string &db_name, const string & sql_file, const 
         calculateAutoAggregate();
 }
 
-// for ZK plans
 template<typename B>
 PlanParser<B>::PlanParser(const string &db_name, const string & json_file, const int &limit) : db_name_(db_name), input_limit_(limit), zk_plan_(false) {
     json_only_ = true;
@@ -310,8 +310,8 @@ void PlanParser<B>::calculateAutoAggregate() {
                 cur_output_cardinality_ = cur_op->getOutputCardinality();
             }
         }
-
-        std::cout << "Cost : " << cost << ", combination : " << combination << "\n";
+		Logger* log = get_log();
+        log->write("Cost : " + std::to_string(cost) + ", combination : " + std::to_string(combination), Level::INFO);
 
         // If this combination is cheaper than the current best, update the minimum cost and combination
         if (cost < min_cost) {
@@ -635,7 +635,11 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                 size_t NLJ_cost = OperatorCostModel::operatorCost((SecureOperator *) nlj);
                 join_type = (SMJ_cost < NLJ_cost) ? "sort-merge-join" : "nested-loop-join";
 
-                cout << "smj cost : " << SMJ_cost << ", nlj cost : " << NLJ_cost << ", join type : " << join_type << endl;
+				Logger* log = get_log();
+                log->write("Operator (" + std::to_string(operator_id) + "). " +
+							"smj cost : " + std::to_string(SMJ_cost) +
+							", nlj cost : " + std::to_string(NLJ_cost) +
+							", join type : " + join_type, Level::INFO);
                 delete smj;
                 delete nlj;
 
@@ -932,7 +936,7 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
         case OperatorType::ZK_SQL_INPUT:
         case OperatorType::TABLE_INPUT: {
             // first try with given sort order (if any) and empty set unconditionally
-            auto sorts = getCollations(node);
+            auto sorts = getCollations(op);
             for (auto &sort: sorts) {
                 node->setSortOrder(sort);
                 optimizeTree_operators_[node->getOperatorId()] = node;
@@ -940,7 +944,6 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
                 std::cout << node->toString() << endl;
                 recurseNode(node);
             }
-            break;
             break;
         }
         case OperatorType::KEYED_NESTED_LOOP_JOIN:
@@ -963,6 +966,7 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
             recurseNode(node);
             break;
         default:
+            node->setSortOrder(node->getChild()->getSortOrder());
             // Same with child's sort order
             node->updateCollation();
             optimizeTree_operators_[node->getOperatorId()] = node;
@@ -978,9 +982,9 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
 
 template<typename B>
 void PlanParser<B>::recurseNode(Operator<B> *op) {
+    int op_id = op->getOperatorId();
+    Operator<B> *parent = operators_[op_id]->getParent();
 
-    auto original = operators_.at(op->getOperatorId());
-    auto parent = original->getParent();
     // at the root node
     if(parent == nullptr) {
         size_t plan_cost = op->planCost();
@@ -998,7 +1002,7 @@ void PlanParser<B>::recurseNode(Operator<B> *op) {
     }
 
     // else recurse up the tree
-    optimizeTreeHelper(parent);
+    optimizeTreeHelper(op->getParent());
 
 }
 
@@ -1024,7 +1028,7 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
 
         // TODO: add method to propagate sort to parent nodes
         // recommend doing this in Operator<B> - like adding an updateSortOrder() method that uses the same logic in operator constructor
-        //recurseNode(join);
+        recurseNode(join);
 
         if(join->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN) {
             // For KeyedJoin, sort order is same with foreign key's sort order

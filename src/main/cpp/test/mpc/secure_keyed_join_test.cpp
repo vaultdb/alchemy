@@ -20,6 +20,7 @@ DEFINE_bool(validation, true, "run reveal for validation, turn this off for benc
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 using namespace vaultdb;
+using namespace Logging;
 
 class SecureKeyedJoinTest : public EmpBaseTest {
 protected:
@@ -72,6 +73,13 @@ void SecureKeyedJoinTest::runCustomerOrdersTest() {
 
     KeyedJoin join(orders_input, customer_input, predicate);
     auto joined = join.run();
+
+	Logger* log = get_log();	
+
+    log->write("Predicted gate count: " + std::to_string(OperatorCostModel::operatorCost(&join)), Level::INFO);
+	log->write("Observed gate count: " + std::to_string(join.getGateCount()), Level::INFO);
+	log->write("Runtime: " + std::to_string(join.getRuntimeMs()), Level::INFO);
+
 
 
     if(FLAGS_validation) {

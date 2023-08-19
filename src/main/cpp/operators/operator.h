@@ -92,14 +92,13 @@ namespace  vaultdb {
                 output_ = run();
             }
             return output_;
-
-
         }
+
         virtual OperatorType getType() const = 0;
 
-        inline Operator * getParent() const { return parent_; }
+        inline Operator *getParent() const { return parent_; }
 
-        inline Operator * getChild(int idx = 0) const {
+        inline Operator *getChild(int idx = 0) const {
             if(idx == 0) return lhs_child_;
             return rhs_child_;
         }
@@ -110,10 +109,16 @@ namespace  vaultdb {
         }
 
         inline void setChild(Operator *c, int idx = 0) {
-            if(idx == 0)
+            if(idx == 0) {
                 lhs_child_ = c;
-            else
-              rhs_child_ = c;
+                lhs_child_->setParent(this);
+
+            }
+            else {
+                rhs_child_ = c;
+                lhs_child_->setParent(this);
+            }
+            this->updateCollation();
         }
 
         bool isLeaf() const { return  (lhs_child_ == nullptr); }
@@ -124,7 +129,12 @@ namespace  vaultdb {
             return sort_definition_;
         }
 
-        void setSortOrder(const SortDefinition & sort_def) { sort_definition_ = sort_def; }
+        void setSortOrder(const SortDefinition & sort_def) {
+            if(sort_def != sort_definition_) {
+                sort_definition_ = sort_def;
+                this->updateCollation();
+            }
+        }
 
         QuerySchema getOutputSchema() const { return output_schema_; }
         void setSchema(QuerySchema new_schema) { output_schema_.setSchema(new_schema); }
