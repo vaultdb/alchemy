@@ -82,7 +82,9 @@ namespace  vaultdb {
         // recurses first, then invokes runSelf method
         QueryTable<B>  *run();
         std::string printTree() const;
+        std::string printMinCostPlan() const;
         std::string toString() const;
+        std::string toSortOptimizedString() const;
         size_t getGateCount() const { return gate_cnt_; }
         double getRuntimeMs() const { return runtime_ms_; }
         inline int getOperatorId() const {     return operator_id_; }
@@ -207,6 +209,7 @@ namespace  vaultdb {
 
     private:
         std::string printHelper(const std::string & prefix) const;
+        std::string printMinCostHelper(const std::string & prefix) const;
         int operator_id_ = -1;
 
     };

@@ -962,11 +962,11 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
         }
         case OperatorType::SORT:
             // Sort is always same with sort order
-            node->setSortOrder(op->getSortOrder());
-            recurseNode(node);
+            recurseSort(node);
             break;
         default:
-            node->setSortOrder(node->getChild()->getSortOrder());
+            optimizeTree_operators_.at(node->getChild()->getOperatorId())->setParent(node);
+            node->setChild(optimizeTree_operators_.at(node->getChild()->getOperatorId()));
             // Same with child's sort order
             node->updateCollation();
             optimizeTree_operators_[node->getOperatorId()] = node;
@@ -976,7 +976,7 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
             break;
     }
 
-    delete node;
+    //delete node;
 }
 
 
@@ -993,16 +993,17 @@ void PlanParser<B>::recurseNode(Operator<B> *op) {
 
         if(plan_cost < min_plan_cost_) {
             min_plan_cost_ = plan_cost;
-            if(min_cost_plan_ != nullptr) {
-                delete min_cost_plan_;
-            }
-            min_cost_plan_ = op->clone();
+            min_cost_plan_string_ = op->printMinCostPlan();
+//            if(min_cost_plan_ != nullptr) {
+//                delete min_cost_plan_;
+//            }
+            //min_cost_plan_ = op->clone();
         }
         return;
     }
 
     // else recurse up the tree
-    optimizeTreeHelper(op->getParent());
+    optimizeTreeHelper(parent);
 
 }
 
@@ -1028,7 +1029,7 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
 
         // TODO: add method to propagate sort to parent nodes
         // recommend doing this in Operator<B> - like adding an updateSortOrder() method that uses the same logic in operator constructor
-        recurseNode(join);
+        // recurseNode(join);
 
         if(join->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN) {
             // For KeyedJoin, sort order is same with foreign key's sort order
@@ -1039,8 +1040,10 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             kj->setChild(optimizeTree_operators_.at(kj->getChild(1)->getOperatorId()), 1);
             optimizeTree_operators_.at(kj->getChild(0)->getOperatorId())->setParent(kj);
             optimizeTree_operators_.at(kj->getChild(1)->getOperatorId())->setParent(kj);
-
             kj->updateCollation();
+
+            optimizeTree_operators_[kj->getOperatorId()] = kj;
+
             std::cout << kj->toString() << endl;
             recurseNode(kj);
 
@@ -1065,9 +1068,11 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             smj->setChild(optimizeTree_operators_.at(smj->getChild(1)->getOperatorId()), 1);
             optimizeTree_operators_.at(smj->getChild(0)->getOperatorId())->setParent(smj);
             optimizeTree_operators_.at(smj->getChild(1)->getOperatorId())->setParent(smj);
-
             smj->updateCollation();
             std::cout << smj->toString() << endl;
+
+            optimizeTree_operators_[smj->getOperatorId()] = smj;
+
             recurseNode(smj);
 
             KeyedJoin j(join->getChild(0)->clone(), join->getChild(1)->clone(), smj->foreignKeyChild(), smj->getPredicate());
@@ -1149,6 +1154,8 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
 //            sma->setChild(sort_before_sma);
 //        }
         sma->updateCollation();
+        optimizeTree_operators_[sma->getOperatorId()] = sma;
+
         recurseNode(sma);
         NestedLoopAggregate a(child->clone(), sma->group_by_, sma->aggregate_definitions_,
                               sma->getJsonOutputCardinality());
@@ -1162,6 +1169,29 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
         recurseNode(&a);
     }
 }
+
+template<typename B>
+void PlanParser<B>::recurseSort(Operator<B> *sort) {
+    // Need to check if this sort is need or not.
+    if(sort->getSortOrder() == sort->getChild()->getSortOrder()) {
+        optimizeTree_operators_[sort->getOperatorId()] = sort;
+
+        int op_id = sort->getOperatorId();
+
+        if(op_id < operators_.size()) {
+            Operator<B> *parent = operators_[op_id]->getParent();
+            parent->setChild(optimizeTree_operators_.at(sort->getChild()->getOperatorId()));
+        }
+        recurseNode(sort);
+    }
+    else {
+        sort->setChild(optimizeTree_operators_.at(sort->getChild()->getOperatorId()));
+        optimizeTree_operators_.at(sort->getChild()->getOperatorId())->setParent(sort);
+        optimizeTree_operators_[sort->getOperatorId()] = sort;
+        recurseNode(sort);
+    }
+}
+
 
 
 template class vaultdb::PlanParser<bool>;

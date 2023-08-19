@@ -126,6 +126,7 @@ namespace vaultdb {
 
         void recurseJoin(Operator<B> *join);
         void recurseAgg(Operator<B> *agg);
+        void recurseSort(Operator<B> *sort);
 
         vector<SortDefinition> getCollations(Operator<B> *op) {
             map<SortDefinition, int> collations; // making a map to eliminate duplicate collations
