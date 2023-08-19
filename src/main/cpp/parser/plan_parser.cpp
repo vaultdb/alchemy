@@ -1140,33 +1140,29 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
             sma->setChild(sort_before_sma);
             sma->check_sort_ = true;
         }
-
-//        if (!GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals)) {
-//            // insert sort
-//            SortDefinition sort_order;
-//            for (uint32_t idx: group_by_ordinals) {
-//                sort_order.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
-//            }
-//            Sort<B> *sort_before_sma = new Sort<B>(child->clone(), sort_order);
-//            child->setParent(sort_before_sma);
-//            sort_before_sma->setChild(child);
-//            sort_before_sma->setParent(sma);
-//            sma->setChild(sort_before_sma);
-//        }
+        else{
+            child->setParent(sma);
+            sma->setChild(child);
+        }
         sma->updateCollation();
         optimizeTree_operators_[sma->getOperatorId()] = sma;
-
         recurseNode(sma);
+
+
+        // Make plan in case of nla.
         NestedLoopAggregate a(child->clone(), sma->group_by_, sma->aggregate_definitions_,
                               sma->getJsonOutputCardinality());
-
+        a.setOperatorId(sma->getOperatorId());
+        child->setParent(&a);
+        a.setChild(child);
+        a.updateCollation();
+        optimizeTree_operators_[a.getOperatorId()] = &a;
+        recurseNode(&a);
         // In NestedLoop, child's sort is not remained,
         // TODO : need to change this part of setting sort order.
-        a.updateCollation();
+
 
         //TODO : check if we need to add sort order to parent. Need Expected Sort
-
-        recurseNode(&a);
     }
 }
 
