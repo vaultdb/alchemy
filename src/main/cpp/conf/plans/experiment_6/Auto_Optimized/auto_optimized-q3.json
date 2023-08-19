@@ -26,6 +26,22 @@
           "name": "o_shippriority"
         }
       ],
+      "sql": "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_orderkey, o_orderdate, o_shippriority",
+      "dummy-tag": true,
+      "collation-1": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -38,6 +54,15 @@
           "type": "INTEGER",
           "nullable": false,
           "name": "c_custkey"
+        }
+      ],
+      "sql": "SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer ORDER BY c_custkey",
+      "dummy-tag": true,
+      "collation":  [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
         }
       ],
       "tuples": [],
@@ -115,6 +140,15 @@
           "name": "revenue"
         }
       ],
+      "sql": "SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey",
+      "dummy-tag": true,
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -183,10 +217,23 @@
       "operator-algorithm" : "auto",
       "cardBound" : 6005,
       "checkSort" : false,
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
       "group": [
         0,
         1,
         2
+      ],
+      "functional-dependency": [
+        {
+          "determinant": 0,
+          "dependsOn": [1, 2]
+        }
       ],
       "aggs": [
         {

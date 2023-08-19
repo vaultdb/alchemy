@@ -127,6 +127,33 @@ std::string Operator<B>::toString() const {
 
 }
 
+template<typename B>
+std::string Operator<B>::printMinCostPlan() const {
+    return printMinCostHelper("");
+
+}
+
+template<typename B>
+std::string Operator<B>::printMinCostHelper(const string &prefix) const {
+    stringstream  ss;
+    ss << prefix << toSortOptimizedString() << endl;
+    string indent = prefix + "    ";
+    if(lhs_child_)   ss << lhs_child_->printMinCostHelper(indent);
+    if(rhs_child_)   ss << rhs_child_->printMinCostHelper(indent);
+
+    return ss.str();
+}
+
+template<typename B>
+std::string Operator<B>::toSortOptimizedString() const {
+    stringstream  ss;
+
+    ss << "#" << operator_id_ << ": " << getTypeString();
+    ss << " order by: " << DataUtilities::printSortDefinition(sort_definition_);
+    return ss.str();
+
+}
+
 /*
 template<typename B>
 QueryTable<B> Operator<B>::sortByDummyTag(QueryTable<B> &table) {

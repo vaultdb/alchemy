@@ -13,8 +13,10 @@ namespace vaultdb {
     class NestedLoopAggregate : public Operator<B> {
 
     public:
+        SortDefinition effective_sort_;
         std::vector<ScalarAggregateDefinition> aggregate_definitions_;
         std::vector<int32_t> group_by_;
+        std::map<int32_t, std::set<int32_t>> functional_dependency_;
 
         vector<UnsortedAggregateImpl<B> *> aggregators_;
 
@@ -22,14 +24,15 @@ namespace vaultdb {
                             const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const int & output_card = 0);
         NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
                             const vector<ScalarAggregateDefinition> &aggregates, const int output_card = 0);
+        NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+                            const vector<ScalarAggregateDefinition> &aggregates, const int output_card, const SortDefinition & effective_sort, const map<int32_t, std::set<int32_t>> &functional_dependency);
 
         NestedLoopAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
                             const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const int & output_card = 0);
-
         NestedLoopAggregate(QueryTable<B>  *child, const vector<int32_t> &groupBys,
                             const vector<ScalarAggregateDefinition> &aggregates, const int & output_card = 0);
         NestedLoopAggregate(const NestedLoopAggregate & src) : Operator<B>(src), aggregate_definitions_(src.aggregate_definitions_),
-                group_by_(src.group_by_) {
+                group_by_(src.group_by_), effective_sort_(src.effective_sort_), functional_dependency_(src.functional_dependency_) {
             setup();
         }
 
@@ -58,7 +61,6 @@ namespace vaultdb {
        }
 
     protected:
-
         QueryTable<B> *runSelf() override;
         string getParameters() const override {
             stringstream  ss;

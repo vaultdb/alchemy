@@ -70,6 +70,23 @@ GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> 
 
 
 template<typename B>
+GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+                                      const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const SortDefinition &effective_sort, const map<int32_t, std::set<int32_t>> &functional_dependency)
+        :  Operator<B>(child, SortDefinition()), check_sort_(check_sort), aggregate_definitions_(aggregates),
+           group_by_(groupBys), effective_sort_(effective_sort), functional_dependency_(functional_dependency) {
+    setup();
+}
+
+template<typename B>
+GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+                                      const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const int &json_cardinality, const SortDefinition &effective_sort, const map<int32_t, std::set<int32_t>> &functional_dependency)
+        :  Operator<B>(child, SortDefinition()), check_sort_(check_sort), aggregate_definitions_(aggregates),
+           group_by_(groupBys), json_cardinality_(json_cardinality), effective_sort_(effective_sort), functional_dependency_(functional_dependency) {
+    setup();
+}
+
+
+template<typename B>
 QueryTable<B> *GroupByAggregate<B>::runSelf() {
     QueryTable<B> *input = Operator<B>::getChild()->getOutput();
     QuerySchema input_schema = input->getSchema();
@@ -233,8 +250,29 @@ bool GroupByAggregate<B>::sortCompatible(const SortDefinition & sorted_on, const
     }
 
     return true;
-
 }
+
+template<typename B>
+bool GroupByAggregate<B>::sortCompatible(const SortDefinition & sorted_on,
+                                         const vector<int32_t> &group_by_idxs,
+                                         const map<int32_t, std::set<int32_t>> &dependencies) {
+    std::set<int32_t> coveredColumns;
+    for(const auto& sort_def : sorted_on) {
+        coveredColumns.insert(sort_def.first);
+        if(dependencies.count(sort_def.first) > 0) {
+            coveredColumns.insert(dependencies.at(sort_def.first).begin(), dependencies.at(sort_def.first).end());
+        }
+    }
+
+    for(const auto& group_by_idx : group_by_idxs) {
+        if(coveredColumns.count(group_by_idx) == 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 template<typename B>
 void GroupByAggregate<B>::setup() {

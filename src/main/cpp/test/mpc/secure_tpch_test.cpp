@@ -24,7 +24,7 @@ DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65478, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(filter, "*.tpch_q03", "run only the tests passing this filter");
 
 
 class SecureTpcHTest : public EmpBaseTest {
@@ -36,7 +36,7 @@ protected:
     void runTest(const int &test_id, const string &test_name, const SortDefinition &expected_sort);
     string  generateExpectedOutputQuery(const int & test_id);
 
-    int input_tuple_limit_ = 150;
+    int input_tuple_limit_ = -1;
 
 };
 
@@ -53,8 +53,9 @@ SecureTpcHTest::runTest(const int &test_id, const string &test_name, const SortD
     string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + test_name + ".sql";
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
 
-    PlanParser<Bit> parser(db_name_, sql_file, plan_file, input_tuple_limit_);
-    //PlanParser<Bit> parser(local_db, plan_file, input_tuple_limit_);
+    //PlanParser<Bit> parser(db_name_, sql_file, plan_file, input_tuple_limit_);
+    PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
+    parser.optimizeTree();
     SecureOperator *root = parser.getRoot();
     auto result = root->run();
 

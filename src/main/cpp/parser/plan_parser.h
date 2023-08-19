@@ -31,7 +31,7 @@ namespace vaultdb {
 
         Operator<B> *getOperator(const int &op_id);
 
-        Operator<B> *optmizeTree();
+        Operator<B> *optimizeTree();
 
         static Operator<B> *
         parse(const std::string &db_name, const string &sql_file, const string &json_file, const int &limit = -1);
@@ -58,8 +58,10 @@ namespace vaultdb {
         map<int, vector<SortDefinition>> interesting_sort_orders_;
         Operator<B> *min_cost_plan_ = nullptr;
         size_t min_plan_cost_ = std::numeric_limits<size_t>::max();
+        string min_cost_plan_string_ = "";
         std::map<int, Operator<B> * > operators_; // op ID --> operator instantiation
         std::vector<Operator<B> * > support_ops_; // these ones don't get an operator ID from the JSON plan
+        std::map<int, Operator<B> * > optimizeTree_operators_;
         std::map<int, std::vector<SortDefinition>> scan_sorts_; // op ID --> sort definition
 
 
@@ -124,6 +126,7 @@ namespace vaultdb {
 
         void recurseJoin(Operator<B> *join);
         void recurseAgg(Operator<B> *agg);
+        void recurseSort(Operator<B> *sort);
 
         vector<SortDefinition> getCollations(Operator<B> *op) {
             map<SortDefinition, int> collations; // making a map to eliminate duplicate collations
