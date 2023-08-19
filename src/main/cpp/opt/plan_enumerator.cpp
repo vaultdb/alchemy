@@ -54,8 +54,6 @@ SecureOperator *PlanEnumerator::optimizeTree() {
         auto input = leaf->clone();
         if(input->getSortOrder() != sort)  input->setSortOrder(sort); // automatically sorts leaf inputs by new sort order
         optimizeTreeHelper(input);
-        delete input;
-
     }
     return min_cost_plan_;
 
@@ -85,6 +83,7 @@ void PlanEnumerator::optimizeTreeHelper(SecureOperator *op) {
         case OperatorType::SORT_MERGE_JOIN: {
             // for each rhs leaf collation cycle through its collations and then try both SMJ and NLJ with each collation
              recurseJoin(node);
+             delete node;
              break;
         }
         // skip sorts for now, we handle them elsewhere

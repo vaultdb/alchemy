@@ -53,20 +53,18 @@ void  SecurePlanEnumeratorTest::runTest(const int &test_id, const SortDefinition
     cout << "Optimized plan: " << optimized->printTree() << endl;
     cout << "Plan cost: " << optimized->planCost() << endl;
 
-//    if(FLAGS_validation) {
-//        auto expected_sql = generateExpectedOutputQuery(test_id);
-//        auto expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
-//        expected->setSortOrder(expected_sort);
-//
-//        auto observed = optimized->run();
-//        auto revealed = observed->reveal();
-//
-//        EXPECT_EQ(*expected, *revealed);
-//        delete expected;
-//        delete revealed;
-//
-//
-//    }
+    if(FLAGS_validation) {
+        auto expected_sql = generateExpectedOutputQuery(test_id);
+        auto expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
+        expected->setSortOrder(expected_sort);
+
+        auto observed = optimized->run();
+        auto revealed = observed->reveal();
+
+        EXPECT_EQ(*expected, *revealed);
+        delete expected;
+        delete revealed;
+    }
 
     delete root;
     delete optimized;
