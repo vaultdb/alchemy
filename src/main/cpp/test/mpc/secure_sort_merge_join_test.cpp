@@ -23,6 +23,7 @@ DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
 using namespace vaultdb;
+using namespace Logging;
 
 class SecureSortMergeJoinTest : public EmpBaseTest {
 protected:
@@ -89,6 +90,13 @@ void SecureSortMergeJoinTest::runCustomerOrdersTest() {
 
     auto joined = join.run();
 
+
+	Logger* log = get_log();	
+
+    log->write("Predicted gate count: " + std::to_string(OperatorCostModel::operatorCost(&join)), Level::INFO);
+	log->write("Observed gate count: " + std::to_string(join.getGateCount()), Level::INFO);
+	log->write("Runtime: " + std::to_string(join.getRuntimeMs()), Level::INFO);
+
     if(FLAGS_validation) {
         PlainTable *observed = joined->reveal();
         Sort sorter(observed, DataUtilities::getDefaultSortDefinition(1));
@@ -127,6 +135,12 @@ void SecureSortMergeJoinTest::runLineitemOrdersTest() {
                                                                                       lineitem_input, 4);
     SortMergeJoin join(orders_input, lineitem_input, 1, predicate);
     auto joined = join.run();
+
+	Logger* log = get_log();	
+
+    log->write("Predicted gate count: " + std::to_string(OperatorCostModel::operatorCost(&join)), Level::INFO);
+	log->write("Observed gate count: " + std::to_string(join.getGateCount()), Level::INFO);
+	log->write("Runtime: " + std::to_string(join.getRuntimeMs()), Level::INFO);
 
     if(FLAGS_validation) {
         PlainTable *observed = joined->reveal();
@@ -178,6 +192,12 @@ void SecureSortMergeJoinTest::runLineitemOrdersCustomerTest() {
 
     SortMergeJoin col_join(lineitem_input, co_join, lineitem_orders_predicate);
     auto joined = col_join.run();
+
+	Logger* log = get_log();	
+
+    log->write("Predicted gate count: " + std::to_string(OperatorCostModel::operatorCost(&col_join)), Level::INFO);
+	log->write("Observed gate count: " + std::to_string(col_join.getGateCount()), Level::INFO);
+	log->write("Runtime: " + std::to_string(col_join.getRuntimeMs()), Level::INFO);
 
     if(FLAGS_validation) {
         PlainTable *observed = joined->reveal();

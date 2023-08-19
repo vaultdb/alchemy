@@ -21,10 +21,11 @@
 #include <operators/project.h>
 #include <parser/expression_parser.h>
 #include <operators/shrinkwrap.h>
+#include <util/logger.h>
 
 using namespace vaultdb;
 using boost::property_tree::ptree;
-
+using namespace Logging;
 
 template<typename B>
 PlanParser<B>::PlanParser(const string &db_name, const string & sql_file, const string & json_file,
@@ -311,8 +312,8 @@ void PlanParser<B>::calculateAutoAggregate() {
                 cur_output_cardinality_ = cur_op->getOutputCardinality();
             }
         }
-
-        std::cout << "Cost : " << cost << ", combination : " << combination << "\n";
+		Logger* log = get_log();
+        log->write("Cost : " + std::to_string(cost) + ", combination : " + std::to_string(combination), Level::INFO);
 
         // If this combination is cheaper than the current best, update the minimum cost and combination
         if (cost < min_cost) {
@@ -598,7 +599,11 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                 size_t NLJ_cost = OperatorCostModel::operatorCost((SecureOperator *) nlj);
                 join_type = (SMJ_cost < NLJ_cost) ? "sort-merge-join" : "nested-loop-join";
 
-                cout << "smj cost : " << SMJ_cost << ", nlj cost : " << NLJ_cost << ", join type : " << join_type << endl;
+				Logger* log = get_log();
+                log->write("Operator (" + std::to_string(operator_id) + "). " +
+							"smj cost : " + std::to_string(SMJ_cost) + 
+							", nlj cost : " + std::to_string(NLJ_cost) + 
+							", join type : " + join_type, Level::INFO);
                 delete smj;
                 delete nlj;
 

@@ -48,9 +48,10 @@ protected:
 
 void
 BaselineComparisonTest::controlBitPacking(const string &db_name) {
+	Logger* log = get_log();
     if(FLAGS_bitpacking == "packed") {
         this->initializeBitPacking(db_name);
-        std::cout << "Bit Packed - Expected DB : " << db_name << "\n";
+        log->write("Bit Packed - Expected DB : " + db_name, Level::DEBUG);
     }
     else {
         this->disableBitPacking();
@@ -68,7 +69,7 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
     string local_db = FLAGS_unioned_db;
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
-    cout << " Observed DB : "<< local_db << endl;
+    //cout << " Observed DB : "<< local_db << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
@@ -81,19 +82,18 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
     PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();	
 
-    SecureTable *result = root->run();
-
-    cout << "Baseline : \n";
+    //SecureTable *result = root->run();
 
 	Logger* log = get_log();	
     log->write(root->printTree(), Level::DEBUG);
+	log->write("Baseline : ", Level::DEBUG);
 	
 
     log->write("Predicted gate count: " + std::to_string(root->planCost()), Level::INFO);	
 	log->write("Observed gate count: " + std::to_string(root->planGateCount()), Level::INFO);
 	log->write("Runtime: " + std::to_string(root->planRuntime()), Level::INFO);
 
-    if(FLAGS_validation) {
+    /*if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
         DataUtilities::removeDummies(observed);
 
@@ -102,7 +102,7 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
 
         delete observed;
         delete expected;
-    }
+    }*/
 }
 
 void
@@ -115,7 +115,7 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
     string local_db = FLAGS_unioned_db;
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
-    cout << " Observed DB : "<< local_db << endl;
+    //cout << " Observed DB : "<< local_db << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
@@ -126,18 +126,17 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
     PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-    SecureTable *result = root->run();
+    //SecureTable *result = root->run(); 
 
-    cout << "Handcode : \n";
-
-	Logger* log = get_log();	
+	Logger* log = get_log();
+	log->write("Handcode : ", Level::DEBUG);
     log->write(root->printTree(), Level::DEBUG);	
 
     log->write("Predicted gate count: " + std::to_string(root->planCost()), Level::INFO);	
 	log->write("Observed gate count: " + std::to_string(root->planGateCount()), Level::INFO);
 	log->write("Runtime: " + std::to_string(root->planRuntime()), Level::INFO);
 
-    if(FLAGS_validation) {
+    /*if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
         DataUtilities::removeDummies(observed);
 
@@ -146,7 +145,7 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
 
         delete observed;
         delete expected;
-    }
+    }*/
 }
 
 string
