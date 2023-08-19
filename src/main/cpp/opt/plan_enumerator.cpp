@@ -50,12 +50,11 @@ SecureOperator *PlanEnumerator::optimizeTree() {
     vector<SortDefinition> sorts = getCollations(leaf);
     assert(leaf->getType() == OperatorType::SECURE_SQL_INPUT);
 
-
-
     for(auto sort : sorts) {
         auto input = leaf->clone();
         if(input->getSortOrder() != sort)  input->setSortOrder(sort); // automatically sorts leaf inputs by new sort order
         optimizeTreeHelper(input);
+        delete input;
 
     }
     return min_cost_plan_;
@@ -74,6 +73,7 @@ void PlanEnumerator::optimizeTreeHelper(SecureOperator *op) {
         case OperatorType::ZK_SQL_INPUT:
         case OperatorType::TABLE_INPUT: {
             // first try with given sort order (if any) and empty set unconditionally
+            // it is unlikely this code will be run since join covers this instead
             auto sorts = getCollations(op);
             for (auto &sort: sorts) {
                 node->setSortOrder(sort);
@@ -91,7 +91,7 @@ void PlanEnumerator::optimizeTreeHelper(SecureOperator *op) {
 //        case OperatorType::SORT: {
 //            auto sort_parent = tree_nodes_[node->getOperatorId()]->getParent();
 //            if(sort_parent != nullptr) {
-//                // leap frog over sort
+//                // leapfrog over sort
 //                auto next_node = sort_parent->clone();
 //                next_node->setChild(op->clone());
 //                recurseNode(next_node);
@@ -120,11 +120,12 @@ void PlanEnumerator::optimizeTreeHelper(SecureOperator *op) {
 }
 
 void PlanEnumerator::recurseJoin(SecureOperator *join) {
-    auto rhs_leaf = join->getChild(1)->clone(); // for now assume that child is always SecureSqlInput
-    assert(rhs_leaf->getType() == OperatorType::SECURE_SQL_INPUT);
+   // for now assume that child is always SecureSqlInput
+    assert(join->getChild(1)->getType() == OperatorType::SECURE_SQL_INPUT);
 
-    auto rhs_sorts = getCollations(rhs_leaf);
+    auto rhs_sorts = getCollations(join->getChild(1));
     for(auto &sort: rhs_sorts) {
+        auto rhs_leaf = join->getChild(1)->clone();
         rhs_leaf->setSortOrder(sort);
         auto first_join = join->clone();
         first_join->setChild(rhs_leaf, 1);
@@ -135,13 +136,16 @@ void PlanEnumerator::recurseJoin(SecureOperator *join) {
             auto second_join  = new SortMergeJoin<Bit>(kj->getChild(0)->clone(), kj->getChild(1)->clone(), kj->foreignKeyChild(), kj->getPredicate());
             second_join->setOperatorId(kj->getOperatorId());
             recurseNode(second_join->clone());
+            delete second_join;
         }
         else {
             SortMergeJoin<Bit> *smj = (SortMergeJoin<Bit> *) first_join;
             auto second_join = new KeyedJoin<Bit>(smj->getChild(0)->clone(), smj->getChild(1)->clone(), smj->foreignKeyChild(), smj->getPredicate());
             second_join->setOperatorId(smj->getOperatorId());
             recurseNode(second_join->clone());
+            delete second_join;
         }
+       // delete first_join;
     }
 }
 
@@ -213,6 +217,7 @@ void PlanEnumerator::recurseNode(SecureOperator *op) {
     // at the root node
     if(parent == nullptr) {
         size_t plan_cost = op->planCost();
+        ++plan_cnt_;
 
         Logger* logger = get_log();
         stringstream ss;

@@ -4,7 +4,6 @@
 
 #include "sql_input.h"
 
-
 // reads SQL input and secret shares it
 // alice and bob need to run at the same time for this
 namespace  vaultdb {
@@ -16,7 +15,6 @@ namespace  vaultdb {
         StorageModel storage_model_;
         int input_party_ = 0;
         string original_input_query_; // no modifications for limit or sort
-
 
     protected:
         SecureTable *runSelf() override;
@@ -55,7 +53,7 @@ namespace  vaultdb {
             }
 
             auto collation = this->sort_definition_;
-            if((plain_input_ != nullptr && plain_input_ ->getSortOrder() != collation)  || (plain_input_ == nullptr)){
+            if((plain_input_ != nullptr && plain_input_->getSortOrder() != collation)  || (plain_input_ == nullptr)){
                 // update collation
                 string sql = "SELECT * FROM (" + original_input_query_ + ") to_sort ORDER BY ";
                 sql += "(" + std::to_string(collation[0].first + 1) + ") "

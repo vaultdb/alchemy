@@ -2,6 +2,11 @@
 #define _PLAN_ENUMERATOR_
 #include <operators/operator.h>
 
+// for Q3 start with:
+// 2 sorts for Customer, 3 for Orders, 2 for Lineitem
+// 2 joins * 2 algos a piece
+// = 2*3*2*2*2 = 48 plans expected
+
 namespace vaultdb {
     class PlanEnumerator {
     public:
@@ -18,18 +23,14 @@ namespace vaultdb {
         SecureOperator *min_cost_plan_ = nullptr;
         map<int, SecureOperator *> tree_nodes_;
         SecureOperator *root_;
+        int plan_cnt_ = 0;
+
 
         void setup(SecureOperator *op);
         void optimizeTreeHelper(SecureOperator *op);
         void recurseJoin(SecureOperator *join);
         void recurseAgg(SecureOperator *agg);
         void recurseNode(SecureOperator *op);
-        inline SecureOperator *fetchLeaf(SecureOperator *op) {
-            while(!op->isLeaf()) {
-                op = op->getChild();
-            }
-            return op;
-        }
 
         inline vector<SortDefinition> getCollations(SecureOperator *op) {
             map<SortDefinition, int> collations; // making a map to eliminate duplicate collations

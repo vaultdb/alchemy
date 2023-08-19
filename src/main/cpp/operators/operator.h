@@ -130,8 +130,10 @@ namespace  vaultdb {
         }
 
         void setSortOrder(const SortDefinition & sort_def) {
-            sort_definition_ = sort_def;
-            this->updateCollation();
+            if(sort_def != sort_definition_) {
+                sort_definition_ = sort_def;
+                this->updateCollation();
+            }
         }
 
         QuerySchema getOutputSchema() const { return output_schema_; }
