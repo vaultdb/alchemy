@@ -17,6 +17,7 @@ namespace vaultdb {
         std::vector<int32_t> group_by_;
         bool check_sort_ = true;
         SortDefinition effective_sort_;
+        std::map<int32_t, std::set<int32_t>> functional_dependency_;
 
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort);
@@ -28,9 +29,9 @@ namespace vaultdb {
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const int &json_cardinality);
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const SortDefinition &effective_sort);
+                         const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const SortDefinition &effective_sort, const map<int32_t, std::set<int32_t>> &functional_dependency);
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const int &json_cardinality, const SortDefinition &effective_sort);
+                         const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const int &json_cardinality, const SortDefinition &effective_sort, const map<int32_t, std::set<int32_t>> &functional_dependency);
 
         GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort);
@@ -39,7 +40,7 @@ namespace vaultdb {
                          const vector<ScalarAggregateDefinition> &aggregates);
 
         GroupByAggregate(const GroupByAggregate<B> & src) : Operator<B>(src), aggregate_definitions_(src.aggregate_definitions_),
-                check_sort_(src.check_sort_), group_by_(src.group_by_), json_cardinality_(src.json_cardinality_), effective_sort_(src.effective_sort_) {
+                check_sort_(src.check_sort_), group_by_(src.group_by_), json_cardinality_(src.json_cardinality_), effective_sort_(src.effective_sort_), functional_dependency_(src.functional_dependency_) {
             setup();
         }
 
@@ -54,16 +55,17 @@ namespace vaultdb {
             if(!check_sort_) return;
 
             SortDefinition  child_sort = this->getChild(0)->getSortOrder();
-            assert(sortCompatible(child_sort, group_by_));
+            assert(sortCompatible(child_sort, group_by_, functional_dependency_));
 
-            SortDefinition  sort_def;
-            // map sort order to that of child
-            for(size_t idx = 0; idx < group_by_.size(); ++idx) {
-                // projecting the attribute in group_by_[idx] to the ith position in output
-                sort_def.emplace_back(idx, child_sort[group_by_[idx]].second);
-            }
-
-            this->sort_definition_ = sort_def;
+            this->sort_definition_ = child_sort;
+//            SortDefinition  sort_def;
+//            // map sort order to that of child
+//            for(size_t idx = 0; idx < group_by_.size(); ++idx) {
+//                // projecting the attribute in group_by_[idx] to the ith position in output
+//                sort_def.emplace_back(idx, child_sort[group_by_[idx]].second);
+//            }
+//
+//            this->sort_definition_ = sort_def;
         }
 
         virtual ~GroupByAggregate()  {
@@ -72,6 +74,7 @@ namespace vaultdb {
             }
         }
         static bool sortCompatible(const SortDefinition & lhs, const vector<int32_t> &group_by_idxs);
+        static bool sortCompatible(const SortDefinition & lhs, const vector<int32_t> &group_by_idxs, const map<int32_t, std::set<int32_t>> &dependencies);
         void setJsonOutputCardinality(size_t cardinality) { json_cardinality_ = cardinality; }
         size_t getJsonOutputCardinality() const { return json_cardinality_; }
 

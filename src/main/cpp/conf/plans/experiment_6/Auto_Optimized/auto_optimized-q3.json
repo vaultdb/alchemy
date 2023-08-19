@@ -229,6 +229,12 @@
         1,
         2
       ],
+      "functional-dependency": [
+        {
+          "determinant": 0,
+          "dependsOn": [1, 2]
+        }
+      ],
       "aggs": [
         {
           "agg": {
