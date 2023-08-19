@@ -346,8 +346,9 @@ void PlanParser<B>::calculateAutoAggregate() {
             group_by_ordinals = sma_vector[i]->group_by_;
             aggregators = sma_vector[i]->aggregate_definitions_;
             bool check_sort = sma_vector[i]->check_sort_;
+            SortDefinition effective_sort = sma_vector[i]->effective_sort_;
 
-            GroupByAggregate<B> *real_sma = new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort);
+            GroupByAggregate<B> *real_sma = new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort, effective_sort);
             real_sma->setOutputCardinality( sma_vector[i]->getJsonOutputCardinality());
             child->setParent(real_sma);
             real_sma->setChild(child);
@@ -360,8 +361,9 @@ void PlanParser<B>::calculateAutoAggregate() {
             group_by_ordinals = nla_vector[i]->group_by_;
             aggregators = nla_vector[i]->aggregate_definitions_;
             int cardBound = nla_vector[i]->getOutputCardinality();
+            SortDefinition effective_sort = nla_vector[i]->effective_sort_;
 
-            NestedLoopAggregate<B> *real_nla = new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardBound);
+            NestedLoopAggregate<B> *real_nla = new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardBound, effective_sort);
             child->setParent(real_nla);
             real_nla->setChild(child);
             operators_[agg_id[i]] = real_nla;
@@ -446,6 +448,21 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
         check_sort = aggregate_json.get_child("checkSort").template get_value<bool>();
     }
 
+    SortDefinition effective_sort;
+    if(aggregate_json.count("effective-collation") > 0) {
+        boost::property_tree::ptree sort_payload = aggregate_json.get_child("effective-collation");
+        int limit = -1;
+
+        for (ptree::const_iterator it = sort_payload.begin(); it != sort_payload.end(); ++it) {
+            ColumnSort cs;
+            cs.first = it->second.get_child("field").get_value<int>(); // field_idx
+            std::string direction_str = it->second.get_child("direction").get_value<std::string>();
+            cs.second = (direction_str == "ASCENDING") ? SortDirection::ASCENDING : SortDirection::DESCENDING;
+            effective_sort.push_back(cs);
+        }
+    }
+
+
     string agg_algo;
     if(aggregate_json.count("operator-algorithm") > 0)
         agg_algo = aggregate_json.get_child("operator-algorithm").template get_value<string>();
@@ -507,6 +524,8 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
             }
 
             sma->setJsonOutputCardinality(cardinality_bound);
+            sma->effective_sort_ = effective_sort;
+            nla->effective_sort_ = effective_sort;
             sma_vector.push_back(sma);
             nla_vector.push_back(nla);
             setAutoFlag(true);
@@ -516,9 +535,9 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
         }
 
         if(cardinality_bound > 0 && (agg_algo == "nested-loop-aggregate" || agg_algo == ""))
-            return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardinality_bound);
+            return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardinality_bound, effective_sort);
         else if(!check_sort && (agg_algo == "sort-merge-aggregate" || agg_algo == ""))
-            return new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort, cardinality_bound);
+            return new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort, cardinality_bound, effective_sort);
         else {
             // if sort not aligned, insert a sort op
             SortDefinition child_sort = child->getSortOrder();
@@ -531,7 +550,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
                 child = new Sort<B>(child, child_sort);
                 support_ops_.template emplace_back(child);
             }
-            return new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort, cardinality_bound);
+            return new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort, cardinality_bound, effective_sort);
         }
     }
     else {
@@ -903,6 +922,7 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
                 recurseNode(node);
             }
             break;
+            break;
         }
         case OperatorType::KEYED_NESTED_LOOP_JOIN:
         case OperatorType::SORT_MERGE_JOIN: {
@@ -915,9 +935,6 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
         case OperatorType::SORT_MERGE_AGGREGATE: {
             // for each agg try NLA and SMA
             // for SMA check if we need sort before op, also check if we have any extra sorts that are unneeded?
-            node->setSortOrder(node->getChild()->getSortOrder());
-
-            std::cout << "Agg :  Order by: " << DataUtilities::printSortDefinition(node->getSortOrder())  << ", ";
             recurseAgg(node);
             break;
         }
@@ -1051,9 +1068,15 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
     Operator<B> *child = agg->getChild();
     if (agg->getType() == OperatorType::NESTED_LOOP_AGGREGATE) {
         NestedLoopAggregate<B> *nla = (NestedLoopAggregate<B> *) agg;
+
+        nla->updateCollation();
+        recurseNode(nla);
+
         std::vector<int32_t> group_by_ordinals = nla->group_by_;
         // if sort not aligned, insert a sort op
         SortDefinition child_sort = child->getSortOrder();
+
+        // TODO : Make it work with effective collation
         if (!GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals)) {
             // insert sort
             SortDefinition child_sort;
@@ -1067,18 +1090,20 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
             sort_before_sma->setChild(child);
             sort_before_sma->setParent(&a);
             a.setChild(sort_before_sma);
+
+            a.updateCollation();
             recurseNode(&a);
         } else {
             GroupByAggregate a(child->clone(), group_by_ordinals, nla->aggregate_definitions_, true);
+            a.updateCollation();
             recurseNode(&a);
         }
-        recurseNode(nla);
     } else {
         GroupByAggregate<B> *sma = (GroupByAggregate<B> *) agg;
 
-        SortDefinition cur_sort = sma->getSortOrder();
+        SortDefinition child_sort = child->getSortOrder();
         std::vector<int32_t> group_by_ordinals = sma->group_by_;
-        if (!GroupByAggregate<B>::sortCompatible(cur_sort, group_by_ordinals)) {
+        if (!GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals)) {
             // insert sort
             SortDefinition sort_order;
             for (uint32_t idx: group_by_ordinals) {
@@ -1090,16 +1115,14 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
             sort_before_sma->setParent(sma);
             sma->setChild(sort_before_sma);
         }
-
-
+        sma->updateCollation();
         recurseNode(sma);
         NestedLoopAggregate a(child->clone(), sma->group_by_, sma->aggregate_definitions_,
                               sma->getJsonOutputCardinality());
 
         // In NestedLoop, child's sort is not remained,
         // TODO : need to change this part of setting sort order.
-        a.setSortOrder(child->getSortOrder());
-        a.setOperatorId(sma->getOperatorId());
+        a.updateCollation();
 
         //TODO : check if we need to add sort order to parent. Need Expected Sort
 

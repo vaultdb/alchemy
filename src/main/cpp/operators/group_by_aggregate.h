@@ -16,7 +16,7 @@ namespace vaultdb {
         std::vector<ScalarAggregateDefinition> aggregate_definitions_;
         std::vector<int32_t> group_by_;
         bool check_sort_ = true;
-        SortDefinition effective_sort_; // TODO: populate this with JSON inputs
+        SortDefinition effective_sort_;
 
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort);
@@ -27,6 +27,10 @@ namespace vaultdb {
                          const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort);
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const int &json_cardinality);
+        GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
+                         const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const SortDefinition &effective_sort);
+        GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
+                         const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const int &json_cardinality, const SortDefinition &effective_sort);
 
         GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort);
@@ -35,7 +39,7 @@ namespace vaultdb {
                          const vector<ScalarAggregateDefinition> &aggregates);
 
         GroupByAggregate(const GroupByAggregate<B> & src) : Operator<B>(src), aggregate_definitions_(src.aggregate_definitions_),
-                check_sort_(src.check_sort_), group_by_(src.group_by_), json_cardinality_(src.json_cardinality_) {
+                check_sort_(src.check_sort_), group_by_(src.group_by_), json_cardinality_(src.json_cardinality_), effective_sort_(src.effective_sort_) {
             setup();
         }
 

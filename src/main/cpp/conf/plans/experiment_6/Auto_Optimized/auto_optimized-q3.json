@@ -217,6 +217,13 @@
       "operator-algorithm" : "auto",
       "cardBound" : 6005,
       "checkSort" : false,
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
       "group": [
         0,
         1,

@@ -38,6 +38,18 @@ NestedLoopAggregate<B>::NestedLoopAggregate(Operator<B> *child, const vector<int
 }
 
 template<typename B>
+NestedLoopAggregate<B>::NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+                                            const vector<ScalarAggregateDefinition> &aggregates,
+                                            const int output_card, const SortDefinition & effective_sort) : Operator<B>(child, SortDefinition()),
+                                                                     aggregate_definitions_(aggregates),
+                                                                     group_by_(groupBys), effective_sort_(effective_sort) {
+
+
+    this->output_cardinality_ = output_card;
+    setup();
+}
+
+template<typename B>
 NestedLoopAggregate<B>::NestedLoopAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
                                             const vector<ScalarAggregateDefinition> &aggregates,
                                             const SortDefinition &sort,

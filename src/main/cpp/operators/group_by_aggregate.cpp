@@ -70,6 +70,23 @@ GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> 
 
 
 template<typename B>
+GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+                                      const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const SortDefinition &effective_sort)
+        :  Operator<B>(child, SortDefinition()), check_sort_(check_sort), aggregate_definitions_(aggregates),
+           group_by_(groupBys), effective_sort_(effective_sort) {
+    setup();
+}
+
+template<typename B>
+GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+                                      const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const int &json_cardinality, const SortDefinition &effective_sort)
+        :  Operator<B>(child, SortDefinition()), check_sort_(check_sort), aggregate_definitions_(aggregates),
+           group_by_(groupBys), json_cardinality_(json_cardinality), effective_sort_(effective_sort) {
+    setup();
+}
+
+
+template<typename B>
 QueryTable<B> *GroupByAggregate<B>::runSelf() {
     QueryTable<B> *input = Operator<B>::getChild()->getOutput();
     QuerySchema input_schema = input->getSchema();
