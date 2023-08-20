@@ -50,10 +50,8 @@ SecureTpcHTest::runTest(const int &test_id, const string &test_name, const SortD
     ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
 
-    string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + test_name + ".sql";
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
 
-    //PlanParser<Bit> parser(db_name_, sql_file, plan_file, input_tuple_limit_);
     PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
     parser.optimizeTree();
     SecureOperator *root = parser.getRoot();

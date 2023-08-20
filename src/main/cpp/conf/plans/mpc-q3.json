@@ -123,15 +123,6 @@
           "input": 3,
           "name": "$3"
         }
-      ],
-      "sql": "SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey",
-      "dummy-tag": true,
-      "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
       ]
     },
     {
@@ -154,7 +145,7 @@
       ],
       "sql": "SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey",
       "dummy-tag": true,
-      "collation-1": [
+      "collation": [
         {
           "field": 0,
           "name": "l_orderkey",
