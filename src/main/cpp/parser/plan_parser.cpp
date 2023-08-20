@@ -1048,8 +1048,9 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             recurseNode(kj);
 
             // For SMJ, sort order is same with sort key's order
-            SortMergeJoin j(join->getChild(0)->clone(), join->getChild(1)->clone(), kj->foreignKeyChild(), kj->getPredicate());
-
+            // Make plan in case of smj.
+            SortMergeJoin j(kj->getChild(0)->clone(), kj->getChild(1)->clone(), kj->foreignKeyChild(), kj->getPredicate());
+            j.setOperatorId(kj->getOperatorId());
             // Childs are pointing original parent, Need to fix those to point new parent.
             j.setChild(optimizeTree_operators_.at(j.getChild(0)->getOperatorId()));
             j.setChild(optimizeTree_operators_.at(j.getChild(1)->getOperatorId()), 1);
@@ -1057,33 +1058,38 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             optimizeTree_operators_.at(j.getChild(1)->getOperatorId())->setParent(&j);
 
             j.updateCollation();
+
+            optimizeTree_operators_[j.getOperatorId()] = &j;
             std::cout << j.toString() << endl;
             recurseNode(&j);
         }
         else {
             SortMergeJoin<B> *smj = (SortMergeJoin<B> *) join;
 
+            int lhs_id = smj->getChild(0)->getOperatorId();
+            int rhs_id = smj->getChild(1)->getOperatorId();
             // Childs are pointing original parent, Need to fix those to point new parent.
-            smj->setChild(optimizeTree_operators_.at(smj->getChild(0)->getOperatorId()));
-            smj->setChild(optimizeTree_operators_.at(smj->getChild(1)->getOperatorId()), 1);
-            optimizeTree_operators_.at(smj->getChild(0)->getOperatorId())->setParent(smj);
-            optimizeTree_operators_.at(smj->getChild(1)->getOperatorId())->setParent(smj);
+            smj->setChild(optimizeTree_operators_.at(lhs_id));
+            smj->setChild(optimizeTree_operators_.at(rhs_id), 1);
+            optimizeTree_operators_.at(lhs_id)->setParent(smj);
+            optimizeTree_operators_.at(rhs_id)->setParent(smj);
             smj->updateCollation();
             std::cout << smj->toString() << endl;
 
             optimizeTree_operators_[smj->getOperatorId()] = smj;
-
             recurseNode(smj);
 
-            KeyedJoin j(join->getChild(0)->clone(), join->getChild(1)->clone(), smj->foreignKeyChild(), smj->getPredicate());
-
+            // Make plan in case of KeyedJoin.
+            KeyedJoin j(optimizeTree_operators_.at(lhs_id), optimizeTree_operators_.at(rhs_id), smj->foreignKeyChild(), smj->getPredicate());
+            j.setOperatorId(smj->getOperatorId());
             // Childs are pointing original parent, Need to fix those to point new parent.
-            j.setChild(optimizeTree_operators_.at(j.getChild(0)->getOperatorId()));
-            j.setChild(optimizeTree_operators_.at(j.getChild(1)->getOperatorId()), 1);
-            optimizeTree_operators_.at(j.getChild(0)->getOperatorId())->setParent(&j);
-            optimizeTree_operators_.at(j.getChild(1)->getOperatorId())->setParent(&j);
+            //j.setChild(optimizeTree_operators_.at(j.getChild(0)->getOperatorId()));
+            //j.setChild(optimizeTree_operators_.at(j.getChild(1)->getOperatorId()), 1);
+            //optimizeTree_operators_.at(j.getChild(0)->getOperatorId())->setParent(&j);
+            //optimizeTree_operators_.at(j.getChild(1)->getOperatorId())->setParent(&j);
 
             j.updateCollation();
+            optimizeTree_operators_[j.getOperatorId()] = &j;
             std::cout << j.toString() << endl;
             recurseNode(&j);
         }
@@ -1093,11 +1099,14 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
 template<typename B>
 void PlanParser<B>::recurseAgg(Operator<B> *agg) {
 
-    Operator<B> *child = agg->getChild();
+    Operator<B> *child = optimizeTree_operators_.at(agg->getChild()->getOperatorId());
     if (agg->getType() == OperatorType::NESTED_LOOP_AGGREGATE) {
         NestedLoopAggregate<B> *nla = (NestedLoopAggregate<B> *) agg;
 
+        child->setParent(nla);
+        nla->setChild(child);
         nla->updateCollation();
+        optimizeTree_operators_[nla->getOperatorId()] = nla;
         recurseNode(nla);
 
         std::vector<int32_t> group_by_ordinals = nla->group_by_;
