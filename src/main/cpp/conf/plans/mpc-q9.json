@@ -14,19 +14,31 @@
           "type": "CHAR",
           "nullable": true,
           "precision": 25,
-          "name": "nation"
+          "name": "n_name"
         }
       ],
       "sql": "SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY n_name, s_suppkey",
       "dummy-tag": false,
-      "collation": [
+      "collation-1": [
         {
-          "input": 1,
-          "collation": "ASCENDING"
+          "field": 1,
+          "direction": "ASCENDING"
         },
         {
-          "input": 0,
-          "collation": "ASCENDING"
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-3": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
         }
       ],
       "tuples": [],
@@ -57,16 +69,29 @@
       ],
       "sql": "SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%' ORDER BY ps_suppkey, ps_partkey",
       "dummy-tag": false,
-      "collation": [
+      "collation-1": [
             {
-            "input": 1,
-            "collation": "ASCENDING"
+            "field": 0,
+            "direction": "ASCENDING"
             },
             {
-            "input": 2,
-            "collation": "ASCENDING"
+            "field": 1,
+            "direction": "ASCENDING"
             }
         ],
+      "collation-2": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-3": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
+
       "tuples": [],
       "inputs": []
     },
@@ -173,18 +198,37 @@
       ],
       "sql": "SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice, l_discount FROM lineitem ORDER BY l_orderkey, l_partkey, l_suppkey",
       "dummy-tag": false,
-      "collation": [
+      "collation-1": [
         {
-          "input": 0,
-          "collation": "ASCENDING"
+          "field": 0,
+          "direction": "ASCENDING"
         },
         {
-          "input": 1,
-          "collation": "ASCENDING"
+          "field": 1,
+          "direction": "ASCENDING"
         },
         {
-          "input": 2,
-          "collation": "ASCENDING"
+          "field": 2,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 1,
+          "name": "l_partkey",
+          "direction": "ASCENDING"
+        },
+        {
+          "field": 2,
+          "name": "l_suppkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-3": [
+        {
+          "field": 0,
+          "name": "l_orderkey",
+          "direction": "ASCENDING"
         }
       ],
       "tuples": [],
@@ -249,14 +293,13 @@
     {
       "id": "6",
       "relOp": "LogicalProject",
-      "outputFields": "nation (#0), ps_supplycost (#1), l_orderkey (#2), l_extendedprice (#3), l_discount (#4), l_quantity (#5)",
+      "inputFields": "nation (#0), ps_partkey (#1), ps_suppkey (#2), ps_supplycost (#3), l_orderkey (#4), l_partkey (#5), l_suppkey (#6), l_quantity (#7), l_extendedprice (#8), l_discount (#9)",
+      "outputFields": "nation (#0),  l_orderkey (#1), amount (#2)",
+      "amount": "l.l_extendedprice * (1.0 - l.l_discount) - ps.ps_supplycost * l.l_quantity",
       "fields": [
         "nation",
-        "ps_supplycost",
         "l_orderkey",
-        "l_extendedprice",
-        "l_discount",
-        "l_quantity"
+        "amount"
       ],
       "exprs": [
         {
@@ -264,24 +307,71 @@
           "name": "$0"
         },
         {
-          "input": 3,
-          "name": "$3"
-        },
-        {
           "input": 4,
           "name": "$4"
         },
         {
-          "input": 8,
-          "name": "$8"
-        },
-        {
-          "input": 9,
-          "name": "$9"
-        },
-        {
-          "input": 7,
-          "name": "$7"
+          "op": {
+            "name": "-",
+            "kind": "MINUS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "*",
+                "kind": "TIMES",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 8,
+                  "field_name": "l_extendedprice",
+                  "name": "$8"
+                },
+                {
+                  "op": {
+                    "name": "-",
+                    "kind": "MINUS",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "literal": 1,
+                      "type": {
+                        "type": "FLOAT",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 9,
+                      "name": "$9",
+                      "field_name": "l_discount"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "*",
+                "kind": "TIMES",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 3,
+                  "name": "$3",
+                  "field_name": "ps_supplycost"
+                },
+                {
+                  "input": 7,
+                  "name": "$7",
+                  "field_name": "l_quantity"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -303,12 +393,18 @@
       ],
       "sql": "SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders ORDER BY o_orderkey",
       "dummy-tag": false,
-      "collation": [
+      "collation-1": [
             {
-            "input": 1,
-            "collation": "ASCENDING"
+            "field": 1,
+            "direction": "ASCENDING"
             }
         ],
+      "collation-2": [
+        {
+          "field": 0,
+          "direction": "DESCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -317,7 +413,7 @@
       "relOp": "LogicalJoin",
       "joinCondition" : "l_orderkey = o_orderkey",
       "operator-algorithm" : "nested-loop-join",
-      "outputFields": "nation (#0), ps_supplycost (#1), l_orderkey (#2), l_extendedprice (#3), l_discount (#4), l_quantity (#5), o_year (#6), o_orderkey (#7)",
+      "outputFields": "nation (#0),  l_orderkey (#1), amount (#2), o_year (#3), o_orderkey (#4)",
       "condition": {
         "op": {
           "name": "=",
@@ -326,12 +422,12 @@
         },
         "operands": [
           {
-            "input": 2,
-            "name": "$2"
+            "input": 1,
+            "name": "$1"
           },
           {
-            "input": 7,
-            "name": "$7"
+            "input": 4,
+            "name": "$4"
           }
         ]
       },
@@ -345,12 +441,11 @@
     {
       "id": "9",
       "relOp": "LogicalProject",
-      "inputFields": "nation (#0), ps_supplycost (#1), l_orderkey (#2), l_extendedprice (#3), l_discount (#4), l_quantity (#5), o_year (#6), o_orderkey (#7)",
-      "amount": "l.l_extendedprice * (1.0 - l.l_discount) - ps.ps_supplycost * l.l_quantity",
+      "inputFields": "nation (#0), o_year (#1), amount (#2)",
       "fields": [
         "nation",
-        "o_year",
-        "amount"
+        "amount",
+        "o_year"
       ],
       "exprs": [
         {
@@ -358,67 +453,12 @@
           "name": "$0"
         },
         {
-          "input": 6,
-          "name": "$6"
+          "input": 3,
+          "name": "$3"
         },
         {
-          "op": {
-            "name": "-",
-            "kind": "MINUS",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "op": {
-                "name": "*",
-                "kind": "TIMES",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 3,
-                  "name": "$3"
-                },
-                {
-                  "op": {
-                    "name": "-",
-                    "kind": "MINUS",
-                    "syntax": "BINARY"
-                  },
-                  "operands": [
-                    {
-                      "literal": 1,
-                      "type": {
-                        "type": "FLOAT",
-                        "nullable": false
-                      }
-                    },
-                    {
-                      "input": 4,
-                      "name": "$4"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "op": {
-                "name": "*",
-                "kind": "TIMES",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 1,
-                  "name": "$1"
-                },
-                {
-                  "input": 5,
-                  "name": "$5"
-                }
-              ]
-            }
-          ]
+          "input": 2,
+          "name": "$2"
         }
       ]
     },

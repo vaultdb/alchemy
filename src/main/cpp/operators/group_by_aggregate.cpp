@@ -283,11 +283,15 @@ void GroupByAggregate<B>::setup() {
 
     // sorted on group-by cols
     if(check_sort_)
-        if(effective_sort_.size() > 0)
-            assert(sortCompatible(effective_sort_, group_by_));
-        else
+        if(effective_sort_.size() > 0) {
+            // check that effective sort is consistent with input_sort
+            for(int i = 0; i < effective_sort_.size(); ++i) {
+                assert(effective_sort_[i].first == input_sort[i].first);
+            }
+        }
+        else {
             assert(sortCompatible(input_sort, group_by_));
-
+        }
     this->setOutputCardinality(this->getChild()->getOutputCardinality());
     updateCollation();
 }

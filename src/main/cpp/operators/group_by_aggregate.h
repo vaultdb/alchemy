@@ -55,17 +55,23 @@ namespace vaultdb {
             if(!check_sort_) return;
 
             SortDefinition  child_sort = this->getChild(0)->getSortOrder();
-            assert(sortCompatible(child_sort, group_by_, functional_dependency_));
+            if(effective_sort_.empty())
+                assert(sortCompatible(child_sort, group_by_));
+            else {
+                for(int i = 0; i < effective_sort_.size(); ++i) {
+                    assert(effective_sort_[i].first == child_sort[i].first);
+                }
 
-            this->sort_definition_ = child_sort;
-//            SortDefinition  sort_def;
-//            // map sort order to that of child
-//            for(size_t idx = 0; idx < group_by_.size(); ++idx) {
-//                // projecting the attribute in group_by_[idx] to the ith position in output
-//                sort_def.emplace_back(idx, child_sort[group_by_[idx]].second);
-//            }
-//
-//            this->sort_definition_ = sort_def;
+            }
+
+            SortDefinition  output_sort_def;
+            // map sort order to that of child
+            for(size_t idx = 0; idx < group_by_.size(); ++idx) {
+                // projecting the attribute in group_by_[idx] to the ith position in output
+                output_sort_def.emplace_back(idx, child_sort[group_by_[idx]].second);
+            }
+
+            this->sort_definition_ = output_sort_def;
         }
 
         virtual ~GroupByAggregate()  {

@@ -778,7 +778,7 @@ void PlanParser<B>::parseLocalScan(const int & operator_id, const boost::propert
         collationIndex++; // Move to the next collation index
     }
     // If there is only one sort, parse it
-    if(!foundMultipleSorts){
+    if(!foundMultipleSorts && local_scan_tree.count("collation") > 0){
         boost::property_tree::ptree sort_payload = local_scan_tree.get_child("collation");
 
         SortDefinition sort_definition; // Define a single sort definition

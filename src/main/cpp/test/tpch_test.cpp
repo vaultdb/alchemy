@@ -30,10 +30,9 @@ TpcHTest::runTest(const int &test_id, const string & test_name, const SortDefini
     PlainTable *expected = DataUtilities::getExpectedResults(db_name, query, false, 0);
     expected->setSortOrder(expected_sort);
 
-    string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + test_name + ".sql";
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
 
-    PlanParser<bool> plan_reader(db_name_, sql_file, plan_file, input_tuple_limit_);
+    PlanParser<bool> plan_reader(db_name_,plan_file, input_tuple_limit_);
     PlainOperator *root = plan_reader.getRoot();
 
     PlainTable *observed = root->run();

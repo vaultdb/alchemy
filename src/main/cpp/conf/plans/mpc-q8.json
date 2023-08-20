@@ -43,7 +43,7 @@
       ],
       "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_year, o_orderkey",
       "dummy-tag": true,
-      "collation": [
+      "collation-1": [
         {
           "field": 2,
           "direction": "ASCENDING"
@@ -53,6 +53,19 @@
           "direction": "ASCENDING"
         }
       ],
+      "collation-2": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-3": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        }
+      ],
+
       "tuples": [],
       "inputs": []
     },
@@ -128,9 +141,15 @@
       ],
       "sql": "SELECT  l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) volume, NOT p_type = 'LARGE ANODIZED STEEL' AS dummy_tag FROM part JOIN lineitem ON p_partkey = l_partkey ORDER BY l_orderkey, l_linenumber",
       "dummy-tag": true,
-      "collation": [
+      "collation-1": [
         {
           "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 1,
           "direction": "ASCENDING"
         }
       ],
@@ -139,6 +158,58 @@
     },
     {
       "id": "5",
+      "joinOn" : "l_orderkey = o_orderkey",
+      "outputFields": "o_orderkey (#0), o_year (#1), l_orderkey (#2),  l_suppkey (#3), volume (#4)",
+      "relOp": "LogicalJoin",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 1,
+      "inputs": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalProject",
+      "fields": [
+        "o_year",
+        "l_suppkey",
+        "volume"
+      ],
+      "exprs": [
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        }
+      ]
+    },
+    {
+      "id": "7",
       "relOp": "LogicalValues",
       "type": [
         {
@@ -164,9 +235,9 @@
       "inputs": []
     },
     {
-      "id": "6",
+      "id": "8",
       "joinOn" : "l_suppkey = s_suppkey",
-      "outputFields": "l_orderkey (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check(#4)",
+      "outputFields": "o_year (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check(#4)",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
@@ -188,15 +259,15 @@
       "joinType": "inner",
       "foreignKey": 0,
       "inputs": [
-        "4",
-        "5"
+        "6",
+        "7"
       ]
     },
     {
-      "id": "7",
+      "id": "9",
       "relOp": "LogicalProject",
       "fields": [
-        "l_orderkey",
+        "o_year",
         "volume",
         "selected_volume"
       ],
@@ -232,60 +303,6 @@
               }
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": "8",
-      "joinOn" : "l_orderkey = o_orderkey",
-      "outputFields": "o_orderkey (#0), o_year (#1), l_orderkey (#2),  volume (#3), selected_volume (#4)",
-      "relOp": "LogicalJoin",
-      "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 0,
-            "name": "$0"
-          },
-          {
-            "input": 2,
-            "name": "$2"
-          }
-        ]
-      },
-      "joinType": "inner",
-      "foreignKey": 1,
-      "inputs": [
-          "3",
-        "7"
-      ]
-    },
-    {
-      "id": "9",
-      "relOp": "LogicalProject",
-      "inputFields": "o_orderkey (#0), o_year (#1), l_orderkey (#2), volume (#3), selected_volume (#4)",
-      "outputFields" : "o_year (#0), volume (#1), selected_volume (#2)",
-      "fields": [
-        "o_year",
-        "volume",
-        "selected_volume"
-      ],
-      "exprs": [
-        {
-          "input": 1,
-          "name": "$1"
-        },
-        {
-          "input": 3,
-          "name": "$3"
-        },
-        {
-          "input": 4,
-          "name": "$4"
         }
       ]
     },
