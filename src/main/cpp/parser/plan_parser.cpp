@@ -257,7 +257,7 @@ void PlanParser<B>::calculateAutoAggregate() {
     int min_combination = -1;
 
     // Get the number of aggregate operators
-    int num_aggregates = sma_vector.size();
+    int num_aggregates = sma_vector_.size();
 
     // Iterate over all possible combinations
     for (int combination = 0; combination < (1 << num_aggregates); combination++) {
@@ -273,17 +273,17 @@ void PlanParser<B>::calculateAutoAggregate() {
             // Fetch the correct operator and add its cost
             if (type == SMA) {
                 // Check if SMA has sort
-                if(sort_vector[i] != nullptr)
-                    cost += OperatorCostModel::operatorCost((SecureOperator *) sort_vector[i]);
+                if(sort_vector_[i] != nullptr)
+                    cost += OperatorCostModel::operatorCost((SecureOperator *) sort_vector_[i]);
 
-                sma = sma_vector[i];
+                sma = sma_vector_[i];
                 cost += OperatorCostModel::operatorCost((SecureOperator *) sma);
 
                 // Propagate output cardinality
                 cur_output_cardinality_ = sma->getOutputCardinality();
 
             } else {  // type == NestedLoopAggregate
-                NestedLoopAggregate<B> *nla = nla_vector[i];
+                NestedLoopAggregate<B> *nla = nla_vector_[i];
                 cost += OperatorCostModel::operatorCost((SecureOperator *) nla);
 
                 // Propagate output cardinality
@@ -291,10 +291,10 @@ void PlanParser<B>::calculateAutoAggregate() {
             }
 
             // Get the operator id of the next aggregate operator (or the end if this is the last one)
-            int next_op_id = (i + 1 < num_aggregates) ? agg_id[i + 1] : operators_.size();
+            int next_op_id = (i + 1 < num_aggregates) ? agg_id_[i + 1] : operators_.size();
 
             // Propagate the output cardinality to the operators between this aggregate and the next one
-            for (int op_id = agg_id[i] + 1; op_id < next_op_id; op_id++) {
+            for (int op_id = agg_id_[i] + 1; op_id < next_op_id; op_id++) {
                 Operator<B> *cur_op = operators_[op_id];
                 cur_op->setOutputCardinality(cur_output_cardinality_);
 
@@ -328,13 +328,13 @@ void PlanParser<B>::calculateAutoAggregate() {
         // Define the group by ordinals and aggregators variables
         std::vector<int32_t> group_by_ordinals;
         vector<ScalarAggregateDefinition> aggregators;
-        Operator<B>* child = operators_[agg_id[i] - 1];
+        Operator<B>* child = operators_[agg_id_[i] - 1];
 
         // Fetch the correct operator and create a new instance
         if (type == SMA) {
             // if sort flag is set, create and link a new sort operator
-            if(sort_vector[i] != nullptr){
-                Sort<B>* sort_before_sma = sort_vector[i];
+            if(sort_vector_[i] != nullptr){
+                Sort<B>* sort_before_sma = sort_vector_[i];
                 SortDefinition sort_order = sort_before_sma->getSortOrder();
                 Operator<B>* real_sort_before_sma = new Sort<B>(child, sort_order);
                 support_ops_.emplace_back(real_sort_before_sma);
@@ -343,83 +343,83 @@ void PlanParser<B>::calculateAutoAggregate() {
                 child = real_sort_before_sma;
             }
 
-            group_by_ordinals = sma_vector[i]->group_by_;
-            aggregators = sma_vector[i]->aggregate_definitions_;
-            bool check_sort = sma_vector[i]->check_sort_;
-            SortDefinition effective_sort = sma_vector[i]->effective_sort_;
-            map<int32_t, std::set<int32_t>> functional_dependency = sma_vector[i]->functional_dependency_;
+            group_by_ordinals = sma_vector_[i]->group_by_;
+            aggregators = sma_vector_[i]->aggregate_definitions_;
+            bool check_sort = sma_vector_[i]->check_sort_;
+            SortDefinition effective_sort = sma_vector_[i]->effective_sort_;
+            map<int32_t, std::set<int32_t>> functional_dependency = sma_vector_[i]->functional_dependency_;
 
             GroupByAggregate<B> *real_sma = new GroupByAggregate<B>(child, group_by_ordinals, aggregators, check_sort, effective_sort, functional_dependency);
-            real_sma->setOutputCardinality( sma_vector[i]->getJsonOutputCardinality());
+            real_sma->setOutputCardinality(sma_vector_[i]->getJsonOutputCardinality());
             child->setParent(real_sma);
             real_sma->setChild(child);
-            operators_[agg_id[i]] = real_sma;
+            operators_[agg_id_[i]] = real_sma;
 
-            if(agg_id[i] + 1 == operators_.size())
+            if(agg_id_[i] + 1 == operators_.size())
                 root_ = real_sma;
 
         } else {  // type == NestedLoopAggregate
-            group_by_ordinals = nla_vector[i]->group_by_;
-            aggregators = nla_vector[i]->aggregate_definitions_;
-            int cardBound = nla_vector[i]->getOutputCardinality();
-            SortDefinition effective_sort = nla_vector[i]->effective_sort_;
-            map<int32_t, std::set<int32_t>> functional_dependency = nla_vector[i]->functional_dependency_;
+            group_by_ordinals = nla_vector_[i]->group_by_;
+            aggregators = nla_vector_[i]->aggregate_definitions_;
+            int cardBound = nla_vector_[i]->getOutputCardinality();
+            SortDefinition effective_sort = nla_vector_[i]->effective_sort_;
+            map<int32_t, std::set<int32_t>> functional_dependency = nla_vector_[i]->functional_dependency_;
 
             NestedLoopAggregate<B> *real_nla = new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardBound, effective_sort, functional_dependency);
             child->setParent(real_nla);
             real_nla->setChild(child);
-            operators_[agg_id[i]] = real_nla;
+            operators_[agg_id_[i]] = real_nla;
 
-            if(agg_id[i] + 1 == operators_.size())
+            if(agg_id_[i] + 1 == operators_.size())
                 root_ = real_nla;
         }
 
-        operators_.at(agg_id[i])->setOperatorId(agg_id[i]);
+        operators_.at(agg_id_[i])->setOperatorId(agg_id_[i]);
 
         // set the parent of the next operator to this one
-        if (agg_id[i] + 1 < operators_.size()){
-            operators_[agg_id[i] + 1]->setChild(operators_[agg_id[i]]);
-            operators_[agg_id[i]]->setParent(operators_[agg_id[i] + 1]);
+        if (agg_id_[i] + 1 < operators_.size()){
+            operators_[agg_id_[i] + 1]->setChild(operators_[agg_id_[i]]);
+            operators_[agg_id_[i]]->setParent(operators_[agg_id_[i] + 1]);
         }
 
         // Get the operator id of the next aggregate operator (or the end if this is the last one)
-        int next_op_id = (i + 1 < num_aggregates) ? agg_id[i + 1] : operators_.size();
+        int next_op_id = (i + 1 < num_aggregates) ? agg_id_[i + 1] : operators_.size();
 
         // Propagate the output cardinality to the operators between this aggregate and the next one
-        for (int op_id = agg_id[i] + 1; op_id < next_op_id; op_id++) {
+        for (int op_id = agg_id_[i] + 1; op_id < next_op_id; op_id++) {
             Operator<B> *cur_op = operators_[op_id];
-            cur_op->setOutputCardinality(operators_[agg_id[i]]->getOutputCardinality());
+            cur_op->setOutputCardinality(operators_[agg_id_[i]]->getOutputCardinality());
         }
     }
 
     // Delete SMA vector
-    for (auto &sma : sma_vector) {
+    for (auto &sma : sma_vector_) {
         if (sma != nullptr)
             delete sma;
     }
 
     // Delete NLA vector
-    for (auto &nla : nla_vector) {
+    for (auto &nla : nla_vector_) {
         if (nla != nullptr)
             delete nla;
     }
 
     // Delete Sort vector
-    for (auto &sort : sort_vector) {
+    for (auto &sort : sort_vector_) {
         if (sort != nullptr)
             delete sort;
     }
     // Clear and shrink SMA vector
-    sma_vector.clear();
-    sma_vector.shrink_to_fit();
+    sma_vector_.clear();
+    sma_vector_.shrink_to_fit();
 
     // Clear and shrink NLA vector
-    nla_vector.clear();
-    nla_vector.shrink_to_fit();
+    nla_vector_.clear();
+    nla_vector_.shrink_to_fit();
 
     // Clear and shrink Sort vector
-    sort_vector.clear();
-    sort_vector.shrink_to_fit();
+    sort_vector_.clear();
+    sort_vector_.shrink_to_fit();
 }
 
 
@@ -526,17 +526,17 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
                     }
                     Sort<B> *sort_before_sma = new Sort<B>(child->clone(), child_sort);
                     sma = new GroupByAggregate<B>(sort_before_sma->clone(), group_by_ordinals, aggregators, check_sort);
-                    sort_vector.push_back(sort_before_sma);
+                    sort_vector_.push_back(sort_before_sma);
                 }
                 else{
                     sma = new GroupByAggregate<B>(child->clone(), group_by_ordinals, aggregators, check_sort);
-                    sort_vector.push_back(nullptr);
+                    sort_vector_.push_back(nullptr);
                 }
                 nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, cardinality_bound);
             }
             else {
                 sma = new GroupByAggregate<B>(child->clone(), group_by_ordinals, aggregators, check_sort);
-                sort_vector.push_back(nullptr);
+                sort_vector_.push_back(nullptr);
                 nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, cardinality_bound);
             }
 
@@ -545,10 +545,10 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
             nla->effective_sort_ = effective_sort;
             sma->functional_dependency_ = func_dependency;
             nla->functional_dependency_ = func_dependency;
-            sma_vector.push_back(sma);
-            nla_vector.push_back(nla);
+            sma_vector_.push_back(sma);
+            nla_vector_.push_back(nla);
             setAutoFlag(true);
-            agg_id.push_back(operator_id);
+            agg_id_.push_back(operator_id);
 
             return sma;
         }

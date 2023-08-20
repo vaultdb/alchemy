@@ -41,9 +41,9 @@ namespace vaultdb {
 
         static tuple<int, SortDefinition, int> parseSqlHeader(const string &header);
 
-        bool getAutoFlag() const { return agg_auto_flag; }
+        bool getAutoFlag() const { return agg_auto_flag_; }
 
-        void setAutoFlag(bool inputFlag) { agg_auto_flag = inputFlag; }
+        void setAutoFlag(bool inputFlag) { agg_auto_flag_ = inputFlag; }
         map<int, vector<SortDefinition>> getInterestingSortOrders() { return interesting_sort_orders_; }
     private:
         std::string db_name_;
@@ -89,11 +89,11 @@ namespace vaultdb {
 
         void calculateAutoAggregate();
 
-        bool agg_auto_flag = false;
-        std::vector<GroupByAggregate<B> *> sma_vector;
-        std::vector<NestedLoopAggregate<B> *> nla_vector;
-        std::vector<Sort<B> *> sort_vector;
-        std::vector<int> agg_id;
+        bool agg_auto_flag_ = false;
+        std::vector<GroupByAggregate<B> *> sma_vector_;
+        std::vector<NestedLoopAggregate<B> *> nla_vector_;
+        std::vector<Sort<B> *> sort_vector_;
+        std::vector<int> agg_id_;
 
 
         // faux template specialization
