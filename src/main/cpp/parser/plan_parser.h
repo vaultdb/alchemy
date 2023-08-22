@@ -64,6 +64,7 @@ namespace vaultdb {
         std::vector<Operator<B> * > support_ops_; // these ones don't get an operator ID from the JSON plan
         std::map<int, Operator<B> * > optimizeTree_operators_;
         std::map<int, std::vector<SortDefinition>> scan_sorts_; // op ID --> sort definition
+        std::vector<Operator<B>*> operatorPool;
 
 
         void parseSqlInputs(const std::string &input_file);

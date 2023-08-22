@@ -1027,15 +1027,14 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
             for (auto &sort: sorts) {
                 node->setSortOrder(sort);
                 optimizeTree_operators_[node->getOperatorId()] = node;
-
-                std::cout << node->toString() << endl;
+                operatorPool.push_back(node);
+                //std::cout << node->toString() << endl;
                 recurseNode(node);
             }
             break;
         }
         case OperatorType::KEYED_NESTED_LOOP_JOIN:
         case OperatorType::SORT_MERGE_JOIN: {
-
             // for each rhs leaf collation cycle through its collations and then try both SMJ and NLJ with each collation
             recurseJoin(node);
             break;
@@ -1043,7 +1042,6 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
         case OperatorType::NESTED_LOOP_AGGREGATE:
         case OperatorType::SORT_MERGE_AGGREGATE: {
             // for each agg try NLA and SMA
-            // for SMA check if we need sort before op, also check if we have any extra sorts that are unneeded?
             recurseAgg(node);
             break;
         }
@@ -1057,8 +1055,8 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
             // Same with child's sort order
             node->updateCollation();
             optimizeTree_operators_[node->getOperatorId()] = node;
-
-            std::cout << node->toString() << endl;
+            operatorPool.push_back(node);
+            //std::cout << node->toString() << endl;
             recurseNode(node);
             break;
     }
@@ -1111,7 +1109,7 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
         rhs_leaf->setSortOrder(sort);
         optimizeTree_operators_[rhs_leaf->getOperatorId()] = rhs_leaf;
 
-        std::cout << rhs_leaf->toString() << endl;
+        //std::cout << rhs_leaf->toString() << endl;
         // TODO : If there is more than one op in rhs, we need to set sort order for all of them.
 
         // TODO: add method to propagate sort to parent nodes
@@ -1123,56 +1121,64 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             KeyedJoin<B> *kj = (KeyedJoin<B> *)join;
 
             // Childs are pointing original parent, Need to fix those to point new parent.
-            kj->setChild(optimizeTree_operators_.at(kj->getChild(0)->getOperatorId()));
-            kj->setChild(optimizeTree_operators_.at(kj->getChild(1)->getOperatorId()), 1);
-            optimizeTree_operators_.at(kj->getChild(0)->getOperatorId())->setParent(kj);
-            optimizeTree_operators_.at(kj->getChild(1)->getOperatorId())->setParent(kj);
+            Operator<B> *lhs = optimizeTree_operators_.at(kj->getChild(0)->getOperatorId());
+            Operator<B> *rhs = optimizeTree_operators_.at(kj->getChild(1)->getOperatorId());
+
+            kj->setChild(lhs);
+            kj->setChild(rhs, 1);
+            lhs->setParent(kj);
+            rhs->setParent(kj);
             kj->updateCollation();
 
             optimizeTree_operators_[kj->getOperatorId()] = kj;
-
-            std::cout << kj->toString() << endl;
+            operatorPool.push_back(kj);
+            //std::cout << kj->toString() << endl;
             recurseNode(kj);
 
             // For SMJ, sort order is same with sort key's order
-            SortMergeJoin j(join->getChild(0)->clone(), join->getChild(1)->clone(), kj->foreignKeyChild(), kj->getPredicate());
+            // Make plan in case of smj.
+            SortMergeJoin<B> *smj = new SortMergeJoin(lhs, rhs, kj->foreignKeyChild(), kj->getPredicate());
+            smj->setOperatorId(kj->getOperatorId());
 
             // Childs are pointing original parent, Need to fix those to point new parent.
-            j.setChild(optimizeTree_operators_.at(j.getChild(0)->getOperatorId()));
-            j.setChild(optimizeTree_operators_.at(j.getChild(1)->getOperatorId()), 1);
-            optimizeTree_operators_.at(j.getChild(0)->getOperatorId())->setParent(&j);
-            optimizeTree_operators_.at(j.getChild(1)->getOperatorId())->setParent(&j);
-
-            j.updateCollation();
-            std::cout << j.toString() << endl;
-            recurseNode(&j);
+            smj->setChild(lhs);
+            smj->setChild(rhs, 1);
+            lhs->setParent(smj);
+            rhs->setParent(smj);
+            smj->updateCollation();
+            optimizeTree_operators_[smj->getOperatorId()] = smj;
+            operatorPool.push_back(smj);
+            //std::cout << smj->toString() << endl;
+            recurseNode(smj);
         }
         else {
             SortMergeJoin<B> *smj = (SortMergeJoin<B> *) join;
 
+            Operator<B> *lhs = optimizeTree_operators_.at(smj->getChild(0)->getOperatorId());
+            Operator<B> *rhs = optimizeTree_operators_.at(smj->getChild(1)->getOperatorId());
+
+
             // Childs are pointing original parent, Need to fix those to point new parent.
-            smj->setChild(optimizeTree_operators_.at(smj->getChild(0)->getOperatorId()));
-            smj->setChild(optimizeTree_operators_.at(smj->getChild(1)->getOperatorId()), 1);
-            optimizeTree_operators_.at(smj->getChild(0)->getOperatorId())->setParent(smj);
-            optimizeTree_operators_.at(smj->getChild(1)->getOperatorId())->setParent(smj);
+            smj->setChild(lhs);
+            smj->setChild(rhs, 1);
+            lhs->setParent(smj);
+            rhs->setParent(smj);
             smj->updateCollation();
-            std::cout << smj->toString() << endl;
+            //std::cout << smj->toString() << endl;
 
             optimizeTree_operators_[smj->getOperatorId()] = smj;
-
+            operatorPool.push_back(smj);
             recurseNode(smj);
 
-            KeyedJoin j(join->getChild(0)->clone(), join->getChild(1)->clone(), smj->foreignKeyChild(), smj->getPredicate());
+            // Make plan in case of KeyedJoin.
+            KeyedJoin<B> *kj = new KeyedJoin(lhs, rhs, smj->foreignKeyChild(), smj->getPredicate());
+            kj->setOperatorId(smj->getOperatorId());
+            kj->updateCollation();
+            optimizeTree_operators_[kj->getOperatorId()] = kj;
+            operatorPool.push_back(kj);
 
-            // Childs are pointing original parent, Need to fix those to point new parent.
-            j.setChild(optimizeTree_operators_.at(j.getChild(0)->getOperatorId()));
-            j.setChild(optimizeTree_operators_.at(j.getChild(1)->getOperatorId()), 1);
-            optimizeTree_operators_.at(j.getChild(0)->getOperatorId())->setParent(&j);
-            optimizeTree_operators_.at(j.getChild(1)->getOperatorId())->setParent(&j);
-
-            j.updateCollation();
-            std::cout << j.toString() << endl;
-            recurseNode(&j);
+            //std::cout << kj->toString() << endl;
+            recurseNode(kj);
         }
     }
 }
@@ -1180,47 +1186,52 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
 template<typename B>
 void PlanParser<B>::recurseAgg(Operator<B> *agg) {
 
-    Operator<B> *child = agg->getChild();
+    Operator<B> *child = optimizeTree_operators_.at(agg->getChild()->getOperatorId());
     if (agg->getType() == OperatorType::NESTED_LOOP_AGGREGATE) {
         NestedLoopAggregate<B> *nla = (NestedLoopAggregate<B> *) agg;
 
+        child->setParent(nla);
+        nla->setChild(child);
         nla->updateCollation();
+        optimizeTree_operators_[nla->getOperatorId()] = nla;
+        operatorPool.push_back(nla);
         recurseNode(nla);
 
         std::vector<int32_t> group_by_ordinals = nla->group_by_;
         // if sort not aligned, insert a sort op
         SortDefinition child_sort = child->getSortOrder();
+        map<int32_t, std::set<int32_t>> functional_dependency = nla->functional_dependency_;
 
-        // TODO : Make it work with effective collation
-        if (!GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals)) {
+        if (!GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals, functional_dependency)) {
             // insert sort
-            SortDefinition child_sort;
-            for (uint32_t idx: group_by_ordinals) {
-                child_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
-            }
-            Sort<B> *sort_before_sma = new Sort<B>(child->clone(), child_sort);
-            GroupByAggregate a(sort_before_sma->clone(), group_by_ordinals, nla->aggregate_definitions_,
-                               true);
+            Sort<B> *sort_before_sma = new Sort<B>(child, nla->effective_sort_);
+            GroupByAggregate<B> *sma = new GroupByAggregate(sort_before_sma, group_by_ordinals, nla->aggregate_definitions_, true);
             child->setParent(sort_before_sma);
             sort_before_sma->setChild(child);
-            sort_before_sma->setParent(&a);
-            a.setChild(sort_before_sma);
-
-            a.updateCollation();
-            recurseNode(&a);
+            sort_before_sma->setParent(sma);
+            sma->setChild(sort_before_sma);
+            sma->updateCollation();
+            optimizeTree_operators_[sma->getOperatorId()] = sma;
+            operatorPool.push_back(sma);
+            recurseNode(sma);
         } else {
-            GroupByAggregate a(child->clone(), group_by_ordinals, nla->aggregate_definitions_, true);
-            a.updateCollation();
-            recurseNode(&a);
+            GroupByAggregate<B> *sma = new GroupByAggregate(child, group_by_ordinals, nla->aggregate_definitions_, true);
+            child->setParent(sma);
+            sma->setChild(child);
+            sma->updateCollation();
+            optimizeTree_operators_[sma->getOperatorId()] = sma;
+            operatorPool.push_back(sma);
+            recurseNode(sma);
         }
     } else {
         GroupByAggregate<B> *sma = (GroupByAggregate<B> *) agg;
 
         SortDefinition child_sort = child->getSortOrder();
         std::vector<int32_t> group_by_ordinals = sma->group_by_;
+        map<int32_t, std::set<int32_t>> functional_dependency = sma->functional_dependency_;
 
-        if(child_sort != sma->effective_sort_){
-            Sort<B> *sort_before_sma = new Sort<B>(child->clone(), sma->effective_sort_);
+        if(!GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals, functional_dependency)){
+            Sort<B> *sort_before_sma = new Sort<B>(child, sma->effective_sort_);
             child->setParent(sort_before_sma);
             sort_before_sma->setChild(child);
             sort_before_sma->setParent(sma);
@@ -1233,22 +1244,20 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
         }
         sma->updateCollation();
         optimizeTree_operators_[sma->getOperatorId()] = sma;
+        operatorPool.push_back(sma);
         recurseNode(sma);
 
-
         // Make plan in case of nla.
-        NestedLoopAggregate a(child->clone(), sma->group_by_, sma->aggregate_definitions_,
-                              sma->getJsonOutputCardinality());
-        a.setOperatorId(sma->getOperatorId());
-        child->setParent(&a);
-        a.setChild(child);
-        a.updateCollation();
-        optimizeTree_operators_[a.getOperatorId()] = &a;
-        recurseNode(&a);
+        NestedLoopAggregate<B> *nla = new NestedLoopAggregate(child->clone(), sma->group_by_, sma->aggregate_definitions_, sma->getJsonOutputCardinality());
+        nla->setOperatorId(sma->getOperatorId());
+        child->setParent(nla);
+        nla->setChild(child);
+        nla->updateCollation();
+        optimizeTree_operators_[nla->getOperatorId()] = nla;
+        operatorPool.push_back(nla);
+        recurseNode(nla);
         // In NestedLoop, child's sort is not remained,
         // TODO : need to change this part of setting sort order.
-
-
         //TODO : check if we need to add sort order to parent. Need Expected Sort
     }
 }
@@ -1258,7 +1267,7 @@ void PlanParser<B>::recurseSort(Operator<B> *sort) {
     // Need to check if this sort is need or not.
     if(sort->getSortOrder() == sort->getChild()->getSortOrder()) {
         optimizeTree_operators_[sort->getOperatorId()] = sort;
-
+        operatorPool.push_back(sort);
         int op_id = sort->getOperatorId();
 
         if(op_id < operators_.size()) {
@@ -1271,10 +1280,10 @@ void PlanParser<B>::recurseSort(Operator<B> *sort) {
         sort->setChild(optimizeTree_operators_.at(sort->getChild()->getOperatorId()));
         optimizeTree_operators_.at(sort->getChild()->getOperatorId())->setParent(sort);
         optimizeTree_operators_[sort->getOperatorId()] = sort;
+        operatorPool.push_back(sort);
         recurseNode(sort);
     }
 }
-
 
 
 template class vaultdb::PlanParser<bool>;
