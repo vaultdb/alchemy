@@ -152,18 +152,11 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
     if(op_name == "LogicalFilter")  op = parseFilter(operator_id, tree);
     if(op_name == "JdbcTableScan")  op = parseSeqScan(operator_id, tree);
     if(op_name == "ShrinkWrap")  op = parseShrinkwrap(operator_id, tree);
+    if(op_name == "LogicalValues") if(json_only_) { op = parseLocalScan(operator_id, tree); } else { return;  }
 
-    if(op_name == "LogicalValues"){
-        if(json_only_)
-            parseLocalScan(operator_id, tree);
-        else
-            return;
-    }
-    else if(op != nullptr) {
-
+    if(op != nullptr) {
         operators_[operator_id] = op;
         operators_.at(operator_id)->setOperatorId(operator_id);
-
         root_ = op;
     }
     else
@@ -442,7 +435,9 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     }
 
     // Parse Cardinality Bound info from JSON
-    if(aggregate_json.count("cardBound") > 0)
+    if(aggregate_json.count("cardinality-bound") > 0)
+        cardinality_bound = aggregate_json.get_child("cardinality-bound").template get_value<int>();
+    else if(aggregate_json.count("cardBound") > 0)
         cardinality_bound = aggregate_json.get_child("cardBound").template get_value<int>();
 
     bool check_sort = true;
@@ -463,6 +458,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
             effective_sort.push_back(cs);
         }
     }
+
 
     std::map<int32_t, std::set<int32_t>> func_dependency;
     if(aggregate_json.count("functional-dependency") > 0) {
@@ -527,16 +523,19 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
                     Sort<B> *sort_before_sma = new Sort<B>(child->clone(), child_sort);
                     sma = new GroupByAggregate<B>(sort_before_sma->clone(), group_by_ordinals, aggregators, check_sort);
                     sort_vector_.push_back(sort_before_sma);
+                    sma->effective_sort_ = effective_sort;
                 }
                 else{
                     sma = new GroupByAggregate<B>(child->clone(), group_by_ordinals, aggregators, check_sort);
                     sort_vector_.push_back(nullptr);
+                    sma->effective_sort_ = effective_sort;
                 }
                 nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, cardinality_bound);
             }
             else {
                 sma = new GroupByAggregate<B>(child->clone(), group_by_ordinals, aggregators, check_sort);
                 sort_vector_.push_back(nullptr);
+                sma->effective_sort_ = effective_sort;
                 nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, cardinality_bound);
             }
 
@@ -628,20 +627,117 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
             // Use Cost Model to calculate NLJ and SMJ, pick more better one.
             if(join_type == "auto") {
 
-                Operator<B>* smj = new SortMergeJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
-                Operator<B>* nlj = new KeyedJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone(), sort_def);
+                auto smj = new SortMergeJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
+                auto nlj = new KeyedJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone(), sort_def);
+                size_t smj_cost = OperatorCostModel::operatorCost((SecureOperator *) smj);
+                size_t nlj_cost = OperatorCostModel::operatorCost((SecureOperator *) nlj);
 
-                size_t SMJ_cost = OperatorCostModel::operatorCost((SecureOperator *) smj);
-                size_t NLJ_cost = OperatorCostModel::operatorCost((SecureOperator *) nlj);
-                join_type = (SMJ_cost < NLJ_cost) ? "sort-merge-join" : "nested-loop-join";
-
-				Logger* log = get_log();
-                log->write("Operator (" + std::to_string(operator_id) + "). " +
-							"smj cost : " + std::to_string(SMJ_cost) +
-							", nlj cost : " + std::to_string(NLJ_cost) +
-							", join type : " + join_type, Level::INFO);
-                delete smj;
                 delete nlj;
+
+
+                Logger *log = get_log();
+
+                // check sort compatibility for SMJ
+                if (smj->sortCompatible(lhs)) {
+                    // try inserting sort for RHS
+                    auto join_key_idxs = smj->joinKeyIdxs();
+                    // rhs will have second keys
+                    vector<ColumnSort> rhs_sort;
+                    int lhs_col_cnt = lhs->getOutputSchema().getFieldCount();
+                    SortDefinition lhs_sort = lhs->getSortOrder();
+
+                    for (int i = 0; i < join_key_idxs.size(); ++i) {
+                        int idx = join_key_idxs[i].second;
+                        rhs_sort.emplace_back(ColumnSort(idx - lhs_col_cnt, lhs_sort[i].second));
+                    }
+                    Operator<B> *rhs_sorter = new Sort<B>(rhs->clone(), rhs_sort);
+                    auto smj_presorted = new SortMergeJoin<B>(lhs->clone(), rhs_sorter, foreign_key,
+                                                         join_condition->clone());
+                    auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
+                    delete smj_presorted;
+
+
+                    cout << "Presorted SMJ cost for " << operator_id << ": " << smj_opt_cost << endl;
+                    int min_cost = (smj_opt_cost < nlj_cost) ? smj_opt_cost : nlj_cost;
+                    min_cost = (smj_cost < min_cost) ? smj_cost : min_cost;
+
+                    string msg = "Operator (" + std::to_string(operator_id) + "). " +
+                                 "smj cost : " + std::to_string(smj_cost) +
+                                 ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
+                                 ", nlj cost : " + std::to_string(nlj_cost) +
+                                 ", min cost: " + std::to_string(min_cost);
+                    cout << msg << endl;
+                    if(smj_opt_cost < smj_cost && smj_opt_cost < nlj_cost)  {
+                        delete smj;
+                        log->write("Operator (" + std::to_string(operator_id) + "). " +
+                                   "smj cost : " + std::to_string(smj_cost) +
+                                   ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
+                                   ", nlj cost : " + std::to_string(nlj_cost) +
+                                   ", join type: presorted smj", Level::INFO);
+
+                        Sort<B> *sorter = new Sort<B>(rhs, rhs_sort);
+                        return new SortMergeJoin<B>(lhs, sorter, foreign_key, join_condition);
+                    }
+                }
+                else if (smj->sortCompatible(rhs)) {
+                    // add sort to lhs
+                    // try inserting sort for RHS
+                    auto join_key_idxs = smj->joinKeyIdxs();
+                    // rhs will have second keys
+                    vector<ColumnSort> lhs_sort;
+                    SortDefinition rhs_sort = rhs->getSortOrder();
+
+                    for (int i = 0; i < join_key_idxs.size(); ++i) {
+                        int idx = join_key_idxs[i].first;
+                        lhs_sort.emplace_back(ColumnSort(idx, rhs_sort[i].second));
+                    }
+
+                    Operator<B> *lhs_sorter = new Sort<B>(lhs->clone(), lhs_sort);
+                    auto smj_presorted = new SortMergeJoin<B>(lhs->clone(), lhs_sorter, foreign_key,
+                                                         join_condition->clone());
+                    auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
+                    delete smj_presorted;
+                    cout << "Presorted SMJ cost for " << operator_id << ": " << smj_opt_cost << endl;
+                    int min_cost = (smj_opt_cost < nlj_cost) ? smj_opt_cost : nlj_cost;
+                    min_cost = (smj_cost < min_cost) ? smj_cost : min_cost;
+
+                    string msg = "Operator (" + std::to_string(operator_id) + "). " +
+                                 "smj cost : " + std::to_string(smj_cost) +
+                                 ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
+                                 ", nlj cost : " + std::to_string(nlj_cost) +
+                                 ", min cost: " + std::to_string(min_cost);
+                    cout << msg << endl;
+
+                    if(smj_opt_cost < smj_cost && smj_opt_cost < nlj_cost)  {
+                        log->write("Operator (" + std::to_string(operator_id) + "). " +
+                                   "smj cost : " + std::to_string(smj_cost) +
+                                   ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
+                                   ", nlj cost : " + std::to_string(nlj_cost) +
+                                   ", join type: presorted smj", Level::INFO);
+                        delete smj;
+                        Sort<B> *sorter = new Sort<B>(lhs, lhs_sort);
+                        return new SortMergeJoin<B>(sorter, rhs, foreign_key, join_condition);
+                    }
+
+                }
+
+                delete smj;
+
+
+
+
+
+                join_type = (smj_cost < nlj_cost) ? "sort-merge-join" : "nested-loop-join";
+                string msg = "Operator (" + std::to_string(operator_id) + "). " +
+                             "smj cost : " + std::to_string(smj_cost) +
+                             ", nlj cost : " + std::to_string(nlj_cost) +
+                             ", join type : " + join_type;
+                cout << msg << endl;
+
+                log->write("Operator (" + std::to_string(operator_id) + "). " +
+                               "smj cost : " + std::to_string(smj_cost) +
+                               ", nlj cost : " + std::to_string(nlj_cost) +
+                               ", join type : " + join_type, Level::INFO);
 
                 if (join_type == "sort-merge-join") {
                     return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
@@ -650,7 +746,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                     return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
                 }
 
-            }
+            } // end join-algorithm="auto"
             else if (join_type == "sort-merge-join")
                 return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
 
@@ -735,20 +831,29 @@ Operator<B> *PlanParser<B>::parseSeqScan(const int & operator_id, const boost::p
 }
 
 template<typename B>
-void PlanParser<B>::parseLocalScan(const int & operator_id, const boost::property_tree::ptree &local_scan_tree) {
+Operator<B> *PlanParser<B>::parseLocalScan(const int & operator_id, const boost::property_tree::ptree &local_scan_tree) {
     string sql = "";
     int input_party = 0;
     bool multiple_sort_ = false;
     B plain_has_dummy_tag = false;
+    string merge_sql = "", op_algo = "";
+    int local_tuple_limit = input_limit_;
 
     if(local_scan_tree.count("sql") > 0)
         sql = local_scan_tree.get_child("sql").template get_value<string>();
+    if(local_scan_tree.count("merge-sql") > 0)
+        merge_sql = local_scan_tree.get_child("merge-sql").template get_value<string>();
+    if(local_scan_tree.count("operator-algorithm") > 0)
+        op_algo = local_scan_tree.get_child("operator-algorithm").template get_value<string>();
 
     if(local_scan_tree.count("party") > 0)
         input_party = local_scan_tree.get_child("party").template get_value<int>();
 
-    plain_has_dummy_tag =  (sql.find("dummy_tag") != std::string::npos);
-    bool tmp = (sql.find("dummy_tag") != std::string::npos);
+    if(local_scan_tree.count("input-limit") > 0)
+        local_tuple_limit = local_scan_tree.get_child("input-limit").template get_value<int>();
+
+    plain_has_dummy_tag =  (sql.find("dummy-tag") != std::string::npos) || (sql.find("dummy_tag") != std::string::npos);
+    bool dummy_tag = (sql.find("dummy-tag") != std::string::npos) || (sql.find("dummy_tag") != std::string::npos);
 
     int collationIndex = 1; // Start index for multiple collations
     bool foundMultipleSorts = false;
@@ -792,12 +897,15 @@ void PlanParser<B>::parseLocalScan(const int & operator_id, const boost::propert
         }
         interesting_sort_orders_[operator_id].push_back(sort_definition);
     }
-    if(input_party > 0)
-        operators_[operator_id] = createInputOperator(sql, interesting_sort_orders_[operator_id].front(), input_party, plain_has_dummy_tag, tmp);
-    else
-        operators_[operator_id] = createInputOperator(sql, interesting_sort_orders_[operator_id].front(), plain_has_dummy_tag, tmp);
-    operators_.at(operator_id)->setOperatorId(operator_id);
-    root_ = operators_[operator_id];
+
+
+    SortDefinition sort_def = (interesting_sort_orders_.find(operator_id) != interesting_sort_orders_.end()) ?  interesting_sort_orders_[operator_id].front() : SortDefinition();
+    if(op_algo == "merge-input" && std::is_same_v<B, Bit> && local_tuple_limit > 0) {
+        return createMergeInput(merge_sql, dummy_tag, local_tuple_limit, sort_def, plain_has_dummy_tag);
+    }
+    if(input_party > 0) return createInputOperator(sql, sort_def, input_party, plain_has_dummy_tag, dummy_tag);
+    // else
+    return createInputOperator(sql, sort_def, plain_has_dummy_tag, dummy_tag);
 }
 
 

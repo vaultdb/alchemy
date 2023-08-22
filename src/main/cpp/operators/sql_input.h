@@ -13,9 +13,6 @@ namespace  vaultdb {
     class SqlInput : public Operator<bool> {
 
     protected:
-        std::string input_query_;
-        std::string db_name_;
-        bool dummy_tagged_;
         StorageModel storage_model_ = SystemConfiguration::getInstance().storageModel();
 
     public:
@@ -40,10 +37,14 @@ namespace  vaultdb {
         }
 
         void truncateInput(const size_t & limit); // to test on smaller datasets
+        std::string input_query_;
+        std::string db_name_;
+        bool dummy_tagged_;
+        size_t tuple_limit_;
+
 
     private:
         void runQuery();
-        void runQuery(const int & input_party);
 
     protected:
         PlainTable *runSelf() override;
@@ -53,7 +54,6 @@ namespace  vaultdb {
             return "\"" + str + "\", tuple_count=" + std::to_string(this->getOutputCardinality());
          }
         OperatorType getType() const override { return OperatorType::SQL_INPUT; }
-        size_t tuple_limit_;
 
     };
 

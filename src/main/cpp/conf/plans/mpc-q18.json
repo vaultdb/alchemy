@@ -3,8 +3,8 @@
     {
       "id": "0",
       "relOp": "LogicalValues",
-      "outputFields" : "l_orderkey (#0), sum_qty (#1)",
-      "sql": "WITH all_keys AS (SELECT o_orderkey AS ak FROM order_keys),      sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag                   FROM lineitem                   GROUP BY l_orderkey                   ORDER BY l_orderkey) SELECT ak AS l_orderkey, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = ak ORDER BY ak ",
+      "outputFields" : "o_orderkey (#0), sum_qty (#1)",
+      "sql": "WITH all_keys AS (SELECT o_orderkey  FROM order_keys), sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag FROM lineitem GROUP BY l_orderkey ORDER BY l_orderkey) SELECT o_orderkey, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = o_orderkey ORDER BY o_orderkey ",
       "dummy-tag": true,
       "party": 1,
       "type": [
@@ -33,7 +33,7 @@
       "id": "1",
       "relOp": "LogicalValues",
       "outputFields" : "l_orderkey (#0), sum_qty (#1)",
-      "sql": "WITH all_keys AS (SELECT o_orderkey AS ak FROM order_keys),      sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag                   FROM lineitem                   GROUP BY l_orderkey                   ORDER BY l_orderkey) SELECT ak AS l_orderkey, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = ak ORDER BY ak ",
+      "sql": "WITH all_keys AS (SELECT o_orderkey  FROM order_keys), sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag FROM lineitem GROUP BY l_orderkey ORDER BY l_orderkey) SELECT o_orderkey, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = o_orderkey ORDER BY o_orderkey ",
       "dummy-tag": true,
       "party": 2,
       "type": [
@@ -61,7 +61,7 @@
       "relOp": "LogicalJoin",
       "joinOn": "No-op, keys aligned in SQL setup",
       "operator-algorithm" : "merge-join",
-      "outputFields": "L1.l_orderkey (#0), L1.sum_qty (#1), L2.l_orderkey (#2), L2.sum_qty (#3)",
+      "outputFields": "alice.o_orderkey (#0), alice.sum_qty (#1), bob.o_orderkey (#2), bob.sum_qty (#3)",
       "condition": {
         "no-op": true
       },
@@ -75,9 +75,9 @@
     {
       "id": "3",
       "relOp": "LogicalProject",
-      "inputFields": "L1.l_orderkey (#0), L1.sum_qty (#1), L2.l_orderkey (#2), L2.sum_qty (#3)",
+      "inputFields": "l1.l_orderkey (#0), l1.sum_qty (#1), l2.l_orderkey (#2), l2.sum_qty (#3)",
       "fields": [
-        "l_orderkey",
+        "o_orderkey",
         "sum_qty"
       ],
       "exprs": [
@@ -131,23 +131,21 @@
     {
       "id": "5",
       "relOp": "LogicalValues",
-      "sql": "SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate FROM orders ORDER BY o_orderkey",
+      "operator-algorithm": "merge-input",
+      "sql": "SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate, false dummy_tag FROM orders ORDER BY o_orderkey",
+      "dummy-tag": true,
+      "merge-sql": "WITH all_keys AS (SELECT o_orderkey AS all_orderkey FROM order_keys), rows AS (SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate FROM orders ORDER BY o_orderkey) SELECT all_orderkey AS o_orderkey, COALESCE(o_custkey, 0) o_custkey, COALESCE(o_totalprice, 0.0) o_totalprice, COALESCE(o_orderdate, '1970-01-01'::DATE) o_orderdate, COALESCE(o_custkey<0, TRUE) dummy_tag FROM all_keys LEFT JOIN rows ON o_orderkey = all_orderkey ORDER BY all_orderkey",
       "type": [
         {
           "type": "INTEGER",
-          "nullable": false,
           "name": "o_orderkey"
         },
         {
           "type": "INTEGER",
-          "nullable": true,
           "name": "o_custkey"
         },
         {
           "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
           "name": "o_totalprice"
         },
         {
@@ -163,6 +161,22 @@
         }],
       "tuples": [],
       "inputs": []
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalJoin",
+      "joinOn": "o_orderkey = o_orderkey",
+      "operator-algorithm" : "merge-join",
+      "outputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), o_orderkey (#4), o_custkey (#5), o_totalprice (#6), o_orderdate (#7)",
+      "condition": {
+        "no-op": true
+      },
+      "joinType": "inner",
+      "dummy-handling" : "OR",
+      "inputs": [
+        "4",
+        "5"
+      ]
     },
     {
       "id": "6",
@@ -192,8 +206,9 @@
       ],
       "exprs": [
         {
-          "input": 2,
-          "name": "$2"
+          "input": 0,
+          "comment": "actually l_orderkey, doing this for sort propagation",
+          "name": "$0"
         },
         {
           "input": 3,
@@ -230,11 +245,6 @@
         }
       ],
       "sql": "SELECT c_custkey, c_name FROM customer ORDER BY c_custkey",
-      "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING"
-        }],
       "tuples": [],
       "inputs": []
     },

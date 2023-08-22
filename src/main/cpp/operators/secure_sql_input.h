@@ -9,11 +9,7 @@
 namespace  vaultdb {
     class SecureSqlInput : public Operator<emp::Bit> {
 
-        string input_query_;
-        string db_name_;
-        bool has_dummy_tag_;
         StorageModel storage_model_;
-        int input_party_ = 0;
         string original_input_query_; // no modifications for limit or sort
 
     protected:
@@ -26,11 +22,17 @@ namespace  vaultdb {
             return "\"" + input_query_ + "\", tuple_count=" + std::to_string(plain_input_->getTupleCount());
          }
 
+
+
+    public:
+        string input_query_;
+        string db_name_;
+        bool has_dummy_tag_;
+        int input_party_ = 0;
         size_t input_tuple_limit_;
         PlainTable *plain_input_ = nullptr;
 
 
-    public:
         SecureSqlInput(const string & db, const string & sql, const bool & dummy_tag, const SortDefinition & def, const size_t & input_tuple_cnt = 0); // truncate tuples with last term
         SecureSqlInput(const string & db, const string & sql, const bool & dummy_tag, const int & input_party, const size_t & input_tuple_cnt, const SortDefinition & def);
 
@@ -65,8 +67,7 @@ namespace  vaultdb {
                 this->input_query_ = sql;
 
                 if (plain_input_ != nullptr) delete plain_input_;
-                if (input_party_ > 0) runQuery(input_party_);
-                else runQuery();
+                runQuery();
             }
         }
 
@@ -79,7 +80,6 @@ namespace  vaultdb {
 
     private:
         void runQuery();
-        void runQuery(const int & input_party);
     };
 
 }

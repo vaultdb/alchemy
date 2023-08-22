@@ -6,6 +6,7 @@
 #include "operators/filter.h"
 #include "operators/group_by_aggregate.h"
 #include "operators/keyed_join.h"
+#include "operators/merge_input.h"
 #include "operators/nested_loop_aggregate.h"
 #include "operators/project.h"
 #include "operators/secure_sql_input.h"
@@ -33,6 +34,7 @@ namespace vaultdb {
         static size_t sortCost(const Sort<Bit> *sort);
         static size_t shrinkwrapCost(const Shrinkwrap<Bit> *shrinkwrap);
         static size_t scalarAggregateCost(const ScalarAggregate<Bit> *aggregate);
+        static size_t mergeInputCost(const MergeInput *input);
 
         // these ones cost zero gates:
         //        static size_t unionCost(const Union<Bit> *union_op);

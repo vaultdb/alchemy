@@ -9,7 +9,6 @@ template<typename B>
 QueryTable<B> *MergeJoin<B>::runSelf() {
     auto lhs = this->getChild(0)->getOutput();
     auto rhs = this->getChild(1)->getOutput();
-
     assert(lhs->getTupleCount() == rhs->getTupleCount());
 
     this->start_time_ = clock_start();
@@ -37,24 +36,13 @@ QueryTable<B> *MergeJoin<B>::runSelf() {
 template<typename B>
 void MergeJoin<B>::setup() {
 
+    updateCollation();
     auto lhs = this->getChild(0);
     auto rhs = this->getChild(1);
-
-    updateCollation();
     assert(lhs->getOutputCardinality() == rhs->getOutputCardinality());
 
     this->output_cardinality_ = lhs->getOutputCardinality();
-    // TODO: make this robust to permutations in sort column order
-    // assuming it was sorted on the join key for both sides
-    this->sort_definition_ = lhs->getSortOrder();
 
-    // check sort compatibility
-    auto lhs_collation = lhs->getSortOrder();
-    auto rhs_collation = rhs->getSortOrder();
-    assert(lhs_collation.size() == rhs_collation.size());
-   for(int i = 0; i < lhs_collation.size(); ++i) {
-       assert(lhs_collation[i] == rhs_collation[i]);
-   }
 
 }
 

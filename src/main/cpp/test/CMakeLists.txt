@@ -66,6 +66,8 @@ package_add_test(merge_join_test plain/merge_join_test.cpp plain/plain_base_test
 
 package_add_test(secret_share_generator_test secret_share_generator_test.cpp plain/plain_base_test.cpp)
 package_add_test(plan_parser_test plan_parser_test.cpp plain/plain_base_test.cpp)
+#cpackage_add_test(plan_deparser_test plan_deparser_test.cpp plain/plain_base_test.cpp)
+
 package_add_test(tpch_test tpch_test.cpp plain/plain_base_test.cpp)
 
 unset(Labels)

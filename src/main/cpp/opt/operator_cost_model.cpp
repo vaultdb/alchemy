@@ -7,34 +7,36 @@
 using namespace vaultdb;
 
 size_t OperatorCostModel::operatorCost(const SecureOperator *op) {
-    string operator_type = op->getTypeString();
-   // TODO repalce with Operator::getType()
-    if(operator_type == "Filter")
-        return filterCost((Filter<Bit> *) op);
-    else if(operator_type == "SecureSqlInput")
-        return secureSqlInputCost((SecureSqlInput *) op);
-	else if(operator_type == "Sort")
-		return sortCost((Sort<Bit> *) op);
-    else if(operator_type == "KeyedJoin")
-        return keyedJoinCost((KeyedJoin<Bit> *) op);
-    else if(operator_type == "BasicJoin")
-        return basicJoinCost((BasicJoin<Bit> *) op);
-    else if(operator_type == "MergeJoin")
-        return mergeJoinCost((MergeJoin<Bit> *) op);
-    else if(operator_type == "Shrinkwrap")
-        return shrinkwrapCost((Shrinkwrap<Bit> *) op);
-    else if(operator_type == "Project")
-        return projectCost((Project<Bit> *) op);
-    else if(operator_type == "SortMergeJoin")
-        return sortMergeJoinCost((SortMergeJoin<Bit> *) op);
-    else if(operator_type == "GroupByAggregate")
-        return groupByAggregateCost((GroupByAggregate<Bit> *) op);
-    else if(operator_type == "NestedLoopAggregate")
-        return nestedLoopAggregateCost((NestedLoopAggregate<Bit> *) op);
-    else if(operator_type == "ScalarAggregate")
-        return scalarAggregateCost((ScalarAggregate<Bit> *) op);
-
-    return 0;
+   switch(op->getType()) {
+       case OperatorType::FILTER:
+           return filterCost((Filter<Bit> *) op);
+           case OperatorType::SECURE_SQL_INPUT:
+               return secureSqlInputCost((SecureSqlInput *) op);
+          case OperatorType::MERGE_INPUT:
+              return mergeInputCost((MergeInput *) op);
+            case OperatorType::SORT:
+                return sortCost((Sort<Bit> *) op);
+            case OperatorType::KEYED_NESTED_LOOP_JOIN:
+                return keyedJoinCost((KeyedJoin<Bit> *) op);
+            case OperatorType::NESTED_LOOP_JOIN:
+                return basicJoinCost((BasicJoin<Bit> *) op);
+            case OperatorType::MERGE_JOIN:
+                return mergeJoinCost((MergeJoin<Bit> *) op);
+           case OperatorType::SORT_MERGE_JOIN:
+              return sortMergeJoinCost((SortMergeJoin<Bit> *) op);
+           case OperatorType::SHRINKWRAP:
+              return shrinkwrapCost((Shrinkwrap<Bit> *) op);
+           case OperatorType::PROJECT:
+                return projectCost((Project<Bit> *) op);
+           case OperatorType::SORT_MERGE_AGGREGATE:
+                return groupByAggregateCost((GroupByAggregate<Bit> *) op);
+           case OperatorType::NESTED_LOOP_AGGREGATE:
+              return nestedLoopAggregateCost((NestedLoopAggregate<Bit> *) op);
+           case OperatorType::SCALAR_AGGREGATE:
+                return scalarAggregateCost((ScalarAggregate<Bit> *) op);
+       default:
+           return 0;
+   }
 }
 size_t vaultdb::OperatorCostModel::filterCost(const vaultdb::Filter<Bit> *filter) {
     Expression<Bit> *predicate = filter->predicate_;
@@ -52,6 +54,13 @@ size_t vaultdb::OperatorCostModel::filterCost(const vaultdb::Filter<Bit> *filter
 size_t vaultdb::OperatorCostModel::secureSqlInputCost(const SecureSqlInput *input) {
     if(input->getSortOrder().empty())
         return 0;
+
+    if(input->plain_input_ != nullptr) {
+        int local_input_card = input->plain_input_->getTupleCount();
+        if(local_input_card == 0 || local_input_card == input->getOutputCardinality()) {
+            return 0;
+        }
+    }
 
     float n =  input->getOutputCardinality();
     float rounds = log2(n);
@@ -529,6 +538,14 @@ size_t OperatorCostModel::sortCost(const QuerySchema &schema, const SortDefiniti
     // each comparison consists of an equality, a <, and a handful of ANDs
     size_t c_and_s_cost = compareSwapCost(schema, sort, n);
     return comparison_cnt * c_and_s_cost;
+}
+
+size_t OperatorCostModel::mergeInputCost(const MergeInput *input) {
+    int tuple_cnt = input->getOutputCardinality();
+    int tuple_len = input->getOutputSchema().size();
+
+    // do two conditional writes of length {row bits} plus ANDing the dummy tags
+    return tuple_cnt * (2*tuple_len + 1);
 }
 
 

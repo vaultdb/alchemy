@@ -53,6 +53,7 @@ namespace  vaultdb {
 
 		int foreignKeyChild() const { return foreign_key_input_; }
         QuerySchema deriveAugmentedSchema() const;
+        const vector<pair<uint32_t, uint32_t>> joinKeyIdxs() const { return join_idxs_; }
 
 		inline bool sortCompatible() {
             auto lhs_sort = Operator<B>::lhs_child_->getSortOrder();
@@ -64,6 +65,28 @@ namespace  vaultdb {
             for(int i = 0; i < join_idxs_.size(); ++i) {
                 if(lhs_sort[i].first != join_idxs_[i].first || rhs_sort[i].first + lhs_schema.getFieldCount() != join_idxs_[i].second) {
 					return false;
+                }
+            }
+            return true;
+        }
+
+
+        inline bool sortCompatible(const Operator<B> *child) {
+            bool lhs_child = (child->getOperatorId() == this->getChild()->getOperatorId());
+            // check it is a child
+            if(!lhs_child) assert(child->getOperatorId() == this->getChild(1)->getOperatorId());
+
+            auto child_sort = (lhs_child) ? this->getChild()->getSortOrder() : this->getChild(1)->getSortOrder();
+            auto lhs_schema_cols = this->getChild()->getOutputSchema().getFieldCount();
+            if(child_sort.size() < join_idxs_.size())
+                return false;
+
+            for(int i = 0; i < join_idxs_.size(); ++i) {
+                if(lhs_child && child_sort[i].first != join_idxs_[i].first)  {
+                    return false;
+                }
+                if(!lhs_child && (child_sort[i].first + lhs_schema_cols != join_idxs_[i].second)) {
+                    return false;
                 }
             }
             return true;

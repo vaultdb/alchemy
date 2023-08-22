@@ -164,6 +164,8 @@ namespace  vaultdb {
                         return "TableInput";
                 case OperatorType::CSV_INPUT:
                         return "CsvInput";
+                case OperatorType::MERGE_INPUT:
+                        return "MergeInput";
                 case OperatorType::FILTER:
                         return "Filter";
                 case OperatorType::PROJECT:
