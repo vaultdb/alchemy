@@ -22,6 +22,7 @@
 #include <parser/expression_parser.h>
 #include <operators/shrinkwrap.h>
 #include <util/logger.h>
+#include <regex>
 
 using namespace vaultdb;
 using boost::property_tree::ptree;
@@ -917,12 +918,130 @@ Operator<B> *PlanParser<B>::getOperator(const int &op_id) {
 //  * For example, if OP#0, OP#1 are logical values, OP#2 join should have lhs as 0, and rhs as 1, not vice versa.
 
 template<typename B>
-Operator<B> *PlanParser<B>::optimizeTree() {
+void PlanParser<B>::optimizeTree() {
     Operator<B> *leaf = operators_.begin()->second;
     optimizeTreeHelper(leaf);
-    return nullptr;
+
+    std::cout << "Total Plans : " << std::to_string(total_plan_cnt_) << endl;
+    changeOperatorSortOrder();
 
 }
+
+template<typename B>
+void PlanParser<B>::changeOperatorSortOrder() {
+    // Extract the sort orders
+    std::map<int, SortEntry> sort_orders = extractSortOrders(min_cost_plan_string_);
+
+    SortEntry sort_before_sma;  // This will store the SortDefinition of the sort right before SMA
+
+    // Modify the operators sort orders
+    for (const auto &order : sort_orders) {
+        int op_id = order.first;
+        const SortDefinition &sort_def = std::get<0>(order.second);
+        int next_op_id = std::get<1>(order.second);
+
+        if (operators_.count(op_id) > 0) {
+            operators_[op_id]->setSortOrder(sort_def);
+
+            Operator<B> *op = operators_[op_id];
+            if (op->getType() == OperatorType::SQL_INPUT || op->getType() == OperatorType::SECURE_SQL_INPUT ||
+                op->getType() == OperatorType::ZK_SQL_INPUT || op->getType() == OperatorType::TABLE_INPUT) {
+                // Your logic for these types of operators
+            } else if(op->getType() == OperatorType::SORT_MERGE_AGGREGATE) {
+
+                // If the SMA operator has a child operator of type SORT
+                if(op->getChild()->getType() == OperatorType::SORT) {
+                    // Your logic for this scenario
+                }
+
+                // If there's a sort right before this SMA
+                if (std::get<1>(sort_before_sma) == op->getOperatorId()) {
+                    // Use the stored sort_before_sma here.
+                    // You might want to set its sort order or do other operations.
+                }
+
+                if (next_op_id != -1 && operators_.count(next_op_id) > 0
+                    && operators_[next_op_id]->getType() == OperatorType::SORT_MERGE_AGGREGATE) {
+                    // Your logic when a GroupByAggregate follows this operator
+                }
+            }
+        } else if(op_id == -1) {
+            sort_before_sma = order.second;
+        }
+    }
+}
+
+template<typename B>
+std::map<int, typename PlanParser<B>::SortEntry> PlanParser<B>::extractSortOrders(const std::string &plan_string) {
+    std::map<int, SortEntry> sort_orders;
+    std::regex line_regex("\\n");
+    std::sregex_token_iterator line_iterator(plan_string.begin(), plan_string.end(), line_regex, -1);
+    std::sregex_token_iterator end;
+
+    int prev_op_id = -1;
+    std::string prev_op_type;
+    std::string op_type;
+
+    while (line_iterator != end) {
+        std::string line = *line_iterator++;
+        std::regex op_id_regex("#(-?\\d+):");
+        std::smatch op_id_match;
+
+        if (std::regex_search(line, op_id_match, op_id_regex)) {
+            int op_id = std::stoi(op_id_match[1].str());
+
+            std::regex op_type_regex(": (\\w+) order by:");
+            std::smatch op_type_match;
+            if (std::regex_search(line, op_type_match, op_type_regex)) {
+                op_type = op_type_match[1].str();
+
+                std::regex sort_regex("\\{([^}]+)\\}");
+                std::smatch sort_match;
+                if (std::regex_search(line, sort_match, sort_regex)) {
+                    std::string sort_str = sort_match[1].str();
+
+                    SortDefinition sort_order;
+                    if (!sort_str.empty()) {
+                        std::regex order_regex("<(\\-?\\d+),\\s(ASC|DESC|INVALID)>");
+                        std::smatch order_match;
+                        std::string::const_iterator order_start(sort_str.cbegin());
+
+                        while (std::regex_search(order_start, sort_str.cend(), order_match, order_regex)) {
+                            int32_t ordinal = std::stoi(order_match[1].str());
+                            SortDirection dir = (order_match[2].str() == "ASC") ? SortDirection::ASCENDING : SortDirection::DESCENDING;
+                            sort_order.push_back({ordinal, dir});
+                            order_start = order_match.suffix().first;
+                        }
+                    } else {
+                        // If order by set is empty, set default sort definition
+                        sort_order.push_back({-2, SortDirection::ASCENDING});
+                    }
+
+                    int next_op_id = -1;
+                    if (prev_op_type == "GroupByAggregate" && op_type == "Sort" && op_id == -1) {
+                        next_op_id = prev_op_id;
+                    }
+
+                    sort_orders[op_id] = std::make_tuple(sort_order, next_op_id, op_type);
+                } else if (line.find("order by: {}") != std::string::npos) { // Check if the line contains an empty order by
+                    // If order by set is empty, set default sort definition
+                    SortDefinition sort_order;
+                    sort_order.push_back({-2, SortDirection::ASCENDING});
+                    sort_orders[op_id] = std::make_tuple(sort_order, -1, op_type); // Using -1 as the default next_op_id for these cases
+                }
+            }
+
+            prev_op_id = op_id;
+            prev_op_type = op_type;
+        }
+    }
+
+    return sort_orders;
+}
+
+
+
+
 
 // helper function for recursing up operator tree
 template<typename B>
@@ -988,6 +1107,7 @@ void PlanParser<B>::recurseNode(Operator<B> *op) {
         size_t plan_cost = op->planCost();
         std::cout << op->printTree() << endl;
         std::cout << "Cost : " << std::to_string(plan_cost) << "\n" << "----------------------------" << std::endl;
+        total_plan_cnt_++;
 
         if(plan_cost < min_plan_cost_) {
             min_plan_cost_ = plan_cost;

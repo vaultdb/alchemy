@@ -21,6 +21,8 @@ namespace vaultdb {
     template<typename B>
     class PlanParser {
     public:
+        typedef std::tuple<SortDefinition, int, std::string> SortEntry; // Adding operator type as a string.
+
         PlanParser(const string &db_name, const string &sql_file, const string &json_file, const int &limit = -1);
 
         // for ZK plans
@@ -31,7 +33,10 @@ namespace vaultdb {
 
         Operator<B> *getOperator(const int &op_id);
 
-        Operator<B> *optimizeTree();
+        void optimizeTree();
+        void changeOperatorSortOrder();
+
+        std::map<int, SortEntry> extractSortOrders(const std::string &plan_string);
 
         static Operator<B> *
         parse(const std::string &db_name, const string &sql_file, const string &json_file, const int &limit = -1);
@@ -45,6 +50,7 @@ namespace vaultdb {
 
         void setAutoFlag(bool inputFlag) { agg_auto_flag_ = inputFlag; }
         map<int, vector<SortDefinition>> getInterestingSortOrders() { return interesting_sort_orders_; }
+        int total_plan_cnt_ = 0;
     private:
         std::string db_name_;
         StorageModel storage_model_ = SystemConfiguration::getInstance().storageModel();
