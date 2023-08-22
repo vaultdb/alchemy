@@ -656,17 +656,6 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                     auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
                     delete smj_presorted;
 
-
-                    cout << "Presorted SMJ cost for " << operator_id << ": " << smj_opt_cost << endl;
-                    int min_cost = (smj_opt_cost < nlj_cost) ? smj_opt_cost : nlj_cost;
-                    min_cost = (smj_cost < min_cost) ? smj_cost : min_cost;
-
-                    string msg = "Operator (" + std::to_string(operator_id) + "). " +
-                                 "smj cost : " + std::to_string(smj_cost) +
-                                 ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
-                                 ", nlj cost : " + std::to_string(nlj_cost) +
-                                 ", min cost: " + std::to_string(min_cost);
-                    cout << msg << endl;
                     if(smj_opt_cost < smj_cost && smj_opt_cost < nlj_cost)  {
                         delete smj;
                         log->write("Operator (" + std::to_string(operator_id) + "). " +
@@ -697,16 +686,6 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                                                          join_condition->clone());
                     auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
                     delete smj_presorted;
-                    cout << "Presorted SMJ cost for " << operator_id << ": " << smj_opt_cost << endl;
-                    int min_cost = (smj_opt_cost < nlj_cost) ? smj_opt_cost : nlj_cost;
-                    min_cost = (smj_cost < min_cost) ? smj_cost : min_cost;
-
-                    string msg = "Operator (" + std::to_string(operator_id) + "). " +
-                                 "smj cost : " + std::to_string(smj_cost) +
-                                 ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
-                                 ", nlj cost : " + std::to_string(nlj_cost) +
-                                 ", min cost: " + std::to_string(min_cost);
-                    cout << msg << endl;
 
                     if(smj_opt_cost < smj_cost && smj_opt_cost < nlj_cost)  {
                         log->write("Operator (" + std::to_string(operator_id) + "). " +
@@ -728,11 +707,6 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
 
                 join_type = (smj_cost < nlj_cost) ? "sort-merge-join" : "nested-loop-join";
-                string msg = "Operator (" + std::to_string(operator_id) + "). " +
-                             "smj cost : " + std::to_string(smj_cost) +
-                             ", nlj cost : " + std::to_string(nlj_cost) +
-                             ", join type : " + join_type;
-                cout << msg << endl;
 
                 log->write("Operator (" + std::to_string(operator_id) + "). " +
                                "smj cost : " + std::to_string(smj_cost) +
