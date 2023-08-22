@@ -888,12 +888,17 @@ Operator<B> *PlanParser<B>::parseShrinkwrap(const int & operator_id, const boost
 
     ptree input_list = pt.get_child("inputs.");
     ptree::const_iterator it = input_list.begin();
-    int op_id = it->second.get_value<int>();
-    Operator<B> *op = operators_.at(op_id);
+    int child_op_id = it->second.get_value<int>();
+    Operator<B> *op = operators_.at(child_op_id);
 
-    size_t output_cardinality = pt.get_child("output_cardinality").template get_value<int>();
+    size_t output_cardinality;
+    if(pt.count("output_cardinality") > 0)
+           output_cardinality =  pt.get_child("output_cardinality").template get_value<int>();
 
-    return new Shrinkwrap<B>(op->getOutput(), output_cardinality);
+    if(pt.count("output-cardinality") > 0)
+        output_cardinality =  pt.get_child("output-cardinality").template get_value<int>();
+
+    return new Shrinkwrap<B>(op, output_cardinality);
 }
 
 

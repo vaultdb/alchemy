@@ -4,7 +4,6 @@
 #include <util/type_utilities.h>
 #include <util/data_utilities.h>
 #include <test/mpc/emp_base_test.h>
-#include <query_table/secure_tuple.h>
 #include <test/support/tpch_queries.h>
 #include <boost/algorithm/string/replace.hpp>
 #include <parser/plan_parser.h>

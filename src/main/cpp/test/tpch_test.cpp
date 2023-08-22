@@ -16,7 +16,7 @@ protected:
 
     // depends on truncate-tpch-set.sql
     // different DBs for different tests to bump up the output size - don't want empty output!
-    void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
+    void runTest(const int &test_id, const string & plan_file, const SortDefinition &expected_sort);
 
     int input_tuple_limit_ = 0;
 
@@ -24,13 +24,11 @@ protected:
 };
 
 void
-TpcHTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
-    string query = tpch_queries[test_id];
+TpcHTest::runTest(const int &test_id, const string & plan_file, const SortDefinition &expected_sort) {
+    string expected_sql = tpch_queries[test_id];
 
-    PlainTable *expected = DataUtilities::getExpectedResults(db_name, query, false, 0);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 0);
     expected->setSortOrder(expected_sort);
-
-    string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
 
     PlanParser<bool> plan_reader(db_name_,plan_file, input_tuple_limit_);
     PlainOperator *root = plan_reader.getRoot();
@@ -47,7 +45,9 @@ TpcHTest::runTest(const int &test_id, const string & test_name, const SortDefini
 
 TEST_F(TpcHTest, tpch_q01) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort, db_name_);
+   string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q1.json";
+
+    runTest(1, plan_file, expected_sort);
 }
 
 TEST_F(TpcHTest, tpch_q03) {
@@ -57,25 +57,34 @@ TEST_F(TpcHTest, tpch_q03) {
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
-    runTest(3, "q3", expected_sort, db_name_);
+
+   string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q3.json";
+
+    runTest(3, plan_file, expected_sort);
 }
 
 //join(join(join(customer, orders), lineitem), supplier)
 TEST_F(TpcHTest, tpch_q05) {
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(5, "q5", expected_sort, db_name_);
+    string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q5.json";
+
+    runTest(5, plan_file, expected_sort);
 }
 
 TEST_F(TpcHTest, tpch_q08) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest(8, "q8", expected_sort, db_name_);
+    string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q8.json";
+
+    runTest(8, plan_file, expected_sort);
 }
 
 // q9 expresssion:   l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity
 TEST_F(TpcHTest, tpch_q09) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(9, "q9", expected_sort, db_name_);
+       string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q9.json";
+
+    runTest(9, plan_file, expected_sort);
 
 }
 
@@ -87,8 +96,8 @@ TEST_F(TpcHTest, tpch_q18) {
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(4, SortDirection::DESCENDING),
                                  ColumnSort(3, SortDirection::ASCENDING)};
-
-    runTest(18, "q18", expected_sort, db_name_);
+    string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/plain-q18.json";
+    runTest(18, plan_file, expected_sort);
 }
 
 
