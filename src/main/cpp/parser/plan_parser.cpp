@@ -1271,8 +1271,8 @@ void PlanParser<B>::recurseNode(Operator<B> *op) {
     // at the root node
     if(parent == nullptr) {
         size_t plan_cost = op->planCost();
-        std::cout << op->printTree() << endl;
-        std::cout << "Cost : " << std::to_string(plan_cost) << "\n" << "----------------------------" << std::endl;
+//        std::cout << op->printTree() << endl;
+//        std::cout << "Cost : " << std::to_string(plan_cost) << "\n" << "----------------------------" << std::endl;
         total_plan_cnt_++;
 
         if(plan_cost < min_plan_cost_) {
@@ -1405,6 +1405,7 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
             // insert sort
             Sort<B> *sort_before_sma = new Sort<B>(child, nla->effective_sort_);
             GroupByAggregate<B> *sma = new GroupByAggregate(sort_before_sma, group_by_ordinals, nla->aggregate_definitions_, true);
+            sma->setOperatorId(nla->getOperatorId());
             child->setParent(sort_before_sma);
             sort_before_sma->setChild(child);
             sort_before_sma->setParent(sma);
@@ -1415,6 +1416,7 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
             recurseNode(sma);
         } else {
             GroupByAggregate<B> *sma = new GroupByAggregate(child, group_by_ordinals, nla->aggregate_definitions_, true);
+            sma->setOperatorId(nla->getOperatorId());
             child->setParent(sma);
             sma->setChild(child);
             sma->updateCollation();

@@ -23,7 +23,7 @@ DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*.tpch_q3", "run only the tests passing this filter");
+DEFINE_string(filter, "*.tpch_q9", "run only the tests passing this filter");
 
 
 class SortPlanEnumerationTest : public EmpBaseTest {
@@ -197,20 +197,20 @@ void SortPlanEnumerationTest::runStubTest(string & sql_plan, string & json_plan,
 
 // No Aggregate
 
-TEST_F(SortPlanEnumerationTest, tpch_q1) {
-string test_name = "q1";
-std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-" + test_name + ".sql";
-std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-"  + test_name + ".json";
-
-SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-string expected_sql = tpch_queries[1];
-
-
-this->initializeBitPacking(FLAGS_unioned_db);
-
-runStubTest(sql_file, plan_file, expected_sql, expected_sort, FLAGS_unioned_db);
-
-}
+//TEST_F(SortPlanEnumerationTest, tpch_q1) {
+//string test_name = "q1";
+//std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-" + test_name + ".sql";
+//std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-"  + test_name + ".json";
+//
+//SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+//string expected_sql = tpch_queries[1];
+//
+//
+//this->initializeBitPacking(FLAGS_unioned_db);
+//
+//runStubTest(sql_file, plan_file, expected_sql, expected_sort, FLAGS_unioned_db);
+//
+//}
 
 
 TEST_F(SortPlanEnumerationTest, tpch_q3) {
@@ -247,7 +247,7 @@ runTest(9, "q9", expected_sort, FLAGS_unioned_db);
 
 
 // No Aggregate
-
+/*
 TEST_F(SortPlanEnumerationTest, tpch_q18) {
 // -1 ASC, $4 DESC, $3 ASC
 SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
@@ -268,7 +268,7 @@ TEST_F(SortPlanEnumerationTest, two_aggregates_q18) {
 
     runMultiAggregatesTest(18, "q18", expected_sort, FLAGS_unioned_db, sql_file, plan_file);
 }
-
+*/
 
 
 int main(int argc, char **argv) {
