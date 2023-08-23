@@ -65,6 +65,7 @@ SortPlanEnumerationTest::runTest(const int &test_id, const string & test_name, c
     parser.optimizeTree();
     SecureOperator *root = parser.getRoot();
 
+    std::cout << "Sort Optimized Plan : " << endl;
     std::cout << root->printTree() << endl;
 
     SecureTable *result = root->run();

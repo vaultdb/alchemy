@@ -924,8 +924,27 @@ void PlanParser<B>::optimizeTree() {
 
     std::cout << "Total Plans : " << std::to_string(total_plan_cnt_) << endl;
     changeOperatorSortOrder();
-
+    deleteOptmizeTreeOperators();
 }
+
+template<typename B>
+void PlanParser<B>::deleteOptmizeTreeOperators() {
+    for (auto &entry : optimizeTree_operators_) {
+        Operator<B> *op = entry.second;
+
+        // Set the children to nullptr
+        op->setNullChild(nullptr, 0);
+        op->setNullChild(nullptr, 1);
+        op->setParent(nullptr);
+        // Delete the operator
+        delete op;
+        entry.second = nullptr;  // Optional: set the map value to nullptr too
+    }
+
+    // Optionally, you can also clear the map after deleting the operators
+    optimizeTree_operators_.clear();
+}
+
 
 template<typename B>
 void PlanParser<B>::changeOperatorSortOrder() {
@@ -941,35 +960,182 @@ void PlanParser<B>::changeOperatorSortOrder() {
         int next_op_id = std::get<1>(order.second);
 
         if (operators_.count(op_id) > 0) {
-            operators_[op_id]->setSortOrder(sort_def);
 
             Operator<B> *op = operators_[op_id];
-            if (op->getType() == OperatorType::SQL_INPUT || op->getType() == OperatorType::SECURE_SQL_INPUT ||
-                op->getType() == OperatorType::ZK_SQL_INPUT || op->getType() == OperatorType::TABLE_INPUT) {
-                // Your logic for these types of operators
-            } else if(op->getType() == OperatorType::SORT_MERGE_AGGREGATE) {
+            OperatorType op_type = op->getType();
 
-                // If the SMA operator has a child operator of type SORT
-                if(op->getChild()->getType() == OperatorType::SORT) {
-                    // Your logic for this scenario
+            if (op_type == OperatorType::SQL_INPUT || op_type == OperatorType::SECURE_SQL_INPUT ||
+                    op_type == OperatorType::ZK_SQL_INPUT || op_type == OperatorType::TABLE_INPUT) {
+                switch(op_type) {
+                    case OperatorType::SQL_INPUT:
+                        break;
+                    case OperatorType::SECURE_SQL_INPUT:
+                        // Attempt to cast the pointer to SecureSqlInput type
+                        SecureSqlInput* secureSqlInputOp = dynamic_cast<SecureSqlInput*>(op);
+
+                        if (secureSqlInputOp) { // If the cast was successful
+                            string sql_statement_ = secureSqlInputOp->getInputQuery();
+                            sql_statement_ = modifySqlStatement(sql_statement_, sort_def);
+                            secureSqlInputOp->setInputQuery(sql_statement_);
+                        }
+                        break;
+                }
+            } else if(op_type == OperatorType::SORT_MERGE_AGGREGATE || op_type == OperatorType::NESTED_LOOP_AGGREGATE) {
+                //If optimized plan has different aggregate with original plan
+                if(op->getTypeString() != std::get<2>(order.second)) {
+                    Operator<B> *child = op->getChild();
+                    Operator<B> *parent = op->getParent();
+
+                    if(std::get<2>(order.second) == "GroupByAggregate"){
+                        GroupByAggregate<B> *sma = (GroupByAggregate<B> *) optimizeTree_operators_[op_id];
+                        sma->setChild(child);
+                        child->setParent(sma);
+                        sma->setParent(parent);
+                        parent->setChild(sma);
+                        operators_[op_id] = sma;
+                    }
+                    else{
+                        NestedLoopAggregate<B> *nla = (NestedLoopAggregate<B> *) optimizeTree_operators_[op_id];
+                        nla->setChild(child);
+                        child->setParent(nla);
+                        nla->setParent(parent);
+                        parent->setChild(nla);
+                        operators_[op_id] = nla;
+                    }
+
+                    // Delete the original operator
+                    op->setNullChild(nullptr);
+                    op->setParent(nullptr);
+                    delete(op);
                 }
 
-                // If there's a sort right before this SMA
-                if (std::get<1>(sort_before_sma) == op->getOperatorId()) {
-                    // Use the stored sort_before_sma here.
-                    // You might want to set its sort order or do other operations.
+                op = operators_[op_id];
+                // If optimized plan has sort before sma.
+                if(next_op_id == -2 && std::get<1>(sort_before_sma) == op->getOperatorId()){
+                    // If the SMA operator has a child operator of type SORT
+                    if(op->getChild()->getType() == OperatorType::SORT) {
+                        op->getChild()->setSortOrder(std::get<0>(sort_before_sma));
+                    }
+                    // Need to define new sort operator
+                    else{
+                        Operator<B> *child = op->getChild();
+                        Sort<B> *new_sort = new Sort<B>(child, std::get<0>(sort_before_sma));
+                        new_sort->setOperatorId(-1);
+                        child->setParent(new_sort);
+                        new_sort->setChild(child);
+                        new_sort->setParent(op);
+                        op->setChild(new_sort);
+                    }
                 }
+                //If optimized plan has no sort before sma
+                else{
+                    //If original plan has sort before sma
+                    if(op->getChild()->getType() == OperatorType::SORT) {
+                        Operator<B>* delete_sort = op->getChild();
+                        Operator<B>* child = delete_sort->getChild();
+                        delete_sort->setNullChild(nullptr);
+                        delete_sort->setParent(nullptr);
+                        delete delete_sort;
+                        op->setChild(child);
+                        child->setParent(op);
+                    }
+                }
+            }  else if(op_type == OperatorType::KEYED_NESTED_LOOP_JOIN || op_type == OperatorType::SORT_MERGE_JOIN) {
+                //If optimized plan has different aggregate with original plan
+                if(op->getTypeString() != std::get<2>(order.second)) {
+                    Operator<B> *lhs = op->getChild(0);
+                    Operator<B> *rhs = op->getChild(1);
+                    Operator<B> *parent = op->getParent();
 
-                if (next_op_id != -1 && operators_.count(next_op_id) > 0
-                    && operators_[next_op_id]->getType() == OperatorType::SORT_MERGE_AGGREGATE) {
-                    // Your logic when a GroupByAggregate follows this operator
+                    if(std::get<2>(order.second) == "KeyedJoin"){
+                        KeyedJoin<B> *kj = (KeyedJoin<B> *) optimizeTree_operators_[op_id];
+                        kj->setParent(parent);
+                        parent->setChild(kj);
+                        kj->setChild(lhs,0);
+                        kj->setChild(rhs,1);
+                        lhs->setParent(kj);
+                        rhs->setParent(kj);
+                        operators_[op_id] = kj;
+                    }
+                    else{
+                        SortMergeJoin<B> *smj = (SortMergeJoin<B> *) optimizeTree_operators_[op_id];
+                        smj->setParent(parent);
+                        parent->setChild(smj);
+                        smj->setChild(lhs,0);
+                        smj->setChild(rhs,1);
+                        lhs->setParent(smj);
+                        rhs->setParent(smj);
+                        operators_[op_id] = smj;
+                    }
+                    // Delete the original operator
+                    op->setNullChild(nullptr);
+                    op->setNullChild(nullptr, 1);
+                    op->setParent(nullptr);
+                    delete(op);
                 }
             }
+            if(sort_def[0].first == -2)
+                operators_[op_id]->setSortOrder(SortDefinition());
+            else
+                operators_[op_id]->setSortOrder(sort_def);
         } else if(op_id == -1) {
             sort_before_sma = order.second;
         }
     }
 }
+
+template<typename B>
+std::vector<std::string> PlanParser<B>::extractColumnsFromSql(const std::string& sql) {
+    std::regex columnRegex(R"(SELECT\s+(.*?)\s*FROM)");
+    std::smatch matches;
+    if (std::regex_search(sql, matches, columnRegex)) {
+        std::string columnsStr = matches[1];
+        std::stringstream ss(columnsStr);
+        std::string segment;
+        std::vector<std::string> columns;
+
+        // Extracting columns and their aliases
+        while (std::getline(ss, segment, ',')) {
+            std::size_t aliasPos = segment.rfind("AS");
+            if (aliasPos != std::string::npos) {
+                // Take alias name if exists
+                columns.push_back(segment.substr(aliasPos + 3));
+            } else {
+                // Otherwise, extract raw column name
+                std::stringstream segmentStream(segment);
+                std::string potentialColumn;
+                segmentStream >> potentialColumn;
+                columns.push_back(potentialColumn);
+            }
+        }
+        return columns;
+    }
+    return {};
+}
+
+template<typename B>
+std::string PlanParser<B>::modifySqlStatement(const std::string& originalSql, const SortDefinition& sort_defs) {
+    auto columns = extractColumnsFromSql(originalSql);
+
+    std::string orderByClause = "";
+    for (const auto& def : sort_defs) {
+        if (def.first < 0 || def.first >= columns.size()) continue; // skip invalid column index
+
+        std::string direction = (def.second == SortDirection::ASCENDING) ? "ASC" : "DESC";
+        if (!orderByClause.empty()) orderByClause += ", ";
+        orderByClause += columns[def.first] + " " + direction;
+    }
+
+    std::regex orderByRegex("ORDER BY [^)]+$");
+    if (orderByClause.empty()) {
+        return std::regex_replace(originalSql, orderByRegex, "");
+    } else if (std::regex_search(originalSql, orderByRegex)) {
+        return std::regex_replace(originalSql, orderByRegex, "ORDER BY " + orderByClause);
+    } else {
+        return originalSql + " ORDER BY " + orderByClause;
+    }
+}
+
 
 template<typename B>
 std::map<int, typename PlanParser<B>::SortEntry> PlanParser<B>::extractSortOrders(const std::string &plan_string) {
@@ -1020,6 +1186,9 @@ std::map<int, typename PlanParser<B>::SortEntry> PlanParser<B>::extractSortOrder
                     int next_op_id = -1;
                     if (prev_op_type == "GroupByAggregate" && op_type == "Sort" && op_id == -1) {
                         next_op_id = prev_op_id;
+
+                        // set sma's int value as -2, so that it can be flag for sort exsists before sma.
+                        sort_orders[prev_op_id] = std::make_tuple(sort_order, -2, "GroupByAggregate");
                     }
 
                     sort_orders[op_id] = std::make_tuple(sort_order, next_op_id, op_type);
@@ -1038,9 +1207,6 @@ std::map<int, typename PlanParser<B>::SortEntry> PlanParser<B>::extractSortOrder
 
     return sort_orders;
 }
-
-
-
 
 
 // helper function for recursing up operator tree

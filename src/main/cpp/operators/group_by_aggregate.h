@@ -66,10 +66,14 @@ namespace vaultdb {
 
             SortDefinition  output_sort_def;
             // map sort order to that of child
-            for(size_t idx = 0; idx < group_by_.size(); ++idx) {
+            for(size_t idx = 0; idx < effective_sort_.size(); ++idx) {
                 // projecting the attribute in group_by_[idx] to the ith position in output
-                output_sort_def.emplace_back(idx, child_sort[group_by_[idx]].second);
+                output_sort_def.emplace_back(idx, child_sort[effective_sort_[idx].first].second);
             }
+//            for(size_t idx = 0; idx < group_by_.size(); ++idx) {
+//                // projecting the attribute in group_by_[idx] to the ith position in output
+//                output_sort_def.emplace_back(idx, child_sort[group_by_[idx]].second);
+//            }
 
             this->sort_definition_ = output_sort_def;
         }

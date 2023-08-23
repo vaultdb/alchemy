@@ -9,7 +9,6 @@
 namespace  vaultdb {
     class SecureSqlInput : public Operator<emp::Bit> {
 
-        string input_query_;
         string db_name_;
         bool has_dummy_tag_;
         StorageModel storage_model_;
@@ -28,6 +27,7 @@ namespace  vaultdb {
 
         size_t input_tuple_limit_;
         PlainTable *plain_input_ = nullptr;
+        string input_query_;
 
 
     public:
@@ -44,6 +44,9 @@ namespace  vaultdb {
         SecureOperator *clone() const override {
             return new SecureSqlInput(*this);
         }
+
+        string getInputQuery() const { return input_query_; }
+        void setInputQuery(const string & sql) { input_query_ = sql; }
 
         void updateCollation() override {
             // take current sql and wrap it in ORDER BY

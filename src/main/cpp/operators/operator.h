@@ -110,6 +110,13 @@ namespace  vaultdb {
 
         }
 
+        void setNullChild(Operator *c, int idx = 0){
+            if(idx == 0)
+                lhs_child_ = c;
+            else
+                rhs_child_ = c;
+        }
+
         inline void setChild(Operator *c, int idx = 0) {
             if(idx == 0) {
                 lhs_child_ = c;

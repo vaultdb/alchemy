@@ -34,8 +34,10 @@ namespace vaultdb {
         Operator<B> *getOperator(const int &op_id);
 
         void optimizeTree();
+        void deleteOptmizeTreeOperators();
         void changeOperatorSortOrder();
-
+        std::vector<std::string> extractColumnsFromSql(const std::string& sql);
+        std::string modifySqlStatement(const std::string& originalSql, const SortDefinition& sort_defs);
         std::map<int, SortEntry> extractSortOrders(const std::string &plan_string);
 
         static Operator<B> *

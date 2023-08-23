@@ -45,6 +45,7 @@ namespace  vaultdb {
             SortDefinition sort_def;
             for(auto &pos : join_idxs_) {
                 sort_def.push_back(ColumnSort (pos.first, SortDirection::ASCENDING));
+                sort_def.push_back(ColumnSort (pos.second, SortDirection::ASCENDING));
             }
             this->sort_definition_ = sort_def;
 

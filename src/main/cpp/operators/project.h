@@ -104,9 +104,9 @@ namespace vaultdb {
                     break;
                 }
             } // end search for mapping
-            if(!found) {
-                break;
-            } // broke the sequence of mappings
+//            if(!found) {
+//                break;
+//            } // broke the sequence of mappings
         }
 
         this->sort_definition_ = dst_sort;
