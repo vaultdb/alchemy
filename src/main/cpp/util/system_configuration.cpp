@@ -11,7 +11,19 @@ BitPackingDefinition SystemConfiguration::getBitPackingSpec(const string &table_
             return bit_packing_.at(c);
         }
     } catch(const std::out_of_range& e) {}
-    return BitPackingDefinition();
+    // also try matching on the column name alone, in case table name is unavailable
+    bool found = false;
+    BitPackingDefinition def;
+    for(auto & [name, md] : bit_packing_) {
+        if(name.second == col_name) {
+            if(found) {// second match implies ambiguity, return empty set
+                return BitPackingDefinition();
+            }
+           def = md;
+           found = true;
+        }
+    }
+    return def;
 }
 
 

@@ -4,7 +4,6 @@
 #include <util/type_utilities.h>
 #include <util/data_utilities.h>
 #include <test/mpc/emp_base_test.h>
-#include <query_table/secure_tuple.h>
 #include <test/support/tpch_queries.h>
 #include <boost/algorithm/string/replace.hpp>
 #include <parser/plan_parser.h>
@@ -24,7 +23,7 @@ DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65478, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*.tpch_q03", "run only the tests passing this filter");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
 class SecureTpcHTest : public EmpBaseTest {
@@ -36,12 +35,11 @@ protected:
     void runTest(const int &test_id, const string &test_name, const SortDefinition &expected_sort);
     string  generateExpectedOutputQuery(const int & test_id);
 
-    int input_tuple_limit_ = -1;
+    int input_tuple_limit_ = 150;
 
 };
 
-void
-SecureTpcHTest::runTest(const int &test_id, const string &test_name, const SortDefinition &expected_sort) {
+void SecureTpcHTest::runTest(const int &test_id, const string &test_name, const SortDefinition &expected_sort) {
 
     string expected_sql = generateExpectedOutputQuery(test_id);
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 0);
@@ -49,12 +47,11 @@ SecureTpcHTest::runTest(const int &test_id, const string &test_name, const SortD
 
     ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
-
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
 
     PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
-    parser.optimizeTree();
-    SecureOperator *root = parser.getRoot();
+   SecureOperator *root = parser.getRoot();
+
     auto result = root->run();
 
     if(FLAGS_validation) {

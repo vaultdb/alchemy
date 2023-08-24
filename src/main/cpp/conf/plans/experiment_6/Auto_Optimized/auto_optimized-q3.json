@@ -215,7 +215,7 @@
       "id": "7",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "auto",
-      "cardBound" : 6005,
+      "cardinality-bound" : 6005,
       "checkSort" : false,
       "effective-collation": [
         {

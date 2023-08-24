@@ -169,4 +169,29 @@ bool TypeUtilities::types_equivalent(const FieldType & lhs, const FieldType & rh
      return false;
  }
 
+string TypeUtilities::getJSONTypeString(const FieldType &type_id) {
+    switch(type_id) {
+        case FieldType::BOOL:
+        case FieldType::SECURE_BOOL:
+            return "BOOLEAN";
+        case FieldType::INT:
+        case FieldType::SECURE_INT:
+            return "INTEGER";
+        case FieldType::LONG:
+        case FieldType::SECURE_LONG:
+            return "LONG";
+        case FieldType::FLOAT:
+        case FieldType::SECURE_FLOAT:
+            return "FLOAT";
+        case FieldType::STRING:
+        case FieldType::SECURE_STRING:
+            return "CHAR";
+        case FieldType::DATE:
+            return "DATE";
+        default:
+            return "INVALID";
+
+    }
+}
+
 

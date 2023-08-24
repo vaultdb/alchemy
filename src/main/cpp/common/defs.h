@@ -94,6 +94,7 @@ namespace vaultdb {
         SECURE_SQL_INPUT,
         TABLE_INPUT,
         CSV_INPUT,
+        MERGE_INPUT,
         FILTER,
         PROJECT,
         NESTED_LOOP_JOIN,

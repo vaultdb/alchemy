@@ -257,7 +257,7 @@
       "id": "10",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "nested-loop-aggregate",
-      "cardBound" : 7,
+      "cardinality-bound" : 7,
       "group": [
         0
       ],

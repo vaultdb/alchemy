@@ -2,15 +2,9 @@
   "rels": [
     {
       "id": "0",
+      "outputFields": "c_custkey (#0), c_nationkey (#1)",
       "relOp": "LogicalValues",
-      "outputFields": "n_name (#0), c_custkey (#1), c_nationkey (#2)",
       "type": [
-        {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 25,
-          "name": "n_name"
-        },
         {
           "type": "INTEGER",
           "nullable": false,
@@ -47,9 +41,10 @@
     {
       "id": "2",
       "relOp": "LogicalJoin",
+      "outputFields": "c_custkey (#0), c_nationkey (#1), o_orderkey (#2), o_custkey (#3)",
       "joinOn" : "c_custkey = o_custkey",
-      "outputFields": "n_name (#0), c_custkey (#1), c_nationkey (#2), o_orderkey (#3), o_custkey (#4)",
-      "operator-algorithm" : "nested-loop-join",
+      "operator-algorithm": "nested-loop-join",
+      "foreignKey": 1,
       "condition": {
         "op": {
           "name": "=",
@@ -58,17 +53,16 @@
         },
         "operands": [
           {
-            "input": 1,
-            "name": "$1"
+            "input": 0,
+            "name": "$0"
           },
           {
-            "input": 4,
-            "name": "$4"
+            "input": 3,
+            "name": "$3"
           }
         ]
       },
       "joinType": "inner",
-      "foreignKey": 1,
       "inputs": [
         "0",
         "1"
@@ -76,32 +70,8 @@
     },
     {
       "id": "3",
-      "relOp": "LogicalProject",
-      "outputFields": "n_name (#0), c_nationkey (#1), o_orderkey (#2)",
-      "fields": [
-        "n_name",
-        "c_nationkey",
-        "o_orderkey"
-      ],
-      "exprs": [
-        {
-          "input": 0,
-          "name": "$0"
-        },
-        {
-          "input": 2,
-          "name": "$2"
-        },
-        {
-          "input": 3,
-          "name": "$3"
-        }
-      ]
-    },
-    {
-      "id": "4",
       "relOp": "LogicalValues",
-      "outputFields": "l_orderkey (#0), l_suppkey (#1), revenue (#2)",
+      "outputFields": "l_orderkey (#0), l_suppkey (#1), l_extendedprice (#2), l_discount (#3)",
       "type": [
         {
           "type": "INTEGER",
@@ -116,20 +86,25 @@
         {
           "type": "DECIMAL",
           "nullable": true,
-          "precision": 19,
+          "precision": 0,
           "scale": 0,
-          "name": "revenue"
+          "name": "l_extendedprice"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 0,
+          "scale": 0,
+          "name": "l_discount"
         }
       ],
       "tuples": [],
       "inputs": []
     },
     {
-      "id": "5",
+      "id": "4",
       "relOp": "LogicalJoin",
-      "joinOn" : "o_orderkey = l_orderkey",
-      "outputFields": "n_name (#0), c_nationkey (#1), o_orderkey (#2), l_orderkey (#3), l_suppkey (#4), revenue (#5)",
-      "operator-algorithm" : "nested-loop-join",
+      "outputFields": "c_custkey (#0), c_nationkey (#1), o_orderkey (#2), o_custkey (#3), l_orderkey (#4), l_suppkey (#5), l_extendedprice (#6), l_discount (#7)",
       "condition": {
         "op": {
           "name": "=",
@@ -138,55 +113,27 @@
         },
         "operands": [
           {
-            "input": 2,
-            "name": "$2"
+            "input": 4,
+            "name": "$4"
           },
           {
-            "input": 3,
-            "name": "$3"
+            "input": 2,
+            "name": "$2"
           }
         ]
       },
       "joinType": "inner",
+      "operator-algorithm": "nested-loop-join",
       "foreignKey": 1,
       "inputs": [
-        "3",
-        "4"
+        "2",
+        "3"
       ]
     },
     {
-      "id": "6",
-      "relOp": "LogicalProject",
-      "outputFields": "n_name (#0), c_nationkey (#1), l_suppkey (#2), revenue (#3)",
-      "fields": [
-        "n_name",
-        "c_nationkey",
-        "l_suppkey",
-        "revenue"
-      ],
-      "exprs": [
-        {
-          "input": 0,
-          "name": "$0"
-        },
-        {
-          "input": 1,
-          "name": "$1"
-        },
-        {
-          "input": 4,
-          "name": "$4"
-        },
-        {
-          "input": 5,
-          "name": "$5"
-        }
-      ]
-    },
-    {
-      "id": "7",
-      "outputFields": "s_suppkey (#0), s_nationkey (#1)",
+      "id": "5",
       "relOp": "LogicalValues",
+        "outputFields": "s_suppkey (#0), s_nationkey (#1), n_name (#2)",
       "type": [
         {
           "type": "INTEGER",
@@ -197,17 +144,20 @@
           "type": "INTEGER",
           "nullable": true,
           "name": "s_nationkey"
+        },
+        {
+          "type": "CHAR",
+          "precision": 25,
+          "name": "n_name"
         }
       ],
       "tuples": [],
       "inputs": []
     },
     {
-      "id": "8",
+      "id": "6",
       "relOp": "LogicalJoin",
-      "outputFields": "n_name (#0), c_nationkey (#1), l_suppkey (#2), revenue (#3), s_suppkey (#4), s_nationkey (#5)",
-      "joinOn" : "c_nationkey = s_nationkey AND l_suppkey = s_suppkey",
-      "operator-algorithm" : "nested-loop-join",
+      "outputFields": "c_custkey (#0), c_nationkey (#1), o_orderkey (#2), o_custkey (#3), l_orderkey (#4), l_suppkey (#5), l_extendedprice (#6), l_discount (#7), s_suppkey (#8), s_nationkey (#9), n_name (#10)",
       "condition": {
         "op": {
           "name": "AND",
@@ -223,12 +173,12 @@
             },
             "operands": [
               {
-                "input": 1,
-                "name": "$1"
-              },
-              {
                 "input": 5,
                 "name": "$5"
+              },
+              {
+                "input": 8,
+                "name": "$8"
               }
             ]
           },
@@ -240,48 +190,76 @@
             },
             "operands": [
               {
-                "input": 2,
-                "name": "$2"
+                "input": 1,
+                "name": "$1"
               },
               {
-                "input": 4,
-                "name": "$4"
+                "input": 9,
+                "name": "$9"
               }
             ]
           }
         ]
       },
       "joinType": "inner",
+      "operator-algorithm": "nested-loop-join",
       "foreignKey": 0,
       "inputs": [
-        "6",
-        "7"
+        "4",
+        "5"
       ]
     },
     {
-      "id": "9",
+      "id": "7",
       "relOp": "LogicalProject",
-      "outputFields": "n_name (#0), revenue (#1)",
+      "input_fields": "c_custkey (#0), c_nationkey (#1), o_orderkey (#2), o_custkey (#3), l_orderkey (#4), l_suppkey (#5), l_extendedprice (#6), l_discount (#7), s_suppkey (#8), s_nationkey (#9), n_name (#10)",
       "fields": [
         "n_name",
         "revenue"
       ],
       "exprs": [
         {
-          "input": 0,
-          "name": "$0"
+          "input": 10,
+          "name": "n_name"
         },
         {
-          "input": 3,
-          "name": "$3"
+          "op": {
+            "name": "*",
+            "kind": "TIMES",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 6,
+              "name": "l_extendedprice"
+            },
+            {
+              "op": {
+                "name": "-",
+                "kind": "MINUS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "literal": 1.0,
+                  "type": {
+                    "type": "FLOAT",
+                    "nullable": false
+                  }
+                },
+                {
+                  "input": 7,
+                  "name": "l_discount"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     {
-      "id": "10",
+      "id": "8",
       "relOp": "LogicalAggregate",
-      "operator-algorithm" : "nested-loop-aggregate",
-      "cardinality-bound" : 5,
       "group": [
         0
       ],
@@ -307,7 +285,7 @@
       ]
     },
     {
-      "id": "11",
+      "id": "9",
       "relOp": "LogicalSort",
       "collation": [
         {

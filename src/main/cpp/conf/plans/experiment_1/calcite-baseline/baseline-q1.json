@@ -3,48 +3,53 @@
     {
       "id": "0",
       "relOp": "LogicalValues",
-      "outputFields": "l_returnflag (#0), l_linestatus (#1), l_quantity (#2), l_extendedprice (#3), discount (#4), charge (#5), l_discount (#6)",
       "type": [
         {
           "type": "CHAR",
+          "nullable": true,
           "precision": 1,
           "name": "l_returnflag"
         },
         {
           "type": "CHAR",
+          "nullable": true,
           "precision": 1,
           "name": "l_linestatus"
         },
         {
           "type": "DECIMAL",
+          "nullable": true,
+          "precision": 0,
+          "scale": 0,
           "name": "l_quantity"
         },
         {
           "type": "DECIMAL",
+          "nullable": true,
+          "precision": 0,
+          "scale": 0,
           "name": "l_extendedprice"
         },
         {
           "type": "DECIMAL",
-          "name": "discount"
+          "nullable": true,
+          "precision": 11,
+          "scale": 0,
+          "name": "$f4"
         },
         {
           "type": "DECIMAL",
-          "name": "charge"
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "$f5"
         },
         {
           "type": "DECIMAL",
+          "nullable": true,
+          "precision": 0,
+          "scale": 0,
           "name": "l_discount"
-        }
-      ],
-      "sql": "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice, l_extendedprice * (1 - l_discount) AS discount, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, l_discount, NOT l_shipdate <= DATE '1998-08-03' AS dummy_tag FROM lineitem ORDER BY  l_returnflag, l_linestatus, l_orderkey, l_linenumber",
-      "collation":  [
-        {
-          "field": 0,
-          "direction": "ASCENDING"
-        },
-        {
-          "field": 1,
-          "direction": "ASCENDING"
         }
       ],
       "tuples": [],
@@ -53,9 +58,6 @@
     {
       "id": "1",
       "relOp": "LogicalAggregate",
-      "outputFields": "l_returnflag (#0),  l_linestatus (#1),  sum_qty (#2), sum_base_price (#3), sum_disc_price (#4),  sum_charge (#5), avg_qty (#6), avg_price (#7), avg_disc (#8), count_order (#9)",
-      "operator-algorithm" : "sort-merge-aggregate",
-      "cardinality-bound" : 6005,
       "group": [
         0,
         1
@@ -142,7 +144,7 @@
           "type": {
             "type": "DECIMAL",
             "nullable": true,
-            "precision": 19,
+            "precision": 0,
             "scale": 0
           },
           "distinct": false,
@@ -160,7 +162,7 @@
           "type": {
             "type": "DECIMAL",
             "nullable": true,
-            "precision": 19,
+            "precision": 0,
             "scale": 0
           },
           "distinct": false,
@@ -178,7 +180,7 @@
           "type": {
             "type": "DECIMAL",
             "nullable": true,
-            "precision": 19,
+            "precision": 0,
             "scale": 0
           },
           "distinct": false,
@@ -200,6 +202,22 @@
           "distinct": false,
           "operands": [],
           "name": "count_order"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
         }
       ]
     }

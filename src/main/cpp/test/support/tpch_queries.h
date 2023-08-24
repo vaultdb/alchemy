@@ -83,31 +83,12 @@ namespace vaultdb {
                  " FROM lineitem\n"
                  " GROUP BY l_orderkey\n"
                  " HAVING SUM(l_quantity) > 7) \n"
-                 " select c.c_name,\n"
-                 "    c.c_custkey,\n"
-                 "   o.o_orderkey,\n"
-                 "   o.o_orderdate,\n"
-                 "   o.o_totalprice,\n"
-                 "   sum(l.l_quantity) sum_qty\n"
-                 " from\n"
-                 "   customer c,\n"
-                 "   orders o,\n"
-                 "   lineitem l\n"
-                 " where\n"
-                 "   o.o_orderkey in (\n"
-                 "     select * FROM high_quantity)\n"
-                 "   and c.c_custkey = o.o_custkey\n"
-                 "   and o.o_orderkey = l.l_orderkey\n"
-                 " group by\n"
-                 "   c.c_name,\n"
-                 "   c.c_custkey,\n"
-                 "   o.o_orderkey,\n"
-                 "   o.o_orderdate,\n"
-                 "   o.o_totalprice\n"
-                 " order by\n"
-                 "   o.o_totalprice desc,\n"
-                 "   o.o_orderdate\n"
-                 " limit 100\n"}
+                 " SELECT c.c_name, c.c_custkey,  o.o_orderkey, o.o_orderdate,  o.o_totalprice, SUM(l.l_quantity) sum_qty\n"
+                 " FROM customer c, orders o,   lineitem l\n"
+                 " WHERE o.o_orderkey IN (SELECT * FROM high_quantity) AND c.c_custkey = o.o_custkey  AND o.o_orderkey = l.l_orderkey\n"
+                 " GROUP BY  c.c_name, c.c_custkey, o.o_orderkey, o.o_orderdate,  o.o_totalprice\n"
+                 " ORDER BY  o.o_totalprice DESC, o.o_orderdate "
+                 " LIMIT 100\n"}
     };
 
 
@@ -292,27 +273,15 @@ namespace vaultdb {
                 " order by\n"
                 "  n_name,\n"
                 "  o_orderyear desc\n"},
-            {18, "WITH high_quantity AS (\n"
-                 " SELECT l_orderkey\n"
-                 " FROM ((SELECT * FROM  lineitem  WHERE l_alice_store ORDER BY l_quantity, l_orderkey LIMIT $LIMIT) "
-                 "UNION ALL (SELECT * FROM  lineitem  WHERE NOT l_alice_store ORDER BY l_quantity, l_orderkey LIMIT "
-                 "$LIMIT)) l\n"
-                 " GROUP BY l_orderkey\n"
-                 " HAVING SUM(l_quantity) > 7) \n" // was 300 (validation) or 312...315 (test) but these always produce empty set with smaller workload
-                 " SELECT c.c_name, c.c_custkey, o.o_orderkey, o.o_orderdate,  o.o_totalprice, SUM(l.l_quantity) sum_qty\n"
+            {18, "WITH sum_qtys AS (\n"
+                 " SELECT l_orderkey, SUM(l_quantity) sum_qty FROM lineitem GROUP BY l_orderkey ORDER BY l_orderkey LIMIT $LIMIT), \n"
+                 "sum_qtys_filtered AS (SELECT * FROM sum_qtys WHERE sum_qty > 7) \n" // was 300 (validation) or 312...315 (test) but these always produce empty set with smaller workload
+                 " SELECT  c.c_name, c.c_custkey, o.o_orderkey, o.o_orderdate,  o.o_totalprice, sum_qty\n"
                  " FROM  ((SELECT * FROM  customer  WHERE c_alice_store ORDER BY c_custkey LIMIT $LIMIT) UNION ALL "
                  "(SELECT * FROM  customer  WHERE NOT c_alice_store ORDER BY c_custkey LIMIT $LIMIT))  c,\n"
-                 "    ((SELECT * FROM  orders  WHERE o_alice_store ORDER BY o_orderkey LIMIT $LIMIT) UNION ALL (SELECT"
-                 " * FROM  orders  WHERE NOT o_alice_store ORDER BY o_orderkey LIMIT $LIMIT)) o,\n"
-                 "    ((SELECT * FROM  lineitem  WHERE l_alice_store ORDER BY l_quantity, l_orderkey LIMIT $LIMIT) "
-                 "UNION ALL (SELECT * FROM  lineitem  WHERE NOT l_alice_store ORDER BY l_quantity, l_orderkey LIMIT "
-                 "$LIMIT)) l\n"
-                 " WHERE \n"
-                 "   o.o_orderkey in (\n"
-                 "     SELECT * FROM high_quantity)\n"
-                 "   AND c.c_custkey = o.o_custkey\n"
-                 "   AND o.o_orderkey = l.l_orderkey\n"
-                 " GROUP BY  c.c_name,  c.c_custkey, o.o_orderkey, o.o_orderdate, o.o_totalprice\n"
+                 "    (SELECT * FROM  orders  ORDER BY o_orderkey LIMIT $LIMIT) o,\n" // MergeInput handling combining alice and bob's rows
+                 "    sum_qtys_filtered l \n"
+                 "  WHERE c_custkey = o_custkey AND l_orderkey = o_orderkey "
                  " ORDER BY  o.o_totalprice DESC, o.o_orderdate \n"
                  " LIMIT 100\n"}
     };
@@ -386,8 +355,7 @@ namespace vaultdb {
                  " GROUP BY l_orderkey\n"
                  " HAVING SUM(l_quantity) > 7) \n" // was 300 (validation) or 312...315 (test) but these always produce empty set with smaller workload
                  " SELECT c.c_name, c.c_custkey, o.o_orderkey, o.o_orderdate,  o.o_totalprice, SUM(l.l_quantity) sum_qty FROM  (SELECT * FROM  customer  ORDER BY c_custkey LIMIT $LIMIT)  c,\n"
-                 " (SELECT * FROM  orders   ORDER BY o_orderkey LIMIT $LIMIT) o,\n"
-                 " (SELECT * FROM  lineitem  ORDER BY l_quantity, l_orderkey LIMIT $LIMIT) l\n"
+                 " (SELECT * FROM  orders   ORDER BY o_orderkey LIMIT $LIMIT) o, \n"
                  " WHERE   o.o_orderkey in (\n"
                  "     SELECT * FROM high_quantity)\n"
                  "   AND c.c_custkey = o.o_custkey\n"
@@ -506,4 +474,4 @@ namespace vaultdb {
 
 }
 
-#endif // TESTING_DEFS_H
+#endif //  _TPCH_QUERIES_H

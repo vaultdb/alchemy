@@ -25,7 +25,7 @@
       "id": "1",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "auto",
-      "cardBound" : 6005,
+      "cardinality-bound" : 6005,
       "group": [
         0
       ],
@@ -344,7 +344,7 @@
       "id": "13",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "auto",
-      "cardBound" : 6005,
+      "cardinality-bound" : 6005,
       "group": [
         0,
         1,

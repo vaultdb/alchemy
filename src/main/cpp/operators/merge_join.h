@@ -40,6 +40,17 @@ namespace  vaultdb {
 
             // just use lhs sort order for now, can use one or sides' since they are equivalent for equi-join
             this->sort_definition_ = this->getChild()->getSortOrder();
+            auto lhs = this->getChild(0);
+            auto rhs = this->getChild(1);
+
+            // check sort compatibility
+            auto lhs_collation = lhs->getSortOrder();
+            auto rhs_collation = rhs->getSortOrder();
+            assert(lhs_collation.size() == rhs_collation.size());
+            for(int i = 0; i < lhs_collation.size(); ++i) {
+                assert(lhs_collation[i] == rhs_collation[i]);
+            }
+
         }
 
 

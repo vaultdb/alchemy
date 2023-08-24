@@ -118,8 +118,8 @@ namespace vaultdb {
             }
     }
 
-    static string printTable(const SecureTable *table, bool show_dummies=true);
-    static string printTable(const PlainTable *table, bool show_dummies=true);
+    static string printTable(const SecureTable *table, bool show_dummies=true, int tuple_limit = -1);
+    static string printTable(const PlainTable *table, bool show_dummies=true, int tuple_limit = -1);
 
     };
 }

@@ -3,7 +3,7 @@
     {
       "id": "0",
       "relOp": "LogicalValues",
-      "outputFields": "n_name (#0), c_custkey (#1), c_nationkey (#2)",
+      "outputFields": "c_custkey (#0), c_nationkey (#2)",
       "type": [
         {
           "type": "CHAR",
@@ -48,7 +48,7 @@
       "id": "2",
       "relOp": "LogicalJoin",
       "joinOn" : "c_custkey = o_custkey",
-      "outputFields": "n_name (#0), c_custkey (#1), c_nationkey (#2), o_orderkey (#3), o_custkey (#4)",
+      "outputFields": " c_custkey (#0), c_nationkey (#1), o_orderkey (#2), o_custkey (#3)",
       "operator-algorithm" : "auto",
       "condition": {
         "op": {
@@ -58,12 +58,12 @@
         },
         "operands": [
           {
-            "input": 1,
-            "name": "$1"
+            "input": 0,
+            "name": "c_custkey"
           },
           {
-            "input": 4,
-            "name": "$4"
+            "input": 3,
+            "name": "o_custkey"
           }
         ]
       },
@@ -77,24 +77,19 @@
     {
       "id": "3",
       "relOp": "LogicalProject",
-      "outputFields": "n_name (#0), c_nationkey (#1), o_orderkey (#2)",
+      "outputFields": "c_nationkey (#1), o_orderkey (#2)",
       "fields": [
-        "n_name",
         "c_nationkey",
         "o_orderkey"
       ],
       "exprs": [
         {
-          "input": 0,
-          "name": "$0"
+          "input": 1,
+          "name": "c_nationkey"
         },
         {
           "input": 2,
-          "name": "$2"
-        },
-        {
-          "input": 3,
-          "name": "$3"
+          "name": "o_orderkey"
         }
       ]
     },
@@ -128,7 +123,7 @@
       "id": "5",
       "relOp": "LogicalJoin",
       "joinOn" : "o_orderkey = l_orderkey",
-      "outputFields": "n_name (#0), c_nationkey (#1), o_orderkey (#2), l_orderkey (#3), l_suppkey (#4), revenue (#5)",
+      "outputFields": "c_nationkey (#0), o_orderkey (#1), l_orderkey (#2), l_suppkey (#3), revenue (#4)",
       "operator-algorithm" : "auto",
       "condition": {
         "op": {
@@ -138,12 +133,12 @@
         },
         "operands": [
           {
-            "input": 2,
-            "name": "$2"
+            "input": 1,
+            "name": "$1"
           },
           {
-            "input": 3,
-            "name": "$3"
+            "input": 2,
+            "name": "$2"
           }
         ]
       },
@@ -157,9 +152,8 @@
     {
       "id": "6",
       "relOp": "LogicalProject",
-      "outputFields": "n_name (#0), c_nationkey (#1), l_suppkey (#2), revenue (#3)",
+      "outputFields": "c_nationkey (#0), l_suppkey (#1), revenue (#2)",
       "fields": [
-        "n_name",
         "c_nationkey",
         "l_suppkey",
         "revenue"
@@ -170,22 +164,18 @@
           "name": "$0"
         },
         {
-          "input": 1,
-          "name": "$1"
+          "input": 3,
+          "name": "$3"
         },
         {
           "input": 4,
           "name": "$4"
-        },
-        {
-          "input": 5,
-          "name": "$5"
         }
       ]
     },
     {
       "id": "7",
-      "outputFields": "s_suppkey (#0), s_nationkey (#1)",
+      "outputFields": "s_suppkey (#0), s_nationkey (#1), n_name (#2)",
       "relOp": "LogicalValues",
       "type": [
         {
@@ -197,6 +187,11 @@
           "type": "INTEGER",
           "nullable": true,
           "name": "s_nationkey"
+        },
+        {
+          "type": "CHAR",
+          "precision": 25,
+          "name": "n_name"
         }
       ],
       "tuples": [],
@@ -205,7 +200,7 @@
     {
       "id": "8",
       "relOp": "LogicalJoin",
-      "outputFields": "n_name (#0), c_nationkey (#1), l_suppkey (#2), revenue (#3), s_suppkey (#4), s_nationkey (#5)",
+      "outputFields": "c_nationkey (#0), l_suppkey (#1), revenue (#2), s_suppkey (#3), s_nationkey (#4), n_name (#5)",
       "joinOn" : "c_nationkey = s_nationkey AND l_suppkey = s_suppkey",
       "operator-algorithm" : "auto",
       "condition": {
@@ -223,12 +218,12 @@
             },
             "operands": [
               {
-                "input": 1,
-                "name": "$1"
+                "input": 0,
+                "name": "c_nationkey"
               },
               {
-                "input": 5,
-                "name": "$5"
+                "input": 4,
+                "name": "s_nationkey"
               }
             ]
           },
@@ -240,12 +235,12 @@
             },
             "operands": [
               {
-                "input": 2,
-                "name": "$2"
+                "input": 1,
+                "name": "l_suppkey"
               },
               {
-                "input": 4,
-                "name": "$4"
+                "input": 3,
+                "name": "s_suppkey"
               }
             ]
           }
@@ -268,12 +263,12 @@
       ],
       "exprs": [
         {
-          "input": 0,
-          "name": "$0"
+          "input": 5,
+          "name": "n_name"
         },
         {
-          "input": 3,
-          "name": "$3"
+          "input": 2,
+          "name": "revenue"
         }
       ]
     },
@@ -281,7 +276,7 @@
       "id": "10",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "auto",
-      "cardBound" : 5,
+      "cardinality-bound" : 5,
       "group": [
         0
       ],

@@ -11,6 +11,7 @@
 #include <operators/nested_loop_aggregate.h>
 #include <operators/group_by_aggregate.h>
 #include <operators/sort.h>
+#include <operators/merge_input.h>
 
 
 // parse this from 1) list of SQL statements, and 2) Apache Calcite JSON for secure plan
@@ -94,7 +95,7 @@ namespace vaultdb {
         Operator<B> *parseSeqScan(const int &operator_id, const boost::property_tree::ptree &seq_scan_tree);
 
         Operator<B> *parseShrinkwrap(const int &operator_id, const boost::property_tree::ptree &pt);
-        void parseLocalScan(const int & operator_id, const boost::property_tree::ptree &local_scan_tree);
+        Operator<B> *parseLocalScan(const int & operator_id, const boost::property_tree::ptree &local_scan_tree);
 
         void calculateAutoAggregate();
 
@@ -114,12 +115,20 @@ namespace vaultdb {
         createInputOperator(const string &sql, const SortDefinition &collation, const emp::Bit &has_dummy_tag,
                             const bool &plain_has_dummy_tag);
 
-        Operator<bool> *createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party,
-                                            const bool &has_dummy_tag, const bool &plain_has_dummy_tag);
+        Operator<bool> *createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party, const bool &has_dummy_tag, const bool &plain_has_dummy_tag);
 
-        Operator<emp::Bit> *
-        createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party,
-                            const emp::Bit &has_dummy_tag, const bool &plain_has_dummy_tag);
+        Operator<emp::Bit> *createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party, const emp::Bit &has_dummy_tag, const bool &plain_has_dummy_tag);
+
+        // placeholder for template specialization
+        Operator<Bit> *createMergeInput(const string &sql, const bool &dummy_tag, const size_t &input_tuple_cnt, const SortDefinition &def, Bit & placeholder) {
+            return new MergeInput(db_name_, sql, dummy_tag, input_tuple_cnt, def);
+        }
+
+
+        Operator<bool> *createMergeInput(const string &sql, const bool &dummy_tag, const size_t &input_tuple_cnt, const SortDefinition &def, bool & placeholder) {
+            // this operator is N/A in plaintext mode
+            throw;
+        }
 
 
         // utils
@@ -154,6 +163,7 @@ namespace vaultdb {
 
 
     };
+
 
 }
 
