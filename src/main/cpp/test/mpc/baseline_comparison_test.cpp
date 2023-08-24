@@ -82,7 +82,9 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
     PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();	
 
-    //SecureTable *result = root->run();
+    cout << "Parsed plan: " << root->printTree() << endl;
+
+    SecureTable *result = root->run();
 
 	Logger* log = get_log();	
     log->write(root->printTree(), Level::DEBUG);
@@ -93,7 +95,7 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
 	log->write("Observed gate count: " + std::to_string(root->planGateCount()), Level::INFO);
 	log->write("Runtime: " + std::to_string(root->planRuntime()), Level::INFO);
 
-    /*if(FLAGS_validation) {
+    if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
         DataUtilities::removeDummies(observed);
 
@@ -102,7 +104,7 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
 
         delete observed;
         delete expected;
-    }*/
+    }
 }
 
 void
@@ -126,7 +128,7 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
     PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-    //SecureTable *result = root->run(); 
+    SecureTable *result = root->run();
 
 	Logger* log = get_log();
 	log->write("Handcode : ", Level::DEBUG);
@@ -136,7 +138,7 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
 	log->write("Observed gate count: " + std::to_string(root->planGateCount()), Level::INFO);
 	log->write("Runtime: " + std::to_string(root->planRuntime()), Level::INFO);
 
-    /*if(FLAGS_validation) {
+    if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
         DataUtilities::removeDummies(observed);
 
@@ -145,7 +147,7 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
 
         delete observed;
         delete expected;
-    }*/
+    }
 }
 
 string
