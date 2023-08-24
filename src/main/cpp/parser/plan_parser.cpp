@@ -1446,65 +1446,27 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
 
         std::vector<int32_t> group_by_ordinals = nla->group_by_;
         SortDefinition child_sort = child->getSortOrder();
-<<<<<<< HEAD
-//        map<int32_t, std::set<int32_t>> functional_dependency = nla->functional_dependency_;
-
-        // TODO: push this up to GroupByAggregate (shared parent) level
-        if (!nla->sortCompatible(child_sort)) {
-            // insert sort
-            Sort<B> *sort_before_sma = new Sort<B>(child, nla->effective_sort_);
-            SortMergeAggregate<B> *sma = new SortMergeAggregate(sort_before_sma, group_by_ordinals, nla->aggregate_definitions_, nla->effective_sort_, nla->getCardinalityBound());
-            child->setParent(sort_before_sma);
-            sort_before_sma->setChild(child);
-            sort_before_sma->setParent(sma);
-            sma->setChild(sort_before_sma);
-            sma->updateCollation();
-            optimizeTree_operators_[sma->getOperatorId()] = sma;
-            operatorPool.push_back(sma);
-            recurseNode(sma);
-        } else {
-            SortMergeAggregate<B> *sma = new SortMergeAggregate(child, group_by_ordinals, nla->aggregate_definitions_, nla->effective_sort_, nla->getCardinalityBound());
-            child->setParent(sma);
-            sma->setChild(child);
-            sma->updateCollation();
-            optimizeTree_operators_[sma->getOperatorId()] = sma;
-            operatorPool.push_back(sma);
-            recurseNode(sma);
-        }
-    } else {
-        SortMergeAggregate<B> *sma = (SortMergeAggregate<B> *) agg;
-
-        SortDefinition child_sort = child->getSortOrder();
-        std::vector<int32_t> group_by_ordinals = sma->group_by_;
-//        map<int32_t, std::set<int32_t>> functional_dependency = sma->functional_dependency_;
-
-        if(!GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals, sma->effective_sort_)){ // JMR: do we need this here?  So we alread have the sort in SMA?
-            Sort<B> *sort_before_sma = new Sort<B>(child, sma->effective_sort_);
-            child->setParent(sort_before_sma);
-            sort_before_sma->setChild(child);
-            sort_before_sma->setParent(sma);
-=======
         SortDefinition effective_sort = nla->effective_sort_;
 
         // If Child's sort is not compatible with effective_sort, then insert sort before sma.
         if (child_sort != effective_sort) {
             Sort<B> *sort_before_sma = new Sort<B>(cloned_child, effective_sort);
-            GroupByAggregate<B> *sma = new GroupByAggregate(sort_before_sma, group_by_ordinals, nla->aggregate_definitions_, true);
+            GroupByAggregate<B> *sma = new SortMergeAggregate<B>(sort_before_sma, group_by_ordinals, nla->aggregate_definitions_, effective_sort, nla->getCardinalityBound());
             sma->setOperatorId(nla->getOperatorId());
             sma->updateCollation();
             optimizeTree_operators_[sma->getOperatorId()] = sma;
             recurseNode(sma);
         }
-        // If Child's sort is compatible with effective_sort, then just insert sma.
+            // If Child's sort is compatible with effective_sort, then just insert sma.
         else {
-            GroupByAggregate<B> *sma = new GroupByAggregate(cloned_child, group_by_ordinals, nla->aggregate_definitions_, true);
+            GroupByAggregate<B> *sma = new SortMergeAggregate<B>(cloned_child, group_by_ordinals, nla->aggregate_definitions_, effective_sort, nla->getCardinalityBound());
             sma->setOperatorId(nla->getOperatorId());
             sma->updateCollation();
             optimizeTree_operators_[sma->getOperatorId()] = sma;
             recurseNode(sma);
         }
     }
-    // SortMergeAggregate Case
+        // SortMergeAggregate Case
     else {
         GroupByAggregate<B> *sma = (GroupByAggregate<B> *) agg;
 
@@ -1515,10 +1477,9 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
         // If Child's sort is not compatible with effective_sort, then insert sort before sma.
         if(child_sort != effective_sort){
             Sort<B> *sort_before_sma = new Sort<B>(child, effective_sort);
->>>>>>> ab2f84ea195c6ed4f2f592768c4db40d0d60889d
             sma->setChild(sort_before_sma);
         }
-        // If Child's sort is compatible with effective_sort, then just insert sma.
+            // If Child's sort is compatible with effective_sort, then just insert sma.
         else
             sma->setChild(child);
         sma->updateCollation();
@@ -1526,24 +1487,12 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
         recurseNode(sma);
 
         // Make plan in case of nla.
-<<<<<<< HEAD
-        NestedLoopAggregate<B> *nla = new NestedLoopAggregate(child->clone(), sma->group_by_, sma->aggregate_definitions_, sma->effective_sort_, sma->getCardinalityBound());
-=======
-        NestedLoopAggregate<B> *nla = new NestedLoopAggregate(cloned_child, sma->group_by_, sma->aggregate_definitions_, sma->getJsonOutputCardinality());
->>>>>>> ab2f84ea195c6ed4f2f592768c4db40d0d60889d
+        NestedLoopAggregate<B> *nla = new NestedLoopAggregate(cloned_child, sma->group_by_, sma->aggregate_definitions_, sma->effective_sort_, sma->getCardinalityBound());
         nla->setOperatorId(sma->getOperatorId());
         nla->setChild(cloned_child);
         nla->updateCollation();
         optimizeTree_operators_[nla->getOperatorId()] = nla;
         recurseNode(nla);
-<<<<<<< HEAD
-        // In NestedLoop, child's sort is not remained
-        // JMR: added child sort deduction in NestedLoopAggregate::updateCollation()
-        // TODO : need to change this part of setting sort order.
-        //TODO : check if we need to add sort order to parent. Need Expected Sort.
-        // JMR: added effective_sort_ in parent class (GroupByAggregate<B>)
-=======
->>>>>>> ab2f84ea195c6ed4f2f592768c4db40d0d60889d
     }
 }
 
