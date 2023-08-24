@@ -12,7 +12,7 @@ set +x
 ./bin/merge_join_test --flagfile=flagfiles/plain.flags
 ./bin/sort_test --flagfile=flagfiles/plain.flags
 ./bin/scalar_aggregate_test --flagfile=flagfiles/plain.flags
-./bin/group_by_aggregate_test --flagfile=flagfiles/plain.flags
+./bin/sort_merge_aggregate_test --flagfile=flagfiles/plain.flags
 ./bin/nested_loop_aggregate_test --flagfile=flagfiles/plain.flags
 ./bin/secret_share_generator_test  --flagfile=flagfiles/plain.flags
 #this test depends on pilot testbed

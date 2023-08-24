@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/support/aggregate_id.h>
-#include <operators/group_by_aggregate.h>
+#include <operators/sort_merge_aggregate.h>
 #include <test/zk/zk_base_test.h>
 #include <operators/sort.h>
 #include <operators/zk_sql_input.h>
@@ -42,7 +42,7 @@ void ZkGroupByAggregateTest::runTest(const string &expected_sql,
     input->setSortOrder(order_by);
 
     std::vector<int32_t> groupByCols{0};
-    GroupByAggregate aggregate(input, groupByCols, aggregators);
+    SortMergeAggregate aggregate(input, groupByCols, aggregators);
 
     SecureTable * aggregated = aggregate.run();
     PlainTable *observed = aggregated->reveal();
@@ -71,7 +71,7 @@ void ZkGroupByAggregateTest::runDummiesTest(const string &expected_sql,
     input->setSortOrder(order_by);
 
     std::vector<int32_t> groupByCols{0};
-    GroupByAggregate aggregate(input, groupByCols, aggregators);
+    SortMergeAggregate aggregate(input, groupByCols, aggregators);
 
     PlainTable *observed = aggregate.run()->reveal();
 
@@ -202,7 +202,7 @@ TEST_F(ZkGroupByAggregateTest, test_tpch_q1_sums) {
     // sort alice + bob inputs after union
     Sort sort(input, sortDefinition);
 
-    GroupByAggregate aggregate(&sort, groupByCols, aggregators);
+    SortMergeAggregate aggregate(&sort, groupByCols, aggregators);
 
     PlainTable * observed = aggregate.run()->reveal(PUBLIC);
 
@@ -255,7 +255,7 @@ TEST_F(ZkGroupByAggregateTest, test_tpch_q1_avg_cnt) {
     // sort alice + bob inputs after union -- TODO: this is deprecated
     Sort sort(input, sortDefinition);
 
-    GroupByAggregate aggregate(&sort, groupByCols, aggregators);
+    SortMergeAggregate aggregate(&sort, groupByCols, aggregators);
 
     PlainTable * observed = aggregate.run()->reveal(PUBLIC);
 
@@ -317,7 +317,7 @@ TEST_F(ZkGroupByAggregateTest, tpch_q1) {
     // sort alice + bob inputs after union -- TODO: this is deprecated
     Sort sort(input, sort_def);
 
-    GroupByAggregate aggregate(&sort, groupByCols, aggregators);
+    SortMergeAggregate aggregate(&sort, groupByCols, aggregators);
 
     PlainTable *observed = aggregate.run()->reveal(PUBLIC);
 

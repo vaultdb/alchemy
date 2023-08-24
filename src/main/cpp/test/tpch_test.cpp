@@ -12,10 +12,7 @@ class TpcHTest : public PlainBaseTest {
 
 protected:
 
-
-
     // depends on truncate-tpch-set.sql
-    // different DBs for different tests to bump up the output size - don't want empty output!
     void runTest(const int &test_id, const string & plan_file, const SortDefinition &expected_sort);
 
     int input_tuple_limit_ = 0;

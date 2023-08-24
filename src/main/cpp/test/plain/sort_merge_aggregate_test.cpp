@@ -1,13 +1,13 @@
 #include <operators/sql_input.h>
 #include <operators/support/aggregate_id.h>
-#include <operators/group_by_aggregate.h>
+#include <operators/sort_merge_aggregate.h>
 #include "plain_base_test.h"
 
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
-class GroupByAggregateTest :  public PlainBaseTest  {
+class SortMergeAggregateTest :  public PlainBaseTest  {
 
 
 protected:
@@ -15,7 +15,7 @@ protected:
     void runDummiesTest(const std::string & expected_sql, const std::vector<ScalarAggregateDefinition> & aggregators) const;
 };
 
-void GroupByAggregateTest::runTest(const string &expected_sql,
+void SortMergeAggregateTest::runTest(const string &expected_sql,
                                    const vector<ScalarAggregateDefinition> &aggregators) const {
 
 
@@ -28,7 +28,7 @@ void GroupByAggregateTest::runTest(const string &expected_sql,
 
     auto input = new SqlInput(db_name_, query, false, sort_def);
 
-    GroupByAggregate aggregate(input, groupByCols, aggregators);
+    SortMergeAggregate aggregate(input, groupByCols, aggregators, SortDefinition());
 
     PlainTable *aggregated = aggregate.run();
 
@@ -42,7 +42,7 @@ void GroupByAggregateTest::runTest(const string &expected_sql,
 
 }
 
-void GroupByAggregateTest::runDummiesTest(const string &expected_sql,
+void SortMergeAggregateTest::runDummiesTest(const string &expected_sql,
                                           const vector<ScalarAggregateDefinition> &aggregators) const {
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
     PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 1);
@@ -53,7 +53,7 @@ void GroupByAggregateTest::runDummiesTest(const string &expected_sql,
 
     auto input = new SqlInput(db_name_, query, true, sort_def);
 
-    GroupByAggregate aggregate(input, group_bys, aggregators);
+    SortMergeAggregate aggregate(input, group_bys, aggregators);
 
     PlainTable *aggregated = aggregate.run();
 
@@ -66,14 +66,14 @@ void GroupByAggregateTest::runDummiesTest(const string &expected_sql,
 }
 
 
-TEST_F(GroupByAggregateTest, test_count) {
+TEST_F(SortMergeAggregateTest, test_count) {
     std::string expected_sql = "SELECT l_orderkey, COUNT(*)::BIGINT FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
 
     runTest(expected_sql, aggregators);
 }
 
-TEST_F(GroupByAggregateTest, test_count_dummies) {
+TEST_F(SortMergeAggregateTest, test_count_dummies) {
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
     std::string expected_sql = "SELECT l_orderkey,COUNT(*)::BIGINT cnt  FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
@@ -84,14 +84,14 @@ TEST_F(GroupByAggregateTest, test_count_dummies) {
 
 
 
-TEST_F(GroupByAggregateTest, test_sum) {
+TEST_F(SortMergeAggregateTest, test_sum) {
     std::string expected_sql = "SELECT l_orderkey, SUM(l_linenumber)::INT sum_lineno FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno")};
 
     runTest(expected_sql, aggregators);
 }
 
-TEST_F(GroupByAggregateTest, test_sum_dummies) {
+TEST_F(SortMergeAggregateTest, test_sum_dummies) {
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
     std::string expected_sql = "SELECT l_orderkey, SUM(l_linenumber)::INT sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno")};
@@ -100,7 +100,7 @@ TEST_F(GroupByAggregateTest, test_sum_dummies) {
 }
 
 
-TEST_F(GroupByAggregateTest, test_avg) {
+TEST_F(SortMergeAggregateTest, test_avg) {
     std::string expected_sql = "SELECT l_orderkey, FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::AVG, "avg_lineno")};
 
@@ -108,7 +108,7 @@ TEST_F(GroupByAggregateTest, test_avg) {
 
 }
 
-TEST_F(GroupByAggregateTest, test_avg_dummies) {
+TEST_F(SortMergeAggregateTest, test_avg_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
@@ -120,7 +120,7 @@ TEST_F(GroupByAggregateTest, test_avg_dummies) {
 }
 
 
-TEST_F(GroupByAggregateTest, test_min) {
+TEST_F(SortMergeAggregateTest, test_min) {
     std::string expected_sql = "SELECT l_orderkey, MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno")};
 
@@ -128,7 +128,7 @@ TEST_F(GroupByAggregateTest, test_min) {
 
 }
 
-TEST_F(GroupByAggregateTest, test_min_dummies) {
+TEST_F(SortMergeAggregateTest, test_min_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
@@ -140,7 +140,7 @@ TEST_F(GroupByAggregateTest, test_min_dummies) {
 }
 
 
-TEST_F(GroupByAggregateTest, test_max) {
+TEST_F(SortMergeAggregateTest, test_max) {
     std::string expected_sql = "SELECT l_orderkey, MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno")};
 
@@ -148,7 +148,7 @@ TEST_F(GroupByAggregateTest, test_max) {
 
 }
 
-TEST_F(GroupByAggregateTest, test_max_dummies) {
+TEST_F(SortMergeAggregateTest, test_max_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
@@ -161,7 +161,7 @@ TEST_F(GroupByAggregateTest, test_max_dummies) {
 }
 
 // brings in about 200 tuples
-TEST_F(GroupByAggregateTest, test_tpch_q1_sums) {
+TEST_F(SortMergeAggregateTest, test_tpch_q1_sums) {
 
 
     string input_sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1.0 - l_discount) AS disc_price, l_extendedprice * (1.0 - l_discount) * (1.0 + l_tax) AS charge, \n"
@@ -189,7 +189,7 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_sums) {
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
     auto input = new SqlInput(db_name_, input_sql, true, sort_def);
 
-    GroupByAggregate aggregate(input, groupByCols, aggregators);
+    SortMergeAggregate aggregate(input, groupByCols, aggregators);
 
     PlainTable *aggregated = aggregate.run();
 
@@ -204,7 +204,7 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_sums) {
 }
 
 
-TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
+TEST_F(SortMergeAggregateTest, test_tpch_q1_avg_cnt) {
 
     string input_sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
@@ -239,7 +239,7 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
     auto input = new SqlInput(db_name_, input_sql, true, sort_def);
 
-    GroupByAggregate aggregate(input, groupByCols, aggregators);
+    SortMergeAggregate aggregate(input, groupByCols, aggregators);
 
     PlainTable *aggregated = aggregate.run();
 
@@ -252,7 +252,7 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
 
 }
 
-TEST_F(GroupByAggregateTest, tpch_q1) {
+TEST_F(SortMergeAggregateTest, tpch_q1) {
 
     string input_rows = "SELECT * FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY l_orderkey, l_linenumber";
     string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
@@ -297,7 +297,7 @@ TEST_F(GroupByAggregateTest, tpch_q1) {
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
     auto input = new SqlInput(db_name_, input_query, true, sort_def);
 
-    GroupByAggregate aggregate(input, groupByCols, aggregators);
+    SortMergeAggregate aggregate(input, groupByCols, aggregators);
 
     PlainTable *aggregated = aggregate.run();
 

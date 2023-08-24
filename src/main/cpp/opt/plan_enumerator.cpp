@@ -2,7 +2,7 @@
 #include <util/data_utilities.h>
 #include <operators/keyed_join.h>
 #include <operators/sort_merge_join.h>
-#include <operators/group_by_aggregate.h>
+#include <operators/sort_merge_aggregate.h>
 #include <operators/nested_loop_aggregate.h>
 #include <operators/sort.h>
 #include <util/logger.h>
@@ -156,31 +156,30 @@ void PlanEnumerator::recurseAgg(SecureOperator *agg) {
         std::vector<int32_t> group_by_ordinals = nla->group_by_;
         // if sort not aligned, insert a sort op
         SortDefinition child_sort = child->getSortOrder();
-        if (!GroupByAggregate<Bit>::sortCompatible(child_sort, group_by_ordinals)) {
+        if (!nla->sortCompatible(child_sort)) {
             // insert sort
             SortDefinition child_sort;
             for (uint32_t idx: group_by_ordinals) {
                 child_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
             }
             Sort<Bit> *sort_before_sma = new Sort<Bit>(child->clone(), child_sort);
-            GroupByAggregate a(sort_before_sma->clone(), group_by_ordinals, nla->aggregate_definitions_,
-                               true);
+            SortMergeAggregate a(sort_before_sma->clone(), group_by_ordinals, nla->aggregate_definitions_, nla->effective_sort_);
             child->setParent(sort_before_sma);
             sort_before_sma->setChild(child);
             sort_before_sma->setParent(&a);
             a.setChild(sort_before_sma);
             recurseNode(&a);
         } else {
-            GroupByAggregate a(child->clone(), group_by_ordinals, nla->aggregate_definitions_, true);
+            SortMergeAggregate a(child->clone(), group_by_ordinals, nla->aggregate_definitions_, nla->effective_sort_, nla->getCardinalityBound());
             recurseNode(&a);
         }
         recurseNode(nla);
     } else {
-        GroupByAggregate<Bit> *sma = (GroupByAggregate<Bit> *) agg;
+        SortMergeAggregate<Bit> *sma = (SortMergeAggregate<Bit> *) agg;
 
         SortDefinition cur_sort = sma->getSortOrder();
         std::vector<int32_t> group_by_ordinals = sma->group_by_;
-        if (!GroupByAggregate<Bit>::sortCompatible(cur_sort, group_by_ordinals)) {
+        if (!((GroupByAggregate<Bit> *) agg)->sortCompatible(cur_sort)) {
             // insert sort
             SortDefinition sort_order;
             for (uint32_t idx: group_by_ordinals) {
@@ -195,8 +194,8 @@ void PlanEnumerator::recurseAgg(SecureOperator *agg) {
 
 
         recurseNode(sma);
-        NestedLoopAggregate a(child->clone(), sma->group_by_, sma->aggregate_definitions_,
-                              sma->getJsonOutputCardinality());
+        NestedLoopAggregate a(child->clone(), sma->group_by_, sma->aggregate_definitions_, sma->effective_sort_,
+                              sma->getCardinalityBound());
 
         // In NestedLoop, child's sort is not remained,
         // TODO : need to change this part of setting sort order.

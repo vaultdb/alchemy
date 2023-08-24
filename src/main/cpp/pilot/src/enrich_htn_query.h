@@ -2,7 +2,7 @@
 #define ENRICH_HTN_QUERY_H
 
 #include <query_table/query_table.h>
-#include <operators/group_by_aggregate.h>
+#include <operators/sort_merge_aggregate.h>
 #include <operators/filter.h>
 
 using namespace std;

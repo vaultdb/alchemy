@@ -5,7 +5,7 @@
 #include <query_table/secure_tuple.h>
 #include <test/support/zk_tpch_queries.h>
 #include <boost/algorithm/string/replace.hpp>
-#include <operators/group_by_aggregate.h>
+#include <operators/sort_merge_aggregate.h>
 #include <parser/plan_parser.h>
 #include <test/zk/zk_base_test.h>
 #include <ctime>

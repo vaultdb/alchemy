@@ -44,7 +44,7 @@ void PlanParserTest::runTest(const int &test_id, const std::string &expected_pla
 
 // sort not really needed in Q1 MPC pipeline, retaining it to demo the hand-off from one op to the next
 TEST_F(PlanParserTest, tpch_q01) {
-    std::string expected_plan = "#1: GroupByAggregate<bool> (group-by: (0, 1) aggs: (SUM($2) sum_qty, SUM($3) sum_base_price, SUM($4) sum_disc_price, SUM($5) sum_charge, AVG($2) avg_qty, AVG($3) avg_price, AVG($6) avg_disc, COUNT(*) count_order)) : (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 float sum_base_price, #4 float sum_disc_price, #5 float sum_charge, #6 float avg_qty, #7 float avg_price, #8 float avg_disc, #9 int64 count_order) order by: {<0, ASC> , <1, ASC> }\n"
+    std::string expected_plan = "#1: SortMergeAggregate<bool> (group-by: (0, 1) aggs: (SUM($2) sum_qty, SUM($3) sum_base_price, SUM($4) sum_disc_price, SUM($5) sum_charge, AVG($2) avg_qty, AVG($3) avg_price, AVG($6) avg_disc, COUNT(*) count_order)) : (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 float sum_base_price, #4 float sum_disc_price, #5 float sum_charge, #6 float avg_qty, #7 float avg_price, #8 float avg_disc, #9 int64 count_order) order by: {<0, ASC> , <1, ASC> }\n"
          "    #0: SqlInput<bool> (\"SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice, l_extendedprice * (1 - l_discount) AS discount, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, l_discount, NOT l_shipdate <= DATE '1998-08-03' AS dummy_tag FROM lineitem ORDER BY  l_returnflag, l_linestatus, l_orderkey, l_linenumber\", tuple_count=10) : (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float lineitem.l_quantity, #3 float lineitem.l_extendedprice, #4 float discount, #5 float charge, #6 float lineitem.l_discount) order by: {<0, ASC> , <1, ASC> }\n";
     runTest(1, expected_plan);
 }
@@ -52,22 +52,23 @@ TEST_F(PlanParserTest, tpch_q01) {
 
 TEST_F(PlanParserTest, tpch_q03) {
            string expected_plan =   "#9: Project<bool> ((<0, $0 int32>, <1, $3 float>, <2, $1 int64>, <3, $2 int32>)) : (#0 int32 orders.l_orderkey, #1 float revenue, #2 int64 orders.o_orderdate, #3 int32 orders.o_shippriority) order by: {<-1, ASC> , <1, DESC> , <2, ASC> }\n"
-         "    #8: Sort<bool> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority, #3 float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }\n"
-         "        #7: GroupByAggregate<bool> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority, #3 float revenue) order by: {}\n"
-         "            #6: Project<bool> ((<0, $0 int32>, <1, $1 int64>, <2, $2 int32>, <3, $4 float>)) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority, #3 float revenue) order by: {}\n"
-         "                #5: KeyedJoin<bool> ($0 == $3) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority, #3 int32 lineitem.l_orderkey, #4 float revenue) order by: {<3, ASC> }\n"
-         "                    #3: Project<bool> ((<0, $0 int32>, <1, $2 int64>, <2, $3 int32>)) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority) order by: {<0, ASC> }\n"
-         "                        #2: KeyedJoin<bool> ($1 == $4) : (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 orders.o_orderdate, #3 int32 orders.o_shippriority, #4 int32 customer.c_custkey) order by: {<0, ASC> }\n"
-         "                            #0: SqlInput<bool> (\"SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_orderkey, o_orderdate, o_shippriority\", tuple_count=10) : (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 orders.o_orderdate, #3 int32 orders.o_shippriority) order by: {<0, ASC> }\n"
-         "                            #1: SqlInput<bool> (\"SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD ' AS dummy_tag FROM customer ORDER BY c_custkey\", tuple_count=10) : (#0 int32 customer.c_custkey) order by: {<0, ASC> }\n"
-         "                    #4: SqlInput<bool> (\"SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey\", tuple_count=10) : (#0 int32 lineitem.l_orderkey, #1 float revenue) order by: {<0, ASC> }\n";
+                                    "    #8: Sort<bool> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority, #3 float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }\n"
+                                    "        #7: SortMergeAggregate<bool> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority, #3 float revenue) order by: {<0, ASC> }\n"
+                                    "            #-1: Sort<bool> ({<0, ASC> , <1, ASC> , <2, ASC> }) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority, #3 float revenue) order by: {<0, ASC> , <1, ASC> , <2, ASC> }\n"
+                                    "                #6: Project<bool> ((<0, $0 int32>, <1, $1 int64>, <2, $2 int32>, <3, $4 float>)) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority, #3 float revenue) order by: {}\n"
+                                    "                    #5: KeyedJoin<bool> ($0 == $3) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority, #3 int32 lineitem.l_orderkey, #4 float revenue) order by: {<3, ASC> }\n"
+                                    "                        #3: Project<bool> ((<0, $0 int32>, <1, $2 int64>, <2, $3 int32>)) : (#0 int32 orders.o_orderkey, #1 int64 orders.o_orderdate, #2 int32 orders.o_shippriority) order by: {<0, ASC> }\n"
+                                    "                            #2: KeyedJoin<bool> ($1 == $4) : (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 orders.o_orderdate, #3 int32 orders.o_shippriority, #4 int32 customer.c_custkey) order by: {<0, ASC> }\n"
+                                    "                                #0: SqlInput<bool> (\"SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_orderkey, o_orderdate, o_shippriority\", tuple_count=10) : (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 orders.o_orderdate, #3 int32 orders.o_shippriority) order by: {<0, ASC> }\n"
+                                    "                                #1: SqlInput<bool> (\"SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD ' AS dummy_tag FROM customer ORDER BY c_custkey\", tuple_count=10) : (#0 int32 customer.c_custkey) order by: {<0, ASC> }\n"
+                                    "                        #4: SqlInput<bool> (\"SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey\", tuple_count=10) : (#0 int32 lineitem.l_orderkey, #1 float revenue) order by: {<0, ASC> }\n";
     runTest(3, expected_plan);
 }
 
 
 TEST_F(PlanParserTest, tpch_q05) {
     std::string expected_plan =  "#11: Sort<bool> ({<1, DESC> }) : (#0 varchar(25) nation.n_name, #1 float revenue) order by: {<1, DESC> }\n"
-         "    #10: GroupByAggregate<bool> (group-by: (0) aggs: (SUM($1) revenue)) : (#0 varchar(25) nation.n_name, #1 float revenue) order by: {<0, ASC> }\n"
+         "    #10: SortMergeAggregate<bool> (group-by: (0) aggs: (SUM($1) revenue)) : (#0 varchar(25) nation.n_name, #1 float revenue) order by: {<0, ASC> }\n"
          "        #-1: Sort<bool> ({<0, ASC> }) : (#0 varchar(25) nation.n_name, #1 float revenue) order by: {<0, ASC> }\n"
          "            #9: Project<bool> ((<0, $5 varchar>, <1, $2 float>)) : (#0 varchar(25) nation.n_name, #1 float revenue) order by: {}\n"
          "                #8: KeyedJoin<bool> (($0 == $4) AND ($1 == $3)) : (#0 int32 customer.c_nationkey, #1 int32 lineitem.l_suppkey, #2 float revenue, #3 int32 supplier.s_suppkey, #4 int32 supplier.s_nationkey, #5 varchar(25) nation.n_name) order by: {}\n"
@@ -85,7 +86,7 @@ TEST_F(PlanParserTest, tpch_q05) {
 TEST_F(PlanParserTest, tpch_q08) {
 
     std::string expected_plan = "#11: Project<bool> ((<0, $0 int32>, <1, $2 / $1 float>)) : (#0 int32 orders.o_year, #1 float mkt_share) order by: {<0, ASC> }\n"
-         "    #10: GroupByAggregate<bool> (group-by: (0) aggs: (SUM($1) null, SUM($2) null)) : (#0 int32 orders.o_year, #1 float null, #2 float null) order by: {<0, ASC> }\n"
+         "    #10: SortMergeAggregate<bool> (group-by: (0) aggs: (SUM($1) null, SUM($2) null)) : (#0 int32 orders.o_year, #1 float null, #2 float null) order by: {<0, ASC> }\n"
          "        #-1: Sort<bool> ({<0, ASC> }) : (#0 int32 orders.o_year, #1 float volume, #2 float selected_volume) order by: {<0, ASC> }\n"
          "            #9: Project<bool> ((<0, $0 int32>, <1, $2 float>, <2, CASE($4, $2, 0.000000) float>)) : (#0 int32 orders.o_year, #1 float volume, #2 float selected_volume) order by: {}\n"
          "                #8: KeyedJoin<bool> ($3 == $1) : (#0 int32 orders.o_year, #1 int32 lineitem.l_suppkey, #2 float volume, #3 int32 supplier.s_suppkey, #4 bool nation_check) order by: {}\n"
@@ -104,7 +105,7 @@ TEST_F(PlanParserTest, tpch_q08) {
 TEST_F(PlanParserTest, tpch_q09) {
 
     std::string expected_plan = "#11: Sort<bool> ({<0, ASC> , <1, DESC> }) : (#0 varchar(25) nation.nation, #1 int32 amount, #2 float sum_profit) order by: {<0, ASC> , <1, DESC> }\n"
-         "    #10: GroupByAggregate<bool> (group-by: (0, 1) aggs: (SUM($2) sum_profit)) : (#0 varchar(25) nation.nation, #1 int32 amount, #2 float sum_profit) order by: {<0, ASC> , <1, ASC> }\n"
+         "    #10: SortMergeAggregate<bool> (group-by: (0, 1) aggs: (SUM($2) sum_profit)) : (#0 varchar(25) nation.nation, #1 int32 amount, #2 float sum_profit) order by: {<0, ASC> , <1, ASC> }\n"
          "        #-1: Sort<bool> ({<0, ASC> , <1, ASC> }) : (#0 varchar(25) nation.nation, #1 int32 amount, #2 float o_year) order by: {<0, ASC> , <1, ASC> }\n"
          "            #9: Project<bool> ((<0, $0 varchar>, <1, $3 int32>, <2, $2 float>)) : (#0 varchar(25) nation.nation, #1 int32 amount, #2 float o_year) order by: {}\n"
          "                #8: KeyedJoin<bool> ($1 == $4) : (#0 varchar(25) nation.nation, #1 int32 lineitem.l_orderkey, #2 float amount, #3 int32 o_year, #4 int32 orders.o_orderkey) order by: {<1, ASC> }\n"

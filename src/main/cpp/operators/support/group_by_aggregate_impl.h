@@ -57,7 +57,7 @@ namespace vaultdb {
 
         }
 
-        // run on first row alone for a GroupByAggregate
+        // run on first row alone for a SortMergeAggregate
          inline void initialize(const SecureTable *table) override {
             Bit dummy_tag = table->getDummyTag(0);
             running_count_.bits[0] = !dummy_tag;
@@ -101,7 +101,7 @@ namespace vaultdb {
 
         }
 
-        // run on first row alone for a GroupByAggregate
+        // run on first row alone for a SortMergeAggregate
         inline void initialize(const PlainTable *table) override {
             running_count_ = table->getDummyTag(0) ? 0L : 1L;
         }

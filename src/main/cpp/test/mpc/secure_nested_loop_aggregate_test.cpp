@@ -49,7 +49,7 @@ void SecureNestedLoopAggregateTest::runTest(const string &expected_sql,
 
 
     std::vector<int32_t> group_bys{0};
-    NestedLoopAggregate aggregate(input, group_bys, aggregators, FLAGS_cutoff);
+    NestedLoopAggregate aggregate(input, group_bys, aggregators, SortDefinition(), FLAGS_cutoff);
     auto aggregated= aggregate.run();
 
     size_t observed_gates = aggregate.getGateCount();
@@ -83,7 +83,7 @@ void SecureNestedLoopAggregateTest::runDummiesTest(const string &expected_sql,
     std::vector<int32_t> group_bys;
     group_bys.push_back(0);
 
-    NestedLoopAggregate aggregate(input, group_bys, aggregators, FLAGS_cutoff);
+    NestedLoopAggregate aggregate(input, group_bys, aggregators, SortDefinition(), FLAGS_cutoff);
     auto aggregated= aggregate.run();
 
     size_t observed_gates = aggregate.getGateCount();
@@ -241,7 +241,7 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_sums) {
     auto input = new SecureSqlInput(db_name_, sql, true, collation);
 
 
-    NestedLoopAggregate aggregate(input, group_bys, aggregators, 6);
+    NestedLoopAggregate aggregate(input, group_bys, aggregators, SortDefinition(), 6);
     auto aggregated = aggregate.run();
 
     size_t observed_gates = aggregate.getGateCount();
@@ -300,7 +300,7 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
     auto input = new SecureSqlInput(db_name_, sql, true, sort_def);
 
-    NestedLoopAggregate aggregate(input, group_bys, aggregators, 6);
+    NestedLoopAggregate aggregate(input, group_bys, aggregators,SortDefinition(),  6);
     auto aggregated = aggregate.run();
 
     size_t observed_gates = aggregate.getGateCount();
@@ -372,7 +372,7 @@ TEST_F(SecureNestedLoopAggregateTest, tpch_q1) {
 
 
     //auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
-    NestedLoopAggregate aggregate(input, group_bys, aggregators, 6);
+    NestedLoopAggregate aggregate(input, group_bys, aggregators, SortDefinition(), 6);
     auto aggregated = aggregate.run();
 
     size_t observed_gates = aggregate.getGateCount();
@@ -413,7 +413,7 @@ TEST_F(SecureNestedLoopAggregateTest, DISABLED_tpch_q5) {
 
     auto input = new SecureSqlInput(db_name_, input_rows, true, SortDefinition());
 
-	auto aggregate = new NestedLoopAggregate (input, group_bys, aggregators, 5);
+	auto aggregate = new NestedLoopAggregate (input, group_bys, aggregators, SortDefinition(), 5);
 
 	SortDefinition revenue_sort{ColumnSort(1, SortDirection::DESCENDING)};
 	Sort<Bit> sort(aggregate, revenue_sort);

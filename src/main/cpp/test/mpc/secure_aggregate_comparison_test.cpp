@@ -10,7 +10,7 @@
 #include <parser/plan_parser.h>
 #include <operators/secure_sql_input.h>
 #include <operators/sort.h>
-#include <operators/group_by_aggregate.h>
+#include <operators/sort_merge_aggregate.h>
 #include <operators/nested_loop_aggregate.h>
 
 
@@ -305,7 +305,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q1_SMA) {
     // sort alice + bob inputs after union
     // Sort sort(&input, sort_def);
 
-    GroupByAggregate aggregate(sort, groupByCols, aggregators);
+    SortMergeAggregate aggregate(sort, groupByCols, aggregators);
 
     auto aggregated = aggregate.run();
     if(FLAGS_validation) {
@@ -409,7 +409,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q5_SMA) {
     auto input = new SecureSqlInput(local_db_name, sql, true);
     auto sort = new Sort(input, sort_def);
 
-    auto aggregate = new GroupByAggregate(sort, group_bys, aggregators);
+    auto aggregate = new SortMergeAggregate(sort, group_bys, aggregators);
     auto aggregated = aggregate->run();
 
     if(FLAGS_validation) {
@@ -513,7 +513,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q9_SMA) {
     auto input = new SecureSqlInput(local_db_name, sql, false);
     auto sort = new Sort(input, sort_def);
 
-    auto aggregate = new GroupByAggregate(sort, group_bys, aggregators);
+    auto aggregate = new SortMergeAggregate(sort, group_bys, aggregators);
     auto aggregated = aggregate->run();
 
     if(FLAGS_validation) {
@@ -671,7 +671,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q3_SMA) {
     auto input = new SecureSqlInput(local_db_name, sql, true);
     auto sort = new Sort(input, sort_def);
 
-    auto aggregate = new GroupByAggregate(sort, group_bys, aggregators);
+    auto aggregate = new SortMergeAggregate(sort, group_bys, aggregators);
     auto aggregated = aggregate->run();
 
     if(FLAGS_validation) {

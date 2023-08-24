@@ -11,6 +11,8 @@
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
 #include <query_table/row_table.h>
+#include <operators/sort_merge_aggregate.h>
+
 
 
 
@@ -53,7 +55,7 @@ runRollup(int idx, string colName, int party, SecureTable  *data_cube, const str
             ScalarAggregateDefinition(6, AggregateId::SUM, "denominator_cnt")
     };
 
-    GroupByAggregate rollupStrata(sorted, groupByCols, aggregators );
+    SortMergeAggregate rollupStrata(sorted, groupByCols, aggregators);
 
 
 

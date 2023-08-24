@@ -8,7 +8,7 @@
 #include <data/psql_data_provider.h>
 #include <test/support/tpch_queries.h>
 #include <boost/algorithm/string/replace.hpp>
-#include <operators/group_by_aggregate.h>
+#include <operators/sort_merge_aggregate.h>
 #include <operators/nested_loop_aggregate.h>
 #include <parser/plan_parser.h>
 #include <util/field_utilities.h>

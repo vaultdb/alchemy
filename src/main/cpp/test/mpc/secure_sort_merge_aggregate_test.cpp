@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/support/aggregate_id.h>
-#include <operators/group_by_aggregate.h>
+#include <operators/sort_merge_aggregate.h>
 #include <test/mpc/emp_base_test.h>
 #include <operators/secure_sql_input.h>
 #include <operators/sort.h>
@@ -28,7 +28,7 @@ DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
 
-class SecureGroupByAggregateTest : public EmpBaseTest {
+class SecureSortMergeAggregateTest : public EmpBaseTest {
 
 protected:
     void runTest(const string & expectedResultsQuery, const vector<ScalarAggregateDefinition> & aggregators) const;
@@ -36,7 +36,7 @@ protected:
 
 };
 
-void SecureGroupByAggregateTest::runTest(const string &expected_sql,
+void SecureSortMergeAggregateTest::runTest(const string &expected_sql,
                                          const vector<ScalarAggregateDefinition> & aggregators) const {
 
     // produces 25 rows
@@ -49,7 +49,7 @@ void SecureGroupByAggregateTest::runTest(const string &expected_sql,
 
 
     std::vector<int32_t> group_bys{0};
-    GroupByAggregate aggregate(input, group_bys, aggregators);
+    SortMergeAggregate aggregate(input, group_bys, aggregators);
     auto aggregated = aggregate.run();
 
     size_t observed_gates = aggregate.getGateCount();
@@ -70,7 +70,7 @@ void SecureGroupByAggregateTest::runTest(const string &expected_sql,
     }
 }
 
-void SecureGroupByAggregateTest::runDummiesTest(const string &expected_sql,
+void SecureSortMergeAggregateTest::runDummiesTest(const string &expected_sql,
                                                 const vector<ScalarAggregateDefinition> &aggregators) const {
 
 
@@ -84,7 +84,7 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expected_sql,
 
     std::vector<int32_t> groupByCols{0};
 
-    GroupByAggregate aggregate(input, groupByCols, aggregators);
+    SortMergeAggregate aggregate(input, groupByCols, aggregators);
 
     auto aggregated = aggregate.run();
 
@@ -105,7 +105,7 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expected_sql,
 }
 
 
-TEST_F(SecureGroupByAggregateTest, test_count) {
+TEST_F(SecureSortMergeAggregateTest, test_count) {
     // set up expected output
     std::string expected_sql = "SELECT l_orderkey, COUNT(*) cnt FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " GROUP BY l_orderkey ORDER BY (1)";
 
@@ -114,7 +114,7 @@ TEST_F(SecureGroupByAggregateTest, test_count) {
 
 }
 
-TEST_F(SecureGroupByAggregateTest, test_count_dummies) {
+TEST_F(SecureSortMergeAggregateTest, test_count_dummies) {
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
     std::string expected_sql = "SELECT l_orderkey,COUNT(*) cnt  FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
@@ -126,7 +126,7 @@ TEST_F(SecureGroupByAggregateTest, test_count_dummies) {
 
 
 
-TEST_F(SecureGroupByAggregateTest, test_sum) {
+TEST_F(SecureSortMergeAggregateTest, test_sum) {
     // set up expected outputs
     std::string expected_sql = "SELECT l_orderkey, SUM(l_linenumber)::INTEGER sum_lineno FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " GROUP BY l_orderkey ORDER BY (1)";
 
@@ -136,7 +136,7 @@ TEST_F(SecureGroupByAggregateTest, test_sum) {
 
 }
 
-TEST_F(SecureGroupByAggregateTest, test_sum_dummies) {
+TEST_F(SecureSortMergeAggregateTest, test_sum_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
@@ -149,7 +149,7 @@ TEST_F(SecureGroupByAggregateTest, test_sum_dummies) {
 }
 
 
-TEST_F(SecureGroupByAggregateTest, test_avg) {
+TEST_F(SecureSortMergeAggregateTest, test_avg) {
     std::string expected_sql = "SELECT l_orderkey, FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators;
@@ -157,7 +157,7 @@ TEST_F(SecureGroupByAggregateTest, test_avg) {
     runTest(expected_sql, aggregators);
 }
 
-TEST_F(SecureGroupByAggregateTest, test_avg_dummies) {
+TEST_F(SecureSortMergeAggregateTest, test_avg_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
@@ -169,14 +169,14 @@ TEST_F(SecureGroupByAggregateTest, test_avg_dummies) {
 }
 
 
-TEST_F(SecureGroupByAggregateTest, test_min) {
+TEST_F(SecureSortMergeAggregateTest, test_min) {
     std::string expected_sql = "SELECT l_orderkey, MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno")};
     runTest(expected_sql, aggregators);
 }
 
 
-TEST_F(SecureGroupByAggregateTest, test_min_dummies) {
+TEST_F(SecureSortMergeAggregateTest, test_min_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
@@ -185,13 +185,13 @@ TEST_F(SecureGroupByAggregateTest, test_min_dummies) {
     runDummiesTest(expected_sql, aggregators);
 }
 
-TEST_F(SecureGroupByAggregateTest, test_max) {
+TEST_F(SecureSortMergeAggregateTest, test_max) {
     std::string expected_sql = "SELECT l_orderkey, MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno")};
     runTest(expected_sql, aggregators);
 }
 
-TEST_F(SecureGroupByAggregateTest, test_max_dummies) {
+TEST_F(SecureSortMergeAggregateTest, test_max_dummies) {
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
     std::string expected_sql = "SELECT l_orderkey, MAX(l_linenumber) max_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno")};
@@ -199,7 +199,7 @@ TEST_F(SecureGroupByAggregateTest, test_max_dummies) {
 }
 
  // brings in about 200 tuples
-TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
+TEST_F(SecureSortMergeAggregateTest, test_tpch_q1_sums) {
 
     // TODO: if <= 194, then we start to get floating point drift.
     string inputTuples = "SELECT * FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY l_orderkey, l_linenumber";
@@ -231,7 +231,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
     // sort alice + bob inputs after union
    // Sort sort(input, sort_def);
 
-    GroupByAggregate aggregate(input, group_bys, aggregators);
+    SortMergeAggregate aggregate(input, group_bys, aggregators);
     auto aggregated = aggregate.run();
 
     size_t observed_gates = aggregate.getGateCount();
@@ -251,7 +251,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
 
 
 
-TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
+TEST_F(SecureSortMergeAggregateTest, test_tpch_q1_avg_cnt) {
 
     string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
@@ -288,7 +288,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
     // sort alice + bob inputs after union
     //Sort sort(&input, sort_def);
 
-    GroupByAggregate aggregate(input, groupByCols, aggregators);
+    SortMergeAggregate aggregate(input, groupByCols, aggregators);
 
     auto aggregated = aggregate.run();
 
@@ -309,8 +309,8 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
 
 // Output:
 //Operator #-1 SecureSqlInput ran for 0.441767 seconds,  gate count: 76044 output cardinality: 110, row width=177
-//Operator #-1 GroupByAggregate ran for 1.91893 seconds,  gate count: 2419772 output cardinality: 110, row width=305
-TEST_F(SecureGroupByAggregateTest, tpch_q1) {
+//Operator #-1 SortMergeAggregate ran for 1.91893 seconds,  gate count: 2419772 output cardinality: 110, row width=305
+TEST_F(SecureSortMergeAggregateTest, tpch_q1) {
 
     string input_rows = "SELECT * FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + "  ORDER BY l_orderkey, l_linenumber";
     string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
@@ -357,7 +357,7 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
     // sort alice + bob inputs after union
     // Sort sort(&input, sort_def);
 
-    GroupByAggregate aggregate(input, groupByCols, aggregators);
+    SortMergeAggregate aggregate(input, groupByCols, aggregators);
 
     auto aggregated = aggregate.run();
 
@@ -375,7 +375,7 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
     }
 }
 
-TEST_F(SecureGroupByAggregateTest, DISABLED_tpch_q5) {
+TEST_F(SecureSortMergeAggregateTest, DISABLED_tpch_q5) {
 	string input_rows =	"SELECT\n"
 						"n_name,\n"
 						"l_extendedprice * (1 - l_discount) AS disc_price,\n"
@@ -415,7 +415,7 @@ TEST_F(SecureGroupByAggregateTest, DISABLED_tpch_q5) {
 
 	Sort<Bit> sort(input, sort_def);
 
-	GroupByAggregate aggregate(&sort, group_bys, aggregators);
+	SortMergeAggregate aggregate(&sort, group_bys, aggregators);
 
 	SortDefinition revenue_sort{ColumnSort(1, SortDirection::DESCENDING)};
 	Sort<Bit> sorter(&aggregate, revenue_sort);

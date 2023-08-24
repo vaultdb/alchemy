@@ -4,7 +4,7 @@
 
 #include "operators/basic_join.h"
 #include "operators/filter.h"
-#include "operators/group_by_aggregate.h"
+#include "operators/sort_merge_aggregate.h"
 #include "operators/keyed_join.h"
 #include "operators/merge_input.h"
 #include "operators/nested_loop_aggregate.h"
@@ -29,7 +29,7 @@ namespace vaultdb {
         static size_t keyedJoinCost(const KeyedJoin<Bit> *join);
         static size_t sortMergeJoinCost(SortMergeJoin<Bit> *join);
         static size_t mergeJoinCost(MergeJoin<Bit> *join);
-        static size_t groupByAggregateCost(const GroupByAggregate<Bit> *aggregate);
+        static size_t groupByAggregateCost(const SortMergeAggregate<Bit> *aggregate);
         static size_t nestedLoopAggregateCost(const NestedLoopAggregate<Bit> *aggregate);
         static size_t sortCost(const Sort<Bit> *sort);
         static size_t shrinkwrapCost(const Shrinkwrap<Bit> *shrinkwrap);

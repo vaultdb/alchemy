@@ -1,99 +1,86 @@
-#ifndef _GROUP_BY_AGGREGATE_H
-#define _GROUP_BY_AGGREGATE_H
+#ifndef _GROUP_BY_AGGREGATE_H_
+#define _GROUP_BY_AGGREGATE_H_
 
+#include "operator.h"
 #include <expression/generic_expression.h>
 #include <operators/support/aggregate_id.h>
-#include <operators/support/group_by_aggregate_impl.h>
-#include "operator.h"
+#include "common/defs.h"
+
+
 
 namespace vaultdb {
     template<typename B>
     class GroupByAggregate : public Operator<B> {
 
-        vector<GroupByAggregateImpl<B> *> aggregators_;
-
     public:
         std::vector<ScalarAggregateDefinition> aggregate_definitions_;
         std::vector<int32_t> group_by_;
-        bool check_sort_ = true;
         SortDefinition effective_sort_;
-        std::map<int32_t, std::set<int32_t>> functional_dependency_;
 
-        GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort);
-        GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
-			       const vector<ScalarAggregateDefinition> &aggregates);
 
-        GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort);
-        GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const int &json_cardinality);
-        GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const SortDefinition &effective_sort, const map<int32_t, std::set<int32_t>> &functional_dependency);
-        GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const int &json_cardinality, const SortDefinition &effective_sort, const map<int32_t, std::set<int32_t>> &functional_dependency);
+        size_t getCardinalityBound() const { return cardinality_bound_; }
 
-        GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort);
+        GroupByAggregate(const GroupByAggregate<B> & src) : Operator<B>(src), aggregate_definitions_(src.aggregate_definitions_), group_by_(src.group_by_), cardinality_bound_(src.cardinality_bound_), effective_sort_(src.effective_sort_) {}
 
-        GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys,
-                         const vector<ScalarAggregateDefinition> &aggregates);
+        GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys, const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & effective_sort = SortDefinition(), const int & cardinality_bound = -1)
+            : Operator<B>(child),  aggregate_definitions_(aggregates), group_by_(group_bys), cardinality_bound_(cardinality_bound), effective_sort_(effective_sort)
+        {
 
-        GroupByAggregate(const GroupByAggregate<B> & src) : Operator<B>(src), aggregate_definitions_(src.aggregate_definitions_),
-                check_sort_(src.check_sort_), group_by_(src.group_by_), json_cardinality_(src.json_cardinality_), effective_sort_(src.effective_sort_), functional_dependency_(src.functional_dependency_) {
-            setup();
         }
 
-        Operator<B> *clone() const override {
-            return new GroupByAggregate<B>(*this);
+
+        GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys, const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & effective_sort = SortDefinition(), const int & cardinality_bound = -1)
+                : Operator<B>(child),  aggregate_definitions_(aggregates), group_by_(group_bys), cardinality_bound_(cardinality_bound), effective_sort_(effective_sort)
+        { }
+
+        // this checks if a given input sort will enable SMA to produce correct results
+        // including this in parent class so NLA input can check for this too
+        bool sortCompatible(const SortDefinition & sorted_on) {
+
+            return sortCompatible(sorted_on, this->group_by_, this->effective_sort_);
         }
 
-        void updateCollation() override {
-            // for now regarding group_by as sort order
-            // TODO: work in effective_sort to cover functional dependencies
-            this->getChild(0)->updateCollation();
-            if(!check_sort_) return;
+        // for use in plan parser before GroupByAggregate object constructed
+        static bool sortCompatible(const SortDefinition & input_sort, const vector<int> & group_by, const SortDefinition & effective_sort = SortDefinition()) {
+            int col_cnt = (effective_sort.empty()) ? group_by.size() : effective_sort.size();
 
-            SortDefinition  child_sort = this->getChild(0)->getSortOrder();
-            if(effective_sort_.empty())
-                assert(sortCompatible(child_sort, group_by_));
-            else {
-                for(int i = 0; i < effective_sort_.size(); ++i) {
-                    assert(effective_sort_[i].first == child_sort[i].first);
+            if(input_sort.size() < col_cnt)
+                return false;
+
+            if(!effective_sort.empty()) {
+                for(size_t idx = 0; idx < col_cnt; ++idx) {
+                    // ASC || DESC does not matter here
+                    // effective_sort is output sort
+                    int out_col_idx = effective_sort[idx].first;
+                    int in_col_idx = -1;
+                    for(int i = 0; i < group_by.size(); ++i) {
+                        if(out_col_idx == group_by[i]) {
+                            in_col_idx = group_by[i];
+                            break;
+                        }
+                    }
+
+                    if(in_col_idx == -1) return false; // sort col must be in group_by
+
+                    if(in_col_idx != input_sort[idx].first) {
+                        return false;
+                    }
                 }
+                return true;
+            } // end effective sort case
 
+            for(int i = 0; i < col_cnt; ++i) {
+                if(group_by[i] != input_sort[i].first) {
+                    return false;
+                }
             }
 
-            SortDefinition  output_sort_def;
-            // map sort order to that of child
-            for(size_t idx = 0; idx < group_by_.size(); ++idx) {
-                // projecting the attribute in group_by_[idx] to the ith position in output
-                output_sort_def.emplace_back(idx, child_sort[group_by_[idx]].second);
-            }
-
-            this->sort_definition_ = output_sort_def;
+            return true;
         }
-
-        virtual ~GroupByAggregate()  {
-            for(size_t i = 0; i < aggregators_.size(); ++i) {
-                delete aggregators_[i];
-            }
-        }
-        static bool sortCompatible(const SortDefinition & lhs, const vector<int32_t> &group_by_idxs);
-        static bool sortCompatible(const SortDefinition & lhs, const vector<int32_t> &group_by_idxs, const map<int32_t, std::set<int32_t>> &dependencies);
-        void setJsonOutputCardinality(size_t cardinality) { json_cardinality_ = cardinality; }
-        size_t getJsonOutputCardinality() const { return json_cardinality_; }
-
-
 
     protected:
-        size_t json_cardinality_ = 0;
-        QueryTable<B> *runSelf() override;
+        size_t cardinality_bound_  = 0; // stored in SMA for planning purposes, only used in NLA
 
-
-        inline OperatorType getType() const override {
-            return OperatorType::SORT_MERGE_AGGREGATE;
-        }
 
         inline string getParameters() const override {
             stringstream  ss;
@@ -111,16 +98,43 @@ namespace vaultdb {
             return ss.str();
         }
 
+        QuerySchema generateOutputSchema(const QuerySchema & input_schema) const {
+            QuerySchema output_schema;
+            size_t i;
+            bool bit_packing = SystemConfiguration::getInstance().bitPackingEnabled();
+            int input_row_cnt = this->getChild(0)->getOutputCardinality();
 
-    private:
-        GroupByAggregateImpl<B> *aggregateFactory(const AggregateId &aggregator_type, const int32_t &ordinal,
-                                                  const QueryFieldDesc &input_schema) const;
+            for(i = 0; i < group_by_.size(); ++i) {
+                QueryFieldDesc src = input_schema.getField(group_by_[i]);
+                QueryFieldDesc dst(i, src.getName(), src.getTableName(), src.getType());
+                dst.setStringLength(src.getStringLength());
+                output_schema.putField(dst);
+            }
 
 
-        QuerySchema generateOutputSchema(const QuerySchema & srcSchema) const;
+            for(i = 0; i < aggregate_definitions_.size(); ++i) {
+                ScalarAggregateDefinition agg = aggregate_definitions_[i];
+                FieldType agg_type = (agg.ordinal >= 0) ?
+                                     input_schema.getField(agg.ordinal).getType() :
+                                     (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
+                QueryFieldDesc f;
+                if((agg.type == AggregateId::MIN || agg.type == AggregateId::MAX) && std::is_same_v<B, Bit> && bit_packing) {
+                    f = QueryFieldDesc(input_schema.getField(agg.ordinal), i + group_by_.size()); // copy out bit packing info
+                }
+                else if (agg.type == AggregateId::COUNT && std::is_same_v<B, Bit> && bit_packing) {
+                    f = QueryFieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
+                    f.initializeFieldSizeWithCardinality(input_row_cnt);
+                }
+                else { // sum, avg
+                    f = QueryFieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
+                }
+                output_schema.putField(f);
+            }
 
+            output_schema.initializeFieldOffsets();
+            return output_schema;
+        }
 
-        void setup();
 
 
     };

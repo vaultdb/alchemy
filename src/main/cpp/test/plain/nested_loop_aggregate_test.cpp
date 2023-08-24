@@ -30,7 +30,7 @@ void NestedLoopAggregateTest::runTest(const string &expected_sql,
 
     auto input = new SqlInput(db_name_, query, false, SortDefinition());
 
-    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, FLAGS_cutoff);
+    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, SortDefinition (), FLAGS_cutoff);
 
     auto sort = new Sort(aggregate, DataUtilities::getDefaultSortDefinition(1));
 
@@ -55,7 +55,7 @@ void NestedLoopAggregateTest::runDummiesTest(const string &expected_sql,
 
     auto input = new SqlInput(db_name_, query, true, SortDefinition());
 
-    auto  aggregate = new NestedLoopAggregate(input, group_bys, aggregators, FLAGS_cutoff);
+    auto  aggregate = new NestedLoopAggregate(input, group_bys, aggregators, SortDefinition (), FLAGS_cutoff);
     auto sort = new Sort(aggregate, DataUtilities::getDefaultSortDefinition(1));
 
     PlainTable* observed = sort->run();
@@ -191,7 +191,7 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_sums) {
 
 
     auto input = new SqlInput(db_name_, sql, true, SortDefinition());
-    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
+    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators,SortDefinition (),  6);
 
     Sort<bool> sort(aggregate, DataUtilities::getDefaultSortDefinition(2));
     PlainTable *observed = sort.run();
@@ -238,7 +238,7 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
 
 
     auto input = new SqlInput(db_name_, sql, true, SortDefinition());
-    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
+    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, SortDefinition (), 6);
 
     Sort<bool> sort(aggregate, DataUtilities::getDefaultSortDefinition(2));
     PlainTable *observed  = sort.run();
@@ -293,7 +293,7 @@ TEST_F(NestedLoopAggregateTest, tpch_q1) {
         ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     auto input = new SqlInput(db_name_, sql, true, SortDefinition());
-    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
+    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, SortDefinition (), 6);
 
 
     Sort<bool> sort(aggregate, DataUtilities::getDefaultSortDefinition(2));

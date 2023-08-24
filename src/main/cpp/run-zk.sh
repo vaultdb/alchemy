@@ -31,8 +31,8 @@ sleep 2
 ./bin/zk_scalar_aggregate_test --party=2 2>&1 >> $BOB_LOG
 
 sleep 2
-./bin/zk_group_by_aggregate_test --party=1 2>&1 >> $ALICE_LOG &
-./bin/zk_group_by_aggregate_test --party=2 2>&1 >> $BOB_LOG
+./bin/zk_sort_merge_aggregate_test --party=1 2>&1 >> $ALICE_LOG &
+./bin/zk_sort_merge_aggregate_test --party=2 2>&1 >> $BOB_LOG
 
 sleep 2
 
