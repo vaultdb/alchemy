@@ -21,6 +21,8 @@ UPDATE unit_test SET test_name='tpchQ05Sort' WHERE test_name='tpchQ5Sort';
 UPDATE unit_test SET test_name='tpchQ08Sort' WHERE test_name='tpchQ8Sort';
 UPDATE unit_test SET test_name='tpchQ09Sort' WHERE test_name='tpchQ9Sort';
 UPDATE unit_test SET test_suite='SecureKeyedJoinTest' WHERE test_suite='SecurePkeyFkeyJoinTest';
+UPDATE unit_test SET test_suite='SecureSortMergeAggregateTest' WHERE test_suite='SecureGroupByAggregateTest';
+UPDATE unit_test SET test_suite='SortMergeAggregateTest' WHERE test_suite='GroupByAggregateTest';
 
 UPDATE unit_test SET test_name='tpch_q01' WHERE test_name='tpch_q1';
 UPDATE unit_test SET test_name='tpch_q03' WHERE test_name='tpch_q3';
