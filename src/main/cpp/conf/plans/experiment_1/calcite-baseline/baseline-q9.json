@@ -1,0 +1,349 @@
+{
+  "rels": [
+    {
+      "id": "0",
+      "relOp": "LogicalValues",
+      "outputFields": "s_suppkey (#0), n_name (#1)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "s_suppkey"
+        },
+        {
+          "type": "CHAR",
+          "precision": 25,
+          "name": "n_name"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "outputFields": "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_quantity (#3), l_extendedprice (#4), l_discount (#5)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_orderkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "l_partkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "l_suppkey"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 0,
+          "scale": 0,
+          "name": "l_quantity"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 0,
+          "scale": 0,
+          "name": "l_extendedprice"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 0,
+          "scale": 0,
+          "name": "l_discount"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalJoin",
+      "outputFields":       "s_suppkey (#0), n_name (#1), l_orderkey (#2), l_partkey (#3), l_suppkey (#4), l_quantity (#5), l_extendedprice (#6), l_discount (#7) ",
+      "condition": {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 0,
+                "name": "s_suppkey"
+              },
+              {
+                "input": 4,
+                "name": "l_suppkey"
+              }
+            ]
+          },
+      "joinType": "inner",
+      "operator-algorithm": "nested-loop-join",
+      "foreignKey": 1,
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "outputFields": "ps_partkey (#0), ps_suppkey (#1), ps_supplycost (#2)",
+      "relOp": "LogicalValues",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "ps_partkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "ps_suppkey"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 0,
+          "scale": 0,
+          "name": "ps_supplycost"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "4",
+      "relOp": "LogicalJoin",
+      "operator-algorithm": "sort-merge-join",
+      "foreignKey": 0,
+      "outputFields": "s_suppkey (#0), n_name (#1), l_orderkey (#2), l_partkey (#3), l_suppkey (#4), l_quantity (#5), l_extendedprice (#6), l_discount (#7), ps_partkey (#8), ps_suppkey (#9), ps_supplycost (#10)",
+      "condition": {
+        "op": {
+          "name": "AND",
+          "kind": "AND",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "ps_partkey"
+              },
+              {
+                "input": 3,
+                "name": "l_partkey"
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 9,
+                "name": "ps_suppkey"
+              },
+              {
+                "input": 4,
+                "name": "l_suppkey"
+              }
+            ]
+          }
+        ]
+      },
+      "joinType": "inner",
+      "inputs": [
+        "2",
+        "3"
+      ]
+    },
+    {
+      "id": "5",
+      "relOp": "LogicalValues",
+      "outputFields": "o_orderkey (#0), o_orderyear (#1)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "o_orderkey"
+        },
+        {
+          "type": "DATE",
+          "nullable": true,
+          "name": "o_orderyear"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalJoin",
+      "outputFields": "s_suppkey (#0), n_name (#1), l_orderkey (#2), l_partkey (#3), l_suppkey (#4), l_quantity (#5), l_extendedprice (#6), l_discount (#7), ps_partkey (#8), ps_suppkey (#9), ps_supplycost (#10), o_orderkey (#11), o_orderyear (#12)",
+      "operator-algorithm": "sort-merge-join",
+      "foreignKey": 0,
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 2,
+            "name": "l_orderkey"
+          },
+          {
+            "input": 11,
+            "name": "o_orderkey"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "inputs": [
+        "4",
+        "5"
+      ]
+    },
+    {
+      "id": "7",
+      "relOp": "LogicalProject",
+      "inputFields": "s_suppkey (#0), n_name (#1), l_orderkey (#2), l_partkey (#3), l_suppkey (#4), l_quantity (#5), l_extendedprice (#6), l_discount (#7), ps_partkey (#8), ps_suppkey (#9), ps_supplycost (#10), o_orderkey (#11), o_orderyear (#12)",
+      "fields": [
+        "nation",
+        "o_year",
+        "profit"
+      ],
+      "exprs": [
+        {
+          "input": 1,
+          "name": "n_name"
+        },
+        {
+          "input": 12,
+          "name": "o_orderyear"
+        },
+        {
+          "op": {
+            "name": "-",
+            "kind": "MINUS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "*",
+                "kind": "TIMES",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 6,
+                  "name": "l_extendedprice"
+                },
+                {
+                  "op": {
+                    "name": "-",
+                    "kind": "MINUS",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "literal": 1,
+                      "type": {
+                        "type": "FLOAT",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 7,
+                      "name": "l_discount"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "*",
+                "kind": "TIMES",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 10,
+                  "name": "ps_supplycost"
+                },
+                {
+                  "input": 5,
+                  "name": "l_quantity"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "8",
+      "relOp": "LogicalAggregate",
+      "group": [
+        0,
+        1
+      ],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            2
+          ],
+          "name": "sum_profit"
+        }
+      ]
+    },
+    {
+      "id": "9",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        },
+        {
+          "field": 1,
+          "direction": "DESCENDING",
+          "nulls": "FIRST"
+        }
+      ]
+    }
+  ]
+}

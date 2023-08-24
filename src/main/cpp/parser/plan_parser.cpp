@@ -152,7 +152,11 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
     if(op_name == "LogicalFilter")  op = parseFilter(operator_id, tree);
     if(op_name == "JdbcTableScan")  op = parseSeqScan(operator_id, tree);
     if(op_name == "ShrinkWrap")  op = parseShrinkwrap(operator_id, tree);
-    if(op_name == "LogicalValues") if(json_only_) { op = parseLocalScan(operator_id, tree); } else { return;  }
+    if(op_name == "LogicalValues") if(json_only_) {
+            op = parseLocalScan(operator_id, tree);
+    } else {
+        return;  // parsed elsewhere
+    }
 
     if(op != nullptr) {
         operators_[operator_id] = op;
@@ -580,6 +584,10 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
 
 template<typename B>
 Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_tree) {
+    Logger *log = get_log();
+    string join_type;
+
+
     boost::property_tree::ptree join_condition_tree = join_tree.get_child("condition");
 
     ptree input_list = join_tree.get_child("inputs.");
@@ -592,145 +600,112 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
     Expression<B> *join_condition = ExpressionParser<B>::parseExpression(join_condition_tree, lhs->getOutputSchema(), rhs->getOutputSchema());
 
-    // for basic join and keyed join with fkey on lhs:
-    SortDefinition sort_def = lhs->getSortOrder();
-
-    // add offset for rhs
-    for(auto pos : rhs->getSortOrder()) {
-        sort_def.emplace_back(ColumnSort(pos.first + lhs->getOutputSchema().getFieldCount(), pos.second));
-    }
-
-    string join_type;
     if(join_tree.count("operator-algorithm") > 0)
         join_type = join_tree.get_child("operator-algorithm").template get_value<string>();
+
+    // check it is a valid join algo spec (if specified)
+    assert(join_type == "sort-merge-join" || join_type == "nested-loop-join" || join_type == "merge-join" || join_type == "auto" || join_type.empty());
 
     // if fkey designation exists, use this to create keyed join
     // key: foreignKey
     if(join_tree.count("foreignKey") > 0) {
         int foreign_key = join_tree.get_child("foreignKey").template get_value<int>();
 
-        if(foreign_key == 1) {
-            // switch sort orders
-            sort_def.clear();
-            // rhs --> lhs
-            for(auto pos : rhs->getSortOrder()) {
-                sort_def.emplace_back(ColumnSort(pos.first + lhs->getOutputSchema().getFieldCount(), pos.second));
+        if (join_type == "auto") {
+
+            auto smj = new SortMergeJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
+            auto nlj = new KeyedJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
+            size_t smj_cost = OperatorCostModel::operatorCost((SecureOperator *) smj);
+            size_t nlj_cost = OperatorCostModel::operatorCost((SecureOperator *) nlj);
+
+            auto join_key_idxs = smj->joinKeyIdxs();
+            bool lhs_sort_compatible = smj->sortCompatible(lhs);
+            bool rhs_sort_compatible = smj->sortCompatible(rhs);
+
+            delete nlj;
+            delete smj;
+
+
+            // check sort compatibility for SMJ
+            // TODO: consider case where we insert sort in front of both lhs and rhs inputs
+            if (lhs_sort_compatible && !rhs_sort_compatible) {
+
+                // rhs will have second keys
+                vector<ColumnSort> rhs_sort;
+                int lhs_col_cnt = lhs->getOutputSchema().getFieldCount();
+                SortDefinition lhs_sort = lhs->getSortOrder();
+
+                for (int i = 0; i < join_key_idxs.size(); ++i) {
+                    int idx = join_key_idxs[i].second;
+                    rhs_sort.emplace_back(ColumnSort(idx - lhs_col_cnt, lhs_sort[i].second));
+                }
+
+                Operator<B> *rhs_sorter = new Sort<B>(rhs->clone(), rhs_sort);
+                auto smj_presorted = new SortMergeJoin<B>(lhs->clone(), rhs_sorter, foreign_key, join_condition->clone());
+                auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
+                delete smj_presorted;
+
+                if (smj_opt_cost < smj_cost && smj_opt_cost < nlj_cost) {
+                    log->write("Operator (" + std::to_string(operator_id) + "). " +
+                        "smj cost : " + std::to_string(smj_cost) +
+                        ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
+                        ", nlj cost : " + std::to_string(nlj_cost) +
+                        ", join type: presorted smj", Level::INFO);
+
+                    Sort<B> *sorter = new Sort<B>(rhs, rhs_sort);
+                    return new SortMergeJoin<B>(lhs, sorter, foreign_key, join_condition);
+                }
+            } else if (rhs_sort_compatible && !lhs_sort_compatible) {
+               vector<ColumnSort> lhs_sort;
+               SortDefinition rhs_sort = rhs->getSortOrder();
+
+               for (int i = 0; i < join_key_idxs.size(); ++i) {
+                   int idx = join_key_idxs[i].first;
+                   lhs_sort.emplace_back(ColumnSort(idx, rhs_sort[i].second));
+               }
+
+               Operator<B> *lhs_sorter = new Sort<B>(lhs->clone(), lhs_sort);
+               auto smj_presorted = new SortMergeJoin<B>(lhs->clone(), lhs_sorter, foreign_key, join_condition->clone());
+               auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
+               delete smj_presorted;
+
+               if (smj_opt_cost < smj_cost && smj_opt_cost < nlj_cost) {
+                   log->write("Operator (" + std::to_string(operator_id) + "). " +
+                   "smj cost : " + std::to_string(smj_cost) +
+                   ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
+                   ", nlj cost : " + std::to_string(nlj_cost) +
+                   ", join type: presorted smj", Level::INFO);
+
+                   Sort<B> *sorter = new Sort<B>(lhs, lhs_sort);
+                   return new SortMergeJoin<B>(sorter, rhs, foreign_key, join_condition);
+               }
+
             }
 
-            for(auto pos : lhs->getSortOrder()) {
-                sort_def.emplace_back(pos);
-            }
-        }
+            string selected_join = (smj_cost < nlj_cost) ? "sort-merge-join" : "nested-loop-join";
 
-        if(join_tree.count("operator-algorithm") > 0) {
+            log->write("Operator (" + std::to_string(operator_id) + "). " +
+                "smj cost : " + std::to_string(smj_cost) +
+                ", nlj cost : " + std::to_string(nlj_cost) +
+                ", join type : " + selected_join, Level::INFO);
 
-            // Use Cost Model to calculate NLJ and SMJ, pick more better one.
-            if(join_type == "auto") {
-
-                auto smj = new SortMergeJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
-                auto nlj = new KeyedJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone(), sort_def);
-                size_t smj_cost = OperatorCostModel::operatorCost((SecureOperator *) smj);
-                size_t nlj_cost = OperatorCostModel::operatorCost((SecureOperator *) nlj);
-
-                delete nlj;
-
-
-                Logger *log = get_log();
-
-                // check sort compatibility for SMJ
-                if (smj->sortCompatible(lhs)) {
-                    // try inserting sort for RHS
-                    auto join_key_idxs = smj->joinKeyIdxs();
-                    // rhs will have second keys
-                    vector<ColumnSort> rhs_sort;
-                    int lhs_col_cnt = lhs->getOutputSchema().getFieldCount();
-                    SortDefinition lhs_sort = lhs->getSortOrder();
-
-                    for (int i = 0; i < join_key_idxs.size(); ++i) {
-                        int idx = join_key_idxs[i].second;
-                        rhs_sort.emplace_back(ColumnSort(idx - lhs_col_cnt, lhs_sort[i].second));
-                    }
-                    Operator<B> *rhs_sorter = new Sort<B>(rhs->clone(), rhs_sort);
-                    auto smj_presorted = new SortMergeJoin<B>(lhs->clone(), rhs_sorter, foreign_key,
-                                                         join_condition->clone());
-                    auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
-                    delete smj_presorted;
-
-                    if(smj_opt_cost < smj_cost && smj_opt_cost < nlj_cost)  {
-                        delete smj;
-                        log->write("Operator (" + std::to_string(operator_id) + "). " +
-                                   "smj cost : " + std::to_string(smj_cost) +
-                                   ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
-                                   ", nlj cost : " + std::to_string(nlj_cost) +
-                                   ", join type: presorted smj", Level::INFO);
-
-                        Sort<B> *sorter = new Sort<B>(rhs, rhs_sort);
-                        return new SortMergeJoin<B>(lhs, sorter, foreign_key, join_condition);
-                    }
-                }
-                else if (smj->sortCompatible(rhs)) {
-                    // add sort to lhs
-                    // try inserting sort for RHS
-                    auto join_key_idxs = smj->joinKeyIdxs();
-                    // rhs will have second keys
-                    vector<ColumnSort> lhs_sort;
-                    SortDefinition rhs_sort = rhs->getSortOrder();
-
-                    for (int i = 0; i < join_key_idxs.size(); ++i) {
-                        int idx = join_key_idxs[i].first;
-                        lhs_sort.emplace_back(ColumnSort(idx, rhs_sort[i].second));
-                    }
-
-                    Operator<B> *lhs_sorter = new Sort<B>(lhs->clone(), lhs_sort);
-                    auto smj_presorted = new SortMergeJoin<B>(lhs->clone(), lhs_sorter, foreign_key,
-                                                         join_condition->clone());
-                    auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
-                    delete smj_presorted;
-
-                    if(smj_opt_cost < smj_cost && smj_opt_cost < nlj_cost)  {
-                        log->write("Operator (" + std::to_string(operator_id) + "). " +
-                                   "smj cost : " + std::to_string(smj_cost) +
-                                   ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
-                                   ", nlj cost : " + std::to_string(nlj_cost) +
-                                   ", join type: presorted smj", Level::INFO);
-                        delete smj;
-                        Sort<B> *sorter = new Sort<B>(lhs, lhs_sort);
-                        return new SortMergeJoin<B>(sorter, rhs, foreign_key, join_condition);
-                    }
-
-                }
-
-                delete smj;
-
-
-
-
-
-                join_type = (smj_cost < nlj_cost) ? "sort-merge-join" : "nested-loop-join";
-
-                log->write("Operator (" + std::to_string(operator_id) + "). " +
-                               "smj cost : " + std::to_string(smj_cost) +
-                               ", nlj cost : " + std::to_string(nlj_cost) +
-                               ", join type : " + join_type, Level::INFO);
-
-                if (join_type == "sort-merge-join") {
-                    return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
-                }
-                else {
-                    return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
-                }
-
-            } // end join-algorithm="auto"
-            else if (join_type == "sort-merge-join")
+            if (selected_join == "sort-merge-join") {
                 return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
+            }
+            else {
+                return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition);
+            }
 
-            return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
+        } // end join-algorithm="auto"
 
-        }
-        else { // if unspecified but FK, use KeyedJoin
-            return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
-        }
-    }
+         if (join_type == "sort-merge-join") {
+             return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
+         }
+        else { // if algorithm unspecified but FK, use KeyedJoin
+             return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition);
+         }
+
+    } // end pk-fk join
 
     if (join_type == "merge-join") {
         if(join_tree.count("dummy-handling") > 0 && join_tree.get_child("dummy-handling").template get_value<string>() == "OR")
@@ -740,7 +715,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
     }
 
 
-    return new BasicJoin<B>(lhs, rhs, join_condition, sort_def);
+    return new BasicJoin<B>(lhs, rhs, join_condition);
 
 }
 
