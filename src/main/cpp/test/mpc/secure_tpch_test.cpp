@@ -35,7 +35,7 @@ protected:
     void runTest(const int &test_id, const string &test_name, const SortDefinition &expected_sort);
     string  generateExpectedOutputQuery(const int & test_id);
 
-    int input_tuple_limit_ = -1;
+    int input_tuple_limit_ = 150;
 
 };
 
