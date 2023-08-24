@@ -12,7 +12,6 @@ namespace  vaultdb {
         string db_name_;
         bool has_dummy_tag_;
         StorageModel storage_model_;
-        int input_party_ = 0;
         string original_input_query_; // no modifications for limit or sort
 
     protected:
@@ -28,6 +27,7 @@ namespace  vaultdb {
         size_t input_tuple_limit_;
         PlainTable *plain_input_ = nullptr;
         string input_query_;
+        int input_party_ = 0;
 
 
     public:
@@ -47,6 +47,7 @@ namespace  vaultdb {
 
         string getInputQuery() const { return input_query_; }
         void setInputQuery(const string & sql) { input_query_ = sql; }
+        int getInputParty() const { return input_party_; }
 
         void updateCollation() override {
             // take current sql and wrap it in ORDER BY

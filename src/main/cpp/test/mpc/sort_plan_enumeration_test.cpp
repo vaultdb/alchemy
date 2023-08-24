@@ -23,7 +23,7 @@ DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*.tpch_q9", "run only the tests passing this filter");
+DEFINE_string(filter, "*.tpch_q3", "run only the tests passing this filter");
 
 
 class SortPlanEnumerationTest : public EmpBaseTest {
@@ -62,8 +62,13 @@ SortPlanEnumerationTest::runTest(const int &test_id, const string & test_name, c
 
     //PlanParser<Bit> parser(db_name_, sql_file, plan_file, input_tuple_limit_);
     PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
-    parser.optimizeTree();
     SecureOperator *root = parser.getRoot();
+
+    std::cout << "Original Plan : " << endl;
+    std::cout << root->printTree() << endl;
+
+    parser.optimizeTree();
+    root = parser.getRoot();
 
     std::cout << "Sort Optimized Plan : " << endl;
     std::cout << root->printTree() << endl;
@@ -164,10 +169,18 @@ void SortPlanEnumerationTest::runStubTest(string & sql_plan, string & json_plan,
     boost::replace_all(local_db, "unioned", party_name);
     auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
 
-    PlanParser<emp::Bit> parser(local_db, sql_plan, json_plan, input_tuple_limit_);
+//    PlanParser<emp::Bit> parser(local_db, sql_plan, json_plan, input_tuple_limit_);
+    PlanParser<emp::Bit> parser(db_name_, json_plan, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-    std::cout << "Query plan: " << root->printTree() << endl;
+    std::cout << "Original Plan : " << endl;
+    std::cout << root->printTree() << endl;
+
+    parser.optimizeTree();
+    root = parser.getRoot();
+
+    std::cout << "Sort Optimized Plan : " << endl;
+    std::cout << root->printTree() << endl;
 
     SecureTable *result = root->run();
 

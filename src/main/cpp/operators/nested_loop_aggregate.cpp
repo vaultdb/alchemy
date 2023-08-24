@@ -40,9 +40,9 @@ NestedLoopAggregate<B>::NestedLoopAggregate(Operator<B> *child, const vector<int
 template<typename B>
 NestedLoopAggregate<B>::NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
                                             const vector<ScalarAggregateDefinition> &aggregates,
-                                            const int output_card, const SortDefinition & effective_sort, const map<int32_t, std::set<int32_t>> &functional_dependency) : Operator<B>(child, SortDefinition()),
+                                            const int output_card, const SortDefinition & effective_sort) : Operator<B>(child, SortDefinition()),
                                                                      aggregate_definitions_(aggregates),
-                                                                     group_by_(groupBys), effective_sort_(effective_sort), functional_dependency_(functional_dependency) {
+                                                                     group_by_(groupBys), effective_sort_(effective_sort) {
 
 
     this->output_cardinality_ = output_card;

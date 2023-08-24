@@ -466,7 +466,7 @@
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "auto",
       "cardBound" : 175,
-      "checkSort" : false,
+      "checkSort" : true,
       "effective-collation": [
         {
           "field": 0,

@@ -71,17 +71,17 @@ GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> 
 
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                                      const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const SortDefinition &effective_sort, const map<int32_t, std::set<int32_t>> &functional_dependency)
+                                      const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const SortDefinition &effective_sort)
         :  Operator<B>(child, SortDefinition()), check_sort_(check_sort), aggregate_definitions_(aggregates),
-           group_by_(groupBys), effective_sort_(effective_sort), functional_dependency_(functional_dependency) {
+           group_by_(groupBys), effective_sort_(effective_sort){
     setup();
 }
 
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                                      const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const int &json_cardinality, const SortDefinition &effective_sort, const map<int32_t, std::set<int32_t>> &functional_dependency)
+                                      const vector<ScalarAggregateDefinition> &aggregates, const bool &check_sort, const int &json_cardinality, const SortDefinition &effective_sort)
         :  Operator<B>(child, SortDefinition()), check_sort_(check_sort), aggregate_definitions_(aggregates),
-           group_by_(groupBys), json_cardinality_(json_cardinality), effective_sort_(effective_sort), functional_dependency_(functional_dependency) {
+           group_by_(groupBys), json_cardinality_(json_cardinality), effective_sort_(effective_sort) {
     setup();
 }
 
@@ -245,27 +245,6 @@ bool GroupByAggregate<B>::sortCompatible(const SortDefinition & sorted_on, const
     for(size_t idx = 0; idx < group_by_idxs.size(); ++idx) {
         // ASC || DESC does not matter here
         if(group_by_idxs[idx] != sorted_on[idx].first) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-template<typename B>
-bool GroupByAggregate<B>::sortCompatible(const SortDefinition & sorted_on,
-                                         const vector<int32_t> &group_by_idxs,
-                                         const map<int32_t, std::set<int32_t>> &dependencies) {
-    std::set<int32_t> coveredColumns;
-    for(const auto& sort_def : sorted_on) {
-        coveredColumns.insert(sort_def.first);
-        if(dependencies.count(sort_def.first) > 0) {
-            coveredColumns.insert(dependencies.at(sort_def.first).begin(), dependencies.at(sort_def.first).end());
-        }
-    }
-
-    for(const auto& group_by_idx : group_by_idxs) {
-        if(coveredColumns.count(group_by_idx) == 0) {
             return false;
         }
     }
