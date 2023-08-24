@@ -357,13 +357,7 @@ void PlanParser<B>::calculateAutoAggregate() {
             int cardBound = nla_vector_[i]->getOutputCardinality();
             SortDefinition effective_sort = nla_vector_[i]->effective_sort_;
 
-<<<<<<< HEAD
             NestedLoopAggregate<B> *real_nla = new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, effective_sort, cardBound);
-=======
-            NestedLoopAggregate<B> *real_nla = new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardBound, effective_sort);
->>>>>>> ab2f84ea195c6ed4f2f592768c4db40d0d60889d
-            child->setParent(real_nla);
-            real_nla->setChild(child);
             operators_[agg_id_[i]] = real_nla;
 
             if(agg_id_[i] + 1 == operators_.size())
