@@ -18,20 +18,19 @@ namespace vaultdb {
         SortDefinition effective_sort_;
 
 
-        size_t getCardinalityBound() const { return cardinality_bound_; }
-
         GroupByAggregate(const GroupByAggregate<B> & src) : Operator<B>(src), aggregate_definitions_(src.aggregate_definitions_), group_by_(src.group_by_), cardinality_bound_(src.cardinality_bound_), effective_sort_(src.effective_sort_) {}
 
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys, const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & effective_sort = SortDefinition(), const int & cardinality_bound = -1)
-            : Operator<B>(child),  aggregate_definitions_(aggregates), group_by_(group_bys), cardinality_bound_(cardinality_bound), effective_sort_(effective_sort)
-        {
+            : Operator<B>(child),  aggregate_definitions_(aggregates), group_by_(group_bys), cardinality_bound_(cardinality_bound), effective_sort_(effective_sort) {
 
         }
-
 
         GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys, const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & effective_sort = SortDefinition(), const int & cardinality_bound = -1)
                 : Operator<B>(child),  aggregate_definitions_(aggregates), group_by_(group_bys), cardinality_bound_(cardinality_bound), effective_sort_(effective_sort)
         { }
+
+
+        size_t getCardinalityBound() const { return cardinality_bound_; }
 
         // this checks if a given input sort will enable SMA to produce correct results
         // including this in parent class so NLA input can check for this too

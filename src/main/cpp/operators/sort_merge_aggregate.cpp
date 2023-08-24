@@ -13,8 +13,6 @@ using namespace vaultdb;
 using namespace std;
 
 
-
-
 template<typename B>
 QueryTable<B> *SortMergeAggregate<B>::runSelf() {
     QueryTable<B> *input = Operator<B>::getChild()->getOutput();

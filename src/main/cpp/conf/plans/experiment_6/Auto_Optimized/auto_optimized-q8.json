@@ -11,6 +11,14 @@
           "name": "c_custkey"
         }
       ],
+      "sql": "SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA' ORDER BY c_custkey",
+      "dummy-tag": false,
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -33,6 +41,30 @@
           "type": "INTEGER",
           "nullable": true,
           "name": "o_year"
+        }
+      ],
+      "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_year, o_orderkey",
+      "dummy-tag": true,
+      "collation-1": [
+        {
+          "field": 2,
+          "direction": "ASCENDING"
+        },
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-3": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
         }
       ],
       "tuples": [],
@@ -73,17 +105,17 @@
       "relOp": "LogicalProject",
       "outputFields": "o_year (#0), o_orderkey (#1)",
       "fields": [
-        "o_year",
-        "o_orderkey"
+        "o_orderkey",
+        "o_year"
       ],
       "exprs": [
         {
-          "input": 3,
-          "name": "$3"
-        },
-        {
           "input": 1,
           "name": "$1"
+        },
+        {
+          "input": 3,
+          "name": "$3"
         }
       ]
     },
@@ -109,13 +141,27 @@
           "name": "volume"
         }
       ],
+      "sql": "SELECT  l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) volume, NOT p_type = 'LARGE ANODIZED STEEL' AS dummy_tag FROM part JOIN lineitem ON p_partkey = l_partkey ORDER BY l_orderkey, l_linenumber",
+      "dummy-tag": true,
+      "collation-1": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
     {
       "id": "5",
-      "joinOn" : "o_orderkey = l_orderkey",
-      "outputFields": "o_year (#0), o_orderkey (#1), l_orderkey (#2), l_suppkey (#3), volume (#4)",
+      "joinOn" : "l_orderkey = o_orderkey",
+      "outputFields": "o_orderkey (#0), o_year (#1), l_orderkey (#2),  l_suppkey (#3), volume (#4)",
       "operator-algorithm" : "auto",
       "relOp": "LogicalJoin",
       "condition": {
@@ -126,8 +172,8 @@
         },
         "operands": [
           {
-            "input": 1,
-            "name": "$1"
+            "input": 0,
+            "name": "$0"
           },
           {
             "input": 2,
@@ -153,8 +199,8 @@
       ],
       "exprs": [
         {
-          "input": 0,
-          "name": "$0"
+          "input": 1,
+          "name": "$1"
         },
         {
           "input": 3,
@@ -182,12 +228,20 @@
           "name": "nation_check"
         }
       ],
+      "sql": "SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey ORDER BY s_suppkey",
+      "dummy-tag": false,
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
     {
       "id": "8",
-      "joinOn" : "s_suppkey = l_suppkey",
+      "joinOn" : "l_suppkey = s_suppkey",
       "outputFields": "o_year (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check (#4)",
       "operator-algorithm" : "auto",
       "relOp": "LogicalJoin",
@@ -217,18 +271,20 @@
     },
     {
       "id": "9",
-      "inputFields": "o_year (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check (#4)",
-      "outputFields" : "o_year, nation_volume, volume",
       "relOp": "LogicalProject",
       "fields": [
         "o_year",
-        "nation_volume",
-        "volume"
+        "volume",
+        "selected_volume"
       ],
       "exprs": [
         {
           "input": 0,
           "name": "$0"
+        },
+        {
+          "input": 2,
+          "name": "$2"
         },
         {
           "op": {
@@ -238,11 +294,11 @@
           },
           "operands": [
             {
-              "input":  4,
+              "input": 4,
               "name": "$4"
             },
             {
-              "input":  2,
+              "input": 2,
               "name": "$2"
             },
             {
@@ -253,18 +309,23 @@
               }
             }
           ]
-        },
-        {
-          "input": 2,
-          "name": "$2"
         }
       ]
     },
     {
       "id": "10",
       "relOp": "LogicalAggregate",
+      "outputFields" : "o_year (#0), SUM(volume) (#1), SUM(selected_volume) (#2)",
       "operator-algorithm" : "auto",
-      "cardinality-bound" : 2,
+      "cardBound" : 2,
+      "checkSort" : false,
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
       "group": [
         0
       ],
@@ -310,6 +371,7 @@
     {
       "id": "11",
       "relOp": "LogicalProject",
+      "outputFields" : "o_year (#0), SUM(volume) / SUM(selected_volume) mkt_share  (#1)",
       "fields": [
         "o_year",
         "mkt_share"
@@ -327,25 +389,14 @@
           },
           "operands": [
             {
-              "input": 1,
-              "name": "$1"
-            },
-            {
               "input": 2,
               "name": "$2"
+            },
+            {
+              "input": 1,
+              "name": "$1"
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": "12",
-      "relOp": "LogicalSort",
-      "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "LAST"
         }
       ]
     }

@@ -9,7 +9,6 @@ namespace vaultdb {
     class NestedLoopAggregate : public GroupByAggregate<B> {
 
     public:
-        vector<UnsortedAggregateImpl<B> *> aggregators_;
 
         NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &group_by,
                             const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & effective_sort = SortDefinition (), const int & output_card = 0) : GroupByAggregate<B>(child, group_by, aggregates, effective_sort, output_card) {
@@ -54,6 +53,7 @@ namespace vaultdb {
         QueryTable<B> *runSelf() override;
 
     private:
+        vector<UnsortedAggregateImpl<B> *> aggregators_;
 
 
         // returns boolean for whether two tuples are in the same group-by bin

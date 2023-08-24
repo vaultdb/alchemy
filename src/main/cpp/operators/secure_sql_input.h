@@ -47,6 +47,10 @@ namespace  vaultdb {
             return new SecureSqlInput(*this);
         }
 
+        string getInputQuery() const { return input_query_; }
+        void setInputQuery(const string & sql) { input_query_ = sql; }
+        int getInputParty() const { return input_party_; }
+
         void updateCollation() override {
             // take current sql and wrap it in ORDER BY
             if(this->sort_definition_.empty())  {

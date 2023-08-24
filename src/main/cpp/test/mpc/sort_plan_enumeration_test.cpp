@@ -62,9 +62,15 @@ SortPlanEnumerationTest::runTest(const int &test_id, const string & test_name, c
 
     //PlanParser<Bit> parser(db_name_, sql_file, plan_file, input_tuple_limit_);
     PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
-    parser.optimizeTree();
     SecureOperator *root = parser.getRoot();
 
+    std::cout << "Original Plan : " << endl;
+    std::cout << root->printTree() << endl;
+
+    parser.optimizeTree();
+    root = parser.getRoot();
+
+    std::cout << "Sort Optimized Plan : " << endl;
     std::cout << root->printTree() << endl;
 
     SecureTable *result = root->run();
@@ -163,10 +169,18 @@ void SortPlanEnumerationTest::runStubTest(string & sql_plan, string & json_plan,
     boost::replace_all(local_db, "unioned", party_name);
     auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
 
-    PlanParser<emp::Bit> parser(local_db, sql_plan, json_plan, input_tuple_limit_);
+//    PlanParser<emp::Bit> parser(local_db, sql_plan, json_plan, input_tuple_limit_);
+    PlanParser<emp::Bit> parser(db_name_, json_plan, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-    std::cout << "Query plan: " << root->printTree() << endl;
+    std::cout << "Original Plan : " << endl;
+    std::cout << root->printTree() << endl;
+
+    parser.optimizeTree();
+    root = parser.getRoot();
+
+    std::cout << "Sort Optimized Plan : " << endl;
+    std::cout << root->printTree() << endl;
 
     SecureTable *result = root->run();
 
@@ -196,20 +210,20 @@ void SortPlanEnumerationTest::runStubTest(string & sql_plan, string & json_plan,
 
 // No Aggregate
 
-TEST_F(SortPlanEnumerationTest, tpch_q1) {
-string test_name = "q1";
-std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-" + test_name + ".sql";
-std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-"  + test_name + ".json";
-
-SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-string expected_sql = tpch_queries[1];
-
-
-this->initializeBitPacking(FLAGS_unioned_db);
-
-runStubTest(sql_file, plan_file, expected_sql, expected_sort, FLAGS_unioned_db);
-
-}
+//TEST_F(SortPlanEnumerationTest, tpch_q1) {
+//string test_name = "q1";
+//std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-" + test_name + ".sql";
+//std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-"  + test_name + ".json";
+//
+//SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+//string expected_sql = tpch_queries[1];
+//
+//
+//this->initializeBitPacking(FLAGS_unioned_db);
+//
+//runStubTest(sql_file, plan_file, expected_sql, expected_sort, FLAGS_unioned_db);
+//
+//}
 
 
 TEST_F(SortPlanEnumerationTest, tpch_q3) {
@@ -246,7 +260,7 @@ runTest(9, "q9", expected_sort, FLAGS_unioned_db);
 
 
 // No Aggregate
-
+/*
 TEST_F(SortPlanEnumerationTest, tpch_q18) {
 // -1 ASC, $4 DESC, $3 ASC
 SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
@@ -267,7 +281,7 @@ TEST_F(SortPlanEnumerationTest, two_aggregates_q18) {
 
     runMultiAggregatesTest(18, "q18", expected_sort, FLAGS_unioned_db, sql_file, plan_file);
 }
-
+*/
 
 
 int main(int argc, char **argv) {

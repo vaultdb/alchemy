@@ -22,6 +22,7 @@
 #include <parser/expression_parser.h>
 #include <operators/shrinkwrap.h>
 #include <util/logger.h>
+#include <regex>
 
 using namespace vaultdb;
 using boost::property_tree::ptree;
@@ -356,7 +357,11 @@ void PlanParser<B>::calculateAutoAggregate() {
             int cardBound = nla_vector_[i]->getOutputCardinality();
             SortDefinition effective_sort = nla_vector_[i]->effective_sort_;
 
+<<<<<<< HEAD
             NestedLoopAggregate<B> *real_nla = new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, effective_sort, cardBound);
+=======
+            NestedLoopAggregate<B> *real_nla = new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardBound, effective_sort);
+>>>>>>> ab2f84ea195c6ed4f2f592768c4db40d0d60889d
             child->setParent(real_nla);
             real_nla->setChild(child);
             operators_[agg_id_[i]] = real_nla;
@@ -453,23 +458,6 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
         }
     }
 
-
-    std::map<int32_t, std::set<int32_t>> func_dependency;
-    if(aggregate_json.count("functional-dependency") > 0) {
-        boost::property_tree::ptree fd_payload = aggregate_json.get_child("functional-dependency");
-
-        for (ptree::const_iterator it = fd_payload.begin(); it != fd_payload.end(); ++it) {
-            int determinant = it->second.get_child("determinant").get_value<int>();
-
-            boost::property_tree::ptree dependsOn_payload = it->second.get_child("dependsOn");
-            for (ptree::const_iterator dep_it = dependsOn_payload.begin(); dep_it != dependsOn_payload.end(); ++dep_it) {
-                func_dependency[determinant].insert(dep_it->second.get_value<int>());
-            }
-        }
-    }
-
-
-
     string agg_algo;
     if(aggregate_json.count("operator-algorithm") > 0)
         agg_algo = aggregate_json.get_child("operator-algorithm").template get_value<string>();
@@ -527,14 +515,13 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
             nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, effective_sort,
                                              cardinality_bound);
 
-
             sma_vector_.push_back(sma);
             nla_vector_.push_back(nla);
             setAutoFlag(true);
             agg_id_.push_back(operator_id);
 
             return sma;
-        }
+        } // end auto aggregate setup
         SortDefinition child_sort = child->getSortOrder();
 
         if (cardinality_bound > 0 && (agg_algo == "nested-loop-aggregate" || agg_algo == ""))
@@ -542,8 +529,6 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
 
         // default to SMA
         if (!GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals, effective_sort)) {
-            // if sort not aligned, insert a sort op
-            if (!SortMergeAggregate<B>::sortCompatible(child_sort, group_by_ordinals)) {
                 // insert sort
                 SortDefinition sma_sort;
                 for (uint32_t idx: group_by_ordinals) {
@@ -552,9 +537,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
                 child = new Sort<B>(child, sma_sort);
                 support_ops_.template emplace_back(child);
             }
-        }
         return new SortMergeAggregate<B>(child, group_by_ordinals, aggregators, effective_sort,  cardinality_bound);
-
     } // end group-by case
     else {
         return new ScalarAggregate<B>(child, aggregators);
@@ -960,12 +943,306 @@ Operator<B> *PlanParser<B>::getOperator(const int &op_id) {
 //  * For example, if OP#0, OP#1 are logical values, OP#2 join should have lhs as 0, and rhs as 1, not vice versa.
 
 template<typename B>
-Operator<B> *PlanParser<B>::optimizeTree() {
-    Operator<B> *leaf = operators_.begin()->second;
-    optimizeTreeHelper(leaf);
-    return nullptr;
+void PlanParser<B>::optimizeTree() {
+    auto new_root = root_->clone();
+    auto leaf = new_root;
+    while(leaf->getChild() != nullptr) leaf = leaf->getChild();
 
+    assert(leaf->getType() == OperatorType::SECURE_SQL_INPUT);
+
+    //clone operators_ map into optimizeTree_operators_
+    for (auto &entry : operators_) {
+        optimizeTree_operators_[entry.first] = entry.second->clone();
+    }
+
+    optimizeTreeHelper(leaf);
+
+    std::cout << "Total Plans : " << std::to_string(total_plan_cnt_) << endl;
+    changeOperatorSortOrder();
+    deleteOptmizeTreeOperators();
 }
+
+template<typename B>
+void PlanParser<B>::deleteOptmizeTreeOperators() {
+    for (auto &entry : optimizeTree_operators_) {
+        Operator<B> *op = entry.second;
+
+        // Set the children to nullptr
+        op->setNullChild(nullptr, 0);
+        op->setNullChild(nullptr, 1);
+        op->setParent(nullptr);
+        // Delete the operator
+        delete op;
+        entry.second = nullptr;  // Optional: set the map value to nullptr too
+    }
+
+    // Optionally, you can also clear the map after deleting the operators
+    optimizeTree_operators_.clear();
+}
+
+
+template<typename B>
+void PlanParser<B>::changeOperatorSortOrder() {
+    // Extract the sort orders
+    std::map<int, SortEntry> sort_orders = extractSortOrders(min_cost_plan_string_);
+
+    SortEntry sort_before_sma;  // This will store the SortDefinition of the sort right before SMA
+
+    // Modify the operators sort orders
+    for (const auto &order : sort_orders) {
+        int op_id = order.first;
+        const SortDefinition &sort_def = std::get<0>(order.second);
+        int next_op_id = std::get<1>(order.second);
+
+        if (operators_.count(op_id) > 0) {
+
+            Operator<B> *op = operators_[op_id];
+            OperatorType op_type = op->getType();
+
+            if (op_type == OperatorType::SQL_INPUT || op_type == OperatorType::SECURE_SQL_INPUT ||
+                    op_type == OperatorType::ZK_SQL_INPUT || op_type == OperatorType::TABLE_INPUT) {
+                switch(op_type) {
+                    case OperatorType::SQL_INPUT:
+                        break;
+                    case OperatorType::SECURE_SQL_INPUT:
+                        // Attempt to cast the pointer to SecureSqlInput type
+                        SecureSqlInput* secureSqlInputOp = dynamic_cast<SecureSqlInput*>(op);
+
+                        if (secureSqlInputOp) { // If the cast was successful
+                            string sql_statement_ = secureSqlInputOp->getInputQuery();
+                            sql_statement_ = modifySqlStatement(sql_statement_, sort_def);
+                            secureSqlInputOp->setInputQuery(sql_statement_);
+                        }
+                        break;
+                }
+            } else if(op_type == OperatorType::SORT_MERGE_AGGREGATE || op_type == OperatorType::NESTED_LOOP_AGGREGATE) {
+                //If optimized plan has different aggregate with original plan
+                if(op->getTypeString() != std::get<2>(order.second)) {
+                    Operator<B> *child = op->getChild();
+                    Operator<B> *parent = op->getParent();
+
+                    if(std::get<2>(order.second) == "GroupByAggregate"){
+                        GroupByAggregate<B> *sma = (GroupByAggregate<B> *) optimizeTree_operators_[op_id];
+                        sma->setChild(child);
+                        child->setParent(sma);
+                        sma->setParent(parent);
+                        parent->setChild(sma);
+                        operators_[op_id] = sma;
+                    }
+                    else{
+                        NestedLoopAggregate<B> *nla = (NestedLoopAggregate<B> *) optimizeTree_operators_[op_id];
+                        nla->setChild(child);
+                        child->setParent(nla);
+                        nla->setParent(parent);
+                        parent->setChild(nla);
+                        operators_[op_id] = nla;
+                    }
+
+                    // Delete the original operator
+                    op->setNullChild(nullptr);
+                    op->setParent(nullptr);
+                    delete(op);
+                }
+
+                op = operators_[op_id];
+                // If optimized plan has sort before sma.
+                if(next_op_id == -2 && std::get<1>(sort_before_sma) == op->getOperatorId()){
+                    // If the SMA operator has a child operator of type SORT
+                    if(op->getChild()->getType() == OperatorType::SORT) {
+                        op->getChild()->setSortOrder(std::get<0>(sort_before_sma));
+                    }
+                    // Need to define new sort operator
+                    else{
+                        Operator<B> *child = op->getChild();
+                        Sort<B> *new_sort = new Sort<B>(child, std::get<0>(sort_before_sma));
+                        new_sort->setOperatorId(-1);
+                        child->setParent(new_sort);
+                        new_sort->setChild(child);
+                        new_sort->setParent(op);
+                        op->setChild(new_sort);
+                    }
+                }
+                //If optimized plan has no sort before sma
+                else{
+                    //If original plan has sort before sma
+                    if(op->getChild()->getType() == OperatorType::SORT) {
+                        Operator<B>* delete_sort = op->getChild();
+                        Operator<B>* child = delete_sort->getChild();
+                        delete_sort->setNullChild(nullptr);
+                        delete_sort->setParent(nullptr);
+                        delete delete_sort;
+                        op->setChild(child);
+                        child->setParent(op);
+                    }
+                }
+            }  else if(op_type == OperatorType::KEYED_NESTED_LOOP_JOIN || op_type == OperatorType::SORT_MERGE_JOIN) {
+                //If optimized plan has different aggregate with original plan
+                if(op->getTypeString() != std::get<2>(order.second)) {
+                    Operator<B> *lhs = op->getChild(0);
+                    Operator<B> *rhs = op->getChild(1);
+                    Operator<B> *parent = op->getParent();
+
+                    if(std::get<2>(order.second) == "KeyedJoin"){
+                        KeyedJoin<B> *kj = (KeyedJoin<B> *) optimizeTree_operators_[op_id];
+                        kj->setParent(parent);
+                        parent->setChild(kj);
+                        kj->setChild(lhs,0);
+                        kj->setChild(rhs,1);
+                        lhs->setParent(kj);
+                        rhs->setParent(kj);
+                        operators_[op_id] = kj;
+                    }
+                    else{
+                        SortMergeJoin<B> *smj = (SortMergeJoin<B> *) optimizeTree_operators_[op_id];
+                        smj->setParent(parent);
+                        parent->setChild(smj);
+                        smj->setChild(lhs,0);
+                        smj->setChild(rhs,1);
+                        lhs->setParent(smj);
+                        rhs->setParent(smj);
+                        operators_[op_id] = smj;
+                    }
+                    // Delete the original operator
+                    op->setNullChild(nullptr);
+                    op->setNullChild(nullptr, 1);
+                    op->setParent(nullptr);
+                    delete(op);
+                }
+            }
+            if(sort_def[0].first == -2)
+                operators_[op_id]->setSortOrder(SortDefinition());
+            else
+                operators_[op_id]->setSortOrder(sort_def);
+        } else if(op_id == -1) {
+            sort_before_sma = order.second;
+        }
+    }
+}
+
+template<typename B>
+std::vector<std::string> PlanParser<B>::extractColumnsFromSql(const std::string& sql) {
+    std::regex columnRegex(R"(SELECT\s+(.*?)\s*FROM)");
+    std::smatch matches;
+    if (std::regex_search(sql, matches, columnRegex)) {
+        std::string columnsStr = matches[1];
+        std::stringstream ss(columnsStr);
+        std::string segment;
+        std::vector<std::string> columns;
+
+        // Extracting columns and their aliases
+        while (std::getline(ss, segment, ',')) {
+            std::size_t aliasPos = segment.rfind("AS");
+            if (aliasPos != std::string::npos) {
+                // Take alias name if exists
+                columns.push_back(segment.substr(aliasPos + 3));
+            } else {
+                // Otherwise, extract raw column name
+                std::stringstream segmentStream(segment);
+                std::string potentialColumn;
+                segmentStream >> potentialColumn;
+                columns.push_back(potentialColumn);
+            }
+        }
+        return columns;
+    }
+    return {};
+}
+
+template<typename B>
+std::string PlanParser<B>::modifySqlStatement(const std::string& originalSql, const SortDefinition& sort_defs) {
+    auto columns = extractColumnsFromSql(originalSql);
+
+    std::string orderByClause = "";
+    for (const auto& def : sort_defs) {
+        if (def.first < 0 || def.first >= columns.size()) continue; // skip invalid column index
+
+        std::string direction = (def.second == SortDirection::ASCENDING) ? "ASC" : "DESC";
+        if (!orderByClause.empty()) orderByClause += ", ";
+        orderByClause += columns[def.first] + " " + direction;
+    }
+
+    std::regex orderByRegex("ORDER BY [^)]+$");
+    if (orderByClause.empty()) {
+        return std::regex_replace(originalSql, orderByRegex, "");
+    } else if (std::regex_search(originalSql, orderByRegex)) {
+        return std::regex_replace(originalSql, orderByRegex, "ORDER BY " + orderByClause);
+    } else {
+        return originalSql + " ORDER BY " + orderByClause;
+    }
+}
+
+
+template<typename B>
+std::map<int, typename PlanParser<B>::SortEntry> PlanParser<B>::extractSortOrders(const std::string &plan_string) {
+    std::map<int, SortEntry> sort_orders;
+    std::regex line_regex("\\n");
+    std::sregex_token_iterator line_iterator(plan_string.begin(), plan_string.end(), line_regex, -1);
+    std::sregex_token_iterator end;
+
+    int prev_op_id = -1;
+    std::string prev_op_type;
+    std::string op_type;
+
+    while (line_iterator != end) {
+        std::string line = *line_iterator++;
+        std::regex op_id_regex("#(-?\\d+):");
+        std::smatch op_id_match;
+
+        if (std::regex_search(line, op_id_match, op_id_regex)) {
+            int op_id = std::stoi(op_id_match[1].str());
+
+            std::regex op_type_regex(": (\\w+) order by:");
+            std::smatch op_type_match;
+            if (std::regex_search(line, op_type_match, op_type_regex)) {
+                op_type = op_type_match[1].str();
+
+                std::regex sort_regex("\\{([^}]+)\\}");
+                std::smatch sort_match;
+                if (std::regex_search(line, sort_match, sort_regex)) {
+                    std::string sort_str = sort_match[1].str();
+
+                    SortDefinition sort_order;
+                    if (!sort_str.empty()) {
+                        std::regex order_regex("<(\\-?\\d+),\\s(ASC|DESC|INVALID)>");
+                        std::smatch order_match;
+                        std::string::const_iterator order_start(sort_str.cbegin());
+
+                        while (std::regex_search(order_start, sort_str.cend(), order_match, order_regex)) {
+                            int32_t ordinal = std::stoi(order_match[1].str());
+                            SortDirection dir = (order_match[2].str() == "ASC") ? SortDirection::ASCENDING : SortDirection::DESCENDING;
+                            sort_order.push_back({ordinal, dir});
+                            order_start = order_match.suffix().first;
+                        }
+                    } else {
+                        // If order by set is empty, set default sort definition
+                        sort_order.push_back({-2, SortDirection::ASCENDING});
+                    }
+
+                    int next_op_id = -1;
+                    if (prev_op_type == "GroupByAggregate" && op_type == "Sort" && op_id == -1) {
+                        next_op_id = prev_op_id;
+
+                        // set sma's int value as -2, so that it can be flag for sort exsists before sma.
+                        sort_orders[prev_op_id] = std::make_tuple(sort_order, -2, "GroupByAggregate");
+                    }
+
+                    sort_orders[op_id] = std::make_tuple(sort_order, next_op_id, op_type);
+                } else if (line.find("order by: {}") != std::string::npos) { // Check if the line contains an empty order by
+                    // If order by set is empty, set default sort definition
+                    SortDefinition sort_order;
+                    sort_order.push_back({-2, SortDirection::ASCENDING});
+                    sort_orders[op_id] = std::make_tuple(sort_order, -1, op_type); // Using -1 as the default next_op_id for these cases
+                }
+            }
+
+            prev_op_id = op_id;
+            prev_op_type = op_type;
+        }
+    }
+
+    return sort_orders;
+}
+
 
 // helper function for recursing up operator tree
 template<typename B>
@@ -975,7 +1252,6 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
 
     switch(op->getType()) {
         case OperatorType::SQL_INPUT:
-        case OperatorType::SECURE_SQL_INPUT:
         case OperatorType::ZK_SQL_INPUT:
         case OperatorType::TABLE_INPUT: {
             // first try with given sort order (if any) and empty set unconditionally
@@ -983,9 +1259,26 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
             for (auto &sort: sorts) {
                 node->setSortOrder(sort);
                 optimizeTree_operators_[node->getOperatorId()] = node;
-                operatorPool.push_back(node);
                 //std::cout << node->toString() << endl;
                 recurseNode(node);
+            }
+            break;
+        }
+        case OperatorType::SECURE_SQL_INPUT:{
+            // first try with given sort order (if any) and empty set unconditionally
+            SecureSqlInput* secureSqlInputOp = dynamic_cast<SecureSqlInput*>(op);
+
+            // If it is party scan, just run the node with default sort order
+            if(secureSqlInputOp->getInputParty() > 0)
+                recurseNode(node);
+            else {
+                auto sorts = getCollations(op);
+                for (auto &sort: sorts) {
+                    node->setSortOrder(sort);
+                    optimizeTree_operators_[node->getOperatorId()] = node;
+                    //std::cout << node->toString() << endl;
+                    recurseNode(node);
+                }
             }
             break;
         }
@@ -1006,12 +1299,12 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
             recurseSort(node);
             break;
         default:
-            optimizeTree_operators_.at(node->getChild()->getOperatorId())->setParent(node);
+            // node is cloned from operators_ map in the optimizeHelper()
+            // it's child is pointing operators_ map's child(original child), so need to fix those to point child with new order
             node->setChild(optimizeTree_operators_.at(node->getChild()->getOperatorId()));
             // Same with child's sort order
             node->updateCollation();
             optimizeTree_operators_[node->getOperatorId()] = node;
-            operatorPool.push_back(node);
             //std::cout << node->toString() << endl;
             recurseNode(node);
             break;
@@ -1031,14 +1324,15 @@ void PlanParser<B>::recurseNode(Operator<B> *op) {
         size_t plan_cost = op->planCost();
         std::cout << op->printTree() << endl;
         std::cout << "Cost : " << std::to_string(plan_cost) << "\n" << "----------------------------" << std::endl;
+        total_plan_cnt_++;
 
         if(plan_cost < min_plan_cost_) {
             min_plan_cost_ = plan_cost;
             min_cost_plan_string_ = op->printMinCostPlan();
-//            if(min_cost_plan_ != nullptr) {
-//                delete min_cost_plan_;
-//            }
-            //min_cost_plan_ = op->clone();
+            if(min_cost_plan_ != nullptr) {
+                delete min_cost_plan_;
+            }
+            min_cost_plan_ = op->clone();
         }
         return;
     }
@@ -1062,72 +1356,52 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
     auto rhs_leaf = fetchLeaf(join->getChild(1));
     auto rhs_sorts = getCollations(rhs_leaf);
     for(auto &sort: rhs_sorts) {
+        // If it is party scan, skip the first empty order
         rhs_leaf->setSortOrder(sort);
         optimizeTree_operators_[rhs_leaf->getOperatorId()] = rhs_leaf;
-
-        //std::cout << rhs_leaf->toString() << endl;
-        // TODO : If there is more than one op in rhs, we need to set sort order for all of them.
-
-        // TODO: add method to propagate sort to parent nodes
-        // recommend doing this in Operator<B> - like adding an updateSortOrder() method that uses the same logic in operator constructor
-        // recurseNode(join);
 
         if(join->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN) {
             // For KeyedJoin, sort order is same with foreign key's sort order
             KeyedJoin<B> *kj = (KeyedJoin<B> *)join;
 
-            // Childs are pointing original parent, Need to fix those to point new parent.
+            // join is cloned from operators_ map in the optimizeHelper()
+            // it's childs are pointing operators_ map's child(original child), so need to fix those to point child with new order
             Operator<B> *lhs = optimizeTree_operators_.at(kj->getChild(0)->getOperatorId());
-            Operator<B> *rhs = optimizeTree_operators_.at(kj->getChild(1)->getOperatorId());
 
             kj->setChild(lhs);
-            kj->setChild(rhs, 1);
-            lhs->setParent(kj);
-            rhs->setParent(kj);
+            kj->setChild(rhs_leaf, 1);
             kj->updateCollation();
 
             optimizeTree_operators_[kj->getOperatorId()] = kj;
-            operatorPool.push_back(kj);
             //std::cout << kj->toString() << endl;
             recurseNode(kj);
 
             // For SMJ, sort order is same with sort key's order
             // Make plan in case of smj.
-            SortMergeJoin<B> *smj = new SortMergeJoin(lhs, rhs, kj->foreignKeyChild(), kj->getPredicate());
+            SortMergeJoin<B> *smj = new SortMergeJoin(lhs->clone(), rhs_leaf->clone(), kj->foreignKeyChild(), kj->getPredicate());
             smj->setOperatorId(kj->getOperatorId());
-
-            // Childs are pointing original parent, Need to fix those to point new parent.
-            smj->setChild(lhs);
-            smj->setChild(rhs, 1);
-            lhs->setParent(smj);
-            rhs->setParent(smj);
             smj->updateCollation();
             optimizeTree_operators_[smj->getOperatorId()] = smj;
-            operatorPool.push_back(smj);
             //std::cout << smj->toString() << endl;
             recurseNode(smj);
         }
-        else {
+        else if(join->getType() == OperatorType::SORT_MERGE_JOIN){
             SortMergeJoin<B> *smj = (SortMergeJoin<B> *) join;
 
             Operator<B> *lhs = optimizeTree_operators_.at(smj->getChild(0)->getOperatorId());
-            Operator<B> *rhs = optimizeTree_operators_.at(smj->getChild(1)->getOperatorId());
 
-
-            // Childs are pointing original parent, Need to fix those to point new parent.
+            // join is cloned from operators_ map in the optimizeHelper()
+            // it's childs are pointing operators_ map's child(original child), so need to fix those to point child with new order
             smj->setChild(lhs);
-            smj->setChild(rhs, 1);
-            lhs->setParent(smj);
-            rhs->setParent(smj);
+            smj->setChild(rhs_leaf, 1);
             smj->updateCollation();
             //std::cout << smj->toString() << endl;
 
             optimizeTree_operators_[smj->getOperatorId()] = smj;
-            operatorPool.push_back(smj);
             recurseNode(smj);
 
             // Make plan in case of KeyedJoin.
-            KeyedJoin<B> *kj = new KeyedJoin(lhs, rhs, smj->foreignKeyChild(), smj->getPredicate());
+            KeyedJoin<B> *kj = new KeyedJoin(lhs->clone(), rhs_leaf->clone(), smj->foreignKeyChild(), smj->getPredicate());
             kj->setOperatorId(smj->getOperatorId());
             kj->updateCollation();
             optimizeTree_operators_[kj->getOperatorId()] = kj;
@@ -1136,6 +1410,24 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             //std::cout << kj->toString() << endl;
             recurseNode(kj);
         }
+        else if(join->getType() == OperatorType::MERGE_JOIN){
+            MergeJoin<B> *mj = (MergeJoin<B> *) join;
+
+            Operator<B> *lhs = optimizeTree_operators_.at(mj->getChild(0)->getOperatorId());
+            Operator<B> *rhs = optimizeTree_operators_.at(mj->getChild(1)->getOperatorId());
+
+            // Childs are pointing original parent, Need to fix those to point new parent.
+            mj->setChild(lhs);
+            mj->setChild(rhs, 1);
+            lhs->setParent(mj);
+            rhs->setParent(mj);
+            mj->updateCollation();
+            //std::cout << smj->toString() << endl;
+
+            optimizeTree_operators_[mj->getOperatorId()] = mj;
+            operatorPool.push_back(mj);
+            recurseNode(mj);
+        }
     }
 }
 
@@ -1143,19 +1435,24 @@ template<typename B>
 void PlanParser<B>::recurseAgg(Operator<B> *agg) {
 
     Operator<B> *child = optimizeTree_operators_.at(agg->getChild()->getOperatorId());
+
+    // Need this cloned_child for second aggregate option, in case if first aggregate plan is deleted
+    Operator<B> *cloned_child = child->clone();
+
+    // Nested Loop Aggregate Case
     if (agg->getType() == OperatorType::NESTED_LOOP_AGGREGATE) {
         NestedLoopAggregate<B> *nla = (NestedLoopAggregate<B> *) agg;
 
-        child->setParent(nla);
+        // agg is cloned from operators_ map in the optimizeHelper()
+        // it's child is pointing operators_ map's child(original child), so need to fix those to point child with new order
         nla->setChild(child);
         nla->updateCollation();
         optimizeTree_operators_[nla->getOperatorId()] = nla;
-        operatorPool.push_back(nla);
         recurseNode(nla);
 
         std::vector<int32_t> group_by_ordinals = nla->group_by_;
-        // if sort not aligned, insert a sort op
         SortDefinition child_sort = child->getSortOrder();
+<<<<<<< HEAD
 //        map<int32_t, std::set<int32_t>> functional_dependency = nla->functional_dependency_;
 
         // TODO: push this up to GroupByAggregate (shared parent) level
@@ -1192,53 +1489,95 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
             child->setParent(sort_before_sma);
             sort_before_sma->setChild(child);
             sort_before_sma->setParent(sma);
+=======
+        SortDefinition effective_sort = nla->effective_sort_;
+
+        // If Child's sort is not compatible with effective_sort, then insert sort before sma.
+        if (child_sort != effective_sort) {
+            Sort<B> *sort_before_sma = new Sort<B>(cloned_child, effective_sort);
+            GroupByAggregate<B> *sma = new GroupByAggregate(sort_before_sma, group_by_ordinals, nla->aggregate_definitions_, true);
+            sma->setOperatorId(nla->getOperatorId());
+            sma->updateCollation();
+            optimizeTree_operators_[sma->getOperatorId()] = sma;
+            recurseNode(sma);
+        }
+        // If Child's sort is compatible with effective_sort, then just insert sma.
+        else {
+            GroupByAggregate<B> *sma = new GroupByAggregate(cloned_child, group_by_ordinals, nla->aggregate_definitions_, true);
+            sma->setOperatorId(nla->getOperatorId());
+            sma->updateCollation();
+            optimizeTree_operators_[sma->getOperatorId()] = sma;
+            recurseNode(sma);
+        }
+    }
+    // SortMergeAggregate Case
+    else {
+        GroupByAggregate<B> *sma = (GroupByAggregate<B> *) agg;
+
+        SortDefinition child_sort = child->getSortOrder();
+        std::vector<int32_t> group_by_ordinals = sma->group_by_;
+        SortDefinition effective_sort = sma->effective_sort_;
+
+        // If Child's sort is not compatible with effective_sort, then insert sort before sma.
+        if(child_sort != effective_sort){
+            Sort<B> *sort_before_sma = new Sort<B>(child, effective_sort);
+>>>>>>> ab2f84ea195c6ed4f2f592768c4db40d0d60889d
             sma->setChild(sort_before_sma);
         }
-        else{
-            child->setParent(sma);
+        // If Child's sort is compatible with effective_sort, then just insert sma.
+        else
             sma->setChild(child);
-        }
         sma->updateCollation();
         optimizeTree_operators_[sma->getOperatorId()] = sma;
-        operatorPool.push_back(sma);
         recurseNode(sma);
 
         // Make plan in case of nla.
+<<<<<<< HEAD
         NestedLoopAggregate<B> *nla = new NestedLoopAggregate(child->clone(), sma->group_by_, sma->aggregate_definitions_, sma->effective_sort_, sma->getCardinalityBound());
+=======
+        NestedLoopAggregate<B> *nla = new NestedLoopAggregate(cloned_child, sma->group_by_, sma->aggregate_definitions_, sma->getJsonOutputCardinality());
+>>>>>>> ab2f84ea195c6ed4f2f592768c4db40d0d60889d
         nla->setOperatorId(sma->getOperatorId());
-        child->setParent(nla);
-        nla->setChild(child);
+        nla->setChild(cloned_child);
         nla->updateCollation();
         optimizeTree_operators_[nla->getOperatorId()] = nla;
-        operatorPool.push_back(nla);
         recurseNode(nla);
+<<<<<<< HEAD
         // In NestedLoop, child's sort is not remained
         // JMR: added child sort deduction in NestedLoopAggregate::updateCollation()
         // TODO : need to change this part of setting sort order.
         //TODO : check if we need to add sort order to parent. Need Expected Sort.
         // JMR: added effective_sort_ in parent class (GroupByAggregate<B>)
+=======
+>>>>>>> ab2f84ea195c6ed4f2f592768c4db40d0d60889d
     }
 }
 
 template<typename B>
 void PlanParser<B>::recurseSort(Operator<B> *sort) {
-    // Need to check if this sort is need or not.
-    if(sort->getSortOrder() == sort->getChild()->getSortOrder()) {
-        optimizeTree_operators_[sort->getOperatorId()] = sort;
-        operatorPool.push_back(sort);
+    Operator<B> *child = optimizeTree_operators_.at(sort->getChild()->getOperatorId());
+
+    // If sort is same with child's order, then this sort is not needed
+    if(sort->getSortOrder() == child->getSortOrder()) {
         int op_id = sort->getOperatorId();
 
+        // If sort is not root, then need to fix parent's child pointer
         if(op_id < operators_.size()) {
-            Operator<B> *parent = operators_[op_id]->getParent();
-            parent->setChild(optimizeTree_operators_.at(sort->getChild()->getOperatorId()));
+            Operator<B> *parent = sort->getParent();
+            parent->setChild(child);
+            recurseNode(parent);
         }
-        recurseNode(sort);
+        // If sort is root
+        else{
+            child->setParent(nullptr);
+            recurseNode(child);
+        }
     }
+    // If sort is needed
     else {
-        sort->setChild(optimizeTree_operators_.at(sort->getChild()->getOperatorId()));
-        optimizeTree_operators_.at(sort->getChild()->getOperatorId())->setParent(sort);
+        sort->setChild(child);
+        sort->updateCollation();
         optimizeTree_operators_[sort->getOperatorId()] = sort;
-        operatorPool.push_back(sort);
         recurseNode(sort);
     }
 }
