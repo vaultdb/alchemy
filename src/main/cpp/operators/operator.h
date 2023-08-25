@@ -192,7 +192,7 @@ namespace  vaultdb {
                 case OperatorType::SCALAR_AGGREGATE:
                     return "ScalarAggregate";
                 case OperatorType::SORT_MERGE_AGGREGATE:
-                    return "GroupByAggregate";
+                    return "SortMergeAggregate";
                 case OperatorType::NESTED_LOOP_AGGREGATE:
                     return "NestedLoopAggregate";
                 case OperatorType::UNION:

@@ -26,7 +26,7 @@ bash run-mpc-tests.sh
 #bash run.sh  zk_basic_join_test
 #bash run.sh zk_keyed_join_test
 #bash run.sh  zk_scalar_aggregate_test
-#bash run.sh zk_group_by_aggregate_test
+#bash run.sh zk_sort_merge_aggregate_test
 #bash run.sh zk_sort_test
 #bash run.sh zk_tpch_test
 

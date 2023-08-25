@@ -1,6 +1,6 @@
 #include "pilot_utilities.h"
 #include <operators/sort.h>
-#include <operators/group_by_aggregate.h>
+#include <operators/sort_merge_aggregate.h>
 #include <util/data_utilities.h>
 #include <data/csv_reader.h>
 #include "util/emp_manager/sh2pc_manager.h"
@@ -61,7 +61,7 @@ SecureTable *PilotUtilities::rollUpAggregate(SecureTable *input, const int &ordi
             ScalarAggregateDefinition(8, AggregateId::SUM, "denominator_multisite")
     };
 
-    GroupByAggregate rollupStrata(sort, groupByCols, aggregators );
+    SortMergeAggregate rollupStrata(sort, groupByCols, aggregators, SortDefinition() );
 
     return rollupStrata.run()->clone();
 

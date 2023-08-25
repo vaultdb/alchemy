@@ -6,7 +6,7 @@
 #include <operators/csv_input.h>
 #include <operators/project.h>
 #include <operators/sort.h>
-#include <operators/group_by_aggregate.h>
+#include <operators/sort_merge_aggregate.h>
 #include <operators/filter.h>
 #include <test/mpc/emp_base_test.h>
 

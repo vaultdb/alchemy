@@ -349,7 +349,7 @@ TEST_F(OperatorCostModelTest, test_group_by_aggregate) {
 
 
     std::vector<int32_t> group_bys{0};
-    GroupByAggregate aggregate(input, group_bys, aggregators);
+    SortMergeAggregate aggregate(input, group_bys, aggregators);
 
 	size_t start_gates = manager_->andGateCount();
 
@@ -392,7 +392,7 @@ TEST_F(OperatorCostModelTest, test_nested_loop_aggregate) {
 
 
     std::vector<int32_t> group_bys{0};
-    NestedLoopAggregate aggregate(input, group_bys, aggregators, FLAGS_cutoff);
+    NestedLoopAggregate aggregate(input, group_bys, aggregators, SortDefinition(), FLAGS_cutoff);
 
 	size_t start_gates = manager_->andGateCount();
 

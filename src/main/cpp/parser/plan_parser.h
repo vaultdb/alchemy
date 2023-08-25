@@ -8,8 +8,6 @@
 #include <emp-tool/emp-tool.h>
 #include <operators/operator.h>
 #include "util/system_configuration.h"
-#include <operators/nested_loop_aggregate.h>
-#include <operators/group_by_aggregate.h>
 #include <operators/sort.h>
 #include <operators/merge_input.h>
 
@@ -18,6 +16,9 @@
 // plan generator from SQL is in vaultdb-mock repo
 
 namespace vaultdb {
+
+    template<typename B> class SortMergeAggregate;
+    template<typename B> class NestedLoopAggregate;
 
     template<typename B>
     class PlanParser {
@@ -100,7 +101,7 @@ namespace vaultdb {
         void calculateAutoAggregate();
 
         bool agg_auto_flag_ = false;
-        std::vector<GroupByAggregate<B> *> sma_vector_;
+        std::vector<SortMergeAggregate<B> *> sma_vector_;
         std::vector<NestedLoopAggregate<B> *> nla_vector_;
         std::vector<Sort<B> *> sort_vector_;
         std::vector<int> agg_id_;

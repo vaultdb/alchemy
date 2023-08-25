@@ -21,7 +21,7 @@ bash  test/support/load-generated-data.sh 100
 ./bin/sort_merge_join_test --flagfile=flagfiles/plain.flags --storage=column
 ./bin/sort_test --flagfile=flagfiles/plain.flags --storage=column
 ./bin/scalar_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
-./bin/group_by_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/sort_merge_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
 ./bin/nested_loop_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
 ./bin/secret_share_generator_test --flagfile=flagfiles/plain.flags --storage=column
 #this test depends on pilot testbed                                                                                                                                                                                                                  
@@ -41,7 +41,7 @@ bash  test/support/load-generated-data.sh 100
 ./bin/secure_keyed_join_test  --flagfile=flagfiles/alice.flags --storage=column
 ./bin/secure_sort_merge_join_test --flagfile=flagfiles/alice.flags --storage=column
 ./bin/secure_scalar_aggregate_test 	 --flagfile=flagfiles/alice.flags --storage=column
-./bin/secure_group_by_aggregate_test  --flagfile=flagfiles/alice.flags --storage=column
+./bin/secure_sort_merge_aggregate_test  --flagfile=flagfiles/alice.flags --storage=column
 ./bin/secure_nested_loop_aggregate_test --flagfile=flagfiles/alice.flags --storage=column
 #./bin/enrich_test  --party=1 --storage=column  #excluded because data is not synced between A + B
 ./bin/secure_tpch_test  --flagfile=flagfiles/alice.flags --storage=column

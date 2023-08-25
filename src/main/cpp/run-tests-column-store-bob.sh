@@ -28,7 +28,7 @@ bash  test/support/load-generated-data.sh 100
 ./bin/sort_merge_join_test --flagfile=flagfiles/plain.flags --storage=column
 ./bin/sort_test --flagfile=flagfiles/plain.flags --storage=column
 ./bin/scalar_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
-./bin/group_by_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/sort_merge_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
 ./bin/nested_loop_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
 ./bin/secret_share_generator_test --flagfile=flagfiles/plain.flags --storage=column
 #this test depends on pilot testbed
@@ -47,7 +47,7 @@ ALICE_HOST=$1
 ./bin/secure_keyed_join_test  --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST
 ./bin/secure_sort_merge_join_test --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST
 ./bin/secure_scalar_aggregate_test   --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST
-./bin/secure_group_by_aggregate_test  --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST
+./bin/secure_sort_merge_aggregate_test  --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST
 ./bin/secure_nested_loop_aggregate_test  --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST
 
 #./bin/enrich_test  --party=2 --storage=column --alice_host=$ALICE_HOST # excluded because data is not synced between A + B

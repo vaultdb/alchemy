@@ -48,7 +48,7 @@ SecureTable *EnrichTest::rollUpAggregate(const int &ordinal, SecureTable *src) {
             ScalarAggregateDefinition(8, AggregateId::SUM, "denominator_multisite")
     };
 
-    GroupByAggregate rollup_strata(sort, group_bys, aggregators );
+    SortMergeAggregate rollup_strata(sort, group_bys, aggregators );
     return rollup_strata.run()->clone();
 }
 
@@ -122,7 +122,7 @@ SecureTable *EnrichTest::loadUnionAndDeduplicateData() const{
             ScalarAggregateDefinition(9, AggregateId::MAX, "denom_excl")
     };
 
-    GroupByAggregate<emp::Bit> unioned_pats(sort_unioned, groupByCols, unionAggregators );
+    SortMergeAggregate<emp::Bit> unioned_pats(sort_unioned, groupByCols, unionAggregators );
     return unioned_pats.run()->clone();
 
 }
@@ -214,7 +214,7 @@ SecureTable *EnrichTest::aggregatePatientData() {
 
     // output schema:
     // zip_marker (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
-    GroupByAggregate aggregated_pats(sort, group_bys, aggregators );
+    SortMergeAggregate aggregated_pats(sort, group_bys, aggregators );
     return aggregated_pats.run()->clone();
 
 }

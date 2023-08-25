@@ -12,67 +12,6 @@
 using namespace vaultdb;
 using namespace std;
 
-template<typename B>
-NestedLoopAggregate<B>::NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                                            const vector<ScalarAggregateDefinition> &aggregates,
-                                            const SortDefinition &sort,
-                                            const int & output_card) : Operator<B>(child, sort),
-                                                                       aggregate_definitions_(aggregates),
-                                                                       group_by_(groupBys)
-{
-    this->output_cardinality_ = output_card;
-    setup();
-}
-
-
-template<typename B>
-NestedLoopAggregate<B>::NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                                            const vector<ScalarAggregateDefinition> &aggregates,
-                                            const int output_card) : Operator<B>(child, SortDefinition()),
-                                                                     aggregate_definitions_(aggregates),
-                                                                     group_by_(groupBys) {
-
-
-    this->output_cardinality_ = output_card;
-    setup();
-}
-
-template<typename B>
-NestedLoopAggregate<B>::NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                                            const vector<ScalarAggregateDefinition> &aggregates,
-                                            const int output_card, const SortDefinition & effective_sort) : Operator<B>(child, SortDefinition()),
-                                                                     aggregate_definitions_(aggregates),
-                                                                     group_by_(groupBys), effective_sort_(effective_sort) {
-
-
-    this->output_cardinality_ = output_card;
-    setup();
-}
-
-template<typename B>
-NestedLoopAggregate<B>::NestedLoopAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
-                                            const vector<ScalarAggregateDefinition> &aggregates,
-                                            const SortDefinition &sort,
-                                            const int & output_card) : Operator<B>(child, sort),
-                                                                       aggregate_definitions_(aggregates),
-                                                                       group_by_(groupBys) {
-
-    this->output_cardinality_ = output_card;
-    setup();
-}
-
-template<typename B>
-NestedLoopAggregate<B>::NestedLoopAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
-                                            const vector<ScalarAggregateDefinition> &aggregates,
-                                            const int & output_card) : Operator<B>(child, SortDefinition()),
-                                                                       aggregate_definitions_(aggregates),
-                                                                       group_by_(groupBys) {
-
-    this->output_cardinality_ = output_card;
-
-    setup();
-}
-
 
 template<typename B>
 QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
@@ -115,8 +54,8 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
             // if output is dummy and no match so far, then initialize group-by cols
             B initialize_group_by = output_dummy & !matched;
 
-            for (int k = 0; k < group_by_.size(); ++k) {
-                Field<B> src = input->getPackedField(i, group_by_[k]);
+            for (int k = 0; k < this->group_by_.size(); ++k) {
+                Field<B> src = input->getPackedField(i, this->group_by_[k]);
                 Field<B> dst = Field<B>::If(initialize_group_by, src, output->getPackedField(j, k));
                 output->setPackedField(j, k, dst);
             }
@@ -136,9 +75,9 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
         } // end for each  output tuple
     }// end for each input tuple
 
-    for(int i = 0; i < aggregate_definitions_.size(); ++i) {
+    for(int i = 0; i < this->aggregate_definitions_.size(); ++i) {
             delete aggregators_[i];
-        if(aggregate_definitions_[i].type == AggregateId::AVG) {
+        if(this->aggregate_definitions_[i].type == AggregateId::AVG) {
             for(int j = 0; j < per_tuple_aggregators.size(); ++j) {
                 delete per_tuple_aggregators[j][i];
             }
@@ -154,12 +93,12 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
 template<typename B>
 B NestedLoopAggregate<B>::groupByMatch(const QueryTable<B> *src, const int & src_row, const QueryTable<B> *dst, const int & dst_row) const {
 
-    B result = (src->getPackedField(src_row,group_by_[0]) == dst->getPackedField(dst_row,0));
+    B result = (src->getPackedField(src_row, this->group_by_[0]) == dst->getPackedField(dst_row,0));
     size_t cursor = 1;
 
-    while(cursor < group_by_.size()) {
+    while(cursor < this->group_by_.size()) {
         result = result &
-                 (src->getPackedField(src_row, group_by_[cursor]) == dst->getPackedField(dst_row, cursor));
+                 (src->getPackedField(src_row, this->group_by_[cursor]) == dst->getPackedField(dst_row, cursor));
         ++cursor;
     }
 
@@ -169,57 +108,19 @@ B NestedLoopAggregate<B>::groupByMatch(const QueryTable<B> *src, const int & src
 }
 
 
-template<typename B>
-QuerySchema NestedLoopAggregate<B>::generateOutputSchema(const QuerySchema & input_schema) const {
-    QuerySchema output_schema;
-    size_t i;
-    bool bit_packing = SystemConfiguration::getInstance().bitPackingEnabled();
-    int input_row_cnt = this->getChild(0)->getOutputCardinality();
-
-    for(i = 0; i < group_by_.size(); ++i) {
-        QueryFieldDesc srcField = input_schema.getField(group_by_[i]);
-        QueryFieldDesc dstField(i, srcField.getName(), srcField.getTableName(), srcField.getType());
-        dstField.setStringLength(srcField.getStringLength());
-        output_schema.putField(dstField);
-    }
-
-
-    for(i = 0; i < aggregate_definitions_.size(); ++i) {
-        ScalarAggregateDefinition agg = aggregate_definitions_[i];
-        FieldType agg_type = (agg.ordinal >= 0) ?
-                             input_schema.getField(agg.ordinal).getType() :
-                             (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
-        QueryFieldDesc f;
-        if((agg.type == AggregateId::MIN || agg.type == AggregateId::MAX) && std::is_same_v<B, Bit> && bit_packing) {
-            f = QueryFieldDesc(input_schema.getField(agg.ordinal), i + group_by_.size()); // copy out bit packing info
-        }
-        else if (agg.type == AggregateId::COUNT&& std::is_same_v<B, Bit> && bit_packing) {
-            f = QueryFieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
-            f.initializeFieldSizeWithCardinality(input_row_cnt);
-        }
-        else {
-            f = QueryFieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
-        }
-        output_schema.putField(f);
-    }
-
-    output_schema.initializeFieldOffsets();
-    return output_schema;
-
-}
 
 template<typename B>
 void NestedLoopAggregate<B>::setup() {
     QuerySchema input_schema = this->getChild(0)->getOutputSchema();
     int max_cnt = this->getChild(0)->getOutputCardinality();
-    int output_ordinal = group_by_.size();
-
+    int output_ordinal = this->group_by_.size();
+    this->output_cardinality_ = this->cardinality_bound_;
 
     if(this->output_cardinality_ == 0) { // naive case - go full oblivious
         this->output_cardinality_ = this->getChild(0)->getOutputCardinality();
     }
 
-    for(ScalarAggregateDefinition agg : aggregate_definitions_) {
+    for(ScalarAggregateDefinition agg : this->aggregate_definitions_) {
         // for most aggs the output type is the same as the input type
         // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
         FieldType agg_val_type = (agg.ordinal >= 0) ?
@@ -236,7 +137,7 @@ void NestedLoopAggregate<B>::setup() {
 
 
 
-    Operator<B>::output_schema_ = generateOutputSchema(input_schema);
+    this->output_schema_ = this->generateOutputSchema(input_schema);
 
 }
 

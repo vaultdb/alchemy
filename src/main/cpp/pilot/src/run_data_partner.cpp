@@ -29,7 +29,7 @@ int min_cell_count_ = 11;
 // roll up one group-by strata at a time
 // input schema:
 // study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6)
-SecureTable *runRollup(int idx, string colName, int party, SecureTable *data_cube, const std::string & selection_clause, const string &output_path) {
+SecureTable *runRollup(int idx, const string & colName, int party, SecureTable *data_cube, const std::string & selection_clause, const string &output_path) {
     auto start_time = emp::clock_start();
     SecureTable *stratified = PilotUtilities::rollUpAggregate(data_cube, idx);
     if(!TESTBED)
@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
     bool semijoin_optimization = false;
     size_t cardinality_bound = 441*3; // 7 * 3 * 3 * 7 * 3 study_years
     string study_year, party_name;
-    string logfile_prefix = "";
+    string logfile_prefix;
     string patient_input_query = DataUtilities::readTextFileToString("pilot/queries/patient.sql");
     string partial_count_query = DataUtilities::readTextFileToString("pilot/queries/partial-count.sql");
     string selection_clause;

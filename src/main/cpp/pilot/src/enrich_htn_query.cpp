@@ -6,6 +6,7 @@
 #include <query_table/plain_tuple.h>
 #include <expression/function_expression.h>
 #include <expression/comparator_expression_nodes.h>
+#include <operators/sort_merge_aggregate.h>
 #include <operators/shrinkwrap.h>
 #include <operators/union.h>
 #include <pilot/src/common/shared_schema.h>
@@ -53,7 +54,7 @@ SecureTable *EnrichHtnQuery::filterPatients() {
             ScalarAggregateDefinition(8, AggregateId::MAX, "denom_excl")  // #9
     };
 
-    auto unionedPatients = new GroupByAggregate (sortUnioned, groupByCols, aggregators );
+    auto unionedPatients = new SortMergeAggregate (sortUnioned, groupByCols, aggregators, SortDefinition());
     SecureTable *aggregated = unionedPatients->run();
 
     double runtime = emp::time_from(start_time);
@@ -166,7 +167,7 @@ void EnrichHtnQuery::aggregatePatients(SecureTable *src) {
 
     // output schema:
     // study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
-    auto aggregator = new GroupByAggregate (sort, groupByCols, aggregators);
+    auto aggregator = new SortMergeAggregate (sort, groupByCols, aggregators);
     data_cube_ = aggregator->run();
 
     if(cardinality_bound_ < data_cube_->getTupleCount()) {
@@ -206,7 +207,7 @@ SecureTable *EnrichHtnQuery::aggregatePartialPatientCounts( SecureTable *src, co
 
     // output schema:
     // study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
-    auto aggregator = new GroupByAggregate(sort, groupByCols, aggregators);
+    auto aggregator = new SortMergeAggregate(sort, groupByCols, aggregators);
     SecureTable *dst = aggregator->run();
 
 
@@ -248,7 +249,7 @@ void EnrichHtnQuery::unionWithPartialAggregates(vector<SecureTable *> partials) 
 
     // output schema:
     // study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
-    auto aggregator = new GroupByAggregate(sort, groupByCols, aggregators);
+    auto aggregator = new SortMergeAggregate(sort, groupByCols, aggregators);
     data_cube_ = aggregator->run();
 
     if(cardinality_bound_ < data_cube_->getTupleCount()) {
