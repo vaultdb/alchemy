@@ -1015,23 +1015,7 @@ void PlanParser<B>::changeOperatorSortOrder() {
             Operator<B> *op = operators_[op_id];
             OperatorType op_type = op->getType();
 
-            if (op_type == OperatorType::SQL_INPUT || op_type == OperatorType::SECURE_SQL_INPUT ||
-                    op_type == OperatorType::ZK_SQL_INPUT || op_type == OperatorType::TABLE_INPUT) {
-                switch(op_type) {
-                    case OperatorType::SQL_INPUT:
-                        break;
-                    case OperatorType::SECURE_SQL_INPUT:
-                        // Attempt to cast the pointer to SecureSqlInput type
-                        SecureSqlInput* secureSqlInputOp = dynamic_cast<SecureSqlInput*>(op);
-
-                        if (secureSqlInputOp) { // If the cast was successful
-                            string sql_statement_ = secureSqlInputOp->getInputQuery();
-                            sql_statement_ = modifySqlStatement(sql_statement_, sort_def);
-                            secureSqlInputOp->setInputQuery(sql_statement_);
-                        }
-                        break;
-                }
-            } else if(op_type == OperatorType::SORT_MERGE_AGGREGATE || op_type == OperatorType::NESTED_LOOP_AGGREGATE) {
+            if(op_type == OperatorType::SORT_MERGE_AGGREGATE || op_type == OperatorType::NESTED_LOOP_AGGREGATE) {
                 //If optimized plan has different aggregate with original plan
                 if(op->getTypeString() != std::get<2>(order.second)) {
                     Operator<B> *child = op->getChild();
@@ -1040,16 +1024,12 @@ void PlanParser<B>::changeOperatorSortOrder() {
                     if(std::get<2>(order.second) == "GroupByAggregate"){
                         GroupByAggregate<B> *sma = (GroupByAggregate<B> *) optimizeTree_operators_[op_id];
                         sma->setChild(child);
-                        child->setParent(sma);
-                        sma->setParent(parent);
                         parent->setChild(sma);
                         operators_[op_id] = sma;
                     }
                     else{
                         NestedLoopAggregate<B> *nla = (NestedLoopAggregate<B> *) optimizeTree_operators_[op_id];
                         nla->setChild(child);
-                        child->setParent(nla);
-                        nla->setParent(parent);
                         parent->setChild(nla);
                         operators_[op_id] = nla;
                     }
@@ -1072,9 +1052,7 @@ void PlanParser<B>::changeOperatorSortOrder() {
                         Operator<B> *child = op->getChild();
                         Sort<B> *new_sort = new Sort<B>(child, std::get<0>(sort_before_sma));
                         new_sort->setOperatorId(-1);
-                        child->setParent(new_sort);
                         new_sort->setChild(child);
-                        new_sort->setParent(op);
                         op->setChild(new_sort);
                     }
                 }
@@ -1088,7 +1066,6 @@ void PlanParser<B>::changeOperatorSortOrder() {
                         delete_sort->setParent(nullptr);
                         delete delete_sort;
                         op->setChild(child);
-                        child->setParent(op);
                     }
                 }
             }  else if(op_type == OperatorType::KEYED_NESTED_LOOP_JOIN || op_type == OperatorType::SORT_MERGE_JOIN) {
@@ -1100,22 +1077,16 @@ void PlanParser<B>::changeOperatorSortOrder() {
 
                     if(std::get<2>(order.second) == "KeyedJoin"){
                         KeyedJoin<B> *kj = (KeyedJoin<B> *) optimizeTree_operators_[op_id];
-                        kj->setParent(parent);
                         parent->setChild(kj);
                         kj->setChild(lhs,0);
                         kj->setChild(rhs,1);
-                        lhs->setParent(kj);
-                        rhs->setParent(kj);
                         operators_[op_id] = kj;
                     }
                     else{
                         SortMergeJoin<B> *smj = (SortMergeJoin<B> *) optimizeTree_operators_[op_id];
-                        smj->setParent(parent);
                         parent->setChild(smj);
                         smj->setChild(lhs,0);
                         smj->setChild(rhs,1);
-                        lhs->setParent(smj);
-                        rhs->setParent(smj);
                         operators_[op_id] = smj;
                     }
                     // Delete the original operator
