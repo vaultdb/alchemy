@@ -999,8 +999,8 @@ void PlanParser<B>::changeOperatorSortOrder() {
                     Operator<B> *child = op->getChild();
                     Operator<B> *parent = op->getParent();
 
-                    if(std::get<2>(order.second) == "GroupByAggregate"){
-                        GroupByAggregate<B> *sma = (GroupByAggregate<B> *) optimizeTree_operators_[op_id];
+                    if(std::get<2>(order.second) == "SortMergeAggregate"){
+                        SortMergeAggregate<B> *sma = (SortMergeAggregate<B> *) optimizeTree_operators_[op_id];
                         sma->setChild(child);
                         parent->setChild(sma);
                         operators_[op_id] = sma;
@@ -1184,11 +1184,11 @@ std::map<int, typename PlanParser<B>::SortEntry> PlanParser<B>::extractSortOrder
                     }
 
                     int next_op_id = -1;
-                    if (prev_op_type == "GroupByAggregate" && op_type == "Sort" && op_id == -1) {
+                    if (prev_op_type == "SortMergeAggregate" && op_type == "Sort" && op_id == -1) {
                         next_op_id = prev_op_id;
 
                         // set sma's int value as -2, so that it can be flag for sort exsists before sma.
-                        sort_orders[prev_op_id] = std::make_tuple(sort_order, -2, "GroupByAggregate");
+                        sort_orders[prev_op_id] = std::make_tuple(sort_order, -2, "SortMergeAggregate");
                     }
 
                     sort_orders[op_id] = std::make_tuple(sort_order, next_op_id, op_type);
@@ -1422,7 +1422,7 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
         // If Child's sort is not compatible with effective_sort, then insert sort before sma.
         if (child_sort != effective_sort) {
             Sort<B> *sort_before_sma = new Sort<B>(cloned_child, effective_sort);
-            GroupByAggregate<B> *sma = new SortMergeAggregate<B>(sort_before_sma, group_by_ordinals, nla->aggregate_definitions_, effective_sort, nla->getCardinalityBound());
+            SortMergeAggregate<B> *sma = new SortMergeAggregate<B>(sort_before_sma, group_by_ordinals, nla->aggregate_definitions_, effective_sort, nla->getCardinalityBound());
             sma->setOperatorId(nla->getOperatorId());
             sma->updateCollation();
             optimizeTree_operators_[sma->getOperatorId()] = sma;
@@ -1430,7 +1430,7 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
         }
             // If Child's sort is compatible with effective_sort, then just insert sma.
         else {
-            GroupByAggregate<B> *sma = new SortMergeAggregate<B>(cloned_child, group_by_ordinals, nla->aggregate_definitions_, effective_sort, nla->getCardinalityBound());
+            SortMergeAggregate<B> *sma = new SortMergeAggregate<B>(cloned_child, group_by_ordinals, nla->aggregate_definitions_, effective_sort, nla->getCardinalityBound());
             sma->setOperatorId(nla->getOperatorId());
             sma->updateCollation();
             optimizeTree_operators_[sma->getOperatorId()] = sma;
@@ -1439,7 +1439,7 @@ void PlanParser<B>::recurseAgg(Operator<B> *agg) {
     }
         // SortMergeAggregate Case
     else {
-        GroupByAggregate<B> *sma = (GroupByAggregate<B> *) agg;
+        SortMergeAggregate<B> *sma = (SortMergeAggregate<B> *) agg;
 
         SortDefinition child_sort = child->getSortOrder();
         std::vector<int32_t> group_by_ordinals = sma->group_by_;
