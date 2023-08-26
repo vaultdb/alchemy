@@ -1621,23 +1621,33 @@ void PlanParser<B>::recurseSort(Operator<B> *sort) {
             // If sort was root
             else {
                 s->setNullChild(nullptr);
-                delete(s);
                 child->setParent(nullptr);
-                root_ = child;
-                recurseNode(child);
+
+                size_t plan_cost = child->planCost();
+                std::cout << child->printTree() << endl;
+                std::cout << "Cost : " << std::to_string(plan_cost) << "\n" << "----------------------------" << std::endl;
+                total_plan_cnt_++;
+
+                if(plan_cost < min_plan_cost_) {
+                    min_plan_cost_ = plan_cost;
+                    min_cost_plan_string_ = child->printMinCostPlan();
+                    if(min_cost_plan_ != nullptr) {
+                        delete min_cost_plan_;
+                    }
+                    min_cost_plan_ = child->clone();
+                }
+                return;
             }
         }
         // If sort is needed
         else {
             sort->setChild(child);
-            sort->updateCollation();
             optimizeTree_operators_[sort->getOperatorId()] = sort;
             recurseNode(sort);
         }
     }
     else{
         sort->setChild(child);
-        sort->updateCollation();
         optimizeTree_operators_[sort->getOperatorId()] = sort;
         recurseNode(sort);
     }
