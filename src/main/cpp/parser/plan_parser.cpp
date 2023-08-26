@@ -623,7 +623,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                }
 
                Operator<B> *lhs_sorter = new Sort<B>(lhs->clone(), lhs_sort);
-               auto smj_presorted = new SortMergeJoin<B>(lhs->clone(), lhs_sorter, foreign_key, join_condition->clone());
+               auto smj_presorted = new SortMergeJoin<B>(lhs_sorter, rhs->clone(), foreign_key, join_condition->clone());
                auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
                delete smj_presorted;
 
