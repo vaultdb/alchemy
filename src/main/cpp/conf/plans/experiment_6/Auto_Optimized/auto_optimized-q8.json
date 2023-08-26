@@ -399,6 +399,17 @@
           ]
         }
       ]
+    },
+    {
+      "id": "12",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ]
     }
   ]
 }

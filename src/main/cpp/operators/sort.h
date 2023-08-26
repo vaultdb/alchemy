@@ -31,6 +31,7 @@ namespace  vaultdb {
         QueryTable<B> *normalizeTable(QueryTable<B> *src);
         QueryTable<B> *denormalizeTable(QueryTable<B> *src);
 
+        int getLimit() const { return limit_; }
         void updateCollation() override {}
 
     protected:
