@@ -125,8 +125,7 @@ QueryTuple<bool>::QueryTuple(QuerySchema *schema) {
     memset(managed_data_, 0, tuple_byte_cnt); // zero out memory (for dummy tuples)
     fields_ = managed_data_;
     schema_ = schema;
-
-
+    this->setDummyTag(true);
 }
 
 QueryTuple<bool>::QueryTuple(const QueryTuple<bool> &src) {

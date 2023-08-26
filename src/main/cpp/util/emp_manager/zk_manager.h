@@ -15,6 +15,7 @@ namespace vaultdb {
 
 
         ZKManager(string gen_host, int party, int port) {
+
             for(int i = 0; i < threads_; ++i)
                 ios_[i] = new BoolIO<NetIO>(new NetIO(party == ALICE ? nullptr
                                         : gen_host.c_str(),port+i), party==ALICE);
@@ -22,11 +23,14 @@ namespace vaultdb {
             SystemConfiguration & s = SystemConfiguration::getInstance();
             s.emp_bit_size_bytes_ = sizeof(emp::block);
             s.party_ = party;
+            s.emp_mode_ = EmpMode::ZK;
         }
 
         // set up EMP for insecure execution
         ZKManager()  {
             setup_plain_prot(false, "");
+            SystemConfiguration & s = SystemConfiguration::getInstance();
+            s.emp_mode_ = EmpMode::PLAIN;
         }
 
 

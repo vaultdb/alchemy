@@ -185,6 +185,7 @@ QueryTuple<emp::Bit>::QueryTuple(QuerySchema *schema) {
     // schema_ = std::make_shared<QuerySchema>(schema);
     // thus const'ing it above
     schema_ = schema;
+    this->setDummyTag(true);
 }
 
 QueryTuple<emp::Bit>::QueryTuple(const QueryTuple & src) {

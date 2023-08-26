@@ -10,14 +10,10 @@
       "type": [
         {
           "type": "INTEGER",
-          "nullable": false,
           "name": "l_orderkey"
         },
         {
           "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
           "name": "sum_qty"
         }
       ],

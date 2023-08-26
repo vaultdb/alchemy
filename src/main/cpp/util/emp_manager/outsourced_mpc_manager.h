@@ -76,11 +76,15 @@ namespace  vaultdb {
             SystemConfiguration & s = SystemConfiguration::getInstance();
             s.emp_bit_size_bytes_  =  sizeof(OMPCPackedWire);
             s.party_ = party;
+            s.emp_mode_ = EmpMode::OUTSOURCED;
         }
 
         // setup for plaintext execution
         OutsourcedMpcManager() {
             emp::backend = new ClearPrinter();
+            SystemConfiguration & s = SystemConfiguration::getInstance();
+            s.emp_mode_ = EmpMode::PLAIN;
+
         }
 
         size_t andGateCount() const override {

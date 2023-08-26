@@ -68,7 +68,7 @@ package_add_test(secret_share_generator_test secret_share_generator_test.cpp pla
 package_add_test(plan_parser_test plan_parser_test.cpp plain/plain_base_test.cpp)
 #cpackage_add_test(plan_deparser_test plan_deparser_test.cpp plain/plain_base_test.cpp)
 
-package_add_test(tpch_test tpch_test.cpp plain/plain_base_test.cpp)
+package_add_test(tpch_test plain/tpch_test.cpp plain/plain_base_test.cpp)
 
 unset(Labels)
 set(Labels "LABELS;PlainTest")
@@ -123,3 +123,4 @@ package_add_test(zk_keyed_join_test zk/zk_keyed_join.cpp zk/zk_base_test.cpp)
 package_add_test(zk_scalar_aggregate_test zk/zk_scalar_aggregate_test.cpp zk/zk_base_test.cpp)
 package_add_test(zk_group_by_aggregate_test zk/zk_group_by_aggregate_test.cpp zk/zk_base_test.cpp)
 package_add_test(zk_tpch_test zk/zk_tpch_test.cpp zk/zk_base_test.cpp)
+

@@ -1,6 +1,7 @@
 #include "zk_base_test.h"
 #include <util/data_utilities.h>
 #include <operators/sql_input.h>
+#include <util/field_utilities.h>
 
 using namespace vaultdb;
 
@@ -8,8 +9,8 @@ DECLARE_int32(party);
 DECLARE_int32(port);
 DECLARE_string(alice_host);
 
-const std::string ZkTest::unioned_db_ = "tpch_unioned_15000"; // rename from tpch_unioned_sf0.1 to avoid non-standard characters
-const std::string ZkTest::empty_db_=  "tpch_zk_bob"; // this should be an empty DBMS for testing but contain the same schema as tpc-h
+const std::string ZkTest::unioned_db_ = "tpch_unioned_150";
+const std::string ZkTest::empty_db_=  "tpch_empty"; // this should be an empty DBMS for testing but contain the same schema as tpc-h
 
 //  set up tpch_zk_bob with:
 //  \set target_db tpch_zk_bob
@@ -25,11 +26,20 @@ const std::string ZkTest::empty_db_=  "tpch_zk_bob"; // this should be an empty 
 //DELETE FROM part CASCADE;
 
 void ZkTest::SetUp() {
+    SystemConfiguration & s = SystemConfiguration::getInstance();
+
     manager_ = new ZKManager(FLAGS_alice_host, FLAGS_party, FLAGS_port);
 
-    // Alice gets unioned DB to query entire dataset for ZK Proof
+    // Alice gets unioned DB to query entire dataset for ZK proof
     db_name_ = (FLAGS_party == ALICE) ? unioned_db_ : empty_db_;
     Utilities::mkdir("data");
+    s.emp_manager_ = manager_;
+
+    BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(unioned_db_);
+    s.initialize(db_name_, md, StorageModel::ROW_STORE);
+    s.setEmptyDbName(empty_db_);
+    s.emp_manager_ = manager_;
+    s.emp_mode_ = EmpMode::ZK;
 
 }
 

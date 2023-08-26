@@ -50,13 +50,11 @@ QueryTable<Bit> *ZKManager::secretShare(const QueryTable<bool> *src) {
         netio->flush();
     }
 
-    assert(alice_tuple_cnt > 0);
+    // zero rows is needed for MergeJoin
+    //assert(alice_tuple_cnt > 0);
 
     QuerySchema dst_schema = QuerySchema::toSecure(src->getSchema());
-
-    SecureTable *dst_table = TableFactory<Bit>::getTable(alice_tuple_cnt, dst_schema, src->storageModel());
-    dst_table->setSortOrder(src->getSortOrder());
-
+    SecureTable *dst_table = TableFactory<Bit>::getTable(alice_tuple_cnt, dst_schema, src->storageModel(), src->getSortOrder());
 
     if (party == emp::ALICE) {
         secret_share_send(emp::ALICE,  (PlainTable *) src, dst_table);

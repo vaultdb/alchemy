@@ -21,12 +21,17 @@ namespace  vaultdb {
             SystemConfiguration & s = SystemConfiguration::getInstance();
             s.emp_bit_size_bytes_ = sizeof(emp::block);
             s.party_ = party;
+            s.emp_mode_ = EmpMode::SH2PC;
+
 
         }
 
         // set up EMP for insecure execution
         SH2PCManager()  {
             setup_plain_prot(false, "");
+            SystemConfiguration & s = SystemConfiguration::getInstance();
+            s.emp_mode_ = EmpMode::PLAIN;
+
         }
 
         size_t andGateCount() const override {

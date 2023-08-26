@@ -9,25 +9,58 @@ template<typename B>
 QueryTable<B> *MergeJoin<B>::runSelf() {
     auto lhs = this->getChild(0)->getOutput();
     auto rhs = this->getChild(1)->getOutput();
-    assert(lhs->getTupleCount() == rhs->getTupleCount());
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
-    this->output_ = TableFactory<B>::getTable(lhs->getTupleCount(), this->output_schema_, lhs->storageModel(), this->sort_definition_);
-    B selected, dst_dummy_tag;
+    this->output_ = TableFactory<B>::getTable(this->output_cardinality_, this->output_schema_, lhs->storageModel(),
+                                              this->sort_definition_);
 
-    for(int i = 0; i < this->output_cardinality_; ++i) {
-        Join<B>::write_left(this->output_, i,  lhs, i);
-        Join<B>::write_right(this->output_, i,  rhs, i);
-        selected = Join<B>::predicate_->call(lhs, i, rhs, i).template getValue<B>();
+    int lhs_card = lhs->getTupleCount();
+    int rhs_card = rhs->getTupleCount();
 
-        if(or_dummy_tags_)
-            dst_dummy_tag = (!selected) | lhs->getDummyTag(i) | rhs->getDummyTag(i);
-        else
-            dst_dummy_tag = (!selected) | (lhs->getDummyTag(i) & rhs->getDummyTag(i));
+    bool one_non_empty = (lhs_card > 0 || rhs_card > 0);  // need at least one non-empty input
+    bool one_side_empty = (lhs_card == 0 || rhs_card == 0); // other input is empty
+    bool two_sided_input = (lhs_card == rhs_card && lhs_card > 0);
+    bool one_sided_input = (one_side_empty & one_non_empty);
+
+    if (two_sided_input) {
+
+        B selected, dst_dummy_tag;
+
+        for (int i = 0; i < this->output_cardinality_; ++i) {
+            Join<B>::write_left(this->output_, i, lhs, i);
+            Join<B>::write_right(this->output_, i, rhs, i);
+            selected = Join<B>::predicate_->call(lhs, i, rhs, i).template getValue<B>();
+
+            if (or_dummy_tags_)
+                dst_dummy_tag = (!selected) | lhs->getDummyTag(i) | rhs->getDummyTag(i);
+            else
+                dst_dummy_tag = (!selected) | (lhs->getDummyTag(i) & rhs->getDummyTag(i));
 
 
-        this->output_->setDummyTag(i, dst_dummy_tag);
+            this->output_->setDummyTag(i, dst_dummy_tag);
+        }
+    }
+    else if(one_sided_input) {
+        // all others have a single party providing input, so pad the remaining fields with zeros
+
+        QueryTable<B> *non_empty;
+        if(lhs_card > 0) {
+            non_empty = lhs;
+        }
+        else {
+            non_empty = rhs;
+        }
+
+        for(int i = 0; i < this->getOutputCardinality(); ++i) {
+            Join<B>::write_left(this->output_, i, non_empty, i);
+            this->output_->setDummyTag(i, non_empty->getDummyTag(i));
+        }
+
+    }
+    else {
+        // two non-empty inputs, different cardinalities
+        throw std::runtime_error("MergeJoin: unsupported input configuration");
     }
     return this->output_;
 }
@@ -39,9 +72,19 @@ void MergeJoin<B>::setup() {
     updateCollation();
     auto lhs = this->getChild(0);
     auto rhs = this->getChild(1);
-    assert(lhs->getOutputCardinality() == rhs->getOutputCardinality());
 
-    this->output_cardinality_ = lhs->getOutputCardinality();
+
+    int lhs_card = lhs->getOutputCardinality();
+    int rhs_card = rhs->getOutputCardinality();
+
+    bool one_non_empty = (lhs_card > 0 || rhs_card > 0);  // need at least one non-empty input
+    bool one_side_empty = (lhs_card == 0 || rhs_card == 0); // other input is empty
+    bool two_sided_input = (lhs_card == rhs_card && lhs_card > 0);
+    bool one_sided_input = (one_side_empty & one_non_empty);
+
+    assert(one_sided_input || two_sided_input);
+
+    this->output_cardinality_ = std::max(lhs->getOutputCardinality(), rhs->getOutputCardinality());
 
 
 }

@@ -593,7 +593,7 @@
               },
               "operands": [
                 {
-                  "literal": 1000,
+                  "literal": 100,
                   "type": {
                     "type": "LONG",
                     "nullable": false

@@ -60,25 +60,32 @@ SecureTable *SecureSqlInput::runSelf() {
 void SecureSqlInput::runQuery() {
     PsqlDataProvider dataProvider;
     string sql = input_query_;
-    bool no_input = false;
-    string local_db = db_name_;
+    bool has_input = true;
+    string local_db;
+    int party = SystemConfiguration::getInstance().party_;
+    EmpMode emp_mode = SystemConfiguration::getInstance().emp_mode_;
 
     if(input_party_ > 0) {
-        int party = SystemConfiguration::getInstance().party_;
-        no_input = (input_party_ > 0 && (party != input_party_));
-        local_db = SystemConfiguration::getInstance().getEmptyDbName();
+        has_input = (party == input_party_);
+    }
+    if(emp_mode == EmpMode::ZK && party == 2) {
+        has_input = false;
     }
 
+    local_db = (!has_input) ? SystemConfiguration::getInstance().getEmptyDbName() : db_name_;
+
+    // running the query on all parties to get the schema
     if(input_tuple_limit_ > 0) { // truncate inputs
         // check if it ends in ";" - delete it if detected
         boost::replace_all(input_query_, ";", "");
         sql = "SELECT * FROM (" + input_query_ + ") input LIMIT " + std::to_string(input_tuple_limit_);
     }
 
-    plain_input_ = dataProvider.getQueryTable(db_name_, sql, has_dummy_tag_);
+    plain_input_ = dataProvider.getQueryTable(local_db, sql, has_dummy_tag_);
     plain_input_->setSortOrder(this->sort_definition_);
 
-    if(no_input) plain_input_->resize(0); // in case the domain is fixed (e.g., TPC-H Q1)
+    if(!has_input) plain_input_->resize(0); // just to double-check - some cases like Q1 might need this for fixed domain from supporting table like order_keys
+
 
 }
 

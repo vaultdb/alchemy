@@ -3,7 +3,8 @@
 #include <util/type_utilities.h>
 #include <util/data_utilities.h>
 #include <query_table/secure_tuple.h>
-#include <test/support/zk_tpch_queries.h>
+//#include <test/support/zk_tpch_queries.h>
+#include <test/support/tpch_queries.h>
 #include <boost/algorithm/string/replace.hpp>
 #include <operators/sort_merge_aggregate.h>
 #include <parser/plan_parser.h>
@@ -18,7 +19,8 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54327, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
-
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
 class ZkTpcHTest : public ZkTest {
@@ -32,24 +34,15 @@ protected:
 
 };
 
-// most of these runs are not meaningful for diffing the results because they produce no tuples - joins are too sparse.
-// This isn't relevant to the parser so work on this elsewhere.
+// this runs the "hybrid" tpc-h plans from VaultDB - these ones perform some operators locally in the clear on the data provider.
+// for E2E ZK queries run conf/plans/zk-*.json or see https://github.com/vaultdb/zksql
 void
 ZkTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 
-    string query = zk_tpch_queries[test_id];
-    if(TRUNCATE_INPUTS) {
-        query = truncated_zk_tpch_queries[test_id];
-        boost::replace_all(query, "$LIMIT", std::to_string(tuple_limit_));
-    }
-
-    // use alice DB since she's the prover
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, query, false, 0);
-    expected->setSortOrder(expected_sort);
 
     int limit = (TRUNCATE_INPUTS) ? tuple_limit_ : -1; // set to -1 for full test
 
-    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/zk-" + test_name + ".json";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
     PlanParser<Bit> parser(db_name, plan_file, limit);
 
     SecureOperator *root = parser.getRoot();
@@ -60,23 +53,36 @@ ZkTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefi
 
     cout << "ZK runtime: " << secureDuration << "s\n";
 
-    PlainTable *revealed = observed->reveal();
+    if(FLAGS_validation) {
+        string expected_sql = tpch_queries[test_id];
+        if(TRUNCATE_INPUTS) {
+            expected_sql = truncated_tpch_queries[test_id];
+            boost::replace_all(expected_sql, "$LIMIT", std::to_string(tuple_limit_));
+        }
 
-    ASSERT_EQ(*expected, *revealed);
+        // use alice DB since she's the prover
+        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
+        expected->setSortOrder(expected_sort);
+        PlainTable *revealed = observed->reveal();
 
-    delete expected;
-    delete revealed;
+        ASSERT_EQ(*expected, *revealed);
+        delete expected;
+        delete revealed;
 
+    }
+
+
+    delete root;
 }
 
 
-TEST_F(ZkTpcHTest, tpch_q1) {
+TEST_F(ZkTpcHTest, tpch_q01) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest(1, "q1", expected_sort, db_name_);
 }
 
 
-TEST_F(ZkTpcHTest, tpch_q3) {
+TEST_F(ZkTpcHTest, tpch_q03) {
 
     // dummy_tag (-1), 1 DESC, 2 ASC
     // aka revenue desc,  o.o_orderdate
@@ -92,18 +98,18 @@ TEST_F(ZkTpcHTest, tpch_q3) {
 
 
 
-TEST_F(ZkTpcHTest, tpch_q5) {
+TEST_F(ZkTpcHTest, tpch_q05) {
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
     runTest(5, "q5", expected_sort, db_name_);
 
 }
 
-TEST_F(ZkTpcHTest, tpch_q8) {
+TEST_F(ZkTpcHTest, tpch_q08) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     runTest(8, "q8", expected_sort, db_name_);
 }
 
-TEST_F(ZkTpcHTest, tpch_q9) {
+TEST_F(ZkTpcHTest, tpch_q09) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
     runTest(9, "q9", expected_sort, db_name_);
@@ -128,6 +134,8 @@ TEST_F(ZkTpcHTest, tpch_q18) {
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    ::testing::GTEST_FLAG(filter)=FLAGS_filter;
 
     return RUN_ALL_TESTS();
 }
