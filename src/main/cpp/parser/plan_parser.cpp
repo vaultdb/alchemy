@@ -1284,6 +1284,13 @@ void PlanParser<B>::recurseNode(Operator<B> *op) {
     int op_id = op->getOperatorId();
     Operator<B> *parent = operators_[op_id]->getParent();
 
+    // If there is sort for join or aggregate, then id will be -1. skip it
+    if(parent != nullptr) {
+        if (parent->getOperatorId() < 0)
+            parent = parent->getParent();
+    }
+
+
     // at the root node
     if(parent == nullptr) {
         size_t plan_cost = op->planCost();
@@ -1318,6 +1325,8 @@ Operator<B> *PlanParser<B>::fetchLeaf(Operator<B> *op) {
 
 template<typename B>
 void PlanParser<B>::recurseJoin(Operator<B> *join) {
+
+    // TODO : Need to check if child has sort
     auto rhs_leaf = fetchLeaf(join->getChild(1));
     auto rhs_sorts = getCollations(rhs_leaf);
     for(auto &sort: rhs_sorts) {
@@ -1399,7 +1408,13 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
 template<typename B>
 void PlanParser<B>::recurseAgg(Operator<B> *agg) {
 
-    Operator<B> *child = optimizeTree_operators_.at(agg->getChild()->getOperatorId());
+    int child_id = agg->getChild()->getOperatorId();
+
+    // If there is sort before agg, then id will be -1, so get real child's id
+    if(child_id < 0)
+        child_id = agg->getChild()->getChild()->getOperatorId();
+
+    Operator<B> *child = optimizeTree_operators_.at(child_id);
 
     // Need this cloned_child for second aggregate option, in case if first aggregate plan is deleted
     Operator<B> *cloned_child = child->clone();
