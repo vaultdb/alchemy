@@ -68,13 +68,15 @@ namespace  vaultdb {
         emp::NetIO *tpio_ctrl_ = nullptr;
         vector<NetIO *> ios_ctrl_;
         int party_;
+        OMPCBackend<N> *protocol = nullptr;
 
         OutsourcedMpcManager(string hosts[], int party, int comm_port, int ctrl_port)  : party_(party) {
             ios_ = emp::setup_netio(tpio_, hosts, comm_port, party_, N);
             ios_ctrl_ = emp::setup_netio(tpio_ctrl_, hosts, ctrl_port, party_, N);
             emp::backend = new OMPCBackend<N>(ios_, tpio_, party_);
+            protocol_ = emp::backend;
             SystemConfiguration & s = SystemConfiguration::getInstance();
-            s.emp_bit_size_bytes_  =  sizeof(OMPCPackedWire);
+            s.emp_bit_size_bytes_  =  sizeof(emp::Bit); // for packed:  sizeof(OMPCPackedWire);
             s.party_ = party;
             s.emp_mode_ = EmpMode::OUTSOURCED;
         }
@@ -137,14 +139,14 @@ namespace  vaultdb {
         size_t getTableCardinality(const int & local_cardinality) override;
 
         void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {
-            auto protocol = ((OMPCBackend<N> *) emp::backend);
-            protocol->pack(src, (OMPCPackedWire *) dst, bit_cnt);
-            flush();
+            memcpy(dst, src, bit_cnt * sizeof(Bit));
+//            protocol_->pack(src, (OMPCPackedWire *) dst, bit_cnt);
+//            flush();
         }
         void unpack(Bit *src, Bit *dst, const int & bit_cnt) override {
-            auto protocol = ((OMPCBackend<N> *) emp::backend);
-            protocol->unpack(dst, (OMPCPackedWire *) src, bit_cnt);
-            flush();
+            memcpy(dst, src, bit_cnt * sizeof(Bit));
+//            protocol_->unpack(dst, (OMPCPackedWire *) src, bit_cnt);
+//            flush();
         }
 
     };
