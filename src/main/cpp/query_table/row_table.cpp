@@ -22,7 +22,6 @@ RowTable<B>::RowTable(const size_t &tuple_cnt, const QuerySchema &schema, const 
         return;
 
     tuple_data_.resize(tuple_cnt * this->tuple_size_bytes_);
-
     std::memset(tuple_data_.data(), 0, tuple_data_.size());
 
     // initialize dummy tags to true
@@ -36,7 +35,7 @@ RowTable<B>::RowTable(const size_t &tuple_cnt, const QuerySchema &schema, const 
 
 template <typename B>
 RowTable<B>::RowTable(const QueryTable<B> &src) : QueryTable<B>(src) {
-    // only support copy constructor on tables with same storage
+    // only support copy constructor on tables with same storage model
     assert(src.storageModel() == StorageModel::ROW_STORE);
     tuple_data_ = ((RowTable<B>) src).tuple_data_;
 
@@ -415,10 +414,10 @@ template<typename B>
 void RowTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) {
 
 
-    if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED && this->isEncrypted()) {
-        compareSwapOmpc(swap, lhs_row, rhs_row);
-        return;
-    }
+//    if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED && this->isEncrypted()) {
+//        compareSwapOmpc(swap, lhs_row, rhs_row);
+//        return;
+//    }
 
     Bit *l = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * lhs_row );
     Bit *r = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * rhs_row);

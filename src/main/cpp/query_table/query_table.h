@@ -73,7 +73,8 @@ namespace  vaultdb {
                 int field_size_bytes;
                 for(auto pos : schema_.offsets_) {
                     desc = schema_.getField(pos.first);
-                    field_size_bytes = (mode == EmpMode::OUTSOURCED) ? desc.packedWires() * TypeUtilities::getEmpBitSize() : desc.size() * TypeUtilities::getEmpBitSize();
+                    field_size_bytes = desc.size() * TypeUtilities::getEmpBitSize();
+                   // field_size_bytes = (mode == EmpMode::OUTSOURCED) ? desc.packedWires() * TypeUtilities::getEmpBitSize() : desc.size() * TypeUtilities::getEmpBitSize();
                     tuple_size_bytes_ += field_size_bytes;
                     // offset units are packed wires for OMPC (Bits o.w.)
                     field_offsets_bytes_[pos.first] = pos.second * TypeUtilities::getEmpBitSize();
