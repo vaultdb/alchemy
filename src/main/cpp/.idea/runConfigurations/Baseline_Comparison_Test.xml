@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Baseline Comparison Test" type="CompoundRunConfigurationType">
+    <toRun name="baseline_comparison_test A" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="baseline_comparison_test B" type="CMakeGoogleTestRunConfigurationType" />
+    <method v="2" />
+  </configuration>
+</component>

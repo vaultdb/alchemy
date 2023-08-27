@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="SecurePlanEnumeratorTest A+B" type="CompoundRunConfigurationType">
+    <toRun name="secure_plan_enumerator_test A" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="secure_plan_enumerator_test B" type="CMakeGoogleTestRunConfigurationType" />
+    <method v="2" />
+  </configuration>
+</component>
