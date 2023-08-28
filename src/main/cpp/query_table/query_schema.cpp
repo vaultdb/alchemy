@@ -143,7 +143,7 @@ void QuerySchema::initializeFieldOffsets()  {
     for(int i = 0; i < col_count; ++i) {
         QueryFieldDesc fd = fields_.at(i);
         offsets_[i] = running_offset;
-        running_offset += (mode == EmpMode::OUTSOURCED && is_secure) ? fd.packedWires() : fd.size();
+        running_offset += fd.size(); // (mode == EmpMode::OUTSOURCED && is_secure) ? fd.packedWires() : fd.size();
 
     }
     // dummy tag at end

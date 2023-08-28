@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ZK TPC-H Test A+B" type="CompoundRunConfigurationType">
+    <toRun name="ZkTpcHTest A" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="ZkTpcHTest B" type="CMakeGoogleTestRunConfigurationType" />
+    <method v="2" />
+  </configuration>
+</component>

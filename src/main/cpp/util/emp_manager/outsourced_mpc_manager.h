@@ -76,7 +76,7 @@ namespace  vaultdb {
             emp::backend = new OMPCBackend<N>(ios_, tpio_, party_);
             protocol_ = (OMPCBackend<N> *) emp::backend;
             SystemConfiguration & s = SystemConfiguration::getInstance();
-            s.emp_bit_size_bytes_  =  sizeof(emp::Bit); // for packed:  sizeof(OMPCPackedWire);
+            s.emp_bit_size_bytes_  =  sizeof(emp::Bit); // for packed:  sizeof(OMPCPackedWire);_
             s.party_ = party;
             s.emp_mode_ = EmpMode::OUTSOURCED;
         }
