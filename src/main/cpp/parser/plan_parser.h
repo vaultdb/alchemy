@@ -23,7 +23,7 @@ namespace vaultdb {
     template<typename B>
     class PlanParser {
     public:
-        typedef std::tuple<SortDefinition, int, std::string> SortEntry; // Adding operator type as a string.
+        typedef std::tuple<SortDefinition, int /*parent_id*/, int /*child_id*/, std::string> SortEntry;// Adding operator type as a string.
 
         PlanParser(const string &db_name, const string &sql_file, const string &json_file, const int &limit = -1);
 
@@ -36,11 +36,13 @@ namespace vaultdb {
         Operator<B> *getOperator(const int &op_id);
 
         void optimizeTree();
+        void deleteSort();
         void deleteOptmizeTreeOperators();
+        void deleteNotOptimizedOperators();
         void changeOperatorSortOrder();
         std::vector<std::string> extractColumnsFromSql(const std::string& sql);
         std::string modifySqlStatement(const std::string& originalSql, const SortDefinition& sort_defs);
-        std::map<int, SortEntry> extractSortOrders(const std::string &plan_string);
+        std::vector<std::pair<int, SortEntry>> extractSortOrders(const std::string &plan_string);
 
         static Operator<B> *
         parse(const std::string &db_name, const string &sql_file, const string &json_file, const int &limit = -1);

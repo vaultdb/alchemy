@@ -134,7 +134,7 @@
           "name": "revenue"
         }
       ],
-      "sql": "SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem ORDER BY l_orderkey, l_suppkey, revenue",
+      "sql": "SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem ORDER BY l_orderkey",
       "dummy-tag": false,
       "collation": [
         {

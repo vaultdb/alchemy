@@ -130,6 +130,18 @@ namespace  vaultdb {
             this->updateCollation();
         }
 
+        inline void setChildWithNoUpdateCollation(Operator *c, int idx = 0) {
+            if(idx == 0) {
+                lhs_child_ = c;
+                lhs_child_->setParent(this);
+
+            }
+            else {
+                rhs_child_ = c;
+                lhs_child_->setParent(this);
+            }
+        }
+
         bool isLeaf() const { return  (lhs_child_ == nullptr); }
         
         inline SortDefinition  getSortOrder() const {
@@ -201,6 +213,8 @@ namespace  vaultdb {
                     throw;
             }
         }
+
+        bool is_optimized_ = false;
 
     protected:
         // to be implemented by the operator classes, e.g., sort, filter, et cetera

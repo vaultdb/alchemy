@@ -150,6 +150,14 @@ std::string Operator<B>::toSortOptimizedString() const {
 
     ss << "#" << operator_id_ << ": " << getTypeString();
     ss << " order by: " << DataUtilities::printSortDefinition(sort_definition_);
+
+    // if operator id is -1, then this sort is inserted
+    if(operator_id_ == -1){
+        if(parent_->getType() == OperatorType::SORT_MERGE_AGGREGATE)
+            ss << " | parent : " << parent_->getOperatorId() << ", child : " << lhs_child_->getOperatorId();
+        else if(parent_->getType() == OperatorType::SORT_MERGE_JOIN)
+            ss << " | parent : " << parent_->getOperatorId() << ", child : " << lhs_child_->getOperatorId();
+    }
     return ss.str();
 
 }

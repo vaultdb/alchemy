@@ -277,7 +277,7 @@
       "id": "9",
       "relOp": "LogicalProject",
       "fields": [
-        "l_orderkey",
+        "o_orderkey",
         "revenue",
         "o_orderdate",
         "o_shippriority"

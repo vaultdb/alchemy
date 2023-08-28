@@ -3,6 +3,7 @@
 
 
 #include "sql_input.h"
+#include <regex>
 
 // reads SQL input and secret shares it
 // alice and bob need to run at the same time for this
@@ -55,6 +56,10 @@ namespace  vaultdb {
             // take current sql and wrap it in ORDER BY
             if(this->sort_definition_.empty())  {
                 plain_input_->setSortOrder(this->sort_definition_); // if sort is empty it does not really matter how it is stored now
+
+                string sql = this->input_query_;
+                std::regex order_by_regex(" ORDER BY .*");
+                this->input_query_ = std::regex_replace(sql, order_by_regex, "");
                 return;
             }
 
