@@ -68,7 +68,6 @@ namespace vaultdb {
 
         // plan enumerator state
         map<int, vector<SortDefinition>> interesting_sort_orders_;
-        Operator<B> *min_cost_plan_ = nullptr;
         size_t min_plan_cost_ = std::numeric_limits<size_t>::max();
         string min_cost_plan_string_ = "";
         std::map<int, Operator<B> * > operators_; // op ID --> operator instantiation

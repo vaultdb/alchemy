@@ -53,7 +53,7 @@ Sort<B>::Sort(QueryTable<B> *child, const SortDefinition &sort_def, const int & 
 
 template<typename B>
 QueryTable<B> *Sort<B>::runSelf() {
-    QueryTable<B> *input = this->getChild()->getOutput();;
+    QueryTable<B> *input = this->getChild()->getOutput();
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();

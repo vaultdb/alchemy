@@ -82,7 +82,7 @@ namespace  vaultdb {
         // recurses first, then invokes runSelf method
         QueryTable<B>  *run();
         std::string printTree() const;
-        std::string printMinCostPlan() const;
+        std::string printMinCostPlan();
         std::string toString() const;
         std::string toSortOptimizedString() const;
         size_t getGateCount() const { return gate_cnt_; }
@@ -125,7 +125,7 @@ namespace  vaultdb {
             }
             else {
                 rhs_child_ = c;
-                lhs_child_->setParent(this);
+                rhs_child_->setParent(this);
             }
             this->updateCollation();
         }
@@ -138,7 +138,7 @@ namespace  vaultdb {
             }
             else {
                 rhs_child_ = c;
-                lhs_child_->setParent(this);
+                rhs_child_->setParent(this);
             }
         }
 
@@ -232,7 +232,7 @@ namespace  vaultdb {
 
     private:
         std::string printHelper(const std::string & prefix) const;
-        std::string printMinCostHelper(const std::string & prefix) const;
+        std::string printMinCostHelper(const std::string & prefix);
         int operator_id_ = -1;
 
     };

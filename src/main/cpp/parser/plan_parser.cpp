@@ -956,8 +956,8 @@ void PlanParser<B>::optimizeTree() {
     deleteSort();
     changeOperatorSortOrder();
     deleteNotOptimizedOperators();
-    delete min_cost_plan_;
-    //deleteOptmizeTreeOperators();
+    delete new_root;
+    deleteOptmizeTreeOperators();
 
     std::cout << "Total Min Cost Plan String : " << min_cost_plan_string_ << endl;
 }
@@ -967,13 +967,18 @@ void PlanParser<B>::deleteOptmizeTreeOperators() {
     for (auto &entry : optimizeTree_operators_) {
         Operator<B> *op = entry.second;
 
-        // Set the children to nullptr
-        op->setNullChild(nullptr, 0);
-        op->setNullChild(nullptr, 1);
-        op->setParent(nullptr);
-        // Delete the operator
-        delete op;
-        entry.second = nullptr;  // Optional: set the map value to nullptr too
+        // Check if the operator has not been deleted (i.e., is not nullptr)
+        if (op) {
+            // Set the children to nullptr
+            op->setNullChild(nullptr, 0);
+            op->setNullChild(nullptr, 1);
+            op->setParent(nullptr);
+
+            // Delete the operator
+            delete op;
+
+            entry.second = nullptr;  // Optional: set the map value to nullptr too
+        }
     }
 
     // Optionally, you can also clear the map after deleting the operators
@@ -1235,7 +1240,6 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
             for (auto &sort: sorts) {
                 node->setSortOrder(sort);
                 optimizeTree_operators_[node->getOperatorId()] = node;
-                //std::cout << node->toString() << endl;
                 recurseNode(node);
             }
             break;
@@ -1252,7 +1256,6 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
                 for (auto &sort: sorts) {
                     node->setSortOrder(sort);
                     optimizeTree_operators_[node->getOperatorId()] = node;
-                    //std::cout << node->toString() << endl;
                     recurseNode(node);
                 }
             }
@@ -1281,11 +1284,11 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
             // Same with child's sort order
             node->updateCollation();
             optimizeTree_operators_[node->getOperatorId()] = node;
-            //std::cout << node->toString() << endl;
             recurseNode(node);
             break;
     }
 
+    optimizeTree_operators_[node->getOperatorId()] = nullptr;
     node->setNullChild(nullptr);
     if(node->getChild(1) != nullptr)
         node->setNullChild(nullptr, 1);
@@ -1314,10 +1317,6 @@ void PlanParser<B>::recurseNode(Operator<B> *op) {
         if(plan_cost < min_plan_cost_) {
             min_plan_cost_ = plan_cost;
             min_cost_plan_string_ = op->printMinCostPlan();
-//            if(min_cost_plan_ != nullptr) {
-//                delete min_cost_plan_;
-//            }
-//            min_cost_plan_ = op->clone();
         }
         return;
     }
@@ -1344,7 +1343,6 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
     for(auto &sort: rhs_sorts) {
         rhs_leaf->setSortOrder(sort);
         optimizeTree_operators_[rhs_leaf->getOperatorId()] = rhs_leaf;
-
         if(join->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN) {
             // For KeyedJoin, sort order is same with foreign key's sort order
             KeyedJoin<B> *kj = (KeyedJoin<B> *)join;
@@ -1358,7 +1356,6 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             kj->updateCollation();
 
             optimizeTree_operators_[kj->getOperatorId()] = kj;
-            //std::cout << kj->toString() << endl;
             recurseNode(kj);
 
             // For SMJ, sort order is same with sort key's order
@@ -1384,6 +1381,8 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
                 // Define sort before rhs_leaf
                 Operator<B> *rhs_sorter = new Sort<B>(rhs_leaf->clone(), rhs_sort);
                 smj = new SortMergeJoin<B>(lhs->clone(), rhs_sorter, kj->foreignKeyChild(), kj->getPredicate()->clone());
+                rhs_sorter->setParent(smj);
+                lhs->setParent(smj);
             }
             else if (smj->sortCompatible(rhs_leaf)) {
                 // add sort to lhs
@@ -1403,19 +1402,18 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
                 // Define sort before lhs
                 Operator<B> *lhs_sorter = new Sort<B>(lhs->clone(), lhs_sort);
                 smj = new SortMergeJoin<B>(lhs_sorter, rhs_leaf->clone(), kj->foreignKeyChild(), kj->getPredicate()->clone());
+                lhs_sorter->setParent(smj);
             }
 
             smj->setOperatorId(kj->getOperatorId());
             smj->updateCollation();
             optimizeTree_operators_[smj->getOperatorId()] = smj;
-            //std::cout << smj->toString() << endl;
             recurseNode(smj);
 
             //Since smj was not original node, delete it
             delete smj;
         }
         else if(join->getType() == OperatorType::SORT_MERGE_JOIN){
-            // TODO : Make this to clone
             SortMergeJoin<B> *meta_smj = (SortMergeJoin<B> *) join;
 
             Expression<B> *predicate;
@@ -1492,7 +1490,6 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             }
 
             smj->updateCollation();
-            //std::cout << smj->toString() << endl;
 
             optimizeTree_operators_[smj->getOperatorId()] = smj;
             recurseNode(smj);
@@ -1506,7 +1503,6 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             kj->updateCollation();
             optimizeTree_operators_[kj->getOperatorId()] = kj;
 
-            //std::cout << kj->toString() << endl;
             recurseNode(kj);
 
             //Since kj was not original node, delete it
@@ -1525,7 +1521,6 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             lhs->setParent(mj);
             rhs->setParent(mj);
             mj->updateCollation();
-            //std::cout << smj->toString() << endl;
 
             optimizeTree_operators_[mj->getOperatorId()] = mj;
             operatorPool.push_back(mj);
@@ -1635,17 +1630,11 @@ void PlanParser<B>::recurseSort(Operator<B> *sort) {
                 child->setParent(nullptr);
 
                 size_t plan_cost = child->planCost();
-//                std::cout << child->printTree() << endl;
-//                std::cout << "Cost : " << std::to_string(plan_cost) << "\n" << "----------------------------" << std::endl;
                 total_plan_cnt_++;
 
                 if(plan_cost < min_plan_cost_) {
                     min_plan_cost_ = plan_cost;
                     min_cost_plan_string_ = child->printMinCostPlan();
-                    if(min_cost_plan_ != nullptr) {
-                        delete min_cost_plan_;
-                    }
-                    min_cost_plan_ = child->clone();
                 }
                 return;
             }

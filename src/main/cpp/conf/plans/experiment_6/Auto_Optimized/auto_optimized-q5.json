@@ -315,7 +315,6 @@
       "id": "10",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "auto",
-      "checkSort" : false,
       "effective-collation": [
         {
           "field": 0,

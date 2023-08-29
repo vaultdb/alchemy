@@ -60,6 +60,9 @@ namespace  vaultdb {
                 string sql = this->input_query_;
                 std::regex order_by_regex(" ORDER BY .*");
                 this->input_query_ = std::regex_replace(sql, order_by_regex, "");
+
+                if (plain_input_ != nullptr) delete plain_input_;
+                runQuery();
                 return;
             }
 

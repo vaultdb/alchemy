@@ -128,18 +128,27 @@ std::string Operator<B>::toString() const {
 }
 
 template<typename B>
-std::string Operator<B>::printMinCostPlan() const {
+std::string Operator<B>::printMinCostPlan() {
     return printMinCostHelper("");
 
 }
 
 template<typename B>
-std::string Operator<B>::printMinCostHelper(const string &prefix) const {
+std::string Operator<B>::printMinCostHelper(const string &prefix) {
     stringstream  ss;
     ss << prefix << toSortOptimizedString() << endl;
     string indent = prefix + "    ";
-    if(lhs_child_)   ss << lhs_child_->printMinCostHelper(indent);
-    if(rhs_child_)   ss << rhs_child_->printMinCostHelper(indent);
+
+    if(lhs_child_){
+        if(lhs_child_->getParent() == nullptr)
+            lhs_child_->setParent(this);
+        ss << lhs_child_->printMinCostHelper(indent);
+    }
+    if(rhs_child_){
+        if(rhs_child_->getParent() == nullptr)
+            rhs_child_->setParent(this);
+        ss << rhs_child_->printMinCostHelper(indent);
+    }
 
     return ss.str();
 }

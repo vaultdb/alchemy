@@ -318,7 +318,6 @@
       "outputFields" : "o_year (#0), SUM(volume) (#1), SUM(selected_volume) (#2)",
       "operator-algorithm" : "auto",
       "cardBound" : 2,
-      "checkSort" : false,
       "effective-collation": [
         {
           "field": 0,

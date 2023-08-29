@@ -48,7 +48,8 @@
         {
           "field": 0,
           "direction": "ASCENDING"
-        }],
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
