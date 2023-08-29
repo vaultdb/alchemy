@@ -1051,14 +1051,14 @@ void PlanParser<B>::changeOperatorSortOrder() {
                     Operator<B> *parent = op->getParent();
 
                     if(std::get<3>(order.second) == "SortMergeAggregate"){
-                        SortMergeAggregate<B> *sma = (SortMergeAggregate<B> *) optimizeTree_operators_[op_id];
-                        sma->setChild(child);
+                        NestedLoopAggregate<B> *original_nla = (NestedLoopAggregate<B> *) op;
+                        SortMergeAggregate<B> *sma = new SortMergeAggregate<B>(child, original_nla->group_by_, original_nla->aggregate_definitions_, original_nla->effective_sort_, original_nla->getCardinalityBound());
                         parent->setChild(sma);
                         operators_[op_id] = sma;
                     }
                     else{
-                        NestedLoopAggregate<B> *nla = (NestedLoopAggregate<B> *) optimizeTree_operators_[op_id];
-                        nla->setChild(child);
+                        SortMergeAggregate<B> *original_sma = (SortMergeAggregate<B> *) op;
+                        NestedLoopAggregate<B> *nla = new NestedLoopAggregate(child, original_sma->group_by_, original_sma->aggregate_definitions_, original_sma->effective_sort_, original_sma->getCardinalityBound());
                         parent->setChild(nla);
                         operators_[op_id] = nla;
                     }
@@ -1079,17 +1079,15 @@ void PlanParser<B>::changeOperatorSortOrder() {
                     Operator<B> *parent = op->getParent();
 
                     if(std::get<3>(order.second) == "KeyedJoin"){
-                        KeyedJoin<B> *kj = (KeyedJoin<B> *) optimizeTree_operators_[op_id];
+                        SortMergeJoin<B> *original_smj = (SortMergeJoin<B> *)op;
+                        KeyedJoin<B> *kj = new KeyedJoin(lhs, rhs, original_smj->foreignKeyChild(), original_smj->getPredicate()->clone());
                         parent->setChild(kj);
-                        kj->setChild(lhs,0);
-                        kj->setChild(rhs,1);
                         operators_[op_id] = kj;
                     }
                     else{
-                        SortMergeJoin<B> *smj = (SortMergeJoin<B> *) optimizeTree_operators_[op_id];
+                        KeyedJoin<B> *original_kj = (KeyedJoin<B> *)op;
+                        SortMergeJoin<B> *smj = new SortMergeJoin<B>(lhs, rhs, original_kj->foreignKeyChild(), original_kj->getPredicate()->clone());
                         parent->setChild(smj);
-                        smj->setChild(lhs,0);
-                        smj->setChild(rhs,1);
                         operators_[op_id] = smj;
                     }
                     // Delete the original operator
