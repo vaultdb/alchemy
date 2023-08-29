@@ -47,6 +47,9 @@ SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &
 
 SecureTable *SecureSqlInput::runSelf() {
 
+    if (plain_input_ != nullptr) delete plain_input_;
+    runQuery();
+
     // secret share it
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = system_conf_.andGateCount();

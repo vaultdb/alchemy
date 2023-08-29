@@ -53,6 +53,7 @@ namespace  vaultdb {
         int getInputParty() const { return input_party_; }
 
         void updateCollation() override {
+            auto collation = this->sort_definition_;
             // take current sql and wrap it in ORDER BY
             if(this->sort_definition_.empty())  {
                 plain_input_->setSortOrder(this->sort_definition_); // if sort is empty it does not really matter how it is stored now
@@ -61,13 +62,10 @@ namespace  vaultdb {
                 std::regex order_by_regex(" ORDER BY .*");
                 this->input_query_ = std::regex_replace(sql, order_by_regex, "");
 
-                if (plain_input_ != nullptr) delete plain_input_;
-                runQuery();
-                return;
+//                if (plain_input_ != nullptr) delete plain_input_;
+//                runQuery();
             }
-
-            auto collation = this->sort_definition_;
-            if((plain_input_ != nullptr && plain_input_->getSortOrder() != collation)  || (plain_input_ == nullptr)){
+            else if((plain_input_ != nullptr && plain_input_->getSortOrder() != collation)  || (plain_input_ == nullptr)){
                 // update collation
                 string sql = "SELECT * FROM (" + original_input_query_ + ") to_sort ORDER BY ";
                 sql += "(" + std::to_string(collation[0].first + 1) + ") "
@@ -77,9 +75,8 @@ namespace  vaultdb {
                            + ((collation[i].second == SortDirection::DESCENDING) ? " DESC " : " ASC ");
                 }
                 this->input_query_ = sql;
-
-                if (plain_input_ != nullptr) delete plain_input_;
-                runQuery();
+//                if (plain_input_ != nullptr) delete plain_input_;
+//                runQuery();
             }
         }
 
