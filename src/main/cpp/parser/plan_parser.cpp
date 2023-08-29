@@ -1613,7 +1613,7 @@ void PlanParser<B>::recurseSort(Operator<B> *sort) {
     Sort<B> *s = (Sort<B> *) sort;
 
     // If sort does not have LIMIT clause, then need to check if this sort is needed
-    if(s->getLimit() == -1) {
+    if(s->getOutputCardinality() > 0) {
         // If sort is the same with child's order, then this sort is not needed
         if (sort->getSortOrder() == child->getSortOrder()) {
             int op_id = sort->getOperatorId();

@@ -566,8 +566,8 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
         for(int i = target_size - j - 1; i >= 0; i--) {
 
             Field<B> weight = dst_table->getPackedField(i,weight_idx_);
-
-            B result = weight >= FieldFactory<B>::getInt(i + j + 1, weight_width);
+            Field<B> pos = FieldFactory<B>::getInt(i + j + 1, weight_width);
+            B result = (weight >= pos);
             dst_table->compareSwap(result, i, i+j);
 
         }

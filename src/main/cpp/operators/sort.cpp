@@ -31,9 +31,10 @@ Sort<B>::Sort(Operator<B> *child, const SortDefinition &sort_def, const int & li
 
     // Need to sort on dummy tag to make resizing not delete real tuples
     // otherwise may produce incorrect results
-    if(limit_ > 0)
+    if(limit_ > 0) {
         assert(Operator<B>::sort_definition_[0].first == -1);
-
+        this->output_cardinality_ = limit;
+    }
 }
 
 template<typename B>
@@ -46,9 +47,11 @@ Sort<B>::Sort(QueryTable<B> *child, const SortDefinition &sort_def, const int & 
             throw; // invalid sort definition
     }
 
-    if(limit_ > 0)
-        assert(Operator<B>::sort_definition_[0].first == -1); // Need to sort on dummy tag to ensure resizing does not delete real tuples
-
+    if(limit_ > 0) {
+        assert(Operator<B>::sort_definition_[0].first ==
+               -1); // Need to sort on dummy tag to ensure resizing does not delete real tuples
+        this->output_cardinality_ = limit;
+    }
 }
 
 template<typename B>
