@@ -225,8 +225,8 @@ Operator<emp::Bit> *PlanParser<B>::createInputOperator(const string &sql, const 
 template<typename B>
 Operator<bool> *PlanParser<B>::createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party, const bool &has_dummy_tag, const bool & plain_has_dummy_tag) {
     size_t limit = (input_limit_ < 0) ? 0 : input_limit_;
-
-    return new SqlInput(db_name_, sql, plain_has_dummy_tag, collation, input_party, limit);
+    // input party is not applicable for plaintext
+    return new SqlInput(db_name_, sql, plain_has_dummy_tag, collation, limit);
 }
 
 template<typename B>
@@ -587,9 +587,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
             // check sort compatibility for SMJ
             // TODO: consider case where we insert sort in front of both lhs and rhs inputs
             if (lhs_sort_compatible && !rhs_sort_compatible) {
-
-                // rhs will have second keys
-                vector<ColumnSort> rhs_sort;
+                SortDefinition rhs_sort;
                 int lhs_col_cnt = lhs->getOutputSchema().getFieldCount();
                 SortDefinition lhs_sort = lhs->getSortOrder();
 
@@ -598,23 +596,46 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                     rhs_sort.emplace_back(ColumnSort(idx - lhs_col_cnt, lhs_sort[i].second));
                 }
 
-                Operator<B> *rhs_sorter = new Sort<B>(rhs->clone(), rhs_sort);
-                auto smj_presorted = new SortMergeJoin<B>(lhs->clone(), rhs_sorter, foreign_key, join_condition->clone());
-                auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
-                delete smj_presorted;
+                if(!rhs->isLeaf()) {
 
-                if (smj_opt_cost < smj_cost && smj_opt_cost < nlj_cost) {
-                    log->write("Operator (" + std::to_string(operator_id) + "). " +
-                        "smj cost : " + std::to_string(smj_cost) +
-                        ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
-                        ", nlj cost : " + std::to_string(nlj_cost) +
-                        ", join type: presorted smj", Level::INFO);
+                    Operator<B> *rhs_sorter = new Sort<B>(rhs->clone(), rhs_sort);
+                    auto smj_presorted = new SortMergeJoin<B>(lhs->clone(), rhs_sorter, foreign_key,
+                                                              join_condition->clone());
+                    auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
+                    delete smj_presorted;
 
-                    Sort<B> *sorter = new Sort<B>(rhs, rhs_sort);
-                    return new SortMergeJoin<B>(lhs, sorter, foreign_key, join_condition);
+                    if (smj_opt_cost < smj_cost && smj_opt_cost < nlj_cost) {
+                        log->write("Operator (" + std::to_string(operator_id) + "). " +
+                                   "smj cost : " + std::to_string(smj_cost) +
+                                   ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
+                                   ", nlj cost : " + std::to_string(nlj_cost) +
+                                   ", join type: presorted smj", Level::INFO);
+
+                        Sort<B> *sorter = new Sort<B>(rhs, rhs_sort);
+                        return new SortMergeJoin<B>(lhs, sorter, foreign_key, join_condition);
+                    }
                 }
+                else { // uncollated side is a leaf
+                    auto rhs_copy = rhs->clone();
+                    rhs_copy->setSortOrder(rhs_sort); // automatically calls `updateCollation`
+                    auto smj_presorted = new SortMergeJoin<B>(lhs->clone(), rhs_copy, foreign_key,
+                                                              join_condition->clone());
+                    auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
+                    delete smj_presorted;
+
+                    if (smj_opt_cost < smj_cost && smj_opt_cost < nlj_cost) {
+                        log->write("Operator (" + std::to_string(operator_id) + "). " +
+                                   "smj cost : " + std::to_string(smj_cost) +
+                                   ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
+                                   ", nlj cost : " + std::to_string(nlj_cost) +
+                                   ", join type: presorted smj", Level::INFO);
+
+                        rhs->setSortOrder(rhs_sort);
+                        return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
+                    }
+                } // end leaf case
             } else if (rhs_sort_compatible && !lhs_sort_compatible) {
-               vector<ColumnSort> lhs_sort;
+               SortDefinition lhs_sort;
                SortDefinition rhs_sort = rhs->getSortOrder();
 
                for (int i = 0; i < join_key_idxs.size(); ++i) {
@@ -622,22 +643,43 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                    lhs_sort.emplace_back(ColumnSort(idx, rhs_sort[i].second));
                }
 
-               Operator<B> *lhs_sorter = new Sort<B>(lhs->clone(), lhs_sort);
-               auto smj_presorted = new SortMergeJoin<B>(lhs_sorter, rhs->clone(), foreign_key, join_condition->clone());
-               auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
-               delete smj_presorted;
+               if(!lhs->isLeaf()) {
+                   Operator<B> *lhs_sorter = new Sort<B>(lhs->clone(), lhs_sort);
+                   auto smj_presorted = new SortMergeJoin<B>(lhs_sorter, rhs->clone(), foreign_key,
+                                                             join_condition->clone());
+                   auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
+                   delete smj_presorted;
 
-               if (smj_opt_cost < smj_cost && smj_opt_cost < nlj_cost) {
-                   log->write("Operator (" + std::to_string(operator_id) + "). " +
-                   "smj cost : " + std::to_string(smj_cost) +
-                   ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
-                   ", nlj cost : " + std::to_string(nlj_cost) +
-                   ", join type: presorted smj", Level::INFO);
+                   if (smj_opt_cost < smj_cost && smj_opt_cost < nlj_cost) {
+                       log->write("Operator (" + std::to_string(operator_id) + "). " +
+                                  "smj cost : " + std::to_string(smj_cost) +
+                                  ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
+                                  ", nlj cost : " + std::to_string(nlj_cost) +
+                                  ", join type: presorted smj", Level::INFO);
 
-                   Sort<B> *sorter = new Sort<B>(lhs, lhs_sort);
-                   return new SortMergeJoin<B>(sorter, rhs, foreign_key, join_condition);
+                       Sort<B> *sorter = new Sort<B>(lhs, lhs_sort);
+                       return new SortMergeJoin<B>(sorter, rhs, foreign_key, join_condition);
+                   }
                }
+               else { // leaf case
+                   auto lhs_copy = lhs->clone();
+                   lhs_copy->setSortOrder(lhs_sort); // automatically calls `updateCollation`
+                   auto smj_presorted = new SortMergeJoin<B>(lhs_copy, rhs->clone(), foreign_key,
+                                                             join_condition->clone());
+                   auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
+                   delete smj_presorted;
 
+                   if (smj_opt_cost < smj_cost && smj_opt_cost < nlj_cost) {
+                       log->write("Operator (" + std::to_string(operator_id) + "). " +
+                                  "smj cost : " + std::to_string(smj_cost) +
+                                  ", pre-sorted smj cost: " + std::to_string(smj_opt_cost) +
+                                  ", nlj cost : " + std::to_string(nlj_cost) +
+                                  ", join type: presorted smj", Level::INFO);
+
+                       lhs->setSortOrder(lhs_sort);
+                       return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
+                   }
+               } // end leaf case
             }
 
             string selected_join = (smj_cost < nlj_cost) ? "sort-merge-join" : "nested-loop-join";
