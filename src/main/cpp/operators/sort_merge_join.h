@@ -57,9 +57,9 @@ namespace  vaultdb {
         const vector<pair<uint32_t, uint32_t>> joinKeyIdxs() const { return join_idxs_; }
 
 		inline bool sortCompatible() {
-            auto lhs_sort = Operator<B>::lhs_child_->getSortOrder();
-            auto rhs_sort = Operator<B>::rhs_child_->getSortOrder();
-			auto lhs_schema = Operator<B>::lhs_child_->getOutputSchema();
+            auto lhs_sort = this->lhs_child_->getSortOrder();
+            auto rhs_sort = this->rhs_child_->getSortOrder();
+			auto lhs_schema = this->lhs_child_->getOutputSchema();
 			if(lhs_sort.size() < join_idxs_.size() || rhs_sort.size() < join_idxs_.size())
                 return false;
 

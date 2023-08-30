@@ -23,7 +23,7 @@ SecureSqlInput::SecureSqlInput(const string & db, const string & sql, const bool
 // assume that sql is sorted on given sort definition
 SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &dummy_tag,  const SortDefinition &sort_def, const size_t & input_tuple_limit) :
         Operator(sort_def),  input_query_(sql), db_name_(db), has_dummy_tag_(dummy_tag), input_tuple_limit_(input_tuple_limit),
-        original_input_query_(sql) {
+        original_input_query_(sql), original_collation_(sort_def) {
 
     runQuery();
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
@@ -35,7 +35,7 @@ SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &
 
 SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &dummy_tag, const int &input_party, const size_t & input_tuple_limit, const SortDefinition &sort_def) :
         Operator(sort_def),  input_query_(sql), db_name_(db), has_dummy_tag_(dummy_tag), input_tuple_limit_(input_tuple_limit), input_party_(input_party),
-        original_input_query_(sql) {
+        original_input_query_(sql), original_collation_(sort_def) {
 
     runQuery();
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
@@ -47,8 +47,9 @@ SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &
 
 SecureTable *SecureSqlInput::runSelf() {
 
-    if (plain_input_ != nullptr) delete plain_input_;
-    runQuery();
+    if(plain_input_ == nullptr || plain_input_->getSortOrder() != this->sort_definition_) {
+        runQuery();
+    }
 
     // secret share it
     this->start_time_ = clock_start();
