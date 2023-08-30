@@ -58,9 +58,9 @@ namespace  vaultdb {
             if(this->sort_definition_.empty())  {
                 plain_input_->setSortOrder(this->sort_definition_); // if sort is empty it does not really matter how it is stored now
 
-                string sql = this->input_query_;
-                std::regex order_by_regex(" ORDER BY .*");
-                this->input_query_ = std::regex_replace(sql, order_by_regex, "");
+//                string sql = this->input_query_;
+//                std::regex order_by_regex(" ORDER BY .*");
+//                this->input_query_ = std::regex_replace(sql, order_by_regex, "");
 
 //                if (plain_input_ != nullptr) delete plain_input_;
 //                runQuery();
