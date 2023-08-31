@@ -993,6 +993,24 @@ Operator<B> *PlanParser<B>::optimizeTree() {
     std::cout << "Total Plans : " << std::to_string(total_plan_cnt_) << endl;
 
     delete new_root;
+
+    // Delete the elements in operators_
+    for(auto& pair : operators_) {
+        pair.second->setNullChild(nullptr);
+        pair.second->setNullChild(nullptr, 1);
+        delete pair.second; // delete the Operator<B> pointer
+    }
+    operators_.clear();
+
+    // Delete the elements in support_ops_
+    for(auto& op : support_ops_) {
+        op->setNullChild(nullptr);
+        op->setNullChild(nullptr, 1);
+        delete op; // delete the Operator<B> pointer
+    }
+    support_ops_.clear();
+    root_ = nullptr;
+
     return min_cost_plan_;
 }
 
@@ -1085,8 +1103,8 @@ void PlanParser<B>::recurseNode(Operator<B> *op) {
     // at the root node
     if(parent == nullptr) {
         size_t plan_cost = op->planCost();
-        std::cout << op->printTree() << endl;
-        std::cout << "Cost : " << std::to_string(plan_cost) << "\n" << "----------------------------" << std::endl;
+//        std::cout << op->printTree() << endl;
+//        std::cout << "Cost : " << std::to_string(plan_cost) << "\n" << "----------------------------" << std::endl;
         total_plan_cnt_++;
 
         if(plan_cost < min_plan_cost_) {
