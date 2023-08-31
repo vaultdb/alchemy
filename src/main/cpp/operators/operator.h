@@ -110,24 +110,18 @@ namespace  vaultdb {
 
         }
 
-        void setNullChild(Operator *c, int idx = 0){
-            if(idx == 0)
-                lhs_child_ = c;
-            else
-                rhs_child_ = c;
-        }
-
         inline void setChild(Operator *c, int idx = 0) {
             if(idx == 0) {
                 lhs_child_ = c;
-                lhs_child_->setParent(this);
+                if(c != nullptr) lhs_child_->setParent(this);
 
             }
             else {
                 rhs_child_ = c;
-                rhs_child_->setParent(this);
+                if(c != nullptr) rhs_child_->setParent(this);
             }
-            this->updateCollation();
+
+            if(c != nullptr) this->updateCollation();
         }
 
         inline void setChildWithNoUpdateCollation(Operator *c, int idx = 0) {

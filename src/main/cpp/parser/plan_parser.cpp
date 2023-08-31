@@ -1012,8 +1012,8 @@ void PlanParser<B>::deleteOptmizeTreeOperators() {
         // Check if the operator has not been deleted (i.e., is not nullptr)
         if (op) {
             // Set the children to nullptr
-            op->setNullChild(nullptr, 0);
-            op->setNullChild(nullptr, 1);
+            op->setChild(nullptr, 0);
+            op->setChild(nullptr, 1);
             op->setParent(nullptr);
 
             // Delete the operator
@@ -1037,7 +1037,7 @@ void PlanParser<B>::deleteSort() {
             if(op->getParent()->getOperatorId() == -1){
                 Operator<B>* unnecessary_sort = op->getParent();
                 unnecessary_sort->getParent()->setChildWithNoUpdateCollation(op);
-                unnecessary_sort->setNullChild(nullptr, 0);
+                unnecessary_sort->setChild(nullptr, 0);
                 unnecessary_sort->setParent(nullptr);
                 delete unnecessary_sort;
             }
@@ -1060,7 +1060,7 @@ void PlanParser<B>::deleteNotOptimizedOperators() {
                 child->setParent(nullptr);
                 root_ = child;
             }
-            op->setNullChild(nullptr);
+            op->setChild(nullptr);
             delete(op);
         }
     }
@@ -1106,7 +1106,7 @@ void PlanParser<B>::changeOperatorSortOrder() {
                     }
 
                     // Delete the original operator
-                    op->setNullChild(nullptr);
+                    op->setChild(nullptr);
                     op->setParent(nullptr);
                     delete(op);
                 }
@@ -1133,8 +1133,8 @@ void PlanParser<B>::changeOperatorSortOrder() {
                         operators_[op_id] = smj;
                     }
                     // Delete the original operator
-                    op->setNullChild(nullptr);
-                    op->setNullChild(nullptr, 1);
+                    op->setChild(nullptr);
+                    op->setChild(nullptr, 1);
                     op->setParent(nullptr);
                     delete(op);
                 }
@@ -1329,9 +1329,9 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
     }
 
     optimizeTree_operators_[node->getOperatorId()] = nullptr;
-    node->setNullChild(nullptr);
+    node->setChild(nullptr);
     if(node->getChild(1) != nullptr)
-        node->setNullChild(nullptr, 1);
+        node->setChild(nullptr, 1);
     delete node;
 }
 
@@ -1507,8 +1507,8 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
                     predicate = smj->getPredicate()->clone();
 
                     // Need to delete only smj, b/c childs can be used later
-                    smj->setNullChild(nullptr);
-                    smj->setNullChild(nullptr, 1);
+                    smj->setChild(nullptr);
+                    smj->setChild(nullptr, 1);
                     delete smj;
 
                     // Define sort before rhs_leaf
@@ -1537,8 +1537,8 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
                     predicate = smj->getPredicate()->clone();
 
                     // Need to delete only smj, b/c childs can be used later
-                    smj->setNullChild(nullptr);
-                    smj->setNullChild(nullptr, 1);
+                    smj->setChild(nullptr);
+                    smj->setChild(nullptr, 1);
                     delete smj;
 
                     // Define sort before lhs
@@ -1685,7 +1685,7 @@ void PlanParser<B>::recurseSort(Operator<B> *sort) {
             }
             // If sort was root
             else {
-                s->setNullChild(nullptr);
+                s->setChild(nullptr);
                 child->setParent(nullptr);
 
                 size_t plan_cost = child->planCost();
