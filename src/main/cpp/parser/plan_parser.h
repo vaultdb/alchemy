@@ -35,14 +35,7 @@ namespace vaultdb {
 
         Operator<B> *getOperator(const int &op_id);
 
-        void optimizeTree();
-        void deleteSort();
-        void deleteOptmizeTreeOperators();
-        void deleteNotOptimizedOperators();
-        void changeOperatorSortOrder();
-        std::vector<std::string> extractColumnsFromSql(const std::string& sql);
-        std::string modifySqlStatement(const std::string& originalSql, const SortDefinition& sort_defs);
-        std::vector<std::pair<int, SortEntry>> extractSortOrders(const std::string &plan_string);
+        Operator<B> *optimizeTree();
 
         static Operator<B> *
         parse(const std::string &db_name, const string &sql_file, const string &json_file, const int &limit = -1);
@@ -69,7 +62,7 @@ namespace vaultdb {
         // plan enumerator state
         map<int, vector<SortDefinition>> interesting_sort_orders_;
         size_t min_plan_cost_ = std::numeric_limits<size_t>::max();
-        string min_cost_plan_string_ = "";
+        Operator<B> *min_cost_plan_ = nullptr;
         std::map<int, Operator<B> * > operators_; // op ID --> operator instantiation
         std::vector<Operator<B> * > support_ops_; // these ones don't get an operator ID from the JSON plan
         std::map<int, Operator<B> * > optimizeTree_operators_;

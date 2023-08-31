@@ -24,7 +24,7 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
     int output_cursor = this->group_by_.size();
     for (ScalarAggregateDefinition agg: this->aggregate_definitions_) {
         GroupByAggregateImpl<B> *agg_impl = this->aggregateFactory(agg.type, agg.ordinal,
-                                                                 input_schema.getField(agg.ordinal));
+                                                                   input_schema.getField(agg.ordinal));
 
         // if an aggregator operates on packed bits (e.g. min/max/count), then copy its output definition from source
         if (std::is_same_v<Bit, B> && SystemConfiguration::getInstance().bitPackingEnabled()) {
@@ -43,9 +43,9 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
 
         }
 
-            aggregators_.push_back(agg_impl);
-            ++output_cursor;
-        }
+        aggregators_.push_back(agg_impl);
+        ++output_cursor;
+    }
     this->setOutputCardinality(input->getTupleCount());
 
     this->output_ = TableFactory<B>::getTable(input->getTupleCount(), Operator<B>::output_schema_, input->storageModel(), this->sort_definition_);
@@ -112,7 +112,9 @@ void SortMergeAggregate<B>::setup() {
 
     this->output_schema_ = this->generateOutputSchema(input_schema);
     this->setOutputCardinality(this->getChild()->getOutputCardinality());
-    updateCollation();
+
+    if(!is_optimized_cloned_)
+        updateCollation();
 }
 
 
