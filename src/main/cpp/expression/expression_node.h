@@ -24,6 +24,7 @@ namespace vaultdb {
         ExpressionNode(ExpressionNode<B> *lhs, ExpressionNode<B> *rhs);
 
 
+
         virtual Field<B> call(const QueryTuple<B> & target) const = 0;
         virtual Field<B> call(const QueryTable<B>  *src, const int & row) const = 0;
         virtual Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const = 0;
@@ -37,6 +38,8 @@ namespace vaultdb {
             if(rhs_ != nullptr)  { delete rhs_; }
         }
         std::string toString();
+        virtual bool operator==(const ExpressionNode<B> &other) const = 0;
+
 
         ExpressionNode<B> *lhs_ = nullptr;
         ExpressionNode<B> *rhs_ = nullptr;
@@ -88,6 +91,16 @@ namespace vaultdb {
 
         ~InputReference() = default;
 
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if(other.kind() != ExpressionKind::INPUT_REF) {
+                return false;
+            }
+            const InputReference<B> &other_ref = static_cast<const InputReference<B> &>(other);
+            return (other_ref.read_idx_ == read_idx_) && (other_ref.output_idx_ == output_idx_) &&
+                   (other_ref.binary_mode_ == binary_mode_) && (other_ref.read_lhs_ == read_lhs_);
+        }
+
+
         inline Field<B> call(const QueryTuple<B> & target) const override {
             return target.getField(read_idx_);
         }
@@ -119,7 +132,7 @@ namespace vaultdb {
         int read_idx_;
         uint32_t output_idx_;
         bool binary_mode_ = false;
-        uint32_t read_lhs_ = true;
+        bool read_lhs_ = true;
     };
 
 
@@ -169,6 +182,15 @@ namespace vaultdb {
 
         ~PackedInputReference() = default;
 
+         bool operator==(const ExpressionNode<B> &other) const override {
+            if(other.kind() != ExpressionKind::PACKED_INPUT_REF) {
+                return false;
+            }
+            const PackedInputReference<B> &other_ref = static_cast<const PackedInputReference<B> &>(other);
+            return (other_ref.read_idx_ == read_idx_) && (other_ref.output_idx_ == output_idx_) &&
+                   (other_ref.binary_mode_ == binary_mode_) && (other_ref.read_lhs_ == read_lhs_);
+        }
+
         inline Field<B> call(const QueryTuple<B> & target) const override {
             return target.getPackedField(read_idx_);
         }
@@ -200,7 +222,7 @@ namespace vaultdb {
         uint32_t read_idx_;
         uint32_t output_idx_;
         bool binary_mode_ = false;
-        uint32_t read_lhs_ = true;
+        bool read_lhs_ = true;
     };
 
     // leave output_schema_ blank initially and adjust automatically based on any bit packing of parent
@@ -212,14 +234,15 @@ namespace vaultdb {
         }
         ~LiteralNode() = default;
 
+         bool operator==(const ExpressionNode<B> &other) const override;
+
         Field<B> call(const QueryTuple<B> & target) const override { return  payload_; }
 
         inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
             return payload_;
         }
 
-        Field<B>
-        call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
             return payload_;
         }
 
@@ -257,14 +280,15 @@ namespace vaultdb {
         }
         ~NoOp() = default;
 
+        bool operator==(const ExpressionNode<B> &other) const override;
+
         Field<B> call(const QueryTuple<B> & target) const override { return  output_; }
 
         inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
             return output_;
         }
 
-        Field<B>
-        call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
             return output_;
         }
 
@@ -282,12 +306,21 @@ namespace vaultdb {
     };
 
 
+
     template<typename B>
     class CastNode : public ExpressionNode<B> {
     public:
         CastNode(ExpressionNode<B> *input, const FieldType &dst_type) : ExpressionNode<B>(input),  dst_type_(dst_type) { }
 
         ~CastNode() = default;
+
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if(other.kind() != ExpressionKind::CAST) {
+                return false;
+            }
+            const CastNode<B> &other_ref = static_cast<const CastNode<B> &>(other);
+            return (other_ref.dst_type_ == dst_type_);
+        }
 
         inline Field<B> call(const QueryTuple<B> &target) const override {
             Field<B> src = ExpressionNode<B>::lhs_->call(target);
@@ -304,8 +337,7 @@ namespace vaultdb {
             return castField(field);
         }
 
-        ExpressionKind kind() const override {     return ExpressionKind::CAST;
-         }
+        ExpressionKind kind() const override {     return ExpressionKind::CAST; }
 
         void accept(ExpressionVisitor<B> *visitor) override {
             visitor->visit(*this);
@@ -316,6 +348,7 @@ namespace vaultdb {
         }
 
         FieldType dst_type_;
+
     private:
         inline Field<B> castField(const Field<B> &src) const {
             switch (dst_type_) {

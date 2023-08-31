@@ -107,8 +107,8 @@ set(sources
 
         parser/plan_parser.cpp
 		parser/expression_parser.cpp
-		#parser/plan_deparser.cpp
-		#parser/expression_deparser.cpp
+		parser/plan_deparser.cpp
+		parser/expression_deparser.cpp
 
 		expression/expression_kind.h
 		expression/expression_factory.cpp

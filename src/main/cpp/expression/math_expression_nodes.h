@@ -11,6 +11,15 @@ namespace vaultdb {
         PlusNode(ExpressionNode<B> *lhs, ExpressionNode<B>  *rhs)  : ExpressionNode<B>(lhs, rhs) { }
 
         ~PlusNode() = default;
+
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::PLUS) {
+                return false;
+            }
+            const PlusNode<B> &other_node = static_cast<const PlusNode<B> &>(other);
+            return ExpressionNode<B>::lhs_ == other_node.lhs_ && ExpressionNode<B>::rhs_ == other_node.rhs_;
+        }
+
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
@@ -30,8 +39,7 @@ namespace vaultdb {
             return l + r;
         }
 
-        void accept(ExpressionVisitor<B> *visitor) override {    visitor->visit(*this);
-        }
+        void accept(ExpressionVisitor<B> *visitor) override {    visitor->visit(*this); }
 
         ExpressionKind kind() const override {     return ExpressionKind::PLUS; }
 
@@ -46,6 +54,14 @@ namespace vaultdb {
         MinusNode(ExpressionNode<B> * lhs, ExpressionNode<B>  *rhs)  : ExpressionNode<B>(lhs, rhs) { }
 
         ~MinusNode() = default;
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::MINUS) {
+                return false;
+            }
+            const MinusNode<B> &other_node = static_cast<const MinusNode<B> &>(other);
+            return ExpressionNode<B>::lhs_ == other_node.lhs_ && ExpressionNode<B>::rhs_ == other_node.rhs_;
+        }
+
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
@@ -84,6 +100,15 @@ namespace vaultdb {
     public:
         TimesNode(ExpressionNode<B> *lhs, ExpressionNode<B> *rhs)  : ExpressionNode<B>(lhs, rhs) { }
         ~TimesNode() = default;
+
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::TIMES) {
+                return false;
+            }
+            const TimesNode<B> &other_node = static_cast<const TimesNode<B> &>(other);
+            return ExpressionNode<B>::lhs_ == other_node.lhs_ && ExpressionNode<B>::rhs_ == other_node.rhs_;
+        }
+
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
@@ -119,6 +144,15 @@ namespace vaultdb {
     public:
         DivideNode(ExpressionNode<B> *lhs, ExpressionNode<B> *rhs)  : ExpressionNode<B>(lhs, rhs) { }
         ~DivideNode() = default;
+
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::DIVIDE) {
+                return false;
+            }
+            const DivideNode<B> &other_node = static_cast<const DivideNode<B> &>(other);
+            return ExpressionNode<B>::lhs_ == other_node.lhs_ && ExpressionNode<B>::rhs_ == other_node.rhs_;
+        }
+
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
@@ -157,6 +191,15 @@ namespace vaultdb {
     public:
         ModulusNode(ExpressionNode<B> * lhs,  ExpressionNode<B>  *rhs)  : ExpressionNode<B>(lhs, rhs) { }
         ~ModulusNode() = default;
+
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::MOD) {
+                return false;
+            }
+            const ModulusNode<B> &other_node = static_cast<const ModulusNode<B> &>(other);
+            return ExpressionNode<B>::lhs_ == other_node.lhs_ && ExpressionNode<B>::rhs_ == other_node.rhs_;
+        }
+
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(target);

@@ -18,6 +18,16 @@ namespace  vaultdb {
 
         ~CaseNode() = default;
 
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::CASE) {
+                return false;
+            }
+            const CaseNode<B> &other_node = static_cast<const CaseNode<B> &>(other);
+            return ExpressionNode<B>::lhs_ == other_node.lhs_ && ExpressionNode<B>::rhs_ == other_node.rhs_ &&
+                   conditional_.root_ == other_node.conditional_.root_;
+
+        }
+
         Field<B> call(const QueryTuple<B> & target) const override {
             B result = conditional_.call(target).template getValue<B>();
             Field<B> lhs_eval = ExpressionNode<B>::lhs_->call(target);

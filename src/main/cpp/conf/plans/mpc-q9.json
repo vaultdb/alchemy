@@ -256,11 +256,11 @@
             "operands": [
               {
                 "input": 2,
-                "name": "$2"
+                "name": "ps_suppkey"
               },
               {
                 "input": 6,
-                "name": "$6"
+                "name": "l_suppkey"
               }
             ]
           },
@@ -273,11 +273,11 @@
             "operands": [
               {
                 "input": 1,
-                "name": "$1"
+                "name": "ps_partkey"
               },
               {
                 "input": 5,
-                "name": "$5"
+                "name": "l_partkey"
               }
             ]
           }

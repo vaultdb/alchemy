@@ -20,6 +20,18 @@ namespace vaultdb {
         }
 
         ~EqualNode() = default;
+
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::EQ) {
+                return false;
+            }
+            const EqualNode<B> &other_node = static_cast<const EqualNode<B> &>(other);
+            bool lhs = (*this->lhs_ == *other_node.lhs_);
+            bool rhs = (*this->rhs_ == *other_node.rhs_);
+            cout << "LHS EQ: " << lhs << " RHS EQ: " << rhs << endl;
+            return lhs && rhs;
+        }
+
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
@@ -60,6 +72,15 @@ namespace vaultdb {
         }
 
         ~NotEqualNode() = default;
+
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::NEQ) {
+                return false;
+            }
+            const NotEqualNode<B> &other_node = static_cast<const NotEqualNode<B> &>(other);
+            return *this->lhs_ == *other_node.lhs_ && *this->rhs_ == *other_node.rhs_;
+        }
+
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
@@ -67,6 +88,7 @@ namespace vaultdb {
             return Field<B>(type_, lhs != rhs, 0);
 
         }
+
         inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(src, row);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(src, row);
@@ -105,6 +127,15 @@ namespace vaultdb {
 
         }
         ~LessThanNode() = default;
+
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::LT) {
+                return false;
+            }
+            const LessThanNode<B> &other_node = static_cast<const LessThanNode<B> &>(other);
+            return *this->lhs_ == *other_node.lhs_ && *this->rhs_ == *other_node.rhs_;
+        }
+
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
@@ -153,6 +184,15 @@ namespace vaultdb {
 
         }
         ~GreaterThanNode() = default;
+
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::GT) {
+                return false;
+            }
+            const GreaterThanNode<B> &other_node = static_cast<const GreaterThanNode<B> &>(other);
+            return *this->lhs_ == *other_node.lhs_ && *this->rhs_ == *other_node.rhs_;
+        }
+
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
@@ -197,10 +237,18 @@ namespace vaultdb {
     public:
         LessThanEqNode( ExpressionNode<B> *lhs, ExpressionNode<B> *rhs )   : ExpressionNode<B>(lhs, rhs) {
             type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
-
-
         }
+
         ~LessThanEqNode() = default;
+
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::LEQ) {
+                return false;
+            }
+            const LessThanEqNode<B> &other_node = static_cast<const LessThanEqNode<B> &>(other);
+            return *this->lhs_ == *other_node.lhs_ && *this->rhs_ == *other_node.rhs_;
+        }
+
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
@@ -243,6 +291,15 @@ namespace vaultdb {
 
         }
         ~GreaterThanEqNode() = default;
+
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::GEQ) {
+                return false;
+            }
+            const GreaterThanEqNode<B> &other_node = static_cast<const GreaterThanEqNode<B> &>(other);
+            return *this->lhs_ == *other_node.lhs_ && *this->rhs_ == *other_node.rhs_;
+        }
+
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(target);

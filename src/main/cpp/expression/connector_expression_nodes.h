@@ -14,6 +14,15 @@ namespace vaultdb {
 
         }
         ~NotNode() = default;
+
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::NOT) {
+                return false;
+            }
+            const NotNode<B> &other_node = static_cast<const NotNode<B> &>(other);
+            return ExpressionNode<B>::lhs_ == other_node.lhs_;
+        }
+
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> child = ExpressionNode<B>::lhs_->call(target);
             return Field<B>(type_, !child, 0);
@@ -53,6 +62,17 @@ namespace vaultdb {
 
         }
         ~AndNode() = default;
+
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::AND) {
+                return false;
+            }
+            const AndNode<B> &other_node = static_cast<const AndNode<B> &>(other);
+            bool lhs = (*this->lhs_ == *other_node.lhs_);
+            bool rhs = (*this->rhs_ == *other_node.rhs_);
+            cout << "LHS: " << lhs << " RHS: " << rhs << endl;
+            return lhs && rhs;
+        }
 
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
@@ -99,6 +119,15 @@ namespace vaultdb {
 
         }
         ~OrNode() = default;
+
+        bool operator==(const ExpressionNode<B> &other) const override {
+            if (other.kind() != ExpressionKind::OR) {
+                return false;
+            }
+            const OrNode<B> &other_node = static_cast<const OrNode<B> &>(other);
+            return (*this->lhs_ == *other_node.lhs_) && (*this->rhs_ == *other_node.rhs_);
+        }
+
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(target);

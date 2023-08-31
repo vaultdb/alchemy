@@ -18,26 +18,15 @@ Expression<B> * ExpressionParser<B>::parseJSONExpression(const std::string &json
     return parseExpression(pt, input_schema);
 }
 
-// starts with:
-// {
-//   "op": {
-// ...
-// handle "input" / raw value copies separately in parse_projection
-//template<typename B>
-//Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & input_schema) {
-//   ExpressionNode<B> *expression_root = parseHelper(tree, input_schema);
-//
-//   TypeValidationVisitor<B> visitor(expression_root, input_schema);
-//    expression_root->accept(&visitor);
-//
-//
-//    GenericExpression<B> *g =  new GenericExpression<B>(expression_root, input_schema);
-//
-//    delete expression_root;
-//    return g;
-//
-//}
-//
+template<typename B>
+Expression<B> * ExpressionParser<B>::parseJSONExpression(const std::string &json, const QuerySchema & lhs, const QuerySchema & rhs) {
+    stringstream ss;
+    ss << json << endl;
+    boost::property_tree::ptree pt;
+    boost::property_tree::read_json(ss, pt);
+    return parseExpression(pt, lhs, rhs);
+}
+
 template<typename B>
 Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & lhs, const QuerySchema & rhs) {
     ExpressionNode<B> *expression_root = parseHelper(tree, lhs, rhs);
@@ -159,9 +148,7 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
         throw std::invalid_argument("Expression " + expr + " is not a properly formed input");
     }
 
-    return new InputReference<B>(src_ordinal, lhs, rhs);
-
-
+   return new InputReference<B>(src_ordinal, lhs, rhs);
 }
 
 template class vaultdb::ExpressionParser<bool>;

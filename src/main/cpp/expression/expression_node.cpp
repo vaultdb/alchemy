@@ -3,6 +3,7 @@
 #include <expression/visitor/print_expression_visitor.h>
 #include <query_table/plain_tuple.h>  // leave tuple includes in or else it will not resolve field lookups in release mode
 #include <query_table/secure_tuple.h>
+#include "util/field_utilities.h"
 
 
 using namespace vaultdb;
@@ -52,6 +53,25 @@ std::ostream &vaultdb::operator<<(std::ostream &os,  ExpressionNode<Bit> &expres
     return os;
 }
 
+
+template<typename B>
+bool LiteralNode<B>::operator==(const ExpressionNode<B> &other) const {
+    if(other.kind() != ExpressionKind::LITERAL) {
+        return false;
+    }
+    const LiteralNode<B> &other_ref = static_cast<const LiteralNode<B> &>(other);
+    return FieldUtilities::extract_bool(other_ref.payload_ == payload_);
+}
+
+
+template<typename B>
+bool NoOp<B>::operator==(const ExpressionNode<B> &other) const {
+    if(other.kind() != ExpressionKind::NO_OP) {
+        return false;
+    }
+    const NoOp<B> &other_ref = static_cast<const NoOp<B> &>(other);
+    return FieldUtilities::extract_bool(other_ref.output_ == output_);
+}
 
 template class vaultdb::ExpressionNode<bool>;
 template class vaultdb::ExpressionNode<emp::Bit>;

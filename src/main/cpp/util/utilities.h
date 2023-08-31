@@ -20,6 +20,8 @@
 #include <operators/support/aggregate_id.h>
 #include <common/defs.h>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 
 namespace vaultdb {
@@ -60,7 +62,32 @@ namespace vaultdb {
         // for parser debugging
         static void printTree(const boost::property_tree::ptree &pt, const std::string &prefix = "");
 
+        // for simulating types in JSON deparser
 
+        static string eraseValueQuotes(const string & json_plan, const vector<string> & search_strs)  {
+            // iterate over JSON plan and delete extra quotes around some fields
+            vector<string> lines;
+            boost::split(lines, json_plan, boost::is_any_of("\n"));
+
+
+            for(auto search_str : search_strs) {
+                for(auto & line : lines) {
+                if(line.find(search_str) != std::string::npos) {
+                    // delete last two instances of quote
+                    line.erase(line.find_last_of("\""), 1);
+                    line.erase(line.find_last_of("\""), 1);
+                }
+            }
+        }
+
+            // re-assemble lines
+            string output;
+            for(auto line : lines) {
+                output += line + "\n";
+            }
+            return output;
+
+        }
     };
 
 }
