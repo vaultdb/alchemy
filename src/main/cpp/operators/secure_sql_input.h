@@ -21,7 +21,7 @@ namespace  vaultdb {
         string getParameters() const override {
             // N.B., this is the tuple count provided by each party
             // after secret sharing we expect more than this via the other party
-            return "\"" + input_query_ + "\", tuple_count=" + std::to_string(plain_input_->getTupleCount());
+            return "\"" + input_query_ + "\", tuple_count=" + std::to_string(this->getOutputCardinality());
          }
 
 
