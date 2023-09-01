@@ -1,6 +1,7 @@
 #!/bin/bash -x
 
 bash run.sh emp_test
+bash run.sh secure_plan_deparser_test
 bash run.sh secure_field_expression_test
 bash run.sh emp_table_test
 bash run.sh secure_filter_test

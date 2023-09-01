@@ -3,6 +3,7 @@ set +x
 
 
 ./bin/csv_reader_test --flagfile=flagfiles/plain.flags
+./bin/plan_deparser_test --flagfile=flagfiles/plain.flags
 ./bin/field_expression_test --flagfile=flagfiles/plain.flags
 ./bin/filter_test --flagfile=flagfiles/plain.flags
 ./bin/project_test --flagfile=flagfiles/plain.flags
