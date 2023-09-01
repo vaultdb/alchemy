@@ -151,10 +151,9 @@ void ExpressionDeparser<B>::visitBinaryExpression(ExpressionNode<B> &binary_node
     binary_node_ptree.put("name", connector);
     binary_node_ptree.put("kind", connector);
     binary_node_ptree.put("syntax", "BINARY");
+
     ptree op;
     op.add_child("op", binary_node_ptree);
-
-
     op.add_child("operands", operands);
 
     last_expr_ = op;
@@ -183,20 +182,16 @@ void ExpressionDeparser<B>::visit(CaseNode<B> &  case_node) {
     case_node_ptree.put("kind", "CASE");
     case_node_ptree.put("syntax", "SPECIAL");
 
-    ptree operands;
+    ptree op;
+    op.add_child("op", case_node_ptree);
+
     ptree operands_list;
     operands_list.push_back(std::make_pair("", conditional));
     operands_list.push_back(std::make_pair("", lhs));
     operands_list.push_back(std::make_pair("", rhs));
+    op.add_child("operands", operands_list);
 
-    case_node_ptree.add_child("operands", operands_list);
-    case_node_ptree.add_child("", operands);
-
-    last_expr_ = case_node_ptree;
-
-
-
-
+    last_expr_ = op;
 
 }
 

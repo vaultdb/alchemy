@@ -23,8 +23,8 @@ namespace  vaultdb {
                 return false;
             }
             const CaseNode<B> &other_node = static_cast<const CaseNode<B> &>(other);
-            return ExpressionNode<B>::lhs_ == other_node.lhs_ && ExpressionNode<B>::rhs_ == other_node.rhs_ &&
-                   conditional_.root_ == other_node.conditional_.root_;
+            return (*this->lhs_ == *other_node.lhs_) && (*this->rhs_ == *other_node.rhs_) &&
+                    (*conditional_.root_ == *other_node.conditional_.root_);
 
         }
 
