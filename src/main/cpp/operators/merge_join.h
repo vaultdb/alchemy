@@ -64,6 +64,7 @@ namespace  vaultdb {
             return this->operatorEquality(other);
         }
 
+        bool getDummyHandling() const { return or_dummy_tags_; }
 
     protected:
         bool or_dummy_tags_ = false;

@@ -50,6 +50,12 @@ void ExpressionDeparser<B>::visit(LiteralNode<B>&  node) {
 template<typename B>
 void ExpressionDeparser<B>::visit(NoOp<B>&  node) {
 
+    ptree no_op_node;
+
+    no_op_node.put("no-op", true);
+
+    last_expr_ = no_op_node;
+
 }
 
 template<typename B>

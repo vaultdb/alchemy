@@ -33,7 +33,7 @@ void PlanDeparser<B>::deparseTree() {
     pt::write_json(ss, base_node);
     json_plan_ = ss.str();
 
-    vector<string> search_strs = {"\"dummy-tag\"", "\"input-party\"", "\"input-limit\"", "\"field\"", "\"input\"", "\"foreign-key\"", "\"nullable\"", " \"literal\"", "precision", "\"scale\"", "\"output-cardinality\""};
+    vector<string> search_strs = {"\"dummy-tag\"", "\"input-party\"", "\"input-limit\"", "\"field\"", "\"input\"", "\"foreign-key\"", "\"nullable\"", " \"literal\"", "precision", "\"scale\"", "\"output-cardinality\"", "\"no-op\""};
 
    json_plan_ = Utilities::eraseValueQuotes(json_plan_, search_strs);
 

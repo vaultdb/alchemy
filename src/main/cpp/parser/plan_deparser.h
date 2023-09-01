@@ -7,6 +7,7 @@
 #include "expression/expression.h"
 #include "expression_deparser.h"
 #include "operators/group_by_aggregate.h"
+#include "operators/merge_join.h"
 
 using namespace std;
 using boost::property_tree::ptree;
@@ -89,6 +90,13 @@ namespace vaultdb {
 
             ptree join_cond = ExpressionDeparser<B>::deparse(join->getPredicate());
             join_node.add_child("condition", join_cond);
+            // TODO: add OR handling for merge join
+
+            if(join->getType() == OperatorType::MERGE_JOIN) {
+                //  "dummy-handling" : "OR",
+                auto mj = (MergeJoin<B> *) join;
+                join_node.put("dummy-handling", mj->getDummyHandling() ? "OR" : "AND");
+            }
 
             return join_node;
        }

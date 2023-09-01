@@ -24,7 +24,7 @@ protected:
 
     void runTest(const int &test_id);
 
-    vector<string> search_strs_ = {"\"dummy-tag\"", "\"input-party\"", "\"input-limit\"", "\"field\"", "\"input\"", "\"foreign-key\"", "\"nullable\"", " \"literal\"", "precision", "\"scale\"", "\"read_lhs\"", "\"binary_mode\"", "\"output-cardinality\""};
+    vector<string> search_strs_ = {"\"dummy-tag\"", "\"input-party\"", "\"input-limit\"", "\"field\"", "\"input\"", "\"foreign-key\"", "\"nullable\"", " \"literal\"", "precision", "\"scale\"", "\"read_lhs\"", "\"binary_mode\"", "\"output-cardinality\"", "\"no-op\""};
 
 };
 
@@ -39,7 +39,7 @@ void PlanDeparserTest::runTest(const int &test_id) {
     cout << "Expected plan: " << expected_root->printTree() << endl;
 
     string json_plan = PlanDeparser<bool>::deparse(expected_root);
-//    cout << "JSON Plan: " << json_plan << endl;
+    cout << "JSON Plan: " << json_plan << endl;
 
     // re-parse the plan, leaving out limit to test it persisting from JSON
     PlainOperator *observed_root = PlanParser<bool>::parseJSONString(db_name_, json_plan);
@@ -50,6 +50,7 @@ void PlanDeparserTest::runTest(const int &test_id) {
     delete observed_root;
 
 }
+
 
 
 // expression: ($2 == $6) AND ($1 == $5)
@@ -105,7 +106,6 @@ TEST_F(PlanDeparserTest, tpch_q01) {
 
 
 TEST_F(PlanDeparserTest, tpch_q03) {
-    // Output is creating BasicJoin instead of keyed join.  Double-check that join key (foreign-key) field is being parsed correctly
     runTest(3);
 }
 

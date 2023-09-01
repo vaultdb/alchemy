@@ -564,7 +564,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
     ++it;
     int rhs_id = it->second.get_value<int>();
     Operator<B> *rhs  = operators_.at(rhs_id);
-
+    cout << "Parsing join condition: " << Utilities::printTree(join_condition_tree) << endl;
     Expression<B> *join_condition = ExpressionParser<B>::parseExpression(join_condition_tree, lhs->getOutputSchema(), rhs->getOutputSchema());
 
     if(join_tree.count("operator-algorithm") > 0)
