@@ -48,7 +48,7 @@ namespace vaultdb {
     protected:
         QueryTable<Bit> *runSelf() override;
         OperatorType getType() const override {     return OperatorType::MERGE_INPUT;  }
-        string getParameters() const {
+        string getParameters() const override {
             return "\"" + ((SecureSqlInput *)lhs_)->input_query_ + "\", tuple_count=" + std::to_string(this->output_cardinality_);
         }
 

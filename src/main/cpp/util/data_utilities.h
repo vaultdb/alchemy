@@ -77,7 +77,7 @@ namespace vaultdb {
         static string printBitArray(const bool* bits, const size_t & bit_cnt) {
             std::stringstream ss;
             for(int i = 0; i < bit_cnt; ++i) {
-                ss << (bits[i]) ? "1" : "0";
+                ss << ((bits[i]) ? "1" : "0");
             }
             return ss.str();
         }

@@ -51,7 +51,7 @@ void PlanDeparserTest::runTest(const int &test_id) {
 
 }
 
-/*
+
 // expression: ($2 == $6) AND ($1 == $5)
 TEST_F(PlanDeparserTest, conjunction_expression) {
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q9.json";
@@ -102,17 +102,18 @@ TEST_F(PlanDeparserTest, tpch_q01) {
 }
 
 
-*/
+
 
 TEST_F(PlanDeparserTest, tpch_q03) {
     // Output is creating BasicJoin instead of keyed join.  Double-check that join key (foreign-key) field is being parsed correctly
     runTest(3);
 }
 
-/*
+
 TEST_F(PlanDeparserTest, tpch_q05) {
     runTest(5);
 }
+
 
 TEST_F(PlanDeparserTest, tpch_q08) {
     runTest(8);
@@ -126,7 +127,7 @@ TEST_F(PlanDeparserTest, tpch_q18) {
     runTest(18);
 }
 
-*/
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, true);

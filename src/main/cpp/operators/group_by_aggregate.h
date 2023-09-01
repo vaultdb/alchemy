@@ -90,9 +90,9 @@ namespace vaultdb {
             auto rhs = dynamic_cast<const GroupByAggregate<B> *>(&other);
             if(!Utilities::vectorEquality(this->group_by_, rhs->group_by_)) return false;
             if(!Utilities::vectorEquality(this->aggregate_definitions_, rhs->aggregate_definitions_)) return false;
+            if(!Utilities::vectorEquality(this->effective_sort_, rhs->effective_sort_)) return false;
 
             if(this->cardinality_bound_ != rhs->cardinality_bound_) return false;
-            if(this->effective_sort_ != rhs->effective_sort_) return false;
 
             return this->operatorEquality(other);
         }

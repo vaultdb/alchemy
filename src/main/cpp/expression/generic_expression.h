@@ -45,7 +45,7 @@ namespace  vaultdb {
             }
         }
 
-        bool operator==(const Expression<B> & other) const {
+        bool operator==(const Expression<B> & other) const override {
             if (other.exprClass() != ExpressionClass::GENERIC) {
                 return false;
             }

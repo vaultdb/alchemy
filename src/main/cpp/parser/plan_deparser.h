@@ -2,7 +2,11 @@
 #define _PLAN_DEPARSER_
 
 #include "operators/operator.h"
+#include "operators/join.h"
 #include <boost/property_tree/ptree.hpp>
+#include "expression/expression.h"
+#include "expression_deparser.h"
+#include "operators/group_by_aggregate.h"
 
 using namespace std;
 using boost::property_tree::ptree;
@@ -15,13 +19,14 @@ namespace vaultdb {
     template<typename B>
     class PlanDeparser {
     public:
-        PlanDeparser(const Operator<B> *root): root_(root) {
+        PlanDeparser(Operator<B> *root): root_(root) {
+            validateTree();
             deparseTree();
         }
 
         string getJsonPlan() const { return json_plan_; }
 
-        static string deparse(const Operator<B> *root) {
+        static string deparse(Operator<B> *root) {
             PlanDeparser<B> deparser(root);
             return deparser.getJsonPlan();
         }
@@ -29,7 +34,7 @@ namespace vaultdb {
 
     private:
         string json_plan_;
-        const Operator<B> *root_;
+        Operator<B> *root_;
         pt::ptree rels_;
 
         void deparseTree();
@@ -37,7 +42,6 @@ namespace vaultdb {
 
         pt::ptree deparseNode(const Operator<B> *node);
         pt::ptree deparseCollation(const SortDefinition & sort);
-        pt::ptree deparseSchema(const QuerySchema & schema);
 
         pt::ptree deparseSecureSqlInput(const Operator<B> *input);
         pt::ptree deparseSort(const Operator<B> *sort);
@@ -57,16 +61,83 @@ namespace vaultdb {
         pt::ptree deparseZkSqlInput(const Operator<B> *input);
         pt::ptree deparseScalarAggregate(const Operator<B> *agg);
 
-        void eraseValueQuotes(string &line, const vector<string> & search_strs) const {
-            for(auto search_str : search_strs) {
-                if(line.find(search_str) != std::string::npos) {
-                    // delete last two instances of quote
-                    line.erase(line.find_last_of("\""), 1);
-                    line.erase(line.find_last_of("\""), 1);
+        void validateTree();
+        void validateTreeHelper(Operator<B> *node, map<int, int> & known_ids);
 
-                }
+        // creates a list of field1Name (#0), field2Name (#1), etc.
+       inline string generateFieldList(const QuerySchema & schema) {
+            int field_cnt = schema.getFieldCount();
+            if (field_cnt == 0) return "";
+            string fields = schema.getField(0).getName() + " (#0)";
+
+            for (int i = 1; i < field_cnt; ++i) {
+                fields += ", " + schema.getField(i).getName() + " (#" + to_string(i) + ")";
             }
+
+            return fields;
         }
+
+        pt::ptree deparseSchema(const QuerySchema & schema);
+
+        ptree deparseJoin(const Join<B> *join, const string &algo_name, const int &foreign_key_reln) {
+            pt::ptree join_node;
+            writeHeader(join_node, join, "LogicalJoin");
+            join_node.put("operator-algorithm", algo_name);
+            if(foreign_key_reln == 0 || foreign_key_reln == 1) {
+                join_node.put("foreign-key", foreign_key_reln);
+            }
+
+            ptree join_cond = ExpressionDeparser<B>::deparse(join->getPredicate());
+            join_node.add_child("condition", join_cond);
+
+            return join_node;
+       }
+
+
+        void writeHeader(ptree & to_write, const Operator<B> *op, string op_name) {
+            to_write.put("id", op->getOperatorId());
+            to_write.put("relOp", op_name);
+            to_write.put("outputFields", generateFieldList(op->getOutputSchema()));
+
+            ptree inputs;
+            if(op->getChild() != nullptr) inputs.push_back(std::make_pair("", ptree(std::to_string(op->getChild()->getOperatorId()))));
+            if(op->getChild(1) != nullptr) inputs.push_back(std::make_pair("", ptree(std::to_string(op->getChild(1)->getOperatorId()))));
+            if(op->getChild() != nullptr) {
+                to_write.add_child("inputs", inputs);
+            }
+       }
+
+       ptree deparseGroupByAggregate(GroupByAggregate<B> *agg, const string & algo_name) {
+           pt::ptree gb_agg_node;
+           writeHeader(gb_agg_node, agg, "LogicalAggregate");
+           gb_agg_node.put("operator-algorithm", algo_name);
+           gb_agg_node.put<int>("cardinality-bound", agg->getCardinalityBound());
+
+           pt::ptree group_bys;
+           for(auto col : agg->group_by_) {
+               pt::ptree col_ordinal;
+               col_ordinal.put_value(col);
+               group_bys.push_back(std::make_pair("", col_ordinal));
+           }
+
+           gb_agg_node.add_child("group", group_bys);
+
+            pt::ptree aggregates;
+            for(ScalarAggregateDefinition agg_def : agg->aggregate_definitions_) {
+                ptree agg_node = ScalarAggregateDefinition::aggregateDefinitionToPTree(agg_def, agg->getOutputSchema());
+                aggregates.push_back(std::make_pair("", agg_node));
+            }
+            gb_agg_node.add_child("aggs", aggregates);
+
+            auto collation = deparseCollation(agg->effective_sort_);
+            gb_agg_node.add_child("effective-collation", collation);
+
+           return gb_agg_node;
+
+       }
+
+
+
 
 
     };

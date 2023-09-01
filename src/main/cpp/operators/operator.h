@@ -256,6 +256,8 @@ namespace  vaultdb {
         // to handle template specialization
         inline bool operatorEquality(const Operator<bool> &other) const {
             cout << "Testing equality on: " << endl << "    " << this->toString() << " and \n    " << other.toString() << endl;
+            if(this->toString() == other.toString()) cout << "... strings equal!" << endl;
+
             if(std::is_same_v<B, Bit>) return false; // this is PlainOperator
             if (!Utilities::vectorEquality(this->getSortOrder(), other.getSortOrder())) return false;
             if (this->output_schema_ != other.getOutputSchema()) return false;

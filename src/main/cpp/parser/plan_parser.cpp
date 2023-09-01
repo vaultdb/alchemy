@@ -178,12 +178,13 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
     if(op_name == "LogicalFilter")  op = parseFilter(operator_id, tree);
     if(op_name == "JdbcTableScan")  op = parseSeqScan(operator_id, tree);
     if(op_name == "ShrinkWrap")  op = parseShrinkwrap(operator_id, tree);
-    if(op_name == "LogicalValues")
-        if(json_only_) {
+    if(op_name == "LogicalValues") {
+        if (json_only_) {
             op = parseLocalScan(operator_id, tree);
         } else {
             return;  // parsed elsewhere
         }
+    }
 
     if(op != nullptr) {
         operators_[operator_id] = op;

@@ -96,7 +96,7 @@ namespace  vaultdb {
 
 
 
-        inline int8_t *getFieldPtr(const int & row, const int & col) const {
+        inline int8_t *getFieldPtr(const int & row, const int & col) const override {
             return const_cast<int8_t *>(column_data_.at(col).data() + row * this->field_sizes_bytes_.at(col));
         }
 
