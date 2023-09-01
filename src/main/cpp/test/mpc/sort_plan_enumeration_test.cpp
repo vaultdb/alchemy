@@ -158,70 +158,14 @@ SortPlanEnumerationTest::generateExpectedOutputQuery(const int &test_id, const S
     return query;
 }
 
-void SortPlanEnumerationTest::runStubTest(string & sql_plan, string & json_plan, string & expected_query, SortDefinition & expected_sort, const string & unioned_db) {
-    this->initializeBitPacking(FLAGS_unioned_db);
-
-    string local_db = unioned_db;
-    string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
-    boost::replace_all(local_db, "unioned", party_name);
-
-    cout << " Observed DB : "<< local_db << " - Bit Packed" << endl;
-
-    auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
-    time_point<high_resolution_clock> startTime = clock_start();
-    clock_t secureStartClock = clock();
-
-    PlanParser<Bit> parser(db_name_, json_plan, input_tuple_limit_);
-    SecureOperator *root = parser.getRoot();
-
-    std::cout << "Original Plan : " << endl;
-    std::cout << root->printTree() << endl;
-
-    root = parser.optimizeTree();
-
-    std::cout << "Sort Optimized Plan : " << endl;
-    std::cout << root->printTree() << endl;
-
-    SecureTable *result = root->run();
-
-    double secureClockTicks = (double) (clock() - secureStartClock);
-    double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
-    double duration = time_from(startTime) / 1e6;
-
-    cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
-    auto end_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
-    float e2e_gates = (float) (end_gates - start_gates);
-    float cost_estimate = (float) root->planCost();
-    float relative_error = (fabs(e2e_gates - cost_estimate) / e2e_gates) * 100.0f;
-    cout << "End-to-end plan gates: " << root->planCost() << " estimated: " << end_gates - start_gates << " gates, relative error (%)=" << relative_error << endl;
-
-    if(FLAGS_validation) {
-        PlainTable *observed = result->reveal();
-        PlainTable  *expected = DataUtilities::getQueryResults(unioned_db, expected_query, false);
-        expected->setSortOrder(expected_sort);
-
-        ASSERT_EQ(*expected, *observed);
-
-        delete observed;
-        delete expected;
-    }
-
-}
 
 // No Aggregate
 
 TEST_F(SortPlanEnumerationTest, tpch_q1) {
-string test_name = "q1";
-std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-" + test_name + ".sql";
-std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-"  + test_name + ".json";
 
-SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-string expected_sql = tpch_queries[1];
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+    runTest(1, "q1", expected_sort, FLAGS_unioned_db);
 
-
-this->initializeBitPacking(FLAGS_unioned_db);
-
-runStubTest(sql_file, plan_file, expected_sql, expected_sort, FLAGS_unioned_db);
 
 }
 
