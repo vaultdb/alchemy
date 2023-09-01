@@ -225,8 +225,6 @@ namespace  vaultdb {
         virtual QueryTable<B> *runSelf() = 0;
 
         inline bool operatorEquality(const Operator<Bit> &other) const {
-            cout << "Testing equality on " << this->toString() << " and " << other.toString() << endl;
-
             if(std::is_same_v<B, bool>) return false; // secure operator
             if (this->sort_definition_ != other.getSortOrder()) return false;
             if (this->output_schema_ != other.getOutputSchema()) return false;
@@ -246,22 +244,18 @@ namespace  vaultdb {
             SecureOperator *this_lhs_child = (SecureOperator *) this->getChild(0);
             SecureOperator *this_rhs_child = (SecureOperator *) this->getChild(1);
 
-            //
+
             bool lhs = (this_lhs_child != nullptr && other_lhs_child != nullptr) ? ( *this_lhs_child == *other_lhs_child ) : (other_lhs_child == this_lhs_child);
             bool rhs = (this_rhs_child != nullptr && other_rhs_child != nullptr) ? ( *this_rhs_child == *other_rhs_child ) : (other_rhs_child == this_rhs_child);
-            cout << "Equality check on " << this->toString() << " produces " << (lhs && rhs) << endl;
             return lhs && rhs; // true for self and children
         }
 
         // to handle template specialization
         inline bool operatorEquality(const Operator<bool> &other) const {
-            cout << "Testing equality on: " << endl << "    " << this->toString() << " and \n    " << other.toString() << endl;
-            if(this->toString() == other.toString()) cout << "... strings equal!" << endl;
 
             if(std::is_same_v<B, Bit>) return false; // this is PlainOperator
             if (!Utilities::vectorEquality(this->getSortOrder(), other.getSortOrder())) return false;
             if (this->output_schema_ != other.getOutputSchema()) return false;
-            cout << "This output card: " << this->output_cardinality_ << " other output card: " << other.getOutputCardinality() << endl;
             if (this->output_cardinality_ != other.getOutputCardinality()) return false;
 
             // don't really need to check outputs -  check control flow
@@ -276,27 +270,9 @@ namespace  vaultdb {
             PlainOperator *this_lhs_child = (PlainOperator *) this->getChild();
             PlainOperator *this_rhs_child = (PlainOperator *) this->getChild(1);
 
-            bool lhs, rhs;
-            if(this_lhs_child != nullptr && other_lhs_child != nullptr) {
-                cout << "Recursing LHS!" << endl;
-                lhs = *this_lhs_child == *other_lhs_child;
 
-            }
-            else {
-                lhs = (this_lhs_child == nullptr && other_lhs_child == nullptr);
-            }
-
-            if(this_rhs_child != nullptr && other_rhs_child != nullptr) {
-                cout << "Recursing RHS!" << endl;
-                rhs = *this_rhs_child == *other_rhs_child;
-            }
-            else {
-                rhs = (this_rhs_child == nullptr && other_rhs_child == nullptr);
-            }
-
-//            bool lhs = (this_lhs_child != nullptr && other_lhs_child != nullptr) ? ( *this_lhs_child == *other_lhs_child ) : (other_lhs_child == this_lhs_child); // latter: both nullptr
-//            bool rhs = (this_rhs_child != nullptr && other_rhs_child != nullptr) ? ( *this_rhs_child == *other_rhs_child ) : (other_rhs_child == this_rhs_child);
-            cout << "Equality check on " << this->toString() << " produces " << lhs << ", " << rhs << ": " << (lhs && rhs) << endl;
+            bool lhs = (this_lhs_child != nullptr && other_lhs_child != nullptr) ? ( *this_lhs_child == *other_lhs_child ) : (other_lhs_child == this_lhs_child); 
+            bool rhs = (this_rhs_child != nullptr && other_rhs_child != nullptr) ? ( *this_rhs_child == *other_rhs_child ) : (other_rhs_child == this_rhs_child);
             return lhs && rhs; // true for self and children
         }
 

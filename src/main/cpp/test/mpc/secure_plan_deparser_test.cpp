@@ -1,4 +1,4 @@
-#include "plain_base_test.h"
+#include "emp_base_test.h"
 #include "data/csv_reader.h"
 #include "parser/plan_parser.h"
 #include "test/support/tpch_queries.h"
@@ -9,12 +9,19 @@
 #include "parser/expression_deparser.h"
 #include "parser/expression_parser.h"
 
-DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_int32(party, 1, "party for EMP execution");
+DEFINE_int32(port, 54325, "port for EMP execution");
+DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_int32(ctrl_port, 65454, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
 
-// TODO: create secure_deparser_test to check out SecureSqlInput and others
-
-class PlanDeparserTest : public PlainBaseTest {
+class PlanDeparserTest : public EmpBaseTest {
 
 
 protected:
@@ -36,10 +43,8 @@ void PlanDeparserTest::runTest(const int &test_id) {
 
     PlanParser<bool> plan_reader(db_name_, plan_file, limit_);
     PlainOperator *expected_root = plan_reader.getRoot();
-    cout << "Expected plan: " << expected_root->printTree() << endl;
 
     string json_plan = PlanDeparser<bool>::deparse(expected_root);
-    cout << "JSON Plan: " << json_plan << endl;
 
     // re-parse the plan, leaving out limit to test it persisting from JSON
     PlainOperator *observed_root = PlanParser<bool>::parseJSONString(db_name_, json_plan);
@@ -127,10 +132,9 @@ TEST_F(PlanDeparserTest, tpch_q18) {
     runTest(18);
 }
 
-
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
-    gflags::ParseCommandLineFlags(&argc, &argv, true);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
 
     ::testing::GTEST_FLAG(filter)=FLAGS_filter;
     return RUN_ALL_TESTS();

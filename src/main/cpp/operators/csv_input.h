@@ -42,11 +42,11 @@ public:
 
 protected:
 
-    string getParameters() const {
+    string getParameters() const override {
         return "filename=" + input_file_;
     }
 
-    OperatorType getType() const {
+    OperatorType getType() const override {
         return OperatorType::CSV_INPUT;
     }
 

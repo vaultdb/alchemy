@@ -1,8 +1,8 @@
-#include "plain/plain_base_test.h"
-#include <operators/sql_input.h>
-#include <data/csv_reader.h>
-#include <parser/plan_parser.h>
-#include "support/tpch_queries.h"
+#include "plain_base_test.h"
+#include "operators/sql_input.h"
+#include "data/csv_reader.h"
+#include "parser/plan_parser.h"
+#include "test/support/tpch_queries.h"
 #include <boost/algorithm/string/replace.hpp>
 
 

@@ -65,8 +65,8 @@ package_add_test(nested_loop_aggregate_test plain/nested_loop_aggregate_test.cpp
 package_add_test(merge_join_test plain/merge_join_test.cpp plain/plain_base_test.cpp)
 
 package_add_test(secret_share_generator_test secret_share_generator_test.cpp plain/plain_base_test.cpp)
-package_add_test(plan_parser_test plan_parser_test.cpp plain/plain_base_test.cpp)
-package_add_test(plan_deparser_test plan_deparser_test.cpp plain/plain_base_test.cpp)
+package_add_test(plan_parser_test plain/plan_parser_test.cpp plain/plain_base_test.cpp)
+package_add_test(plan_deparser_test plain/plan_deparser_test.cpp plain/plain_base_test.cpp)
 
 package_add_test(tpch_test plain/tpch_test.cpp plain/plain_base_test.cpp)
 
@@ -95,6 +95,7 @@ package_add_test(secure_sort_merge_aggregate_test mpc/secure_sort_merge_aggregat
 package_add_test(secure_nested_loop_aggregate_test mpc/secure_nested_loop_aggregate_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_tpch_test mpc/secure_tpch_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_plan_enumerator_test mpc/secure_plan_enumerator_test.cpp  mpc/emp_base_test.cpp)
+package_add_test(secure_plan_deparser_test mpc/secure_plan_deparser_test.cpp  mpc/emp_base_test.cpp)
 unset(Labels)
 set(Labels "LABELS;EmpTest")
 

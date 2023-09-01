@@ -1,10 +1,10 @@
-#include "plain/plain_base_test.h"
-#include <data/csv_reader.h>
-#include <parser/plan_parser.h>
-#include "support/tpch_queries.h"
-#include <parser/plan_deparser.h>
+#include "plain_base_test.h"
+#include "data/csv_reader.h"
+#include "parser/plan_parser.h"
+#include "test/support/tpch_queries.h"
+#include "parser/plan_deparser.h"
 #include <boost/algorithm/string/replace.hpp>
-#include <operators/project.h>
+#include "operators/project.h"
 #include "operators/join.h"
 #include "parser/expression_deparser.h"
 #include "parser/expression_parser.h"
@@ -12,7 +12,6 @@
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
-// TODO: create secure_deparser_test to check out SecureSqlInput and others
 
 class PlanDeparserTest : public PlainBaseTest {
 
@@ -36,10 +35,8 @@ void PlanDeparserTest::runTest(const int &test_id) {
 
     PlanParser<bool> plan_reader(db_name_, plan_file, limit_);
     PlainOperator *expected_root = plan_reader.getRoot();
-    cout << "Expected plan: " << expected_root->printTree() << endl;
 
     string json_plan = PlanDeparser<bool>::deparse(expected_root);
-    cout << "JSON Plan: " << json_plan << endl;
 
     // re-parse the plan, leaving out limit to test it persisting from JSON
     PlainOperator *observed_root = PlanParser<bool>::parseJSONString(db_name_, json_plan);
@@ -130,7 +127,7 @@ TEST_F(PlanDeparserTest, tpch_q18) {
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
-    gflags::ParseCommandLineFlags(&argc, &argv, true);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
 
     ::testing::GTEST_FLAG(filter)=FLAGS_filter;
     return RUN_ALL_TESTS();
