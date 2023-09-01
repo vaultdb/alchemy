@@ -61,6 +61,22 @@ namespace  vaultdb {
         virtual ~SqlInput() {
         }
 
+        bool operator==(const Operator<bool> & rhs) const override {
+
+            if(rhs.getType() != OperatorType::SQL_INPUT) return false;
+
+            auto other_node = dynamic_cast<const SqlInput &>(rhs);
+            if(this->input_query_ != other_node.input_query_) return false;
+            if(this->dummy_tagged_ != other_node.dummy_tagged_) return false;
+            if(this->input_query_ != other_node.input_query_) return false;
+            if(this->tuple_limit_ != other_node.tuple_limit_) return false;
+            if(this->original_input_query_ != other_node.original_input_query_) return false;
+            if(this->original_collation_ != other_node.original_collation_) return false;
+            if(this->db_name_ != other_node.db_name_) return false;
+
+            return this->operatorEquality(rhs);
+        }
+
         void truncateInput(const size_t & limit); // to test on smaller datasets
         std::string input_query_, original_input_query_;
         std::string db_name_;

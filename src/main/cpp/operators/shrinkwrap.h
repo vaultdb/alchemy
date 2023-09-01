@@ -31,6 +31,14 @@ namespace vaultdb {
             this->sort_definition_ = dst_sort;
         }
 
+        bool operator==(const Operator<B> & rhs) const override {
+            if (rhs.getType() != OperatorType::SHRINKWRAP) {
+                return false;
+            }
+
+            return this->operatorEquality(rhs);
+        }
+
     protected:
         QueryTable<B>* runSelf()  override;
         string getParameters() const override {  return "cardinality_bound=" + std::to_string(this->output_cardinality_); }

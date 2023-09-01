@@ -70,7 +70,7 @@ namespace vaultdb {
             const AndNode<B> &other_node = static_cast<const AndNode<B> &>(other);
             bool lhs = (*this->lhs_ == *other_node.lhs_);
             bool rhs = (*this->rhs_ == *other_node.rhs_);
-            cout << "LHS: " << lhs << " RHS: " << rhs << endl;
+
             return lhs && rhs;
         }
 

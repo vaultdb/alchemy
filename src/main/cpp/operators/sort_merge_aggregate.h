@@ -22,6 +22,7 @@ namespace vaultdb {
         }
 
         SortMergeAggregate(const SortMergeAggregate<B> & src) : GroupByAggregate<B>(src) {
+            is_optimized_cloned_ = src.is_optimized_cloned_;
             setup();
         }
 
@@ -56,6 +57,7 @@ namespace vaultdb {
             }
         }
 
+        bool is_optimized_cloned_ = false;
 
     protected:
         QueryTable<B> *runSelf() override;

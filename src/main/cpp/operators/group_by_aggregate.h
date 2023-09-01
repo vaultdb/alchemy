@@ -22,12 +22,19 @@ namespace vaultdb {
 
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys, const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & effective_sort = SortDefinition(), const int & cardinality_bound = -1)
             : Operator<B>(child),  aggregate_definitions_(aggregates), group_by_(group_bys), cardinality_bound_(cardinality_bound), effective_sort_(effective_sort) {
+            if(cardinality_bound == -1) {
+                cardinality_bound_ = child->getOutputCardinality();
+            }
 
         }
 
         GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys, const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & effective_sort = SortDefinition(), const int & cardinality_bound = -1)
                 : Operator<B>(child),  aggregate_definitions_(aggregates), group_by_(group_bys), cardinality_bound_(cardinality_bound), effective_sort_(effective_sort)
-        { }
+        {
+            if(cardinality_bound == -1) {
+                cardinality_bound_ = child->getTupleCount();
+            }
+        }
 
 
         size_t getCardinalityBound() const { return cardinality_bound_; }
@@ -76,6 +83,21 @@ namespace vaultdb {
 
             return true;
         }
+
+        bool operator==(const Operator<B> &other) const override {
+            if(other.getType() != this->getType()) return false;
+
+            auto rhs = dynamic_cast<const GroupByAggregate<B> *>(&other);
+            if(!Utilities::vectorEquality(this->group_by_, rhs->group_by_)) return false;
+            if(!Utilities::vectorEquality(this->aggregate_definitions_, rhs->aggregate_definitions_)) return false;
+
+            if(this->cardinality_bound_ != rhs->cardinality_bound_) return false;
+            if(this->effective_sort_ != rhs->effective_sort_) return false;
+
+            return this->operatorEquality(other);
+        }
+
+
 
     protected:
         size_t cardinality_bound_  = 0; // stored in SMA for planning purposes, only used in NLA

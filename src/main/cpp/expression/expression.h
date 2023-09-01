@@ -25,7 +25,10 @@ namespace vaultdb {
         Expression(const Expression & src) : alias_(src.alias_), type_(src.type_) { }
         virtual Expression<B> *clone() const = 0;
         virtual ~Expression() {}
-
+        virtual bool operator==(const Expression<B> & other) const = 0;
+        bool operator!=(const Expression<B> & other) const {
+            return !(*this == other);
+        }
 
 
         virtual Field<B> call(const QueryTuple<B> & aTuple) const = 0;

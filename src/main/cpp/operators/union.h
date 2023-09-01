@@ -30,6 +30,13 @@ namespace  vaultdb {
 
         virtual ~Union() = default;
 
+        bool operator==(const Operator<B> & other) const override {
+            if (other.getType() != OperatorType::UNION) {
+                return false;
+            }
+
+            return this->operatorEquality(other);
+        }
 
     protected:
         QueryTable<B> *runSelf()  override;

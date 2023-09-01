@@ -27,28 +27,21 @@ namespace vaultdb {
 
         PlanParser(const string &db_name, const string &sql_file, const string &json_file, const int &limit = -1);
 
-        // for ZK plans
-        PlanParser(const string &db_name, const string &json_file, const int &limit = -1);
+        PlanParser(const string &db_name, const string &json_file, const int &limit = -1, const bool read_from_file=true);
 
 
         Operator<B> *getRoot() const { return root_; }
 
         Operator<B> *getOperator(const int &op_id);
 
-        void optimizeTree();
-        void deleteSort();
-        void deleteOptmizeTreeOperators();
-        void deleteNotOptimizedOperators();
-        void changeOperatorSortOrder();
-        std::vector<std::string> extractColumnsFromSql(const std::string& sql);
-        std::string modifySqlStatement(const std::string& originalSql, const SortDefinition& sort_defs);
-        std::vector<std::pair<int, SortEntry>> extractSortOrders(const std::string &plan_string);
+        Operator<B> *optimizeTree();
 
         static Operator<B> *
         parse(const std::string &db_name, const string &sql_file, const string &json_file, const int &limit = -1);
 
-        // for ZK plans
         static Operator<B> *parse(const string &db_name, const string &json_plan, const int &limit = -1);
+
+        static Operator<B> *parseJSONString(const string &db_name, const string &json_string, const int &limit = -1);
 
         static tuple<int, SortDefinition, int> parseSqlHeader(const string &header);
 
@@ -69,10 +62,9 @@ namespace vaultdb {
         // plan enumerator state
         map<int, vector<SortDefinition>> interesting_sort_orders_;
         size_t min_plan_cost_ = std::numeric_limits<size_t>::max();
-        string min_cost_plan_string_ = "";
+        Operator<B> *min_cost_plan_ = nullptr;
         std::map<int, Operator<B> * > operators_; // op ID --> operator instantiation
         std::vector<Operator<B> * > support_ops_; // these ones don't get an operator ID from the JSON plan
-        std::map<int, Operator<B> * > optimizeTree_operators_;
         std::map<int, std::vector<SortDefinition>> scan_sorts_; // op ID --> sort definition
         std::vector<Operator<B>*> operatorPool;
 
@@ -80,6 +72,7 @@ namespace vaultdb {
         void parseSqlInputs(const std::string &input_file);
 
         void parseSecurePlan(const std::string &plan_file);
+        void parseSecurePlanString(const string & json_plan);
 
         // operator parsers
         void parseOperator(const int &operator_id, const std::string &op_name, const boost::property_tree::ptree &pt);
@@ -109,17 +102,11 @@ namespace vaultdb {
 
 
         // faux template specialization
-        Operator<bool> *
-        createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag,
-                            const bool &plain_has_dummy_tag);
+        Operator<bool> *createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag,
+                            const bool &plain_has_dummy_tag, const int & input_limit, const int & input_party = 0);
 
-        Operator<emp::Bit> *
-        createInputOperator(const string &sql, const SortDefinition &collation, const emp::Bit &has_dummy_tag,
-                            const bool &plain_has_dummy_tag);
-
-        Operator<bool> *createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party, const bool &has_dummy_tag, const bool &plain_has_dummy_tag);
-
-        Operator<emp::Bit> *createInputOperator(const string &sql, const SortDefinition &collation, const int &input_party, const emp::Bit &has_dummy_tag, const bool &plain_has_dummy_tag);
+        Operator<emp::Bit> *createInputOperator(const string &sql, const SortDefinition &collation, const emp::Bit &has_dummy_tag,
+                            const bool &plain_has_dummy_tag, const int & input_limit, const int & input_party = 0);
 
         // placeholder for template specialization
         Operator<Bit> *createMergeInput(const string &sql, const bool &dummy_tag, const size_t &input_tuple_cnt, const SortDefinition &def, Bit & placeholder) {
@@ -165,6 +152,8 @@ namespace vaultdb {
 
 
     };
+
+
 
 
 }

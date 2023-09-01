@@ -28,7 +28,6 @@ namespace vaultdb {
             const EqualNode<B> &other_node = static_cast<const EqualNode<B> &>(other);
             bool lhs = (*this->lhs_ == *other_node.lhs_);
             bool rhs = (*this->rhs_ == *other_node.rhs_);
-            cout << "LHS EQ: " << lhs << " RHS EQ: " << rhs << endl;
             return lhs && rhs;
         }
 

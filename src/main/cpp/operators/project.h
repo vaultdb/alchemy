@@ -9,9 +9,6 @@ typedef std::pair<int32_t, int32_t> ProjectionMapping; // src ordinal, dst ordin
 
 // single projection, it is either an expression over 2+ fields or it is a 1:1 mapping spec'd in projection mapping
 
-
-//template<typename B>
-//typedef std::map<uint32_t, Expression<B> > ExpressionMap; // ordinal to expression
 typedef std::vector<ProjectionMapping> ProjectionMappingSet;
 
 namespace vaultdb {
@@ -57,6 +54,30 @@ namespace vaultdb {
 
         std::map<uint32_t, Expression<B> * > getExpressions() const { return expressions_; }
         std::vector<uint32_t> getExpressionsToExec() const { return exprs_to_exec_; }
+
+        bool operator==(const Operator<B> &other) const override {
+            if (other.getType() != OperatorType::PROJECT) {
+                return false;
+            }
+
+            const Project<B> &other_node = static_cast<const Project<B> &>(other);
+            if (expressions_.size() != other_node.expressions_.size()) {
+                return false;
+            }
+
+            for (auto pos : expressions_) {
+                if (other_node.expressions_.find(pos.first) == other_node.expressions_.end()) {
+                    return false;
+                }
+                if (!(*pos.second == *other_node.expressions_.at(pos.first))) {
+                    return false;
+                }
+            }
+
+            if(this->column_mappings_ != other_node.column_mappings_) return false;
+            if(this->exprs_to_exec_ != other_node.exprs_to_exec_) return false;
+            return this->operatorEquality(other);
+        }
 
     private:
         void setup();

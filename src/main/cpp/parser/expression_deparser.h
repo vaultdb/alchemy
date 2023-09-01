@@ -20,6 +20,7 @@ namespace vaultdb {
         explicit ExpressionDeparser(ExpressionNode<B> *root): root_(root) {
             root_->accept(this);
         }
+
         void visit(InputReference<B> & node) override;
 
         void visit(PackedInputReference<B> & node) override;
@@ -59,6 +60,20 @@ namespace vaultdb {
         void visit(CastNode<B> & node) override;
 
         void visit(CaseNode<B> & node) override;
+
+        static ptree deparse(ExpressionNode<B> *root) {
+            ExpressionDeparser<B> deparser(root);
+            return deparser.getJsonPlan();
+        }
+
+        static ptree deparse(Expression<B> *root) {
+            assert(root->exprClass() == ExpressionClass::GENERIC);
+
+            ExpressionDeparser<B> deparser(((GenericExpression<B> *) root)->root_);
+            return deparser.getJsonPlan();
+        }
+
+
 
         ptree getJsonPlan() const { return last_expr_; }
 

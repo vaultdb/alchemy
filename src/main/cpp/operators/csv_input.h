@@ -29,6 +29,17 @@ public:
 
     void updateCollation() override {}
 
+    bool operator==(const Operator<bool> &other) const override {
+        if (other.getType() != OperatorType::CSV_INPUT) {
+            return false;
+        }
+
+        auto other_node = dynamic_cast<const CsvInput &>(other);
+
+        if(this->input_file_ != other_node.input_file_) return false;
+        return this->operatorEquality(other);
+    }
+
 protected:
 
     string getParameters() const {

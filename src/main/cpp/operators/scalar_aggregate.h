@@ -36,6 +36,20 @@ namespace vaultdb {
             }
         }
 
+        bool operator==(const Operator<B> & other) const override {
+            if (other.getType() != OperatorType::SCALAR_AGGREGATE) {
+                return false;
+            }
+
+            auto other_node = dynamic_cast<const ScalarAggregate<B> &>(other);
+            if(this->aggregate_definitions_.size() != other_node.aggregate_definitions_.size()) return false;
+            for(int i = 0; i < this->aggregate_definitions_.size(); ++i) {
+                if(this->aggregate_definitions_[i] != other_node.aggregate_definitions_[i]) return false;
+            }
+
+            return this->operatorEquality(other);
+        }
+
     protected:
 
         QueryTable<B> *runSelf() override;

@@ -45,6 +45,16 @@ namespace  vaultdb {
             }
         }
 
+        bool operator==(const Expression<B> & other) const {
+            if (other.exprClass() != ExpressionClass::GENERIC) {
+                return false;
+            }
+
+            auto other_node = static_cast<const GenericExpression<B> &>(other);
+            if(other_node.type_ != this->type_ && other_node.alias_ != this->alias_) { return false; }
+            return *root_ == *(other_node.root_);
+        }
+
         inline string toString() const override {
             return root_->toString() + " " +  TypeUtilities::getTypeString(Expression<B>::type_);
         }

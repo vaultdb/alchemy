@@ -49,6 +49,22 @@ namespace  vaultdb {
             return new SecureSqlInput(*this);
         }
 
+        bool operator==(const Operator<Bit> & rhs) const override {
+            if(rhs.getType() != OperatorType::SECURE_SQL_INPUT) return false;
+
+            auto other_node = dynamic_cast<const SecureSqlInput &>(rhs);
+            if(this->input_query_ != other_node.input_query_) return false;
+            if(this->has_dummy_tag_ != other_node.has_dummy_tag_) return false;
+            if(this->input_party_ != other_node.input_party_) return false;
+            if(this->input_tuple_limit_ != other_node.input_tuple_limit_) return false;
+            if(this->original_input_query_ != other_node.original_input_query_) return false;
+            if(this->original_collation_ != other_node.original_collation_) return false;
+            if(this->db_name_ != other_node.db_name_) return false;
+
+            return this->operatorEquality(rhs);
+        }
+
+
         string getInputQuery() const { return input_query_; }
         void setInputQuery(const string & sql) { input_query_ = sql; }
         int getInputParty() const { return input_party_; }

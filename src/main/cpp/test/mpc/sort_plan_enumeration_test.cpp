@@ -62,14 +62,13 @@ SortPlanEnumerationTest::runTest(const int &test_id, const string & test_name, c
     PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-//    std::cout << "Original Plan : " << endl;
-//    std::cout << root->printTree() << endl;
+    std::cout << "Original Plan : " << endl;
+    std::cout << root->printTree() << endl;
 
-    parser.optimizeTree();
-    root = parser.getRoot();
+    root = parser.optimizeTree();
 
-//    std::cout << "Sort Optimized Plan : " << endl;
-//    std::cout << root->printTree() << endl;
+    std::cout << "Sort Optimized Plan : " << endl;
+    std::cout << root->printTree() << endl;
 
     SecureTable *result = root->run();
 
@@ -160,22 +159,25 @@ SortPlanEnumerationTest::generateExpectedOutputQuery(const int &test_id, const S
 }
 
 void SortPlanEnumerationTest::runStubTest(string & sql_plan, string & json_plan, string & expected_query, SortDefinition & expected_sort, const string & unioned_db) {
-    time_point<high_resolution_clock> startTime = clock_start();
-    clock_t secureStartClock = clock();
+    this->initializeBitPacking(FLAGS_unioned_db);
+
     string local_db = unioned_db;
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
     boost::replace_all(local_db, "unioned", party_name);
-    auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
 
-//    PlanParser<emp::Bit> parser(local_db, sql_plan, json_plan, input_tuple_limit_);
-    PlanParser<emp::Bit> parser(db_name_, json_plan, input_tuple_limit_);
+    cout << " Observed DB : "<< local_db << " - Bit Packed" << endl;
+
+    auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
+    time_point<high_resolution_clock> startTime = clock_start();
+    clock_t secureStartClock = clock();
+
+    PlanParser<Bit> parser(db_name_, json_plan, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
     std::cout << "Original Plan : " << endl;
     std::cout << root->printTree() << endl;
 
-    parser.optimizeTree();
-    root = parser.getRoot();
+    root = parser.optimizeTree();
 
     std::cout << "Sort Optimized Plan : " << endl;
     std::cout << root->printTree() << endl;

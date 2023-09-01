@@ -93,6 +93,16 @@ namespace  vaultdb {
             return true;
         }
 
+        bool operator==(const Operator<B> &other) const override {
+            if (other.getType() != OperatorType::SORT_MERGE_JOIN) {
+                return false;
+            }
+
+            auto rhs = dynamic_cast<const SortMergeJoin<B> &>(other);
+
+            if(*this->predicate_ != *rhs.predicate_ || this->foreign_key_input_ != rhs.foreign_key_input_) return false;
+            return this->operatorEquality(other);
+        }
 
     protected:
         QueryTable<B> *runSelf() override;

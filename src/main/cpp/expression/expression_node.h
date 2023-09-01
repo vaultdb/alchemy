@@ -47,8 +47,8 @@ namespace vaultdb {
 
     };
 
-    std::ostream &operator<<(std::ostream &os,  ExpressionNode<bool> &expression);
-    std::ostream &operator<<(std::ostream &os,  ExpressionNode<Bit> &expression);
+    static std::ostream &operator<<(std::ostream &os,  ExpressionNode<bool> &expression);
+    static std::ostream &operator<<(std::ostream &os,  ExpressionNode<Bit> &expression);
 
 
     // read a field from a tuple

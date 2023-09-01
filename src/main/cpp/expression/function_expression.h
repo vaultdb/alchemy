@@ -47,7 +47,18 @@ namespace vaultdb {
 
         }
 
-    private:
+        bool operator==(const Expression<B> & other) const override {
+            if (other.exprClass() == ExpressionClass::FUNC) {
+                return false;
+            }
+
+            const FunctionExpression<B> &other_node = static_cast<const FunctionExpression<B> &>(other);
+
+            return (Expression<B>::alias_ == other_node.alias_) && (Expression<B>::type_ == other_node.type_)
+                && (*table_func_ == *other_node.table_func_) && (*tuple_func_ == *other_node.tuple_func_);
+        }
+
+    protected:
         // function pointer to expression
         Field<B> (*tuple_func_)(const QueryTuple<B> &) = nullptr;
         Field<B> (*table_func_)(const QueryTable<B> *, const int &) = nullptr;

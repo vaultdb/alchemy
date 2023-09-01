@@ -32,6 +32,17 @@ namespace vaultdb {
             if(rhs_ != nullptr) delete rhs_;
         }
 
+        bool operator==(const Operator<Bit> & other) const override {
+            if(other.getType() != OperatorType::MERGE_INPUT) return false;
+
+            auto other_node = dynamic_cast<const MergeInput &>(other);
+
+            if(*lhs_ != *other_node.lhs_) return false;
+            if(*rhs_ != *other_node.rhs_) return false;
+
+            return this->operatorEquality(other);
+
+        }
 
 
     protected:

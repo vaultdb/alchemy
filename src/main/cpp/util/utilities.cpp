@@ -169,12 +169,14 @@ uint64_t Utilities::getEpoch() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-void Utilities::printTree(const boost::property_tree::ptree &pt, const std::string &prefix) {
-
+string Utilities::printTree(const boost::property_tree::ptree &pt, const std::string &prefix) {
+    std::stringstream ss;
     boost::property_tree::ptree::const_iterator end = pt.end();
     for (boost::property_tree::ptree::const_iterator it = pt.begin(); it != end; ++it) {
-        std::cout << prefix <<  it->first << ": " << it->second.get_value<std::string>() << std::endl;
-        printTree(it->second, prefix + "   ");
+        ss << prefix <<  it->first << ": " << it->second.get_value<std::string>() << std::endl;
+        ss << printTree(it->second, prefix + "   ");
     }
+
+    return ss.str();
 }
 

@@ -34,6 +34,16 @@ namespace  vaultdb {
         int getLimit() const { return limit_; }
         void updateCollation() override {}
 
+        bool operator==(const Operator<B> & rhs) const override {
+            if (rhs.getType() != OperatorType::SORT) {
+                return false;
+            }
+
+            auto rhs_node = dynamic_cast<const Sort<B> &>(rhs);
+            if(this->limit_ != rhs_node.limit_) return false;
+            return this->operatorEquality(rhs);
+        }
+
     protected:
         OperatorType getType() const override { return OperatorType::SORT; }
         string getParameters() const override;

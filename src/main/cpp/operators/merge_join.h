@@ -53,6 +53,17 @@ namespace  vaultdb {
 
         }
 
+        bool operator==(const Operator<B> & other) const override {
+            if (other.getType() != OperatorType::MERGE_JOIN) {
+                return false;
+            }
+
+            auto other_node = dynamic_cast<const MergeJoin<B> &>(other);
+            if(this->or_dummy_tags_ != other_node.or_dummy_tags_) return false;
+
+            return this->operatorEquality(other);
+        }
+
 
     protected:
         bool or_dummy_tags_ = false;

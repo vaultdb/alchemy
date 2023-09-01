@@ -33,10 +33,8 @@ QueryTable<B> *Filter<B>::runSelf() {
     for(int i = 0; i < tuple_cnt; ++i) {
 		
         Field<B> selected = predicate_->call(Operator<B>::output_, i);
-		//std::cout << "gate count: " << this->system_conf_.andGateCount() << "\n";
         B dummy_tag =  ((!(selected.template getValue<B>())) | Operator<B>::output_->getDummyTag(i)); // (!) because dummyTag is false if our selection criteria is satisfied
         Operator<B>::output_->setDummyTag(i, dummy_tag);
-		//std::cout << "gate count (dummy tag)" << this->system_conf_.andGateCount() << "\n";
     }
 
 

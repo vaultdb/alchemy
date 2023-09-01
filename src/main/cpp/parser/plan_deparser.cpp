@@ -11,7 +11,6 @@
 #include <operators/basic_join.h>
 #include <operators/filter.h>
 #include <operators/project.h>
-#include <parser/expression_parser.h>
 #include <operators/shrinkwrap.h>
 #include <util/logger.h>
 #include <operators/support/aggregate_id.h>
@@ -24,6 +23,9 @@ using namespace vaultdb;
 template<typename B>
 void PlanDeparser<B>::deparseTree() {
 
+    // make a pass to ensure that all operator IDs are unique
+
+
     deparseTreeHelper(root_);
     pt::ptree base_node;
     base_node.add_child("rels", rels_);
@@ -31,7 +33,7 @@ void PlanDeparser<B>::deparseTree() {
     pt::write_json(ss, base_node);
     json_plan_ = ss.str();
 
-    vector<string> search_strs = {"\"dummy-tag\"", "\"input-party\"", "\"input-limit\"", "\"field\"", "\"input\"", "\"foreign-key\"", "\"nullable\"", " \"literal\"", "precision", "\"scale\""};
+    vector<string> search_strs = {"\"dummy-tag\"", "\"input-party\"", "\"input-limit\"", "\"field\"", "\"input\"", "\"foreign-key\"", "\"nullable\"", " \"literal\"", "precision", "\"scale\"", "\"output-cardinality\""};
 
    json_plan_ = Utilities::eraseValueQuotes(json_plan_, search_strs);
 
@@ -127,17 +129,19 @@ pt::ptree  PlanDeparser<B>::deparseSecureSqlInput(const Operator<B> *input) {
     assert(input->getType() == OperatorType::SECURE_SQL_INPUT);
     auto in = (SecureSqlInput *) input;
     pt::ptree input_node;
-    input_node.put("id", input->getOperatorId());
-    input_node.put("relOp", "LogicalValues");
-    auto schema = deparseSchema(in->getOutputSchema());
-    input_node.add_child("type", schema);
+    writeHeader(input_node, input, "LogicalValues");
+//    auto schema = deparseSchema(in->getOutputSchema());
+//    input_node.add_child("type", schema);
     input_node.put("sql", in->input_query_);
     input_node.put<bool>("dummy-tag", in->has_dummy_tag_);
     input_node.put("db-name", in->db_name_);
     input_node.put("input-party", in->input_party_);
     input_node.put("input-limit", in->input_tuple_limit_);
-    auto collation = deparseCollation(in->getSortOrder());
-    input_node.add_child("collation", collation);
+    input_node.put("outputFields", generateFieldList(in->getOutputSchema()));
+    if(!in->getSortOrder().empty()) {
+        auto collation = deparseCollation(in->getSortOrder());
+        input_node.add_child("collation", collation);
+    }
     return input_node;
 }
 
@@ -147,112 +151,230 @@ pt::ptree PlanDeparser<B>::deparseSqlInput(const Operator<B> *input) {
     auto in = (SqlInput *) input;
     pt::ptree input_node;
 
-    input_node.put("id", input->getOperatorId());
-    input_node.put("relOp", "LogicalValues");
-    auto schema = deparseSchema(in->getOutputSchema());
-    input_node.add_child("type", schema);
+    writeHeader(input_node, input, "LogicalValues");
+    // auto schema = deparseSchema(in->getOutputSchema());
+    //input_node.add_child("type", schema);
+
 
     input_node.put("sql", in->input_query_);
     input_node.put<bool>("dummy-tag", in->dummy_tagged_);
+    input_node.put("outputFields", generateFieldList(in->getOutputSchema()));
     input_node.put("db-name", in->db_name_);
     input_node.put<int>("input-limit", in->tuple_limit_);
-    auto collation = deparseCollation(in->getSortOrder());
-    input_node.add_child("collation", collation);
+    if(!in->getSortOrder().empty()) {
+        auto collation = deparseCollation(in->getSortOrder());
+        input_node.add_child("collation", collation);
+    }
     return input_node;
 
 }
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseSortMergeJoin(const Operator<B> *input) {
-    return boost::property_tree::ptree();
+    assert(input->getType() == OperatorType::SORT_MERGE_JOIN);
+    auto smj = (SortMergeJoin<B> *) input;
+    return deparseJoin(smj, "sort-merge-join", smj->foreignKeyChild());
 }
 
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseMergeJoin(const Operator<B> *input) {
-    return boost::property_tree::ptree();
+    assert(input->getType() == OperatorType::MERGE_JOIN);
+    auto mj = (MergeJoin<B> *) input;
+    return deparseJoin(mj, "merge-join", -1);
 }
 
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseNestedLoopAggregate(const Operator<B> *input) {
-    return boost::property_tree::ptree();
-}
+    assert(input->getType() == OperatorType::NESTED_LOOP_AGGREGATE);
+    auto nla = (NestedLoopAggregate<B> *) input;
+    return deparseGroupByAggregate(nla, "nested-loop-aggregate");
+ }
 
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseShrinkwrap(const Operator<B> *input) {
-    return boost::property_tree::ptree();
+    assert(input->getType() == OperatorType::SHRINKWRAP);
+    auto shrinkwrap = (Shrinkwrap<B> *) input;
+
+    pt::ptree shrinkwrap_node;
+    writeHeader(shrinkwrap_node, input, "LogicalShrinkwrap");
+
+
+    shrinkwrap_node.put("output-cardinality", shrinkwrap->getOutputCardinality());
+    return shrinkwrap_node;
 }
 
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseUnion(const Operator<B> *input) {
-    return boost::property_tree::ptree();
+    assert(input->getType() == OperatorType::UNION);
+    auto union_op = (Union<B> *) input;
+    ptree union_node;
+    writeHeader(union_node, input, "LogicalUnion");
+
+
+    return union_node;
 }
 
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseKeyedNestedLoopJoin(const Operator<B> *input) {
-    return boost::property_tree::ptree();
+    assert(input->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN);
+    auto kj = (KeyedJoin<B> *) input;
+    return deparseJoin(kj, "nested-loop-join", kj->foreignKeyChild());
 }
 
 
 
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseZkSqlInput(const Operator<B> *input) {
-    return boost::property_tree::ptree();
+    assert(input->getType() == OperatorType::ZK_SQL_INPUT);
+    auto in = (ZkSqlInput *) input;
+    pt::ptree input_node;
+
+    writeHeader(input_node, input, "LogicalValues");
+    // auto schema = deparseSchema(in->getOutputSchema());
+    //input_node.add_child("type", schema);
+
+
+    input_node.put("sql", in->input_query_);
+    input_node.put<bool>("dummy-tag", in->has_dummy_tag_);
+    input_node.put("outputFields", generateFieldList(in->getOutputSchema()));
+    input_node.put("db-name", in->db_name_);
+    input_node.put<int>("input-limit", in->input_tuple_limit_);
+    if(!in->getSortOrder().empty()) {
+        auto collation = deparseCollation(in->getSortOrder());
+        input_node.add_child("collation", collation);
+    }
+    return input_node;
 }
 
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseCsvInput(const Operator<B> *input) {
-    return boost::property_tree::ptree();
+    throw; // not yet implemented
+
 }
 
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseScalarAggregate(const Operator<B> *agg) {
-    return boost::property_tree::ptree();
+    throw; // not yet implemented
+
 }
 
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseTableInput(const Operator<B> *input) {
-    return boost::property_tree::ptree();
+    //  not yet implemented, this operator is largely for debugging anyway
+    throw;
 }
 
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseProject(const Operator<B> *project) {
-    return boost::property_tree::ptree();
+    assert(project->getType() == OperatorType::PROJECT);
+    auto proj = (Project<B> *) project;
+
+    pt::ptree project_node;
+    project_node.put("id", proj->getOperatorId());
+    project_node.put("relOp", "LogicalProject");
+
+    project_node.put("inputFields", generateFieldList(proj->getChild()->getOutputSchema()));
+
+    QuerySchema output_schema = proj->getOutputSchema();
+    project_node.put("outputFields", generateFieldList(output_schema));
+
+    ptree field_names, exprs;
+    for(int i = 0; i < output_schema.getFieldCount(); ++i) {
+        string field_name = output_schema.getField(i).getName();
+        field_names.put_value(field_name);
+    }
+    project_node.add_child("fields", field_names);
+
+    auto expression_map = proj->getExpressions();
+    for(auto pos : expression_map) {
+        ptree deparsed = ExpressionDeparser<B>::deparse(pos.second);
+        exprs.push_back(std::make_pair("", deparsed));
+    }
+
+    project_node.add_child("exprs", exprs);
+    return project_node;
 }
 
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseFilter(const Operator<B> *filter) {
-    return boost::property_tree::ptree();
+    assert(filter->getType() == OperatorType::FILTER);
+
+   pt:ptree filter_node;
+    filter_node.put("id", filter->getOperatorId());
+    filter_node.put("relOp", "LogicalFilter");
+    filter_node.put("inputFields", generateFieldList(filter->getChild()->getOutputSchema()));
+    filter_node.put("outputFields", generateFieldList(filter->getOutputSchema()));
+
+    auto deparsed = ExpressionDeparser<B>::deparse(((Filter<B> *)filter)->predicate_);
+    filter_node.add_child("condition", deparsed);
+
+    return filter_node;
+
 }
 
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseNestedLoopJoin(const Operator<B> *join) {
-    return boost::property_tree::ptree();
+    assert(join->getType() == OperatorType::NESTED_LOOP_JOIN);
+    auto nlj = (BasicJoin<B> *) join;
+    return deparseJoin(nlj, "nested-loop-join", -1);
 }
 
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseSort(const Operator<B> *sort) {
-    return boost::property_tree::ptree();
+    assert(sort->getType() == OperatorType::SORT);
+    auto sort_op = (Sort<B> *) sort;
+    pt::ptree sort_node;
+
+    writeHeader(sort_node, sort, "LogicalSort");
+    auto collation = deparseCollation(sort_op->getSortOrder());
+    sort_node.add_child("collation", collation);
+
+    int sort_limit = sort_op->getLimit();
+    if(sort_limit > 0) {
+        PlainField limit_field = PlainField(FieldType::INT, sort_limit);
+        LiteralNode<bool> fetch_literal(limit_field);
+        ptree expr_json = ExpressionDeparser<bool>::deparse(&fetch_literal);
+        sort_node.add_child("fetch", expr_json);
+    }
+
+
+    return sort_node;
 }
 
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseSortMergeAggregate(const Operator<B> *agg) {
     assert(agg->getType() == OperatorType::SORT_MERGE_AGGREGATE);
-    auto sma = (GroupByAggregate<B> *) agg;
-    pt::ptree sma_node;
-    sma_node.put("id", sma->getOperatorId());
-    sma_node.put("relOp", "LogicalAggregate");
-    sma_node.put("operator-algorithm", "sort-merge-aggregate");
-    sma_node.put<int>("cardinality-bound", sma->getOutputCardinality());
-
-    pt::ptree group_bys;
-    for(auto col : sma->group_by_) {
-        pt::ptree col_ordinal;
-        col_ordinal.put_value(col);
-        group_bys.push_back(std::make_pair("", col_ordinal));
-    }
-
-    sma_node.add_child("group", group_bys);
-    return sma_node;
+    auto sma = (SortMergeAggregate<B> *) agg;
+    return deparseGroupByAggregate(sma, "sort-merge-aggregate");
 }
+
+
+
+template<typename B>
+void PlanDeparser<B>::validateTree() {
+    map<int, int> known_ids;
+    validateTreeHelper(root_, known_ids);
+}
+
+
+// check for duplicate operator IDs and replace them as needed
+template<typename B>
+void PlanDeparser<B>::validateTreeHelper(Operator<B> *node, map<int, int> & known_ids) {
+        if(known_ids.find(node->getOperatorId()) != known_ids.end()) {
+            int max_id = 0;
+            for(auto pos : known_ids) {
+                max_id = std::max(max_id, pos.second);
+            }
+        int new_id = max_id + 1;
+        node->setOperatorId(new_id);
+    }
+    known_ids[node->getOperatorId()] = 1;
+
+
+    if(node->getChild() != nullptr) validateTreeHelper(node->getChild(), known_ids);
+    if(node->getChild(1) != nullptr) validateTreeHelper(node->getChild(1), known_ids);
+
+}
+
 
 template class vaultdb::PlanDeparser<bool>;
 template class vaultdb::PlanDeparser<emp::Bit>;

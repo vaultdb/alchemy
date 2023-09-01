@@ -3,6 +3,10 @@
 
 #include <string>
 #include <sstream>
+#include <boost/property_tree/ptree.hpp>
+#include "query_table/query_schema.h"
+
+using boost::property_tree::ptree;
 
 namespace vaultdb {
 
@@ -26,10 +30,35 @@ namespace vaultdb {
 
         ScalarAggregateDefinition() {}
 
+        bool operator==(const ScalarAggregateDefinition & rhs) const {
+            return ordinal == rhs.ordinal && type == rhs.type && alias == rhs.alias && is_distinct == rhs.is_distinct;
+        }
+
+        bool operator!=(const ScalarAggregateDefinition & rhs) const {
+            return !(*this == rhs);
+        }
+
+        static std::string getAggregatorString(const AggregateId & id) {
+            switch(id) {
+                case AggregateId::COUNT:
+                    return "COUNT";
+                case AggregateId::SUM:
+                    return "SUM";
+                case AggregateId::AVG:
+                    return "AVG";
+                case AggregateId::MIN:
+                    return "MIN";
+                case AggregateId::MAX:
+                    return "MAX";
+                default:
+                    return "";
+            }
+        }
+
         std::string toString() const {
             std::stringstream ss;
 
-            switch(type) {
+            switch (type) {
                 case AggregateId::COUNT:
                     ss << "COUNT("
                        << ((ordinal == -1) ? "*" : "$" + std::to_string(ordinal))
@@ -60,9 +89,38 @@ namespace vaultdb {
             };
 
             return ss.str();
+        }
 
-            }
-        };
+      static ptree  aggregateDefinitionToPTree(const ScalarAggregateDefinition &def, const QuerySchema &schema) {
+            ptree agg_parent;
+            ptree agg;
+            agg.put("name", ScalarAggregateDefinition::getAggregatorString(def.type));
+            agg.put("kind", ScalarAggregateDefinition::getAggregatorString(def.type));
+
+            agg.put("syntax", "FUNCTION");
+
+            agg_parent.add_child("agg", agg);
+
+            ptree type;
+            FieldType  f = schema.getField(def.ordinal).getType();
+            type.put("type", TypeUtilities::getJSONTypeString(f));
+            type.put("nullable", false);
+            agg_parent.add_child("type", type);
+
+            agg_parent.put("distinct", false);
+
+
+            ptree ordinal, operands;
+            ordinal.put_value(def.ordinal);
+            operands.push_back(std::make_pair("", ordinal));
+
+            agg_parent.add_child("operands", operands);
+            agg_parent.put("name", def.alias);
+
+            return agg_parent;
+        }
+
+   };
 
 
 

@@ -60,7 +60,7 @@ namespace vaultdb {
 
 
         // for parser debugging
-        static void printTree(const boost::property_tree::ptree &pt, const std::string &prefix = "");
+        static string printTree(const boost::property_tree::ptree &pt, const std::string &prefix = "");
 
         // for simulating types in JSON deparser
 
@@ -88,6 +88,16 @@ namespace vaultdb {
             return output;
 
         }
+
+        template<typename T>
+        static bool vectorEquality(const vector<T> & lhs, const vector<T> & rhs)  {
+            if(lhs.size() != rhs.size()) return false;
+            for(int i = 0; i < lhs.size(); ++i) {
+                if(lhs[i] != rhs[i]) return false;
+            }
+            return true;
+        }
+
     };
 
 }

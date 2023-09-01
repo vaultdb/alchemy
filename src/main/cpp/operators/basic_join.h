@@ -23,6 +23,20 @@ namespace vaultdb {
 
         ~BasicJoin() = default;
 
+        bool operator==(const Operator<B> &other) const override {
+            if (other.getType() != OperatorType::NESTED_LOOP_JOIN) {
+                return false;
+            }
+
+            auto rhs = dynamic_cast<const BasicJoin<B> &>(other);
+            if(*this->predicate_ != *rhs.predicate_) {
+                return false;
+            }
+
+            return this->operatorEquality(other);
+        }
+
+
         void updateCollation() override {
             this->getChild(0)->updateCollation();
             this->getChild(1)->updateCollation();

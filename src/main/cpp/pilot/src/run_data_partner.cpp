@@ -50,12 +50,12 @@ SecureTable *runRollup(int idx, const string & colName, int party, SecureTable *
 
     // validate it against the DB for testing
     if(TESTBED) {
-        SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(2);
+        SortDefinition order_by = DataUtilities::getDefaultSortDefinition(2);
 
         PlainTable *revealed = stratified->reveal();
 
         string query = PilotUtilities::getRollupExpectedResultsSql(colName, selection_clause);
-        PilotUtilities::validateTable(PilotUtilities::unioned_db_name_, query, orderBy, revealed);
+        PilotUtilities::validateTable(PilotUtilities::unioned_db_name_, query, order_by, revealed);
 
         // write it out
         string csv, schema;

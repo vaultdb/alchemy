@@ -32,6 +32,16 @@ namespace  vaultdb {
                 this->sort_definition_ = this->getChild(0)->getSortOrder();
             }
 
+            bool operator==(const Operator<B> &other) const override {
+                if (other.getType() != OperatorType::FILTER) {
+                    return false;
+                }
+
+                auto other_node = dynamic_cast<const Filter<B> &>(other);
+                if(*this->predicate_ != *other_node.predicate_)   return false;
+
+                return this->operatorEquality(other);
+            }
 
     protected:
 
@@ -40,7 +50,7 @@ namespace  vaultdb {
         OperatorType getType() const override {
             return OperatorType::FILTER;
         }
-
+        // in cpp to avoid circular dependency
         string getParameters() const override;
 
 

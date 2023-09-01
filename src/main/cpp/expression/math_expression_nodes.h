@@ -17,7 +17,7 @@ namespace vaultdb {
                 return false;
             }
             const PlusNode<B> &other_node = static_cast<const PlusNode<B> &>(other);
-            return ExpressionNode<B>::lhs_ == other_node.lhs_ && ExpressionNode<B>::rhs_ == other_node.rhs_;
+            return (*this->lhs_ == *other_node.lhs_) && (*this->rhs_ == *other_node.rhs_);
         }
 
         Field<B> call(const QueryTuple<B> & target) const override {
@@ -59,7 +59,7 @@ namespace vaultdb {
                 return false;
             }
             const MinusNode<B> &other_node = static_cast<const MinusNode<B> &>(other);
-            return ExpressionNode<B>::lhs_ == other_node.lhs_ && ExpressionNode<B>::rhs_ == other_node.rhs_;
+            return (*this->lhs_ == *other_node.lhs_) && (*this->rhs_ == *other_node.rhs_);
         }
 
         Field<B> call(const QueryTuple<B> & target) const override {
@@ -106,7 +106,7 @@ namespace vaultdb {
                 return false;
             }
             const TimesNode<B> &other_node = static_cast<const TimesNode<B> &>(other);
-            return ExpressionNode<B>::lhs_ == other_node.lhs_ && ExpressionNode<B>::rhs_ == other_node.rhs_;
+            return (*this->lhs_ == *other_node.lhs_) && (*this->rhs_ == *other_node.rhs_);
         }
 
         Field<B> call(const QueryTuple<B> & target) const override {
@@ -150,7 +150,7 @@ namespace vaultdb {
                 return false;
             }
             const DivideNode<B> &other_node = static_cast<const DivideNode<B> &>(other);
-            return ExpressionNode<B>::lhs_ == other_node.lhs_ && ExpressionNode<B>::rhs_ == other_node.rhs_;
+            return (*this->lhs_ == *other_node.lhs_) && (*this->rhs_ == *other_node.rhs_);
         }
 
         Field<B> call(const QueryTuple<B> & target) const override {
@@ -197,7 +197,7 @@ namespace vaultdb {
                 return false;
             }
             const ModulusNode<B> &other_node = static_cast<const ModulusNode<B> &>(other);
-            return ExpressionNode<B>::lhs_ == other_node.lhs_ && ExpressionNode<B>::rhs_ == other_node.rhs_;
+            return (*this->lhs_ == *other_node.lhs_) && (*this->rhs_ == *other_node.rhs_);
         }
 
         Field<B> call(const QueryTuple<B> & target) const override {

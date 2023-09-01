@@ -573,12 +573,5 @@ std::string RowTable<B>::toString(const size_t &limit, const bool &show_dummies)
 }
 
 
-
-
-
-
-
-
-
 template class vaultdb::RowTable<bool>;
 template class vaultdb::RowTable<emp::Bit>;
