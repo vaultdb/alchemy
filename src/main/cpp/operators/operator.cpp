@@ -122,6 +122,7 @@ std::string Operator<B>::toString() const {
     if(std::is_same_v<B, Bit>) {
         size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
         ss << ", cost est: " << estimated_gates;
+        ss << ", output card: " << output_cardinality_;
     }
     return ss.str();
 

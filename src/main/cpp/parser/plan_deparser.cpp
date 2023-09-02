@@ -15,6 +15,7 @@
 #include <util/logger.h>
 #include <operators/support/aggregate_id.h>
 #include <boost/algorithm/string.hpp>
+#include "operators/merge_input.h"
 
 
 using namespace vaultdb;
@@ -33,7 +34,7 @@ void PlanDeparser<B>::deparseTree() {
     pt::write_json(ss, base_node);
     json_plan_ = ss.str();
 
-    vector<string> search_strs = {"\"dummy-tag\"", "\"input-party\"", "\"input-limit\"", "\"field\"", "\"input\"", "\"foreign-key\"", "\"nullable\"", " \"literal\"", "precision", "\"scale\"", "\"output-cardinality\"", "\"no-op\""};
+    vector<string> search_strs = {"\"dummy-tag\"", "\"party\"", "\"input-limit\"", "\"field\"", "\"input\"", "\"foreign-key\"", "\"nullable\"", " \"literal\"", "precision", "\"scale\"", "\"output-cardinality\"", "\"no-op\""};
 
    json_plan_ = Utilities::eraseValueQuotes(json_plan_, search_strs);
 
@@ -88,8 +89,10 @@ pt::ptree PlanDeparser<B>::deparseNode(const Operator<B> *node) {
             return deparseNestedLoopAggregate(node);
         case OperatorType::UNION:
             return deparseUnion(node);
+        case OperatorType::MERGE_INPUT:
+            return deparseMergeInput(node);
         default:
-           return pt::ptree();
+          throw;
     }
 
 }
@@ -134,8 +137,7 @@ pt::ptree  PlanDeparser<B>::deparseSecureSqlInput(const Operator<B> *input) {
 //    input_node.add_child("type", schema);
     input_node.put("sql", in->input_query_);
     input_node.put<bool>("dummy-tag", in->has_dummy_tag_);
-    input_node.put("db-name", in->db_name_);
-    input_node.put("input-party", in->input_party_);
+    input_node.put("party", in->input_party_);
     input_node.put("input-limit", in->input_tuple_limit_);
     input_node.put("outputFields", generateFieldList(in->getOutputSchema()));
     if(!in->getSortOrder().empty()) {
@@ -159,7 +161,6 @@ pt::ptree PlanDeparser<B>::deparseSqlInput(const Operator<B> *input) {
     input_node.put("sql", in->input_query_);
     input_node.put<bool>("dummy-tag", in->dummy_tagged_);
     input_node.put("outputFields", generateFieldList(in->getOutputSchema()));
-    input_node.put("db-name", in->db_name_);
     input_node.put<int>("input-limit", in->tuple_limit_);
     if(!in->getSortOrder().empty()) {
         auto collation = deparseCollation(in->getSortOrder());
@@ -168,6 +169,33 @@ pt::ptree PlanDeparser<B>::deparseSqlInput(const Operator<B> *input) {
     return input_node;
 
 }
+template<typename B>
+pt::ptree PlanDeparser<B>::deparseMergeInput(const Operator<B> *input) {
+    assert(input->getType() == OperatorType::MERGE_INPUT);
+    auto in = (MergeInput *) input;
+    pt::ptree  input_node;
+
+    writeHeader(input_node, input, "LogicalValues");
+//    auto schema = deparseSchema(in->getOutputSchema());
+//    input_node.add_child("type", schema);
+    input_node.put("sql", in->getSqlInput()); // TODO: consider holding onto original (unmerged) SQL input here
+    input_node.put("merge-sql", in->getSqlInput());
+    input_node.put<bool>("dummy-tag", in->getHasDummyTag());
+    input_node.put("input-limit", in->getTupleLimit());
+    input_node.put("outputFields", generateFieldList(in->getOutputSchema()));
+    input_node.put("operator-algorithm", "merge-input");
+
+    if(!in->getSortOrder().empty()) {
+        auto collation = deparseCollation(in->getSortOrder());
+        input_node.add_child("collation", collation);
+    }
+
+    return input_node;
+
+
+
+}
+
 template<typename B>
 pt::ptree PlanDeparser<B>::deparseSortMergeJoin(const Operator<B> *input) {
     assert(input->getType() == OperatorType::SORT_MERGE_JOIN);
@@ -236,7 +264,6 @@ pt::ptree PlanDeparser<B>::deparseZkSqlInput(const Operator<B> *input) {
     input_node.put("sql", in->input_query_);
     input_node.put<bool>("dummy-tag", in->has_dummy_tag_);
     input_node.put("outputFields", generateFieldList(in->getOutputSchema()));
-    input_node.put("db-name", in->db_name_);
     input_node.put<int>("input-limit", in->input_tuple_limit_);
     if(!in->getSortOrder().empty()) {
         auto collation = deparseCollation(in->getSortOrder());
@@ -359,13 +386,15 @@ void PlanDeparser<B>::validateTree() {
 // check for duplicate operator IDs and replace them as needed
 template<typename B>
 void PlanDeparser<B>::validateTreeHelper(Operator<B> *node, map<int, int> & known_ids) {
+
         if(known_ids.find(node->getOperatorId()) != known_ids.end()) {
             int max_id = 0;
             for(auto pos : known_ids) {
                 max_id = std::max(max_id, pos.second);
             }
         int new_id = max_id + 1;
-        node->setOperatorId(new_id);
+            cout << "Re-assigning " << node->getOperatorId() << " to ";
+            node->setOperatorId(new_id);
     }
     known_ids[node->getOperatorId()] = 1;
 

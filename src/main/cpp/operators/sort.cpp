@@ -33,7 +33,8 @@ Sort<B>::Sort(Operator<B> *child, const SortDefinition &sort_def, const int & li
     // otherwise may produce incorrect results
     if(limit_ > 0) {
         assert(Operator<B>::sort_definition_[0].first == -1);
-        this->output_cardinality_ = limit;
+        if(limit_ < this->output_cardinality_)
+            this->output_cardinality_ = limit;
     }
 }
 

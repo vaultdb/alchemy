@@ -61,6 +61,7 @@ namespace vaultdb {
         pt::ptree deparseSqlInput(const Operator<B> *input);
         pt::ptree deparseZkSqlInput(const Operator<B> *input);
         pt::ptree deparseScalarAggregate(const Operator<B> *agg);
+        pt::ptree deparseMergeInput(const Operator<B> *input);
 
         void validateTree();
         void validateTreeHelper(Operator<B> *node, map<int, int> & known_ids);

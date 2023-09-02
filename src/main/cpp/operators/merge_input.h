@@ -44,6 +44,10 @@ namespace vaultdb {
 
         }
 
+        string getSqlInput() const { return ((SecureSqlInput *)lhs_)->input_query_; }
+        bool getHasDummyTag() const { return ((SecureSqlInput *)lhs_)->has_dummy_tag_; }
+        string getDbName() const { return ((SecureSqlInput *)lhs_)->db_name_; }
+        int getTupleLimit() const { return ((SecureSqlInput *)lhs_)->input_tuple_limit_; }
 
     protected:
         QueryTable<Bit> *runSelf() override;

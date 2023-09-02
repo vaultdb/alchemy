@@ -226,7 +226,7 @@ namespace  vaultdb {
 
         inline bool operatorEquality(const Operator<Bit> &other) const {
             if(std::is_same_v<B, bool>) return false; // secure operator
-            if (this->sort_definition_ != other.getSortOrder()) return false;
+            if (!Utilities::vectorEquality(this->getSortOrder(), other.getSortOrder())) return false;
             if (this->output_schema_ != other.getOutputSchema()) return false;
             if (this->output_cardinality_ != other.getOutputCardinality()) return false;
 

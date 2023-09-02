@@ -156,7 +156,6 @@ void PlanParser<B>::parseSecurePlanString(const string & json_plan) {
     BOOST_FOREACH(boost::property_tree::ptree::value_type &v, pt.get_child("rels."))
                 {
                     assert(v.first.empty()); // array elements have no names
-
                     boost::property_tree::ptree inputs = v.second.get_child("id");
                     int operator_id = v.second.get_child("id").template get_value<int>();
                     string op_name =  (std::string) v.second.get_child("relOp").data();
