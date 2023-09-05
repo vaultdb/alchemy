@@ -19,7 +19,7 @@
       "sql": "SELECT t2.c_custkey, t2.c_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t2.c_custkey ASC",
       "dummy-tag": false,
       "collation": [
-        {
+        {e
           "field": 0,
           "direction": "ASCENDING"
         }

@@ -47,6 +47,14 @@ ZkTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefi
 
     SecureOperator *root = parser.getRoot();
 
+//    std::cout << "Original Plan : " << endl;
+//    std::cout << root->printTree() << endl;
+
+    root = parser.optimizeTree();
+
+//    std::cout << "Sort Optimized Plan : " << endl;
+//    std::cout << root->printTree() << endl;
+
     clock_t secureStartTime = clock();
     SecureTable *observed = root->run();
     double secureDuration = ((double) (clock() - secureStartTime)) / ((double) CLOCKS_PER_SEC);
