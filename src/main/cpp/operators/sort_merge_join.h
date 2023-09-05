@@ -7,8 +7,8 @@
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
 
-// TODOs:
-// reduce counts to log(fkey_length) bits
+// TODO: reduce counts to log(fkey_length) bits
+// TODO: create alt SMJ operator for many-to-many relationships
 
 namespace  vaultdb {
     template<typename B>
@@ -119,14 +119,16 @@ namespace  vaultdb {
         Field<B> zero_, one_;
         FieldType int_field_type_, bool_field_type_;
         bool is_secure_;
-        map<int, int> rhs_field_mapping_; // temp --> original
-        map<int, int> lhs_field_mapping_; // temp --> original
+        map<int, int> rhs_field_mapping_; // normalized --> original
+        map<int, int> lhs_field_mapping_; // normalized --> original
         QuerySchema lhs_projected_schema_, rhs_projected_schema_; // cache the schema of the smaller input relation
         bool bit_packed_ = false;
         long max_intermediate_cardinality_ = 0;
 		QueryTable<B> *lhs_prime_;
 		QueryTable<B> *rhs_prime_;
 		Field<B> table_id_field_;
+        // TEMP VARIABLE: TODO: JMR DELETE THIS
+        const int  suspect_key_ = 94884; //  94885;
 
         pair<QueryTable<B> *, QueryTable<B> *> augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs);
         QueryTable<B> *obliviousDistribute(QueryTable<B> *input, size_t target_size);
@@ -155,7 +157,26 @@ namespace  vaultdb {
             }
             return match;
         }
- 
+
+        void printSuspect(QueryTable<B> *table) {
+            if(this->getOperatorId() == 6) {
+                for(int i = 0; i < table->getTupleCount(); ++i) {
+                    if(table->getPlainTuple(i).getField(0).template getValue<int>() >= suspect_key_ && table->getPlainTuple(i).getDummyTag() == false) {
+                        cout << "Suspect: " << i << ": " << table->getPlainTuple(i).toString(true) << endl;
+                        cout << "Neighbors: \n";
+                        for(int j = i-3; j < table->getTupleCount(); ++j) {
+                            auto tmp  = table->getPlainTuple(j);
+//                            if(j == table->getTupleCount()) { cout << "   Fin." << endl; break; }
+                           if(!tmp.getDummyTag()) cout << "   " << j << ": " << tmp.toString() << endl;
+                        }
+                        return;
+
+                    }
+                }
+            }
+        }
+
+
         void setup();
     };
 
