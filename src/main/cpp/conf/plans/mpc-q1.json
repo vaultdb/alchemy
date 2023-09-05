@@ -60,6 +60,18 @@
         0,
         1
       ],
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
       "aggs": [
         {
           "agg": {

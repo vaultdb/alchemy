@@ -317,6 +317,13 @@
       "group": [
         0
       ],
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
       "aggs": [
         {
           "agg": {
