@@ -372,8 +372,6 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
     unioned =  sorter.denormalizeTable(normalized);
     unioned->setSortOrder(sort_def);
     delete normalized;
-
-
     return unioned;
 
 }
