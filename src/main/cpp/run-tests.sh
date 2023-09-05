@@ -15,7 +15,9 @@ bash  test/support/load-generated-data.sh 100
 ./bin/assemble_secret_shares pilot/secret_shares/xor pilot/secret_shares/revealed
 
 
-
+# can speed up with (4 threads):
+# parallel -j 4 < run-plain-tests.sh
+#use `sudo apt install parallel` to set this up in ubuntu
 bash run-plain-tests.sh
 bash run-mpc-tests.sh
 

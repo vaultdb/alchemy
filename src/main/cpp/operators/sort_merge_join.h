@@ -7,8 +7,8 @@
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
 
-// TODOs:
-// reduce counts to log(fkey_length) bits
+// TODO: reduce counts to log(fkey_length) bits
+// TODO: create alt SMJ operator for many-to-many relationships
 
 namespace  vaultdb {
     template<typename B>
@@ -119,8 +119,8 @@ namespace  vaultdb {
         Field<B> zero_, one_;
         FieldType int_field_type_, bool_field_type_;
         bool is_secure_;
-        map<int, int> rhs_field_mapping_; // temp --> original
-        map<int, int> lhs_field_mapping_; // temp --> original
+        map<int, int> rhs_field_mapping_; // normalized --> original
+        map<int, int> lhs_field_mapping_; // normalized --> original
         QuerySchema lhs_projected_schema_, rhs_projected_schema_; // cache the schema of the smaller input relation
         bool bit_packed_ = false;
         long max_intermediate_cardinality_ = 0;
@@ -155,7 +155,7 @@ namespace  vaultdb {
             }
             return match;
         }
- 
+
         void setup();
     };
 

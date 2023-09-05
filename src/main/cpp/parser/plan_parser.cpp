@@ -115,9 +115,7 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
     auto collation = get<1>(input_parameters);
     int input_party = get<2>(input_parameters);
 
-    // Define Party if exists
-    operators_[query_id] = createInputOperator(query, collation, has_dummy, plain_dummy_tag, input_party);
-
+    operators_[query_id] = createInputOperator(query, collation, has_dummy, plain_dummy_tag, input_limit_, input_party);
     operators_.at(query_id)->setOperatorId(query_id);
 
 }
