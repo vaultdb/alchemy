@@ -93,34 +93,9 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
     QueryTable<B> *s1, *s2;
-    if(this->getOperatorId() == 6)  cout << "Before oblivious expand, lhs" << endl;
-    printSuspect(augmented.first);
 
 	s1 = obliviousExpand(augmented.first, true);
-
-    if(this->getOperatorId() == 6)  cout << "Before oblivious expand, rhs" << endl;
-    printSuspect(augmented.second);
-
 	s2 = obliviousExpand(augmented.second, false);
-
-    if(this->getOperatorId() == 6) cout << "After oblivious expand, lhs" << endl;
-    printSuspect(s1);
-    if(this->getOperatorId() == 6)  cout << "After oblivious expand, rhs" << endl;
-    printSuspect(s2);
-
-    for(int  i = 0; i < s1->getTupleCount(); ++i) {
-       if(s1->getPlainTuple(i).getField(0) != s2->getPlainTuple(i).getField(0)) {
-           cout << "Mismatch at " << i << endl;
-           cout << "Schema: " << s1->getSchema() << endl;
-           cout << "lhs: " << s1->getPlainTuple(i).toString(true) << endl;
-           cout << "rhs: " << s2->getPlainTuple(i).toString(true) << endl;
-           cout << "Neighbors: \n";
-           for(int j = i-3; j <= i+3; ++j) {
-               cout << "  " << j << ": " << endl << s1->getPlainTuple(j).toString(true) <<  endl << s2->getPlainTuple(j).toString(true) << endl;
-           }
-           return 0;
-       }
-    }
 
     delete augmented.first;
 	delete augmented.second;
@@ -135,11 +110,6 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     delete s1;
     delete s2;
 
-    if(this->getOperatorId() == 6)  cout << "after revert, lhs " << endl;
-    printSuspect(lhs_reverted);
-    if(this->getOperatorId() == 6)  cout << "after revert, rhs " << endl;
-    printSuspect(rhs_reverted);
-
     for(int i = 0; i < foreign_key_cardinality_; i++) {
         B dummy_tag = lhs_reverted->getDummyTag(i) | rhs_reverted->getDummyTag(i);
         this->output_->cloneRow(!dummy_tag, i, 0, lhs_reverted, i);
@@ -151,9 +121,6 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     delete rhs_reverted;
 
     this->output_->setSortOrder(this->sort_definition_);
-    if(this->getOperatorId() == 6)  cout << "in final output: " << endl;
-    printSuspect(this->output_);
-
     return this->output_;
 
 
@@ -273,17 +240,11 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 
     auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
 
-    if(this->getOperatorId() == 6)  cout << "Before initialize alphas" << endl;
-    printSuspect(sorted);
-
     if(is_secure_ && bit_packed_) initializeAlphasPacked(sorted);
     else initializeAlphas(sorted);
 
-    if(this->getOperatorId() == 6)  cout << "After initialize alphas" << endl;
-    printSuspect(sorted);
 
     SortDefinition sort_def;
-
     sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
     for(int i = 0; i < join_idxs_.size(); ++i) {
         sort_def.emplace_back(i, SortDirection::ASCENDING);
@@ -360,16 +321,6 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
     QuerySchema augmented_schema = deriveAugmentedSchema();
     int unioned_len = lhs_prime_->getTupleCount() + rhs_prime_->getTupleCount();
     bool lhs_is_foreign_key = (foreign_key_input_ == 0);
-    if(this->getOperatorId() == 6) {
-        cout << "Before union and merge, lhs: " << endl;
-        printSuspect(lhs_prime_);
-
-    }
-    if(this->getOperatorId() == 6) {
-        cout << "Before union and merge, rhs: " << endl;
-        printSuspect(rhs_prime_);
-    }
-
     QueryTable<B> *unioned =   TableFactory<B>::getTable(unioned_len, augmented_schema, storage_model_);
 
     if(lhs_is_foreign_key) {
@@ -422,8 +373,7 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
     unioned->setSortOrder(sort_def);
     delete normalized;
 
-    if(this->getOperatorId() == 6)  cout << "After merge: " << endl;
-    printSuspect(unioned);
+
     return unioned;
 
 }
@@ -483,8 +433,6 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
 
     for(int i = 1; i < dst->getTupleCount(); i++) {
-        if((this->getOperatorId() == 6) && dst->getPlainTuple(i).getField(0).template getValue<int>() >= suspect_key_ && dst->getPlainTuple(i).getDummyTag() == false)
-        cout << "Examining tuple " << i << ": " << dst->getPlainTuple(i).toString(true) << ", a1=" << alpha_1 << ", a2=" << alpha_2 << endl;
 		table_id = dst->getPackedField(i, table_id_idx_).template getValue<B>();
 		is_foreign_key = (table_id == fkey_check);
         B dummy = dst->getDummyTag(i);
@@ -494,14 +442,7 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
                                Field<B>::If(is_foreign_key & !dummy, one_, zero_));
 		alpha_2 = Field<B>::If(same_group, Field<B>::If(!is_foreign_key, alpha_2 + one_, zero_),
                                Field<B>::If(!is_foreign_key, one_, zero_));
-
 		dst->setPackedField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_2, alpha_1));
-
-        if((this->getOperatorId() == 6) && dst->getPlainTuple(i).getField(0).template getValue<int>() >= suspect_key_ && dst->getPlainTuple(i).getDummyTag() == false)
-            cout << "     After: "  << dst->getPlainTuple(i).toString(true) << ", a1=" << alpha_1 << ", a2=" << alpha_2
-            << ", same group: " << FieldUtilities::extract_bool(same_group)
-            << " is fkey: " << FieldUtilities::extract_bool(is_foreign_key) << endl;
-
 	}
 
     int last_idx = dst->getTupleCount() - 1;
@@ -518,10 +459,6 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
 
 	for(int i = last_idx-1; i >= 0; i--) {
-        if((this->getOperatorId() == 6) && dst->getPlainTuple(i).getField(0).template getValue<int>() >= suspect_key_ && dst->getPlainTuple(i).getDummyTag() == false) {
-            cout << "Second pass examining "  << i << ": " << dst->getPlainTuple(i).toString(true) << ", a1=" << alpha_1 << ", a2=" << alpha_2 << endl;
-        }
-
         table_id = dst->getPackedField(i, table_id_idx_).template getValue<B>();
 		is_foreign_key = (table_id == fkey_check);
 		B same_group = joinMatch(dst,  i+1, i);
@@ -529,8 +466,6 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 		alpha_1 = Field<B>::If(is_foreign_key & same_group, alpha_1, Field<B>::If(!is_foreign_key & !dummy, one_, zero_));
 		dst->setPackedField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getPackedField(i, alpha_idx_)));
 		dst->setPackedField(i, alpha_idx_, Field<B>::If(dst->getDummyTag(i), zero_, dst->getPackedField(i, alpha_idx_)));
-        if((this->getOperatorId() == 6) && dst->getPlainTuple(i).getField(0).template getValue<int>() >= suspect_key_ && dst->getPlainTuple(i).getDummyTag() == false) cout << "     After: " << dst->getPlainTuple(i).toString(true) << ", a1=" << alpha_1 << ", a2=" << alpha_2 << endl;
-
     }
 }
 
@@ -664,15 +599,10 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
 
     Field<B> s = one_;
     Field<B> one_b(bool_field_type_, B(true)), zero_b(bool_field_type_, B(false));
-    if(this->getOperatorId() == 6) cout << "Schema: " << input->getSchema() << endl;
     for(int i = 0; i < input->getTupleCount(); i++) {
         intermediate_table->cloneRow(i, 0, input, i); // copy input row
         Field<B> cnt = input->getPackedField(i, alpha_idx_); // cnt = alpha
         B null_val = (cnt == zero_); // is count empty?  If no, set weight to running count, else set weight to zero
-//        if(this->getOperatorId() == 6 && (((s.template getValue<int>() > 210 && s.template getValue<int>() < 220)  && cnt.template getValue<int>() > 0) || (i >= 53391 && i <= 53395)))
-//            cout << "Running total: " << i << ": " << s.template getValue<int>()
-//                    << ", " << " null val: " << FieldUtilities::extract_bool(null_val)
-//                     << ", current row: " << input->getPlainTuple(i).toString(true) << endl;
         intermediate_table->setField(i, weight_idx_,
                                      Field<B>::If(null_val, zero_, s));
         intermediate_table->setField(i, is_new_idx_,
@@ -680,15 +610,8 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
         intermediate_table->setDummyTag(i, input->getDummyTag(i) | null_val);
 		s = s + cnt;
     }
-    if(this->getOperatorId() == 6)  cout << "After oblivious expand setup ";
-    printSuspect(intermediate_table);
     QueryTable<B> *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
-
-    if(this->getOperatorId() == 6)  cout << "Immediately after oblivious distribute ";
-    printSuspect(dst_table);
-
     schema = dst_table->getSchema();
-
     QueryTuple<B> tmp(&schema);
 
     tmp.setField(is_new_idx_, one_b);
@@ -713,7 +636,6 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
 	//std::cout << "Observed cost of conditional write step: " << this->system_conf_.andGateCount() - start_gates << "\n";
 
     // cout << "Ending obliviousExpand with and gates: " << this->system_conf_.andGateCount() << endl;
-	//std::cout << "Expand: " << dst_table->toString(true) << "\n";	
 
     return dst_table;
 }
@@ -763,13 +685,11 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
         intermediate_table->setDummyTag(i, input->getDummyTag(i) | result);
         s = s + cnt;
     }
-//    cout << "After setup: " << DataUtilities::printTable(intermediate_table) << endl;
 
     // cout << "Calling obliviousDistribute with and gate count: " << this->system_conf_.andGateCount() << endl;
     SecureTable *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
     // cout << "Exited obliviousDistribute with and gate count: " << this->system_conf_.andGateCount() << endl;
 
-//    cout << "After distribute: " << DataUtilities::printTable(dst_table) << endl;
 
     schema = dst_table->getSchema();
 
