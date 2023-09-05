@@ -256,7 +256,7 @@
         "6",
         "7"
       ],
-      "operator-algorithm": "sort-merge-join"
+      "operator-algorithm": "keyed-sort-merge-join"
     },
     {
       "id": "9",

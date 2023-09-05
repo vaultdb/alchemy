@@ -73,7 +73,7 @@
         ]
       },
       "joinType": "inner",
-      "operator-algorithm": "sort-merge-join",
+      "operator-algorithm": "keyed-sort-merge-join",
       "foreignKey": 1,
       "inputs": [
         "0",
@@ -104,7 +104,7 @@
     {
       "id": "4",
       "relOp": "LogicalJoin",
-      "operator-algorithm": "sort-merge-join",
+      "operator-algorithm": "keyed-sort-merge-join",
       "foreignKey": 1,
       "outputFields": "c_custkey (#0), c_name (#1), o_orderkey (#2), o_custkey (#3), o_totalprice (#4), o_orderdate (#5), l_orderkey (#6), l_quantity (#7)",
       "condition": {

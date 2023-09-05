@@ -247,7 +247,7 @@ TEST_F(OperatorCostModelTest, test_keyed_join) {
 
 }
 
-TEST_F(OperatorCostModelTest, test_sort_merge_join) {
+TEST_F(OperatorCostModelTest, test_keyed_sort_merge_join) {
 	this->disableBitPacking();
 
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
@@ -268,7 +268,7 @@ TEST_F(OperatorCostModelTest, test_sort_merge_join) {
     GenericExpression<emp::Bit> *predicate = (GenericExpression<Bit> *) FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 1,
                                                                                                                        customer_input, 4);
 
-    SortMergeJoin join(orders_input, customer_input, predicate);
+    KeyedSortMergeJoin join(orders_input, customer_input, predicate);
     // Join output schema: (#0 encrypted-int32(13) orders.o_orderkey, #1 encrypted-int32(8) orders.o_custkey, #2 encrypted-int64(28) orders.o_orderdate, #3 encrypted-int32(1) orders.o_shippriority, #4 encrypted-int32(8) customer.c_custkey)
 
 	size_t start_gates = manager_->andGateCount();

@@ -22,8 +22,8 @@ size_t OperatorCostModel::operatorCost(const SecureOperator *op) {
                 return basicJoinCost((BasicJoin<Bit> *) op);
             case OperatorType::MERGE_JOIN:
                 return mergeJoinCost((MergeJoin<Bit> *) op);
-           case OperatorType::SORT_MERGE_JOIN:
-              return sortMergeJoinCost((SortMergeJoin<Bit> *) op);
+           case OperatorType::KEYED_SORT_MERGE_JOIN:
+              return keyedSortMergeJoinCost((KeyedSortMergeJoin<Bit> *) op);
            case OperatorType::SHRINKWRAP:
               return shrinkwrapCost((Shrinkwrap<Bit> *) op);
            case OperatorType::PROJECT:
@@ -117,7 +117,7 @@ size_t OperatorCostModel::keyedJoinCost(const KeyedJoin<Bit> *join) {
     return tuple_comparison_cnt * tuple_comparison_cost;
 }
 
-size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
+size_t OperatorCostModel::keyedSortMergeJoinCost(KeyedSortMergeJoin<Bit> *join) {
 	size_t cost = 0;
 
 	Operator<Bit>* lhs = join->getChild(0);

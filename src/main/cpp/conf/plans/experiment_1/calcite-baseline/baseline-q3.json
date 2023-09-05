@@ -63,7 +63,7 @@
       },
       "joinType": "inner",
       "foreignKey": 1,
-      "operator-algorithm": "sort-merge-join",
+      "operator-algorithm": "keyed-sort-merge-join",
       "inputs": [
         "0",
         "1"

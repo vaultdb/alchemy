@@ -165,7 +165,7 @@ std::string Operator<B>::toSortOptimizedString() const {
     if(operator_id_ == -1){
         if(parent_->getType() == OperatorType::SORT_MERGE_AGGREGATE)
             ss << " | parent : " << parent_->getOperatorId() << ", child : " << lhs_child_->getOperatorId();
-        else if(parent_->getType() == OperatorType::SORT_MERGE_JOIN)
+        else if(parent_->getType() == OperatorType::KEYED_SORT_MERGE_JOIN)
             ss << " | parent : " << parent_->getOperatorId() << ", child : " << lhs_child_->getOperatorId();
     }
     return ss.str();

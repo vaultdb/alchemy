@@ -4,7 +4,7 @@
 #include <operators/secure_sql_input.h>
 #include <operators/sort.h>
 #include <test/mpc/emp_base_test.h>
-#include <operators/sort_merge_join.h>
+#include <operators/keyed_sort_merge_join.h>
 #include "util/field_utilities.h"
 #include "opt/operator_cost_model.h"
 #include "util/logger.h"
@@ -25,7 +25,7 @@ DEFINE_string(filter, "*", "run only the tests passing this filter");
 using namespace vaultdb;
 using namespace Logging;
 
-class SecureSortMergeJoinTest : public EmpBaseTest {
+class SecureKeyedSortMergeJoinTest : public EmpBaseTest {
 protected:
 
 
@@ -65,7 +65,7 @@ protected:
 
 };
 
-void SecureSortMergeJoinTest::runCustomerOrdersTest() {
+void SecureKeyedSortMergeJoinTest::runCustomerOrdersTest() {
 	
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
                                                                           "orders_cte AS (" + orders_cust_sql_ + ") "
@@ -85,7 +85,7 @@ void SecureSortMergeJoinTest::runCustomerOrdersTest() {
     GenericExpression<emp::Bit> *predicate = (GenericExpression<Bit> *) FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 1,
                                                                                                                        customer_input, 4);
 
-    SortMergeJoin join(orders_input, customer_input, predicate);
+    KeyedSortMergeJoin join(orders_input, customer_input, predicate);
     // Join output schema: (#0 encrypted-int32(13) orders.o_orderkey, #1 encrypted-int32(8) orders.o_custkey, #2 encrypted-int64(28) orders.o_orderdate, #3 encrypted-int32(1) orders.o_shippriority, #4 encrypted-int32(8) customer.c_custkey)
 
     auto joined = join.run();
@@ -111,7 +111,7 @@ void SecureSortMergeJoinTest::runCustomerOrdersTest() {
 
 }
 
-void SecureSortMergeJoinTest::runLineitemOrdersTest() {
+void SecureKeyedSortMergeJoinTest::runLineitemOrdersTest() {
     // get inputs from local oblivious ops
     // first N customers, propagate this constraint up the join tree for the test
     std::string expected_sql = "WITH orders_cte AS (" + orders_lineitem_sql_ + "), "
@@ -133,7 +133,7 @@ void SecureSortMergeJoinTest::runLineitemOrdersTest() {
     //  o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue,
     Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 0,
                                                                                       lineitem_input, 4);
-    SortMergeJoin join(orders_input, lineitem_input, 1, predicate);
+    KeyedSortMergeJoin join(orders_input, lineitem_input, 1, predicate);
     auto joined = join.run();
 
 	Logger* log = get_log();	
@@ -158,7 +158,7 @@ void SecureSortMergeJoinTest::runLineitemOrdersTest() {
 
 }
 
-void SecureSortMergeJoinTest::runLineitemOrdersCustomerTest() {
+void SecureKeyedSortMergeJoinTest::runLineitemOrdersCustomerTest() {
     std::string expected_sql = "WITH orders_cte AS (" + orders_cust_sql_ + "), \n"
                                      "lineitem_cte AS (" + lineitem_sql_ + "), \n"
                                      "customer_cte AS (" + customer_sql_ + ")\n "
@@ -180,7 +180,7 @@ void SecureSortMergeJoinTest::runLineitemOrdersCustomerTest() {
     GenericExpression<emp::Bit> *co_predicate = (GenericExpression<Bit> *) FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 1,
                                                                                                                           customer_input, 4);
 
-    auto co_join = new SortMergeJoin(orders_input, customer_input, co_predicate);
+    auto co_join = new KeyedSortMergeJoin(orders_input, customer_input, co_predicate);
 
 
     // join output schema:
@@ -190,7 +190,7 @@ void SecureSortMergeJoinTest::runLineitemOrdersCustomerTest() {
             co_join,
             2);
 
-    SortMergeJoin col_join(lineitem_input, co_join, lineitem_orders_predicate);
+    KeyedSortMergeJoin col_join(lineitem_input, co_join, lineitem_orders_predicate);
     auto joined = col_join.run();
 
 	Logger* log = get_log();	
@@ -212,21 +212,21 @@ void SecureSortMergeJoinTest::runLineitemOrdersCustomerTest() {
 
 }
 
-TEST_F(SecureSortMergeJoinTest, test_tpch_q3_customer_orders) {
+TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_customer_orders) {
     runCustomerOrdersTest();
 
 }
 
 
 
-TEST_F(SecureSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
+TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
     runLineitemOrdersTest();
 }
 
 
 
 // compose C-O-L join
-TEST_F(SecureSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
+TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     runLineitemOrdersCustomerTest();
 }

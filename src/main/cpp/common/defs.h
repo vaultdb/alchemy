@@ -99,7 +99,7 @@ namespace vaultdb {
         PROJECT,
         NESTED_LOOP_JOIN,
         KEYED_NESTED_LOOP_JOIN,
-        SORT_MERGE_JOIN,
+        KEYED_SORT_MERGE_JOIN,
         MERGE_JOIN,
         SORT,
         SHRINKWRAP,

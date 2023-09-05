@@ -1,4 +1,4 @@
-#include "sort_merge_join.h"
+#include "keyed_sort_merge_join.h"
 #include "query_table/table_factory.h"
 #include "operators/project.h"
 #include "expression/visitor/join_equality_condition_visitor.h"
@@ -15,7 +15,7 @@ using namespace Logging;
 
 // lhs assumed to be fkey
 template<typename B>
-SortMergeJoin<B>::SortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key,  Expression<B> *predicate,
+KeyedSortMergeJoin<B>::KeyedSortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key,  Expression<B> *predicate,
                                 const SortDefinition &sort) : Join<B>(foreign_key, primary_key, predicate, sort) {
     this->output_cardinality_ = foreign_key->getOutputCardinality();
     setup();
@@ -23,7 +23,7 @@ SortMergeJoin<B>::SortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_k
 
 
 template<typename B>
-SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *foreign_key, QueryTable<B> *primary_key, Expression<B> *predicate,
+KeyedSortMergeJoin<B>::KeyedSortMergeJoin(QueryTable<B> *foreign_key, QueryTable<B> *primary_key, Expression<B> *predicate,
                                 const SortDefinition &sort)  : Join<B>(foreign_key, primary_key, predicate, sort) {
     this->output_cardinality_ = foreign_key->getTupleCount();
     setup();
@@ -31,7 +31,7 @@ SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *foreign_key, QueryTable<B> *prima
 
 
 template<typename B>
-SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,
+KeyedSortMergeJoin<B>::KeyedSortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,
                                 const SortDefinition &sort) : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey != 0) {
 
     assert(fkey == 0 || fkey == 1);	
@@ -41,7 +41,7 @@ SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & 
 
 
 template<typename B>
-SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
+KeyedSortMergeJoin<B>::KeyedSortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
               const SortDefinition &sort)  : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey != 0) {
 
     assert(fkey == 0 || fkey == 1);
@@ -51,7 +51,7 @@ SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const in
 
 
 template<typename B>
-void SortMergeJoin<B>::setup() {
+void KeyedSortMergeJoin<B>::setup() {
     is_secure_ = std::is_same_v<B, emp::Bit>;
     int_field_type_ = is_secure_ ? FieldType::SECURE_INT : FieldType::INT;
     bool_field_type_ = is_secure_ ? FieldType::SECURE_BOOL : FieldType::BOOL;
@@ -70,7 +70,7 @@ void SortMergeJoin<B>::setup() {
 }
 
 template<typename B>
-QueryTable<B> *SortMergeJoin<B>::runSelf() {
+QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
     QueryTable<B> *lhs = this->getChild(0)->getOutput();
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
@@ -127,7 +127,7 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 }
 
 template<typename B>
-QuerySchema SortMergeJoin<B>::deriveAugmentedSchema() const {
+QuerySchema KeyedSortMergeJoin<B>::deriveAugmentedSchema() const {
     // pick bigger schema as starting point
     Operator<B> *lhs_child = this->getChild(0);
     Operator<B> *rhs_child = this->getChild(1);
@@ -182,7 +182,7 @@ QuerySchema SortMergeJoin<B>::deriveAugmentedSchema() const {
 }
 
 template<typename B>
-QuerySchema SortMergeJoin<B>::getAugmentedSchema() {
+QuerySchema KeyedSortMergeJoin<B>::getAugmentedSchema() {
 	QueryTable<B> * lhs = this->getChild(0)->getOutput();
 	QueryTable<B> * rhs = this->getChild(1)->getOutput();
 	vector<int> lhs_keys, rhs_keys;	
@@ -224,7 +224,7 @@ QuerySchema SortMergeJoin<B>::getAugmentedSchema() {
 
 
 template<typename B>
-pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
+pair<QueryTable<B> *, QueryTable<B> *>  KeyedSortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
     assert(lhs->storageModel() == rhs->storageModel());
     storage_model_ = lhs->storageModel();
 
@@ -280,7 +280,7 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 
 
 template<typename B>
-QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
+QueryTable<B> *KeyedSortMergeJoin<B>::unionAndSortTables() {
     int cursor = 0;
     QuerySchema augmented_schema = deriveAugmentedSchema();
     int unioned_len = lhs_prime_->getTupleCount() + rhs_prime_->getTupleCount();
@@ -316,7 +316,7 @@ QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
 }
 
 template<typename B>
-QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
+QueryTable<B> *KeyedSortMergeJoin<B>::unionAndMergeTables() {
     int cursor = 0;
     QuerySchema augmented_schema = deriveAugmentedSchema();
     int unioned_len = lhs_prime_->getTupleCount() + rhs_prime_->getTupleCount();
@@ -377,7 +377,7 @@ QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
 }
 
 template<typename B>
-QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs) {
+QueryTable<B> *KeyedSortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs) {
 
 
     ExpressionMapBuilder<B> builder(src->getSchema());
@@ -408,7 +408,7 @@ QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, v
 }
 
 template<typename B>
-void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
+void KeyedSortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 	Field<B> alpha_1 = zero_;
 	Field<B> alpha_2 = zero_;
     B one_b(true), zero_b(false);
@@ -468,13 +468,13 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 }
 
 template<>
-void SortMergeJoin<bool>::initializeAlphasPacked(PlainTable *dst) {
+void KeyedSortMergeJoin<bool>::initializeAlphasPacked(PlainTable *dst) {
     throw; // should never get here - packing not supported for plaintext
 }
 
 
 template<>
-void SortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
+void KeyedSortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
 	Integer zero = zero_.getValue<Integer>();
 	Integer one = one_.getValue<Integer>();
 
@@ -532,7 +532,7 @@ void SortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
 
 
 template<typename B>
-QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_t target_size) {
+QueryTable<B> *KeyedSortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_t target_size) {
     QuerySchema schema = input->getSchema();
 
     SortDefinition sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
@@ -577,7 +577,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
 
 
 template<typename B>
-QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_lhs) {
+QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_lhs) {
 
     if(is_secure_ && bit_packed_) return obliviousExpandPacked(input, is_lhs);
 
@@ -639,7 +639,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
 }
 
 template<>
-SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool is_lhs) {
+SecureTable *KeyedSortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool is_lhs) {
 
     // cout << "Starting initialize  in obliviousExpandPacked with and gates: " << this->system_conf_.andGateCount() << endl;
 
@@ -723,12 +723,12 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
 }
 
 template<>
-PlainTable *SortMergeJoin<bool>::obliviousExpandPacked(PlainTable *input, bool is_lhs) {
+PlainTable *KeyedSortMergeJoin<bool>::obliviousExpandPacked(PlainTable *input, bool is_lhs) {
     throw; // should never get here - this method for secure runs only
 }
 
 /*template<typename B>
-QueryTable<B> *SortMergeJoin<B>::alignTable(QueryTable<B> *input) {
+QueryTable<B> *KeyedSortMergeJoin<B>::alignTable(QueryTable<B> *input) {
     QuerySchema schema = input->getSchema();
 
     QueryFieldDesc weight(schema.getFieldCount(), "ii", "", is_secure_ ? FieldType::SECURE_INT : FieldType::INT);
@@ -770,7 +770,7 @@ QueryTable<B> *SortMergeJoin<B>::alignTable(QueryTable<B> *input) {
 */
 
 template<typename B>
-QueryTable<B> *SortMergeJoin<B>::revertProjection(QueryTable<B> *s, const map<int, int> &expr_map,
+QueryTable<B> *KeyedSortMergeJoin<B>::revertProjection(QueryTable<B> *s, const map<int, int> &expr_map,
                                                   const bool &is_lhs) const {
 
 
@@ -809,6 +809,6 @@ QueryTable<B> *SortMergeJoin<B>::revertProjection(QueryTable<B> *s, const map<in
 
 }
 
-template class vaultdb::SortMergeJoin<bool>;
-template class vaultdb::SortMergeJoin<emp::Bit>;
+template class vaultdb::KeyedSortMergeJoin<bool>;
+template class vaultdb::KeyedSortMergeJoin<emp::Bit>;
 

@@ -4,6 +4,8 @@
       "id": "0",
       "relOp": "LogicalValues",
       "outputFields": "n_name (#0), c_custkey (#1), c_nationkey (#2)",
+	  "sql": "SELECT t1.n_name, t2.c_custkey, t2.c_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t2.c_custkey",
+	  "dummy-tag": false,
       "type": [
         {
           "type": "CHAR",
@@ -22,6 +24,12 @@
           "name": "c_nationkey"
         }
       ],
+	  "collation": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -29,6 +37,8 @@
       "id": "1",
       "relOp": "LogicalValues",
       "outputFields": "o_orderkey (#0), o_custkey (#1)",
+	  "sql": "SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders ORDER BY o_custkey",
+	  "dummy-tag": true,
       "type": [
         {
           "type": "INTEGER",
@@ -39,6 +49,12 @@
           "type": "INTEGER",
           "nullable": true,
           "name": "o_custkey"
+        }
+      ],
+	  "collation": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
         }
       ],
       "tuples": [],
@@ -113,6 +129,8 @@
       "id": "5",
       "relOp": "LogicalValues",
       "outputFields": "l_orderkey (#0), l_suppkey (#1), revenue (#2)",
+	  "sql": "SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem ORDER BY l_orderkey, l_suppkey, revenue ASC",
+	  "dummy-tag": false,
       "type": [
         {
           "type": "INTEGER",
@@ -130,6 +148,20 @@
           "precision": 19,
           "scale": 0,
           "name": "revenue"
+        }
+      ],
+	  "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        },
+		{
+          "field": 1,
+          "direction": "ASCENDING"
+        },
+		{
+          "field": 2,
+          "direction": "ASCENDING"
         }
       ],
       "tuples": [],
@@ -198,6 +230,8 @@
       "id": "8",
       "outputFields": "s_suppkey (#0), s_nationkey (#1)",
       "relOp": "LogicalValues",
+	  "sql": "SELECT t2.s_suppkey, t2.s_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT s_suppkey, s_nationkey FROM supplier) AS t2 ON t1.n_nationkey = t2.s_nationkey ORDER BY t2.s_nationkey, t2.s_suppkey",
+	  "dummy-tag": false,
       "type": [
         {
           "type": "INTEGER",
@@ -208,6 +242,16 @@
           "type": "INTEGER",
           "nullable": true,
           "name": "s_nationkey"
+        }
+      ],
+	  "collation": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        },
+		{
+          "field": 0,
+          "direction": "ASCENDING"
         }
       ],
       "tuples": [],

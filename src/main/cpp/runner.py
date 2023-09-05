@@ -155,9 +155,9 @@ class TestConfig:
      
 #note: party flags are constructed automatically, and can be omitted from configs
 class Runner:
-    def __init__(self,config,verbose=True):
+    def __init__(self,config,is_host=True,verbose=True):
         self.config=config
-        self.is_host=True
+        self.is_host=is_host
         self.run_local=True     #running secure test cases locally?
         self.verbose = verbose
         self.procs=[]

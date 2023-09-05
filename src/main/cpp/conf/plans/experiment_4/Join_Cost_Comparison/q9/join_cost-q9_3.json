@@ -154,7 +154,7 @@
       "id": "5",
       "relOp": "LogicalJoin",
       "joinCondition": "ps_suppkey = l_suppkey AND ps_partkey = l_partkey",
-      "operator-algorithm": "sort-merge-join",
+      "operator-algorithm": "keyed-sort-merge-join",
       "outputFields": "n_name (#0), ps_partkey (#1), ps_suppkey (#2), ps_supplycost (#3), l_orderkey (#4), l_partkey (#5), l_suppkey (#6), l_quantity (#7), l_extendedprice (#8), l_discount (#9)",
       "condition": {
         "op": {

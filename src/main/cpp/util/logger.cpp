@@ -7,7 +7,7 @@ using namespace Logging;
 
 void Logger::write(const std::string & msg, Level request_level_ )
 {
-	if((int)request_level_ >= FLAGS_log_level) {
+	if((int)request_level_ >= FLAGS_log_level) {		
 		std::cout << msg << '\n';
 		if(!FLAGS_logfile.empty()) {
 			std::ofstream logfile;

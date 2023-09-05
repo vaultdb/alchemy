@@ -55,7 +55,7 @@ namespace vaultdb {
         pt::ptree deparseShrinkwrap(const Operator<B> *input);
         pt::ptree deparseSortMergeAggregate(const Operator<B> *input);
         pt::ptree deparseNestedLoopAggregate(const Operator<B> *input);
-        pt::ptree deparseSortMergeJoin(const Operator<B> *input);
+        pt::ptree deparseKeyedSortMergeJoin(const Operator<B> *input);
         pt::ptree deparseMergeJoin(const Operator<B> *input);
         pt::ptree deparseKeyedNestedLoopJoin(const Operator<B> *input);
         pt::ptree deparseSqlInput(const Operator<B> *input);

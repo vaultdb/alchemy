@@ -50,7 +50,7 @@
       "id": "2",
       "relOp": "LogicalJoin",
       "joinCondition": "s_suppkey = ps_suppkey",
-      "operator-algorithm": "sort-merge-join",
+      "operator-algorithm": "keyed-sort-merge-join",
       "outputFields": "s_suppkey (#0), n_name (#1), ps_partkey (#2), ps_suppkey (#3), ps_supplycost (#4)",
       "condition": {
         "op": {

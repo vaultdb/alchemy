@@ -375,7 +375,9 @@ TEST_F(SecureSortMergeAggregateTest, tpch_q1) {
     }
 }
 
-TEST_F(SecureSortMergeAggregateTest, DISABLED_tpch_q5) {
+
+/*TEST_F(SecureGroupByAggregateTest, DISABLED_tpch_q5) {
+
 	string input_rows =	"SELECT\n"
 						"n_name,\n"
 						"l_extendedprice * (1 - l_discount) AS disc_price,\n"
@@ -435,6 +437,65 @@ TEST_F(SecureSortMergeAggregateTest, DISABLED_tpch_q5) {
         delete expected;
     }
 }
+
+TEST_F(SecureGroupByAggregateTest, DISABLED_tpch_q9) {
+	string input_rows = "SELECT\n"
+    "n_name AS nation,\n"
+    "o_orderyear,\n"
+    "l_extendedprice * (1 - l_discount) - ps_supplycost * l_quantity AS amount\n"
+	"FROM\n"
+    "part,\n"
+    "supplier,\n"
+    "lineitem,\n"
+    "partsupp,\n"
+    "orders,\n"
+    "nation\n"
+	"WHERE\n"
+    "s_suppkey = l_suppkey\n"
+    "AND ps_suppkey = l_suppkey\n"
+    "AND ps_partkey = l_partkey\n"
+    "AND p_partkey = l_partkey\n"
+    "AND o_orderkey = l_orderkey\n"
+    "AND s_nationkey = n_nationkey\n"
+    "AND p_name like '%green%'";
+
+	string expected_sql = "SELECT\n"
+	"nation,\n"
+	"o_year,\n"
+	"sum(amount) AS sum_profit\n"
+	"FROM (\n"
+	+ input_rows + "\n" +
+	") AS profit\n"
+	"GROUP BY nation, o_year\n"
+	"ORDER BY nation, o_year DESC";
+
+	std::vector<int32_t> group_bys{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_profit")};
+
+	SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
+    auto input = new SecureSqlInput(db_name_, input_rows, true);
+
+	Sort<Bit> sort(input, sort_def);
+
+	GroupByAggregate aggregate(&sort, group_bys, aggregators);
+
+	Sort<Bit> sorter(&aggregate, sort_def);
+	auto observed = sorter.run();
+
+	Logger* log = get_log();
+	log->write("Predicted gate count: " + std::to_string(OperatorCostModel::operatorCost(&aggregate) + OperatorCostModel::operatorCost(&sort)), Level::INFO);
+	log->write("Observed gate count: " + std::to_string(aggregate.getGateCount() + sort.getGateCount()), Level::INFO);
+	log->write("Runtime: " + std::to_string(aggregate.getRuntimeMs() + sort.getRuntimeMs()), Level::INFO);
+
+	if(FLAGS_validation) {
+		PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 2);
+        auto revealed = observed->reveal(PUBLIC);
+        ASSERT_EQ(*expected, *revealed);
+        delete revealed;
+        delete expected;
+	}
+}*/
 
 
 int main(int argc, char **argv) {

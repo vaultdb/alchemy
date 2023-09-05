@@ -1,5 +1,5 @@
-#ifndef _SORT_MERGE_JOIN_
-#define _SORT_MERGE_JOIN_
+#ifndef _KEYED_SORT_MERGE_JOIN_
+#define _KEYED_SORT_MERGE_JOIN_
 
 #include <expression/generic_expression.h>
 #include "operator.h"
@@ -12,28 +12,28 @@
 
 namespace  vaultdb {
     template<typename B>
-    class SortMergeJoin : 
+    class KeyedSortMergeJoin : 
 		public Join<B> {
 	public:
 
-        SortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key, Expression<B> *predicate,
+        KeyedSortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
 
-        SortMergeJoin(QueryTable<B> *foreign_key, QueryTable<B> *primary_key, Expression<B> *predicate,
+        KeyedSortMergeJoin(QueryTable<B> *foreign_key, QueryTable<B> *primary_key, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
 
-        SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,
+        KeyedSortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
 
-        SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
+        KeyedSortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
-        SortMergeJoin(const SortMergeJoin & src) : Join<B>(src) {
+        KeyedSortMergeJoin(const KeyedSortMergeJoin & src) : Join<B>(src) {
             foreign_key_input_ = src.foreignKeyChild();
             setup();
         }
 
         Operator<B> *clone() const override {
-            return new SortMergeJoin<B>(*this);
+            return new KeyedSortMergeJoin<B>(*this);
         }
 
         void updateCollation() override {
@@ -94,11 +94,11 @@ namespace  vaultdb {
         }
 
         bool operator==(const Operator<B> &other) const override {
-            if (other.getType() != OperatorType::SORT_MERGE_JOIN) {
+            if (other.getType() != OperatorType::KEYED_SORT_MERGE_JOIN) {
                 return false;
             }
 
-            auto rhs = dynamic_cast<const SortMergeJoin<B> &>(other);
+            auto rhs = dynamic_cast<const KeyedSortMergeJoin<B> &>(other);
 
             if(*this->predicate_ != *rhs.predicate_ || this->foreign_key_input_ != rhs.foreign_key_input_) return false;
             return this->operatorEquality(other);
@@ -107,7 +107,7 @@ namespace  vaultdb {
     protected:
         QueryTable<B> *runSelf() override;
 
-        OperatorType getType() const override { return OperatorType::SORT_MERGE_JOIN; }
+        OperatorType getType() const override { return OperatorType::KEYED_SORT_MERGE_JOIN; }
 
     private:
         int alpha_idx_=-1, table_id_idx_ = -1, weight_idx_ = -1, is_new_idx_ = -1; // alpha_2_idx_ = -1,

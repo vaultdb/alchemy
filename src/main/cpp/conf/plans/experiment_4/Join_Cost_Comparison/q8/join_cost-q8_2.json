@@ -41,7 +41,7 @@
     {
       "id": "2",
       "outputFields": "c_custkey (#0), o_orderkey (#1), o_custkey (#2), o_year (#3)",
-      "operator-algorithm": "sort-merge-join",
+      "operator-algorithm": "keyed-sort-merge-join",
       "joinOn": "c_custkey = o_custkey",
       "relOp": "LogicalJoin",
       "condition": {

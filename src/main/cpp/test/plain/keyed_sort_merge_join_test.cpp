@@ -1,7 +1,7 @@
 #include "plain_base_test.h"
 #include "util/field_utilities.h"
 #include <operators/sql_input.h>
-#include <operators/sort_merge_join.h>
+#include <operators/keyed_sort_merge_join.h>
 #include <operators/sort.h>
 
 #include <gflags/gflags.h>
@@ -21,7 +21,7 @@ DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
-class SortMergeJoinTest :  public PlainBaseTest  {
+class KeyedSortMergeJoinTest :  public PlainBaseTest  {
 
 protected:
  
@@ -144,7 +144,7 @@ protected:
 
 
 
-TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders) {
+TEST_F(KeyedSortMergeJoinTest, test_tpch_q3_customer_orders) {
 
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
                                           "orders_cte AS (" + orders_cust_sql_ + ") "
@@ -163,7 +163,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders) {
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(orders_input, 1, customer_input, 4);
 
-    auto join = new SortMergeJoin(orders_input, customer_input,  predicate);
+    auto join = new KeyedSortMergeJoin(orders_input, customer_input,  predicate);
     Sort sorter(join, DataUtilities::getDefaultSortDefinition(2));
     PlainTable *observed = sorter.run(); // need sort because otherwise output order isn't deterministic
     expected->setSortOrder(observed->getSortOrder());
@@ -177,7 +177,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders) {
 }
 
 
-TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders) {
+TEST_F(KeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
 
     std::string expected_sql = "WITH orders_cte AS (" + orders_lineitem_sql_ + "), "
                                                                          "lineitem_cte AS (" + lineitem_sql_ + "), "
@@ -200,7 +200,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders) {
     Expression<bool> *predicate  = FieldUtilities::getEqualityPredicate<bool>(lineitem_input, 0, orders_input,
                                                                               2);
 
-    auto join = new SortMergeJoin(lineitem_input, orders_input, 0, predicate);
+    auto join = new KeyedSortMergeJoin(lineitem_input, orders_input, 0, predicate);
     Sort<bool> sorter(join, DataUtilities::getDefaultSortDefinition(2));
     PlainTable *observed = sorter.run();
 
@@ -216,7 +216,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders) {
 
 
 
-TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
+TEST_F(KeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
     std::string expected_sql = "WITH orders_cte AS (" + orders_cust_sql_ + "), \n"
@@ -243,7 +243,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     Expression<bool> *customer_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(orders_input, 1,
                                                                                              customer_input, 4);
-    auto *customer_orders_join = new SortMergeJoin (orders_input, customer_input, 0, customer_orders_predicate);
+    auto *customer_orders_join = new KeyedSortMergeJoin (orders_input, customer_input, 0, customer_orders_predicate);
 
     // join output schema:
     //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
@@ -252,7 +252,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
 
-    auto *full_join = new SortMergeJoin(lineitem_input, customer_orders_join, 0, lineitem_orders_predicate);
+    auto *full_join = new KeyedSortMergeJoin(lineitem_input, customer_orders_join, 0, lineitem_orders_predicate);
 
 
 	SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(7);
@@ -275,7 +275,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
 
-TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders_reversed) {
+TEST_F(KeyedSortMergeJoinTest, test_tpch_q3_customer_orders_reversed) {
 
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
                                                                              "orders_cte AS (" + orders_cust_sql_ + ") "
@@ -295,7 +295,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders_reversed) {
     Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(customer_input, 0, orders_input,
                                                                              2);
 
-    auto join = new SortMergeJoin(customer_input, orders_input, 1, predicate);
+    auto join = new KeyedSortMergeJoin(customer_input, orders_input, 1, predicate);
     Sort sorter(join, DataUtilities::getDefaultSortDefinition(2));
     PlainTable *observed = sorter.run();
 
@@ -310,7 +310,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders_reversed) {
 }
 
 
-TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_reversed) {
+TEST_F(KeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders_reversed) {
 
     std::string expected_sql = "WITH orders_cte AS (" + orders_lineitem_sql_ + "), "
                                                      "lineitem_cte AS (" + lineitem_sql_ + ") "
@@ -331,7 +331,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_reversed) {
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue
     Expression<bool> *predicate  = FieldUtilities::getEqualityPredicate<bool>(orders_input, 0, lineitem_input,
                                                                               4);
-    auto join = new SortMergeJoin(orders_input, lineitem_input, 1, predicate);
+    auto join = new KeyedSortMergeJoin(orders_input, lineitem_input, 1, predicate);
     Sort<bool> sorter(join, DataUtilities::getDefaultSortDefinition(6));
     PlainTable *observed = sorter.run();
 
@@ -349,7 +349,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_reversed) {
 
 
 
-TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
+TEST_F(KeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
 
 
     std::string expected_sql = "WITH orders_cte AS (" + orders_cust_sql_ + "), \n"
@@ -377,7 +377,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
     Expression<bool> *customer_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(customer_input, 0,
                                                                                              orders_input, 2);
 
-    auto customer_orders_join = new SortMergeJoin(customer_input, orders_input, 1, customer_orders_predicate);
+    auto customer_orders_join = new KeyedSortMergeJoin(customer_input, orders_input, 1, customer_orders_predicate);
 
     // join output schema:
     //   c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue
@@ -386,7 +386,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
 
 
 
-    auto full_join = new SortMergeJoin(customer_orders_join, lineitem_input, 1, lineitem_orders_predicate);
+    auto full_join = new KeyedSortMergeJoin(customer_orders_join, lineitem_input, 1, lineitem_orders_predicate);
 
 
     PlainTable *observed = full_join->run()->clone();

@@ -114,7 +114,7 @@
       "id": "5",
       "relOp": "LogicalJoin",
       "joinOn": "l_orderkey = L2.l_orderkey",
-      "operator-algorithm" : "sort-merge-join",
+      "operator-algorithm" : "keyed-sort-merge-join",
       "outputFields": "l_orderkey (#0), L2.l_orderkey (#1), L2.l_quantity (#2), ",
       "condition": {
         "op": {

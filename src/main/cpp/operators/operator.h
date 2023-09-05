@@ -197,7 +197,7 @@ namespace  vaultdb {
                     return "BasicJoin";
                 case OperatorType::KEYED_NESTED_LOOP_JOIN:
                     return "KeyedJoin";
-                case OperatorType::SORT_MERGE_JOIN:
+                case OperatorType::KEYED_SORT_MERGE_JOIN:
                     return "SortMergeJoin";
                 case OperatorType::MERGE_JOIN:
                     return "MergeJoin";

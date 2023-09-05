@@ -4,6 +4,8 @@
       "id": "0",
       "relOp": "LogicalValues",
       "outputFields": "s_suppkey (#0), n_name (#1)",
+	  "sql": "SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY n_name, s_suppkey",
+	  "dummy-tag": false,
       "type": [
         {
           "type": "INTEGER",
@@ -17,6 +19,16 @@
           "name": "n_name"
         }
       ],
+	  "collation": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        },
+		{
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -24,6 +36,8 @@
       "id": "1",
       "relOp": "LogicalValues",
       "outputFields": "ps_partkey (#0), ps_suppkey (#1), ps_supplycost (#2)",
+	  "sql": "SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%' ORDER BY ps_suppkey, ps_partkey",
+	  "dummy-tag": false,
       "type": [
         {
           "type": "INTEGER",
@@ -41,6 +55,16 @@
           "precision": 19,
           "scale": 0,
           "name": "ps_supplycost"
+        }
+      ],
+	  "collation": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        },
+		{
+          "field": 0,
+          "direction": "ASCENDING"
         }
       ],
       "tuples": [],
@@ -126,6 +150,8 @@
       "id": "5",
       "relOp": "LogicalValues",
       "outputFields": "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_quantity (#3), l_extendedprice (#4), l_discount (#5)",
+	  "sql": "SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice, l_discount FROM lineitem ORDER BY l_suppkey, l_partkey",
+	  "dummy-tag": false,
       "type": [
         {
           "type": "INTEGER",
@@ -162,6 +188,16 @@
           "precision": 19,
           "scale": 0,
           "name": "l_discount"
+        }
+      ],
+	  "collation": [
+        {
+          "field": 2,
+          "direction": "ASCENDING"
+        },
+		{
+          "field": 1,
+          "direction": "ASCENDING"
         }
       ],
       "tuples": [],
@@ -277,6 +313,8 @@
       "id": "9",
       "relOp": "LogicalValues",
       "outputFields": "o_year (#0), o_orderkey (#1)",
+	  "sql": "SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders ORDER BY o_orderkey",
+	  "dummy-tag": false,
       "type": [
         {
           "type": "INTEGER",
@@ -287,6 +325,12 @@
           "type": "INTEGER",
           "nullable": false,
           "name": "o_orderkey"
+        }
+      ],
+	  "collation": [
+		{
+          "field": 1,
+          "direction": "ASCENDING"
         }
       ],
       "tuples": [],

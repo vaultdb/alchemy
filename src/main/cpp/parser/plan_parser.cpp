@@ -14,7 +14,7 @@
 #include <operators/zk_sql_input.h>
 #include <operators/scalar_aggregate.h>
 #include <operators/keyed_join.h>
-#include <operators/sort_merge_join.h>
+#include <operators/keyed_sort_merge_join.h>
 #include <operators/merge_join.h>
 #include <operators/basic_join.h>
 #include <operators/filter.h>
@@ -568,7 +568,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
         join_type = join_tree.get_child("operator-algorithm").template get_value<string>();
 
     // check it is a valid join algo spec (if specified)
-    assert(join_type == "sort-merge-join" || join_type == "nested-loop-join" || join_type == "merge-join" || join_type == "auto" || join_type.empty());
+    assert(join_type == "keyed-sort-merge-join" || join_type == "nested-loop-join" || join_type == "merge-join" || join_type == "auto" || join_type.empty());
 
     // if fkey designation exists, use this to create keyed join
     if(join_tree.count("foreignKey") > 0 || join_tree.count("foreign-key") > 0) {
@@ -577,7 +577,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
         if (join_type == "auto") {
 
-            auto smj = new SortMergeJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
+            auto smj = new KeyedSortMergeJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
             auto nlj = new KeyedJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
             size_t smj_cost = OperatorCostModel::operatorCost((SecureOperator *) smj);
             size_t nlj_cost = OperatorCostModel::operatorCost((SecureOperator *) nlj);
@@ -605,7 +605,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                 if(!rhs->isLeaf()) {
 
                     Operator<B> *rhs_sorter = new Sort<B>(rhs->clone(), rhs_sort);
-                    auto smj_presorted = new SortMergeJoin<B>(lhs->clone(), rhs_sorter, foreign_key,
+                    auto smj_presorted = new KeyedSortMergeJoin<B>(lhs->clone(), rhs_sorter, foreign_key,
                                                               join_condition->clone());
                     auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
                     delete smj_presorted;
@@ -618,13 +618,13 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                                    ", join type: presorted smj", Level::INFO);
 
                         Sort<B> *sorter = new Sort<B>(rhs, rhs_sort);
-                        return new SortMergeJoin<B>(lhs, sorter, foreign_key, join_condition);
+                        return new KeyedSortMergeJoin<B>(lhs, sorter, foreign_key, join_condition);
                     }
                 }
                 else { // uncollated side is a leaf
                     auto rhs_copy = rhs->clone();
                     rhs_copy->setSortOrder(rhs_sort); // automatically calls `updateCollation`
-                    auto smj_presorted = new SortMergeJoin<B>(lhs->clone(), rhs_copy, foreign_key,
+                    auto smj_presorted = new KeyedSortMergeJoin<B>(lhs->clone(), rhs_copy, foreign_key,
                                                               join_condition->clone());
                     auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
                     delete smj_presorted;
@@ -637,7 +637,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                                    ", join type: presorted smj", Level::INFO);
 
                         rhs->setSortOrder(rhs_sort);
-                        return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
+                        return new KeyedSortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
                     }
                 } // end leaf case
             } else if (rhs_sort_compatible && !lhs_sort_compatible) {
@@ -651,7 +651,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
                 if(!lhs->isLeaf()) {
                     Operator<B> *lhs_sorter = new Sort<B>(lhs->clone(), lhs_sort);
-                    auto smj_presorted = new SortMergeJoin<B>(lhs_sorter, rhs->clone(), foreign_key,
+                    auto smj_presorted = new KeyedSortMergeJoin<B>(lhs_sorter, rhs->clone(), foreign_key,
                                                               join_condition->clone());
                     auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
                     delete smj_presorted;
@@ -664,13 +664,13 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                                    ", join type: presorted smj", Level::INFO);
 
                         Sort<B> *sorter = new Sort<B>(lhs, lhs_sort);
-                        return new SortMergeJoin<B>(sorter, rhs, foreign_key, join_condition);
+                        return new KeyedSortMergeJoin<B>(sorter, rhs, foreign_key, join_condition);
                     }
                 }
                 else { // leaf case
                     auto lhs_copy = lhs->clone();
                     lhs_copy->setSortOrder(lhs_sort); // automatically calls `updateCollation`
-                    auto smj_presorted = new SortMergeJoin<B>(lhs_copy, rhs->clone(), foreign_key,
+                    auto smj_presorted = new KeyedSortMergeJoin<B>(lhs_copy, rhs->clone(), foreign_key,
                                                               join_condition->clone());
                     auto smj_opt_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
                     delete smj_presorted;
@@ -683,20 +683,20 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                                    ", join type: presorted smj", Level::INFO);
 
                         lhs->setSortOrder(lhs_sort);
-                        return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
+                        return new KeyedSortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
                     }
                 } // end leaf case
             }
 
-            string selected_join = (smj_cost < nlj_cost) ? "sort-merge-join" : "nested-loop-join";
+            string selected_join = (smj_cost < nlj_cost) ? "keyed-sort-merge-join" : "nested-loop-join";
 
             log->write("Operator (" + std::to_string(operator_id) + "). " +
                        "smj cost : " + std::to_string(smj_cost) +
                        ", nlj cost : " + std::to_string(nlj_cost) +
                        ", join type : " + selected_join, Level::INFO);
 
-            if (selected_join == "sort-merge-join") {
-                return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
+            if (selected_join == "keyed-sort-merge-join") {
+                return new KeyedSortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
             }
             else {
                 return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition);
@@ -704,8 +704,8 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
         } // end join-algorithm="auto"
 
-        if (join_type == "sort-merge-join") {
-            return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
+        if (join_type == "keyed-sort-merge-join") {
+            return new KeyedSortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
         }
         else { // if algorithm unspecified but FK, use KeyedJoin
             return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition);
@@ -1056,7 +1056,7 @@ void PlanParser<B>::optimizeTreeHelper(Operator<B> *op) {
             break;
         }
         case OperatorType::KEYED_NESTED_LOOP_JOIN:
-        case OperatorType::SORT_MERGE_JOIN: {
+        case OperatorType::KEYED_SORT_MERGE_JOIN: {
             // for each rhs leaf collation cycle through its collations and then try both SMJ and NLJ with each collation
             recurseJoin(node);
             break;
@@ -1161,7 +1161,7 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
 
             // For SMJ, sort order is same with sort key's order
             // Make plan in case of smj.
-            SortMergeJoin<B> *smj = new SortMergeJoin(lhs->clone(), rhs->clone(), kj->foreignKeyChild(), kj->getPredicate()->clone());
+            KeyedSortMergeJoin<B> *smj = new KeyedSortMergeJoin(lhs->clone(), rhs->clone(), kj->foreignKeyChild(), kj->getPredicate()->clone());
 
             // check sort compatibility for SMJ
             if (smj->sortCompatible(lhs)) {
@@ -1184,7 +1184,7 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
 
                     // Define sort before rhs_leaf
                     Operator<B> *rhs_sorter = new Sort<B>(rhs->clone(), rhs_sort);
-                    smj = new SortMergeJoin<B>(lhs->clone(), rhs_sorter, kj->foreignKeyChild(),
+                    smj = new KeyedSortMergeJoin<B>(lhs->clone(), rhs_sorter, kj->foreignKeyChild(),
                                                kj->getPredicate()->clone());
                 }
             }
@@ -1208,7 +1208,7 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
 
                     // Define sort before lhs
                     Operator<B> *lhs_sorter = new Sort<B>(lhs->clone(), lhs_sort);
-                    smj = new SortMergeJoin<B>(lhs_sorter, rhs->clone(), kj->foreignKeyChild(),
+                    smj = new KeyedSortMergeJoin<B>(lhs_sorter, rhs->clone(), kj->foreignKeyChild(),
                                                kj->getPredicate()->clone());
                     lhs_sorter->setParent(smj);
                 }
@@ -1221,8 +1221,8 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             //Since smj was not original node, delete it
             delete smj;
         }
-        else if(join->getType() == OperatorType::SORT_MERGE_JOIN){
-            SortMergeJoin<B> *smj = (SortMergeJoin<B> *) join;
+        else if(join->getType() == OperatorType::KEYED_SORT_MERGE_JOIN){
+            KeyedSortMergeJoin<B> *smj = (KeyedSortMergeJoin<B> *) join;
 
             // Need to reset right child as rhs because kj's rhs was pointing original child, which does not applied new sort order
             smj->setChild(rhs, 1);
@@ -1254,7 +1254,7 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
                 if(rhs->getType() != OperatorType::SECURE_SQL_INPUT) {
                     // Define sort before rhs_leaf
                     Operator<B> *rhs_sorter = new Sort<B>(rhs->clone(), rhs_sort);
-                    Operator<B> *new_smj = new SortMergeJoin<B>(lhs->clone(), rhs_sorter, foreign_key, smj->getPredicate()->clone());
+                    Operator<B> *new_smj = new KeyedSortMergeJoin<B>(lhs->clone(), rhs_sorter, foreign_key, smj->getPredicate()->clone());
                     new_smj->setOperatorId(operatorId);
                     new_smj->updateCollation();
                     recurseNode(new_smj);
@@ -1286,7 +1286,7 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
                 if(lhs->getType() != OperatorType::SECURE_SQL_INPUT) {
                     // Define sort before lhs
                     Operator<B> *lhs_sorter = new Sort<B>(lhs->clone(), lhs_sort);
-                    Operator<B> *new_smj = new SortMergeJoin<B>(lhs_sorter, rhs->clone(), foreign_key, smj->getPredicate()->clone());
+                    Operator<B> *new_smj = new KeyedSortMergeJoin<B>(lhs_sorter, rhs->clone(), foreign_key, smj->getPredicate()->clone());
                     new_smj->setOperatorId(operatorId);
                     new_smj->updateCollation();
                     recurseNode(new_smj);

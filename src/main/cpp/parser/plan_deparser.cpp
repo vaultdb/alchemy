@@ -6,7 +6,7 @@
 #include <operators/zk_sql_input.h>
 #include <operators/scalar_aggregate.h>
 #include <operators/keyed_join.h>
-#include <operators/sort_merge_join.h>
+#include <operators/keyed_sort_merge_join.h>
 #include <operators/merge_join.h>
 #include <operators/basic_join.h>
 #include <operators/filter.h>
@@ -73,8 +73,8 @@ pt::ptree PlanDeparser<B>::deparseNode(const Operator<B> *node) {
             return deparseNestedLoopJoin(node);
         case OperatorType::KEYED_NESTED_LOOP_JOIN:
             return deparseKeyedNestedLoopJoin(node);
-        case OperatorType::SORT_MERGE_JOIN:
-            return deparseSortMergeJoin(node);
+        case OperatorType::KEYED_SORT_MERGE_JOIN:
+            return deparseKeyedSortMergeJoin(node);
         case OperatorType::MERGE_JOIN:
             return deparseMergeJoin(node);
         case OperatorType::SORT:
@@ -197,9 +197,9 @@ pt::ptree PlanDeparser<B>::deparseMergeInput(const Operator<B> *input) {
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseSortMergeJoin(const Operator<B> *input) {
-    assert(input->getType() == OperatorType::SORT_MERGE_JOIN);
-    auto smj = (SortMergeJoin<B> *) input;
+pt::ptree PlanDeparser<B>::deparseKeyedSortMergeJoin(const Operator<B> *input) {
+    assert(input->getType() == OperatorType::KEYED_SORT_MERGE_JOIN);
+    auto smj = (KeyedSortMergeJoin<B> *) input;
     return deparseJoin(smj, "sort-merge-join", smj->foreignKeyChild());
 }
 

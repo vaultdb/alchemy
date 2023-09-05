@@ -1,7 +1,7 @@
 #include <opt/plan_enumerator.h>
 #include <util/data_utilities.h>
 #include <operators/keyed_join.h>
-#include <operators/sort_merge_join.h>
+#include <operators/keyed_sort_merge_join.h>
 #include <operators/sort_merge_aggregate.h>
 #include <operators/nested_loop_aggregate.h>
 #include <operators/sort.h>
@@ -80,7 +80,7 @@ void PlanEnumerator::optimizeTreeHelper(SecureOperator *op) {
             break;
         }
         case OperatorType::KEYED_NESTED_LOOP_JOIN:
-        case OperatorType::SORT_MERGE_JOIN: {
+        case OperatorType::KEYED_SORT_MERGE_JOIN: {
             // for each rhs leaf collation cycle through its collations and then try both SMJ and NLJ with each collation
              recurseJoin(node);
              delete node;
@@ -132,13 +132,13 @@ void PlanEnumerator::recurseJoin(SecureOperator *join) {
 
         if(join->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN) {
             KeyedJoin<Bit> *kj = (KeyedJoin<Bit> *) first_join;
-            auto second_join  = new SortMergeJoin<Bit>(kj->getChild(0)->clone(), kj->getChild(1)->clone(), kj->foreignKeyChild(), kj->getPredicate());
+            auto second_join  = new KeyedSortMergeJoin<Bit>(kj->getChild(0)->clone(), kj->getChild(1)->clone(), kj->foreignKeyChild(), kj->getPredicate());
             second_join->setOperatorId(kj->getOperatorId());
             recurseNode(second_join->clone());
             delete second_join;
         }
         else {
-            SortMergeJoin<Bit> *smj = (SortMergeJoin<Bit> *) first_join;
+            KeyedSortMergeJoin<Bit> *smj = (KeyedSortMergeJoin<Bit> *) first_join;
             auto second_join = new KeyedJoin<Bit>(smj->getChild(0)->clone(), smj->getChild(1)->clone(), smj->foreignKeyChild(), smj->getPredicate());
             second_join->setOperatorId(smj->getOperatorId());
             recurseNode(second_join->clone());

@@ -4,6 +4,8 @@
       "id": "0",
       "relOp": "LogicalValues",
       "outputFields": "l_returnflag (#0), l_linestatus (#1), l_quantity (#2), l_extendedprice (#3), discount (#4), charge (#5), l_discount (#6)",
+	  "sql": "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice, l_extendedprice * (1 - l_discount) AS discount, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, l_discount, NOT l_shipdate <= DATE '1998-08-03' AS dummy_tag FROM lineitem ORDER BY  l_returnflag, l_linestatus, l_orderkey, l_linenumber",
+	  "dummy-tag": true,
       "type": [
         {
           "type": "CHAR",
@@ -53,6 +55,16 @@
           "name": "l_discount"
         }
       ],
+	  "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        },
+		{
+		  "field": 1,
+		  "direction": "ASCENDING"
+		}
+	  ],
       "tuples": [],
       "inputs": []
     },

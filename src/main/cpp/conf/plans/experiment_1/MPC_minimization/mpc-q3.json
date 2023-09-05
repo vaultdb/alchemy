@@ -4,6 +4,8 @@
       "id": "0",
       "relOp": "LogicalValues",
       "outputFields": "o_orderkey (#0), o_custkey (#1), o_orderdate (#2), o_shippriority (#3)",
+	  "sql": "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_custkey",
+	  "dummy-tag": true,
       "type": [
         {
           "type": "INTEGER",
@@ -26,6 +28,12 @@
           "name": "o_shippriority"
         }
       ],
+	  "collation": [
+		{
+		  "field": 1,
+		  "direction": "ASCENDING"
+		}
+	  ],
       "tuples": [],
       "inputs": []
     },
@@ -33,6 +41,8 @@
       "id": "1",
       "relOp": "LogicalValues",
       "outputFields": "c_custkey (#0)",
+	  "sql": "SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer ORDER BY c_custkey",
+	  "dummy-tag": true,
       "type": [
         {
           "type": "INTEGER",
@@ -40,6 +50,12 @@
           "name": "c_custkey"
         }
       ],
+	  "collation": [
+		{
+		  "field": 0,
+		  "direction": "ASCENDING"
+		}
+	  ],
       "tuples": [],
       "inputs": []
     },
@@ -113,6 +129,8 @@
       "id": "5",
       "relOp": "LogicalValues",
       "outputFields": "l_orderkey (#0), revenue (#1)",
+	  "sql": "SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey",
+	  "dummy-tag": true,
       "type": [
         {
           "type": "INTEGER",
@@ -125,6 +143,12 @@
           "precision": 19,
           "scale": 0,
           "name": "revenue"
+        }
+      ],
+	  "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
         }
       ],
       "tuples": [],
