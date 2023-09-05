@@ -176,22 +176,6 @@
       ]
     },
     {
-      "id": "6",
-      "relOp": "LogicalJoin",
-      "joinOn": "l_orderkey = o_orderkey",
-      "operator-algorithm" : "merge-join",
-      "outputFields": "l_orderkey (#0), sum_qty (#1), o_orderkey (#2), o_custkey (#3), o_totalprice (#4), o_orderdate (#5)",
-      "condition": {
-        "no-op": true
-      },
-      "joinType": "inner",
-      "dummy-handling" : "OR",
-      "inputs": [
-        "4",
-        "5"
-      ]
-    },
-    {
       "id": "7",
       "relOp": "LogicalProject",
       "fields": [
