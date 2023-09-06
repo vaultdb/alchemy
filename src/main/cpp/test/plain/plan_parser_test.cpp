@@ -105,7 +105,7 @@ TEST_F(PlanParserTest, tpch_q08) {
 TEST_F(PlanParserTest, tpch_q09) {
 
     std::string expected_plan = "#11: Sort<bool> ({<0, ASC> , <1, DESC> }) : (#0 varchar(25) nation.nation, #1 int32 amount, #2 float sum_profit) order by: {<0, ASC> , <1, DESC> }\n"
-         "    #10: SortMergeAggregate<bool> (group-by: (0, 1) aggs: (SUM($2) sum_profit)) : (#0 varchar(25) nation.nation, #1 int32 amount, #2 float sum_profit) order by: {<0, ASC> , <1, ASC> }\n"
+         "    #10: SortMergeAggregate<bool> (group-by: (0, 1) aggs: (SUM($2) sum_profit)) : (#0 varchar(25) nation.nation, #1 int32 amount, #2 float sum_profit) order by: {<0, ASC> , <1, DESCbas> }\n"
          "        #-1: Sort<bool> ({<0, ASC> , <1, ASC> }) : (#0 varchar(25) nation.nation, #1 int32 amount, #2 float o_year) order by: {<0, ASC> , <1, ASC> }\n"
          "            #9: Project<bool> ((<0, $0 varchar>, <1, $3 int32>, <2, $2 float>)) : (#0 varchar(25) nation.nation, #1 int32 amount, #2 float o_year) order by: {}\n"
          "                #8: KeyedJoin<bool> ($1 == $4) : (#0 varchar(25) nation.nation, #1 int32 lineitem.l_orderkey, #2 float amount, #3 int32 o_year, #4 int32 orders.o_orderkey) order by: {<1, ASC> }\n"
