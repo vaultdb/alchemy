@@ -212,9 +212,9 @@ B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int 
 template <typename B>
 Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir, const int & sort_key_width_bits) {
 
-    if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED) {
-        return swapTuplesNormalizedOmpc(table, lhs_idx, rhs_idx, dir, sort_key_width_bits);
-    }
+    //if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED) {
+    //    return swapTuplesNormalizedOmpc(table, lhs_idx, rhs_idx, dir, sort_key_width_bits);
+    //}
     // caution: only works with row store
     RowTable<Bit> *row_table = (RowTable<Bit> *) table;
 
