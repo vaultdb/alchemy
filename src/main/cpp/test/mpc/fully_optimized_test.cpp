@@ -40,14 +40,19 @@ protected:
 void
 FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 
- 
+
     this->initializeBitPacking(FLAGS_unioned_db);
 
     string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_unioned_db);
     string local_db = db_name_;
 
 //    cout << " Observed DB : "<< local_db << " - Bit Packed: " << SystemConfiguration::getInstance().bitPackingEnabled() <<  endl;
+
+    // Gate count measurement
     auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
+
+    // Comm Cost measurement
+    auto start_comm_cost = SystemConfiguration::getInstance().emp_manager_->getCommCost();
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
@@ -55,6 +60,10 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-"  + test_name + ".json";
 
+    // Initialize memory measurement
+    size_t initial_memory = Utilities::checkMemoryUtilization(true);
+
+    // Start measuring time
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
 
@@ -65,18 +74,30 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
 
     SecureTable *result = root->run();
 
+    // Measure CPU Time
     double secureClockTicks = (double) (clock() - secureStartClock);
     double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
+
+    // Measure Runtime
     double duration = time_from(startTime) / 1e6;
 
+    cout << "Runtime: " << duration << " sec, CPU Time: " << secureClockTicksPerSecond << " sec, CPU clock ticks: " << secureClockTicks << ", CPU clock ticks per second: " << CLOCKS_PER_SEC << "\n";
 
-    cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
     auto end_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
     float e2e_gates = (float) (end_gates - start_gates);
     float cost_estimate = (float) root->planCost();
     float relative_error = (fabs(e2e_gates - cost_estimate) / e2e_gates) * 100.0f;
     cout << "End-to-end estimated gates: " << cost_estimate <<  ". observed gates: " << end_gates - start_gates << " gates, relative error (%)=" << relative_error << endl;
 
+    // Measure and print memory after execution
+    size_t peak_memory = Utilities::checkMemoryUtilization(true);
+    size_t memory_usage = peak_memory - initial_memory;
+    cout << "Initial Memory: " << initial_memory << " bytes, Peak Memory After Execution: " << peak_memory << " bytes" << ", Memory Usage: " << memory_usage << " bytes" << endl;
+
+    // Comm Cost measurement
+    auto end_comm_cost = SystemConfiguration::getInstance().emp_manager_->getCommCost();
+    double bandwidth = (end_comm_cost - start_comm_cost) / duration;  // Assuming 'duration' is the time taken for this communication in seconds
+    cout << "Bandwidth: " << bandwidth << " Bps" << endl;
 
     if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
@@ -108,62 +129,12 @@ FullyOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDe
     return query;
 }
 
-void FullyOptimizedTest::runStubTest(string & sql_plan, string & json_plan, string & expected_query, SortDefinition & expected_sort, const string & unioned_db) {
-
-    time_point<high_resolution_clock> startTime = clock_start();
-    clock_t secureStartClock = clock();
-    string local_db = unioned_db;
-    string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
-    boost::replace_all(local_db, "unioned", party_name);
-    cout << "Querying db:  " << local_db << endl;
-
-    auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
-
-    PlanParser<emp::Bit> parser(local_db, sql_plan, json_plan, input_tuple_limit_);
-    SecureOperator *root = parser.getRoot();
-
-//    std::cout << "Query plan: " << root->printTree() << endl;
-
-    SecureTable *result = root->run();
-
-    double secureClockTicks = (double) (clock() - secureStartClock);
-    double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
-    double duration = time_from(startTime) / 1e6;
-
-    cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
-    auto end_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
-    float e2e_gates = (float) (end_gates - start_gates);
-    float cost_estimate = (float) root->planCost();
-    float relative_error = (fabs(e2e_gates - cost_estimate) / e2e_gates) * 100.0f;
-    cout << "End-to-end estimated gates: " << cost_estimate <<  ". observed gates: " << end_gates - start_gates << " gates, relative error (%)=" << relative_error << endl;
-
-    if(FLAGS_validation) {
-        PlainTable *observed = result->reveal();
-        PlainTable  *expected = DataUtilities::getQueryResults(unioned_db, expected_query, false);
-        expected->setSortOrder(expected_sort);
-
-        ASSERT_EQ(*expected, *observed);
-
-        delete observed;
-        delete expected;
-    }
-
-}
 
 
 TEST_F(FullyOptimizedTest, tpch_q1) {
-    string test_name = "q1";
-    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-" + test_name + ".sql";
-    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-"  + test_name + ".json";
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    string expected_sql = tpch_queries[1];
-
-
-    this->initializeBitPacking(FLAGS_unioned_db);
-
-    runStubTest(sql_file, plan_file, expected_sql, expected_sort, FLAGS_unioned_db);
-
+    runTest(1, "q1", expected_sort, FLAGS_unioned_db);
 
 }
 

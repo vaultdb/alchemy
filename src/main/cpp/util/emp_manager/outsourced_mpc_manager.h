@@ -21,6 +21,8 @@ namespace  vaultdb {
 
         size_t andGateCount() const override { return 0; }
 
+        size_t getCommCost() const override { return 0; }
+
         void  feed(Bit *labels, int party, const bool *b, int bit_cnt) override  {
             throw;
         }
@@ -92,6 +94,19 @@ namespace  vaultdb {
         size_t andGateCount() const override {
            return  ((OMPCBackend<N> *) backend)->num_and();
         }
+
+        size_t getCommCost() const override {
+            uint64_t commCostFromAllThreads = 0;
+
+            for(int i = 0; i < ios_.size(); ++i) {
+                uint64_t tempCost = ios_[i]->counter;
+                commCostFromAllThreads += tempCost;
+            }
+
+            commCostFromAllThreads += tpio;
+
+            return commCostFromAllThreads;
+        };
 
 
         void  feed(Bit *labels, int party, const bool *b, int bit_cnt) override {

@@ -14,6 +14,7 @@ namespace vaultdb {
     class EmpManager {
     public:
         virtual size_t andGateCount() const = 0;
+        virtual size_t getCommCost() const = 0;
         virtual void feed(Bit *labels, int party, const bool *b, int bit_cnt) = 0;
         virtual void flush() = 0;
         virtual QueryTable<Bit> *secretShare(const QueryTable<bool> *src) = 0;

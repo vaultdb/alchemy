@@ -33,6 +33,10 @@ namespace vaultdb {
         static std::string getCurrentWorkingDirectory();
         static void checkMemoryUtilization(const std::string & msg);
 
+        static size_t checkMemoryUtilization(bool print=false);
+
+        static size_t residentMemoryUtilization(bool print=false);
+
         static void checkMemoryUtilization();
 
         static std::string getStackTrace();

@@ -38,6 +38,11 @@ namespace  vaultdb {
            return  emp::CircuitExecution::circ_exec->num_and();
         }
 
+        size_t getCommCost() const override {
+            return netio_->counter;
+        }
+
+
         void  feed(Bit *labels, int party, const bool *b, int byte_count) override {
              emp::ProtocolExecution::prot_exec->feed((block *) labels, party, b, byte_count);
         }
@@ -100,6 +105,8 @@ namespace  vaultdb {
          SH2PCManager()  { throw; }
 
         size_t andGateCount() const override { return 0; }
+
+        size_t getCommCost() const override { return 0; }
 
         void  feed(Bit *labels, int party, const bool *b, int byte_count) override  {
             throw;

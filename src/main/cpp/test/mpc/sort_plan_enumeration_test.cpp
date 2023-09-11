@@ -55,7 +55,16 @@ SortPlanEnumerationTest::runTest(const int &test_id, const string & test_name, c
 
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-"  + test_name + ".json";
 
+    // Gate count measurement
     auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
+
+    // Comm Cost measurement
+    auto start_comm_cost = SystemConfiguration::getInstance().emp_manager_->getCommCost();
+
+    // Initialize memory measurement
+    size_t initial_memory = Utilities::checkMemoryUtilization(true);
+
+    // Start measuring time
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
 
@@ -79,8 +88,20 @@ SortPlanEnumerationTest::runTest(const int &test_id, const string & test_name, c
 
     cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
     auto end_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
-    cout << "End-to-end plan gates: " << root->planCost() << " estimated: " << end_gates - start_gates << " gates." << endl;
+    float e2e_gates = (float) (end_gates - start_gates);
+    float cost_estimate = (float) root->planCost();
+    float relative_error = (fabs(e2e_gates - cost_estimate) / e2e_gates) * 100.0f;
+    cout << "End-to-end estimated gates: " << cost_estimate <<  ". observed gates: " << end_gates - start_gates << " gates, relative error (%)=" << relative_error << endl;
 
+    // Measure and print memory after execution
+    size_t peak_memory = Utilities::checkMemoryUtilization(true);
+    size_t memory_usage = peak_memory - initial_memory;
+    cout << "Initial Memory: " << initial_memory << " bytes, Peak Memory After Execution: " << peak_memory << " bytes" << ", Memory Usage: " << memory_usage << " bytes" << endl;
+
+    // Comm Cost measurement
+    auto end_comm_cost = SystemConfiguration::getInstance().emp_manager_->getCommCost();
+    double bandwidth = (end_comm_cost - start_comm_cost) / duration;  // Assuming 'duration' is the time taken for this communication in seconds
+    cout << "Bandwidth: " << bandwidth << " Bps" << endl;
 
     if(FLAGS_validation) {
         PlainTable *observed = result->reveal();

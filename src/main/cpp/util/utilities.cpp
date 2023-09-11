@@ -33,41 +33,83 @@ std::string Utilities::getCurrentWorkingDirectory() {
 
 
 
-
-
-
 // From Chenkai Li's EMP memory instrumentation
 
 void Utilities::checkMemoryUtilization(const std::string & msg) {
-    //Logger::write("Checking memory utilization after " + msg);
-    Utilities::checkMemoryUtilization();
+    std::cout << "Checking memory utilization " << msg << std::endl;
+    Utilities::checkMemoryUtilization(true);
 }
 
-void Utilities::checkMemoryUtilization() {
-
-  // get current time in epoch
-  uint64_t epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-  std::stringstream s;
-
+size_t Utilities::checkMemoryUtilization(bool print) {
 #if defined(__linux__)
     struct rusage rusage;
-	if (!getrusage(RUSAGE_SELF, &rusage)) {
-        s << "[Linux]Peak resident set size: " << (size_t) rusage.ru_maxrss << " bytes, at epoch " << epoch << " ms"
-          << std::endl;
-        //Logger::write(s.str());
-
+    if (!getrusage(RUSAGE_SELF, &rusage)) {
+        if(print) {
+            size_t current_memory = Utilities::residentMemoryUtilization();
+            if(print)
+                std::cout << "[Linux]Peak resident set size: " << (size_t) rusage.ru_maxrss * 1024L // kb --> bytes
+                          << " bytes, current memory size: " << current_memory << " bytes.\n";
+        }
+        return (size_t)rusage.ru_maxrss * 1024L;
     }
-        //Logger::write("[Linux]Query RSS failed");
+    else {
+        std::cout << "[Linux]Query RSS failed" << std::endl;
+        return 0;
+    }
 #elif defined(__APPLE__)
     struct mach_task_basic_info info;
     mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
     if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info, &count) == KERN_SUCCESS) {
-        s << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max << " bytes, current memory size: " << (size_t)info.resident_size  <<  " at epoch " << epoch << " ms";
-         //Logger::write(s.str());
+        if(print)
+            std::cout << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max << " bytes, current memory size: " << (size_t)info.resident_size  <<  std::endl;
+        return (size_t)info.resident_size_max;
     }
-    //else Logger::write("[Mac]Query RSS failed");
+    else {
+        std::cout << "[Mac]Query RSS failed" << std::endl;
+        return 0;
+    }
 #endif
 
+}
+
+// from Nadeau's tool:
+// https://stackoverflow.com/questions/669438/how-to-get-memory-usage-at-runtime-using-c
+
+size_t Utilities::residentMemoryUtilization(bool print) {
+
+#if defined(__linux__)
+    long rss = 0L;
+    FILE* fp = NULL;
+    if ( (fp = fopen( "/proc/self/statm", "r" )) == NULL )
+        return (size_t)0L;      /* Can't open? */
+    if ( fscanf( fp, "%*s%ld", &rss ) != 1 )
+    {
+        fclose( fp );
+        return (size_t)0L;      /* Can't read? */
+    }
+    fclose( fp );
+    size_t res = (size_t)rss * (size_t)sysconf( _SC_PAGESIZE);
+
+    /* BSD, Linux, and OSX -------------------------------------- */
+    struct rusage rusage;
+    getrusage( RUSAGE_SELF, &rusage );
+    size_t peak_usage =  (size_t)(rusage.ru_maxrss * 1024L);
+    if(print)
+        std::cout << "[Linux] Peak resident set size: " << peak_usage  << " bytes, current memory size: " <<  res  <<  std::endl;
+    return res;
+#elif defined(__APPLE__)
+    struct mach_task_basic_info info;
+    mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
+    if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info, &count) == KERN_SUCCESS) {
+        if(print)
+            std::cout << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max << " bytes, current memory size: " << (size_t)info.resident_size  <<  std::endl;
+        return (size_t)info.resident_size_max;
+    }
+    else {
+        std::cout << "[Mac]Query RSS failed" << std::endl;
+        return 0;
+    }
+#endif
 }
 
 
