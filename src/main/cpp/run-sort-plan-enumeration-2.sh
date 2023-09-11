@@ -20,6 +20,6 @@ do
     for filter in "${filters[@]}"
     do
         echo "Running tests with Bit Packed and filter $filter" >> "$log_file"
-        $executable --party=$PARTY --alice_host=129.105.61.182--unioned_db=${unioned_dbs[$i]} --alice_db=${alice_dbs[$i]} --bob_db=${bob_dbs[$i]} --filter=$filter >> "$log_file"
+        $executable --party=$PARTY --alice_host=129.105.61.182 --unioned_db=${unioned_dbs[$i]} --alice_db=${alice_dbs[$i]} --bob_db=${bob_dbs[$i]} --filter=$filter >> "$log_file"
     done
 done
