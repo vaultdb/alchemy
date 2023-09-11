@@ -61,7 +61,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-"  + test_name + ".json";
 
     // Initialize memory measurement
-    size_t initial_memory = Utilities::checkMemoryUtilization(true);
+//    size_t initial_memory = Utilities::checkMemoryUtilization(true);
 
     // Start measuring time
     time_point<high_resolution_clock> startTime = clock_start();
@@ -90,9 +90,9 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     cout << "End-to-end estimated gates: " << cost_estimate <<  ". observed gates: " << end_gates - start_gates << " gates, relative error (%)=" << relative_error << endl;
 
     // Measure and print memory after execution
-    size_t peak_memory = Utilities::checkMemoryUtilization(true);
-    size_t memory_usage = peak_memory - initial_memory;
-    cout << "Initial Memory: " << initial_memory << " bytes, Peak Memory After Execution: " << peak_memory << " bytes" << ", Memory Usage: " << memory_usage << " bytes" << endl;
+//    size_t peak_memory = Utilities::checkMemoryUtilization(true);
+//    size_t memory_usage = peak_memory - initial_memory;
+//    cout << "Initial Memory: " << initial_memory << " bytes, Peak Memory After Execution: " << peak_memory << " bytes" << ", Memory Usage: " << memory_usage << " bytes" << endl;
 
     // Comm Cost measurement
     auto end_comm_cost = SystemConfiguration::getInstance().emp_manager_->getCommCost();
