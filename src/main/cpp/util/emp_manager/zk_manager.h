@@ -39,14 +39,13 @@ namespace vaultdb {
         }
 
         size_t getCommCost() const override {
-            uint64_t commCostFromAllThreads = 0;
+            size_t comm_cost = 0;
 
             for(int i = 0; i < threads_; ++i) {
-                uint64_t tempCost = ios_[i]->counter;
-                commCostFromAllThreads += tempCost;
+                comm_cost += ios_[i]->counter;
             }
 
-            return commCostFromAllThreads;
+            return comm_cost;
         };
 
 
