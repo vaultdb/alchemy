@@ -11,7 +11,7 @@ bash run.sh secure_sort_test
 ./bin/secure_basic_join_test --party=2 --cutoff=5
 
 bash run.sh secure_keyed_join_test
-bash run.sh secure_sort_merge_join_test
+bash run.sh secure_keyed_sort_merge_join_test
 bash run.sh secure_merge_join_test
 bash run.sh secure_scalar_aggregate_test
 bash run.sh secure_sort_merge_aggregate_test

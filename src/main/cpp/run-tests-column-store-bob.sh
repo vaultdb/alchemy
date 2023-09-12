@@ -25,7 +25,7 @@ bash  test/support/load-generated-data.sh 100
 ./bin/project_test --flagfile=flagfiles/plain.flags  --storage=column
 ./bin/basic_join_test --flagfile=flagfiles/plain.flags --storage=column
 ./bin/keyed_join_test --flagfile=flagfiles/plain.flags --storage=column
-./bin/sort_merge_join_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/keyed_sort_merge_join_test --flagfile=flagfiles/plain.flags --storage=column
 ./bin/sort_test --flagfile=flagfiles/plain.flags --storage=column
 ./bin/scalar_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
 ./bin/sort_merge_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
@@ -45,7 +45,7 @@ ALICE_HOST=$1
 ./bin/secure_sort_test  --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST
 ./bin/secure_basic_join_test  --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST
 ./bin/secure_keyed_join_test  --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST
-./bin/secure_sort_merge_join_test --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST
+./bin/secure_keyed_sort_merge_join_test --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST
 ./bin/secure_scalar_aggregate_test   --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST
 ./bin/secure_sort_merge_aggregate_test  --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST
 ./bin/secure_nested_loop_aggregate_test  --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST
