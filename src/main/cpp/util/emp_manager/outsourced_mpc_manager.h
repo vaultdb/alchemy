@@ -103,7 +103,7 @@ namespace  vaultdb {
                 commCostFromAllThreads += tempCost;
             }
 
-            commCostFromAllThreads += tpio;
+            commCostFromAllThreads += tpio_->counter;
 
             return commCostFromAllThreads;
         };
