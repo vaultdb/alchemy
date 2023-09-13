@@ -350,17 +350,14 @@ namespace vaultdb {
                 " FROM profit\n"
                 " GROUP BY   n_name, o_orderyear\n"
                 " ORDER BY   n_name, o_orderyear DESC"},
-            {18, "WITH high_quantity AS ( SELECT l_orderkey\n"
-                 " FROM (SELECT * FROM  lineitem   ORDER BY l_quantity, l_orderkey LIMIT $LIMIT) l\n"
-                 " GROUP BY l_orderkey\n"
-                 " HAVING SUM(l_quantity) > 7) \n" // was 300 (validation) or 312...315 (test) but these always produce empty set with smaller workload
-                 " SELECT c.c_name, c.c_custkey, o.o_orderkey, o.o_orderdate,  o.o_totalprice, SUM(l.l_quantity) sum_qty FROM  (SELECT * FROM  customer  ORDER BY c_custkey LIMIT $LIMIT)  c,\n"
-                 " (SELECT * FROM  orders   ORDER BY o_orderkey LIMIT $LIMIT) o, \n"
-                 " WHERE   o.o_orderkey in (\n"
-                 "     SELECT * FROM high_quantity)\n"
-                 "   AND c.c_custkey = o.o_custkey\n"
-                 "   AND o.o_orderkey = l.l_orderkey\n"
-                 " GROUP BY  c.c_name,  c.c_custkey, o.o_orderkey, o.o_orderdate, o.o_totalprice\n"
+            {18, "WITH sum_qtys AS (\n"
+                 " SELECT l_orderkey, SUM(l_quantity) sum_qty FROM lineitem GROUP BY l_orderkey ORDER BY l_orderkey LIMIT $LIMIT), \n"
+                 "sum_qtys_filtered AS (SELECT * FROM sum_qtys WHERE sum_qty > 7) \n" // was 300 (validation) or 312...315 (test) but these always produce empty set with smaller workload
+                 " SELECT  c.c_name, c.c_custkey, o.o_orderkey, o.o_orderdate,  o.o_totalprice, sum_qty\n"
+                 " FROM  (SELECT * FROM  customer  ORDER BY c_custkey LIMIT $LIMIT)  c,\n"
+                 "    (SELECT * FROM  orders  ORDER BY o_orderkey LIMIT $LIMIT) o,\n" // MergeInput handling combining alice and bob's rows
+                 "    sum_qtys_filtered l \n"
+                 "  WHERE c_custkey = o_custkey AND l_orderkey = o_orderkey "
                  " ORDER BY  o.o_totalprice DESC, o.o_orderdate \n"
                  " LIMIT 100\n"}
     };

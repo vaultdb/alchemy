@@ -62,10 +62,9 @@ SecureTable *SecureSqlInput::runSelf() {
 
 
 void SecureSqlInput::runQuery() {
-    PsqlDataProvider dataProvider;
+    PsqlDataProvider data_provider;
     string sql = input_query_;
     bool has_input = true;
-    string local_db;
     int party = SystemConfiguration::getInstance().party_;
     EmpMode emp_mode = SystemConfiguration::getInstance().emp_mode_;
 
@@ -76,7 +75,13 @@ void SecureSqlInput::runQuery() {
         has_input = false;
     }
 
-    local_db = (!has_input) ? SystemConfiguration::getInstance().getEmptyDbName() : db_name_;
+    // for now we only have input from TP
+    if(emp_mode == EmpMode::OUTSOURCED && input_party_ == 1 && party == emp::TP) {
+        has_input = true;
+    }
+
+
+    string local_db = (!has_input) ? SystemConfiguration::getInstance().getEmptyDbName() : db_name_;
 
     // running the query on all parties to get the schema
     if(input_tuple_limit_ > 0) { // truncate inputs
@@ -85,7 +90,7 @@ void SecureSqlInput::runQuery() {
         sql = "SELECT * FROM (" + input_query_ + ") input LIMIT " + std::to_string(input_tuple_limit_);
     }
 
-    plain_input_ = dataProvider.getQueryTable(local_db, sql, has_dummy_tag_);
+    plain_input_ = data_provider.getQueryTable(local_db, sql, has_dummy_tag_);
     plain_input_->setSortOrder(this->sort_definition_);
 
     if(!has_input) plain_input_->resize(0); // just to double-check - some cases like Q1 might need this for fixed domain from supporting table like order_keys

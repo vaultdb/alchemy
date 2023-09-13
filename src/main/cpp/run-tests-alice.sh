@@ -23,7 +23,7 @@ bash run-plain-tests.sh
 ./bin/secure_sort_test  --flagfile=flagfiles/alice.flags --validation=false
 ./bin/secure_basic_join_test  --cutoff=5 --validation=false
 ./bin/secure_keyed_join_test  --flagfile=flagfiles/alice.flags --validation=false
-./bin/secure_sort_merge_join_test --flagfile=flagfiles/alice.flags --validation=false
+./bin/secure_keyed_sort_merge_join_test --flagfile=flagfiles/alice.flags --validation=false
 ./bin/secure_merge_join_test --flagfile=flagfiles/alice.flags --validation=false
 ./bin/secure_scalar_aggregate_test 	 --flagfile=flagfiles/alice.flags --validation=false
 ./bin/secure_sort_merge_aggregate_test  --flagfile=flagfiles/alice.flags --validation=false

@@ -32,7 +32,7 @@ protected:
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
     void runMultiAggregatesTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name, const string & sql_file, const string &plan_file);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
-    void runStubTest(string & sql_plan, string & json_plan, string & expected_query, SortDefinition & expected_sort, const string & unioned_db);
+
     int input_tuple_limit_ = -1;
 
 };
