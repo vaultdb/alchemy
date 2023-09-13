@@ -90,7 +90,7 @@
       "id": "2",
       "relOp": "LogicalJoin",
       "outputFields": "t2.s_suppkey (#0), t2.s_nationkey (#1), t1.n_name (#2), t1.n_nationkey (#3), c_custkey (#4), c_name (#5), c_address (#6), c_nationkey (#7), c_phone (#8), c_acctbal (#9), c_mktsegment (#10), c_comment (#11)",
-      "operator-algorithm" : "basic-join",
+      "operator-algorithm" : "nested-loop-join",
       "joinOn" : "s_nationkey = c_nationkey",
       "condition": {
         "op": {
