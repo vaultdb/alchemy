@@ -54,7 +54,8 @@ namespace vaultdb {
         }
 
         void flush() override {
-            ios_[0]->flush();
+            for(int i = 0; i < threads_; ++i)
+                ios_[i]->flush();
         }
 
         bool finalize() {
