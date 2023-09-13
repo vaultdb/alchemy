@@ -856,7 +856,7 @@ Operator<B> *PlanParser<B>::parseLocalScan(const int & operator_id, const boost:
 
 
     SortDefinition sort_def = (interesting_sort_orders_.find(operator_id) != interesting_sort_orders_.end()) ?  interesting_sort_orders_[operator_id].front() : SortDefinition();
-    if(op_algo == "merge-input" && std::is_same_v<B, Bit> && local_tuple_limit > 0) {
+    if(op_algo == "merge-input" && std::is_same_v<B, Bit> && local_tuple_limit > 0 && SystemConfiguration::getInstance().emp_mode_ == EmpMode::SH2PC) {
         return createMergeInput(merge_sql, dummy_tag, local_tuple_limit, sort_def, plain_has_dummy_tag);
     }
    return createInputOperator(sql, sort_def, plain_has_dummy_tag, dummy_tag, local_tuple_limit, input_party);
