@@ -2,8 +2,6 @@
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
 #include <util/data_utilities.h>
-#include <query_table/secure_tuple.h>
-//#include <test/support/zk_tpch_queries.h>
 #include <test/support/tpch_queries.h>
 #include <boost/algorithm/string/replace.hpp>
 #include <operators/sort_merge_aggregate.h>

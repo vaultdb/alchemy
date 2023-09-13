@@ -40,10 +40,10 @@ QueryTable<Bit> *OutsourcedMpcManager::secretShare(const QueryTable<bool> *src) 
         tpio_ctrl_->flush();
     }
 
-    if(tuple_cnt == 0) throw std::invalid_argument("No tuples to process!");
     QuerySchema plain_schema = src->getSchema();
     QuerySchema dst_schema = QuerySchema::toSecure(plain_schema);
     QueryTable<Bit> *dst = TableFactory<Bit>::getTable(tuple_cnt, dst_schema, src->storageModel(), src->getSortOrder());
+    if(tuple_cnt == 0) return dst;
 
     if(party_ == emp::TP) {
         for(int i = 0; i < tuple_cnt; ++i) {

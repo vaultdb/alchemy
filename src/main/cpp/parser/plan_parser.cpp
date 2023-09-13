@@ -592,6 +592,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
             // check sort compatibility for SMJ
             // TODO: consider case where we insert sort in front of both lhs and rhs inputs
+            //  only needed if plans are bushy or right-deep
             if (lhs_sort_compatible && !rhs_sort_compatible) {
                 SortDefinition rhs_sort;
                 int lhs_col_cnt = lhs->getOutputSchema().getFieldCount();
