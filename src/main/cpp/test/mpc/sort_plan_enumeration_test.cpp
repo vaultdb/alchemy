@@ -71,13 +71,13 @@ SortPlanEnumerationTest::runTest(const int &test_id, const string & test_name, c
     PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-    std::cout << "Original Plan : " << endl;
-    std::cout << root->printTree() << endl;
+//    std::cout << "Original Plan : " << endl;
+//    std::cout << root->printTree() << endl;
 
     root = parser.optimizeTree();
 
-    std::cout << "Sort Optimized Plan : " << endl;
-    std::cout << root->printTree() << endl;
+//    std::cout << "Sort Optimized Plan : " << endl;
+//    std::cout << root->printTree() << endl;
 
     SecureTable *result = root->run();
 

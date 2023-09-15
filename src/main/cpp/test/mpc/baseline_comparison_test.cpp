@@ -82,7 +82,7 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
     PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();	
 
-    cout << "Parsed plan: " << root->printTree() << endl;
+//    cout << "Parsed plan: " << root->printTree() << endl;
 
     SecureTable *result = root->run();
 
