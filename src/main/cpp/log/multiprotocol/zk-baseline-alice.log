@@ -1,0 +1,74 @@
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from ZkBaselineTest
+[ RUN      ] ZkBaselineTest.tpch_q1_baseline
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+DB name: tpch_unioned_600
+Predicted gate count: 2409586528
+Observed gate count: 2320547543
+Runtime: 337954.459000
+[       OK ] ZkBaselineTest.tpch_q1_baseline (339896 ms)
+[ RUN      ] ZkBaselineTest.tpch_q3_baseline
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+DB name: tpch_unioned_600
+Predicted gate count: 16199293290
+Observed gate count: 16609582853
+Runtime: 2406139.090000
+[       OK ] ZkBaselineTest.tpch_q3_baseline (2408410 ms)
+[ RUN      ] ZkBaselineTest.tpch_q5_baseline
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+DB name: tpch_unioned_600
+Predicted gate count: 51551303336
+Observed gate count: 45465030577
+Runtime: 6475061.977000
+[       OK ] ZkBaselineTest.tpch_q5_baseline (6477414 ms)
+[ RUN      ] ZkBaselineTest.tpch_q8_baseline
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+DB name: tpch_unioned_600
+Predicted gate count: 14274862768
+Observed gate count: 14146263751
+Runtime: 2081549.629000
+[       OK ] ZkBaselineTest.tpch_q8_baseline (2084505 ms)
+[ RUN      ] ZkBaselineTest.tpch_q9_baseline
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+DB name: tpch_unioned_600
+Predicted gate count: 156281259592
+Observed gate count: 155900504184
+Runtime: 21532146.758000
+[       OK ] ZkBaselineTest.tpch_q9_baseline (21534932 ms)
+[ RUN      ] ZkBaselineTest.tpch_q18_baseline
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+DB name: tpch_unioned_600
+Predicted gate count: 48025277221
+Observed gate count: 48438782734
+Runtime: 7870062.722000
+[       OK ] ZkBaselineTest.tpch_q18_baseline (7873169 ms)
+[----------] 6 tests from ZkBaselineTest (40718328 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (40718328 ms total)
+[  PASSED  ] 6 tests.
