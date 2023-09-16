@@ -53,7 +53,12 @@ void EmpBaseTest::SetUp()  {
     log->write("Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party), Level::INFO);
 
     if(_emp_mode_ == EmpMode::OUTSOURCED) { // host_list = {alice, bob, carol, trusted party}
-        string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
+        string hosts[] = {"129.105.61.176", // codd2
+                          "129.105.61.179", // codd5
+                          "129.105.61.184", // codd10
+                          "129.105.61.186" // codd12
+                           };
+        //string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
         manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
         db_name_ = (FLAGS_party == emp::TP) ? FLAGS_unioned_db : empty_db_;
         FLAGS_port += N;
