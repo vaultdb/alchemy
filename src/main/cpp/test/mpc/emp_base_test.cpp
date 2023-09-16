@@ -68,6 +68,8 @@ void EmpBaseTest::SetUp()  {
     log->write(ss.str(), Level::INFO);
     log->write("Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party), Level::INFO);
 
+    cout << "Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party) << endl;
+
     if(_emp_mode_ == EmpMode::OUTSOURCED) { // host_list = {alice, bob, carol, trusted party}
         cout << "Running on outsourced MPC backend.\n";
         string hosts[] = {"129.105.61.176", // codd2
