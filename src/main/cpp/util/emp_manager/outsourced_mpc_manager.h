@@ -73,8 +73,11 @@ namespace  vaultdb {
         OMPCBackend<N> *protocol_ = nullptr;
 
         OutsourcedMpcManager(string hosts[], int party, int comm_port, int ctrl_port)  : party_(party) {
+            cout << "Setting up for hosts " << hosts[0] << " " << hosts[1] << " " << hosts[2] << " " <<  hosts[3] << endl;
             ios_ = emp::setup_netio(tpio_, hosts, comm_port, party_, N);
+            cout << "Set up netion, onto control flow" << endl;
             ios_ctrl_ = emp::setup_netio(tpio_ctrl_, hosts, ctrl_port, party_, N);
+            cout << "Calling backend constructor" << endl;
             emp::backend = new OMPCBackend<N>(ios_, tpio_, party_);
             protocol_ = (OMPCBackend<N> *) emp::backend;
             SystemConfiguration & s = SystemConfiguration::getInstance();
