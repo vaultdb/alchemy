@@ -73,7 +73,7 @@ void  SecurePlanEnumeratorTest::runTest(const int &test_id, const SortDefinition
 string SecurePlanEnumeratorTest::generateExpectedOutputQuery(const int &test_id) {
     string query = tpch_queries[test_id];
     if (input_tuple_limit_ > 0) {
-        query = (emp_mode_ == EmpMode::SH2PC) ? truncated_tpch_queries[test_id] : truncated_tpch_queries_ompc[test_id];
+        query = (emp_mode_ == EmpMode::SH2PC) ? truncated_tpch_queries[test_id] : truncated_tpch_queries_single_input_party[test_id];
         boost::replace_all(query, "$LIMIT", std::to_string(input_tuple_limit_));
     }
     return query;
