@@ -28,6 +28,22 @@ void EmpBaseTest::SetUp()  {
     s.emp_mode_ = _emp_mode_;
     emp_mode_ = _emp_mode_;
     s.setStorageModel(storage_model_);
+    cout << "My emp mode: ";
+    switch(emp_mode_) {
+        case EmpMode::PLAIN:
+            cout << "plain";
+            break;
+        case EmpMode::SH2PC:
+            cout << "sh2pc";
+            break;
+        case EmpMode::ZK:
+            cout << "zk";
+            break;
+        case EmpMode::OUTSOURCED:
+            cout << "outsourced";
+            break;
+    }
+    cout << endl;
 
 	Logger* log = get_log();	
 
