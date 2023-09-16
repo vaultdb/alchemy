@@ -2,12 +2,12 @@
 #include <util/data_utilities.h>
 #include <operators/sql_input.h>
 #include <util/field_utilities.h>
+#include <util/logger.h>
+
 
 using namespace vaultdb;
+using namespace Logging;
 
-DECLARE_int32(party);
-DECLARE_int32(port);
-DECLARE_string(alice_host);
 
 const std::string ZkTest::unioned_db_ = "tpch_unioned_150";
 const std::string ZkTest::empty_db_=  "tpch_empty"; // this should be an empty DBMS for testing but contain the same schema as tpc-h
@@ -27,19 +27,26 @@ const std::string ZkTest::empty_db_=  "tpch_empty"; // this should be an empty D
 
 void ZkTest::SetUp() {
     SystemConfiguration & s = SystemConfiguration::getInstance();
+    storage_model_ = (FLAGS_storage == "row") ? StorageModel::ROW_STORE : StorageModel::COLUMN_STORE;
+    s.setStorageModel(storage_model_);
+
 
     manager_ = new ZKManager(FLAGS_alice_host, FLAGS_party, FLAGS_port);
 
     // Alice gets unioned DB to query entire dataset for ZK proof
-    db_name_ = (FLAGS_party == ALICE) ? unioned_db_ : empty_db_;
+    db_name_ = (FLAGS_party == ALICE) ? FLAGS_unioned_db : FLAGS_empty_db;
     Utilities::mkdir("data");
     s.emp_manager_ = manager_;
 
-    BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(unioned_db_);
-    s.initialize(db_name_, md, StorageModel::ROW_STORE);
+    BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(FLAGS_unioned_db);
+    s.initialize(db_name_, md, storage_model_);
     s.setEmptyDbName(empty_db_);
     s.emp_manager_ = manager_;
     s.emp_mode_ = EmpMode::ZK;
+    Logger* log = get_log();
+
+    log->write("ZkTest::SetUp() complete", Level::INFO);
+    log->write("DB name: " + db_name_, Level::INFO);
 
 }
 

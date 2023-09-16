@@ -14,18 +14,14 @@ using namespace emp;
 using namespace vaultdb;
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 7654, "port for EMP execution");
+DEFINE_int32(port, 54327, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_string(unioned_db, "tpch_unioned_600", "unioned db name");
-DEFINE_string(alice_db, "tpch_alice_600", "alice db name");
-DEFINE_string(bob_db, "tpch_bob_600", "bob db name");
-DEFINE_int32(cutoff, 100, "limit clause for queries");
+DEFINE_string(empty_db, "tpch_empty", "empty db name");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
-DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(dbname, "tpch_unioned_600", "db name for baseline comparison test");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
-DEFINE_string(bitpacking, "packed", "bit packed or non-bit packed");
+
 
 using namespace Logging;
 
@@ -43,7 +39,7 @@ protected:
 
 void ZkBaselineTest::runTest(const int &test_id, const string &test_name, const SortDefinition &expected_sort) {
 
-    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_dbname);
+    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, db_name_);
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);

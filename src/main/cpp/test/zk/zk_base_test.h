@@ -7,6 +7,14 @@
 #include <util/emp_manager/zk_manager.h>
 
 
+DECLARE_int32(party);
+DECLARE_int32(port);
+DECLARE_string(alice_host);
+DECLARE_string(unioned_db);
+DECLARE_string(empty_db);
+DECLARE_string(storage); // row || column
+DECLARE_string(filter); //run only the tests with names matching this regex.
+
 
 namespace vaultdb {
 
@@ -20,6 +28,7 @@ namespace vaultdb {
 
         static const std::string unioned_db_;
         static const std::string empty_db_;
+        StorageModel storage_model_;
 
         std::string db_name_ = unioned_db_; // default, set in setUp()
         ZKManager *manager_ = nullptr;
