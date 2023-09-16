@@ -115,7 +115,7 @@ package_add_test(join_cost_comparison_test mpc/join_cost_comparison_test.cpp mpc
 unset(Labels)
 set(Labels "LABELS;UnitTest;LABELS;EmpTest;LABELS;ZkTest")
 
-#ZK experiments - optional
+
 package_add_test(zk_test zk/zk_test.cpp zk/zk_base_test.cpp)
 package_add_test(zk_filter_test zk/zk_filter_test.cpp zk/zk_base_test.cpp)
 package_add_test(zk_sort_test zk/zk_sort_test.cpp zk/zk_base_test.cpp)
@@ -124,4 +124,5 @@ package_add_test(zk_keyed_join_test zk/zk_keyed_join.cpp zk/zk_base_test.cpp)
 package_add_test(zk_scalar_aggregate_test zk/zk_scalar_aggregate_test.cpp zk/zk_base_test.cpp)
 package_add_test(zk_group_by_aggregate_test zk/zk_group_by_aggregate_test.cpp zk/zk_base_test.cpp)
 package_add_test(zk_tpch_test zk/zk_tpch_test.cpp zk/zk_base_test.cpp)
+package_add_test(zk_baseline_test zk/zk_baseline_test.cpp zk/zk_base_test.cpp)
 
