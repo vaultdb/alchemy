@@ -21,7 +21,7 @@ DEFINE_string(unioned_db, "tpch_unioned_600", "unioned db name");
 DEFINE_string(empty_db, "tpch_empty", "empty db name");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(filter, "*.tpch_q08", "run only the tests passing this filter");
 
 
 class ZkTpcHTest : public ZkTest {
@@ -48,19 +48,9 @@ ZkTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefi
 
     SecureOperator *root = parser.getRoot();
 
-//    std::cout << "Original Plan : " << endl;
-//    std::cout << root->printTree() << endl;
-
-    root = parser.optimizeTree();
-
-//    std::cout << "Sort Optimized Plan : " << endl;
-//    std::cout << root->printTree() << endl;
-
     clock_t start_time = clock();
     SecureTable *observed = root->run();
-    double secureDuration = ((double) (clock() - start_time)) / ((double) CLOCKS_PER_SEC);
 
-    cout << "ZK runtime: " << secureDuration << "s\n";
 
     if(FLAGS_validation) {
         string expected_sql = tpch_queries[test_id];
