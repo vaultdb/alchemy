@@ -1,0 +1,63 @@
+Note: Google Test filter = *baseline
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from BaselineComparisonTest
+[ RUN      ] BaselineComparisonTest.tpch_q1_baseline
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7654, 65482 as 2
+connected
+Done setup!
+Predicted gate count: 2409586528
+Observed gate count: 2320547544
+Runtime: 642075.129000
+[       OK ] BaselineComparisonTest.tpch_q1_baseline (645273 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q3_baseline
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7655, 65483 as 2
+connected
+Done setup!
+Predicted gate count: 16199293290
+Observed gate count: 16609582856
+Runtime: 4586914.664000
+[       OK ] BaselineComparisonTest.tpch_q3_baseline (4588829 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q5_baseline
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7656, 65484 as 2
+connected
+Done setup!
+Predicted gate count: 51551303336
+Observed gate count: 45465030580
+Runtime: 12495580.793000
+[       OK ] BaselineComparisonTest.tpch_q5_baseline (12497341 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q8_baseline
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7657, 65485 as 2
+connected
+Done setup!
+Predicted gate count: 15346270768
+Observed gate count: 15217671752
+Runtime: 4193934.427000
+[       OK ] BaselineComparisonTest.tpch_q8_baseline (4198477 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q9_baseline
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7658, 65486 as 2
+connected
+Done setup!
+Predicted gate count: 156282265392
+Observed gate count: 155901509984
+Runtime: 42571713.877000
+[       OK ] BaselineComparisonTest.tpch_q9_baseline (42573887 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q18_baseline
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7659, 65487 as 2
+connected
+Done setup!
+Predicted gate count: 48025277221
+Observed gate count: 48438782736
+Runtime: 13386551.536000
+[       OK ] BaselineComparisonTest.tpch_q18_baseline (13388730 ms)
+[----------] 6 tests from BaselineComparisonTest (77892539 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (77892539 ms total)
+[  PASSED  ] 6 tests.
