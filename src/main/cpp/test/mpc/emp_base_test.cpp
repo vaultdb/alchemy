@@ -71,11 +71,18 @@ void EmpBaseTest::SetUp()  {
     cout << "Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party) << endl;
 
     if(_emp_mode_ == EmpMode::OUTSOURCED) { // host_list = {alice, bob, carol, trusted party}
+        // git pull && make -j baseline_comparison_test secure_plan_enumeration_test
+//   ./bin/baseline_comparison_test --party=10086 --validation=false --filter=*baseline | tee log/multiprotocol/ompc-baseline-tp.log
+//   ./bin/baseline_comparison_test --party=1 --validation=false --filter=*baseline | tee log/multiprotocol/ompc-baseline-alice.log
+//   ./bin/baseline_comparison_test --party=2 --validation=false --filter=*baseline | tee log/multiprotocol/ompc-baseline-bob.log
+//   ./bin/baseline_comparison_test --party=3 --validation=false --filter=*baseline | tee log/multiprotocol/ompc-baseline-carol.log
+
         cout << "Running on outsourced MPC backend.\n";
-        string hosts[] = {"129.105.61.176", // codd2
-                          "129.105.61.179", // codd5
-                          "129.105.61.184", // codd10
-                          "129.105.61.186" // codd12
+        string hosts[] = { // codd2
+                          "129.105.61.179", // codd5 (Alice)
+                          "129.105.61.184", // codd10 (Bob)
+                          "129.105.61.186", // codd12 (Carol)
+                          "129.105.61.176" // codd2 (TP)
                            };
         //string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
         manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
