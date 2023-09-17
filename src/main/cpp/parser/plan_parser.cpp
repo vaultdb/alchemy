@@ -184,6 +184,8 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
     }
 
     if(op != nullptr) {
+        if(operators_.find(operator_id) != operators_.end())
+            throw std::invalid_argument("Operator ID already exists: " + std::to_string(operator_id));
         operators_[operator_id] = op;
         operators_.at(operator_id)->setOperatorId(operator_id);
         root_ = op;

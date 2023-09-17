@@ -28,6 +28,22 @@ void EmpBaseTest::SetUp()  {
     s.emp_mode_ = _emp_mode_;
     emp_mode_ = _emp_mode_;
     s.setStorageModel(storage_model_);
+    cout << "My emp mode: ";
+    switch(emp_mode_) {
+        case EmpMode::PLAIN:
+            cout << "plain";
+            break;
+        case EmpMode::SH2PC:
+            cout << "sh2pc";
+            break;
+        case EmpMode::ZK:
+            cout << "zk";
+            break;
+        case EmpMode::OUTSOURCED:
+            cout << "outsourced";
+            break;
+    }
+    cout << endl;
 
 	Logger* log = get_log();	
 
@@ -52,8 +68,22 @@ void EmpBaseTest::SetUp()  {
     log->write(ss.str(), Level::INFO);
     log->write("Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party), Level::INFO);
 
+
     if(_emp_mode_ == EmpMode::OUTSOURCED) { // host_list = {alice, bob, carol, trusted party}
-        string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
+        // git pull && make -j baseline_comparison_test secure_plan_enumeration_test
+//   ./bin/baseline_comparison_test --party=10086 --validation=false --filter=*baseline | tee log/multiprotocol/ompc-baseline-tp.log
+//   ./bin/baseline_comparison_test --party=1 --validation=false --filter=*baseline | tee log/multiprotocol/ompc-baseline-alice.log
+//   ./bin/baseline_comparison_test --party=2 --validation=false --filter=*baseline | tee log/multiprotocol/ompc-baseline-bob.log
+//   ./bin/baseline_comparison_test --party=3 --validation=false --filter=*baseline | tee log/multiprotocol/ompc-baseline-carol.log
+
+        cout << "Running on outsourced MPC backend.\n";
+        string hosts[] = { // codd2
+                          "129.105.61.179", // codd5 (Alice)
+                          "129.105.61.184", // codd10 (Bob)
+                          "129.105.61.186", // codd12 (Carol)
+                          "129.105.61.176" // codd2 (TP)
+                           };
+        //string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
         manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
         db_name_ = (FLAGS_party == emp::TP) ? FLAGS_unioned_db : empty_db_;
         FLAGS_port += N;
@@ -75,6 +105,7 @@ void EmpBaseTest::SetUp()  {
     s.initialize(db_name_, md, storage_model_);
     s.setEmptyDbName(empty_db_);
     s.emp_manager_ = manager_;
+    cout << "Completed setup!" << endl;
 }
 
 void EmpBaseTest::TearDown() {

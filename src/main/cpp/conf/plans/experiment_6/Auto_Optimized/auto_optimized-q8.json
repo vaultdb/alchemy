@@ -317,7 +317,7 @@
       "relOp": "LogicalAggregate",
       "outputFields" : "o_year (#0), SUM(volume) (#1), SUM(selected_volume) (#2)",
       "operator-algorithm" : "auto",
-      "cardBound" : 2,
+      "cardinality-bound" : 2,
       "effective-collation": [
         {
           "field": 0,

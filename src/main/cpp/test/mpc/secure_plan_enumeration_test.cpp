@@ -19,7 +19,6 @@ DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_string(unioned_db, "tpch_unioned_600", "unioned db name");
 DEFINE_string(alice_db, "tpch_alice_600", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_600", "bob db name");
-DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -49,6 +48,8 @@ SecurePlanEnumerationTest::runTest(const int &test_id, const string & test_name,
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
+
+    ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-"  + test_name + ".json";
 
@@ -92,8 +93,10 @@ SecurePlanEnumerationTest::runTest(const int &test_id, const string & test_name,
 
     // Measure and print memory after execution
     size_t peak_memory = Utilities::checkMemoryUtilization(true);
-    size_t memory_usage = peak_memory - initial_memory;
-    cout << "Initial Memory: " << initial_memory << " bytes, Peak Memory After Execution: " << peak_memory << " bytes" << ", Memory Usage: " << memory_usage << " bytes" << endl;
+    //size_t memory_usage = peak_memory - initial_memory;
+    //cout << "Initial Memory: " << initial_memory << " bytes, Peak Memory After Execution: " << peak_memory << " bytes" << ", Memory Usage: " << memory_usage << " bytes" << endl;
+    cout << "Memory Usage: " << peak_memory << " bytes" << endl;
+
 
     // Comm Cost measurement
     auto end_comm_cost = SystemConfiguration::getInstance().emp_manager_->getCommCost();
