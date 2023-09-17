@@ -74,7 +74,7 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
 
-    //ASSERT_TRUE(!expected->empty()); // want all tests to produce output
+    ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/" + "baseline/baseline-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/" + "baseline/baseline-" + test_name + ".json";
@@ -122,12 +122,13 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
 
+    ASSERT_TRUE(!expected->empty()); // want all tests to produce output
+
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/queries-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/mpc-"  + test_name + ".json";
 
     PlanParser<emp::Bit> parser(local_db, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
-
 
     SecureTable *result = root->run(); 
 
