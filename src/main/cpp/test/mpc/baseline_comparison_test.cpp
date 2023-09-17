@@ -72,7 +72,7 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string &test_
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
 
-    //ASSERT_TRUE(!expected->empty()); // want all tests to produce output
+    ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/" + "baseline/baseline-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/" + "baseline/baseline-" + test_name + ".json";
@@ -114,6 +114,8 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const SortDefinitio
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
+
+    ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
 
