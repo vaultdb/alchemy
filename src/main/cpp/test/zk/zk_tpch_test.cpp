@@ -17,8 +17,11 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54327, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_string(unioned_db, "tpch_unioned_600", "unioned db name");
+DEFINE_string(empty_db, "tpch_empty", "empty db name");
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(filter, "*.tpch_q08", "run only the tests passing this filter");
 
 
 class ZkTpcHTest : public ZkTest {
@@ -28,36 +31,26 @@ protected:
 
     // depends on truncate-tpch-set.sql
     int tuple_limit_ = 1000; // when TRUNCATE_INPUTS == 1, tune this to change the size of our test input data
-    void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
+    void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort);
 
 };
 
 // this runs the "hybrid" tpc-h plans from VaultDB - these ones perform some operators locally in the clear on the data provider.
 // for E2E ZK queries run conf/plans/zk-*.json or see https://github.com/vaultdb/zksql
 void
-ZkTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
+ZkTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort) {
 
 
     int limit = (TRUNCATE_INPUTS) ? tuple_limit_ : -1; // set to -1 for full test
 
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
-    PlanParser<Bit> parser(db_name, plan_file, limit);
+    PlanParser<Bit> parser(db_name_, plan_file, limit);
 
     SecureOperator *root = parser.getRoot();
 
-//    std::cout << "Original Plan : " << endl;
-//    std::cout << root->printTree() << endl;
-
-    root = parser.optimizeTree();
-
-//    std::cout << "Sort Optimized Plan : " << endl;
-//    std::cout << root->printTree() << endl;
-
-    clock_t secureStartTime = clock();
+    clock_t start_time = clock();
     SecureTable *observed = root->run();
-    double secureDuration = ((double) (clock() - secureStartTime)) / ((double) CLOCKS_PER_SEC);
 
-    cout << "ZK runtime: " << secureDuration << "s\n";
 
     if(FLAGS_validation) {
         string expected_sql = tpch_queries[test_id];
@@ -84,7 +77,7 @@ ZkTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefi
 
 TEST_F(ZkTpcHTest, tpch_q01) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort, db_name_);
+    runTest(1, "q1", expected_sort);
 }
 
 
@@ -98,7 +91,7 @@ TEST_F(ZkTpcHTest, tpch_q03) {
 
 
 
-    runTest(3, "q3", expected_sort, db_name_);
+    runTest(3, "q3", expected_sort);
 }
 
 
@@ -106,19 +99,19 @@ TEST_F(ZkTpcHTest, tpch_q03) {
 
 TEST_F(ZkTpcHTest, tpch_q05) {
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(5, "q5", expected_sort, db_name_);
+    runTest(5, "q5", expected_sort);
 
 }
 
 TEST_F(ZkTpcHTest, tpch_q08) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest(8, "q8", expected_sort, db_name_);
+    runTest(8, "q8", expected_sort);
 }
 
 TEST_F(ZkTpcHTest, tpch_q09) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(9, "q9", expected_sort, db_name_);
+    runTest(9, "q9", expected_sort);
 
 }
 
@@ -131,7 +124,7 @@ TEST_F(ZkTpcHTest, tpch_q18) {
                                  ColumnSort(3, SortDirection::ASCENDING)};
 
     string test_name = "q18";
-    runTest(18, test_name, expected_sort, db_name_);
+    runTest(18, test_name, expected_sort);
 }
 
 

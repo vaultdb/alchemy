@@ -19,14 +19,13 @@ DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_string(unioned_db, "tpch_unioned_600", "unioned db name");
 DEFINE_string(alice_db, "tpch_alice_600", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_600", "bob db name");
-DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
-class SortPlanEnumerationTest : public EmpBaseTest {
+class SecurePlanEnumerationTest : public EmpBaseTest {
 protected:
 
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
@@ -39,16 +38,13 @@ protected:
 
 
 void
-SortPlanEnumerationTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
+SecurePlanEnumerationTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 
 
     this->initializeBitPacking(FLAGS_unioned_db);
 
     string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_unioned_db);
-    string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
-    string local_db = db_name_;
 
-    cout << " Observed DB : "<< local_db << " - Bit Packed" << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
@@ -73,13 +69,13 @@ SortPlanEnumerationTest::runTest(const int &test_id, const string & test_name, c
     PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-    std::cout << "Original Plan : " << endl;
-    std::cout << root->printTree() << endl;
+//    std::cout << "Original Plan : " << endl;
+//    std::cout << root->printTree() << endl;
 
     root = parser.optimizeTree();
 
-    std::cout << "Sort Optimized Plan : " << endl;
-    std::cout << root->printTree() << endl;
+//    std::cout << "Sort Optimized Plan : " << endl;
+//    std::cout << root->printTree() << endl;
 
     SecureTable *result = root->run();
 
@@ -118,7 +114,7 @@ SortPlanEnumerationTest::runTest(const int &test_id, const string & test_name, c
 }
 
 void
-SortPlanEnumerationTest::runMultiAggregatesTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name, const string & sql_file, const string &plan_file) {
+SecurePlanEnumerationTest::runMultiAggregatesTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name, const string & sql_file, const string &plan_file) {
 
 
     this->initializeBitPacking(FLAGS_unioned_db);
@@ -165,7 +161,7 @@ SortPlanEnumerationTest::runMultiAggregatesTest(const int &test_id, const string
 
 
 string
-SortPlanEnumerationTest::generateExpectedOutputQuery(const int &test_id, const SortDefinition &expected_sort, const string &db_name) {
+SecurePlanEnumerationTest::generateExpectedOutputQuery(const int &test_id, const SortDefinition &expected_sort, const string &db_name) {
     string alice_db = FLAGS_unioned_db;
     string bob_db = FLAGS_unioned_db;
     boost::replace_first(alice_db, "unioned", "alice");
@@ -186,7 +182,7 @@ SortPlanEnumerationTest::generateExpectedOutputQuery(const int &test_id, const S
 
 // No Aggregate
 
-TEST_F(SortPlanEnumerationTest, tpch_q1) {
+TEST_F(SecurePlanEnumerationTest, tpch_q1) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest(1, "q1", expected_sort, FLAGS_unioned_db);
@@ -195,7 +191,7 @@ TEST_F(SortPlanEnumerationTest, tpch_q1) {
 }
 
 
-TEST_F(SortPlanEnumerationTest, tpch_q3) {
+TEST_F(SecurePlanEnumerationTest, tpch_q3) {
 
 SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                              ColumnSort(1, SortDirection::DESCENDING),
@@ -204,14 +200,14 @@ runTest(3, "q3", expected_sort, FLAGS_unioned_db);
 }
 
 
-TEST_F(SortPlanEnumerationTest, tpch_q5) {
+TEST_F(SecurePlanEnumerationTest, tpch_q5) {
 
 SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
 runTest(5, "q5", expected_sort, FLAGS_unioned_db);
 }
 
 
-TEST_F(SortPlanEnumerationTest, tpch_q8) {
+TEST_F(SecurePlanEnumerationTest, tpch_q8) {
 
 SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
 runTest(8, "q8", expected_sort, FLAGS_unioned_db);
@@ -219,7 +215,7 @@ runTest(8, "q8", expected_sort, FLAGS_unioned_db);
 
 
 
-TEST_F(SortPlanEnumerationTest, tpch_q9) {
+TEST_F(SecurePlanEnumerationTest, tpch_q9) {
 // $0 ASC, $1 DESC
 SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
 runTest(9, "q9", expected_sort, FLAGS_unioned_db);
@@ -227,7 +223,7 @@ runTest(9, "q9", expected_sort, FLAGS_unioned_db);
 }
 
 
-TEST_F(SortPlanEnumerationTest, tpch_q18) {
+TEST_F(SecurePlanEnumerationTest, tpch_q18) {
 // -1 ASC, $4 DESC, $3 ASC
 SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                              ColumnSort(4, SortDirection::DESCENDING),
@@ -236,7 +232,7 @@ runTest(18, "q18", expected_sort, FLAGS_unioned_db);
 }
 
 /*
-TEST_F(SortPlanEnumerationTest, two_aggregates_q18) {
+TEST_F(SecurePlanEnumerationTest, two_aggregates_q18) {
     string test_name = "q18";
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/two_aggregates-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/two_aggregates-"  + test_name + ".json";

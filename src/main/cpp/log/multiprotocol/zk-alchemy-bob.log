@@ -1,0 +1,118 @@
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from ZkPlanEnumerationTest
+[ RUN      ] ZkPlanEnumerationTest.tpch_q1
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+DB name: tpch_empty
+[Linux]Peak resident set size: 196157440 bytes, current memory size: 195465216 bytes.
+Total Plans : 1
+Time: 0.361053 sec, CPU clock ticks: 30769,CPU clock ticks per second: 0.030769
+End-to-end estimated gates: 163614. observed gates: 128100 gates, relative error (%)=27.7237
+[Linux]Peak resident set size: 203399168 bytes, current memory size: 203399168 bytes.
+Initial Memory: 196157440 bytes, Peak Memory After Execution: 203399168 bytes, Memory Usage: 7241728 bytes
+Bandwidth: 0 Bps
+[       OK ] ZkPlanEnumerationTest.tpch_q1 (1539 ms)
+[ RUN      ] ZkPlanEnumerationTest.tpch_q3
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+DB name: tpch_empty
+[Linux]Peak resident set size: 204705792 bytes, current memory size: 204115968 bytes.
+Operator (2). smj cost : 118866450, pre-sorted smj cost: 87055361, nlj cost : 115200000, join type: presorted smj
+Operator (5). smj cost : 721540464, pre-sorted smj cost: 529659352, nlj cost : 14976000000, join type: presorted smj
+Cost : 552695200, combination : 0
+Cost : 738680449920, combination : 1
+Total Plans : 96
+Time: 144.254 sec, CPU clock ticks: 2.79918e+08,CPU clock ticks per second: 279.918
+End-to-end estimated gates: 9.21696e+08. observed gates: 923214251 gates, relative error (%)=0.164469
+[Linux]Peak resident set size: 572076032 bytes, current memory size: 278298624 bytes.
+Initial Memory: 204705792 bytes, Peak Memory After Execution: 572076032 bytes, Memory Usage: 367370240 bytes
+Bandwidth: 352688 Bps
+[       OK ] ZkPlanEnumerationTest.tpch_q3 (145169 ms)
+[ RUN      ] ZkPlanEnumerationTest.tpch_q5
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+DB name: tpch_empty
+[Linux]Peak resident set size: 572076032 bytes, current memory size: 280457216 bytes.
+Operator (2). smj cost : 65276498, nlj cost : 26196000, join type : nested-loop-join
+Operator (5). smj cost : 471630514, nlj cost : 7056000000, join type : keyed-sort-merge-join
+Operator (8). smj cost : 959880316, nlj cost : 41664000, join type : nested-loop-join
+Cost : 991497536, combination : 0
+Cost : 182402583, combination : 1
+Total Plans : 576
+Time: 107.676 sec, CPU clock ticks: 2.13373e+08,CPU clock ticks per second: 213.373
+End-to-end estimated gates: 7.21893e+08. observed gates: 701598030 gates, relative error (%)=2.8927
+[Linux]Peak resident set size: 572076032 bytes, current memory size: 380477440 bytes.
+Initial Memory: 572076032 bytes, Peak Memory After Execution: 572076032 bytes, Memory Usage: 0 bytes
+Bandwidth: 359509 Bps
+[       OK ] ZkPlanEnumerationTest.tpch_q5 (108639 ms)
+[ RUN      ] ZkPlanEnumerationTest.tpch_q8
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+DB name: tpch_empty
+[Linux]Peak resident set size: 572076032 bytes, current memory size: 389550080 bytes.
+Operator (2). smj cost : 86941510, nlj cost : 21120000, join type : nested-loop-join
+Operator (5). smj cost : 635657920, pre-sorted smj cost: 471630514, nlj cost : 10944000000, join type: presorted smj
+Operator (8). smj cost : 454258408, nlj cost : 24000000, join type : nested-loop-join
+Cost : 325825776, combination : 0
+Cost : 113479718, combination : 1
+Total Plans : 768
+Time: 100.26 sec, CPU clock ticks: 1.8924e+08,CPU clock ticks per second: 189.24
+End-to-end estimated gates: 6.3023e+08. observed gates: 611662722 gates, relative error (%)=3.03558
+[Linux]Peak resident set size: 637296640 bytes, current memory size: 416739328 bytes.
+Initial Memory: 572076032 bytes, Peak Memory After Execution: 637296640 bytes, Memory Usage: 65220608 bytes
+Bandwidth: 336461 Bps
+[       OK ] ZkPlanEnumerationTest.tpch_q8 (100943 ms)
+[ RUN      ] ZkPlanEnumerationTest.tpch_q9
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+DB name: tpch_empty
+[Linux]Peak resident set size: 637296640 bytes, current memory size: 416555008 bytes.
+Operator (2). smj cost : 3158794, nlj cost : 1684480, join type : nested-loop-join
+Operator (5). smj cost : 1141377366, nlj cost : 1398720000, join type : keyed-sort-merge-join
+Operator (8). smj cost : 1542195984, pre-sorted smj cost: 1084157188, nlj cost : 10944000000, join type: presorted smj
+Cost : 720145856, combination : 0
+Cost : 6654185772, combination : 1
+Total Plans : 3072
+Time: 469.008 sec, CPU clock ticks: 9.84854e+08,CPU clock ticks per second: 984.854
+End-to-end estimated gates: 3.64218e+09. observed gates: 3473051114 gates, relative error (%)=4.86974
+[Linux]Peak resident set size: 1269878784 bytes, current memory size: 742699008 bytes.
+Initial Memory: 637296640 bytes, Peak Memory After Execution: 1269878784 bytes, Memory Usage: 632582144 bytes
+Bandwidth: 409149 Bps
+[       OK ] ZkPlanEnumerationTest.tpch_q9 (469777 ms)
+[ RUN      ] ZkPlanEnumerationTest.tpch_q18
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+DB name: tpch_empty
+[Linux]Peak resident set size: 1269878784 bytes, current memory size: 742514688 bytes.
+Operator (9). smj cost : 209762102, nlj cost : 835200000, join type : keyed-sort-merge-join
+Total Plans : 2
+Time: 51.5038 sec, CPU clock ticks: 1.02635e+08,CPU clock ticks per second: 102.635
+End-to-end estimated gates: 2.17496e+08. observed gates: 347546746 gates, relative error (%)=37.4196
+[Linux]Peak resident set size: 1269878784 bytes, current memory size: 838504448 bytes.
+Initial Memory: 1269878784 bytes, Peak Memory After Execution: 1269878784 bytes, Memory Usage: 0 bytes
+Bandwidth: 365065 Bps
+[       OK ] ZkPlanEnumerationTest.tpch_q18 (52220 ms)
+[----------] 6 tests from ZkPlanEnumerationTest (878290 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (878290 ms total)
+[  PASSED  ] 6 tests.

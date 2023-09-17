@@ -21,7 +21,6 @@ DECLARE_string(filter); //run only the tests with names matching this regex.
 
 using namespace vaultdb;
 
-
 class EmpBaseTest  : public ::testing::Test {
 protected:
 

@@ -1,0 +1,106 @@
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecurePlanEnumerationTest
+[ RUN      ] SecurePlanEnumerationTest.tpch_q1
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7654, 65482 as 2
+connected
+Done setup!
+[Linux]Peak resident set size: 15990784 bytes, current memory size: 15990784 bytes.
+Total Plans : 1
+Time: 0.969027 sec, CPU clock ticks: 42597,CPU clock ticks per second: 0.042597
+End-to-end estimated gates: 163614. observed gates: 128112 gates, relative error (%)=27.7117
+[Linux]Peak resident set size: 17694720 bytes, current memory size: 17502208 bytes.
+Initial Memory: 15990784 bytes, Peak Memory After Execution: 17694720 bytes, Memory Usage: 1703936 bytes
+Bandwidth: 2598.48 Bps
+[       OK ] SecurePlanEnumerationTest.tpch_q1 (1265 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q3
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7655, 65483 as 2
+connected
+Done setup!
+[Linux]Peak resident set size: 17694720 bytes, current memory size: 17485824 bytes.
+Operator (2). smj cost : 118866450, pre-sorted smj cost: 87055361, nlj cost : 115200000, join type: presorted smj
+Operator (5). smj cost : 721540464, pre-sorted smj cost: 529659352, nlj cost : 14976000000, join type: presorted smj
+Cost : 552695200, combination : 0
+Cost : 738680449920, combination : 1
+Total Plans : 96
+Time: 263.866 sec, CPU clock ticks: 1.90451e+08,CPU clock ticks per second: 190.451
+End-to-end estimated gates: 9.39272e+08. observed gates: 939952388 gates, relative error (%)=0.072419
+[Linux]Peak resident set size: 380411904 bytes, current memory size: 29753344 bytes.
+Initial Memory: 17694720 bytes, Peak Memory After Execution: 380411904 bytes, Memory Usage: 362717184 bytes
+Bandwidth: 60214.6 Bps
+[       OK ] SecurePlanEnumerationTest.tpch_q3 (264088 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q5
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7656, 65484 as 2
+connected
+Done setup!
+[Linux]Peak resident set size: 380411904 bytes, current memory size: 29753344 bytes.
+Operator (2). smj cost : 65276498, nlj cost : 26196000, join type : nested-loop-join
+Operator (5). smj cost : 471630514, nlj cost : 7056000000, join type : keyed-sort-merge-join
+Operator (8). smj cost : 959880316, nlj cost : 41664000, join type : nested-loop-join
+Cost : 991497536, combination : 0
+Cost : 182402583, combination : 1
+Total Plans : 576
+Time: 204.769 sec, CPU clock ticks: 1.39126e+08,CPU clock ticks per second: 139.126
+End-to-end estimated gates: 7.39093e+08. observed gates: 717983184 gates, relative error (%)=2.94018
+[Linux]Peak resident set size: 423800832 bytes, current memory size: 193675264 bytes.
+Initial Memory: 380411904 bytes, Peak Memory After Execution: 423800832 bytes, Memory Usage: 43388928 bytes
+Bandwidth: 73494.3 Bps
+[       OK ] SecurePlanEnumerationTest.tpch_q5 (204981 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q8
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7657, 65485 as 2
+connected
+Done setup!
+[Linux]Peak resident set size: 423800832 bytes, current memory size: 193675264 bytes.
+Operator (2). smj cost : 86941510, nlj cost : 21120000, join type : nested-loop-join
+Operator (5). smj cost : 635657920, pre-sorted smj cost: 471630514, nlj cost : 10944000000, join type: presorted smj
+Operator (8). smj cost : 454258408, nlj cost : 24000000, join type : nested-loop-join
+Cost : 325825776, combination : 0
+Cost : 113479718, combination : 1
+Total Plans : 768
+Time: 185.615 sec, CPU clock ticks: 1.28568e+08,CPU clock ticks per second: 128.568
+End-to-end estimated gates: 6.48635e+08. observed gates: 629220868 gates, relative error (%)=3.08546
+[Linux]Peak resident set size: 603496448 bytes, current memory size: 308813824 bytes.
+Initial Memory: 423800832 bytes, Peak Memory After Execution: 603496448 bytes, Memory Usage: 179695616 bytes
+Bandwidth: 90059.1 Bps
+[       OK ] SecurePlanEnumerationTest.tpch_q8 (185781 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q9
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7658, 65486 as 2
+connected
+Done setup!
+[Linux]Peak resident set size: 603496448 bytes, current memory size: 308813824 bytes.
+Operator (2). smj cost : 3158794, nlj cost : 1684480, join type : nested-loop-join
+Operator (5). smj cost : 1141377366, nlj cost : 1398720000, join type : keyed-sort-merge-join
+Operator (8). smj cost : 1542195984, pre-sorted smj cost: 1084157188, nlj cost : 10944000000, join type: presorted smj
+Cost : 720145856, combination : 0
+Cost : 6654185772, combination : 1
+Total Plans : 3072
+Time: 981.07 sec, CPU clock ticks: 6.6178e+08,CPU clock ticks per second: 661.78
+End-to-end estimated gates: 3.67385e+09. observed gates: 3503575372 gates, relative error (%)=4.86007
+[Linux]Peak resident set size: 1875341312 bytes, current memory size: 1352343552 bytes.
+Initial Memory: 603496448 bytes, Peak Memory After Execution: 1875341312 bytes, Memory Usage: 1271844864 bytes
+Bandwidth: 32947.1 Bps
+[       OK ] SecurePlanEnumerationTest.tpch_q9 (981267 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q18
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7659, 65487 as 2
+connected
+Done setup!
+[Linux]Peak resident set size: 1875341312 bytes, current memory size: 1352343552 bytes.
+Operator (9). smj cost : 209762102, nlj cost : 835200000, join type : keyed-sort-merge-join
+Total Plans : 2
+Time: 98.0005 sec, CPU clock ticks: 7.28641e+07,CPU clock ticks per second: 72.8641
+End-to-end estimated gates: 2.21939e+08. observed gates: 351810844 gates, relative error (%)=36.9152
+[Linux]Peak resident set size: 1875341312 bytes, current memory size: 1422151680 bytes.
+Initial Memory: 1875341312 bytes, Peak Memory After Execution: 1875341312 bytes, Memory Usage: 0 bytes
+Bandwidth: 127946 Bps
+[       OK ] SecurePlanEnumerationTest.tpch_q18 (98253 ms)
+[----------] 6 tests from SecurePlanEnumerationTest (1735638 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (1735638 ms total)
+[  PASSED  ] 6 tests.
