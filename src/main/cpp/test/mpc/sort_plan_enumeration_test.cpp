@@ -95,8 +95,10 @@ SortPlanEnumerationTest::runTest(const int &test_id, const string & test_name, c
 
     // Measure and print memory after execution
     size_t peak_memory = Utilities::checkMemoryUtilization(true);
-    size_t memory_usage = peak_memory - initial_memory;
-    cout << "Initial Memory: " << initial_memory << " bytes, Peak Memory After Execution: " << peak_memory << " bytes" << ", Memory Usage: " << memory_usage << " bytes" << endl;
+    //size_t memory_usage = peak_memory - initial_memory;
+    //cout << "Initial Memory: " << initial_memory << " bytes, Peak Memory After Execution: " << peak_memory << " bytes" << ", Memory Usage: " << memory_usage << " bytes" << endl;
+    cout << "Memory Usage: " << peak_memory << " bytes" << endl;
+
 
     // Comm Cost measurement
     auto end_comm_cost = SystemConfiguration::getInstance().emp_manager_->getCommCost();
