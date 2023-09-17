@@ -310,6 +310,8 @@
       "id": "10",
       "relOp": "LogicalAggregate",
       "outputFields" : "o_year (#0), SUM(volume) (#1), SUM(selected_volume) (#2)",
+      "operator-algorithm": "nested-loop-aggregate",
+      "cardinality-bound": 2,
       "group": [
         0
       ],

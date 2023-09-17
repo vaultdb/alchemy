@@ -22,7 +22,7 @@ DEFINE_string(bob_db, "tpch_bob_600", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
-DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
+DEFINE_bool(validation, false, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(bitpacking, "packed", "bit packed or non-bit packed");
 
@@ -62,7 +62,6 @@ BaselineComparisonTest::controlBitPacking(const string &db_name) {
 void
 BaselineComparisonTest::runTest_baseline(const int &test_id, const string &test_name,
                                          const SortDefinition &expected_sort) {
-
     controlBitPacking(FLAGS_unioned_db);
 
     string expected_query = generateExpectedOutputQuery(test_id, expected_sort, db_name_);
@@ -78,9 +77,8 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string &test_
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/" + "baseline/baseline-" + test_name + ".json";
 
     PlanParser<emp::Bit> parser(db_name_, sql_file, plan_file, input_tuple_limit_);
-    SecureOperator *root = parser.getRoot();	
-
-
+    SecureOperator *root = parser.getRoot();
+//    cout << "Parsed plan for " << test_name <<  ":\n " << root->printTree() << endl;
     SecureTable *result = root->run();
 
 	Logger* log = get_log();	
@@ -94,7 +92,6 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string &test_
 
     if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
-        DataUtilities::removeDummies(observed);
 
         ASSERT_EQ(*expected, *observed);
         //ASSERT_TRUE(!observed->empty()); // want all tests to produce output
@@ -117,10 +114,15 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const SortDefinitio
 
     ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
-    string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
+//    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/queries-" + test_name + ".sql";
+//    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/mpc-"  + test_name + ".json";
+//    PlanParser<emp::Bit> parser(db_name_, plan_file, input_tuple_limit_);
 
+    string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
     PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
+    cout << "Parsed plan for " << test_name <<  ":\n " << root->printTree() << endl;
+
     SecureTable *result = root->run();
 
 
@@ -134,7 +136,6 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const SortDefinitio
 
     if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
-        DataUtilities::removeDummies(observed);
 
         ASSERT_EQ(*expected, *observed);
         //ASSERT_TRUE(!observed->empty()); // want all tests to produce output
