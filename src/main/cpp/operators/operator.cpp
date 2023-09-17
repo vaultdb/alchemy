@@ -71,7 +71,7 @@ QueryTable<B> *Operator<B>::run() {
         if (gate_cnt_ > 0) {
             size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
             float relative_error = std::fabs(((float) estimated_gates) - ((float) gate_cnt_)) / (float) gate_cnt_ * 100.0;
-            log->write("Estimated cost: " + std::to_string(estimated_gates) +
+            log->write("Estimated cost for" + this->toString() + " : " + std::to_string(estimated_gates) +
                     ", Observed gates: " + std::to_string(gate_cnt_) +
                     ", Error rate(%) : " + std::to_string(relative_error) + "\n", Level::DEBUG);
     //        if(relative_error > 25.0) cout << "***Warning: high cost model delta on operator (" << this->getOperatorId() << ") " << this->getTypeString() << endl;
@@ -79,7 +79,7 @@ QueryTable<B> *Operator<B>::run() {
     }
 
     operator_executed_ = true;
-    sort_definition_ = output_->getSortOrder(); // update this if needed, JMR: this should not be needed
+    sort_definition_ = output_->getSortOrder(); // update this if needed
 
     if(lhs_child_)     lhs_child_->reset();
     if(rhs_child_)     rhs_child_->reset();

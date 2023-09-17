@@ -65,6 +65,7 @@
     {
       "id": "2",
       "relOp": "LogicalJoin",
+      "operator-algorithm" : "auto",
       "joinOn" : "c_custkey = o_custkey",
       "outputFields": "c_custkey (#0), c_nationkey (#1), o_orderkey (#2), o_custkey (#3)",
       "condition": {
@@ -148,6 +149,7 @@
     {
       "id": "5",
       "relOp": "LogicalJoin",
+      "operator-algorithm" : "auto",
       "joinOn" : "l_orderkey = o_orderkey",
       "outputFields": "c_nationkey (#0), o_orderkey (#1), l_orderkey (#2), l_suppkey (#3), revenue (#4)",
       "condition": {
@@ -239,6 +241,7 @@
     {
       "id": "8",
       "relOp": "LogicalJoin",
+      "operator-algorithm" : "auto",
       "outputFields": "c_nationkey (#0), l_suppkey (#1), revenue (#2), s_suppkey (#3), s_nationkey (#4), n_name (#5)",
       "joinOn" : "c_nationkey = s_nationkey AND l_suppkey = s_suppkey",
       "condition": {

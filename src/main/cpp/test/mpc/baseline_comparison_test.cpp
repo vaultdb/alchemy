@@ -37,7 +37,7 @@ protected:
     void runTest_baseline(const int &test_id, const string &test_name,
                           const SortDefinition &expected_sort);
     void runTest_handcode(const int &test_id, const SortDefinition &expected_sort);
-    string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
+    string  generateExpectedOutputQuery(const int & test_id);
 
     int input_tuple_limit_ = -1;
 
@@ -64,7 +64,7 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string &test_
                                          const SortDefinition &expected_sort) {
     controlBitPacking(FLAGS_unioned_db);
 
-    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, db_name_);
+    string expected_query = generateExpectedOutputQuery(test_id);
 
     //cout << " Observed DB : "<< local_db << endl;
 
@@ -106,7 +106,7 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const SortDefinitio
     string test_name = "q" + std::to_string(test_id);
     controlBitPacking(FLAGS_unioned_db);
 
-    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_unioned_db);
+    string expected_query = generateExpectedOutputQuery(test_id);
     cout << " Observed DB : "<< db_name_ << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
@@ -146,23 +146,18 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const SortDefinitio
 }
 
 string
-BaselineComparisonTest::generateExpectedOutputQuery(const int &test_id, const SortDefinition &expected_sort, const string &db_name) {
-    string alice_db = db_name;
-    string bob_db = db_name;
-    boost::replace_first(alice_db, "unioned", "alice");
-    boost::replace_first(bob_db, "unioned", "bob");
+BaselineComparisonTest::generateExpectedOutputQuery(const int &test_id) {
 
     string query = tpch_queries[test_id];
 
     if(input_tuple_limit_ > 0) {
         query = truncated_tpch_queries[test_id];
         boost::replace_all(query, "$LIMIT", std::to_string(input_tuple_limit_));
-        boost::replace_all(query, "$ALICE_DB", alice_db);
-        boost::replace_all(query, "$BOB_DB", bob_db);
     }
 
     return query;
 }
+
 
 TEST_F(BaselineComparisonTest, tpch_q1_baseline) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
@@ -189,6 +184,7 @@ TEST_F(BaselineComparisonTest, tpch_q8_baseline) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     runTest_baseline(8, "q8", expected_sort);
 }
+
 
 
 TEST_F(BaselineComparisonTest, tpch_q9_baseline) {
@@ -236,7 +232,6 @@ TEST_F(BaselineComparisonTest, tpch_q8_handcode) {
 }
 
 
-
 TEST_F(BaselineComparisonTest, tpch_q9_handcode) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
@@ -260,6 +255,5 @@ int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
 
-	::testing::GTEST_FLAG(filter)=FLAGS_filter;
-    return RUN_ALL_TESTS();
-}
+    ::testing::GTEST_FLAG(filter)=FLAGS_filter;
+    return RUN_ALL_TESTS();}

@@ -74,6 +74,7 @@
       "joinOn" : "c_custkey = o_custkey",
       "outputFields": "c_custkey (#0), o_orderkey (#1), o_custkey (#2), o_year (#3)",
       "relOp": "LogicalJoin",
+      "operator-algorithm" : "auto",
       "condition": {
         "op": {
           "name": "=",
@@ -161,6 +162,7 @@
       "joinOn" : "l_orderkey = o_orderkey",
       "outputFields": "o_orderkey (#0), o_year (#1), l_orderkey (#2),  l_suppkey (#3), volume (#4)",
       "relOp": "LogicalJoin",
+      "operator-algorithm" : "auto",
       "condition": {
         "op": {
           "name": "=",
@@ -239,6 +241,7 @@
       "joinOn" : "l_suppkey = s_suppkey",
       "outputFields": "o_year (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check(#4)",
       "relOp": "LogicalJoin",
+      "operator-algorithm" : "auto",
       "condition": {
         "op": {
           "name": "=",

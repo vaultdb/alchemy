@@ -28,7 +28,7 @@ void EmpBaseTest::SetUp()  {
     s.emp_mode_ = _emp_mode_;
     emp_mode_ = _emp_mode_;
     s.setStorageModel(storage_model_);
-    cout << "My emp mode: ";
+    cout << "Protocol: ";
     switch(emp_mode_) {
         case EmpMode::PLAIN:
             cout << "plain";
@@ -105,7 +105,6 @@ void EmpBaseTest::SetUp()  {
     s.initialize(db_name_, md, storage_model_);
     s.setEmptyDbName(empty_db_);
     s.emp_manager_ = manager_;
-    cout << "Completed setup!" << endl;
 }
 
 void EmpBaseTest::TearDown() {
