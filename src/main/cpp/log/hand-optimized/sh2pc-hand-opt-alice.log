@@ -1,0 +1,85 @@
+Note: Google Test filter = *handcode
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from BaselineComparisonTest
+[ RUN      ] BaselineComparisonTest.tpch_q1_handcode
+My emp mode: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7654, 65482 as 1
+connected
+Completed setup!
+ Observed DB : tpch_alice_600
+Predicted gate count: 569418992
+Observed gate count: 560994808
+Runtime: 155148.461000
+[       OK ] BaselineComparisonTest.tpch_q1_handcode (156891 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q3_handcode
+My emp mode: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7655, 65483 as 1
+connected
+Completed setup!
+ Observed DB : tpch_alice_600
+Operator (2). smj cost : 118866450, pre-sorted smj cost: 87055361, nlj cost : 115200000, join type: presorted smj
+Operator (5). smj cost : 721540464, pre-sorted smj cost: 529659352, nlj cost : 14976000000, join type: presorted smj
+Predicted gate count: 690828319
+Observed gate count: 1084189284
+Runtime: 262443.457000
+[       OK ] BaselineComparisonTest.tpch_q3_handcode (263144 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q5_handcode
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7654, 65482 as 1
+connected
+ Observed DB : tpch_alice_600
+Operator (2). smj cost : 65276498, nlj cost : 26196000, join type : nested-loop-join
+Operator (5). smj cost : 471630514, nlj cost : 7056000000, join type : keyed-sort-merge-join
+Operator (8). smj cost : 959880316, nlj cost : 41664000, join type : nested-loop-join
+Predicted gate count: 739110284
+Observed gate count: 760593888
+Runtime: 201360.004000
+[       OK ] BaselineComparisonTest.tpch_q5_handcode (204488 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q8_handcode
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7654, 65482 as 1
+connected
+ Observed DB : tpch_alice_600
+Operator (2). smj cost : 86941510, nlj cost : 21120000, join type : nested-loop-join
+Operator (5). smj cost : 635657920, pre-sorted smj cost: 471630514, nlj cost : 10944000000, join type: presorted smj
+Operator (8). smj cost : 454258408, nlj cost : 24000000, join type : nested-loop-join
+Predicted gate count: 669355680
+Observed gate count: 706465868
+Runtime: 187070.367000
+[       OK ] BaselineComparisonTest.tpch_q8_handcode (188457 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q9_handcode
+My emp mode: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7658, 65486 as 1
+connected
+Completed setup!
+ Observed DB : tpch_alice_600
+Operator (2). smj cost : 3158794, nlj cost : 1684480, join type : nested-loop-join
+Operator (5). smj cost : 1141377366, nlj cost : 1398720000, join type : keyed-sort-merge-join
+Operator (8). smj cost : 1542195984, pre-sorted smj cost: 1084157188, nlj cost : 10944000000, join type: presorted smj
+Predicted gate count: 4479639278
+Observed gate count: 6728477384
+Runtime: 1296372.251000
+[       OK ] BaselineComparisonTest.tpch_q9_handcode (1297353 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q18_handcode
+My emp mode: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 127.0.0.1 on ports 7659, 65487 as 1
+connected
+Completed setup!
+ Observed DB : tpch_alice_600
+Operator (9). smj cost : 209762102, nlj cost : 835200000, join type : keyed-sort-merge-join
+Predicted gate count: 221939075
+Observed gate count: 363286940
+Runtime: 98217.614000
+[       OK ] BaselineComparisonTest.tpch_q18_handcode (99292 ms)
+[----------] 6 tests from BaselineComparisonTest (6894222 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (6894222 ms total)
+[  PASSED  ] 6 tests.
