@@ -49,6 +49,8 @@ SecurePlanEnumerationTest::runTest(const int &test_id, const string & test_name,
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
 
+    ASSERT_TRUE(!expected->empty()); // want all tests to produce output
+
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-"  + test_name + ".json";
 
     // Gate count measurement
@@ -91,8 +93,10 @@ SecurePlanEnumerationTest::runTest(const int &test_id, const string & test_name,
 
     // Measure and print memory after execution
     size_t peak_memory = Utilities::checkMemoryUtilization(true);
-    size_t memory_usage = peak_memory - initial_memory;
-    cout << "Initial Memory: " << initial_memory << " bytes, Peak Memory After Execution: " << peak_memory << " bytes" << ", Memory Usage: " << memory_usage << " bytes" << endl;
+    //size_t memory_usage = peak_memory - initial_memory;
+    //cout << "Initial Memory: " << initial_memory << " bytes, Peak Memory After Execution: " << peak_memory << " bytes" << ", Memory Usage: " << memory_usage << " bytes" << endl;
+    cout << "Memory Usage: " << peak_memory << " bytes" << endl;
+
 
     // Comm Cost measurement
     auto end_comm_cost = SystemConfiguration::getInstance().emp_manager_->getCommCost();
