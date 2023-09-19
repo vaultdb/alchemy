@@ -72,7 +72,11 @@ SecurePlanEnumerationTest::runTest(const int &test_id, const string & test_name,
 //    std::cout << "Original Plan : " << endl;
 //    std::cout << root->printTree() << endl;
 
+    time_point<high_resolution_clock> BeforePlanEnumeration = clock_start();
+
     root = parser.optimizeTree();
+
+    double PlanEnumerationDuration = time_from(BeforePlanEnumeration) / 1e6;
 
 //    std::cout << "Sort Optimized Plan : " << endl;
 //    std::cout << root->printTree() << endl;
@@ -84,6 +88,7 @@ SecurePlanEnumerationTest::runTest(const int &test_id, const string & test_name,
     double duration = time_from(startTime) / 1e6;
 
 
+    cout << "Plan Enumeration Time : " << PlanEnumerationDuration << " sec\n";
     cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
     auto end_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
     float e2e_gates = (float) (end_gates - start_gates);
