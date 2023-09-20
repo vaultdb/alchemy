@@ -591,7 +591,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
             delete nlj;
             delete smj;
 
-
+            /*
             // check sort compatibility for SMJ
             // TODO: consider case where we insert sort in front of both lhs and rhs inputs
             //  only needed if plans are bushy or right-deep
@@ -690,6 +690,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                     }
                 } // end leaf case
             }
+            */
 
             string selected_join = (smj_cost < nlj_cost) ? "keyed-sort-merge-join" : "nested-loop-join";
 

@@ -59,7 +59,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
 
     ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
-    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-" + test_name + ".sql";
+    //std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-"  + test_name + ".json";
 
     // Initialize memory measurement
@@ -69,7 +69,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
 
-    PlanParser<Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
+    PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
 //    std::cout << "Query tree: " << root->printTree() << endl;
