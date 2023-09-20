@@ -300,6 +300,14 @@
       "id": "10",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "auto",
+      "cardinality-bound" : 2,
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
       "group": [
         0
       ],

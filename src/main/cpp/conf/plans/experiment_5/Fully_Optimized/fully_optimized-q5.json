@@ -336,6 +336,14 @@
       "id": "11",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "auto",
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
+      "cardBound" : 5,
       "group": [
         0
       ],

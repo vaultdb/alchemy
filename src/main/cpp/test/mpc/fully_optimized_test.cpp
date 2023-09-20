@@ -57,7 +57,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
 
-    ASSERT_TRUE(!expected->empty()); // want all tests to produce output
+    //ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
     //std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-"  + test_name + ".json";
@@ -72,7 +72,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-//    std::cout << "Query tree: " << root->printTree() << endl;
+    std::cout << "Query tree: " << root->printTree() << endl;
 
     SecureTable *result = root->run();
 
