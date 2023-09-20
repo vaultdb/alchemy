@@ -23,7 +23,7 @@ DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, false, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(filter, "*.tpch_q18_handcode", "run only the tests passing this filter");
 DEFINE_string(bitpacking, "packed", "bit packed or non-bit packed");
 
 using namespace Logging;
@@ -114,13 +114,19 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const SortDefinitio
 
     // ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
-//    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/queries-" + test_name + ".sql";
-//    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/mpc-"  + test_name + ".json";
-//    PlanParser<emp::Bit> parser(db_name_, plan_file, input_tuple_limit_);
+    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/queries-" + test_name + ".sql";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/mpc-"  + test_name + ".json";
 
-    string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
-    PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
-    SecureOperator *root = parser.getRoot();
+    SecureOperator *root;
+    if(test_id != 18) {
+        PlanParser <emp::Bit> parser(db_name_, sql_file, plan_file, input_tuple_limit_);
+        root = parser.getRoot();
+    }
+    else {
+        PlanParser <emp::Bit> parser(db_name_, plan_file, input_tuple_limit_);
+        root = parser.getRoot();
+    }
+
 //    cout << "Parsed hand-opt plan for " << test_name <<  ":\n " << root->printTree() << endl;
 
     SecureTable *result = root->run();
