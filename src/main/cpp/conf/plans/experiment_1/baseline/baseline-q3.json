@@ -350,6 +350,29 @@
     },
     {
       "id": "8",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 3,
+          "direction": "DESCENDING",
+          "nulls": "FIRST"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        }
+      ],
+      "fetch": {
+        "literal": 10,
+        "type": {
+          "type": "INTEGER",
+          "nullable": false
+        }
+      }
+    },
+    {
+      "id": "9",
       "relOp": "LogicalProject",
       "outputFields": "o_orderkey (#0), revenue (#1), o_orderdate (#2), o_shippriority (#3)",
       "fields": [
@@ -376,29 +399,6 @@
           "name": "$2"
         }
       ]
-    },
-    {
-      "id": "9",
-      "relOp": "LogicalSort",
-      "collation": [
-        {
-          "field": 1,
-          "direction": "DESCENDING",
-          "nulls": "FIRST"
-        },
-        {
-          "field": 2,
-          "direction": "ASCENDING",
-          "nulls": "LAST"
-        }
-      ],
-      "fetch": {
-        "literal": 10,
-        "type": {
-          "type": "INTEGER",
-          "nullable": false
-        }
-      }
     }
   ]
 }
