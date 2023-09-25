@@ -99,10 +99,12 @@ namespace  vaultdb {
             size_t comm_cost = 0;
 
             for(int i = 0; i < ios_.size(); ++i) {
-                comm_cost += ios_[i]->counter;
+                if(ios_[i] != nullptr)
+                    comm_cost += ios_[i]->counter;
             }
 
-            comm_cost += tpio_->counter;
+            if(tpio_ != nullptr)
+                comm_cost += tpio_->counter;
 
             return comm_cost;
         };
