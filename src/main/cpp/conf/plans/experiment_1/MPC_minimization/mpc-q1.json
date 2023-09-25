@@ -55,16 +55,6 @@
           "name": "l_discount"
         }
       ],
-	  "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING"
-        },
-		{
-		  "field": 1,
-		  "direction": "ASCENDING"
-		}
-	  ],
       "tuples": [],
       "inputs": []
     },
