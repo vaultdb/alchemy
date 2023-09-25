@@ -3,6 +3,7 @@
 #include <util/system_configuration.h>
 #include "util/field_utilities.h"
 #include "util/emp_manager/sh2pc_manager.h"
+#include "util/emp_manager/zk_manager.h"
 #include "util/emp_manager/outsourced_mpc_manager.h"
 #include "query_table/secure_tuple.h" // for use in child classes
 #include "query_table/plain_tuple.h"
@@ -25,9 +26,10 @@ void EmpBaseTest::SetUp()  {
     assert(FLAGS_storage == "row" || FLAGS_storage == "column");
     storage_model_ = (FLAGS_storage == "row") ? StorageModel::ROW_STORE : StorageModel::COLUMN_STORE;
     SystemConfiguration & s = SystemConfiguration::getInstance();
-    s.emp_mode_ = _emp_mode_;
-    emp_mode_ = _emp_mode_;
+    s.emp_mode_ =  _emp_mode_;
+    emp_mode_ =  _emp_mode_;
     s.setStorageModel(storage_model_);
+
     cout << "Protocol: ";
     switch(emp_mode_) {
         case EmpMode::PLAIN:
@@ -69,12 +71,7 @@ void EmpBaseTest::SetUp()  {
     log->write("Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party), Level::INFO);
 
 
-    if(_emp_mode_ == EmpMode::OUTSOURCED) { // host_list = {alice, bob, carol, trusted party}
-        // git pull && make -j baseline_comparison_test secure_plan_enumeration_test
-//   ./bin/baseline_comparison_test --party=10086 --validation=false --filter=*baseline | tee log/multiprotocol/ompc-baseline-tp.log
-//   ./bin/baseline_comparison_test --party=1 --validation=false --filter=*baseline | tee log/multiprotocol/ompc-baseline-alice.log
-//   ./bin/baseline_comparison_test --party=2 --validation=false --filter=*baseline | tee log/multiprotocol/ompc-baseline-bob.log
-//   ./bin/baseline_comparison_test --party=3 --validation=false --filter=*baseline | tee log/multiprotocol/ompc-baseline-carol.log
+    if(emp_mode_ == EmpMode::OUTSOURCED) { // host_list = {alice, bob, carol, trusted party}
 
         cout << "Running on outsourced MPC backend.\n";
         string hosts[] = { // codd2
@@ -89,12 +86,21 @@ void EmpBaseTest::SetUp()  {
         FLAGS_port += N;
         FLAGS_ctrl_port += N;
     }
-    else if(_emp_mode_ == EmpMode::SH2PC) {
+    else if(emp_mode_ == EmpMode::SH2PC) {
         manager_ = new SH2PCManager(FLAGS_alice_host, FLAGS_party, FLAGS_port);
         db_name_ = (FLAGS_party == emp::ALICE) ? FLAGS_alice_db : FLAGS_bob_db;
         // increment the port for each new test
         ++FLAGS_port;
 		++FLAGS_ctrl_port;
+    }
+    else if(emp_mode_ == EmpMode::ZK) {
+        manager_ = new ZKManager(FLAGS_alice_host, FLAGS_party, FLAGS_port);
+
+        // Alice gets unioned DB to query entire dataset for ZK proof
+        db_name_ = (FLAGS_party == ALICE) ? FLAGS_unioned_db : empty_db_;
+        Utilities::mkdir("data");
+        s.emp_manager_ = manager_;
+
     }
     else {
         throw std::runtime_error("No EMP backend found.");
@@ -109,7 +115,14 @@ void EmpBaseTest::SetUp()  {
 
 void EmpBaseTest::TearDown() {
     manager_->flush();
-    delete manager_;
+    if(emp_mode_ == EmpMode::ZK) {
+        ZKManager *mgr = (ZKManager *) manager_;
+        ASSERT_FALSE(mgr->finalize());
+        delete mgr;
+    }
+    else {
+        delete manager_;
+    }
     SystemConfiguration::getInstance().emp_manager_ = nullptr;
 }
 

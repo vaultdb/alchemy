@@ -28,7 +28,7 @@ DEFINE_string(filter, "*", "run only the tests passing this filter");
 class SecurePlanEnumerationTest : public EmpBaseTest {
 protected:
 
-    void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
+    void runTest(const int &test_id, const SortDefinition &expected_sort);
     void runMultiAggregatesTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name, const string & sql_file, const string &plan_file);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
 
@@ -38,8 +38,8 @@ protected:
 
 
 void
-SecurePlanEnumerationTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
-
+SecurePlanEnumerationTest::runTest(const int &test_id, const SortDefinition &expected_sort) {
+    string test_name = "q" + std::to_string(test_id);
 
     this->initializeBitPacking(FLAGS_unioned_db);
 
@@ -190,7 +190,7 @@ SecurePlanEnumerationTest::generateExpectedOutputQuery(const int &test_id, const
 TEST_F(SecurePlanEnumerationTest, tpch_q1) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort, FLAGS_unioned_db);
+    runTest(1, expected_sort);
 
 
 }
@@ -201,21 +201,21 @@ TEST_F(SecurePlanEnumerationTest, tpch_q3) {
 SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                              ColumnSort(1, SortDirection::DESCENDING),
                              ColumnSort(2, SortDirection::ASCENDING)};
-runTest(3, "q3", expected_sort, FLAGS_unioned_db);
+    runTest(3, expected_sort);
 }
 
 
 TEST_F(SecurePlanEnumerationTest, tpch_q5) {
 
 SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-runTest(5, "q5", expected_sort, FLAGS_unioned_db);
+    runTest(5, expected_sort);
 }
 
 
 TEST_F(SecurePlanEnumerationTest, tpch_q8) {
 
 SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-runTest(8, "q8", expected_sort, FLAGS_unioned_db);
+    runTest(8, expected_sort);
 }
 
 
@@ -223,7 +223,7 @@ runTest(8, "q8", expected_sort, FLAGS_unioned_db);
 TEST_F(SecurePlanEnumerationTest, tpch_q9) {
 // $0 ASC, $1 DESC
 SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-runTest(9, "q9", expected_sort, FLAGS_unioned_db);
+    runTest(9, expected_sort);
 
 }
 
@@ -233,7 +233,7 @@ TEST_F(SecurePlanEnumerationTest, tpch_q18) {
 SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                              ColumnSort(4, SortDirection::DESCENDING),
                              ColumnSort(3, SortDirection::ASCENDING)};
-runTest(18, "q18", expected_sort, FLAGS_unioned_db);
+    runTest(18, expected_sort);
 }
 
 /*
