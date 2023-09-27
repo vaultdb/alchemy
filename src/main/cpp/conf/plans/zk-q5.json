@@ -106,12 +106,12 @@
         },
         "operands": [
           {
-            "input": 3,
-            "name": "$3"
-          },
-          {
             "input": 0,
             "name": "$0"
+          },
+          {
+            "input": 3,
+            "name": "$3"
           }
         ]
       },
@@ -374,12 +374,12 @@
         },
         "operands": [
           {
-            "input": 5,
-            "name": "$5"
-          },
-          {
             "input": 3,
             "name": "$3"
+          },
+          {
+            "input": 5,
+            "name": "$5"
           }
         ]
       },
@@ -595,7 +595,7 @@
                 {
                   "literal": 100,
                   "type": {
-                    "type": "LONG",
+                    "type": "FLOAT",
                     "nullable": false
                   }
                 },

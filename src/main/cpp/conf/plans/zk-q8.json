@@ -499,12 +499,12 @@
         },
         "operands": [
           {
-            "input": 3,
-            "name": "$3"
-          },
-          {
             "input": 0,
             "name": "$0"
+          },
+          {
+            "input": 3,
+            "name": "$3"
           }
         ]
       },
@@ -546,7 +546,7 @@
                   "name": "$1"
                 },
                 {
-                  "literal": "EGYPT                    ",
+                  "literal": "KENYA                    ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
@@ -558,14 +558,14 @@
             {
               "literal": 1,
               "type": {
-                "type": "LONG",
+                "type": "BOOLEAN",
                 "nullable": false
               }
             },
             {
               "literal": 0,
               "type": {
-                "type": "LONG",
+                "type": "BOOLEAN",
                 "nullable": false
               }
             }
@@ -660,7 +660,7 @@
       "relOp": "LogicalProject",
       "fields": [
         "o_year",
-        "egypt_volume",
+        "kenya_volume",
         "volume"
       ],
       "exprs": [
@@ -677,18 +677,25 @@
           "operands": [
             {
               "op": {
-                "name": "*",
-                "kind": "TIMES",
-                "syntax": "BINARY"
+                "name": "CASE",
+                "kind": "CASE",
+                "syntax": "SPECIAL"
               },
               "operands": [
                 {
                   "input": 10,
-                  "name": "$10"
+                  "name": "nation_check"
                 },
                 {
                   "input": 8,
-                  "name": "$8"
+                  "name": "l_extendedprice"
+                },
+                {
+                  "literal": 0.0,
+                  "type": {
+                    "type": "FLOAT",
+                    "nullable": false
+                  }
                 }
               ]
             },
@@ -702,7 +709,7 @@
                 {
                   "literal": 100,
                   "type": {
-                    "type": "LONG",
+                    "type": "FLOAT",
                     "nullable": false
                   }
                 },
@@ -735,7 +742,7 @@
                 {
                   "literal": 100,
                   "type": {
-                    "type": "LONG",
+                    "type": "FLOAT",
                     "nullable": false
                   }
                 },
