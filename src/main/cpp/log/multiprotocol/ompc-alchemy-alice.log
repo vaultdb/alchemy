@@ -1,0 +1,838 @@
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecurePlanEnumerationTest
+[ RUN      ] SecurePlanEnumerationTest.tpch_q1
+Protocol: outsourced
+Received storage flag of row, emp mode: outsourced
+Connecting to 127.0.0.1 on ports 7654, 65482 as 1
+Running on outsourced MPC backend.
+party 1 connected to TP
+GB connected to 2
+GB connected to 3
+party 1 connected to TP
+GB connected to 2
+GB connected to 3
+initializing cot
+setup finished! takes 2559.13ms to finish setup
+[Linux]Peak resident set size: 1409818624 bytes, current memory size: 1365356544 bytes.
+Total Plans : 1
+Operator #0 SecureSqlInput ran for 1.057000 ms, gate count: 0 output cardinality: 6, row width=401
+
+Operator #1 SecureSqlInput ran for 0.027000 ms, gate count: 0 output cardinality: 0, row width=401
+
+Operator #2 MergeJoin ran for 0.338000 ms, gate count: 0 output cardinality: 6, row width=801
+
+Operator #3 Project ran for 477.635000 ms, gate count: 128100 output cardinality: 6, row width=305
+
+Estimated cost for#3: Project<Bit> ((<0, $0 shared-varchar>, <1, $1 shared-varchar>, <2, $2 + $15 shared-float>, <3, $3 + $16 shared-float>, <4, $4 + $17 shared-float>, <5, $5 + $18 shared-float>, <6, ($6 + $19) / ($7 + $20) shared-float>, <7, ($8 + $21) / ($9 + $22) shared-float>, <8, ($10 + $23) / ($11 + $24) shared-float>, <9, $12 + $25 shared-int64>)) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float anonymous, #3 shared-float anonymous, #4 shared-float anonymous, #5 shared-float anonymous, #6 shared-float anonymous, #7 shared-float anonymous, #8 shared-float anonymous, #9 shared-int64 anonymous) order by: {<0, ASC> , <1, ASC> }, cost est: 163596, output card: 6 : 163596, Observed gates: 128100, Error rate(%) : 27.709602
+
+Plan Enumeration Time : 0.000467 sec
+Time: 0.641747 sec, CPU clock ticks: 280502,CPU clock ticks per second: 0.280502
+End-to-end estimated gates: 163614. observed gates: 128100 gates, relative error (%)=27.7237
+[Linux]Peak resident set size: 1409818624 bytes, current memory size: 1368760320 bytes.
+Memory Usage: 1409818624 bytes
+Bandwidth: 0 Bps
+party 1 send 0 bytes to party 2
+party 1 send 0 bytes to party 3
+party 1 send 0 bytes to TP 
+total AND gate: 128100
+[       OK ] SecurePlanEnumerationTest.tpch_q1 (4840 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q3
+Protocol: outsourced
+Received storage flag of row, emp mode: outsourced
+Connecting to 127.0.0.1 on ports 7657, 65485 as 1
+Running on outsourced MPC backend.
+party 1 connected to TP
+GB connected to 2
+GB connected to 3
+party 1 connected to TP
+GB connected to 2
+GB connected to 3
+initializing cot
+setup finished! takes 2204.3ms to finish setup
+[Linux]Peak resident set size: 1707114496 bytes, current memory size: 1707114496 bytes.
+Operator (2). smj cost : 51531092, nlj cost : 28800000, join type : nested-loop-join
+Operator (5). smj cost : 234380281, nlj cost : 3743688000, join type : keyed-sort-merge-join
+Cost : 242711230, combination : 0
+Cost : 369433681920, combination : 1
+Total Plans : 96
+Operator #0 SecureSqlInput ran for 283.662000 ms, gate count: 0 output cardinality: 3000, row width=95
+
+Operator #1 SecureSqlInput ran for 12.025000 ms, gate count: 0 output cardinality: 300, row width=15
+
+extension finished! takes 1739.19ms to extend lpn
+extension finished! takes 1664.52ms to extend lpn
+extension finished! takes 1686.41ms to extend lpn
+extension finished! takes 1981.1ms to extend lpn
+extension finished! takes 1683.61ms to extend lpn
+Operator #2 KeyedJoin ran for 469096.049000 ms, gate count: 28800000 output cardinality: 3000, row width=109
+
+Estimated cost for#2: KeyedJoin<Bit> (P$1(14) == P$4(14)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority, #4 shared-int32(14) customer.c_custkey) order by: {<0, ASC> }, cost est: 28800000, output card: 3000 : 28800000, Observed gates: 28800000, Error rate(%) : 0.000000
+
+Operator #3 Project ran for 40.365000 ms, gate count: 0 output cardinality: 3000, row width=81
+
+Operator #4 SecureSqlInput ran for 522.790000 ms, gate count: 0 output cardinality: 11999, row width=53
+
+extension finished! takes 1761.6ms to extend lpn
+extension finished! takes 1834.43ms to extend lpn
+extension finished! takes 2018.9ms to extend lpn
+extension finished! takes 1938.95ms to extend lpn
+extension finished! takes 1670.74ms to extend lpn
+extension finished! takes 1677.58ms to extend lpn
+extension finished! takes 1697.1ms to extend lpn
+extension finished! takes 1651.77ms to extend lpn
+extension finished! takes 1757.53ms to extend lpn
+extension finished! takes 1653.24ms to extend lpn
+extension finished! takes 1688.13ms to extend lpn
+extension finished! takes 1767.32ms to extend lpn
+extension finished! takes 1798.79ms to extend lpn
+extension finished! takes 1704.69ms to extend lpn
+extension finished! takes 1649.54ms to extend lpn
+extension finished! takes 1652.92ms to extend lpn
+extension finished! takes 1672.38ms to extend lpn
+extension finished! takes 1709.47ms to extend lpn
+extension finished! takes 1831.31ms to extend lpn
+extension finished! takes 1672.19ms to extend lpn
+extension finished! takes 1842.25ms to extend lpn
+extension finished! takes 1773.2ms to extend lpn
+extension finished! takes 1757.6ms to extend lpn
+extension finished! takes 1695.54ms to extend lpn
+extension finished! takes 1824.38ms to extend lpn
+extension finished! takes 1828.34ms to extend lpn
+extension finished! takes 1799.24ms to extend lpn
+extension finished! takes 1751.52ms to extend lpn
+extension finished! takes 1759.25ms to extend lpn
+extension finished! takes 1756.26ms to extend lpn
+extension finished! takes 1748.81ms to extend lpn
+extension finished! takes 1740.93ms to extend lpn
+extension finished! takes 1785.41ms to extend lpn
+extension finished! takes 1722.5ms to extend lpn
+extension finished! takes 1738.18ms to extend lpn
+extension finished! takes 1784.86ms to extend lpn
+extension finished! takes 1731.99ms to extend lpn
+extension finished! takes 1736.46ms to extend lpn
+extension finished! takes 1730.11ms to extend lpn
+extension finished! takes 1724.54ms to extend lpn
+extension finished! takes 1755.1ms to extend lpn
+extension finished! takes 1792.56ms to extend lpn
+extension finished! takes 1737.84ms to extend lpn
+extension finished! takes 1758.24ms to extend lpn
+extension finished! takes 1782.92ms to extend lpn
+extension finished! takes 1823.12ms to extend lpn
+extension finished! takes 1871.4ms to extend lpn
+Operator #5 SortMergeJoin ran for 1008709.260000 ms, gate count: 262821585 output cardinality: 11999, row width=133
+
+Estimated cost for#5: SortMergeJoin<Bit> (P$0(20) == P$3(20)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-int32(20) lineitem.l_orderkey, #4 shared-float revenue) order by: {<0, ASC> , <3, ASC> }, cost est: 234380281, output card: 11999 : 234380281, Observed gates: 262821585, Error rate(%) : 10.821522
+
+Operator #6 Project ran for 152.633000 ms, gate count: 0 output cardinality: 11999, row width=113
+
+extension finished! takes 1673.23ms to extend lpn
+extension finished! takes 1764.68ms to extend lpn
+extension finished! takes 1846.65ms to extend lpn
+Operator #7 SortMergeAggregate ran for 57729.427000 ms, gate count: 14649590 output cardinality: 11999, row width=113
+
+Estimated cost for#7: SortMergeAggregate<Bit> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> }, cost est: 14998750, output card: 11999 : 14998750, Observed gates: 14649590, Error rate(%) : 2.383411
+
+extension finished! takes 1739.33ms to extend lpn
+extension finished! takes 1602.99ms to extend lpn
+extension finished! takes 1602.24ms to extend lpn
+extension finished! takes 1688.68ms to extend lpn
+extension finished! takes 1637.11ms to extend lpn
+extension finished! takes 1692.91ms to extend lpn
+extension finished! takes 1701.35ms to extend lpn
+extension finished! takes 1651.71ms to extend lpn
+extension finished! takes 1653.71ms to extend lpn
+extension finished! takes 1623.53ms to extend lpn
+extension finished! takes 1609.62ms to extend lpn
+extension finished! takes 1682.86ms to extend lpn
+extension finished! takes 1605.77ms to extend lpn
+extension finished! takes 1612.87ms to extend lpn
+extension finished! takes 1626.63ms to extend lpn
+extension finished! takes 1608.02ms to extend lpn
+extension finished! takes 1606.12ms to extend lpn
+extension finished! takes 1706.35ms to extend lpn
+extension finished! takes 1655.67ms to extend lpn
+extension finished! takes 1716.38ms to extend lpn
+Operator #8 Sort ran for 387957.132000 ms, gate count: 101547986 output cardinality: 10, row width=113
+
+Estimated cost for#8: Sort<Bit> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }, cost est: 108237360, output card: 11999 : 108237360, Observed gates: 101547986, Error rate(%) : 6.587404
+
+Operator #9 Project ran for 0.124000 ms, gate count: 0 output cardinality: 10, row width=113
+
+Plan Enumeration Time : 0.066889 sec
+Time: 1924.63 sec, CPU clock ticks: 1.70815e+09,CPU clock ticks per second: 1708.15
+End-to-end estimated gates: 3.86416e+08. observed gates: 379019161 gates, relative error (%)=1.95167
+[Linux]Peak resident set size: 2772189184 bytes, current memory size: 1735159808 bytes.
+Memory Usage: 2772189184 bytes
+Bandwidth: 0 Bps
+party 1 send 0 bytes to party 2
+party 1 send 0 bytes to party 3
+party 1 send 0 bytes to TP 
+total AND gate: 379019161
+[       OK ] SecurePlanEnumerationTest.tpch_q3 (1927077 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q5
+Protocol: outsourced
+Received storage flag of row, emp mode: outsourced
+Connecting to 127.0.0.1 on ports 7660, 65488 as 1
+Running on outsourced MPC backend.
+party 1 connected to TP
+GB connected to 2
+GB connected to 3
+party 1 connected to TP
+GB connected to 2
+GB connected to 3
+initializing cot
+setup finished! takes 2258.75ms to finish setup
+[Linux]Peak resident set size: 2772189184 bytes, current memory size: 1730146304 bytes.
+Operator (2). smj cost : 28453360, nlj cost : 6327000, join type : nested-loop-join
+Operator (5). smj cost : 208620172, nlj cost : 1763853000, join type : keyed-sort-merge-join
+Operator (8). smj cost : 424687422, nlj cost : 8927256, join type : nested-loop-join
+Cost : 434243056, combination : 0
+Cost : 91194983, combination : 1
+Total Plans : 576
+Operator #0 SecureSqlInput ran for 2.110000 ms, gate count: 0 output cardinality: 57, row width=20
+
+Operator #1 SecureSqlInput ran for 101.269000 ms, gate count: 0 output cardinality: 3000, row width=35
+
+extension finished! takes 1708.86ms to extend lpn
+Operator #2 KeyedJoin ran for 83846.067000 ms, gate count: 6327000 output cardinality: 3000, row width=54
+
+Estimated cost for#2: KeyedJoin<Bit> (P$0(14) == P$3(14)) : (#0 shared-int32(14) customer.c_custkey, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int32(14) orders.o_custkey) order by: {<2, ASC> }, cost est: 6327000, output card: 3000 : 6327000, Observed gates: 6327000, Error rate(%) : 0.000000
+
+Operator #3 Project ran for 25.214000 ms, gate count: 0 output cardinality: 3000, row width=26
+
+Operator #4 SecureSqlInput ran for 900.627000 ms, gate count: 0 output cardinality: 11999, row width=63
+
+extension finished! takes 1782.98ms to extend lpn
+extension finished! takes 1743.97ms to extend lpn
+extension finished! takes 1746.9ms to extend lpn
+extension finished! takes 1736.86ms to extend lpn
+extension finished! takes 1679.07ms to extend lpn
+extension finished! takes 1707.73ms to extend lpn
+extension finished! takes 1695.96ms to extend lpn
+extension finished! takes 2012.65ms to extend lpn
+extension finished! takes 1716.47ms to extend lpn
+extension finished! takes 2031.29ms to extend lpn
+extension finished! takes 1732.66ms to extend lpn
+extension finished! takes 1721.8ms to extend lpn
+extension finished! takes 1953.73ms to extend lpn
+extension finished! takes 1719.16ms to extend lpn
+extension finished! takes 1828.57ms to extend lpn
+extension finished! takes 1696.58ms to extend lpn
+extension finished! takes 1703.6ms to extend lpn
+extension finished! takes 1776.72ms to extend lpn
+extension finished! takes 1720.6ms to extend lpn
+extension finished! takes 1737.06ms to extend lpn
+extension finished! takes 1757.76ms to extend lpn
+extension finished! takes 1817.06ms to extend lpn
+extension finished! takes 1757.32ms to extend lpn
+extension finished! takes 1905.09ms to extend lpn
+extension finished! takes 1731.71ms to extend lpn
+extension finished! takes 2014.77ms to extend lpn
+extension finished! takes 1745.69ms to extend lpn
+extension finished! takes 2239.31ms to extend lpn
+extension finished! takes 1738.83ms to extend lpn
+extension finished! takes 1799.07ms to extend lpn
+extension finished! takes 1796.52ms to extend lpn
+extension finished! takes 1795.87ms to extend lpn
+extension finished! takes 1783.41ms to extend lpn
+extension finished! takes 1744.09ms to extend lpn
+extension finished! takes 1786.46ms to extend lpn
+extension finished! takes 1821.14ms to extend lpn
+extension finished! takes 1748.65ms to extend lpn
+extension finished! takes 1756.59ms to extend lpn
+extension finished! takes 1764.94ms to extend lpn
+extension finished! takes 1864.73ms to extend lpn
+Operator #5 SortMergeJoin ran for 881388.742000 ms, gate count: 206409738 output cardinality: 11999, row width=88
+
+Estimated cost for#5: SortMergeJoin<Bit> (P$1(20) == P$2(20)) : (#0 shared-int32(5) customer.c_nationkey, #1 shared-int32(20) orders.o_orderkey, #2 shared-int32(20) lineitem.l_orderkey, #3 shared-int32(10) lineitem.l_suppkey, #4 shared-float revenue) order by: {<1, ASC> , <2, ASC> }, cost est: 208620172, output card: 11999 : 208620172, Observed gates: 206409738, Error rate(%) : 1.070895
+
+Operator #6 Project ran for 82.134000 ms, gate count: 0 output cardinality: 11999, row width=48
+
+Operator #7 SecureSqlInput ran for 195.210000 ms, gate count: 0 output cardinality: 3, row width=216
+
+extension finished! takes 1812.66ms to extend lpn
+Operator #8 KeyedJoin ran for 34646.636000 ms, gate count: 8495292 output cardinality: 11999, row width=263
+
+Estimated cost for#8: KeyedJoin<Bit> ((P$0(5) == P$4(5)) AND (P$1(10) == P$3(10))) : (#0 shared-int32(5) customer.c_nationkey, #1 shared-int32(10) lineitem.l_suppkey, #2 shared-float revenue, #3 shared-int32(10) supplier.s_suppkey, #4 shared-int32(5) supplier.s_nationkey, #5 shared-varchar(25) nation.n_name) order by: {}, cost est: 8927256, output card: 11999 : 8927256, Observed gates: 8495292, Error rate(%) : 5.084745
+
+Operator #9 Project ran for 455.779000 ms, gate count: 0 output cardinality: 11999, row width=233
+
+extension finished! takes 1613.74ms to extend lpn
+extension finished! takes 1637.86ms to extend lpn
+extension finished! takes 1635.69ms to extend lpn
+extension finished! takes 1707.74ms to extend lpn
+extension finished! takes 1604.81ms to extend lpn
+extension finished! takes 1576.89ms to extend lpn
+extension finished! takes 1571.49ms to extend lpn
+extension finished! takes 1603.6ms to extend lpn
+extension finished! takes 1560.03ms to extend lpn
+extension finished! takes 1626.68ms to extend lpn
+extension finished! takes 1608.61ms to extend lpn
+extension finished! takes 1589.65ms to extend lpn
+extension finished! takes 1562.14ms to extend lpn
+extension finished! takes 1576.28ms to extend lpn
+extension finished! takes 1564.55ms to extend lpn
+extension finished! takes 1592.57ms to extend lpn
+extension finished! takes 1610.94ms to extend lpn
+extension finished! takes 1604.54ms to extend lpn
+Operator #10 NestedLoopAggregate ran for 332822.738000 ms, gate count: 87532705 output cardinality: 5, row width=233
+
+Estimated cost for#10: NestedLoopAggregate<Bit> (group-by: (0) aggs: (SUM($1) revenue)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {}, cost est: 91192400, output card: 5 : 91192400, Observed gates: 87532705, Error rate(%) : 4.180947
+
+Operator #11 Sort ran for 3.769000 ms, gate count: 3024 output cardinality: 5, row width=233
+
+Estimated cost for#11: Sort<Bit> ({<1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<1, DESC> }, cost est: 2583, output card: 5 : 2583, Observed gates: 3024, Error rate(%) : 14.583333
+
+Plan Enumeration Time : 0.500038 sec
+Time: 1335.13 sec, CPU clock ticks: 1.22103e+09,CPU clock ticks per second: 1221.03
+End-to-end estimated gates: 3.15069e+08. observed gates: 302440759 gates, relative error (%)=4.17557
+[Linux]Peak resident set size: 2772189184 bytes, current memory size: 1783427072 bytes.
+Memory Usage: 2772189184 bytes
+Bandwidth: 0 Bps
+party 1 send 0 bytes to party 2
+party 1 send 0 bytes to party 3
+party 1 send 0 bytes to TP 
+total AND gate: 302440759
+[       OK ] SecurePlanEnumerationTest.tpch_q5 (1337640 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q8
+Protocol: outsourced
+Received storage flag of row, emp mode: outsourced
+Connecting to 127.0.0.1 on ports 7663, 65491 as 1
+Running on outsourced MPC backend.
+party 1 connected to TP
+GB connected to 2
+GB connected to 3
+party 1 connected to TP
+GB connected to 2
+GB connected to 3
+initializing cot
+setup finished! takes 2332.31ms to finish setup
+[Linux]Peak resident set size: 2772189184 bytes, current memory size: 1844023296 bytes.
+Operator (2). smj cost : 37931910, nlj cost : 5568000, join type : nested-loop-join
+Operator (5). smj cost : 278929732, nlj cost : 2735772000, join type : keyed-sort-merge-join
+Operator (8). smj cost : 201272370, nlj cost : 5999500, join type : nested-loop-join
+Cost : 151374739, combination : 0
+Cost : 56738990, combination : 1
+Total Plans : 768
+Operator #0 SecureSqlInput ran for 1.941000 ms, gate count: 0 output cardinality: 58, row width=15
+
+Operator #1 SecureSqlInput ran for 110.263000 ms, gate count: 0 output cardinality: 3000, row width=67
+
+extension finished! takes 1728.52ms to extend lpn
+Operator #2 KeyedJoin ran for 84832.711000 ms, gate count: 5568000 output cardinality: 3000, row width=81
+
+Estimated cost for#2: KeyedJoin<Bit> (P$0(14) == P$2(14)) : (#0 shared-int32(14) customer.c_custkey, #1 shared-int32(20) orders.o_orderkey, #2 shared-int32(14) orders.o_custkey, #3 shared-int32 orders.o_year) order by: {<1, ASC> }, cost est: 5568000, output card: 3000 : 5568000, Observed gates: 5568000, Error rate(%) : 0.000000
+
+Operator #3 Project ran for 29.997000 ms, gate count: 0 output cardinality: 3000, row width=53
+
+Operator #4 SecureSqlInput ran for 650.101000 ms, gate count: 0 output cardinality: 11999, row width=63
+
+extension finished! takes 1777.05ms to extend lpn
+extension finished! takes 1794.41ms to extend lpn
+extension finished! takes 1778.13ms to extend lpn
+extension finished! takes 1738.07ms to extend lpn
+extension finished! takes 1708.66ms to extend lpn
+extension finished! takes 1799.93ms to extend lpn
+extension finished! takes 1760.56ms to extend lpn
+extension finished! takes 1700.96ms to extend lpn
+extension finished! takes 1751.46ms to extend lpn
+extension finished! takes 1702.29ms to extend lpn
+extension finished! takes 1761.92ms to extend lpn
+extension finished! takes 1751.81ms to extend lpn
+extension finished! takes 1759.29ms to extend lpn
+extension finished! takes 1954.38ms to extend lpn
+extension finished! takes 1706.57ms to extend lpn
+extension finished! takes 1710.67ms to extend lpn
+extension finished! takes 1778.56ms to extend lpn
+extension finished! takes 1782.55ms to extend lpn
+extension finished! takes 1835.1ms to extend lpn
+extension finished! takes 1756.59ms to extend lpn
+extension finished! takes 1735.8ms to extend lpn
+extension finished! takes 1723.37ms to extend lpn
+extension finished! takes 1721.28ms to extend lpn
+extension finished! takes 1820.21ms to extend lpn
+extension finished! takes 1765.06ms to extend lpn
+extension finished! takes 1775.51ms to extend lpn
+extension finished! takes 1795.54ms to extend lpn
+extension finished! takes 1763.97ms to extend lpn
+extension finished! takes 1814.1ms to extend lpn
+extension finished! takes 1795.96ms to extend lpn
+extension finished! takes 1800.77ms to extend lpn
+extension finished! takes 1840.36ms to extend lpn
+extension finished! takes 1773.39ms to extend lpn
+extension finished! takes 1833.14ms to extend lpn
+extension finished! takes 1800.78ms to extend lpn
+extension finished! takes 1832.46ms to extend lpn
+extension finished! takes 1805.86ms to extend lpn
+extension finished! takes 1822.51ms to extend lpn
+extension finished! takes 1817.29ms to extend lpn
+extension finished! takes 1738.8ms to extend lpn
+Operator #5 SortMergeJoin ran for 890780.697000 ms, gate count: 205974711 output cardinality: 11999, row width=115
+
+Estimated cost for#5: SortMergeJoin<Bit> (P$0(20) == P$2(20)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32 orders.o_year, #2 shared-int32(20) lineitem.l_orderkey, #3 shared-int32(10) lineitem.l_suppkey, #4 shared-float volume) order by: {<0, ASC> , <2, ASC> }, cost est: 208620172, output card: 11999 : 208620172, Observed gates: 205974711, Error rate(%) : 1.284367
+
+Operator #6 Project ran for 126.179000 ms, gate count: 0 output cardinality: 11999, row width=75
+
+Operator #7 SecureSqlInput ran for 0.497000 ms, gate count: 0 output cardinality: 20, row width=12
+
+extension finished! takes 1874.13ms to extend lpn
+Operator #8 KeyedJoin ran for 133895.966000 ms, gate count: 5999500 output cardinality: 11999, row width=86
+
+Estimated cost for#8: KeyedJoin<Bit> (P$1(10) == P$3(10)) : (#0 shared-int32 orders.o_year, #1 shared-int32(10) lineitem.l_suppkey, #2 shared-float volume, #3 shared-int32(10) supplier.s_suppkey, #4 shared-bool nation_check) order by: {}, cost est: 5999500, output card: 11999 : 5999500, Observed gates: 5999500, Error rate(%) : 0.000000
+
+Operator #9 Project ran for 3483.060000 ms, gate count: 383968 output cardinality: 11999, row width=97
+
+Estimated cost for#9: Project<Bit> ((<0, $0 shared-int32>, <1, $2 shared-float>, <2, CASE($4, $2, SECRET FLOAT) shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float volume, #2 shared-float anonymous) order by: {}, cost est: 0, output card: 11999 : 0, Observed gates: 383968, Error rate(%) : 100.000000
+
+extension finished! takes 1709.98ms to extend lpn
+extension finished! takes 1663.77ms to extend lpn
+extension finished! takes 1678.89ms to extend lpn
+extension finished! takes 1673.52ms to extend lpn
+extension finished! takes 1736.42ms to extend lpn
+extension finished! takes 1672.52ms to extend lpn
+extension finished! takes 1716.34ms to extend lpn
+extension finished! takes 1692.24ms to extend lpn
+extension finished! takes 1712.92ms to extend lpn
+extension finished! takes 1692.71ms to extend lpn
+Operator #10 NestedLoopAggregate ran for 197002.946000 ms, gate count: 52219648 output cardinality: 2, row width=97
+
+Estimated cost for#10: NestedLoopAggregate<Bit> (group-by: (0) aggs: (SUM($1) null, SUM($2) null)) : (#0 shared-int32 orders.o_year, #1 shared-float null, #2 shared-float null) order by: {}, cost est: 56731272, output card: 2 : 56731272, Observed gates: 52219648, Error rate(%) : 8.639706
+
+Operator #11 Project ran for 22.869000 ms, gate count: 7618 output cardinality: 2, row width=65
+
+Estimated cost for#11: Project<Bit> ((<0, $0 shared-int32>, <1, $2 / $1 shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float anonymous) order by: {}, cost est: 7618, output card: 2 : 7618, Observed gates: 7618, Error rate(%) : 0.000000
+
+Operator #12 Sort ran for 0.492000 ms, gate count: 98 output cardinality: 2, row width=65
+
+Estimated cost for#12: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 100, output card: 2 : 100, Observed gates: 98, Error rate(%) : 2.040816
+
+Plan Enumeration Time : 0.690184 sec
+Time: 1311.75 sec, CPU clock ticks: 1.16045e+09,CPU clock ticks per second: 1160.45
+End-to-end estimated gates: 2.76927e+08. observed gates: 264585543 gates, relative error (%)=4.66432
+[Linux]Peak resident set size: 2926002176 bytes, current memory size: 1890975744 bytes.
+Memory Usage: 2926002176 bytes
+Bandwidth: 0 Bps
+party 1 send 0 bytes to party 2
+party 1 send 0 bytes to party 3
+party 1 send 0 bytes to TP 
+total AND gate: 264585543
+[       OK ] SecurePlanEnumerationTest.tpch_q8 (1314291 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q9
+Protocol: outsourced
+Received storage flag of row, emp mode: outsourced
+Connecting to 127.0.0.1 on ports 7666, 65494 as 1
+Running on outsourced MPC backend.
+party 1 connected to TP
+GB connected to 2
+GB connected to 3
+party 1 connected to TP
+GB connected to 2
+GB connected to 3
+initializing cot
+setup finished! takes 2168.79ms to finish setup
+[Linux]Peak resident set size: 2926002176 bytes, current memory size: 2073120768 bytes.
+Operator (2). smj cost : 1231628, nlj cost : 412160, join type : nested-loop-join
+Operator (5). smj cost : 504505862, nlj cost : 342211480, join type : nested-loop-join
+Operator (8). smj cost : 480532466, nlj cost : 2735772000, join type : keyed-sort-merge-join
+Cost : 316127344, combination : 0
+Cost : 3327508572, combination : 1
+Total Plans : 3072
+Operator #0 SecureSqlInput ran for 818.022000 ms, gate count: 0 output cardinality: 20, row width=211
+
+Operator #1 SecureSqlInput ran for 4.635000 ms, gate count: 0 output cardinality: 92, row width=58
+
+Operator #2 KeyedJoin ran for 1476.489000 ms, gate count: 412160 output cardinality: 92, row width=268
+
+Estimated cost for#2: KeyedJoin<Bit> (P$0(10) == P$3(10)) : (#0 shared-int32(10) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(15) partsupp.ps_partkey, #3 shared-int32(10) partsupp.ps_suppkey, #4 shared-float partsupp.ps_supplycost) order by: {}, cost est: 412160, output card: 92 : 412160, Observed gates: 412160, Error rate(%) : 0.000000
+
+Operator #3 Project ran for 5.750000 ms, gate count: 0 output cardinality: 92, row width=258
+
+Operator #4 SecureSqlInput ran for 950.608000 ms, gate count: 0 output cardinality: 11999, row width=142
+
+extension finished! takes 1913.89ms to extend lpn
+extension finished! takes 1892.72ms to extend lpn
+extension finished! takes 1862.96ms to extend lpn
+extension finished! takes 1991.66ms to extend lpn
+extension finished! takes 1884.55ms to extend lpn
+extension finished! takes 1905.35ms to extend lpn
+extension finished! takes 1855.64ms to extend lpn
+extension finished! takes 1886.01ms to extend lpn
+extension finished! takes 1890.65ms to extend lpn
+extension finished! takes 1886.57ms to extend lpn
+extension finished! takes 1877.68ms to extend lpn
+extension finished! takes 1811.36ms to extend lpn
+extension finished! takes 1808.91ms to extend lpn
+extension finished! takes 1943.45ms to extend lpn
+extension finished! takes 1824.63ms to extend lpn
+extension finished! takes 1850.65ms to extend lpn
+extension finished! takes 1832.69ms to extend lpn
+extension finished! takes 1820.73ms to extend lpn
+extension finished! takes 1905.87ms to extend lpn
+extension finished! takes 1819.85ms to extend lpn
+extension finished! takes 1840.3ms to extend lpn
+extension finished! takes 1862.73ms to extend lpn
+extension finished! takes 1853.23ms to extend lpn
+extension finished! takes 1851.85ms to extend lpn
+extension finished! takes 1854.17ms to extend lpn
+extension finished! takes 1906.59ms to extend lpn
+extension finished! takes 2034.28ms to extend lpn
+extension finished! takes 1857.01ms to extend lpn
+extension finished! takes 1888.69ms to extend lpn
+extension finished! takes 2262.18ms to extend lpn
+extension finished! takes 1881.06ms to extend lpn
+extension finished! takes 1892.73ms to extend lpn
+extension finished! takes 1809.93ms to extend lpn
+extension finished! takes 1836.04ms to extend lpn
+extension finished! takes 1807.02ms to extend lpn
+extension finished! takes 1921.67ms to extend lpn
+extension finished! takes 1800.91ms to extend lpn
+extension finished! takes 1796.48ms to extend lpn
+extension finished! takes 2004.54ms to extend lpn
+extension finished! takes 1821.72ms to extend lpn
+extension finished! takes 1831.69ms to extend lpn
+extension finished! takes 1855.33ms to extend lpn
+extension finished! takes 1874.57ms to extend lpn
+extension finished! takes 1853.2ms to extend lpn
+extension finished! takes 1810.69ms to extend lpn
+extension finished! takes 2074.07ms to extend lpn
+extension finished! takes 1833.29ms to extend lpn
+extension finished! takes 1902.53ms to extend lpn
+extension finished! takes 1800.98ms to extend lpn
+extension finished! takes 1804.69ms to extend lpn
+extension finished! takes 1836.96ms to extend lpn
+extension finished! takes 1873.89ms to extend lpn
+extension finished! takes 1810.73ms to extend lpn
+extension finished! takes 1842.06ms to extend lpn
+extension finished! takes 1806.92ms to extend lpn
+extension finished! takes 2076.71ms to extend lpn
+extension finished! takes 1982.95ms to extend lpn
+extension finished! takes 1804.46ms to extend lpn
+extension finished! takes 1806.55ms to extend lpn
+extension finished! takes 2100.51ms to extend lpn
+extension finished! takes 1820.71ms to extend lpn
+extension finished! takes 1829.57ms to extend lpn
+extension finished! takes 1873.62ms to extend lpn
+Operator #5 KeyedJoin ran for 1286819.056000 ms, gate count: 317925504 output cardinality: 11999, row width=399
+
+Estimated cost for#5: KeyedJoin<Bit> ((P$2(10) == P$6(10)) AND (P$1(15) == P$5(15))) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(15) partsupp.ps_partkey, #2 shared-int32(10) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost, #4 shared-int32(20) lineitem.l_orderkey, #5 shared-int32(15) lineitem.l_partkey, #6 shared-int32(10) lineitem.l_suppkey, #7 shared-float l_quantity, #8 shared-float lineitem.l_extendedprice, #9 shared-float lineitem.l_discount) order by: {<4, ASC> , <5, ASC> , <6, ASC> }, cost est: 342211480, output card: 11999 : 342211480, Observed gates: 317925504, Error rate(%) : 7.638891
+
+extension finished! takes 1830.14ms to extend lpn
+extension finished! takes 1826.14ms to extend lpn
+extension finished! takes 1824.16ms to extend lpn
+extension finished! takes 1838.97ms to extend lpn
+extension finished! takes 1854.69ms to extend lpn
+extension finished! takes 1818.13ms to extend lpn
+extension finished! takes 1820.67ms to extend lpn
+extension finished! takes 1798.57ms to extend lpn
+extension finished! takes 1800.97ms to extend lpn
+extension finished! takes 1812.93ms to extend lpn
+extension finished! takes 1895.41ms to extend lpn
+extension finished! takes 1805.5ms to extend lpn
+extension finished! takes 1865.89ms to extend lpn
+extension finished! takes 1899.47ms to extend lpn
+extension finished! takes 1813.67ms to extend lpn
+extension finished! takes 1863.7ms to extend lpn
+extension finished! takes 1900.77ms to extend lpn
+extension finished! takes 1866.26ms to extend lpn
+extension finished! takes 1814.86ms to extend lpn
+extension finished! takes 1790.48ms to extend lpn
+extension finished! takes 1832.44ms to extend lpn
+extension finished! takes 1881.13ms to extend lpn
+Operator #6 Project ran for 403567.764000 ms, gate count: 109358886 output cardinality: 11999, row width=253
+
+Estimated cost for#6: Project<Bit> ((<0, $0 shared-varchar>, <1, $4 shared-int32>, <2, ($8 * (SECRET FLOAT - $9)) - ($3 * $7) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(20) lineitem.l_orderkey, #2 shared-float anonymous) order by: {<1, ASC> }, cost est: 218717772, output card: 11999 : 218717772, Observed gates: 109358886, Error rate(%) : 100.000000
+
+Operator #7 SecureSqlInput ran for 89.254000 ms, gate count: 0 output cardinality: 3000, row width=53
+
+extension finished! takes 1830.34ms to extend lpn
+extension finished! takes 1793.38ms to extend lpn
+extension finished! takes 1812.14ms to extend lpn
+extension finished! takes 1844.82ms to extend lpn
+extension finished! takes 1904.81ms to extend lpn
+extension finished! takes 1813.44ms to extend lpn
+extension finished! takes 1958.51ms to extend lpn
+extension finished! takes 1807.96ms to extend lpn
+extension finished! takes 1913.07ms to extend lpn
+extension finished! takes 1830.65ms to extend lpn
+extension finished! takes 2048.26ms to extend lpn
+extension finished! takes 1924.7ms to extend lpn
+extension finished! takes 1969.42ms to extend lpn
+extension finished! takes 1806.55ms to extend lpn
+extension finished! takes 1803ms to extend lpn
+extension finished! takes 1812.06ms to extend lpn
+extension finished! takes 2102.64ms to extend lpn
+extension finished! takes 1796.75ms to extend lpn
+extension finished! takes 1822.25ms to extend lpn
+extension finished! takes 1816.67ms to extend lpn
+extension finished! takes 1808.32ms to extend lpn
+extension finished! takes 1830.34ms to extend lpn
+extension finished! takes 1800.16ms to extend lpn
+extension finished! takes 1906.25ms to extend lpn
+extension finished! takes 1810.47ms to extend lpn
+extension finished! takes 1807.23ms to extend lpn
+extension finished! takes 1811.12ms to extend lpn
+extension finished! takes 1821.12ms to extend lpn
+extension finished! takes 2102.32ms to extend lpn
+extension finished! takes 1817.87ms to extend lpn
+extension finished! takes 1799.62ms to extend lpn
+extension finished! takes 1828.79ms to extend lpn
+extension finished! takes 1811.02ms to extend lpn
+extension finished! takes 1818.97ms to extend lpn
+extension finished! takes 1821.32ms to extend lpn
+extension finished! takes 1829.99ms to extend lpn
+extension finished! takes 1810.79ms to extend lpn
+extension finished! takes 1818.25ms to extend lpn
+extension finished! takes 1801.39ms to extend lpn
+extension finished! takes 1803.09ms to extend lpn
+extension finished! takes 1804.42ms to extend lpn
+extension finished! takes 1864.63ms to extend lpn
+extension finished! takes 1808.85ms to extend lpn
+extension finished! takes 1804.55ms to extend lpn
+extension finished! takes 1806.51ms to extend lpn
+extension finished! takes 1800.08ms to extend lpn
+extension finished! takes 1817.73ms to extend lpn
+extension finished! takes 1847.43ms to extend lpn
+extension finished! takes 1807.29ms to extend lpn
+extension finished! takes 2027.9ms to extend lpn
+extension finished! takes 1884.37ms to extend lpn
+extension finished! takes 1793.18ms to extend lpn
+extension finished! takes 1859.28ms to extend lpn
+extension finished! takes 1794.5ms to extend lpn
+extension finished! takes 1806.69ms to extend lpn
+extension finished! takes 1808.8ms to extend lpn
+extension finished! takes 1799.98ms to extend lpn
+extension finished! takes 1880.8ms to extend lpn
+extension finished! takes 1865.09ms to extend lpn
+extension finished! takes 1878.06ms to extend lpn
+extension finished! takes 1813.32ms to extend lpn
+extension finished! takes 1912.8ms to extend lpn
+extension finished! takes 1858.73ms to extend lpn
+extension finished! takes 1878.78ms to extend lpn
+extension finished! takes 1897.59ms to extend lpn
+extension finished! takes 1829.4ms to extend lpn
+extension finished! takes 1815.08ms to extend lpn
+extension finished! takes 1802.46ms to extend lpn
+extension finished! takes 1824.52ms to extend lpn
+extension finished! takes 1857.98ms to extend lpn
+extension finished! takes 1802.94ms to extend lpn
+extension finished! takes 1811.65ms to extend lpn
+extension finished! takes 1876.28ms to extend lpn
+extension finished! takes 1799.65ms to extend lpn
+extension finished! takes 1829.15ms to extend lpn
+extension finished! takes 1793.07ms to extend lpn
+extension finished! takes 1800.39ms to extend lpn
+extension finished! takes 1844.29ms to extend lpn
+extension finished! takes 1811.05ms to extend lpn
+extension finished! takes 1835.82ms to extend lpn
+extension finished! takes 1876.72ms to extend lpn
+extension finished! takes 1821.51ms to extend lpn
+extension finished! takes 1810.55ms to extend lpn
+extension finished! takes 1816.67ms to extend lpn
+extension finished! takes 1793.58ms to extend lpn
+extension finished! takes 1855.97ms to extend lpn
+extension finished! takes 1897.74ms to extend lpn
+extension finished! takes 1879.6ms to extend lpn
+extension finished! takes 1790.4ms to extend lpn
+extension finished! takes 1815.66ms to extend lpn
+extension finished! takes 1939.05ms to extend lpn
+extension finished! takes 1861.74ms to extend lpn
+extension finished! takes 1837.94ms to extend lpn
+extension finished! takes 1984.91ms to extend lpn
+extension finished! takes 1894.8ms to extend lpn
+extension finished! takes 1831.64ms to extend lpn
+extension finished! takes 1885.9ms to extend lpn
+extension finished! takes 1845.59ms to extend lpn
+extension finished! takes 1836.56ms to extend lpn
+extension finished! takes 1847.23ms to extend lpn
+extension finished! takes 2209.98ms to extend lpn
+extension finished! takes 1966.78ms to extend lpn
+extension finished! takes 1850.59ms to extend lpn
+extension finished! takes 1840.42ms to extend lpn
+extension finished! takes 1862.22ms to extend lpn
+extension finished! takes 1902.48ms to extend lpn
+extension finished! takes 1994.42ms to extend lpn
+extension finished! takes 1871.38ms to extend lpn
+extension finished! takes 1832.65ms to extend lpn
+extension finished! takes 2327.24ms to extend lpn
+extension finished! takes 1855.88ms to extend lpn
+Operator #8 SortMergeJoin ran for 2197564.807000 ms, gate count: 982902933 output cardinality: 11999, row width=305
+
+Estimated cost for#8: SortMergeJoin<Bit> (P$1(20) == P$4(20)) : (#0 shared-varchar(25) nation.nation, #1 shared-int32(20) lineitem.l_orderkey, #2 shared-float amount, #3 shared-int32 o_year, #4 shared-int32(20) orders.o_orderkey) order by: {<1, ASC> , <4, ASC> }, cost est: 480532466, output card: 11999 : 480532466, Observed gates: 982902933, Error rate(%) : 51.110893
+
+Operator #9 Project ran for 499.106000 ms, gate count: 0 output cardinality: 11999, row width=265
+
+extension finished! takes 1849.78ms to extend lpn
+extension finished! takes 2122.94ms to extend lpn
+extension finished! takes 1856.05ms to extend lpn
+extension finished! takes 2219.99ms to extend lpn
+extension finished! takes 1888.57ms to extend lpn
+extension finished! takes 1871ms to extend lpn
+extension finished! takes 2114.86ms to extend lpn
+extension finished! takes 1832.54ms to extend lpn
+extension finished! takes 1886.5ms to extend lpn
+extension finished! takes 1889.77ms to extend lpn
+extension finished! takes 1892.44ms to extend lpn
+extension finished! takes 1862.45ms to extend lpn
+extension finished! takes 1904.41ms to extend lpn
+extension finished! takes 1809.84ms to extend lpn
+extension finished! takes 1848.1ms to extend lpn
+extension finished! takes 1800.63ms to extend lpn
+extension finished! takes 1797.74ms to extend lpn
+extension finished! takes 1960.64ms to extend lpn
+extension finished! takes 1820.53ms to extend lpn
+extension finished! takes 1852.03ms to extend lpn
+extension finished! takes 1846.73ms to extend lpn
+extension finished! takes 2123.67ms to extend lpn
+extension finished! takes 1822.22ms to extend lpn
+extension finished! takes 1843.44ms to extend lpn
+extension finished! takes 2122.19ms to extend lpn
+extension finished! takes 1941.98ms to extend lpn
+extension finished! takes 1838.82ms to extend lpn
+extension finished! takes 1844.65ms to extend lpn
+extension finished! takes 1910.18ms to extend lpn
+extension finished! takes 1849.93ms to extend lpn
+extension finished! takes 2117.54ms to extend lpn
+extension finished! takes 1854.32ms to extend lpn
+extension finished! takes 1862.88ms to extend lpn
+extension finished! takes 1860.53ms to extend lpn
+extension finished! takes 1876.52ms to extend lpn
+extension finished! takes 1850.01ms to extend lpn
+extension finished! takes 2162.84ms to extend lpn
+extension finished! takes 1841.12ms to extend lpn
+extension finished! takes 1855.01ms to extend lpn
+extension finished! takes 1840.23ms to extend lpn
+extension finished! takes 1856.06ms to extend lpn
+extension finished! takes 1931.36ms to extend lpn
+extension finished! takes 2119.92ms to extend lpn
+extension finished! takes 1842.97ms to extend lpn
+extension finished! takes 1981.16ms to extend lpn
+extension finished! takes 1944.1ms to extend lpn
+extension finished! takes 1857.4ms to extend lpn
+extension finished! takes 1846.7ms to extend lpn
+extension finished! takes 2136.71ms to extend lpn
+extension finished! takes 1872.53ms to extend lpn
+extension finished! takes 1852.03ms to extend lpn
+extension finished! takes 1863.87ms to extend lpn
+extension finished! takes 2206.78ms to extend lpn
+extension finished! takes 1855.16ms to extend lpn
+extension finished! takes 2168.73ms to extend lpn
+extension finished! takes 2245.42ms to extend lpn
+Operator #-1 Sort ran for 1072146.070000 ms, gate count: 283800664 output cardinality: 11999, row width=265
+
+Estimated cost for#-1: Sort<Bit> ({<0, ASC> , <1, DESC> }) : (#0 shared-varchar(25) nation.nation, #1 shared-int32 o_year, #2 shared-float amount) order by: {<0, ASC> , <1, DESC> }, cost est: 297504896, output card: 11999 : 297504896, Observed gates: 283800664, Error rate(%) : 4.828820
+
+extension finished! takes 1883.61ms to extend lpn
+extension finished! takes 1888.13ms to extend lpn
+extension finished! takes 1857.87ms to extend lpn
+extension finished! takes 1898.13ms to extend lpn
+Operator #10 SortMergeAggregate ran for 71893.163000 ms, gate count: 18236992 output cardinality: 11999, row width=265
+
+Estimated cost for#10: SortMergeAggregate<Bit> (group-by: (0, 1) aggs: (SUM($2) sum_profit)) : (#0 shared-varchar(25) nation.nation, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, DESC> }, cost est: 18622448, output card: 11999 : 18622448, Observed gates: 18236992, Error rate(%) : 2.113594
+
+Plan Enumeration Time : 1.91013 sec
+Time: 5038.07 sec, CPU clock ticks: 4.68057e+09,CPU clock ticks per second: 4680.57
+End-to-end estimated gates: 1.358e+09. observed gates: 1284940589 gates, relative error (%)=5.68592
+[Linux]Peak resident set size: 6307667968 bytes, current memory size: 2931150848 bytes.
+Memory Usage: 6307667968 bytes
+Bandwidth: 0 Bps
+party 1 send 0 bytes to party 2
+party 1 send 0 bytes to party 3
+party 1 send 0 bytes to TP 
+total AND gate: 1284940589
+[       OK ] SecurePlanEnumerationTest.tpch_q9 (5040466 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q18
+Protocol: outsourced
+Received storage flag of row, emp mode: outsourced
+Connecting to 127.0.0.1 on ports 7669, 65497 as 1
+Running on outsourced MPC backend.
+party 1 connected to TP
+GB connected to 2
+GB connected to 3
+party 1 connected to TP
+GB connected to 2
+GB connected to 3
+initializing cot
+setup finished! takes 2401.97ms to finish setup
+[Linux]Peak resident set size: 6307667968 bytes, current memory size: 3607199744 bytes.
+Operator (9). smj cost : 90902136, nlj cost : 208800000, join type : keyed-sort-merge-join
+Total Plans : 2
+Operator #0 SecureSqlInput ran for 105.070000 ms, gate count: 0 output cardinality: 3000, row width=53
+
+Operator #1 SecureSqlInput ran for 0.045000 ms, gate count: 0 output cardinality: 0, row width=53
+
+Operator #2 MergeJoin ran for 55.455000 ms, gate count: 0 output cardinality: 3000, row width=105
+
+Operator #3 Project ran for 9834.733000 ms, gate count: 2958000 output cardinality: 3000, row width=53
+
+Estimated cost for#3: Project<Bit> ((<0, $0 shared-int32>, <1, $1 + $3 shared-float>)) : (#0 shared-int32(20) order_keys.o_orderkey, #1 shared-float anonymous) order by: {<0, ASC> }, cost est: 2958000, output card: 3000 : 2958000, Observed gates: 2958000, Error rate(%) : 0.000000
+
+Operator #4 Filter ran for 2328.519000 ms, gate count: 642000 output cardinality: 3000, row width=53
+
+Estimated cost for#4: Filter<Bit> ($1 > SECRET FLOAT) : (#0 shared-int32(20) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 639000, output card: 3000 : 639000, Observed gates: 642000, Error rate(%) : 0.467290
+
+Operator #5 SecureSqlInput ran for 243.780000 ms, gate count: 0 output cardinality: 3000, row width=95
+
+Operator #6 MergeJoin ran for 1189.761000 ms, gate count: 6000 output cardinality: 3000, row width=147
+
+Estimated cost for#6: MergeJoin<Bit> (no-op) : (#0 shared-int32(20) order_keys.o_orderkey, #1 shared-float sum_qty, #2 shared-int32(20) orders.o_orderkey, #3 shared-int32(14) orders.o_custkey, #4 shared-float orders.o_totalprice, #5 shared-int64(28) orders.o_orderdate) order by: {<0, ASC> }, cost est: 9000, output card: 3000 : 9000, Observed gates: 6000, Error rate(%) : 50.000000
+
+Operator #7 Project ran for 49.029000 ms, gate count: 0 output cardinality: 3000, row width=127
+
+Operator #8 SecureSqlInput ran for 57.606000 ms, gate count: 0 output cardinality: 300, row width=215
+
+extension finished! takes 1743.27ms to extend lpn
+extension finished! takes 2026.99ms to extend lpn
+extension finished! takes 1663.16ms to extend lpn
+extension finished! takes 1728.11ms to extend lpn
+extension finished! takes 1730.58ms to extend lpn
+extension finished! takes 1627.57ms to extend lpn
+extension finished! takes 1666.04ms to extend lpn
+extension finished! takes 1627.71ms to extend lpn
+extension finished! takes 1695.19ms to extend lpn
+extension finished! takes 1898.19ms to extend lpn
+extension finished! takes 1639.73ms to extend lpn
+extension finished! takes 1622.29ms to extend lpn
+extension finished! takes 1711.52ms to extend lpn
+extension finished! takes 1675.83ms to extend lpn
+extension finished! takes 1675.88ms to extend lpn
+extension finished! takes 1659.07ms to extend lpn
+extension finished! takes 1673.28ms to extend lpn
+extension finished! takes 1690.83ms to extend lpn
+extension finished! takes 1659.96ms to extend lpn
+extension finished! takes 1668.06ms to extend lpn
+extension finished! takes 1662.1ms to extend lpn
+Operator #9 SortMergeJoin ran for 414905.481000 ms, gate count: 108274006 output cardinality: 3000, row width=341
+
+Estimated cost for#9: SortMergeJoin<Bit> (P$1(14) == P$5(14)) : (#0 shared-int32(20) order_keys.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-float sum_qty, #5 shared-int32(14) customer.c_custkey, #6 shared-varchar(25) customer.c_name) order by: {<1, ASC> , <5, ASC> }, cost est: 90902136, output card: 3000 : 90902136, Observed gates: 108274006, Error rate(%) : 16.044361
+
+Operator #10 Project ran for 89.377000 ms, gate count: 0 output cardinality: 3000, row width=327
+
+extension finished! takes 1629.96ms to extend lpn
+extension finished! takes 1707.03ms to extend lpn
+extension finished! takes 1679.93ms to extend lpn
+extension finished! takes 1684.86ms to extend lpn
+extension finished! takes 1627.07ms to extend lpn
+extension finished! takes 1706.61ms to extend lpn
+extension finished! takes 1651.41ms to extend lpn
+extension finished! takes 1619.44ms to extend lpn
+Operator #11 Sort ran for 151566.408000 ms, gate count: 40922400 output cardinality: 100, row width=327
+
+Estimated cost for#11: Sort<Bit> ({<-1, ASC> , <4, DESC> , <3, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) order_keys.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <4, DESC> , <3, ASC> }, cost est: 504037, output card: 100 : 504037, Observed gates: 40922400, Error rate(%) : 98.768311
+
+Plan Enumeration Time : 0.004612 sec
+Time: 580.54 sec, CPU clock ticks: 5.41147e+08,CPU clock ticks per second: 541.147
+End-to-end estimated gates: 9.50212e+07. observed gates: 149196406 gates, relative error (%)=36.3113
+[Linux]Peak resident set size: 6307667968 bytes, current memory size: 3918307328 bytes.
+Memory Usage: 6307667968 bytes
+Bandwidth: 0 Bps
+party 1 send 0 bytes to party 2
+party 1 send 0 bytes to party 3
+party 1 send 0 bytes to TP 
+total AND gate: 149196406
+[       OK ] SecurePlanEnumerationTest.tpch_q18 (583254 ms)
+[----------] 6 tests from SecurePlanEnumerationTest (10207571 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (10207571 ms total)
+[  PASSED  ] 6 tests.

@@ -1,0 +1,656 @@
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecurePlanEnumerationTest
+[ RUN      ] SecurePlanEnumerationTest.tpch_q1
+Protocol: outsourced
+Received storage flag of row, emp mode: outsourced
+Connecting to 127.0.0.1 on ports 7654, 65482 as 10086
+Running on outsourced MPC backend.
+TP connected to 1
+TP connected to 2
+TP connected to 3
+TP connected to 1
+TP connected to 2
+TP connected to 3
+initializing cot
+setup finished! takes 1693.13ms to finish setup
+[Linux]Peak resident set size: 66482176 bytes, current memory size: 30085120 bytes.
+Total Plans : 1
+Plan Enumeration Time : 0.000988 sec
+Time: 0.522252 sec, CPU clock ticks: 118862,CPU clock ticks per second: 0.118862
+End-to-end estimated gates: 163614. observed gates: 128100 gates, relative error (%)=27.7237
+[Linux]Peak resident set size: 66482176 bytes, current memory size: 34897920 bytes.
+Memory Usage: 66482176 bytes
+Bandwidth: 1.55291e+06 Bps
+TP send 12547474 bytes to party 1
+TP send 12467059 bytes to party 2
+TP send 12467059 bytes to party 3
+total AND gate: 128100
+[       OK ] SecurePlanEnumerationTest.tpch_q1 (9076 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q3
+Protocol: outsourced
+Received storage flag of row, emp mode: outsourced
+Connecting to 127.0.0.1 on ports 7657, 65485 as 10086
+Running on outsourced MPC backend.
+TP connected to 1
+TP connected to 2
+TP connected to 3
+TP connected to 1
+TP connected to 2
+TP connected to 3
+initializing cot
+setup finished! takes 1327.56ms to finish setup
+[Linux]Peak resident set size: 75886592 bytes, current memory size: 75886592 bytes.
+Operator (2). smj cost : 51531092, nlj cost : 28800000, join type : nested-loop-join
+Operator (5). smj cost : 234380281, nlj cost : 3743688000, join type : keyed-sort-merge-join
+Cost : 242711230, combination : 0
+Cost : 369433681920, combination : 1
+Total Plans : 96
+extension finished! takes 76.662ms to extend lpn
+extension finished! takes 76.848ms to extend lpn
+extension finished! takes 79.899ms to extend lpn
+extension finished! takes 76.782ms to extend lpn
+extension finished! takes 76.973ms to extend lpn
+extension finished! takes 77.009ms to extend lpn
+extension finished! takes 76.717ms to extend lpn
+extension finished! takes 77.593ms to extend lpn
+extension finished! takes 76.983ms to extend lpn
+extension finished! takes 157.501ms to extend lpn
+extension finished! takes 76.979ms to extend lpn
+extension finished! takes 80.511ms to extend lpn
+extension finished! takes 76.719ms to extend lpn
+extension finished! takes 76.789ms to extend lpn
+extension finished! takes 157.227ms to extend lpn
+extension finished! takes 99.96ms to extend lpn
+extension finished! takes 76.966ms to extend lpn
+extension finished! takes 157.669ms to extend lpn
+extension finished! takes 143.895ms to extend lpn
+extension finished! takes 135.257ms to extend lpn
+extension finished! takes 76.717ms to extend lpn
+extension finished! takes 76.956ms to extend lpn
+extension finished! takes 77.211ms to extend lpn
+extension finished! takes 76.642ms to extend lpn
+extension finished! takes 76.84ms to extend lpn
+extension finished! takes 77.434ms to extend lpn
+extension finished! takes 157.51ms to extend lpn
+extension finished! takes 76.347ms to extend lpn
+extension finished! takes 76.75ms to extend lpn
+extension finished! takes 156.524ms to extend lpn
+extension finished! takes 149.78ms to extend lpn
+extension finished! takes 84.017ms to extend lpn
+extension finished! takes 76.585ms to extend lpn
+extension finished! takes 156.577ms to extend lpn
+extension finished! takes 115.864ms to extend lpn
+extension finished! takes 76.44ms to extend lpn
+extension finished! takes 79.584ms to extend lpn
+extension finished! takes 76.847ms to extend lpn
+extension finished! takes 129.67ms to extend lpn
+extension finished! takes 76.644ms to extend lpn
+extension finished! takes 77.018ms to extend lpn
+extension finished! takes 103.428ms to extend lpn
+extension finished! takes 76.624ms to extend lpn
+extension finished! takes 123.911ms to extend lpn
+extension finished! takes 157.251ms to extend lpn
+extension finished! takes 77.001ms to extend lpn
+extension finished! takes 76.814ms to extend lpn
+extension finished! takes 76.56ms to extend lpn
+extension finished! takes 76.807ms to extend lpn
+extension finished! takes 76.643ms to extend lpn
+extension finished! takes 77.061ms to extend lpn
+extension finished! takes 76.698ms to extend lpn
+extension finished! takes 136.122ms to extend lpn
+extension finished! takes 76.756ms to extend lpn
+extension finished! takes 157.683ms to extend lpn
+extension finished! takes 76.731ms to extend lpn
+extension finished! takes 157.41ms to extend lpn
+extension finished! takes 76.993ms to extend lpn
+extension finished! takes 157.175ms to extend lpn
+extension finished! takes 145.426ms to extend lpn
+extension finished! takes 76.57ms to extend lpn
+extension finished! takes 157.121ms to extend lpn
+extension finished! takes 76.574ms to extend lpn
+extension finished! takes 76.772ms to extend lpn
+extension finished! takes 157.35ms to extend lpn
+extension finished! takes 76.143ms to extend lpn
+extension finished! takes 76.765ms to extend lpn
+extension finished! takes 157.765ms to extend lpn
+extension finished! takes 156.881ms to extend lpn
+extension finished! takes 103.603ms to extend lpn
+extension finished! takes 157.573ms to extend lpn
+extension finished! takes 76.655ms to extend lpn
+extension finished! takes 157.093ms to extend lpn
+extension finished! takes 157.78ms to extend lpn
+extension finished! takes 134.872ms to extend lpn
+Plan Enumeration Time : 0.142336 sec
+Time: 1925.5 sec, CPU clock ticks: 1.61124e+09,CPU clock ticks per second: 1611.24
+End-to-end estimated gates: 3.86416e+08. observed gates: 379019161 gates, relative error (%)=1.95167
+[Linux]Peak resident set size: 1836937216 bytes, current memory size: 113328128 bytes.
+Memory Usage: 1836937216 bytes
+Bandwidth: 3.0536e+07 Bps
+TP send 121212052 bytes to party 1
+TP send 90685459 bytes to party 2
+TP send 90685459 bytes to party 3
+total AND gate: 379019161
+[       OK ] SecurePlanEnumerationTest.tpch_q3 (1928021 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q5
+Protocol: outsourced
+Received storage flag of row, emp mode: outsourced
+Connecting to 127.0.0.1 on ports 7660, 65488 as 10086
+Running on outsourced MPC backend.
+TP connected to 1
+TP connected to 2
+TP connected to 3
+TP connected to 1
+TP connected to 2
+TP connected to 3
+initializing cot
+setup finished! takes 1300.55ms to finish setup
+[Linux]Peak resident set size: 1836937216 bytes, current memory size: 123551744 bytes.
+Operator (2). smj cost : 28453360, nlj cost : 6327000, join type : nested-loop-join
+Operator (5). smj cost : 208620172, nlj cost : 1763853000, join type : keyed-sort-merge-join
+Operator (8). smj cost : 424687422, nlj cost : 8927256, join type : nested-loop-join
+Cost : 434243056, combination : 0
+Cost : 91194983, combination : 1
+Total Plans : 576
+extension finished! takes 78.045ms to extend lpn
+extension finished! takes 79.058ms to extend lpn
+extension finished! takes 162.324ms to extend lpn
+extension finished! takes 78.623ms to extend lpn
+extension finished! takes 78.849ms to extend lpn
+extension finished! takes 78.981ms to extend lpn
+extension finished! takes 78.969ms to extend lpn
+extension finished! takes 138.801ms to extend lpn
+extension finished! takes 79.857ms to extend lpn
+extension finished! takes 79.154ms to extend lpn
+extension finished! takes 78.806ms to extend lpn
+extension finished! takes 153.749ms to extend lpn
+extension finished! takes 121.876ms to extend lpn
+extension finished! takes 79.105ms to extend lpn
+extension finished! takes 89.906ms to extend lpn
+extension finished! takes 79.061ms to extend lpn
+extension finished! takes 139.047ms to extend lpn
+extension finished! takes 79.422ms to extend lpn
+extension finished! takes 82.861ms to extend lpn
+extension finished! takes 79.375ms to extend lpn
+extension finished! takes 138.838ms to extend lpn
+extension finished! takes 147.84ms to extend lpn
+extension finished! takes 111.825ms to extend lpn
+extension finished! takes 87.058ms to extend lpn
+extension finished! takes 112.122ms to extend lpn
+extension finished! takes 79.124ms to extend lpn
+extension finished! takes 78.856ms to extend lpn
+extension finished! takes 79.192ms to extend lpn
+extension finished! takes 106.169ms to extend lpn
+extension finished! takes 131.689ms to extend lpn
+extension finished! takes 86.596ms to extend lpn
+extension finished! takes 79.045ms to extend lpn
+extension finished! takes 140.587ms to extend lpn
+extension finished! takes 79.86ms to extend lpn
+extension finished! takes 80.804ms to extend lpn
+extension finished! takes 132.276ms to extend lpn
+extension finished! takes 161.661ms to extend lpn
+extension finished! takes 79.256ms to extend lpn
+extension finished! takes 86.033ms to extend lpn
+extension finished! takes 161.641ms to extend lpn
+extension finished! takes 78.787ms to extend lpn
+extension finished! takes 79.544ms to extend lpn
+extension finished! takes 78.546ms to extend lpn
+extension finished! takes 115.021ms to extend lpn
+extension finished! takes 160.487ms to extend lpn
+extension finished! takes 137.127ms to extend lpn
+extension finished! takes 161.372ms to extend lpn
+extension finished! takes 84.215ms to extend lpn
+extension finished! takes 77.938ms to extend lpn
+extension finished! takes 148.178ms to extend lpn
+extension finished! takes 93.694ms to extend lpn
+extension finished! takes 159.996ms to extend lpn
+extension finished! takes 147.542ms to extend lpn
+extension finished! takes 160.687ms to extend lpn
+extension finished! takes 91.253ms to extend lpn
+extension finished! takes 145.944ms to extend lpn
+extension finished! takes 154.591ms to extend lpn
+extension finished! takes 77.997ms to extend lpn
+extension finished! takes 159.719ms to extend lpn
+extension finished! takes 158.227ms to extend lpn
+Plan Enumeration Time : 0.800053 sec
+Time: 1334.83 sec, CPU clock ticks: 1.10018e+09,CPU clock ticks per second: 1100.18
+End-to-end estimated gates: 3.15069e+08. observed gates: 302440759 gates, relative error (%)=4.17557
+[Linux]Peak resident set size: 1836937216 bytes, current memory size: 359337984 bytes.
+Memory Usage: 1836937216 bytes
+Bandwidth: 2.9481e+07 Bps
+TP send 103873010 bytes to party 1
+TP send 75041779 bytes to party 2
+TP send 75041779 bytes to party 3
+total AND gate: 302440759
+[       OK ] SecurePlanEnumerationTest.tpch_q5 (1336417 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q8
+Protocol: outsourced
+Received storage flag of row, emp mode: outsourced
+Connecting to 127.0.0.1 on ports 7663, 65491 as 10086
+Running on outsourced MPC backend.
+TP connected to 1
+TP connected to 2
+TP connected to 3
+TP connected to 1
+TP connected to 2
+TP connected to 3
+initializing cot
+setup finished! takes 1354.15ms to finish setup
+[Linux]Peak resident set size: 1836937216 bytes, current memory size: 359288832 bytes.
+Operator (2). smj cost : 37931910, nlj cost : 5568000, join type : nested-loop-join
+Operator (5). smj cost : 278929732, nlj cost : 2735772000, join type : keyed-sort-merge-join
+Operator (8). smj cost : 201272370, nlj cost : 5999500, join type : nested-loop-join
+Cost : 151374739, combination : 0
+Cost : 56738990, combination : 1
+Total Plans : 768
+extension finished! takes 73.569ms to extend lpn
+extension finished! takes 122.925ms to extend lpn
+extension finished! takes 142.648ms to extend lpn
+extension finished! takes 79.414ms to extend lpn
+extension finished! takes 79.932ms to extend lpn
+extension finished! takes 122.892ms to extend lpn
+extension finished! takes 79.73ms to extend lpn
+extension finished! takes 79.432ms to extend lpn
+extension finished! takes 79.581ms to extend lpn
+extension finished! takes 79.915ms to extend lpn
+extension finished! takes 79.447ms to extend lpn
+extension finished! takes 79.679ms to extend lpn
+extension finished! takes 83.261ms to extend lpn
+extension finished! takes 150.793ms to extend lpn
+extension finished! takes 162.746ms to extend lpn
+extension finished! takes 131.584ms to extend lpn
+extension finished! takes 79.744ms to extend lpn
+extension finished! takes 90.46ms to extend lpn
+extension finished! takes 79.552ms to extend lpn
+extension finished! takes 79.487ms to extend lpn
+extension finished! takes 80.321ms to extend lpn
+extension finished! takes 163.353ms to extend lpn
+extension finished! takes 98.985ms to extend lpn
+extension finished! takes 80.709ms to extend lpn
+extension finished! takes 79.151ms to extend lpn
+extension finished! takes 79.455ms to extend lpn
+extension finished! takes 79.43ms to extend lpn
+extension finished! takes 79.006ms to extend lpn
+extension finished! takes 79.25ms to extend lpn
+extension finished! takes 83.25ms to extend lpn
+extension finished! takes 95.612ms to extend lpn
+extension finished! takes 163.156ms to extend lpn
+extension finished! takes 79.721ms to extend lpn
+extension finished! takes 79.482ms to extend lpn
+extension finished! takes 83.673ms to extend lpn
+extension finished! takes 79.815ms to extend lpn
+extension finished! takes 163.068ms to extend lpn
+extension finished! takes 79.534ms to extend lpn
+extension finished! takes 79.624ms to extend lpn
+extension finished! takes 79.564ms to extend lpn
+extension finished! takes 79.15ms to extend lpn
+extension finished! takes 78.917ms to extend lpn
+extension finished! takes 163.125ms to extend lpn
+extension finished! takes 162.161ms to extend lpn
+extension finished! takes 139.591ms to extend lpn
+extension finished! takes 162.494ms to extend lpn
+extension finished! takes 163.239ms to extend lpn
+extension finished! takes 163.207ms to extend lpn
+extension finished! takes 162.728ms to extend lpn
+extension finished! takes 163.314ms to extend lpn
+extension finished! takes 162.811ms to extend lpn
+extension finished! takes 162.797ms to extend lpn
+Plan Enumeration Time : 0.938894 sec
+Time: 1311.31 sec, CPU clock ticks: 1.10319e+09,CPU clock ticks per second: 1103.19
+End-to-end estimated gates: 2.76927e+08. observed gates: 264585543 gates, relative error (%)=4.66432
+[Linux]Peak resident set size: 2206773248 bytes, current memory size: 735707136 bytes.
+Memory Usage: 2206773248 bytes
+Bandwidth: 3.14151e+07 Bps
+TP send 98571078 bytes to party 1
+TP send 66698483 bytes to party 2
+TP send 66698483 bytes to party 3
+total AND gate: 264585543
+[       OK ] SecurePlanEnumerationTest.tpch_q8 (1314101 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q9
+Protocol: outsourced
+Received storage flag of row, emp mode: outsourced
+Connecting to 127.0.0.1 on ports 7666, 65494 as 10086
+Running on outsourced MPC backend.
+TP connected to 1
+TP connected to 2
+TP connected to 3
+TP connected to 1
+TP connected to 2
+TP connected to 3
+initializing cot
+setup finished! takes 1190.44ms to finish setup
+[Linux]Peak resident set size: 2206773248 bytes, current memory size: 745385984 bytes.
+Operator (2). smj cost : 1231628, nlj cost : 412160, join type : nested-loop-join
+Operator (5). smj cost : 504505862, nlj cost : 342211480, join type : nested-loop-join
+Operator (8). smj cost : 480532466, nlj cost : 2735772000, join type : keyed-sort-merge-join
+Cost : 316127344, combination : 0
+Cost : 3327508572, combination : 1
+Total Plans : 3072
+extension finished! takes 84.799ms to extend lpn
+extension finished! takes 78.242ms to extend lpn
+extension finished! takes 127.924ms to extend lpn
+extension finished! takes 78.4ms to extend lpn
+extension finished! takes 77.849ms to extend lpn
+extension finished! takes 77.959ms to extend lpn
+extension finished! takes 78.175ms to extend lpn
+extension finished! takes 159.126ms to extend lpn
+extension finished! takes 77.645ms to extend lpn
+extension finished! takes 78.001ms to extend lpn
+extension finished! takes 88.452ms to extend lpn
+extension finished! takes 127.897ms to extend lpn
+extension finished! takes 147.279ms to extend lpn
+extension finished! takes 77.555ms to extend lpn
+extension finished! takes 77.89ms to extend lpn
+extension finished! takes 81.505ms to extend lpn
+extension finished! takes 158.592ms to extend lpn
+extension finished! takes 77.769ms to extend lpn
+extension finished! takes 84.886ms to extend lpn
+extension finished! takes 77.835ms to extend lpn
+extension finished! takes 158.962ms to extend lpn
+extension finished! takes 77.896ms to extend lpn
+extension finished! takes 77.94ms to extend lpn
+extension finished! takes 77.935ms to extend lpn
+extension finished! takes 77.773ms to extend lpn
+extension finished! takes 159.096ms to extend lpn
+extension finished! takes 77.7ms to extend lpn
+extension finished! takes 77.918ms to extend lpn
+extension finished! takes 77.672ms to extend lpn
+extension finished! takes 81.459ms to extend lpn
+extension finished! takes 78.571ms to extend lpn
+extension finished! takes 146.915ms to extend lpn
+extension finished! takes 92.573ms to extend lpn
+extension finished! takes 81.21ms to extend lpn
+extension finished! takes 81.599ms to extend lpn
+extension finished! takes 78.41ms to extend lpn
+extension finished! takes 77.89ms to extend lpn
+extension finished! takes 78.003ms to extend lpn
+extension finished! takes 78.165ms to extend lpn
+extension finished! takes 77.953ms to extend lpn
+extension finished! takes 146.844ms to extend lpn
+extension finished! takes 77.199ms to extend lpn
+extension finished! takes 159.44ms to extend lpn
+extension finished! takes 78.862ms to extend lpn
+extension finished! takes 81.508ms to extend lpn
+extension finished! takes 77.952ms to extend lpn
+extension finished! takes 77.644ms to extend lpn
+extension finished! takes 78.032ms to extend lpn
+extension finished! takes 138.81ms to extend lpn
+extension finished! takes 79.131ms to extend lpn
+extension finished! takes 159.026ms to extend lpn
+extension finished! takes 159.279ms to extend lpn
+extension finished! takes 159.163ms to extend lpn
+extension finished! takes 77.635ms to extend lpn
+extension finished! takes 78.388ms to extend lpn
+extension finished! takes 78.009ms to extend lpn
+extension finished! takes 159.265ms to extend lpn
+extension finished! takes 136.766ms to extend lpn
+extension finished! takes 77.401ms to extend lpn
+extension finished! takes 78.179ms to extend lpn
+extension finished! takes 91.676ms to extend lpn
+extension finished! takes 147.367ms to extend lpn
+extension finished! takes 78.229ms to extend lpn
+extension finished! takes 77.561ms to extend lpn
+extension finished! takes 78.149ms to extend lpn
+extension finished! takes 159.203ms to extend lpn
+extension finished! takes 158.199ms to extend lpn
+extension finished! takes 147.412ms to extend lpn
+extension finished! takes 91.581ms to extend lpn
+extension finished! takes 131.151ms to extend lpn
+extension finished! takes 147.817ms to extend lpn
+extension finished! takes 159.115ms to extend lpn
+extension finished! takes 142.035ms to extend lpn
+extension finished! takes 159.112ms to extend lpn
+extension finished! takes 147.349ms to extend lpn
+extension finished! takes 159.15ms to extend lpn
+extension finished! takes 77.466ms to extend lpn
+extension finished! takes 134.368ms to extend lpn
+extension finished! takes 159.112ms to extend lpn
+extension finished! takes 157.842ms to extend lpn
+extension finished! takes 159.776ms to extend lpn
+extension finished! takes 147.691ms to extend lpn
+extension finished! takes 159.011ms to extend lpn
+extension finished! takes 159.607ms to extend lpn
+extension finished! takes 108.622ms to extend lpn
+extension finished! takes 157.491ms to extend lpn
+extension finished! takes 158.954ms to extend lpn
+extension finished! takes 153.291ms to extend lpn
+extension finished! takes 159.83ms to extend lpn
+extension finished! takes 159.104ms to extend lpn
+extension finished! takes 159.572ms to extend lpn
+extension finished! takes 99.187ms to extend lpn
+extension finished! takes 159.087ms to extend lpn
+extension finished! takes 159.508ms to extend lpn
+extension finished! takes 159.193ms to extend lpn
+extension finished! takes 159.408ms to extend lpn
+extension finished! takes 158.781ms to extend lpn
+extension finished! takes 159.542ms to extend lpn
+extension finished! takes 156.12ms to extend lpn
+extension finished! takes 159.325ms to extend lpn
+extension finished! takes 159.857ms to extend lpn
+extension finished! takes 159.157ms to extend lpn
+extension finished! takes 160.392ms to extend lpn
+extension finished! takes 159.666ms to extend lpn
+extension finished! takes 159.133ms to extend lpn
+extension finished! takes 149.515ms to extend lpn
+extension finished! takes 151.912ms to extend lpn
+extension finished! takes 158.963ms to extend lpn
+extension finished! takes 158.817ms to extend lpn
+extension finished! takes 159.159ms to extend lpn
+extension finished! takes 159.163ms to extend lpn
+extension finished! takes 159.435ms to extend lpn
+extension finished! takes 158.739ms to extend lpn
+extension finished! takes 158.691ms to extend lpn
+extension finished! takes 159.291ms to extend lpn
+extension finished! takes 126.833ms to extend lpn
+extension finished! takes 158.497ms to extend lpn
+extension finished! takes 158.994ms to extend lpn
+extension finished! takes 159.401ms to extend lpn
+extension finished! takes 159.087ms to extend lpn
+extension finished! takes 158.73ms to extend lpn
+extension finished! takes 158.849ms to extend lpn
+extension finished! takes 158.976ms to extend lpn
+extension finished! takes 159.355ms to extend lpn
+extension finished! takes 159.326ms to extend lpn
+extension finished! takes 159.418ms to extend lpn
+extension finished! takes 159.357ms to extend lpn
+extension finished! takes 159.265ms to extend lpn
+extension finished! takes 149.048ms to extend lpn
+extension finished! takes 159.215ms to extend lpn
+extension finished! takes 159.267ms to extend lpn
+extension finished! takes 146.866ms to extend lpn
+extension finished! takes 159.343ms to extend lpn
+extension finished! takes 159.314ms to extend lpn
+extension finished! takes 152.971ms to extend lpn
+extension finished! takes 137.96ms to extend lpn
+extension finished! takes 159.13ms to extend lpn
+extension finished! takes 159.753ms to extend lpn
+extension finished! takes 158.957ms to extend lpn
+extension finished! takes 159.056ms to extend lpn
+extension finished! takes 159.952ms to extend lpn
+extension finished! takes 158.678ms to extend lpn
+extension finished! takes 150.671ms to extend lpn
+extension finished! takes 159.015ms to extend lpn
+extension finished! takes 159.749ms to extend lpn
+extension finished! takes 158.759ms to extend lpn
+extension finished! takes 158.959ms to extend lpn
+extension finished! takes 159.829ms to extend lpn
+extension finished! takes 159.032ms to extend lpn
+extension finished! takes 159.301ms to extend lpn
+extension finished! takes 159.603ms to extend lpn
+extension finished! takes 159.465ms to extend lpn
+extension finished! takes 159.578ms to extend lpn
+extension finished! takes 159.086ms to extend lpn
+extension finished! takes 159.322ms to extend lpn
+extension finished! takes 160.117ms to extend lpn
+extension finished! takes 159.167ms to extend lpn
+extension finished! takes 160.014ms to extend lpn
+extension finished! takes 159.272ms to extend lpn
+extension finished! takes 159.219ms to extend lpn
+extension finished! takes 159.271ms to extend lpn
+extension finished! takes 159.429ms to extend lpn
+extension finished! takes 159.127ms to extend lpn
+extension finished! takes 158.848ms to extend lpn
+extension finished! takes 159.528ms to extend lpn
+extension finished! takes 159.211ms to extend lpn
+extension finished! takes 159.518ms to extend lpn
+extension finished! takes 157.797ms to extend lpn
+extension finished! takes 159.301ms to extend lpn
+extension finished! takes 159.272ms to extend lpn
+extension finished! takes 159.383ms to extend lpn
+extension finished! takes 160.036ms to extend lpn
+extension finished! takes 160.282ms to extend lpn
+extension finished! takes 159.037ms to extend lpn
+extension finished! takes 159.37ms to extend lpn
+extension finished! takes 159.949ms to extend lpn
+extension finished! takes 158.897ms to extend lpn
+extension finished! takes 159.354ms to extend lpn
+extension finished! takes 77.613ms to extend lpn
+extension finished! takes 159.72ms to extend lpn
+extension finished! takes 160.183ms to extend lpn
+extension finished! takes 159.242ms to extend lpn
+extension finished! takes 159.537ms to extend lpn
+extension finished! takes 159.208ms to extend lpn
+extension finished! takes 159.116ms to extend lpn
+extension finished! takes 159.261ms to extend lpn
+extension finished! takes 154.973ms to extend lpn
+extension finished! takes 159.36ms to extend lpn
+extension finished! takes 159.098ms to extend lpn
+extension finished! takes 159.528ms to extend lpn
+extension finished! takes 155.957ms to extend lpn
+extension finished! takes 159.663ms to extend lpn
+extension finished! takes 159.013ms to extend lpn
+extension finished! takes 158.814ms to extend lpn
+extension finished! takes 77.731ms to extend lpn
+extension finished! takes 154.706ms to extend lpn
+extension finished! takes 152.387ms to extend lpn
+extension finished! takes 153.679ms to extend lpn
+extension finished! takes 151.684ms to extend lpn
+extension finished! takes 152.656ms to extend lpn
+extension finished! takes 151.832ms to extend lpn
+extension finished! takes 152.236ms to extend lpn
+extension finished! takes 151.515ms to extend lpn
+extension finished! takes 151.392ms to extend lpn
+extension finished! takes 151.554ms to extend lpn
+extension finished! takes 159.218ms to extend lpn
+extension finished! takes 159.396ms to extend lpn
+extension finished! takes 159.896ms to extend lpn
+extension finished! takes 158.914ms to extend lpn
+extension finished! takes 159.198ms to extend lpn
+extension finished! takes 158.638ms to extend lpn
+extension finished! takes 158.239ms to extend lpn
+extension finished! takes 158.974ms to extend lpn
+extension finished! takes 158.86ms to extend lpn
+extension finished! takes 158.936ms to extend lpn
+extension finished! takes 159.933ms to extend lpn
+extension finished! takes 159.897ms to extend lpn
+extension finished! takes 151.576ms to extend lpn
+extension finished! takes 152.045ms to extend lpn
+extension finished! takes 151.736ms to extend lpn
+extension finished! takes 151.832ms to extend lpn
+extension finished! takes 152.066ms to extend lpn
+extension finished! takes 151.916ms to extend lpn
+extension finished! takes 150.915ms to extend lpn
+extension finished! takes 151.521ms to extend lpn
+extension finished! takes 152.495ms to extend lpn
+extension finished! takes 152.745ms to extend lpn
+extension finished! takes 151.999ms to extend lpn
+extension finished! takes 159.526ms to extend lpn
+extension finished! takes 158.854ms to extend lpn
+extension finished! takes 159.398ms to extend lpn
+extension finished! takes 159.404ms to extend lpn
+extension finished! takes 159.331ms to extend lpn
+extension finished! takes 159.184ms to extend lpn
+extension finished! takes 159.539ms to extend lpn
+extension finished! takes 160.144ms to extend lpn
+extension finished! takes 158.978ms to extend lpn
+extension finished! takes 158.779ms to extend lpn
+extension finished! takes 158.949ms to extend lpn
+extension finished! takes 159.929ms to extend lpn
+extension finished! takes 150.634ms to extend lpn
+extension finished! takes 151.738ms to extend lpn
+extension finished! takes 152.888ms to extend lpn
+extension finished! takes 151.954ms to extend lpn
+extension finished! takes 151.609ms to extend lpn
+extension finished! takes 150.892ms to extend lpn
+extension finished! takes 152.444ms to extend lpn
+extension finished! takes 151.508ms to extend lpn
+extension finished! takes 151.745ms to extend lpn
+extension finished! takes 150.628ms to extend lpn
+extension finished! takes 151.799ms to extend lpn
+extension finished! takes 158.71ms to extend lpn
+extension finished! takes 76.143ms to extend lpn
+extension finished! takes 154.3ms to extend lpn
+extension finished! takes 134.475ms to extend lpn
+extension finished! takes 101.039ms to extend lpn
+Plan Enumeration Time : 2.88332 sec
+Time: 5037.81 sec, CPU clock ticks: 2.95881e+09,CPU clock ticks per second: 2958.81
+End-to-end estimated gates: 1.358e+09. observed gates: 1284940589 gates, relative error (%)=5.68592
+[Linux]Peak resident set size: 6580592640 bytes, current memory size: 3174383616 bytes.
+Memory Usage: 6580592640 bytes
+Bandwidth: 1.53679e+07 Bps
+TP send 341102330 bytes to party 1
+TP send 279452531 bytes to party 2
+TP send 279452531 bytes to party 3
+total AND gate: 1284940589
+[       OK ] SecurePlanEnumerationTest.tpch_q9 (5040625 ms)
+[ RUN      ] SecurePlanEnumerationTest.tpch_q18
+Protocol: outsourced
+Received storage flag of row, emp mode: outsourced
+Connecting to 127.0.0.1 on ports 7669, 65497 as 10086
+Running on outsourced MPC backend.
+TP connected to 1
+TP connected to 2
+TP connected to 3
+TP connected to 1
+TP connected to 2
+TP connected to 3
+initializing cot
+setup finished! takes 1539.17ms to finish setup
+[Linux]Peak resident set size: 6580592640 bytes, current memory size: 3184332800 bytes.
+Operator (9). smj cost : 90902136, nlj cost : 208800000, join type : keyed-sort-merge-join
+Total Plans : 2
+extension finished! takes 130.966ms to extend lpn
+extension finished! takes 149.493ms to extend lpn
+extension finished! takes 147.321ms to extend lpn
+extension finished! takes 149.047ms to extend lpn
+extension finished! takes 142.858ms to extend lpn
+extension finished! takes 147.752ms to extend lpn
+extension finished! takes 147.606ms to extend lpn
+extension finished! takes 147.535ms to extend lpn
+extension finished! takes 132.788ms to extend lpn
+extension finished! takes 147.043ms to extend lpn
+extension finished! takes 148.769ms to extend lpn
+extension finished! takes 148.798ms to extend lpn
+extension finished! takes 138.569ms to extend lpn
+extension finished! takes 148.81ms to extend lpn
+extension finished! takes 147.998ms to extend lpn
+extension finished! takes 147.767ms to extend lpn
+extension finished! takes 148.173ms to extend lpn
+extension finished! takes 150.026ms to extend lpn
+extension finished! takes 147.285ms to extend lpn
+extension finished! takes 72.182ms to extend lpn
+extension finished! takes 148.346ms to extend lpn
+extension finished! takes 146.824ms to extend lpn
+extension finished! takes 147.397ms to extend lpn
+extension finished! takes 147.471ms to extend lpn
+extension finished! takes 147.426ms to extend lpn
+extension finished! takes 147.365ms to extend lpn
+extension finished! takes 147.088ms to extend lpn
+extension finished! takes 147.476ms to extend lpn
+extension finished! takes 148.017ms to extend lpn
+Plan Enumeration Time : 0.004298 sec
+Time: 581.412 sec, CPU clock ticks: 3.51624e+08,CPU clock ticks per second: 351.624
+End-to-end estimated gates: 9.50212e+07. observed gates: 149196406 gates, relative error (%)=36.3113
+[Linux]Peak resident set size: 6580592640 bytes, current memory size: 3385163776 bytes.
+Memory Usage: 6580592640 bytes
+Bandwidth: 1.32841e+07 Bps
+TP send 61434840 bytes to party 1
+TP send 42711507 bytes to party 2
+TP send 42711507 bytes to party 3
+total AND gate: 149196406
+[       OK ] SecurePlanEnumerationTest.tpch_q18 (584491 ms)
+[----------] 6 tests from SecurePlanEnumerationTest (10212733 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (10212733 ms total)
+[  PASSED  ] 6 tests.
