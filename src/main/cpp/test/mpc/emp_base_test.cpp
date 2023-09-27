@@ -73,7 +73,6 @@ void EmpBaseTest::SetUp()  {
 
     if(emp_mode_ == EmpMode::OUTSOURCED) { // host_list = {alice, bob, carol, trusted party}
 
-        cout << "Running on outsourced MPC backend.\n";
 //        string hosts[] = { // codd2
 //                          "129.105.61.179", // codd5 (Alice)
 //                          "129.105.61.184", // codd10 (Bob)
@@ -111,6 +110,8 @@ void EmpBaseTest::SetUp()  {
     s.initialize(db_name_, md, storage_model_);
     s.setEmptyDbName(empty_db_);
     s.emp_manager_ = manager_;
+    log->write("Finished connecting!", Level::INFO);
+
 }
 
 void EmpBaseTest::TearDown() {
