@@ -78,7 +78,7 @@ namespace  vaultdb {
 
             pair<ExpressionNode<B> *, ExpressionNode<B> * > result;
             if(expr->lhs_->kind() == ExpressionKind::LITERAL  && inputRef(expr->rhs_)) {
-                // traverse rhs first to cache schema
+                packed_expression_= true;
                 expr->rhs_->accept(this);
                 result.second = root_;
 
@@ -86,17 +86,19 @@ namespace  vaultdb {
                 expr->lhs_->accept(this);
                 convert_literal_ = false;
                 result.first = root_;
+                packed_expression_ = false;
                 return result;
             }
-            else if(expr->rhs_->kind() == ExpressionKind::LITERAL
-               && inputRef(expr->lhs_)) {
+            else if(expr->rhs_->kind() == ExpressionKind::LITERAL && inputRef(expr->lhs_)) {
+                packed_expression_= true;
                 expr->lhs_->accept(this);
                 result.first = root_;
 
-                if(last_schema_.bitPacked()) convert_literal_ = true;
+                if(last_schema_.bitPacked())  { convert_literal_ = true;  }
                 expr->rhs_->accept(this);
                 convert_literal_ = false;
                 result.second = root_;
+                packed_expression_ = false;
                 return result;
             }
             else if(inputRef(expr->lhs_) && inputRef(expr->rhs_)

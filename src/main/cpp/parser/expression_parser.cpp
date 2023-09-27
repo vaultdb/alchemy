@@ -34,15 +34,21 @@ Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const Qu
     TypeValidationVisitor<B> visitor(expression_root, input_schema);
     expression_root->accept(&visitor);
 
-
-    ToPackedExpressionVisitor<B> pack_it(expression_root);
-    expression_root->accept(&pack_it);
-
-
-    GenericExpression<B> *g =  new GenericExpression<B>(pack_it.getRoot(), input_schema);
+    GenericExpression<B> *g;
+    if(expression_root->kind() == ExpressionKind::INPUT_REF && std::is_same_v<B, emp::Bit> && SystemConfiguration::getInstance().bitPackingEnabled()) {
+        InputReference<B> *input_ref = (InputReference<B> *) expression_root;
+        auto packed = new PackedInputReference<B>(*input_ref);
+        delete input_ref;
+        expression_root = packed;
+        g = new GenericExpression<B>(expression_root, input_schema);
+    }
+    else {
+        ToPackedExpressionVisitor<B> pack_it(expression_root);
+        expression_root->accept(&pack_it);
+        g = new GenericExpression<B>(pack_it.getRoot(), input_schema);
+    }
 
     delete expression_root;
-
     return g;
 
 }
