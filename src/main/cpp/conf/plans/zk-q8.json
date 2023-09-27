@@ -350,7 +350,8 @@
             "name": "$1"
           },
           {
-            "literal": "PROMO BRUSHED COPPER     ",
+
+            "literal":  "LARGE ANODIZED STEEL     ",
             "type": {
               "type": "VARCHAR",
               "nullable": false,

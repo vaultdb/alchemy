@@ -74,13 +74,13 @@ void EmpBaseTest::SetUp()  {
     if(emp_mode_ == EmpMode::OUTSOURCED) { // host_list = {alice, bob, carol, trusted party}
 
         cout << "Running on outsourced MPC backend.\n";
-        string hosts[] = { // codd2
-                          "129.105.61.179", // codd5 (Alice)
-                          "129.105.61.184", // codd10 (Bob)
-                          "129.105.61.186", // codd12 (Carol)
-                          "129.105.61.176" // codd2 (TP)
-                           };
-        //string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
+//        string hosts[] = { // codd2
+//                          "129.105.61.179", // codd5 (Alice)
+//                          "129.105.61.184", // codd10 (Bob)
+//                          "129.105.61.186", // codd12 (Carol)
+//                          "129.105.61.176" // codd2 (TP)
+//                           };
+        string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
         manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
         db_name_ = (FLAGS_party == emp::TP) ? FLAGS_unioned_db : empty_db_;
         FLAGS_port += N;

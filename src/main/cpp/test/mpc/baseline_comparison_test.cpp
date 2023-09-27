@@ -34,17 +34,15 @@ class BaselineComparisonTest : public EmpBaseTest {
 protected:
 
     void controlBitPacking(const string &db_name);
-    void runTest_baseline(const int &test_id, const string &test_name,
-                          const SortDefinition &expected_sort);
+    void runTest_baseline(const int &test_id, const SortDefinition &expected_sort);
     void runTest_handcode(const int &test_id, const SortDefinition &expected_sort);
     string  generateExpectedOutputQuery(const int & test_id);
+    void runTest_all_mpc(const int &test_id,
+                         const SortDefinition &expected_sort);
 
     int input_tuple_limit_ = -1;
 
 };
-
-// most of these runs are not meaningful for diffing the results because they produce no tuples - joins are too sparse.
-// This isn't relevant to the parser so work on this elsewhere.
 
 void
 BaselineComparisonTest::controlBitPacking(const string &db_name) {
@@ -59,12 +57,53 @@ BaselineComparisonTest::controlBitPacking(const string &db_name) {
     }
 }
 
-void
-BaselineComparisonTest::runTest_baseline(const int &test_id, const string &test_name,
+void BaselineComparisonTest::runTest_all_mpc(const int &test_id,
+                                              const SortDefinition &expected_sort) {
+    controlBitPacking(FLAGS_unioned_db);
+    string test_name = "q" + std::to_string(test_id);
+    string expected_query = generateExpectedOutputQuery(test_id);
+
+    //cout << " Observed DB : "<< local_db << endl;
+
+    PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
+    expected->setSortOrder(expected_sort);
+
+//    ASSERT_TRUE(!expected->empty()); // want all tests to produce output
+
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/zk-" + test_name + ".json";
+
+    PlanParser<emp::Bit> parser(db_name_, plan_file, input_tuple_limit_);
+    SecureOperator *root = parser.getRoot();
+    //cout << "Parsed baseline plan for " << test_name <<  ":\n " << root->printTree() << endl;
+    SecureTable *result = root->run();
+
+    Logger* log = get_log();
+    log->write(root->printTree(), Level::DEBUG);
+    log->write("All MPC Baseline: ", Level::DEBUG);
+
+
+    log->write("Predicted gate count: " + std::to_string(root->planCost()), Level::INFO);
+    log->write("Observed gate count: " + std::to_string(root->planGateCount()), Level::INFO);
+    log->write("Runtime: " + std::to_string(root->planRuntime()), Level::INFO);
+
+    if(FLAGS_validation) {
+        PlainTable *observed = result->reveal();
+
+        ASSERT_EQ(*expected, *observed);
+        ASSERT_TRUE(!observed->empty()); // want all tests to produce output
+
+        delete observed;
+        delete expected;
+    }
+}
+
+
+void BaselineComparisonTest::runTest_baseline(const int &test_id,
                                          const SortDefinition &expected_sort) {
     controlBitPacking(FLAGS_unioned_db);
 
     string expected_query = generateExpectedOutputQuery(test_id);
+    string test_name = "q" + std::to_string(test_id);
 
     //cout << " Observed DB : "<< local_db << endl;
 
@@ -158,9 +197,53 @@ BaselineComparisonTest::generateExpectedOutputQuery(const int &test_id) {
 }
 
 
+TEST_F(BaselineComparisonTest, tpch_q1_all_mpc) {
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+    runTest_all_mpc(1,  expected_sort);
+}
+
+
+TEST_F(BaselineComparisonTest, tpch_q3_all_mpc) {
+    // dummy_tag (-1), 1 DESC, 2 ASC
+    // aka revenue desc,  o.o_orderdate
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(1, SortDirection::DESCENDING),
+                                 ColumnSort(2, SortDirection::ASCENDING)};
+    runTest_all_mpc(3,  expected_sort);
+}
+
+
+TEST_F(BaselineComparisonTest, tpch_q5_all_mpc) {
+    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+    runTest_all_mpc(5,  expected_sort);
+}
+
+TEST_F(BaselineComparisonTest, tpch_q8_all_mpc) {
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+    runTest_all_mpc(8,  expected_sort);
+}
+
+
+
+TEST_F(BaselineComparisonTest, tpch_q9_all_mpc) {
+    // $0 ASC, $1 DESC
+    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+    runTest_all_mpc(9,  expected_sort);
+}
+
+TEST_F(BaselineComparisonTest, tpch_q18_all_mpc) {
+    // -1 ASC, $4 DESC, $3 ASC
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(4, SortDirection::DESCENDING),
+                                 ColumnSort(3, SortDirection::ASCENDING)};
+
+    runTest_all_mpc(18,  expected_sort);
+}
+
+
 TEST_F(BaselineComparisonTest, tpch_q1_baseline) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest_baseline(1, "q1", expected_sort);
+    runTest_baseline(1,  expected_sort);
 }
 
 
@@ -170,18 +253,18 @@ TEST_F(BaselineComparisonTest, tpch_q3_baseline) {
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
-    runTest_baseline(3, "q3", expected_sort);
+    runTest_baseline(3,  expected_sort);
 }
 
 
 TEST_F(BaselineComparisonTest, tpch_q5_baseline) {
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest_baseline(5, "q5", expected_sort);
+    runTest_baseline(5,  expected_sort);
 }
 
 TEST_F(BaselineComparisonTest, tpch_q8_baseline) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest_baseline(8, "q8", expected_sort);
+    runTest_baseline(8,  expected_sort);
 }
 
 
@@ -189,7 +272,7 @@ TEST_F(BaselineComparisonTest, tpch_q8_baseline) {
 TEST_F(BaselineComparisonTest, tpch_q9_baseline) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest_baseline(9, "q9", expected_sort);
+    runTest_baseline(9,  expected_sort);
 }
 
 TEST_F(BaselineComparisonTest, tpch_q18_baseline) {
@@ -198,7 +281,7 @@ TEST_F(BaselineComparisonTest, tpch_q18_baseline) {
                                  ColumnSort(4, SortDirection::DESCENDING),
                                  ColumnSort(3, SortDirection::ASCENDING)};
 
-    runTest_baseline(18, "q18", expected_sort);
+    runTest_baseline(18,  expected_sort);
 }
 
 TEST_F(BaselineComparisonTest, tpch_q1_handcode) {

@@ -122,8 +122,7 @@ set(sources
 
 		opt/plan_cost.h
 		opt/operator_cost_model.cpp
-		opt/expression_cost_model.cpp
-		opt/plan_enumerator.cpp)
+		opt/expression_cost_model.cpp)
 
 
 

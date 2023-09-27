@@ -131,6 +131,12 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
             return new LiteralNode<B>(input_field);
 
         }
+        else if(type_str == "BOOL" || type_str == "BOOLEAN") {
+            bool literal_bool = literal.template get_value<bool>();
+            Field<B> input_field = Field<B>(FieldType::BOOL, Value(literal_bool));
+            return new LiteralNode<B>(input_field);
+        }
+
         throw std::invalid_argument("Parsing input of type " + type_str + " not yet implemented!");
 
     }
