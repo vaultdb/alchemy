@@ -139,7 +139,8 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
         }
         else if(type_str == "BOOL" || type_str == "BOOLEAN") {
             bool literal_bool = literal.template get_value<bool>();
-            Field<B> input_field = Field<B>(FieldType::BOOL, Value(literal_bool));
+            Field<B> input_field = (std::is_same_v<B, bool>) ?  Field<B>(FieldType::BOOL, Value(literal_bool)) :
+                                   Field<B>(FieldType::SECURE_BOOL, emp::Bit(literal_bool));
             return new LiteralNode<B>(input_field);
         }
 

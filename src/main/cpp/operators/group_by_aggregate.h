@@ -127,8 +127,7 @@ namespace vaultdb {
 
             for(i = 0; i < group_by_.size(); ++i) {
                 QueryFieldDesc src = input_schema.getField(group_by_[i]);
-                QueryFieldDesc dst(i, src.getName(), src.getTableName(), src.getType());
-                dst.setStringLength(src.getStringLength());
+                QueryFieldDesc dst(src, i);
                 output_schema.putField(dst);
             }
 
