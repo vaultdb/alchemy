@@ -1,0 +1,40 @@
+language: java
+
+# This is from https://github.com/travis-ci/travis-ci/issues/9036
+# postgresql uses the ramfs, need to increase it so we 
+# for TPC-H dataset
+before_install: 
+        - sudo mount -o remount,size=50% /var/ramfs
+
+addons:
+        apt:
+                sources:
+                        - llvm-toolchain-trusty-3.9
+                packages:
+                        - clang-3.9
+                        - libc++-dev
+                        - libc++abi-dev
+jdk:
+        - openjdk8
+
+services:
+        - postgresql
+
+cache:
+  directories:
+  - $HOME/.m2
+
+before_script:
+        - sudo ln -s `which clang++` /usr/bin/clang++
+        - sudo ln -s `which clang` /usr/bin/clang
+        - echo "Installing Emp..."
+        - wget https://goo.gl/wmt4KB -O install.sh && bash install.sh 
+        - echo "Completed Emp Install...creating healthlnk testDBs"
+        - /bin/bash conf/workload/testDB/create_test_dbs.sh 
+        - echo "Completed HealthLNK testDBs...creating TPC-H DBs"
+        - /bin/bash conf/workload/tpch/generate-and-load-data.sh 
+
+#This is a hacky way to reduce the log output from testing. Right now, 
+# travis will fail because the log size is > 4MB. Logging needs to be fixed. 
+script: 
+        set -o pipefail && mvn --quiet test -B | grep -B 40 -A 40 -i error
