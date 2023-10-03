@@ -24,11 +24,21 @@ namespace  vaultdb {
         void updateCollation() override {
             this->getChild(0)->updateCollation();
             this->getChild(1)->updateCollation();
-            // if FK is lhs, rhs has no dupes so no propagated sort order (but could propagate if needed, it just won't do anything)
+
             if(foreign_key_input_ == 0) {
                 this->sort_definition_ = this->getChild(0)->getSortOrder();
+                // lhs--> rhs
+                // only append if lhs has collation
+                if(!this->sort_definition_.empty()) {
+                    int lhs_col_cnt = this->getChild(0)->getOutputSchema().getFieldCount();
+                    for(auto col : this->sort_definition_) {
+                        auto col_sort = ColumnSort(col.first + lhs_col_cnt, col.second);
+                        this->sort_definition_.push_back(col_sort);
+                    }
+                }
             }
             else {
+                // rhs --> lhs
                 this->sort_definition_.clear();
                 int lhs_col_cnt = this->getChild(0)->getOutputSchema().getFieldCount();
                 auto rhs_sort = this->getChild(1)->getSortOrder();
@@ -36,6 +46,10 @@ namespace  vaultdb {
                     auto col_sort = ColumnSort(col.first + lhs_col_cnt, col.second);
                     this->sort_definition_.push_back(col_sort);
                 }
+                if(!this->sort_definition_.empty()) {
+                    this->sort_definition_.insert(this->sort_definition_.end(), this->getChild(0)->getSortOrder().begin(), this->getChild(0)->getSortOrder().end());
+                }
+
             }
 
         }

@@ -66,7 +66,7 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
     uint32_t output_tuple_cnt = lhs_table->getTupleCount(); // foreignKeyTable = foreign key
-    this->output_ = TableFactory<B>::getTable(output_tuple_cnt, this->output_schema_, lhs_table->storageModel(), lhs_table->getSortOrder());
+    this->output_ = TableFactory<B>::getTable(output_tuple_cnt, this->output_schema_, lhs_table->storageModel(), this->sort_definition_);
 
     B selected, to_update, lhs_dummy_tag, rhs_dummy_tag, dst_dummy_tag;
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
@@ -105,13 +105,7 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
     uint32_t output_tuple_cnt = rhs_table->getTupleCount(); // foreignKeyTable = foreign key
 
-    SortDefinition output_sort;
-    for(ColumnSort s : rhs_table->getSortOrder()) {
-        ColumnSort s_prime(s.first + lhs_table->getSchema().getFieldCount(), s.second);
-        output_sort.template emplace_back(s_prime);
-    }
-
-    this->output_ = TableFactory<B>::getTable(output_tuple_cnt, this->output_schema_, lhs_table->storageModel(), output_sort);
+    this->output_ = TableFactory<B>::getTable(output_tuple_cnt, this->output_schema_, lhs_table->storageModel(), this->sort_definition_);
     B selected, to_update, lhs_dummy_tag, rhs_dummy_tag, dst_dummy_tag;
 
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation

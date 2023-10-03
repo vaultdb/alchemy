@@ -530,44 +530,21 @@
         },
         {
           "op": {
-            "name": "CASE",
-            "kind": "CASE",
-            "syntax": "SPECIAL"
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
           },
           "operands": [
             {
-              "op": {
-                "name": "=",
-                "kind": "EQUALS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 1,
-                  "name": "$1"
-                },
-                {
-                  "literal": "KENYA                    ",
-                  "type": {
-                    "type": "CHAR",
-                    "nullable": false,
-                    "precision": 25
-                  }
-                }
-              ]
+              "input": 1,
+              "name": "$1"
             },
             {
-              "literal": 1,
+              "literal": "KENYA                    ",
               "type": {
-                "type": "BOOLEAN",
-                "nullable": false
-              }
-            },
-            {
-              "literal": 0,
-              "type": {
-                "type": "BOOLEAN",
-                "nullable": false
+                "type": "CHAR",
+                "nullable": false,
+                "precision": 25
               }
             }
           ]
