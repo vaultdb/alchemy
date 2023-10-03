@@ -47,7 +47,10 @@ namespace  vaultdb {
                     this->sort_definition_.push_back(col_sort);
                 }
                 if(!this->sort_definition_.empty()) {
-                    this->sort_definition_.insert(this->sort_definition_.end(), this->getChild(0)->getSortOrder().begin(), this->getChild(0)->getSortOrder().end());
+                    for(int i = 0; i < this->getChild(0)->getSortOrder().size(); ++i) {
+                        auto col_sort = ColumnSort(i, this->getChild(0)->getSortOrder()[i].second);
+                        this->sort_definition_.push_back(col_sort);
+                    }
                 }
 
             }
