@@ -104,8 +104,7 @@ TEST_F(ZkTpcHTest, tpch_q05) {
 }
 
 TEST_F(ZkTpcHTest, tpch_q08) {
-    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest(8, "q8", expected_sort);
+    runTest(8, "q8", SortDefinition());
 }
 
 TEST_F(ZkTpcHTest, tpch_q09) {

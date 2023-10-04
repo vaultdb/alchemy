@@ -107,8 +107,7 @@ TEST_F(SecureTpcHTest, tpch_q05) {
 //  passes in 56 secs on codd12
 TEST_F(SecureTpcHTest, tpch_q08) {
     input_tuple_limit_ = (emp_mode_ == EmpMode::SH2PC) ? 400 : 800;
-    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest(8, "q8", expected_sort);
+    runTest(8, "q8", SortDefinition());
 }
 
  // *passes in around ~42 secs on codd2

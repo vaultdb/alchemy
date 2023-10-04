@@ -348,7 +348,7 @@ TEST_F(EnrichTest, loadAndJoinData) {
                                       "ORDER BY p.patid, denom_excl";
 
 
-    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING)};
+    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(7, SortDirection::ASCENDING), ColumnSort(9, SortDirection::ASCENDING)};
     PlainTable *alice_joined = loadAndJoinLocalData(alice_enrich_db_);
     validateTable(alice_enrich_db_, expected_sql, expected_sort, alice_joined);
 

@@ -31,7 +31,7 @@ namespace  vaultdb {
                 // only append if lhs has collation
                 if(!this->sort_definition_.empty()) {
                     int lhs_col_cnt = this->getChild(0)->getOutputSchema().getFieldCount();
-                    for(auto col : this->sort_definition_) {
+                    for(auto col : this->getChild(1)->getSortOrder()) {
                         auto col_sort = ColumnSort(col.first + lhs_col_cnt, col.second);
                         this->sort_definition_.push_back(col_sort);
                     }
@@ -47,8 +47,7 @@ namespace  vaultdb {
                     this->sort_definition_.push_back(col_sort);
                 }
                 if(!this->sort_definition_.empty()) {
-                    for(int i = 0; i < this->getChild(0)->getSortOrder().size(); ++i) {
-                        auto col_sort = ColumnSort(i, this->getChild(0)->getSortOrder()[i].second);
+                    for(auto col_sort : this->getChild(0)->getSortOrder()) {
                         this->sort_definition_.push_back(col_sort);
                     }
                 }
