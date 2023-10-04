@@ -76,6 +76,7 @@ PlainTable *ColumnTable<B>::reveal(const int & party)   {
             tmp.emplace_back(collation[i]);
         }
         Sort sort(this->clone(), tmp);
+        sort.setOperatorId(-2);
         table = (ColumnTable<Bit> *)  sort.run()->clone();
     }
 
