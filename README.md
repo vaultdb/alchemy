@@ -10,15 +10,14 @@ The code is a research-quality proof of concept, and is still under development 
 --------------------------------------------------------------------------------
 Requirements
 --------------------------------------------------------------------------------
-* PostgreSQL 9.5+
-* Apache Calcite 1.8+
+* PostgreSQL 14+
+* Apache Calcite 1.18+
 * Apache Maven 3+
-* Java 8+
-* JavaCC 5.0+
+* Java 11+
 * Python 2.7+
-* cmake 3.11+
-* libpqxx 6.2.5 - may be installed with setup.sh
-* libgflags-dev
+* cmake 3.14+
+* libpqxx 7.7.4 - may be installed with setup.sh
+* libgflags-dev - 1.13
 
 --------------------------------------------------------------------------------
 Setup
