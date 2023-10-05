@@ -10,6 +10,30 @@
     },
     {
       "id": "1",
+      "relOp": "LogicalFilter",
+      "condition": {
+        "op": {
+          "name": "<=",
+          "kind": "LESS_THAN_OR_EQUAL",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 10,
+            "name": "$10"
+          },
+          {
+            "literal": 902102400,
+            "type": {
+              "type": "LONG",
+              "nullable": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "2",
       "relOp": "LogicalProject",
       "fields": [
         "l_quantity",
@@ -50,30 +74,6 @@
           "name": "$10"
         }
       ]
-    },
-    {
-      "id": "2",
-      "relOp": "LogicalFilter",
-      "condition": {
-        "op": {
-          "name": "<=",
-          "kind": "LESS_THAN_OR_EQUAL",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 6,
-            "name": "$6"
-          },
-          {
-            "literal": 902102400,
-            "type": {
-              "type": "LONG",
-              "nullable": false
-            }
-          }
-        ]
-      }
     },
     {
       "id": "3",
@@ -123,7 +123,7 @@
               },
               "operands": [
                 {
-                  "literal": 100,
+                  "literal": 1,
                   "type": {
                     "type": "FLOAT",
                     "nullable": false
@@ -163,7 +163,7 @@
                   },
                   "operands": [
                     {
-                      "literal": 100,
+                      "literal": 1,
                       "type": {
                         "type": "FLOAT",
                         "nullable": false
@@ -185,7 +185,7 @@
               },
               "operands": [
                 {
-                  "literal": 100,
+                  "literal": 1,
                   "type": {
                     "type": "FLOAT",
                     "nullable": false
@@ -220,8 +220,7 @@
             "syntax": "FUNCTION"
           },
           "type": {
-            "type": "FLOAT",
-            "nullable": true
+            "type": "FLOAT"
           },
           "distinct": false,
           "operands": [
@@ -236,8 +235,7 @@
             "syntax": "FUNCTION"
           },
           "type": {
-            "type": "FLOAT",
-            "nullable": true
+            "type": "FLOAT"
           },
           "distinct": false,
           "operands": [
@@ -252,8 +250,7 @@
             "syntax": "FUNCTION"
           },
           "type": {
-            "type": "FLOAT",
-            "nullable": true
+            "type": "FLOAT"
           },
           "distinct": false,
           "operands": [
@@ -268,8 +265,7 @@
             "syntax": "FUNCTION"
           },
           "type": {
-            "type": "FLOAT",
-            "nullable": true
+            "type": "FLOAT"
           },
           "distinct": false,
           "operands": [
@@ -284,8 +280,7 @@
             "syntax": "FUNCTION"
           },
           "type": {
-            "type": "FLOAT",
-            "nullable": true
+            "type": "FLOAT"
           },
           "distinct": false,
           "operands": [
@@ -300,8 +295,7 @@
             "syntax": "FUNCTION"
           },
           "type": {
-            "type": "FLOAT",
-            "nullable": true
+            "type": "FLOAT"
           },
           "distinct": false,
           "operands": [
@@ -316,8 +310,7 @@
             "syntax": "FUNCTION"
           },
           "type": {
-            "type": "FLOAT",
-            "nullable": true
+            "type": "FLOAT"
           },
           "distinct": false,
           "operands": [
@@ -332,7 +325,7 @@
             "syntax": "FUNCTION_STAR"
           },
           "type": {
-            "type": "FLOAT",
+            "type": "LONG",
             "nullable": false
           },
           "distinct": false,

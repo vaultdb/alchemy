@@ -4,7 +4,7 @@
       "id": "0",
       "relOp": "JdbcTableScan",
       "table": [
-        "nation"
+        "part"
       ],
       "inputs": []
     },
@@ -12,8 +12,8 @@
       "id": "1",
       "relOp": "LogicalProject",
       "fields": [
-        "n_nationkey",
-        "n_name"
+        "p_partkey",
+        "p_name"
       ],
       "exprs": [
         {
@@ -28,6 +28,19 @@
     },
     {
       "id": "2",
+      "relOp": "LogicalProject",
+      "fields": [
+        "p_partkey"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        }
+      ]
+    },
+    {
+      "id": "3",
       "relOp": "JdbcTableScan",
       "table": [
         "supplier"
@@ -35,7 +48,7 @@
       "inputs": []
     },
     {
-      "id": "3",
+      "id": "4",
       "relOp": "LogicalProject",
       "fields": [
         "s_suppkey",
@@ -53,140 +66,23 @@
       ]
     },
     {
-      "id": "4",
+      "id": "5",
       "relOp": "LogicalJoin",
       "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 0,
-            "name": "$0"
-          },
-          {
-            "input": 3,
-            "name": "$3"
-          }
-        ]
+        "literal": true,
+        "type": {
+          "type": "BOOLEAN",
+          "nullable": false
+        }
       },
       "joinType": "inner",
-      "foreignKey": 1,
       "inputs": [
-        "1",
-        "3"
+        "2",
+        "4"
       ]
-    },
-    {
-      "id": "5",
-      "relOp": "JdbcTableScan",
-      "table": [
-        "partsupp"
-      ],
-      "inputs": []
     },
     {
       "id": "6",
-      "relOp": "LogicalProject",
-      "fields": [
-        "ps_partkey",
-        "ps_suppkey",
-        "ps_supplycost"
-      ],
-      "exprs": [
-        {
-          "input": 0,
-          "name": "$0"
-        },
-        {
-          "input": 1,
-          "name": "$1"
-        },
-        {
-          "input": 3,
-          "name": "$3"
-        }
-      ]
-    },
-    {
-      "id": "7",
-      "relOp": "LogicalJoin",
-      "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 2,
-            "name": "$2"
-          },
-          {
-            "input": 5,
-            "name": "$5"
-          }
-        ]
-      },
-      "joinType": "inner",
-      "foreignKey": 1,
-      "inputs": [
-        "4",
-        "6"
-      ]
-    },
-    {
-      "id": "8",
-      "relOp": "JdbcTableScan",
-      "table": [
-        "part"
-      ],
-      "inputs": []
-    },
-    {
-      "id": "9",
-      "relOp": "LogicalProject",
-      "fields": [
-        "p_partkey"
-      ],
-      "exprs": [
-        {
-          "input": 0,
-          "name": "$0"
-        }
-      ]
-    },
-    {
-      "id": "10",
-      "relOp": "LogicalJoin",
-      "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 4,
-            "name": "$4"
-          },
-          {
-            "input": 7,
-            "name": "$7"
-          }
-        ]
-      },
-      "joinType": "inner",
-      "foreignKey": 0,
-      "inputs": [
-        "7",
-        "9"
-      ]
-    },
-    {
-      "id": "11",
       "relOp": "JdbcTableScan",
       "table": [
         "lineitem"
@@ -194,7 +90,7 @@
       "inputs": []
     },
     {
-      "id": "12",
+      "id": "7",
       "relOp": "LogicalProject",
       "fields": [
         "l_orderkey",
@@ -232,8 +128,9 @@
       ]
     },
     {
-      "id": "13",
+      "id": "8",
       "relOp": "LogicalJoin",
+      "foreignKey": 1,
       "condition": {
         "op": {
           "name": "AND",
@@ -249,12 +146,12 @@
             },
             "operands": [
               {
-                "input": 5,
-                "name": "$5"
+                "input": 1,
+                "name": "$1"
               },
               {
-                "input": 10,
-                "name": "$10"
+                "input": 5,
+                "name": "$5"
               }
             ]
           },
@@ -266,26 +163,110 @@
             },
             "operands": [
               {
-                "input": 4,
-                "name": "$4"
+                "input": 0,
+                "name": "$0"
               },
               {
-                "input": 9,
-                "name": "$9"
+                "input": 4,
+                "name": "$4"
               }
             ]
           }
         ]
       },
       "joinType": "inner",
-      "foreignKey": 1,
       "inputs": [
-        "10",
-        "12"
+        "5",
+        "7"
       ]
     },
     {
-      "id": "14",
+      "id": "9",
+      "relOp": "JdbcTableScan",
+      "table": [
+        "partsupp"
+      ],
+      "inputs": []
+    },
+    {
+      "id": "10",
+      "relOp": "LogicalProject",
+      "inputSchema": "(#0 shared-int32(15) partsupp.ps_partkey, #1 shared-int32(10) partsupp.ps_suppkey, #2 shared-int32(14) partsupp.ps_availqty, #3 shared-float partsupp.ps_supplycost, #4 shared-varchar(199) partsupp.ps_comment)",
+      "fields": [
+        "ps_partkey",
+        "ps_suppkey",
+        "ps_supplycost"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "relOp": "LogicalJoin",
+      "foreignKey": 0,
+      "condition": {
+        "op": {
+          "name": "AND",
+          "kind": "AND",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 10,
+                "name": "$10"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 9,
+                "name": "$9"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              }
+            ]
+          }
+        ]
+      },
+      "joinType": "inner",
+      "inputs": [
+        "8",
+        "10"
+      ]
+    },
+    {
+      "id": "12",
       "relOp": "JdbcTableScan",
       "table": [
         "orders"
@@ -293,7 +274,7 @@
       "inputs": []
     },
     {
-      "id": "15",
+      "id": "13",
       "relOp": "LogicalProject",
       "fields": [
         "o_year",
@@ -311,8 +292,9 @@
       ]
     },
     {
-      "id": "16",
+      "id": "14",
       "relOp": "LogicalJoin",
+      "foreignKey": 0,
       "condition": {
         "op": {
           "name": "=",
@@ -321,38 +303,90 @@
         },
         "operands": [
           {
-            "input": 8,
-            "name": "$8"
+            "input": 13,
+            "name": "$13"
           },
           {
-            "input": 15,
-            "name": "$15"
+            "input": 3,
+            "name": "$3"
           }
         ]
       },
       "joinType": "inner",
-      "foreignKey": 0,
       "inputs": [
-        "13",
-        "15"
+        "11",
+        "13"
+      ]
+    },
+    {
+      "id": "15",
+      "relOp": "JdbcTableScan",
+      "table": [
+        "nation"
+      ],
+      "inputs": []
+    },
+    {
+      "id": "16",
+      "relOp": "LogicalProject",
+      "fields": [
+        "n_nationkey",
+        "n_name"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        }
       ]
     },
     {
       "id": "17",
+      "relOp": "LogicalJoin",
+      "foreignKey": 0,
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 14,
+            "name": "$14"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "inputs": [
+        "14",
+        "16"
+      ]
+    },
+    {
+      "id": "18",
       "relOp": "LogicalProject",
       "fields": [
-        "nation",
+        "n_name",
         "o_year",
         "amount"
       ],
       "exprs": [
         {
-          "input": 1,
-          "name": "$1"
+          "input": 15,
+          "name": "n_name"
         },
         {
-          "input": 14,
-          "name": "$14"
+          "input": 12,
+          "name": "o_year"
         },
         {
           "op": {
@@ -369,8 +403,8 @@
               },
               "operands": [
                 {
-                  "input": 12,
-                  "name": "$12"
+                  "input": 7,
+                  "name": "$7"
                 },
                 {
                   "op": {
@@ -380,15 +414,15 @@
                   },
                   "operands": [
                     {
-                      "literal": 100,
+                      "literal": 1,
                       "type": {
                         "type": "FLOAT",
                         "nullable": false
                       }
                     },
                     {
-                      "input": 13,
-                      "name": "$13"
+                      "input": 8,
+                      "name": "$8"
                     }
                   ]
                 }
@@ -416,7 +450,7 @@
       ]
     },
     {
-      "id": "18",
+      "id": "19",
       "relOp": "LogicalAggregate",
       "group": [
         0,
@@ -430,8 +464,10 @@
             "syntax": "FUNCTION"
           },
           "type": {
-            "type": "LONG",
-            "nullable": true
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
           },
           "distinct": false,
           "operands": [
@@ -442,7 +478,7 @@
       ]
     },
     {
-      "id": "19",
+      "id": "20",
       "relOp": "LogicalSort",
       "collation": [
         {

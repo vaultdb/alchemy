@@ -10,6 +10,31 @@
     },
     {
       "id": "1",
+      "relOp": "LogicalFilter",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "literal": "HOUSEHOLD ",
+            "type": {
+              "type": "CHAR",
+              "nullable": false,
+              "precision": 10
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "2",
       "relOp": "LogicalProject",
       "fields": [
         "c_custkey",
@@ -27,50 +52,36 @@
       ]
     },
     {
-      "id": "2",
-      "relOp": "LogicalFilter",
-      "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 1,
-            "name": "$1"
-          },
-          {
-            "literal": "HOUSEHOLD ",
-            "type": {
-              "type": "CHAR",
-              "nullable": false,
-              "precision": 10
-            }
-          }
-        ]
-      }
-    },
-    {
       "id": "3",
-      "relOp": "LogicalProject",
-      "fields": [
-        "c_custkey"
-      ],
-      "exprs": [
-        {
-          "input": 0,
-          "name": "$0"
-        }
-      ]
-    },
-    {
-      "id": "4",
       "relOp": "JdbcTableScan",
       "table": [
         "orders"
       ],
       "inputs": []
+    },
+    {
+      "id": "4",
+      "relOp": "LogicalFilter",
+      "condition": {
+        "op": {
+          "name": "<",
+          "kind": "LESS_THAN",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 4,
+            "name": "$4"
+          },
+          {
+            "literal": 796089600,
+            "type": {
+              "type": "LONG",
+              "nullable": false
+            }
+          }
+        ]
+      }
     },
     {
       "id": "5",
@@ -102,31 +113,8 @@
     },
     {
       "id": "6",
-      "relOp": "LogicalFilter",
-      "condition": {
-        "op": {
-          "name": "<",
-          "kind": "LESS_THAN",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 2,
-            "name": "$2"
-          },
-          {
-            "literal": 796089600,
-            "type": {
-              "type": "LONG",
-              "nullable": false
-            }
-          }
-        ]
-      }
-    },
-    {
-      "id": "7",
       "relOp": "LogicalJoin",
+      "foreignKey": 1,
       "condition": {
         "op": {
           "name": "=",
@@ -139,25 +127,48 @@
             "name": "$0"
           },
           {
-            "input": 2,
-            "name": "$2"
+            "input": 3,
+            "name": "$3"
           }
         ]
       },
       "joinType": "inner",
-      "foreignKey": 1,
       "inputs": [
-        "3",
-        "6"
+        "2",
+        "5"
       ]
     },
     {
-      "id": "8",
+      "id": "7",
       "relOp": "JdbcTableScan",
       "table": [
         "lineitem"
       ],
       "inputs": []
+    },
+    {
+      "id": "8",
+      "relOp": "LogicalFilter",
+      "condition": {
+        "op": {
+          "name": ">",
+          "kind": "GREATER_THAN",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 10,
+            "name": "$10"
+          },
+          {
+            "literal": 796089600,
+            "type": {
+              "type": "LONG",
+              "nullable": false
+            }
+          }
+        ]
+      }
     },
     {
       "id": "9",
@@ -189,39 +200,52 @@
     },
     {
       "id": "10",
-      "relOp": "LogicalFilter",
+      "relOp": "LogicalJoin",
+      "foreignKey": 1,
       "condition": {
         "op": {
-          "name": ">",
-          "kind": "GREATER_THAN",
+          "name": "=",
+          "kind": "EQUALS",
           "syntax": "BINARY"
         },
         "operands": [
           {
-            "input": 3,
-            "name": "$3"
+            "input": 6,
+            "name": "$6"
           },
           {
-            "literal": 796089600,
-            "type": {
-              "type": "LONG",
-              "nullable": false
-            }
+            "input": 2,
+            "name": "$2"
           }
         ]
-      }
+      },
+      "joinType": "inner",
+      "inputs": [
+        "6",
+        "9"
+      ]
     },
     {
       "id": "11",
       "relOp": "LogicalProject",
       "fields": [
-        "l_orderkey",
+        "o_orderkey",
+        "o_orderdate",
+        "o_shippriority",
         "revenue"
       ],
       "exprs": [
         {
-          "input": 0,
-          "name": "$0"
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "input": 5,
+          "name": "$5"
         },
         {
           "op": {
@@ -231,8 +255,8 @@
           },
           "operands": [
             {
-              "input": 1,
-              "name": "$1"
+              "input": 7,
+              "name": "$7"
             },
             {
               "op": {
@@ -242,15 +266,15 @@
               },
               "operands": [
                 {
-                  "literal": 100,
+                  "literal": 1,
                   "type": {
                     "type": "FLOAT",
                     "nullable": false
                   }
                 },
                 {
-                  "input": 2,
-                  "name": "$2"
+                  "input": 8,
+                  "name": "$8"
                 }
               ]
             }
@@ -260,61 +284,6 @@
     },
     {
       "id": "12",
-      "relOp": "LogicalJoin",
-      "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 5,
-            "name": "$5"
-          },
-          {
-            "input": 1,
-            "name": "$1"
-          }
-        ]
-      },
-      "joinType": "inner",
-      "foreignKey": 1,
-      "inputs": [
-        "7",
-        "11"
-      ]
-    },
-    {
-      "id": "13",
-      "relOp": "LogicalProject",
-      "fields": [
-        "l_orderkey",
-        "o_orderdate",
-        "o_shippriority",
-        "revenue"
-      ],
-      "exprs": [
-        {
-          "input": 5,
-          "name": "$5"
-        },
-        {
-          "input": 3,
-          "name": "$3"
-        },
-        {
-          "input": 4,
-          "name": "$4"
-        },
-        {
-          "input": 6,
-          "name": "$6"
-        }
-      ]
-    },
-    {
-      "id": "14",
       "relOp": "LogicalAggregate",
       "group": [
         0,
@@ -330,7 +299,9 @@
           },
           "type": {
             "type": "FLOAT",
-            "nullable": true
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
           },
           "distinct": false,
           "operands": [
@@ -341,7 +312,7 @@
       ]
     },
     {
-      "id": "15",
+      "id": "13",
       "relOp": "LogicalSort",
       "collation": [
         {
@@ -364,10 +335,10 @@
       }
     },
     {
-      "id": "16",
+      "id": "14",
       "relOp": "LogicalProject",
       "fields": [
-        "l_orderkey",
+        "o_orderkey",
         "revenue",
         "o_orderdate",
         "o_shippriority"
