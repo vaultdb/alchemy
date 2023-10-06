@@ -8,15 +8,16 @@ namespace vaultdb {
 
     typedef QueryTuple<emp::Bit> SecureTuple;
 
-    // secure specialization
+    // MPC specialization
     template<>
     class QueryTuple<emp::Bit> {
 
     public:
 
-        emp::Bit *fields_; // has dummy tag at end, serialized representation, points to an offset in parent QueryTable
-        QuerySchema *schema_; // pointer to enclosing table
+        emp::Bit *fields_; // has dummy tag at end, serialized representation, usually points to an offset in QueryTable
+        QuerySchema *schema_; // pointer to enclosing table's schema
         emp::Bit *managed_data_ = nullptr;
+
 
         QueryTuple() {};
         ~QueryTuple()  { if(managed_data_ != nullptr) delete [] managed_data_; }
@@ -67,39 +68,35 @@ namespace vaultdb {
 
 
         inline void setField(const int &idx, const SecureField &f) {
-            size_t field_offset = schema_->getFieldOffset(idx);
-            int8_t *write_pos = (int8_t *) (fields_ + field_offset);
-
+            int8_t *write_pos = (int8_t *) (fields_ + schema_->getFieldOffset(idx));
             f.serialize(write_pos, schema_->getField(idx));
 
         }
 
         inline void setPackedField(const int &idx, const SecureField &f) {
-            size_t field_offset = schema_->getFieldOffset(idx);
-            int8_t *write_pos = (int8_t *) (fields_ + field_offset);
+            int8_t *write_pos = (int8_t *) (fields_ + schema_->getFieldOffset(idx));
 
             f.serializePacked(write_pos, schema_->getField(idx));
 
         }
 
         inline void setDummyTag(const emp::Bit & d) {
-            const emp::Bit *dst = fields_ + schema_->getFieldOffset(-1);
-            std::memcpy((int8_t *) dst, (int8_t *) &(d.bit), TypeUtilities::getEmpBitSize());
-
+            SecureField f(FieldType::SECURE_BOOL, d);
+            setDummyTag(f);
         }
 
         inline void setDummyTag(const bool & b) {  setDummyTag(Bit(b)); }
 
         inline void setDummyTag(const Field<emp::Bit> & d) {
-            setDummyTag(d.getValue<emp::Bit>());
+            setField(-1, d);
         }
 
         inline void setSchema(QuerySchema *q) { schema_ = q; }
 
 
         inline emp::Bit getDummyTag() const {
-            const emp::Bit *src = fields_ + schema_->getFieldOffset(-1);
-            return emp::Bit(*((emp::Bit *) src));
+            auto tmp = getField(-1);
+            return tmp.template getValue<emp::Bit>();
         }
 
         QuerySchema *getSchema() const { return schema_; }

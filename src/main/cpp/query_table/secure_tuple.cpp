@@ -4,12 +4,8 @@
 using namespace vaultdb;
 
 std::ostream &vaultdb::operator<<(std::ostream &strm,  const SecureTuple &aTuple) {
-
     strm << aTuple.toString(false);
-
     return strm;
-
-
 }
 
 
@@ -20,7 +16,6 @@ QueryTuple<emp::Bit>::QueryTuple(QuerySchema *query_schema, const int8_t *src) :
     int8_t *tmp = const_cast<int8_t *>(src);
     fields_ = (emp::Bit *) tmp;
     assert(fields_ != nullptr);
-
 }
 
 
@@ -41,9 +36,6 @@ QueryTuple<emp::Bit>::reveal(const int &party, QuerySchema *dst_schema, int8_t *
         PlainField revealed = src.reveal(party);
         dst_tuple.setField(i, revealed);
     }
-
-
-
     return dst_tuple;
 
 }
@@ -88,7 +80,7 @@ PlainTuple QueryTuple<emp::Bit>::revealInsecure(QuerySchema *dst_schema, const i
 
 }
 
-
+// TODO: update this for OMPC - model it after RowTable's C&S
 void QueryTuple<emp::Bit>::compareSwap(const Bit &cmp, SecureTuple  & lhs, SecureTuple  & rhs) {
     size_t tuple_size = lhs.getSchema()->size(); // size in bits
 
@@ -190,6 +182,7 @@ QueryTuple<emp::Bit>::QueryTuple(QuerySchema *schema) {
 
 QueryTuple<emp::Bit>::QueryTuple(const QueryTuple & src) {
     schema_ = src.getSchema();
+
     if(src.hasManagedStorage()) { // allocate storage for this copy
         managed_data_ = new emp::Bit[schema_->size()];
         fields_ = managed_data_;
