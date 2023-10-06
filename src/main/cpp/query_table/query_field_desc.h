@@ -18,7 +18,7 @@ namespace  vaultdb {
     protected:
         std::string field_name_;
         std::string table_name_;
-        size_t string_length_; // for varchars
+        size_t string_length_;
         FieldType type_;
         int ordinal_;
         int field_size_ = 0; // size in bits

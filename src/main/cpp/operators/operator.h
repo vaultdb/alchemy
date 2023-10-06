@@ -96,10 +96,7 @@ namespace  vaultdb {
         inline int getOperatorId() const {     return operator_id_; }
         inline void setOperatorId(int op_id) { operator_id_ = op_id; }
         inline QueryTable<B> *getOutput() {
-            if(!operator_executed_) { // if we haven't run it yet
-                output_ = run();
-            }
-            return output_;
+           return run();
         }
 
         inline const QueryTable<B> *getImmutableOutput() const {

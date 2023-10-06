@@ -59,25 +59,34 @@ QueryTable<B> *KeyedJoin<B>::runSelf() {
 template<typename B>
 QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
 
-    QueryTable<B> *lhs_table = Operator<B>::getChild(0)->getOutput(); // foreign key
-    QueryTable<B> *rhs_table = Operator<B>::getChild(1)->getOutput(); // primary key
+    QueryTable<B> *lhs_table = this->getChild(0)->getOutput(); // foreign key
+    QueryTable<B> *rhs_table = this->getChild(1)->getOutput(); // primary key
+    bool cleanup = false;
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
+    // if there's a dependency loop in the operators - break it!
+    if(lhs_table != this->getChild(0)->getOutput()) {
+        cleanup = true;
+        lhs_table = this->getChild(0)->getOutput()->clone();
+        rhs_table = this->getChild(1)->getOutput()->clone();
+    }
+
+
     uint32_t output_tuple_cnt = lhs_table->getTupleCount(); // foreignKeyTable = foreign key
-    this->output_ = TableFactory<B>::getTable(output_tuple_cnt, this->output_schema_, lhs_table->storageModel(), this->sort_definition_);
+    this->output_ = TableFactory<B>::getTable(output_tuple_cnt, this->output_schema_, SystemConfiguration::getInstance().storageModel(), this->sort_definition_);
 
     B selected, to_update, lhs_dummy_tag, rhs_dummy_tag, dst_dummy_tag;
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
     for(uint32_t i = 0; i < lhs_table->getTupleCount(); ++i) {
 
-        lhs_dummy_tag = lhs_table->getDummyTag(i);
+        lhs_dummy_tag = lhs_table->getField(i, -1).template getValue<B>();
         Join<B>::write_left(this->output_, i, lhs_table, i);
         dst_dummy_tag = true; // dummy by default, no matches found yet
 
         for(uint32_t j = 0; j < rhs_table->getTupleCount(); ++j) {
-            rhs_dummy_tag = rhs_table->getDummyTag(j);
+            rhs_dummy_tag = rhs_table->getField(j, -1).template getValue<B>();
             selected = Join<B>::predicate_->call(lhs_table, i, rhs_table, j).template getValue<B>();
 
             to_update = selected & (!lhs_dummy_tag) & (!rhs_dummy_tag);
@@ -89,6 +98,10 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
 
     }
 
+    if(cleanup) {
+        delete lhs_table;
+        delete rhs_table;
+    }
 
     return this->output_;
 
@@ -102,6 +115,16 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
+
+    bool cleanup = false;
+
+    // if there's a dependency loop in the operators - break it!
+    if(lhs_table != this->getChild(0)->getOutput()) {
+        cleanup = true;
+        lhs_table = this->getChild(0)->getOutput()->clone();
+        rhs_table = this->getChild(1)->getOutput()->clone();
+    }
+
 
     uint32_t output_tuple_cnt = rhs_table->getTupleCount(); // foreignKeyTable = foreign key
 
@@ -123,6 +146,11 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
         }
         this->output_->setDummyTag(i, dst_dummy_tag);
+    }
+
+    if(cleanup) {
+        delete lhs_table;
+        delete rhs_table;
     }
 
     return this->output_;

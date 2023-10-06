@@ -29,6 +29,7 @@ Expression<B> * ExpressionParser<B>::parseJSONExpression(const std::string &json
 
 template<typename B>
 Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & lhs, const QuerySchema & rhs) {
+
     ExpressionNode<B> *expression_root = parseHelper(tree, lhs, rhs);
     QuerySchema input_schema = QuerySchema::concatenate(lhs, rhs);
     TypeValidationVisitor<B> visitor(expression_root, input_schema);

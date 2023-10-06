@@ -50,6 +50,7 @@ Operator<B>::Operator(Operator *lhs, Operator *rhs, const SortDefinition & sorte
 
 template<typename B>
 QueryTable<B> *Operator<B>::run() {
+
     if (operator_executed_) // prevent duplicate executions of operator
         return output_;
 
