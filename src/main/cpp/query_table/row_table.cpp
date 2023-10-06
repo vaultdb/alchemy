@@ -354,12 +354,26 @@ template<typename B>
 void RowTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &dst_col, const QueryTable<B> *s, const int &src_row) {
 
     assert(s->storageModel() == StorageModel::ROW_STORE);
-    RowTable<B> *src = (RowTable<B> *) s;
+    assert(this->isEncrypted());
+    assert(s->isEncrypted());
+
+    auto src = (RowTable<Bit> *) s;
+
+    if(this->isEncrypted() && SystemConfiguration::getInstance().wire_packing_enabled_) {
+        // do one at a time to invoke unpacking
+        for(int i = 0; i < s->getSchema().getFieldCount(); ++i) {
+            SecureField src_field = src->getField(src_row, i);
+            SecureField dst_field = ((RowTable<Bit> *) this)->getField(dst_row, dst_col + i);
+            dst_field = Field<Bit>::If(write, src_field, dst_field);
+            ((RowTable<Bit> *) this)->setField(dst_row, dst_col + i, dst_field);
+        }
+        return;
+    }
 
     Bit *read_ptr = (Bit *) (src->tuple_data_.data() + src->tuple_size_bytes_ * src_row );
     Bit *write_ptr = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * dst_row + this->field_offsets_bytes_.at(dst_col));
 
-    size_t write_size = src->schema_.size() - 1;
+    size_t write_size = src->getSchema().size() - 1;
     for(size_t i = 0; i < write_size; ++i) {
         *write_ptr = emp::If(write, *read_ptr, *write_ptr);
         ++read_ptr;
