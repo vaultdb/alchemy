@@ -39,6 +39,7 @@ namespace  vaultdb {
         size_t tuple_cnt_;
         std::map<int, int> field_sizes_bytes_;
         std::map<int, int> field_offsets_bytes_;
+        bool pinned_ = false; // if set to true, do not delete table automatically.  For use in binary operators with CTEs
 
 
         // empty sort definition for default case

@@ -8,6 +8,7 @@ using namespace vaultdb;
 template<typename B>
 QueryTable<B> *MergeJoin<B>::runSelf() {
     auto lhs = this->getChild(0)->getOutput();
+    lhs->pinned_ = true;
     auto rhs = this->getChild(1)->getOutput();
 
     this->start_time_ = clock_start();
@@ -62,6 +63,8 @@ QueryTable<B> *MergeJoin<B>::runSelf() {
         // two non-empty inputs, different cardinalities
         throw std::runtime_error("MergeJoin: unsupported input configuration");
     }
+
+    lhs->pinned_ = false;
     return this->output_;
 }
 

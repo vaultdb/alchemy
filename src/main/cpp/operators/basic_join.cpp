@@ -22,6 +22,7 @@ BasicJoin<B>::BasicJoin(QueryTable<B> *lhs, QueryTable<B> *rhs,  Expression<B> *
 template<typename B>
 QueryTable<B> *BasicJoin<B>::runSelf() {
     QueryTable<B> *lhs = Operator<B>::getChild(0)->getOutput();
+    lhs->pinned_ = true;
     QueryTable<B> *rhs = Operator<B>::getChild(1)->getOutput();
     B predicate_eval;
 
@@ -50,6 +51,7 @@ QueryTable<B> *BasicJoin<B>::runSelf() {
         }
     }
 
+    lhs->pinned_ = false;
     return this->output_;
 }
 

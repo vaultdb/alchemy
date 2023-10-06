@@ -275,7 +275,7 @@ namespace  vaultdb {
 
         virtual std::string getParameters() const = 0;
         inline void reset() {
-            if(output_ != nullptr) {
+            if(output_ != nullptr && !output_->pinned_) {
                 delete output_;
                 output_ = nullptr;
             }

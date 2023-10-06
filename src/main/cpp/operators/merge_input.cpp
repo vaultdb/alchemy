@@ -17,6 +17,7 @@ MergeInput::MergeInput(const string &db, const string &sql, const bool &dummy_ta
 
 QueryTable<Bit> *MergeInput::runSelf() {
     SecureTable *lhs = lhs_->run();
+    lhs->pinned_ = true;
     SecureTable *rhs = rhs_->run();
     int tuple_cnt = lhs->getTupleCount();
 
@@ -34,6 +35,6 @@ QueryTable<Bit> *MergeInput::runSelf() {
         // if both are dummies, then write dummy tag as true
         output_->setDummyTag(i, lhs_dummy & rhs_dummy);
     }
-
+    lhs->pinned_ = false;
     return this->output_;
 }

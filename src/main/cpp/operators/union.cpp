@@ -31,6 +31,7 @@ Union<B>::Union(QueryTable<B> *lhs, QueryTable<B> *rhs) : Operator<B>(lhs, rhs) 
 template<typename B>
 QueryTable<B> * Union<B>::runSelf() {
     QueryTable<B> *lhs = this->getChild(0)->getOutput();
+    lhs->pinned_ = true;
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
     this->start_time_ = clock_start();
@@ -47,7 +48,7 @@ QueryTable<B> * Union<B>::runSelf() {
 
     this->output_->cloneTable(0, lhs);
     this->output_->cloneTable(lhs->getTupleCount(), rhs);
-
+    lhs->pinned_ = false;
     return this->output_;
 }
 

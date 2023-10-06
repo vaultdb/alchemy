@@ -72,6 +72,7 @@ void KeyedSortMergeJoin<B>::setup() {
 template<typename B>
 QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
     QueryTable<B> *lhs = this->getChild(0)->getOutput();
+    lhs->pinned_ = true;
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
     this->start_time_ = clock_start();
@@ -120,6 +121,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
     delete lhs_reverted;
     delete rhs_reverted;
 
+    lhs->pinned_ = false;
     this->output_->setSortOrder(this->sort_definition_);
     return this->output_;
 
