@@ -38,7 +38,6 @@ namespace vaultdb{
             bit_packing_enabled_ = true;
             storage_model_ = model;
             if(emp_mode_ != EmpMode::OUTSOURCED) { wire_packing_enabled_ = false; }
-
         }
 
         string getUnionedDbName() const { return unioned_db_name_; }

@@ -70,12 +70,11 @@ namespace  vaultdb {
                 // covers dummy tag as -1
                 tuple_size_bytes_ = 0;
                 QueryFieldDesc desc;
-                EmpMode mode = SystemConfiguration::getInstance().emp_mode_;
+                bool packed_wires = SystemConfiguration::getInstance().wire_packing_enabled_ && (std::is_same_v<B, Bit>);
                 int field_size_bytes;
                 for(auto pos : schema_.offsets_) {
                     desc = schema_.getField(pos.first);
-                    field_size_bytes = desc.size() * TypeUtilities::getEmpBitSize();
-                   // field_size_bytes = (mode == EmpMode::OUTSOURCED) ? desc.packedWires() * TypeUtilities::getEmpBitSize() : desc.size() * TypeUtilities::getEmpBitSize();
+                   field_size_bytes = (packed_wires) ? desc.packedWires() * TypeUtilities::getEmpBitSize() : desc.size() * TypeUtilities::getEmpBitSize();
                     tuple_size_bytes_ += field_size_bytes;
                     // offset units are packed wires for OMPC (Bits o.w.)
                     field_offsets_bytes_[pos.first] = pos.second * TypeUtilities::getEmpBitSize();

@@ -49,6 +49,7 @@ void PlainBaseTest::SetUp()  {
 
     current_working_directory_ = Utilities::getCurrentWorkingDirectory();
     SystemConfiguration &s = SystemConfiguration::getInstance();
+    s.emp_mode_ = vaultdb::EmpMode::PLAIN; // only need _emp_mode_ to initialize EmpManager
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(db_name_);
     s.initialize(db_name_, md, storage_model_);
     s.emp_manager_ = manager_;
