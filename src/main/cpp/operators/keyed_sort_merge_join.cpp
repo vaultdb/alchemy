@@ -667,7 +667,6 @@ SecureTable *KeyedSortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, 
     Integer zero = zero_.getValue<Integer>();
     Integer one = one_.getValue<Integer>();
     Bit one_b(true), zero_b(false);
-//    SecureField one_b(bool_field_type_, true), zero_b(bool_field_type_, false);
 
     Integer s = one;
     Integer cnt;
@@ -699,14 +698,16 @@ SecureTable *KeyedSortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, 
 
 	size_t start_gates = this->system_conf_.andGateCount();
 
+    cout << "Expand schema " << schema << endl;
     for(int i = 0; i < foreign_key_cardinality_; i++) {
         Bit is_new_bit = dst_table->getField(i, is_new_idx_).getValue<Bit>();
-        Bit result = (is_new_bit == one_b);
-
-        tmp.setDummyTag(FieldUtilities::select(result, tmp.getDummyTag(), dst_table->getDummyTag(i)));
+        Bit new_write = (is_new_bit == one_b);
+        cout << "(" << i << ")" << " is_new_bit: " << is_new_bit.reveal() << " new_write: " << new_write.reveal() << endl;
+        tmp.setDummyTag(FieldUtilities::select(new_write, tmp.getDummyTag(), dst_table->getDummyTag(i)));
 
         for(int j = 0; j < schema.getFieldCount(); j++) {
-            SecureField to_write = SecureField::If(result, tmp.getPackedField(j), dst_table->getPackedField(i, j));
+            SecureField to_write = SecureField::If(new_write, tmp.getPackedField(j), dst_table->getPackedField(i, j));
+            cout << "To write: " << to_write.reveal() << endl;
             tmp.setPackedField(j, to_write);
             dst_table->setPackedField(i, j, to_write);
 
@@ -716,8 +717,7 @@ SecureTable *KeyedSortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, 
 		Integer write_index(schema.getField(weight_idx_).size() + 1, i);
 		
 		Bit end_matches = write_index >= s-one;
-        dst_table->setDummyTag(i, FieldUtilities::select(result, tmp.getDummyTag() | end_matches, dst_table->getDummyTag(i) | end_matches));
-		//dst_table->setDummyTag(i, FieldUtilities::select(result, tmp.getDummyTag(), dst_table->getDummyTag(i)));
+        dst_table->setDummyTag(i, FieldUtilities::select(new_write, tmp.getDummyTag() | end_matches, dst_table->getDummyTag(i) | end_matches));
     }
 
 
