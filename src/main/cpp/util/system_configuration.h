@@ -22,6 +22,9 @@ namespace vaultdb{
 
         // value to be maintained by EMPManager
         int emp_bit_size_bytes_ = sizeof(emp::Bit);
+        // making this public to avoid function call with each memory access
+        bool wire_packing_enabled_ = true;
+
 
         static SystemConfiguration& getInstance() {
             static SystemConfiguration  instance;
@@ -34,6 +37,7 @@ namespace vaultdb{
             bit_packing_ = bp;
             bit_packing_enabled_ = true;
             storage_model_ = model;
+            if(emp_mode_ != EmpMode::OUTSOURCED) { wire_packing_enabled_ = false; }
 
         }
 
@@ -54,6 +58,7 @@ namespace vaultdb{
         inline bool bitPackingEnabled() const {
             return bit_packing_enabled_;
         }
+
 
         inline bool packedExpressions() const {
             return packed_expressions_;
@@ -77,6 +82,7 @@ namespace vaultdb{
         ~SystemConfiguration() {
             if(emp_manager_ != nullptr) delete emp_manager_;
         }
+
 
 
     private:

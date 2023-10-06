@@ -197,21 +197,18 @@ namespace vaultdb {
 
         static Integer unpackRow(const QueryTable<Bit> *table, const int & row, const int & col_cnt, const int & selection_length_bits) {
             QuerySchema schema = table->getSchema();
-//            cout << "*****Malloc'ing " << selection_length_bits << " bits for row " << row << ": " << table->revealRow(row) << endl;
             Integer dst(selection_length_bits, 0, PUBLIC);
 
 
             Bit *cursor = dst.bits.data();
             Bit *start = cursor;
             for(int i = 0; i < col_cnt; ++i) {
-//                cout << "  Deserializing column " << i << ": " << schema.getField(i) << endl;
                 SecureField f = table->getPackedField(row, i);
                 QueryFieldDesc desc = schema.getField(i);
 
                 switch(f.getType()) {
                     case FieldType::SECURE_BOOL: {
                         Bit b = f.getValue<emp::Bit>();
-//                        cout << "    Reading bit and writing to offset " << (cursor - start) << " with " << b.reveal() << endl;
                         *cursor = b;
                         break;
                     }

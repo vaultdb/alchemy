@@ -212,9 +212,10 @@ B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int 
 template <typename B>
 Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir, const int & sort_key_width_bits) {
 
-    //if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED) {
-    //    return swapTuplesNormalizedOmpc(table, lhs_idx, rhs_idx, dir, sort_key_width_bits);
-    //}
+    if(SystemConfiguration::getInstance().wire_packing_enabled_) { // wire packing only enabled if we're in OUTSOURCED mode
+        return swapTuplesNormalizedOmpc(table, lhs_idx, rhs_idx, dir, sort_key_width_bits);
+    }
+
     // caution: only works with row store
     RowTable<Bit> *row_table = (RowTable<Bit> *) table;
 
@@ -240,11 +241,8 @@ Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_i
 template <typename B>
 Bit Sort<B>::swapTuplesNormalizedOmpc(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir, const int & sort_key_width_bits) {
 
-//        assert(table->storageModel() == StorageModel::ROW_STORE);
+        assert(table->storageModel() == StorageModel::ROW_STORE);
 
-//    cout << "Swap tuples for (" << lhs_idx << ", " << rhs_idx << ")" << endl;
-//    cout << "LHS: " << table->revealRow(lhs_idx, tmp).toString(true) << endl;
-//    cout << "RHS: " << table->revealRow(rhs_idx, tmp).toString(true) << endl;
     int sort_col_cnt = table->getSortOrder().size();
 
     Integer lhs_key = FieldUtilities::unpackRow(table, lhs_idx, sort_col_cnt, sort_key_width_bits+1);
@@ -253,8 +251,6 @@ Bit Sort<B>::swapTuplesNormalizedOmpc(const QueryTable<Bit> *table, const int &l
     // set MSB to 1 for all to avoid losing MSBs that are zero
     lhs_key[sort_key_width_bits] = 1;
     rhs_key[sort_key_width_bits] = 1;
-//    cout << "LHS key: " << FieldUtilities::printInt(lhs_key) << endl;
-//    cout << "RHS key: " << FieldUtilities::printInt(rhs_key) << endl;
 
     return ((lhs_key > rhs_key) == dir);
 

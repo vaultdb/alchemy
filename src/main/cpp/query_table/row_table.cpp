@@ -404,10 +404,10 @@ template<typename B>
 void RowTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) {
 
 
-//    if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED && this->isEncrypted()) {
-//        compareSwapOmpc(swap, lhs_row, rhs_row);
-//        return;
-//    }
+    if(this->isEncrypted() && SystemConfiguration::getInstance().wire_packing_enabled_) {
+        compareSwapOmpc(swap, lhs_row, rhs_row);
+        return;
+    }
 
     Bit *l = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * lhs_row );
     Bit *r = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * rhs_row);

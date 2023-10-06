@@ -133,6 +133,7 @@ void QuerySchema::initializeFieldOffsets()  {
     bool is_secure = TypeUtilities::isEncrypted(fields_[0].getType());
     // empty query table
     EmpMode mode = SystemConfiguration::getInstance().emp_mode_;
+    bool wire_packing = SystemConfiguration::getInstance().wire_packing_enabled_;
 
     // empty query table
     if(fields_.empty()) return;
@@ -143,7 +144,7 @@ void QuerySchema::initializeFieldOffsets()  {
     for(int i = 0; i < col_count; ++i) {
         QueryFieldDesc fd = fields_.at(i);
         offsets_[i] = running_offset;
-        running_offset += fd.size(); // (mode == EmpMode::OUTSOURCED && is_secure) ? fd.packedWires() : fd.size();
+        running_offset +=  (is_secure && wire_packing) ? fd.packedWires() : fd.size();
 
     }
     // dummy tag at end

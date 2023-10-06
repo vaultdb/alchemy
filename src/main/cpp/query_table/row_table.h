@@ -105,7 +105,6 @@ namespace  vaultdb {
 
 
         QueryTuple<bool> getPlainTuple(size_t idx) const override;
-//        QueryTuple<Bit> getSecureTuple(size_t idx) const override;
 
         // memcpy a field from one table to another
         void assignField(const int & dst_row, const int & dst_col,const  QueryTable<B> *src, const int & src_row, const int & src_col) override;

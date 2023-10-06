@@ -71,6 +71,7 @@ namespace  vaultdb {
         vector<NetIO *> ios_ctrl_;
         int party_;
         OMPCBackend<N> *protocol_ = nullptr;
+        SystemConfiguration & system_conf_ = SystemConfiguration::getInstance();
 
         OutsourcedMpcManager(string hosts[], int party, int comm_port, int ctrl_port)  : party_(party) {
             ios_ = emp::setup_netio(tpio_, hosts, comm_port, party_, N);
@@ -78,7 +79,7 @@ namespace  vaultdb {
             emp::backend = new OMPCBackend<N>(ios_, tpio_, party_);
             protocol_ = (OMPCBackend<N> *) emp::backend;
             SystemConfiguration & s = SystemConfiguration::getInstance();
-            s.emp_bit_size_bytes_  =  sizeof(emp::Bit); // for packed:  sizeof(OMPCPackedWire);_
+            s.emp_bit_size_bytes_  =  (system_conf_.wire_packing_enabled_) ? sizeof(OMPCPackedWire) : sizeof(emp::Bit);
             s.party_ = party;
             s.emp_mode_ = EmpMode::OUTSOURCED;
         }
@@ -155,14 +156,24 @@ namespace  vaultdb {
         size_t getTableCardinality(const int & local_cardinality) override;
 
         void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {
+            if(system_conf_.wire_packing_enabled_) {
+                protocol_->pack(src, (OMPCPackedWire *) dst, bit_cnt);
+                flush();
+                return;
+            }
+
+            // else
             memcpy(dst, src, bit_cnt * sizeof(Bit));
-//            protocol_->pack(src, (OMPCPackedWire *) dst, bit_cnt);
-//            flush();
+
         }
+
         void unpack(Bit *src, Bit *dst, const int & bit_cnt) override {
+            if (system_conf_.wire_packing_enabled_) {
+                protocol_->unpack(dst, (OMPCPackedWire *) src, bit_cnt);
+                flush();
+                return;
+            }
             memcpy(dst, src, bit_cnt * sizeof(Bit));
-//            protocol_->unpack(dst, (OMPCPackedWire *) src, bit_cnt);
-//            flush();
         }
 
     };
