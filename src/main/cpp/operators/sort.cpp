@@ -168,7 +168,6 @@ void Sort<B>::bitonicMergeNormalized( QueryTable<B> *table, const SortDefinition
     if (n > 1) {
         int m = powerOfTwoLessThan(n);
         for (int i = lo; i < lo + n - m; ++i) {
-
             B to_swap =   swapTuplesNormalized(table, i, i+m, dir, sort_key_size_bits_);
             table->compareSwap(to_swap, i, i+m);
             ++counter;
@@ -361,7 +360,7 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src) {
         }
 
     }
-
+    dst->setSortOrder(this->sort_definition_);
     return dst;
 }
 
