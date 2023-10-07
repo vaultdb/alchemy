@@ -17,7 +17,9 @@ namespace vaultdb {
         emp::Bit *fields_; // has dummy tag at end, serialized representation, usually points to an offset in QueryTable
         QuerySchema *schema_; // pointer to enclosing table's schema
         emp::Bit *managed_data_ = nullptr;
-
+        // storing byte offsets because OMPC will store this in packed wires - not actually a Bit * array
+        map<int, int> field_offset_bytes_;
+        int tuple_size_bytes_ = 0;
 
         QueryTuple() {};
         ~QueryTuple()  { if(managed_data_ != nullptr) delete [] managed_data_; }
@@ -43,40 +45,33 @@ namespace vaultdb {
         inline bool hasManagedStorage() const { return managed_data_ != nullptr; }
 
         inline SecureField getField(const int &ordinal) {
-            size_t field_offset = schema_->getFieldOffset(ordinal);
-            const emp::Bit *read_ptr = fields_ + field_offset;
 
             return Field<emp::Bit>::deserialize(schema_->getField(ordinal),
-                                                (int8_t *) read_ptr);
+                                                ((int8_t *) fields_) + field_offset_bytes_[ordinal]);
 
         }
         const inline SecureField getField(const int & ordinal) const {
-            const emp::Bit *read_ptr = fields_ +  schema_->getFieldOffset(ordinal);
 
             return Field<emp::Bit>::deserialize(schema_->getField(ordinal),
-                                                (int8_t *) read_ptr);
+                                                ((int8_t *) fields_) + field_offset_bytes_.at(ordinal));
 
         }
 
         const inline SecureField getPackedField(const int & ordinal) const {
-            const emp::Bit *read_ptr = fields_ +  schema_->getFieldOffset(ordinal);
 
             return Field<emp::Bit>::deserializePacked(schema_->getField(ordinal),
-                                                (int8_t *) read_ptr);
+                                                      ((int8_t *) fields_) + field_offset_bytes_.at(ordinal));
 
         }
 
 
-        inline void setField(const int &idx, const SecureField &f) {
-            int8_t *write_pos = (int8_t *) (fields_ + schema_->getFieldOffset(idx));
-            f.serialize(write_pos, schema_->getField(idx));
+        inline void setField(const int &ordinal, const SecureField &f) {
+            f.serialize(((int8_t *) fields_) + field_offset_bytes_[ordinal], schema_->getField(ordinal));
 
         }
 
         inline void setPackedField(const int &idx, const SecureField &f) {
-            int8_t *write_pos = (int8_t *) (fields_ + schema_->getFieldOffset(idx));
-
-            f.serializePacked(write_pos, schema_->getField(idx));
+            f.serializePacked(((int8_t *) fields_) + field_offset_bytes_[idx], schema_->getField(idx));
 
         }
 
@@ -108,7 +103,8 @@ namespace vaultdb {
 
         string toString(const bool &showDummies = false) const;
 
-        void serialize(int8_t *dst) {     memcpy((emp::Bit *) dst, fields_, schema_->size()); }
+        void serialize(int8_t *dst) {
+            memcpy((emp::Bit *) dst, fields_, tuple_size_bytes_); }
 
         inline size_t getFieldCount() const {
             return schema_->getFieldCount();
@@ -125,13 +121,22 @@ namespace vaultdb {
 
         static void compareSwap(const emp::Bit & cmp, QueryTuple<emp::Bit> & lhs, QueryTuple<emp::Bit> & rhs);
 
-
-        static SecureTuple
-        deserialize(emp::Bit *dst_tuple_bits, QuerySchema *schema, const emp::Bit *src_tuple_bits);
-
-        static void writeSubset(const SecureTuple & src_tuple, const SecureTuple & dst_tuple, uint32_t src_start_idx, uint32_t src_attr_cnt, uint32_t dst_start_idx);
+        static SecureTuple deserialize(emp::Bit *dst_tuple_bits, QuerySchema *schema, const emp::Bit *src_tuple_bits);
 
         static SecureTuple If(const emp::Bit & cond, const SecureTuple & lhs, const SecureTuple & rhs);
+
+    private:
+        inline void initializeFieldOffsets() {
+            bool packed_wires = SystemConfiguration::getInstance().wire_packing_enabled_;
+            // based on QueryTable::setSchema
+            for(auto pos : schema_->offsets_) {
+                auto desc = schema_->getField(pos.first);
+                auto field_size_bytes = (packed_wires) ? desc.packedWires() * TypeUtilities::getEmpBitSize() : desc.size() * TypeUtilities::getEmpBitSize();
+                tuple_size_bytes_ += field_size_bytes;
+                // offset units are packed wires for OMPC (Bits o.w.)
+                field_offset_bytes_[pos.first] = pos.second * TypeUtilities::getEmpBitSize();
+            }
+        }
 
     };
 

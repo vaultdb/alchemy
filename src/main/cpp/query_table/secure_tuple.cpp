@@ -15,6 +15,7 @@ std::ostream &vaultdb::operator<<(std::ostream &strm,  const SecureTuple &aTuple
 QueryTuple<emp::Bit>::QueryTuple(QuerySchema *query_schema, const int8_t *src) : schema_(query_schema) {
     int8_t *tmp = const_cast<int8_t *>(src);
     fields_ = (emp::Bit *) tmp;
+    initializeFieldOffsets();
     assert(fields_ != nullptr);
 }
 
@@ -177,11 +178,15 @@ QueryTuple<emp::Bit>::QueryTuple(QuerySchema *schema) {
     // schema_ = std::make_shared<QuerySchema>(schema);
     // thus const'ing it above
     schema_ = schema;
+    initializeFieldOffsets();
+
     this->setDummyTag(true);
 }
 
 QueryTuple<emp::Bit>::QueryTuple(const QueryTuple & src) {
     schema_ = src.getSchema();
+    field_offset_bytes_ = src.field_offset_bytes_;
+    tuple_size_bytes_ = src.tuple_size_bytes_;
 
     if(src.hasManagedStorage()) { // allocate storage for this copy
         managed_data_ = new emp::Bit[schema_->size()];
@@ -194,26 +199,6 @@ QueryTuple<emp::Bit>::QueryTuple(const QueryTuple & src) {
     }
     else
         fields_ = src.fields_; // point to the original fields
-
-}
-
-void QueryTuple<emp::Bit>::writeSubset(const SecureTuple &src_tuple, const SecureTuple &dst_tuple, uint32_t src_start_idx,
-                                       uint32_t src_attr_cnt, uint32_t dst_start_idx) {
-
-    size_t src_field_offset = src_tuple.getSchema()->getFieldOffset(src_start_idx);
-    size_t dst_field_offset = dst_tuple.getSchema()->getFieldOffset(dst_start_idx);
-
-    size_t write_size = 0;
-    for(uint32_t i = src_start_idx; i < src_start_idx + src_attr_cnt; ++i) {
-        write_size += src_tuple.getSchema()->getField(i).size();
-    }
-
-    assert(dst_field_offset + write_size <= dst_tuple.schema_->size());
-
-    emp::Bit *read_pos = src_tuple.fields_ + src_field_offset;
-    emp::Bit *write_pos = dst_tuple.fields_ + dst_field_offset;
-
-    memcpy(write_pos, read_pos, write_size * TypeUtilities::getEmpBitSize());
 
 }
 
