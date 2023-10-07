@@ -75,6 +75,9 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
     lhs->pinned_ = true;
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
+    cout << "LHS input: " << DataUtilities::printTable(lhs, false) << endl;
+    cout << "RHS input: " << DataUtilities::printTable(rhs, false) << endl;
+
     this->start_time_ = clock_start();
 
 	max_intermediate_cardinality_ =  lhs->getTupleCount() + rhs->getTupleCount();
@@ -88,13 +91,13 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
 
     QuerySchema lhs_schema = lhs->getSchema();
     QuerySchema rhs_schema = rhs->getSchema();
-    QuerySchema out_schema = QuerySchema::concatenate(lhs->getSchema(), rhs->getSchema());
+    QuerySchema out_schema = this->output_schema_;
 
     foreign_key_cardinality_ = foreign_key_input_ ? rhs->getTupleCount() : lhs->getTupleCount();
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
     QueryTable<B> *s1, *s2;
-
+    cout << "Output of augment tables: " << DataUtilities::printTable(augmented.first, false) << ", \n " <<  DataUtilities::printTable(augmented.second, false)  <<  endl;
 	s1 = obliviousExpand(augmented.first, true);
 	s2 = obliviousExpand(augmented.second, false);
 
@@ -239,7 +242,7 @@ pair<QueryTable<B> *, QueryTable<B> *>  KeyedSortMergeJoin<B>::augmentTables(Que
 
 	table_id_idx_ = augmented_schema.getFieldCount() - 1;
     alpha_idx_ = augmented_schema.getFieldCount() - 2;
-
+    cout << "Sort compatible? " << sortCompatible() << endl;
     auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
 
     if(is_secure_ && bit_packed_) initializeAlphasPacked(sorted);
@@ -373,6 +376,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionAndMergeTables() {
     sorter.bitonicMergeNormalized(normalized, sorter.getSortOrder(), 0, normalized->getTupleCount(), true, counter);
     unioned =  sorter.denormalizeTable(normalized);
     unioned->setSortOrder(sort_def);
+
     delete normalized;
     return unioned;
 
@@ -484,6 +488,8 @@ void KeyedSortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
 	Integer alpha_2 = zero;
 	Bit one_b(true), zero_b(false);
 
+    cout << "input to initialize alphas: " << DataUtilities::printTable(dst, true) << endl;
+
 	Bit table_id = dst->getField(0, table_id_idx_).template getValue<Bit>();
     Bit fkey_check = (foreign_key_input_ == 0 ? zero_b : one_b);
 	Bit is_foreign_key = (table_id == fkey_check);
@@ -516,16 +522,9 @@ void KeyedSortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
 		to_write = emp::If(dst->getDummyTag(i), zero, dst->getPackedField(i, alpha_idx_).template getValue<Integer>());
 		dst->setPackedField(i, alpha_idx_, SecureField(int_field_type_, to_write));
 
-        //         table_id = dst->getPackedField(i, table_id_idx_);
-        //		is_foreign_key = (table_id == fkey_check);
-        //		B same_group = joinMatch(dst, i+1, i);
-        //        B dummy = dst->getDummyTag(i);
-        //		alpha_1 = Field<B>::If(is_foreign_key & same_group, alpha_1, Field<B>::If(!is_foreign_key & !dummy, one_, zero_));
-        //		dst->setPackedField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getPackedField(i, alpha_idx_)));
-        //		dst->setPackedField(i, alpha_idx_, Field<B>::If(dst->getDummyTag(i), zero_, dst->getPackedField(i, alpha_idx_)));
 	}
 
-
+    cout << "After initialize alphas, have: " << DataUtilities::printTable(dst, true) << endl;
 
 }
 
@@ -633,17 +632,11 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool
         dst_table->setDummyTag(i, FieldUtilities::select(result, tmp.getDummyTag() | end_matches, dst_table->getDummyTag(i) | end_matches));
     }
 
-	//std::cout << "Observed cost of conditional write step: " << this->system_conf_.andGateCount() - start_gates << "\n";
-
-    // cout << "Ending obliviousExpand with and gates: " << this->system_conf_.andGateCount() << endl;
-
     return dst_table;
 }
 
 template<>
 SecureTable *KeyedSortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool is_lhs) {
-
-    // cout << "Starting initialize  in obliviousExpandPacked with and gates: " << this->system_conf_.andGateCount() << endl;
 
     QuerySchema schema = input->getSchema();
 
@@ -674,41 +667,41 @@ SecureTable *KeyedSortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, 
     for(int i = 0; i < input->getTupleCount(); i++) {
         intermediate_table->cloneRow(i, 0, input, i);
         cnt = input->getPackedField(i, alpha_idx_).getValue<Integer>();
-        Bit result = (cnt == zero);
+        Bit zero_cnt = (cnt == zero);
 
-        Integer weight_int = emp::If(result, zero, s);
-        Bit is_new_bit = emp::If(result, one_b, zero_b);
+        Integer weight_int = emp::If(zero_cnt, zero, s);
+        Bit is_new_bit = emp::If(zero_cnt, one_b, zero_b);
 
         intermediate_table->setPackedField(i, weight_idx_, SecureField(weight.getType(), weight_int));
         intermediate_table->setField(i, is_new_idx_, SecureField(bool_field_type_, is_new_bit));
-        intermediate_table->setDummyTag(i, input->getDummyTag(i) | result);
+        intermediate_table->setDummyTag(i, input->getDummyTag(i) | zero_cnt);
         s = s + cnt;
+
     }
 
-    // cout << "Calling obliviousDistribute with and gate count: " << this->system_conf_.andGateCount() << endl;
-    SecureTable *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
-    // cout << "Exited obliviousDistribute with and gate count: " << this->system_conf_.andGateCount() << endl;
+    cout << "Input of oblivious distribute: " << DataUtilities::printTable(intermediate_table, false) << endl;
 
+    SecureTable *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
+    cout << "Output of oblivious distribute: " << DataUtilities::printTable(dst_table, false) << endl;
 
     schema = dst_table->getSchema();
 
-    SecureTuple tmp(&schema);
-	
-    tmp.setField(is_new_idx_, SecureField(bool_field_type_, one_b));
+    SecureTuple tmp_row(&schema);
+    tmp_row.setField(is_new_idx_, SecureField(bool_field_type_, one_b));
+    // initialize it to first row in dst_table
+    memcpy(tmp_row.getData(), ((RowTable<Bit> *) dst_table)->tuple_data_.data(), dst_table->tuple_size_bytes_);
+
 
 	size_t start_gates = this->system_conf_.andGateCount();
 
-    cout << "Expand schema " << schema << endl;
     for(int i = 0; i < foreign_key_cardinality_; i++) {
         Bit is_new_bit = dst_table->getField(i, is_new_idx_).getValue<Bit>();
         Bit new_write = (is_new_bit == one_b);
-        cout << "(" << i << ")" << " is_new_bit: " << is_new_bit.reveal() << " new_write: " << new_write.reveal() << endl;
-        tmp.setDummyTag(FieldUtilities::select(new_write, tmp.getDummyTag(), dst_table->getDummyTag(i)));
+        tmp_row.setDummyTag(FieldUtilities::select(new_write, tmp_row.getDummyTag(), dst_table->getDummyTag(i)));
 
         for(int j = 0; j < schema.getFieldCount(); j++) {
-            SecureField to_write = SecureField::If(new_write, tmp.getPackedField(j), dst_table->getPackedField(i, j));
-            cout << "To write: " << to_write.reveal() << endl;
-            tmp.setPackedField(j, to_write);
+            SecureField to_write = SecureField::If(new_write, tmp_row.getPackedField(j), dst_table->getPackedField(i, j));
+            tmp_row.setPackedField(j, to_write);
             dst_table->setPackedField(i, j, to_write);
 
         }
@@ -716,11 +709,12 @@ SecureTable *KeyedSortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, 
 		
 		Integer write_index(schema.getField(weight_idx_).size() + 1, i);
 		
-		Bit end_matches = write_index >= s-one;
-        dst_table->setDummyTag(i, FieldUtilities::select(new_write, tmp.getDummyTag() | end_matches, dst_table->getDummyTag(i) | end_matches));
+		Bit end_matches = write_index >= (s - one);
+        dst_table->setDummyTag(i, FieldUtilities::select(new_write, tmp_row.getDummyTag() | end_matches,
+                                                         dst_table->getDummyTag(i) | end_matches));
     }
 
-
+    cout << "output of oblivious expand: " << DataUtilities::printTable(dst_table, false) << endl;
     return dst_table;
 }
 
