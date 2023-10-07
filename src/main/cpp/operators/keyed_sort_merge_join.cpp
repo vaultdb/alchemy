@@ -75,8 +75,6 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
     lhs->pinned_ = true;
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
-    cout << "LHS input: " << DataUtilities::printTable(lhs, false) << endl;
-    cout << "RHS input: " << DataUtilities::printTable(rhs, false) << endl;
 
     this->start_time_ = clock_start();
 
@@ -97,7 +95,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
     QueryTable<B> *s1, *s2;
-    cout << "Output of augment tables: " << DataUtilities::printTable(augmented.first, false) << ", \n " <<  DataUtilities::printTable(augmented.second, false)  <<  endl;
+
 	s1 = obliviousExpand(augmented.first, true);
 	s2 = obliviousExpand(augmented.second, false);
 
@@ -242,7 +240,7 @@ pair<QueryTable<B> *, QueryTable<B> *>  KeyedSortMergeJoin<B>::augmentTables(Que
 
 	table_id_idx_ = augmented_schema.getFieldCount() - 1;
     alpha_idx_ = augmented_schema.getFieldCount() - 2;
-    cout << "Sort compatible? " << sortCompatible() << endl;
+
     auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
 
     if(is_secure_ && bit_packed_) initializeAlphasPacked(sorted);
@@ -488,8 +486,6 @@ void KeyedSortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
 	Integer alpha_2 = zero;
 	Bit one_b(true), zero_b(false);
 
-    cout << "input to initialize alphas: " << DataUtilities::printTable(dst, true) << endl;
-
 	Bit table_id = dst->getField(0, table_id_idx_).template getValue<Bit>();
     Bit fkey_check = (foreign_key_input_ == 0 ? zero_b : one_b);
 	Bit is_foreign_key = (table_id == fkey_check);
@@ -523,8 +519,6 @@ void KeyedSortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
 		dst->setPackedField(i, alpha_idx_, SecureField(int_field_type_, to_write));
 
 	}
-
-    cout << "After initialize alphas, have: " << DataUtilities::printTable(dst, true) << endl;
 
 }
 
@@ -679,10 +673,8 @@ SecureTable *KeyedSortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, 
 
     }
 
-    cout << "Input of oblivious distribute: " << DataUtilities::printTable(intermediate_table, false) << endl;
 
     SecureTable *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
-    cout << "Output of oblivious distribute: " << DataUtilities::printTable(dst_table, false) << endl;
 
     schema = dst_table->getSchema();
 
@@ -714,7 +706,6 @@ SecureTable *KeyedSortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, 
                                                          dst_table->getDummyTag(i) | end_matches));
     }
 
-    cout << "output of oblivious expand: " << DataUtilities::printTable(dst_table, false) << endl;
     return dst_table;
 }
 
