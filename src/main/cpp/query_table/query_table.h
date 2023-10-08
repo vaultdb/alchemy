@@ -212,7 +212,7 @@ namespace  vaultdb {
 //        virtual QueryTuple<Bit> getSecureTuple(size_t idx) const = 0;
 
         // memcpy a field from one table to another
-        virtual void assignField(const int & dst_row, const int & dst_col,const  QueryTable<B> *src, const int & src_row, const int & src_col) = 0;
+        virtual void assignField(const int & dst_row, const int & dst_col, const  QueryTable<B> *src, const int & src_row, const int & src_col) = 0;
         virtual void cloneFields(const int &dst_row, const int &dst_start_col, const QueryTable<B> *src, const int &src_row, const int & src_start_col,
                          const int &col_cnt) = 0;
 

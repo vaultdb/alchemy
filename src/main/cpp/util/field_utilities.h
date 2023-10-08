@@ -81,6 +81,28 @@ namespace vaultdb {
         static std::string printTupleBits(const PlainTuple & p);
         static std::string printTupleBits(const SecureTuple & s);
 
+        // compatible with OMPC
+        static string printTupleBits(const QueryTable<Bit> *table, const int & idx) {
+            stringstream out;
+            out << "(";
+            if(table->getSchema().getFieldCount() > 0) {
+                SecureField f = table->getField(idx, 0);
+                out << FieldUtilities::printField(f);
+                for (int j = 1; j < table->getSchema().getFieldCount(); ++j) {
+                    f = table->getField(idx, j);
+                    out << ", " << FieldUtilities::printField(f);
+                }
+            }
+            out << ")";
+            // dummy tag
+            out << " (dummy=" << table->getDummyTag(idx).reveal() << ")";
+           return out.str();
+        }
+
+        static std::string printTupleBits(const QueryTable<bool> *table, const int & idx) {
+            return printTupleBits(table->getPlainTuple(idx));
+        }
+
         static bool getBoolPrimitive(const Field<bool> & input) { return input.getValue<bool>(); }
         static emp::Bit getBoolPrimitive(const Field<emp::Bit> & input) { return input.getValue<emp::Bit>(); }
 

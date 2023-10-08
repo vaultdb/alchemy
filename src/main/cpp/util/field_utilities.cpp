@@ -219,15 +219,10 @@ string FieldUtilities::printInt(const int32_t &i) {
 
 string FieldUtilities::printInt(const Integer &i) {
     int bit_cnt = i.size();
-
-    bool *bools = new bool[i.size()];
-    i.revealBools(bools, PUBLIC);
-    int64_t ii = i.reveal<int64_t>();
+    int64_t ii = i.reveal<int64_t>(); // ballpark - input might be > 64 bits
 
     stringstream ss;
-    ss << ii << ": " << DataUtilities::printBitArray(bools, bit_cnt) << ", " << DataUtilities::printByteArray((int8_t *) &ii, ceil(bit_cnt/8.0));
-
-    delete[] bools;
+    ss << ii << ": " << SystemConfiguration::getInstance().emp_manager_->revealToString(i) << ", " << DataUtilities::printByteArray((int8_t *) &ii, ceil(bit_cnt/8.0));
 
     return ss.str();
 

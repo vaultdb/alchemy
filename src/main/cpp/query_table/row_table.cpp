@@ -256,11 +256,8 @@ template<typename B>
 void RowTable<B>::assignField(const int &dst_row, const int &dst_col, const QueryTable<B> *s, const int &src_row,
                                 const int &src_col) {
 
-    assert(s->storageModel() == StorageModel::ROW_STORE);
-    RowTable<B> *src = (RowTable<B> *) s;
 
-    int8_t *src_field = (int8_t *) (src->tuple_data_.data() + src->tuple_size_bytes_ * src_row + src->field_offsets_bytes_.at(src_col));
-
+    int8_t *src_field = s->getFieldPtr(src_row, src_col);
     int8_t *dst_field = getFieldPtr(dst_row, dst_col);
     memcpy(dst_field, src_field, this->field_sizes_bytes_.at(dst_col));
 

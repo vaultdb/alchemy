@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="SecureKeyedSortMergeJoinTest A+B" type="CompoundRunConfigurationType">
+    <toRun name="secure_keyed_sort_merge_join_test A" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="secure_keyed_sort_merge_join_test B" type="CMakeGoogleTestRunConfigurationType" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -7,7 +7,6 @@
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
 
-// TODO: reduce counts to log(fkey_length) bits
 // TODO: create alt SMJ operator for many-to-many relationships
 
 namespace  vaultdb {
@@ -53,6 +52,7 @@ namespace  vaultdb {
 
 
 		int foreignKeyChild() const { return foreign_key_input_; }
+        QuerySchema deriveProjectedSchema() const;
         QuerySchema deriveAugmentedSchema() const;
         const vector<pair<uint32_t, uint32_t>> joinKeyIdxs() const { return join_idxs_; }
 
@@ -137,8 +137,10 @@ namespace  vaultdb {
 
         //QueryTable<B> *alignTable(QueryTable<B> *input);
         QueryTable<B> *revertProjection(QueryTable<B> *s, const map<int, int> &expr_map, const bool &is_lhs) const;
+        QueryTable<B> *revertProjectionOmpc(QueryTable<B> *s, const map<int, int> &expr_map, const bool &is_lhs) const;
 
         QueryTable<B> *projectSortKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs);
+        QueryTable<B> *projectSortKeyToFirstAttrOmpc(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs);
 
         void initializeAlphas(QueryTable<B> *dst); // update in place
         void initializeAlphasPacked(QueryTable<B> *dst); // update in place
@@ -158,6 +160,7 @@ namespace  vaultdb {
 
         void setup();
     };
+
 
 
 

@@ -145,6 +145,7 @@ namespace  vaultdb {
             in.reveal(b, party);
             stringstream s;
             for(int i = 0; i < in.size(); ++i) {
+                if(i % 8 == 0) s << " ";
                 char res =   (b[i]) ? '1' : '0';
                 s << res;
             }

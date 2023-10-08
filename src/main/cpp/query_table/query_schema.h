@@ -35,7 +35,7 @@ namespace  vaultdb {
 
         inline int getFieldCount() const {  return fields_.size() - 1;  } // does not include dummy tag
 
-
+        // remember to run initializeFieldOffsets() after adding all fields
         inline void  putField(const QueryFieldDesc &fd) {     fields_[fd.getOrdinal()]  = fd; }
 
         inline void setSchema(const QuerySchema & s) {
