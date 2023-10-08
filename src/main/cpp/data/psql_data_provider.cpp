@@ -43,7 +43,7 @@ PsqlDataProvider::getQueryTable(std::string db_name, std::string sql, bool has_d
     size_t row_cnt = res.size();
 
     schema_ = getSchema(res, has_dummy_tag);
-    PlainTable *dst_table = TableFactory<bool>::getTable(row_cnt, schema_, storage_model_);
+    PlainTable *dst_table = TableFactory<bool>::getTable(row_cnt, schema_);
 
 
     int counter = 0;

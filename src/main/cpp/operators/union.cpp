@@ -44,7 +44,7 @@ QueryTable<B> * Union<B>::runSelf() {
     size_t tuple_cnt = lhs->getTupleCount() + rhs->getTupleCount();
 
     // intentionally empty sort definition
-    this->output_ = TableFactory<B>::getTable(tuple_cnt, output_schema, lhs->storageModel());
+    this->output_ = TableFactory<B>::getTable(tuple_cnt, output_schema);
 
     this->output_->cloneTable(0, lhs);
     this->output_->cloneTable(lhs->getTupleCount(), rhs);

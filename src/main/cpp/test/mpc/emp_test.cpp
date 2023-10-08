@@ -150,7 +150,7 @@ TEST_F(EmpTest, secret_share_table_one_column) {
 
 
 
-    plain = TableFactory<bool>::getTable(in_tuple_cnt, schema, storage_model_);
+    plain = TableFactory<bool>::getTable(in_tuple_cnt, schema);
 
     for (uint32_t i = 0; i < in_tuple_cnt; ++i) {
             Field<bool> val(FieldType::INT, input[i]);
@@ -163,7 +163,7 @@ TEST_F(EmpTest, secret_share_table_one_column) {
     PlainTable *revealed = secret_shared->revealInsecure(emp::PUBLIC);
 
     // set up expected result by concatenating input tables
-    PlainTable *expected = TableFactory<bool>::getTable(all_input.size(), schema, storage_model_);
+    PlainTable *expected = TableFactory<bool>::getTable(all_input.size(), schema);
 
     for (uint32_t i = 0; i < all_input.size(); ++i) {
         expected->setField(i, 0, Field<bool>(FieldType::INT, all_input[i]));
@@ -208,7 +208,7 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
     schema.initializeFieldOffsets();
 
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
-    PlainTable *input_table = TableFactory<bool>::getTable(tuple_cnt, schema, storage_model_, sort_def);
+    PlainTable *input_table = TableFactory<bool>::getTable(tuple_cnt, schema, sort_def);
 
     for(uint32_t i = 0; i < tuple_cnt; ++i) {
         Field<bool> val(FieldType::INT, input[i]);
@@ -225,7 +225,7 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
     std::sort(all_input.begin(), all_input.end());
 
 
-    PlainTable *expected = TableFactory<bool>::getTable(all_input.size(), schema, storage_model_, sort_def);
+    PlainTable *expected = TableFactory<bool>::getTable(all_input.size(), schema, sort_def);
 
     for(uint32_t i = 0; i < expected->getTupleCount(); ++i) {
         Field<bool> val(FieldType::INT, all_input[i]);

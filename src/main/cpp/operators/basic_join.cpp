@@ -35,7 +35,8 @@ QueryTable<B> *BasicJoin<B>::runSelf() {
 
     B selected, dst_dummy_tag, lhs_dummy_tag;
     // output size, colCount, is_encrypted
-    this->output_ = TableFactory<B>::getTable(lhs->getTupleCount() * rhs->getTupleCount(), this->output_schema_, lhs->storageModel(), this->sort_definition_);
+    this->output_ = TableFactory<B>::getTable(lhs->getTupleCount() * rhs->getTupleCount(), this->output_schema_,
+                                              this->sort_definition_);
     int cursor = 0;
 
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {

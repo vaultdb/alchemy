@@ -24,7 +24,7 @@ QueryTable<Bit> *MergeInput::runSelf() {
     // ensure they line up
     assert (tuple_cnt == rhs->getTupleCount());
 
-    this->output_ = TableFactory<Bit>::getTable(lhs->getTupleCount(), this->output_schema_, lhs->storageModel(), this->sort_definition_);
+    this->output_ = TableFactory<Bit>::getTable(lhs->getTupleCount(), this->output_schema_, this->sort_definition_);
 
     for(int i = 0; i < tuple_cnt; ++i) {
         Bit lhs_dummy = lhs->getDummyTag(i);

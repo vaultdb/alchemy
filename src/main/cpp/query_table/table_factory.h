@@ -22,13 +22,13 @@ template<typename B>
         }
 
 
-        static QueryTable<B> * getTable(const size_t &tuple_cnt, const QuerySchema &schema, const StorageModel &storage_model,
-                                        const SortDefinition &sort_def = SortDefinition()) {
+        static QueryTable<B> *getTable(const size_t &tuple_cnt, const QuerySchema &schema,
+                                       const SortDefinition &sort_def = SortDefinition()) {
 
-            if (storage_model == StorageModel::ROW_STORE) {
+            if (SystemConfiguration::getInstance().storageModel() == StorageModel::ROW_STORE) {
                 return new RowTable<B>(tuple_cnt, schema, sort_def);
             }
-            else if (storage_model == StorageModel::COLUMN_STORE) {
+            else if (SystemConfiguration::getInstance().storageModel() == StorageModel::COLUMN_STORE) {
                 return new ColumnTable<B>(tuple_cnt, schema, sort_def);
             }
             throw;
