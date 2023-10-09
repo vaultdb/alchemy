@@ -180,10 +180,10 @@ signed char Utilities::boolsToByte(const bool *src) {
 }
 
 
-string Utilities::revealAndPrintBytes(emp::Bit *bits, const int &byteCount) {
+string Utilities::revealAndPrintBytes(emp::Bit *bits, const int &byte_cnt) {
     std::stringstream ss;
 
-    for(int i = 0; i < byteCount * 8; ++i) {
+    for(int i = 0; i < byte_cnt * 8; ++i) {
         ss << bits[i].reveal();
         if((i+1) % 8 == 0) ss << " ";
     }
