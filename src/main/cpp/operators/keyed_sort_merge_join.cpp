@@ -448,7 +448,6 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectSortKeyToFirstAttrOmpc(QueryTable<B
     ++dst_row_len_bits; // dummy_tag
     map<int, int> src_field_offsets_bits;
 
-    if(dst_schema == src_schema) return src->clone(); // if no re-arranging needed, bypass this step
 
     for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
         src_field_offsets_bits[i] = src_row_len_bits;
