@@ -142,7 +142,6 @@ QuerySchema KeyedSortMergeJoin<B>::deriveProjectedSchema() const {
     int write_cursor = 0;
     QuerySchema projected_schema;
 
-
     for(auto key_pair : join_idxs_) {
         // visitor always outputs lhs, rhs
         int k = (lhs_smaller_) ? (key_pair.second  - lhs_schema_fields) : key_pair.first;
@@ -288,7 +287,6 @@ pair<QueryTable<B> *, QueryTable<B> *>  KeyedSortMergeJoin<B>::augmentTables(Que
     }
     output.first = s1;
     output.second = s2;
-
 
     return output;
 }
@@ -448,7 +446,6 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectSortKeyToFirstAttrOmpc(QueryTable<B
     ++dst_row_len_bits; // dummy_tag
     map<int, int> src_field_offsets_bits;
 
-
     for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
         src_field_offsets_bits[i] = src_row_len_bits;
         src_row_len_bits += src->getSchema().getField(i).size();
@@ -456,8 +453,10 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectSortKeyToFirstAttrOmpc(QueryTable<B
     src_field_offsets_bits[-1] = src_row_len_bits; // dummy tag
     ++src_row_len_bits;
 
+    bool simple_projection = true; // no data movement
     for(auto key : join_cols) {
         builder.addMapping(key, write_cursor);
+        if(key != write_cursor) simple_projection = false;
         field_mapping[write_cursor] = key;
         ++write_cursor;
     }
@@ -465,6 +464,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectSortKeyToFirstAttrOmpc(QueryTable<B
     for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
         if(std::find(join_cols.begin(), join_cols.end(),i) == join_cols.end()) {
             builder.addMapping(i, write_cursor);
+            if(i != write_cursor) simple_projection = false;
             field_mapping[write_cursor] = i;
             ++write_cursor;
         }
@@ -482,7 +482,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectSortKeyToFirstAttrOmpc(QueryTable<B
         rhs_projected_schema_ = projection.getOutputSchema();
     }
 
-    if(dst_schema == src_schema) return src->clone(); // if no re-arranging needed, bypass this step
+    if(simple_projection) {  return src->clone(); }// if no re-arranging needed, bypass this step
 
     assert(src->isEncrypted());
     auto output = TableFactory<Bit>::getTable(src->getTupleCount(), dst_schema, projection.getSortOrder()); // retain sort order b/c we only care if we're sorted on the join keys
