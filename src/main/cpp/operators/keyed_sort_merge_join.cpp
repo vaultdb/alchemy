@@ -450,6 +450,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectSortKeyToFirstAttrOmpc(QueryTable<B
         src_field_offsets_bits[i] = src_row_len_bits;
         src_row_len_bits += src->getSchema().getField(i).size();
     }
+
     src_field_offsets_bits[-1] = src_row_len_bits; // dummy tag
     ++src_row_len_bits;
 
@@ -482,7 +483,8 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectSortKeyToFirstAttrOmpc(QueryTable<B
         rhs_projected_schema_ = projection.getOutputSchema();
     }
 
-    if(simple_projection) {  return src->clone(); }// if no re-arranging needed, bypass this step
+
+    if(simple_projection && (projection.getOutputSchema() == src_schema) && (dst_schema == src_schema)) {  return src->clone(); }// if no re-arranging needed, bypass this step
 
     assert(src->isEncrypted());
     auto output = TableFactory<Bit>::getTable(src->getTupleCount(), dst_schema, projection.getSortOrder()); // retain sort order b/c we only care if we're sorted on the join keys
