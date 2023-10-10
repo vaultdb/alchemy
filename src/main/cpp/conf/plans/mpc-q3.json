@@ -160,6 +160,7 @@
       "id": "5",
       "relOp": "LogicalJoin",
       "joinOn" : "o_orderkey = l_orderkey",
+      "inputFields": "o_orderkey(13) (#0), o_orderdate(28) (#1), o_shippriority(1) (#2),  l_orderkey(13) (#3), revenue(32) (#4)",
       "outputFields": "o_orderkey (#0), o_orderdate (#1), o_shippriority (#2), l_orderkey (#3), revenue (#4)",
       "operator-algorithm" : "auto",
       "condition": {
