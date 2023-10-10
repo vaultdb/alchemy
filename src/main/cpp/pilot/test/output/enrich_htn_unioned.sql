@@ -21,7 +21,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: demographics_domain; Type: TABLE; Schema: public; Owner: jennie
+-- Name: demographics_domain; Type: TABLE; Schema: public; Owner: vaultdb
 --
 
 CREATE TABLE public.demographics_domain (
@@ -32,10 +32,10 @@ CREATE TABLE public.demographics_domain (
 );
 
 
-ALTER TABLE public.demographics_domain OWNER TO jennie;
+ALTER TABLE public.demographics_domain OWNER TO vaultdb;
 
 --
--- Name: patient; Type: TABLE; Schema: public; Owner: jennie
+-- Name: patient; Type: TABLE; Schema: public; Owner: vaultdb
 --
 
 CREATE TABLE public.patient (
@@ -50,10 +50,10 @@ CREATE TABLE public.patient (
 );
 
 
-ALTER TABLE public.patient OWNER TO jennie;
+ALTER TABLE public.patient OWNER TO vaultdb;
 
 --
--- Name: patient_exclusion; Type: TABLE; Schema: public; Owner: jennie
+-- Name: patient_exclusion; Type: TABLE; Schema: public; Owner: vaultdb
 --
 
 CREATE TABLE public.patient_exclusion (
@@ -64,10 +64,10 @@ CREATE TABLE public.patient_exclusion (
 );
 
 
-ALTER TABLE public.patient_exclusion OWNER TO jennie;
+ALTER TABLE public.patient_exclusion OWNER TO vaultdb;
 
 --
--- Data for Name: demographics_domain; Type: TABLE DATA; Schema: public; Owner: jennie
+-- Data for Name: demographics_domain; Type: TABLE DATA; Schema: public; Owner: vaultdb
 --
 
 COPY public.demographics_domain (age_strata, sex, ethnicity, race) FROM stdin;
@@ -516,7 +516,7 @@ COPY public.demographics_domain (age_strata, sex, ethnicity, race) FROM stdin;
 
 
 --
--- Data for Name: patient; Type: TABLE DATA; Schema: public; Owner: jennie
+-- Data for Name: patient; Type: TABLE DATA; Schema: public; Owner: vaultdb
 --
 
 COPY public.patient (patid, zip_marker, age_days, sex, ethnicity, race, numerator, site_id) FROM stdin;
@@ -724,7 +724,7 @@ COPY public.patient (patid, zip_marker, age_days, sex, ethnicity, race, numerato
 
 
 --
--- Data for Name: patient_exclusion; Type: TABLE DATA; Schema: public; Owner: jennie
+-- Data for Name: patient_exclusion; Type: TABLE DATA; Schema: public; Owner: vaultdb
 --
 
 COPY public.patient_exclusion (patid, numerator, denom_excl, site_id) FROM stdin;
