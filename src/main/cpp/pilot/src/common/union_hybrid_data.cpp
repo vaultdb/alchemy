@@ -64,19 +64,18 @@ SecureTable *UnionHybridData::readSecretSharedInput(const string &secretSharesFi
     std::vector<int8_t> src_data = DataUtilities::readFile(secretSharesFile);
     size_t src_byte_cnt = src_data.size();
     size_t src_bit_cnt = src_byte_cnt * 8;
-    size_t tuple_cnt = src_bit_cnt / plain_schema.size();
+    size_t tuple_cnt = src_bit_cnt / plain_schema.bitCnt();
 
     assert(src_bit_cnt % plain_schema.size() == 8); // 8 left over for storage model header
-
     bool *src_bools = new bool[src_bit_cnt];
     emp::to_bool<int8_t>(src_bools, src_data.data(), src_bit_cnt, false);
-
     // convert serialized representation from byte-aligned to bit-by-bit
     QuerySchema secure_schema = QuerySchema::toSecure(plain_schema);
 
-    size_t dst_bit_cnt = tuple_cnt * secure_schema.size() + 8;
+    size_t dst_bit_cnt = tuple_cnt * secure_schema.bitCnt() + 8;
     size_t remainder = dst_bit_cnt % 128; // pad it to 128-bit increments
     size_t dst_bit_alloc = dst_bit_cnt + remainder;
+
     bool *dst_bools = new bool[dst_bit_alloc];
     assert(dst_bools != nullptr);
 
@@ -161,7 +160,7 @@ void UnionHybridData::plain_to_secure_bits(bool *src, bool *dst, const QuerySche
             QueryFieldDesc plain_field = plain_schema.getField(j);
             QueryFieldDesc secure_field = secure_schema.getField(j);
             memcpy(dst + dst_pos, src + src_pos, secure_field.size());
-            dst_pos += secure_field.size();
+            dst_pos += secure_field.size(); // size in bits
             src_pos += plain_field.size();
         }
         // handle dummy tag
