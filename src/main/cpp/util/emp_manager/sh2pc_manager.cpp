@@ -49,7 +49,7 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
     QuerySchema dst_schema = QuerySchema::toSecure(src->getSchema());
 
     auto dst_table =
-           TableFactory<Bit>::getTable(alice_tuple_cnt + bob_tuple_cnt, dst_schema, src->storageModel(), src->getSortOrder());
+           TableFactory<Bit>::getTable(alice_tuple_cnt + bob_tuple_cnt, dst_schema, src->getSortOrder());
 
     if(!src->getSortOrder().empty()) {
         if (party_ == emp::ALICE) {
