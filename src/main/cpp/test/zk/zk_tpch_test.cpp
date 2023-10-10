@@ -104,7 +104,8 @@ TEST_F(ZkTpcHTest, tpch_q05) {
 }
 
 TEST_F(ZkTpcHTest, tpch_q08) {
-    runTest(8, "q8", SortDefinition());
+    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING)};
+    runTest(8, "q8", expected_sort);
 }
 
 TEST_F(ZkTpcHTest, tpch_q09) {
