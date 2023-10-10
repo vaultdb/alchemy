@@ -10,7 +10,7 @@ namespace  vaultdb {
     public:
         static std::string getRollupExpectedResultsSql(const std::string &groupByColName, const std::string & selection);
         static SecureTable *rollUpAggregate( SecureTable *input, const int &ordinal);
-        static void validateTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, PlainTable *testTable);
+        static void validateTable(const std::string & db_name, const std::string & sql, const SortDefinition  & expected_sort, PlainTable *test_table);
         static void secretShareFromCsv(const string &src_file, const QuerySchema &plain_schema, const string &dst_root);
         static void secretShareFromQuery(const std::string & db_name, const std::string & query, const std::string & dst_root);
         static std::string appendToConjunctivePredicate(const std::string & base, const std::string & to_append);

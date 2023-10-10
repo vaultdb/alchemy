@@ -349,7 +349,7 @@ string DataUtilities::printBitArray(const int8_t *bits, const size_t &byte_cnt) 
     return s.str();
 }
 
-string DataUtilities::printTable(const SecureTable *table, bool show_dummies, int tuple_limit) {
+string DataUtilities::printTable(const SecureTable *table, int tuple_limit, bool show_dummies) {
     auto tmp = table->revealInsecure();
     stringstream  ss;
     ss << tmp->toString(tuple_limit, show_dummies);

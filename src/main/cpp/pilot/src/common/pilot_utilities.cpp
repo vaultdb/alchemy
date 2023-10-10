@@ -69,30 +69,29 @@ SecureTable *PilotUtilities::rollUpAggregate(SecureTable *input, const int &ordi
 }
 
 
-void PilotUtilities::validateTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, PlainTable *testTable)  {
+void PilotUtilities::validateTable(const std::string & db_name, const std::string & sql, const SortDefinition  & expected_sort, PlainTable *test_table)  {
 
 
-    PlainTable *expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
-    expectedTable->setSortOrder(expectedSortDefinition);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name, sql, false);
+    expected->setSortOrder(expected_sort);
 
     // sort the inputs
     // ops deleted later using Operator framework
-    Sort sort(testTable->clone(), expectedSortDefinition);
-    PlainTable *observedTable = sort.run();
-    DataUtilities::removeDummies(observedTable);
+    Sort sort(test_table->clone(), expected_sort);
+    PlainTable *observed = sort.run();
+    DataUtilities::removeDummies(observed);
 
-    bool res = (*expectedTable == *observedTable);
+    bool res = (*expected == *observed);
     if(!res) {
         cout << "Failed to match at " << Utilities::getStackTrace() << endl;
     }
     assert(res);
 
-    delete expectedTable;
+    delete expected;
 
 }
 
-void
-PilotUtilities::secretShareFromCsv(const string &src_csv, const QuerySchema &plain_schema, const string &dst_root) {
+void PilotUtilities::secretShareFromCsv(const string &src_csv, const QuerySchema &plain_schema, const string &dst_root) {
     PlainTable *inputTable = CsvReader::readCsv(src_csv, plain_schema);
     SecretShares shares = inputTable->generateSecretShares();
     QuerySchema dst_schema = QuerySchema::toSecure(plain_schema);
