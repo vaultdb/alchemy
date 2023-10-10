@@ -1,0 +1,194 @@
+[==========] Running 18 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 18 tests from BaselineComparisonTest
+[ RUN      ] BaselineComparisonTest.tpch_q1_all_mpc
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7654, 65482 as 2
+connected
+Finished connecting!
+Predicted gate count: 1730670976
+Observed gate count: 1468184536
+Runtime: 408186.422000
+[       OK ] BaselineComparisonTest.tpch_q1_all_mpc (409730 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q3_all_mpc
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7655, 65483 as 2
+connected
+Finished connecting!
+Predicted gate count: 30482609048
+Observed gate count: 31558477652
+Runtime: 8639578.102000
+[       OK ] BaselineComparisonTest.tpch_q3_all_mpc (8642334 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q5_all_mpc
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7656, 65484 as 2
+connected
+Finished connecting!
+Predicted gate count: 15857255556
+Observed gate count: 16661518988
+Runtime: 4608472.820000
+[       OK ] BaselineComparisonTest.tpch_q5_all_mpc (4610818 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q8_all_mpc
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7657, 65485 as 2
+connected
+Finished connecting!
+Predicted gate count: 464432357396
+Observed gate count: 415127929052
+Runtime: 114079047.682000
+[       OK ] BaselineComparisonTest.tpch_q8_all_mpc (114081294 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q9_all_mpc
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7658, 65486 as 2
+connected
+Finished connecting!
+Predicted gate count: 143202676352
+Observed gate count: 108883844328
+Runtime: 30044379.594000
+[       OK ] BaselineComparisonTest.tpch_q9_all_mpc (30046508 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q18_all_mpc
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7659, 65487 as 2
+connected
+Finished connecting!
+Predicted gate count: 89340502773
+Observed gate count: 89802302608
+Runtime: 24885748.845000
+[       OK ] BaselineComparisonTest.tpch_q18_all_mpc (24883047 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q1_baseline
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7660, 65488 as 2
+connected
+Finished connecting!
+Predicted gate count: 2409586528
+Observed gate count: 2320547544
+Runtime: 642394.706000
+[       OK ] BaselineComparisonTest.tpch_q1_baseline (650031 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q3_baseline
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7661, 65489 as 2
+connected
+Finished connecting!
+Predicted gate count: 15504819848
+Observed gate count: 15716689052
+Runtime: 4371208.980000
+[       OK ] BaselineComparisonTest.tpch_q3_baseline (4373175 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q5_baseline
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7662, 65490 as 2
+connected
+Finished connecting!
+Predicted gate count: 51551303336
+Observed gate count: 45465030580
+Runtime: 12436925.901000
+[       OK ] BaselineComparisonTest.tpch_q5_baseline (12438390 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q8_baseline
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7663, 65491 as 2
+connected
+Finished connecting!
+Predicted gate count: 15346270768
+Observed gate count: 15217671752
+Runtime: 4194840.844000
+[       OK ] BaselineComparisonTest.tpch_q8_baseline (4196843 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q9_baseline
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7664, 65492 as 2
+connected
+Finished connecting!
+Predicted gate count: 156282265392
+Observed gate count: 155901509984
+Runtime: 42574904.958000
+[       OK ] BaselineComparisonTest.tpch_q9_baseline (42576712 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q18_baseline
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7665, 65493 as 2
+connected
+Finished connecting!
+Predicted gate count: 48025277221
+Observed gate count: 48438782736
+Runtime: 13390228.818000
+[       OK ] BaselineComparisonTest.tpch_q18_baseline (13392455 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q1_handcode
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7666, 65494 as 2
+connected
+Finished connecting!
+ Observed DB : tpch_bob_600
+Predicted gate count: 804844320
+Observed gate count: 781558840
+Runtime: 215152.573000
+[       OK ] BaselineComparisonTest.tpch_q1_handcode (216278 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q3_handcode
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7667, 65495 as 2
+connected
+Finished connecting!
+ Observed DB : tpch_bob_600
+Predicted gate count: 15413027656
+Observed gate count: 15624059188
+Runtime: 4285230.529000
+[       OK ] BaselineComparisonTest.tpch_q3_handcode (4285936 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q5_handcode
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7668, 65496 as 2
+connected
+Finished connecting!
+ Observed DB : tpch_bob_600
+Predicted gate count: 37048809467
+Observed gate count: 37009521044
+Runtime: 10118665.218000
+[       OK ] BaselineComparisonTest.tpch_q5_handcode (10119409 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q8_handcode
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7669, 65497 as 2
+connected
+Finished connecting!
+ Observed DB : tpch_bob_600
+Predicted gate count: 11469770374
+Observed gate count: 11449564092
+Runtime: 3130032.264000
+[       OK ] BaselineComparisonTest.tpch_q8_handcode (3130759 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q9_handcode
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7670, 65498 as 2
+connected
+Finished connecting!
+ Observed DB : tpch_bob_600
+Predicted gate count: 14218097380
+Observed gate count: 13835641480
+Runtime: 3814125.339000
+[       OK ] BaselineComparisonTest.tpch_q9_handcode (3814902 ms)
+[ RUN      ] BaselineComparisonTest.tpch_q18_handcode
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7671, 65499 as 2
+connected
+Finished connecting!
+ Observed DB : tpch_bob_600
+Predicted gate count: 46645586993
+Observed gate count: 47112173192
+Runtime: 13034663.595000
+[       OK ] BaselineComparisonTest.tpch_q18_handcode (13035608 ms)
+[----------] 18 tests from BaselineComparisonTest (294904238 ms total)
+
+[----------] Global test environment tear-down
+[==========] 18 tests from 1 test suite ran. (294904238 ms total)
+[  PASSED  ] 18 tests.
