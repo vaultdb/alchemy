@@ -23,7 +23,7 @@ namespace vaultdb{
         // value to be maintained by EMPManager
         int emp_bit_size_bytes_ = sizeof(emp::Bit);
         // making this public to avoid function call with each memory access
-        bool wire_packing_enabled_ = true;
+        bool wire_packing_enabled_ = false;
 
 
         static SystemConfiguration& getInstance() {
