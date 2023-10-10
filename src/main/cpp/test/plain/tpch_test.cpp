@@ -72,7 +72,7 @@ TEST_F(TpcHTest, tpch_q08) {
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING)};
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q8.json";
 
-    runTest(8, plan_file, SortDefinition());
+    runTest(8, plan_file, expected_sort);
 }
 
 // q9 expresssion:   l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity
