@@ -107,6 +107,24 @@ namespace  vaultdb {
 
         }
 
+        // schema width in packed wires
+        size_t packedWires() const {
+            size_t running_cnt = 0;
+           for(auto & field : fields_) {
+               running_cnt += field.second.packedWires();
+           }
+           return running_cnt;
+        }
+
+        // schema width in bits
+        size_t bitCnt() const {
+            size_t running_cnt = 0;
+            for(auto & field : fields_) {
+                running_cnt += field.second.size();
+            }
+            return running_cnt;
+        }
+
     };
 
 

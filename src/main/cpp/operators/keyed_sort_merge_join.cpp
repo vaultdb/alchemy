@@ -60,7 +60,7 @@ void KeyedSortMergeJoin<B>::setup() {
     JoinEqualityConditionVisitor<B> join_visitor(p->root_);
     join_idxs_  = join_visitor.getEqualities();
 
-    lhs_smaller_ = (this->getChild(0)->getOutputSchema().size() < this->getChild(1)->getOutputSchema().size());
+    lhs_smaller_ = (this->getChild(0)->getOutputSchema().bitCnt() < this->getChild(1)->getOutputSchema().bitCnt());
 
     one_ = FieldFactory<B>::getOne(int_field_type_);
     zero_ = FieldFactory<B>::getZero(int_field_type_);
@@ -85,6 +85,9 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
     QueryTable<B> *lhs = this->getChild(0)->getOutput();
     lhs->pinned_ = true;
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
+
+//    cout << "LHS input: " << DataUtilities::printTable(lhs, false);
+//    cout << "RHS input: " << DataUtilities::printTable(rhs, false);
 
     this->start_time_ = clock_start();
 
@@ -162,6 +165,7 @@ QuerySchema KeyedSortMergeJoin<B>::deriveProjectedSchema() const {
     }
 
     projected_schema.initializeFieldOffsets();
+//    cout << "Derived projected schema: " << projected_schema << endl;
     return projected_schema;
 }
 
@@ -207,8 +211,8 @@ QuerySchema KeyedSortMergeJoin<B>::getAugmentedSchema() {
         rhs_keys.emplace_back(key_pair.second - lhs->getSchema().getFieldCount());
     }
 
-    lhs_prime_ = projectSortKeyToFirstAttr(lhs, lhs_keys, true);
-    rhs_prime_ = projectSortKeyToFirstAttr(rhs, rhs_keys, false);
+    lhs_prime_ = projectJoinKeyToFirstAttr(lhs, lhs_keys, true);
+    rhs_prime_ = projectJoinKeyToFirstAttr(rhs, rhs_keys, false);
 
 	QuerySchema augmented_schema = (lhs_smaller_) ? rhs_prime_->getSchema() : lhs_prime_->getSchema();
 	
@@ -279,7 +283,7 @@ pair<QueryTable<B> *, QueryTable<B> *>  KeyedSortMergeJoin<B>::augmentTables(Que
         s1->assignField(i, -1, sort_table, read_cursor, -1);
         ++read_cursor;
     }
-    // 251 rows, we're on read_cursor = 383.  What is off here?
+
     for (int i = 0; i < rhs->getTupleCount(); i++) {
         s2->cloneRow(i, 0, sort_table, read_cursor);
         s2->assignField(i, -1, sort_table, read_cursor, -1);
@@ -390,9 +394,10 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionAndMergeTables() {
 }
 
 template<typename B>
-QueryTable<B> *KeyedSortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs) {
+QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs) {
 
-    if(SystemConfiguration::getInstance().wire_packing_enabled_ && std::is_same_v<B, Bit>) return projectSortKeyToFirstAttrOmpc(src, join_cols, is_lhs);
+    if(SystemConfiguration::getInstance().wire_packing_enabled_ && std::is_same_v<B, Bit>)
+        return projectJoinKeyToFirstAttrOmpc(src, join_cols, is_lhs);
 
     ExpressionMapBuilder<B> builder(src->getSchema());
     int write_cursor = 0;
@@ -430,7 +435,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *s
 
 
 template<typename B>
-QueryTable<B> *KeyedSortMergeJoin<B>::projectSortKeyToFirstAttrOmpc(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs) {
+QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttrOmpc(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs) {
 
     // because when we push the attrs to the first column it may change the column boundaries on the serialized bits
     // we need to unpack each row and re-pack it along the boundaries of the larger input
@@ -441,11 +446,14 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectSortKeyToFirstAttrOmpc(QueryTable<B
     QuerySchema src_schema = src->getSchema();
     auto dst_schema = deriveProjectedSchema();
     // get size of schema in bits - it will return it in packed wires for OMPC
-    int dst_row_len_bits = 0, src_row_len_bits = 0;
-    for(int i = 0; i < dst_schema.getFieldCount(); ++i) { dst_row_len_bits += dst_schema.getField(i).size(); }
-    ++dst_row_len_bits; // dummy_tag
+    // for Q3, 2nd join:
+    // lhs: o_orderkey(13) (#0), o_orderdate(28) (#1), o_shippriority(1) (#2) = 43 bits (13+28+1+1)
+    // rhs: l_orderkey(13) (#3), revenue(32) (#4) = 46 bits (13+32+1)
+    // neither reorders cols, lhs expands to 46
+    int dst_row_len_bits = dst_schema.bitCnt(), src_row_len_bits = 0;
     map<int, int> src_field_offsets_bits;
 
+//    cout << "Projecting: " << DataUtilities::printTable(src) << endl;
     for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
         src_field_offsets_bits[i] = src_row_len_bits;
         src_row_len_bits += src->getSchema().getField(i).size();
@@ -485,7 +493,8 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectSortKeyToFirstAttrOmpc(QueryTable<B
 
 
     if(simple_projection && (projection.getOutputSchema() == src_schema) && (dst_schema == src_schema)) {  return src->clone(); }// if no re-arranging needed, bypass this step
-
+//    cout << "Src schema: " << src_schema << endl;
+//    cout << "dst schema: " <<  dst_schema << endl;
     assert(src->isEncrypted());
     auto output = TableFactory<Bit>::getTable(src->getTupleCount(), dst_schema, projection.getSortOrder()); // retain sort order b/c we only care if we're sorted on the join keys
     RowTable<Bit> *src_rows = (RowTable<Bit> *) src;
@@ -508,7 +517,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectSortKeyToFirstAttrOmpc(QueryTable<B
         to_pack[to_pack.size() - 1] = unpacked.bits[unpacked.bits.size() - 1]; // dummy tag
         FieldUtilities::packRow(output, i, to_pack);
     }
-
+//    cout << "Projected to " << DataUtilities::printTable(output) << endl;
     return (QueryTable<B> *) output;
 }
 
