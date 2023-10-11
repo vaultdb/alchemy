@@ -111,8 +111,6 @@ void EmpBaseTest::SetUp()  {
     s.initialize(db_name_, md, storage_model_);
     s.setEmptyDbName(empty_db_);
     s.emp_manager_ = manager_;
-    log->write("Finished connecting!", Level::INFO);
-
 }
 
 void EmpBaseTest::TearDown() {

@@ -563,6 +563,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
     ++it;
     int rhs_id = it->second.get_value<int>();
     Operator<B> *rhs  = operators_.at(rhs_id);
+    auto storage_model = SystemConfiguration::getInstance().storageModel();
 
     Expression<B> *join_condition = ExpressionParser<B>::parseExpression(join_condition_tree, lhs->getOutputSchema(), rhs->getOutputSchema());
 
@@ -577,7 +578,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
         int foreign_key = (join_tree.count("foreignKey") > 0) ? join_tree.get_child("foreignKey").template get_value<int>()
                 : join_tree.get_child("foreign-key").template get_value<int>();
 
-        if (join_type == "auto") {
+        if (join_type == "auto" && storage_model == StorageModel::ROW_STORE) { // only have a choice in row stores for now
 
             auto smj = new KeyedSortMergeJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
             auto nlj = new KeyedJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
@@ -591,8 +592,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
             delete nlj;
             delete smj;
 
-            /*
-            // check sort compatibility for SMJ
+        /*
             // TODO: consider case where we insert sort in front of both lhs and rhs inputs
             //  only needed if plans are bushy or right-deep
             if (lhs_sort_compatible && !rhs_sort_compatible) {
@@ -692,6 +692,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
             }
             */
 
+
             string selected_join = (smj_cost < nlj_cost) ? "keyed-sort-merge-join" : "nested-loop-join";
 
             log->write("Operator (" + std::to_string(operator_id) + "). " +
@@ -708,7 +709,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
         } // end join-algorithm="auto"
 
-        if (join_type == "keyed-sort-merge-join") {
+        if (join_type == "keyed-sort-merge-join" && storage_model == StorageModel::ROW_STORE) {
             return new KeyedSortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
         }
         else { // if algorithm unspecified but FK, use KeyedJoin

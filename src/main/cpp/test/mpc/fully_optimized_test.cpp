@@ -72,7 +72,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-    std::cout << "Query tree: " << root->printTree() << endl;
+//    std::cout << "Query tree: " << root->printTree() << endl;
 
     SecureTable *result = root->run();
 
