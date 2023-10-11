@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <query_table/query_table.h>
 #include <query_table/row_table.h>
+#include <query_table/table_factory.h>
 
 
 
@@ -296,22 +297,22 @@ bool DataUtilities::verifyCollation(PlainTable *sorted) {
     SortDefinition  collation = sorted->getSortOrder();
     // delete dummies
     int true_card = sorted->getTrueTupleCount();
-    RowTable<bool> no_dummies(true_card, sorted->getSchema(), sorted->getSortOrder());
+    QueryTable<bool> *no_dummies = TableFactory<bool>::getTable(true_card, sorted->getSchema(), sorted->getSortOrder());
     int cursor = 0;
     for(int i = 0; i < sorted->getTupleCount(); ++i) {
         if(!sorted->getDummyTag(i)) {
-            no_dummies.cloneRow(cursor, 0, sorted, i);
-            no_dummies.setDummyTag(cursor, false);
+            no_dummies->cloneRow(cursor, 0, sorted, i);
+            no_dummies->setDummyTag(cursor, false);
             ++cursor;
         }
     }
 
 
-    for(int i = 1; i < no_dummies.getTupleCount(); ++i) {
+    for(int i = 1; i < no_dummies->getTupleCount(); ++i) {
 //        cout << "Comparing row " << no_dummies.getPlainTuple(i-1) << " with " << no_dummies.getPlainTuple(i) << endl;
         for(auto col_sort : collation) {
-                auto lhs_field = no_dummies.getField(i-1, col_sort.first);
-                auto rhs_field = no_dummies.getField(i, col_sort.first);
+                auto lhs_field = no_dummies->getField(i-1, col_sort.first);
+                auto rhs_field = no_dummies->getField(i, col_sort.first);
 //                cout << "   (" << col_sort.first << ", "
 //                << ((col_sort.second == SortDirection::ASCENDING) ? "ASC" : "DESC" ) << ") "
 //                <<  "Comparing " << lhs_field << " with " << rhs_field << endl;
@@ -326,6 +327,7 @@ bool DataUtilities::verifyCollation(PlainTable *sorted) {
             }
         }// each tuple correctly ordered wrt its predecessor
 
+    delete no_dummies;
     return true;
 }
 
