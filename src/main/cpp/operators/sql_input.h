@@ -21,7 +21,7 @@ namespace  vaultdb {
         SqlInput(std::string db, std::string sql, bool dummy_tag, const SortDefinition &sort_def,
                  const size_t &tuple_limit = 0);
 
-        SqlInput(const SqlInput & src) : Operator<bool>(src), input_query_(src.input_query_), db_name_(src.db_name_), dummy_tagged_(src.dummy_tagged_), tuple_limit_(src.tuple_limit_), original_input_query_(src.original_input_query_), original_collation_(src.original_collation_) {}
+        SqlInput(const SqlInput & src) : Operator<bool>(src), input_query_(src.input_query_), original_input_query_(src.original_input_query_), db_name_(src.db_name_), original_collation_(src.original_collation_), dummy_tagged_(src.dummy_tagged_), tuple_limit_(src.tuple_limit_) {}
 
         PlainOperator *clone() const override {
             return new SqlInput(*this);

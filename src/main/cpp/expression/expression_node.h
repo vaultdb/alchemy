@@ -57,16 +57,16 @@ namespace vaultdb {
     public:
         InputReference(const InputReference<B> & src)
                 : ExpressionNode<B>(nullptr), read_idx_(src.read_idx_),
-                   binary_mode_(src.binary_mode_), output_idx_(src.output_idx_), read_lhs_(src.read_lhs_) {
+                   output_idx_(src.output_idx_), binary_mode_(src.binary_mode_),  read_lhs_(src.read_lhs_) {
             this->output_schema_ = src.output_schema_;
         }
 
         InputReference(const uint32_t & read_idx, const QueryFieldDesc &schema)
-                : ExpressionNode<B>(nullptr), read_idx_(read_idx), output_idx_(read_idx_) {
+                : ExpressionNode<B>(nullptr),  output_idx_(read_idx_), read_idx_(read_idx) {
             this->output_schema_ = schema;
         }
         InputReference(const uint32_t & read_idx, const QuerySchema &schema)
-            : ExpressionNode<B>(nullptr), read_idx_(read_idx), output_idx_(read_idx) {
+            : ExpressionNode<B>(nullptr), output_idx_(read_idx), read_idx_(read_idx) {
             this->output_schema_ = schema.getField(read_idx);
         }
          // needed for binary (lhs, rhs) invocation
@@ -95,7 +95,7 @@ namespace vaultdb {
             if(other.kind() != ExpressionKind::INPUT_REF) {
                 return false;
             }
-            const InputReference<B> &other_ref = static_cast<const InputReference<B> &>(other);
+            auto other_ref = static_cast<const InputReference<B> &>(other);
             return (other_ref.read_idx_ == read_idx_) && (other_ref.output_idx_ == output_idx_) &&
                    (other_ref.binary_mode_ == binary_mode_) && (other_ref.read_lhs_ == read_lhs_);
         }

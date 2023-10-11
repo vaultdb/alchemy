@@ -10,7 +10,6 @@
 namespace  vaultdb {
     class SecureSqlInput : public Operator<emp::Bit> {
 
-        StorageModel storage_model_;
         string original_input_query_; // no modifications for limit or sort
         SortDefinition original_collation_;
 
@@ -39,7 +38,7 @@ namespace  vaultdb {
         SecureSqlInput(const string & db, const string & sql, const bool & dummy_tag, const int & input_party, const size_t & input_tuple_cnt, const SortDefinition & def);
 
         SecureSqlInput(const string &db, const string & sql, const bool &dummy_tag, const size_t & input_tuple_cnt = 0);
-        SecureSqlInput(const SecureSqlInput & src) : Operator<Bit>(src), input_query_(src.input_query_), db_name_(src.db_name_), has_dummy_tag_(src.has_dummy_tag_), input_party_(src.input_party_), input_tuple_limit_(src.input_tuple_limit_), original_input_query_(src.original_input_query_), original_collation_(src.original_collation_) {
+        SecureSqlInput(const SecureSqlInput & src) : Operator<Bit>(src),  original_input_query_(src.original_input_query_),  original_collation_(src.original_collation_), input_query_(src.input_query_), db_name_(src.db_name_), has_dummy_tag_(src.has_dummy_tag_), input_party_(src.input_party_), input_tuple_limit_(src.input_tuple_limit_) {
             if(src.plain_input_ != nullptr)  {
                 plain_input_ = src.plain_input_->clone();
             }

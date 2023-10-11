@@ -45,7 +45,7 @@ QueryFieldDesc::QueryFieldDesc(const int & ordinal, const string &col_name, cons
 // spec is of the form "table_name.field_name:field_type"
 // e.g. "nation.n_name:varchar(25)"
 // table name is optional
-QueryFieldDesc::QueryFieldDesc(const int & ordinal, const string & field_spec) : ordinal_(ordinal), string_length_(0) {
+QueryFieldDesc::QueryFieldDesc(const int & ordinal, const string & field_spec) :  string_length_(0), ordinal_(ordinal) {
 
     auto dot_pos = field_spec.find('.');
     auto colon_pos = field_spec.find(':');
