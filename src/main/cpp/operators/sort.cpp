@@ -72,13 +72,14 @@ QueryTable<B> *Sort<B>::runSelf() {
         auto tmp = denormalizeTable(this->output_);
         delete this->output_;
         this->output_ = tmp;
-        this->output_->setSortOrder(this->sort_definition_);
     }
     else {
         this->output_ = input->clone();
         int counter = 0;
-        bitonicSort(0, this->output_->getTupleCount(), true, counter);
+        bitonicSort(0, this->output_->getTupleCount(), true, counter); // TODO: implement this for col store
     }
+
+    this->output_->setSortOrder(this->sort_definition_);
 
     // implement LIMIT
     if(limit_ > 0) {
