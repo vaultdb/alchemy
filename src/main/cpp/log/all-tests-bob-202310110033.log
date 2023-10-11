@@ -1,0 +1,1653 @@
+-- Build type: Release
+-- CXX release flags: -pthread  -Wfatal-errors -Wno-ignored-attributes -fPIC -march=native -maes -mrdseed -O2
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp
+[  1%] Built target generate_enrich_data
+[  2%] Built target gtest
+[  3%] Built target gtest_main
+[  4%] Built target gmock
+[ 27%] Built target vaultdb-emp
+[ 28%] Built target sort_test
+[ 29%] Built target sort_merge_aggregate_test
+[ 30%] Built target csv_reader_test
+[ 31%] Built target keyed_join_test
+[ 32%] Built target filter_test
+[ 34%] Built target nested_loop_aggregate_test
+[ 34%] Built target basic_join_test
+[ 35%] Built target secret_share_generator_test
+[ 36%] Built target keyed_sort_merge_join_test
+[ 37%] Built target project_test
+[ 39%] Built target field_expression_test
+[ 40%] Built target serialization_test
+[ 42%] Built target merge_join_test
+[ 42%] Built target scalar_aggregate_test
+[ 43%] Built target plan_parser_test
+[ 44%] Built target plan_deparser_test
+[ 46%] Built target tpch_test
+[ 46%] Built target secure_field_expression_test
+[ 47%] Built target emp_test
+[ 49%] Built target emp_table_test
+[ 49%] Built target secure_filter_test
+[ 50%] Built target secure_sort_test
+[ 51%] Built target secure_merge_join_test
+[ 53%] Built target secure_basic_join_test
+[ 54%] Built target secure_sort_merge_aggregate_test
+[ 55%] Built target secure_keyed_join_test
+[ 56%] Built target secure_scalar_aggregate_test
+[ 57%] Built target secure_keyed_sort_merge_join_test
+[ 59%] Built target secure_nested_loop_aggregate_test
+[ 60%] Built target secure_tpch_test
+[ 61%] Built target secure_plan_deparser_test
+[ 63%] Built target secure_bit_packing_test
+[ 64%] Built target enrich_test
+[ 66%] Built target baseline_comparison_test
+[ 66%] Built target secure_aggregate_comparison_test
+[ 67%] Built target expression_cost_model_test
+[ 68%] Built target operator_cost_model_test
+[ 71%] Built target plan_cost_test
+[ 71%] Built target fully_optimized_test
+[ 72%] Built target zk_sort_test
+[ 73%] Built target true_cardinality_test
+[ 74%] Built target zk_test
+[ 75%] Built target join_cost_comparison_test
+[ 76%] Built target secure_plan_enumeration_test
+[ 78%] Built target zk_filter_test
+[ 79%] Built target zk_basic_join_test
+[ 80%] Built target generate_enrich_data_three_parties
+[ 82%] Built target zk_tpch_test
+[ 83%] Built target zk_scalar_aggregate_test
+[ 84%] Built target zk_keyed_join_test
+[ 86%] Built target zk_group_by_aggregate_test
+[ 86%] Built target zk_plan_enumeration_test
+[ 87%] Built target secret_share_from_query
+[ 88%] Built target zk_baseline_test
+[ 89%] Built target secret_share_csv
+[ 91%] Built target secret_share_batch_from_query
+[ 93%] Built target load_tuples_data_partner
+[ 94%] Built target assemble_secret_shares
+[ 96%] Built target run_data_partner_aggregation
+[ 99%] Built target run_data_partner
+[100%] Built target run_data_partner_batch
+[  3%] Built target gtest
+[  7%] Built target gtest_main
+[ 11%] Built target gmock
+[ 96%] Built target vaultdb-emp
+[100%] Built target generate_enrich_data_three_parties
+[  3%] Built target gtest
+[  7%] Built target gtest_main
+[ 11%] Built target gmock
+[ 96%] Built target vaultdb-emp
+[100%] Built target secret_share_from_query
+[  3%] Built target gtest
+[ 10%] Built target gtest_main
+[ 10%] Built target gmock
+[ 92%] Built target vaultdb-emp
+[100%] Built target secret_share_batch_from_query
+Finished generating 1000 patients per host!
+DROP TABLE
+CREATE TABLE
+COPY 1000
+COPY 1000
+COPY 1000
+UPDATE 1817
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+CREATE EXTENSION
+ALTER TABLE
+UPDATE 3000
+COPY 1000
+COPY 1000
+COPY 1000
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_chi" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+Writing multisite tables!
+preparing for aggregate-only test
+Setting up semi-join optimization
+finished generating 100 patients per host!
+You are now connected to database "enrich_htn_test_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_test_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_unioned" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from CsvReaderTest
+[ RUN      ] CsvReaderTest.lineitemTest
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] CsvReaderTest.lineitemTest (222 ms)
+[ RUN      ] CsvReaderTest.quotedStringTest
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] CsvReaderTest.quotedStringTest (175 ms)
+[ RUN      ] CsvReaderTest.customerTest
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] CsvReaderTest.customerTest (221 ms)
+[ RUN      ] CsvReaderTest.ordersTest
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] CsvReaderTest.ordersTest (146 ms)
+[----------] 4 tests from CsvReaderTest (766 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (766 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from FieldExpressionTest
+[ RUN      ] FieldExpressionTest.test_int32
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] FieldExpressionTest.test_int32 (55 ms)
+[ RUN      ] FieldExpressionTest.test_int32_comparator
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] FieldExpressionTest.test_int32_comparator (57 ms)
+[ RUN      ] FieldExpressionTest.test_int32_expr
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] FieldExpressionTest.test_int32_expr (64 ms)
+[ RUN      ] FieldExpressionTest.cmp_swap
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] FieldExpressionTest.cmp_swap (225 ms)
+[----------] 4 tests from FieldExpressionTest (402 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (402 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from FilterTest
+[ RUN      ] FilterTest.test_table_scan
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] FilterTest.test_table_scan (132 ms)
+[ RUN      ] FilterTest.test_filter
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] FilterTest.test_filter (155 ms)
+[----------] 2 tests from FilterTest (288 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (288 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ProjectionTest
+[ RUN      ] ProjectionTest.q3Lineitem
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ProjectionTest.q3Lineitem (274 ms)
+[----------] 1 test from ProjectionTest (274 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (275 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from BasicJoinTest
+[ RUN      ] BasicJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] BasicJoinTest.test_tpch_q3_customer_orders (133 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders (298 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer (818 ms)
+[----------] 3 tests from BasicJoinTest (1250 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (1250 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from KeyedJoinTest
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders (267 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders (8371 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer (9701 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed (169 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed (1874 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (1917 ms)
+[----------] 6 tests from KeyedJoinTest (22302 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (22302 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from KeyedSortMergeJoinTest
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders (213 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders (811 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (755 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders_reversed
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders_reversed (225 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_reversed
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_reversed (618 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (1004 ms)
+[----------] 6 tests from KeyedSortMergeJoinTest (3629 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (3629 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MergeJoinTest
+[ RUN      ] MergeJoinTest.merge_q18
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] MergeJoinTest.merge_q18 (103 ms)
+[----------] 1 test from MergeJoinTest (103 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (103 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from SortTest
+[ RUN      ] SortTest.testSingleIntColumn
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.testSingleIntColumn (73 ms)
+[ RUN      ] SortTest.tpchQ1Sort
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.tpchQ1Sort (151 ms)
+[ RUN      ] SortTest.tpchQ3Sort
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.tpchQ3Sort (110 ms)
+[ RUN      ] SortTest.tpchQ5Sort
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.tpchQ5Sort (163 ms)
+[ RUN      ] SortTest.tpchQ8Sort
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.tpchQ8Sort (88 ms)
+[ RUN      ] SortTest.tpchQ9Sort
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.tpchQ9Sort (164 ms)
+[ RUN      ] SortTest.tpchQ18Sort
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.tpchQ18Sort (141 ms)
+[ RUN      ] SortTest.sort_and_encrypt_table_one_column
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortTest.sort_and_encrypt_table_one_column (75 ms)
+[----------] 8 tests from SortTest (971 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (971 ms total)
+[  PASSED  ] 8 tests.
+[==========] Running 12 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 12 tests from ScalarAggregateTest
+[ RUN      ] ScalarAggregateTest.test_count
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_count (94 ms)
+[ RUN      ] ScalarAggregateTest.test_count_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_count_dummies (89 ms)
+[ RUN      ] ScalarAggregateTest.test_min
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_min (84 ms)
+[ RUN      ] ScalarAggregateTest.test_max
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_max (112 ms)
+[ RUN      ] ScalarAggregateTest.test_sum
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_sum (89 ms)
+[ RUN      ] ScalarAggregateTest.test_sum_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_sum_dummies (82 ms)
+[ RUN      ] ScalarAggregateTest.test_avg
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_avg (83 ms)
+[ RUN      ] ScalarAggregateTest.test_avg_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_avg_dummies (84 ms)
+[ RUN      ] ScalarAggregateTest.test_all_sum_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_all_sum_dummies (110 ms)
+[ RUN      ] ScalarAggregateTest.test_all_avg_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_all_avg_dummies (142 ms)
+[ RUN      ] ScalarAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_tpch_q1_avg_cnt (179 ms)
+[ RUN      ] ScalarAggregateTest.test_all_aggs_tpch_q1
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_all_aggs_tpch_q1 (184 ms)
+[----------] 12 tests from ScalarAggregateTest (1340 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (1340 ms total)
+[  PASSED  ] 12 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from SortMergeAggregateTest
+[ RUN      ] SortMergeAggregateTest.test_count
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_count (111 ms)
+[ RUN      ] SortMergeAggregateTest.test_count_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_count_dummies (100 ms)
+[ RUN      ] SortMergeAggregateTest.test_sum
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_sum (99 ms)
+[ RUN      ] SortMergeAggregateTest.test_sum_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_sum_dummies (92 ms)
+[ RUN      ] SortMergeAggregateTest.test_avg
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_avg (103 ms)
+[ RUN      ] SortMergeAggregateTest.test_avg_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_avg_dummies (102 ms)
+[ RUN      ] SortMergeAggregateTest.test_min
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_min (98 ms)
+[ RUN      ] SortMergeAggregateTest.test_min_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_min_dummies (103 ms)
+[ RUN      ] SortMergeAggregateTest.test_max
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_max (108 ms)
+[ RUN      ] SortMergeAggregateTest.test_max_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_max_dummies (112 ms)
+[ RUN      ] SortMergeAggregateTest.test_tpch_q1_sums
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_tpch_q1_sums (218 ms)
+[ RUN      ] SortMergeAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_tpch_q1_avg_cnt (197 ms)
+[ RUN      ] SortMergeAggregateTest.tpch_q1
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.tpch_q1 (238 ms)
+[----------] 13 tests from SortMergeAggregateTest (1687 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (1687 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from NestedLoopAggregateTest
+[ RUN      ] NestedLoopAggregateTest.test_count
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_count (130 ms)
+[ RUN      ] NestedLoopAggregateTest.test_count_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_count_dummies (140 ms)
+[ RUN      ] NestedLoopAggregateTest.test_sum
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_sum (160 ms)
+[ RUN      ] NestedLoopAggregateTest.test_sum_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_sum_dummies (150 ms)
+[ RUN      ] NestedLoopAggregateTest.test_avg
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_avg (138 ms)
+[ RUN      ] NestedLoopAggregateTest.test_avg_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_avg_dummies (167 ms)
+[ RUN      ] NestedLoopAggregateTest.test_min
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_min (163 ms)
+[ RUN      ] NestedLoopAggregateTest.test_min_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_min_dummies (155 ms)
+[ RUN      ] NestedLoopAggregateTest.test_max
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_max (177 ms)
+[ RUN      ] NestedLoopAggregateTest.test_max_dummies
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_max_dummies (179 ms)
+[ RUN      ] NestedLoopAggregateTest.test_tpch_q1_sums
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_tpch_q1_sums (226 ms)
+[ RUN      ] NestedLoopAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_tpch_q1_avg_cnt (229 ms)
+[ RUN      ] NestedLoopAggregateTest.tpch_q1
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.tpch_q1 (243 ms)
+[----------] 13 tests from NestedLoopAggregateTest (2264 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (2264 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecretShareGeneratorTest
+[ RUN      ] SecretShareGeneratorTest.lineitem_sample
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SecretShareGeneratorTest.lineitem_sample (134 ms)
+[ RUN      ] SecretShareGeneratorTest.lineitem_dummy_tag_sample
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SecretShareGeneratorTest.lineitem_dummy_tag_sample (125 ms)
+[----------] 2 tests from SecretShareGeneratorTest (259 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (260 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from SerializationTest
+[ RUN      ] SerializationTest.typesTest
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SerializationTest.typesTest (123 ms)
+[ RUN      ] SerializationTest.capricorn_test
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SerializationTest.capricorn_test (65 ms)
+[ RUN      ] SerializationTest.xored_serialization_test
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SerializationTest.xored_serialization_test (78 ms)
+[ RUN      ] SerializationTest.capricorn_deserialization
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] SerializationTest.capricorn_deserialization (64 ms)
+[----------] 4 tests from SerializationTest (331 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (331 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from PlanParserTest
+[ RUN      ] PlanParserTest.tpch_q01
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] PlanParserTest.tpch_q01 (150 ms)
+[ RUN      ] PlanParserTest.tpch_q03
+Received storage flag of row, emp_mode: sh2pc
+Operator (2). smj cost : 109612, nlj cost : 4200, join type : nested-loop-join
+Operator (5). smj cost : 81457, nlj cost : 13800, join type : nested-loop-join
+[       OK ] PlanParserTest.tpch_q03 (109 ms)
+[ RUN      ] PlanParserTest.tpch_q05
+Received storage flag of row, emp_mode: sh2pc
+Operator (2). smj cost : 72958, nlj cost : 7400, join type : nested-loop-join
+Operator (5). smj cost : 71537, nlj cost : 7400, join type : nested-loop-join
+Operator (8). smj cost : 68304, nlj cost : 2750, join type : nested-loop-join
+[       OK ] PlanParserTest.tpch_q05 (160 ms)
+[ RUN      ] PlanParserTest.tpch_q08
+Received storage flag of row, emp_mode: sh2pc
+Operator (2). smj cost : 85176, nlj cost : 4200, join type : nested-loop-join
+Operator (5). smj cost : 85176, nlj cost : 7400, join type : nested-loop-join
+Operator (8). smj cost : 85176, nlj cost : 5000, join type : nested-loop-join
+[       OK ] PlanParserTest.tpch_q08 (139 ms)
+[ RUN      ] PlanParserTest.tpch_q09
+Received storage flag of row, emp_mode: sh2pc
+Operator (2). smj cost : 137100, nlj cost : 24200, join type : nested-loop-join
+Operator (5). smj cost : 169586, nlj cost : 30700, join type : nested-loop-join
+Operator (8). smj cost : 123619, nlj cost : 7400, join type : nested-loop-join
+[       OK ] PlanParserTest.tpch_q09 (173 ms)
+[ RUN      ] PlanParserTest.tpch_q18
+Received storage flag of row, emp_mode: sh2pc
+Operator (9). smj cost : 137100, nlj cost : 24200, join type : nested-loop-join
+[       OK ] PlanParserTest.tpch_q18 (180 ms)
+[----------] 6 tests from PlanParserTest (913 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (913 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from PlanDeparserTest
+[ RUN      ] PlanDeparserTest.conjunction_expression
+Received storage flag of row, emp_mode: sh2pc
+Operator (2). smj cost : 761958, nlj cost : 135520, join type : nested-loop-join
+Operator (5). smj cost : 294264102, nlj cost : 103237960, join type : nested-loop-join
+Operator (8). smj cost : 247229142, nlj cost : 666555000, join type : keyed-sort-merge-join
+[       OK ] PlanDeparserTest.conjunction_expression (271 ms)
+[ RUN      ] PlanDeparserTest.math_expression
+Received storage flag of row, emp_mode: sh2pc
+Operator (2). smj cost : 761958, nlj cost : 135520, join type : nested-loop-join
+Operator (5). smj cost : 294264102, nlj cost : 103237960, join type : nested-loop-join
+Operator (8). smj cost : 247229142, nlj cost : 666555000, join type : keyed-sort-merge-join
+[       OK ] PlanDeparserTest.math_expression (256 ms)
+[ RUN      ] PlanDeparserTest.tpch_q01
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] PlanDeparserTest.tpch_q01 (249 ms)
+[ RUN      ] PlanDeparserTest.tpch_q03
+Received storage flag of row, emp_mode: sh2pc
+Operator (2). smj cost : 109612, nlj cost : 4200, join type : nested-loop-join
+Operator (5). smj cost : 81457, nlj cost : 13800, join type : nested-loop-join
+[       OK ] PlanDeparserTest.tpch_q03 (158 ms)
+[ RUN      ] PlanDeparserTest.tpch_q05
+Received storage flag of row, emp_mode: sh2pc
+Operator (2). smj cost : 72958, nlj cost : 7400, join type : nested-loop-join
+Operator (5). smj cost : 71537, nlj cost : 7400, join type : nested-loop-join
+Operator (8). smj cost : 68304, nlj cost : 2750, join type : nested-loop-join
+[       OK ] PlanDeparserTest.tpch_q05 (305 ms)
+[ RUN      ] PlanDeparserTest.tpch_q08
+Received storage flag of row, emp_mode: sh2pc
+Operator (2). smj cost : 85176, nlj cost : 4200, join type : nested-loop-join
+Operator (5). smj cost : 85176, nlj cost : 7400, join type : nested-loop-join
+Operator (8). smj cost : 85176, nlj cost : 5000, join type : nested-loop-join
+[       OK ] PlanDeparserTest.tpch_q08 (251 ms)
+[ RUN      ] PlanDeparserTest.tpch_q09
+Received storage flag of row, emp_mode: sh2pc
+Operator (2). smj cost : 137100, nlj cost : 24200, join type : nested-loop-join
+Operator (5). smj cost : 169586, nlj cost : 30700, join type : nested-loop-join
+Operator (8). smj cost : 123619, nlj cost : 7400, join type : nested-loop-join
+[       OK ] PlanDeparserTest.tpch_q09 (311 ms)
+[ RUN      ] PlanDeparserTest.tpch_q18
+Received storage flag of row, emp_mode: sh2pc
+Operator (9). smj cost : 137100, nlj cost : 24200, join type : nested-loop-join
+[       OK ] PlanDeparserTest.tpch_q18 (286 ms)
+[----------] 8 tests from PlanDeparserTest (2090 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (2090 ms total)
+[  PASSED  ] 8 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from TpcHTest
+[ RUN      ] TpcHTest.tpch_q01
+Received storage flag of row, emp_mode: sh2pc
+[       OK ] TpcHTest.tpch_q01 (398 ms)
+[ RUN      ] TpcHTest.tpch_q03
+Received storage flag of row, emp_mode: sh2pc
+Operator (2). smj cost : 38882222, nlj cost : 9450000, join type : nested-loop-join
+Operator (5). smj cost : 161420467, nlj cost : 1243035000, join type : keyed-sort-merge-join
+[       OK ] TpcHTest.tpch_q03 (1149 ms)
+[ RUN      ] TpcHTest.tpch_q05
+Received storage flag of row, emp_mode: sh2pc
+Operator (2). smj cost : 22870998, nlj cost : 2997000, join type : nested-loop-join
+Operator (5). smj cost : 141230193, nlj cost : 666555000, join type : keyed-sort-merge-join
+Operator (8). smj cost : 269961428, nlj cost : 1651375, join type : nested-loop-join
+[       OK ] TpcHTest.tpch_q05 (1106 ms)
+[ RUN      ] TpcHTest.tpch_q08
+Received storage flag of row, emp_mode: sh2pc
+Operator (2). smj cost : 26971598, nlj cost : 1827000, join type : nested-loop-join
+Operator (5). smj cost : 195721756, nlj cost : 666555000, join type : keyed-sort-merge-join
+Operator (8). smj cost : 140228864, nlj cost : 3002500, join type : nested-loop-join
+[       OK ] TpcHTest.tpch_q08 (920 ms)
+[ RUN      ] TpcHTest.tpch_q09
+Received storage flag of row, emp_mode: sh2pc
+Operator (2). smj cost : 761958, nlj cost : 135520, join type : nested-loop-join
+Operator (5). smj cost : 294264102, nlj cost : 103237960, join type : nested-loop-join
+Operator (8). smj cost : 247229142, nlj cost : 666555000, join type : keyed-sort-merge-join
+[       OK ] TpcHTest.tpch_q09 (1394 ms)
+[ RUN      ] TpcHTest.tpch_q18
+Received storage flag of row, emp_mode: sh2pc
+Operator (6). smj cost : 49000102, nlj cost : 54450000, join type : keyed-sort-merge-join
+[       OK ] TpcHTest.tpch_q18 (375 ms)
+[----------] 6 tests from TpcHTest (5344 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (5344 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from EmpTest
+[ RUN      ] EmpTest.emp_test_int
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54345, 65455 as 2
+connected
+Finished connecting!
+[       OK ] EmpTest.emp_test_int (105 ms)
+[ RUN      ] EmpTest.emp_test_varchar
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54346, 65456 as 2
+connected
+Finished connecting!
+[       OK ] EmpTest.emp_test_varchar (175 ms)
+[ RUN      ] EmpTest.test_float_normalization
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54347, 65457 as 2
+connected
+Finished connecting!
+[       OK ] EmpTest.test_float_normalization (244 ms)
+[ RUN      ] EmpTest.secret_share_table_one_column
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54348, 65458 as 2
+connected
+Finished connecting!
+[       OK ] EmpTest.secret_share_table_one_column (196 ms)
+[ RUN      ] EmpTest.sort_and_share_table_one_column
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54349, 65459 as 2
+connected
+Finished connecting!
+[       OK ] EmpTest.sort_and_share_table_one_column (209 ms)
+[----------] 5 tests from EmpTest (931 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (931 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from SecureFieldExpressionTest
+[ RUN      ] SecureFieldExpressionTest.test_value_assignment
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54323, 65482 as 2
+connected
+Finished connecting!
+[       OK ] SecureFieldExpressionTest.test_value_assignment (204 ms)
+[ RUN      ] SecureFieldExpressionTest.test_string_compare
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54324, 65483 as 2
+connected
+Finished connecting!
+[       OK ] SecureFieldExpressionTest.test_string_compare (187 ms)
+[ RUN      ] SecureFieldExpressionTest.test_emp_int_math
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54325, 65484 as 2
+connected
+Finished connecting!
+[       OK ] SecureFieldExpressionTest.test_emp_int_math (180 ms)
+[ RUN      ] SecureFieldExpressionTest.test_millionaires
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54326, 65485 as 2
+connected
+Finished connecting!
+[       OK ] SecureFieldExpressionTest.test_millionaires (187 ms)
+[ RUN      ] SecureFieldExpressionTest.test_char_comparison
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54327, 65486 as 2
+connected
+Finished connecting!
+[       OK ] SecureFieldExpressionTest.test_char_comparison (185 ms)
+[----------] 5 tests from SecureFieldExpressionTest (945 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (945 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from EmpTableTest
+[ RUN      ] EmpTableTest.secret_share_table_one_column
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54334, 65428 as 2
+connected
+Finished connecting!
+[       OK ] EmpTableTest.secret_share_table_one_column (233 ms)
+[ RUN      ] EmpTableTest.secret_share_table_varchar
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54335, 65429 as 2
+connected
+Finished connecting!
+[       OK ] EmpTableTest.secret_share_table_varchar (325 ms)
+[ RUN      ] EmpTableTest.secret_share_table
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54336, 65430 as 2
+connected
+Finished connecting!
+[       OK ] EmpTableTest.secret_share_table (393 ms)
+[ RUN      ] EmpTableTest.secret_share_table_dummy_tag
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54337, 65431 as 2
+connected
+Finished connecting!
+[       OK ] EmpTableTest.secret_share_table_dummy_tag (402 ms)
+[ RUN      ] EmpTableTest.bit_packing_test
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54338, 65432 as 2
+connected
+Finished connecting!
+[       OK ] EmpTableTest.bit_packing_test (245 ms)
+[----------] 5 tests from EmpTableTest (1601 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (1601 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecureFilterTest
+[ RUN      ] SecureFilterTest.test_table_scan
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54325, 65454 as 2
+connected
+Finished connecting!
+[       OK ] SecureFilterTest.test_table_scan (267 ms)
+[ RUN      ] SecureFilterTest.test_filter
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54326, 65455 as 2
+connected
+Finished connecting!
+[       OK ] SecureFilterTest.test_filter (354 ms)
+[----------] 2 tests from SecureFilterTest (621 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (622 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureSortTest
+[ RUN      ] SecureSortTest.tpchQ01Sort
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54333, 65475 as 2
+connected
+Finished connecting!
+[       OK ] SecureSortTest.tpchQ01Sort (296 ms)
+[ RUN      ] SecureSortTest.tpchQ03Sort
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54334, 65476 as 2
+connected
+Finished connecting!
+[       OK ] SecureSortTest.tpchQ03Sort (332 ms)
+[ RUN      ] SecureSortTest.tpchQ05Sort
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54335, 65477 as 2
+connected
+Finished connecting!
+[       OK ] SecureSortTest.tpchQ05Sort (274 ms)
+[ RUN      ] SecureSortTest.tpchQ08Sort
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54336, 65478 as 2
+connected
+Finished connecting!
+[       OK ] SecureSortTest.tpchQ08Sort (225 ms)
+[ RUN      ] SecureSortTest.tpchQ09Sort
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54337, 65479 as 2
+connected
+Finished connecting!
+[       OK ] SecureSortTest.tpchQ09Sort (7928 ms)
+[ RUN      ] SecureSortTest.tpchQ18Sort
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54338, 65480 as 2
+connected
+Finished connecting!
+[       OK ] SecureSortTest.tpchQ18Sort (220 ms)
+[----------] 6 tests from SecureSortTest (9364 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (9364 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureBasicJoinTest
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_customer_orders
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43443, 65450 as 2
+connected
+Finished connecting!
+[       OK ] SecureBasicJoinTest.test_tpch_q3_customer_orders (300 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43444, 65451 as 2
+connected
+Finished connecting!
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders (474 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43445, 65452 as 2
+connected
+Finished connecting!
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer (951 ms)
+[----------] 3 tests from SecureBasicJoinTest (1727 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (1727 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureKeyedJoinTest
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_customer_orders
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43442, 65458 as 2
+connected
+Finished connecting!
+Predicted gate count: 1928520
+Observed gate count: 1928520
+Runtime: 749.600000
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_customer_orders (1197 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43443, 65459 as 2
+connected
+Finished connecting!
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders (69917 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43444, 65460 as 2
+connected
+Finished connecting!
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer (80250 ms)
+[----------] 3 tests from SecureKeyedJoinTest (151364 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (151364 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureKeyedSortMergeJoinTest
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_customer_orders
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43455, 65470 as 2
+connected
+Finished connecting!
+Predicted gate count: 7144019
+Observed gate count: 7411120
+Runtime: 1957.066000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_customer_orders (2319 ms)
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43456, 65471 as 2
+connected
+Finished connecting!
+Predicted gate count: 49127665
+Observed gate count: 48077380
+Runtime: 12600.051000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders (13882 ms)
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43457, 65472 as 2
+connected
+Finished connecting!
+Predicted gate count: 68117628
+Observed gate count: 73496920
+Runtime: 17709.967000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (21133 ms)
+[----------] 3 tests from SecureKeyedSortMergeJoinTest (37336 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (37336 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SecureMergeJoinTest
+[ RUN      ] SecureMergeJoinTest.merge_q18
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43450, 65458 as 2
+connected
+Finished connecting!
+[       OK ] SecureMergeJoinTest.merge_q18 (532 ms)
+[----------] 1 test from SecureMergeJoinTest (532 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (532 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureScalarAggregateTest
+[ RUN      ] SecureScalarAggregateTest.test_count
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54312, 65466 as 2
+connected
+Finished connecting!
+[       OK ] SecureScalarAggregateTest.test_count (258 ms)
+[ RUN      ] SecureScalarAggregateTest.test_count_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54313, 65467 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber, #2 shared-float lineitem.l_extendedprice)
+Estimated cost: 525 observed gates: 552
+[       OK ] SecureScalarAggregateTest.test_count_dummies (235 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54314, 65468 as 2
+connected
+Finished connecting!
+[       OK ] SecureScalarAggregateTest.test_min (221 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54315, 65469 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber, #2 shared-float lineitem.l_extendedprice)
+Estimated cost: 450 observed gates: 452
+[       OK ] SecureScalarAggregateTest.test_min_dummies (236 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54316, 65470 as 2
+connected
+Finished connecting!
+[       OK ] SecureScalarAggregateTest.test_max (221 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54317, 65471 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber, #2 shared-float lineitem.l_extendedprice)
+Estimated cost: 450 observed gates: 452
+[       OK ] SecureScalarAggregateTest.test_max_dummies (235 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54318, 65472 as 2
+connected
+Finished connecting!
+[       OK ] SecureScalarAggregateTest.test_sum (224 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54319, 65473 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber, #2 shared-float lineitem.l_extendedprice)
+Estimated cost: 3275 observed gates: 3276
+[       OK ] SecureScalarAggregateTest.test_sum_dummies (230 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54320, 65474 as 2
+connected
+Finished connecting!
+[       OK ] SecureScalarAggregateTest.test_avg (238 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54321, 65475 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber, #2 shared-float lineitem.l_extendedprice)
+Estimated cost: 34350 observed gates: 34376
+[       OK ] SecureScalarAggregateTest.test_avg_dummies (245 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_baseprice_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54322, 65476 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber, #2 shared-float lineitem.l_extendedprice)
+Estimated cost: 27150 observed gates: 26376
+[       OK ] SecureScalarAggregateTest.test_sum_baseprice_dummies (269 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_lineno_baseprice
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54323, 65477 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber, #2 shared-float lineitem.l_extendedprice)
+Estimated cost: 30425 observed gates: 29652
+[       OK ] SecureScalarAggregateTest.test_sum_lineno_baseprice (240 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_sums
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54324, 65478 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 477840 observed gates: 464200
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_sums (478 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54325, 65479 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 3569946 observed gates: 3551968
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt (1517 ms)
+[ RUN      ] SecureScalarAggregateTest.tpch_q1
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54326, 65480 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 2421540 observed gates: 2398112
+[       OK ] SecureScalarAggregateTest.tpch_q1 (1002 ms)
+[----------] 15 tests from SecureScalarAggregateTest (5856 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (5856 ms total)
+[  PASSED  ] 15 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from SecureSortMergeAggregateTest
+[ RUN      ] SecureSortMergeAggregateTest.test_count
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43440, 65454 as 2
+connected
+Finished connecting!
+[       OK ] SecureSortMergeAggregateTest.test_count (242 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_count_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43441, 65455 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 5170 observed gates: 5232
+[       OK ] SecureSortMergeAggregateTest.test_count_dummies (237 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_sum
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43442, 65456 as 2
+connected
+Finished connecting!
+[       OK ] SecureSortMergeAggregateTest.test_sum (264 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_sum_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43443, 65457 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 17490 observed gates: 17396
+[       OK ] SecureSortMergeAggregateTest.test_sum_dummies (240 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_avg
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43444, 65458 as 2
+connected
+Finished connecting!
+[       OK ] SecureSortMergeAggregateTest.test_avg (299 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_avg_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43445, 65459 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 154220 observed gates: 161100
+[       OK ] SecureSortMergeAggregateTest.test_avg_dummies (273 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_min
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43446, 65460 as 2
+connected
+Finished connecting!
+[       OK ] SecureSortMergeAggregateTest.test_min (234 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_min_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43447, 65461 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 5500 observed gates: 5564
+[       OK ] SecureSortMergeAggregateTest.test_min_dummies (248 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_max
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43448, 65462 as 2
+connected
+Finished connecting!
+[       OK ] SecureSortMergeAggregateTest.test_max (239 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_max_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43449, 65463 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 5500 observed gates: 5564
+[       OK ] SecureSortMergeAggregateTest.test_max_dummies (244 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_tpch_q1_sums
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43450, 65464 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 491920 observed gates: 462068
+[       OK ] SecureSortMergeAggregateTest.test_tpch_q1_sums (498 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_tpch_q1_avg_cnt
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43451, 65465 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 1956900 observed gates: 1949640
+[       OK ] SecureSortMergeAggregateTest.test_tpch_q1_avg_cnt (894 ms)
+[ RUN      ] SecureSortMergeAggregateTest.tpch_q1
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43452, 65466 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 2448820 observed gates: 2407568
+[       OK ] SecureSortMergeAggregateTest.tpch_q1 (1020 ms)
+[----------] 13 tests from SecureSortMergeAggregateTest (4964 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (4965 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureNestedLoopAggregateTest
+[ RUN      ] SecureNestedLoopAggregateTest.test_count
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43440, 65462 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 605000 observed gates: 660000
+[       OK ] SecureNestedLoopAggregateTest.test_count (451 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_count_no_bit_packing
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43441, 65463 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32 lineitem.l_orderkey, #1 shared-int32 lineitem.l_linenumber)
+Estimated cost: 2849000 observed gates: 2904000
+[       OK ] SecureNestedLoopAggregateTest.test_count_no_bit_packing (1004 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_count_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43442, 65464 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 605000 observed gates: 660000
+[       OK ] SecureNestedLoopAggregateTest.test_count_dummies (423 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_sum
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43443, 65465 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 2101000 observed gates: 1793000
+[       OK ] SecureNestedLoopAggregateTest.test_sum (739 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_sum_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43444, 65466 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 2101000 observed gates: 1793000
+[       OK ] SecureNestedLoopAggregateTest.test_sum_dummies (852 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_avg
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43445, 65467 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 15422000 observed gates: 15477000
+[       OK ] SecureNestedLoopAggregateTest.test_avg (4435 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_avg_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43446, 65468 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 15422000 observed gates: 15477000
+[       OK ] SecureNestedLoopAggregateTest.test_avg_dummies (4414 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43447, 65469 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 550000 observed gates: 550000
+[       OK ] SecureNestedLoopAggregateTest.test_min (427 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min_no_bit_packing
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43448, 65470 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32 lineitem.l_orderkey, #1 shared-int32 lineitem.l_linenumber)
+Estimated cost: 1870000 observed gates: 1870000
+[       OK ] SecureNestedLoopAggregateTest.test_min_no_bit_packing (721 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43449, 65471 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 550000 observed gates: 550000
+[       OK ] SecureNestedLoopAggregateTest.test_min_dummies (413 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_max
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43450, 65472 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 550000 observed gates: 550000
+[       OK ] SecureNestedLoopAggregateTest.test_max (417 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_max_dummies
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43451, 65473 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(3) lineitem.l_linenumber)
+Estimated cost: 550000 observed gates: 550000
+[       OK ] SecureNestedLoopAggregateTest.test_max_dummies (425 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_tpch_q1_sums
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43452, 65474 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 3036000 observed gates: 2805660
+[       OK ] SecureNestedLoopAggregateTest.test_tpch_q1_sums (1104 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_tpch_q1_avg_cnt
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43453, 65475 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 11746680 observed gates: 11623920
+[       OK ] SecureNestedLoopAggregateTest.test_tpch_q1_avg_cnt (3506 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.tpch_q1
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43454, 65476 as 2
+connected
+Finished connecting!
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 14782680 observed gates: 14403840
+[       OK ] SecureNestedLoopAggregateTest.tpch_q1 (4269 ms)
+[----------] 15 tests from SecureNestedLoopAggregateTest (23634 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (23634 ms total)
+[  PASSED  ] 15 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureTpcHTest
+[ RUN      ] SecureTpcHTest.tpch_q01
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7654, 65478 as 2
+connected
+Finished connecting!
+[       OK ] SecureTpcHTest.tpch_q01 (2412 ms)
+[ RUN      ] SecureTpcHTest.tpch_q03
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7655, 65479 as 2
+connected
+Finished connecting!
+Operator (2). smj cost : 9839324, nlj cost : 3000000, join type : nested-loop-join
+Operator (5). smj cost : 20231819, nlj cost : 59000000, join type : keyed-sort-merge-join
+[       OK ] SecureTpcHTest.tpch_q03 (6392 ms)
+[ RUN      ] SecureTpcHTest.tpch_q05
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7656, 65480 as 2
+connected
+Finished connecting!
+Operator (2). smj cost : 2081580, nlj cost : 270000, join type : nested-loop-join
+Operator (5). smj cost : 6601596, nlj cost : 5600000, join type : nested-loop-join
+Operator (8). smj cost : 6517730, nlj cost : 94400, join type : nested-loop-join
+[       OK ] SecureTpcHTest.tpch_q05 (2854 ms)
+[ RUN      ] SecureTpcHTest.tpch_q08
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7657, 65481 as 2
+connected
+Finished connecting!
+Operator (2). smj cost : 6646962, nlj cost : 464000, join type : nested-loop-join
+Operator (5). smj cost : 19256158, nlj cost : 39680000, join type : keyed-sort-merge-join
+Operator (8). smj cost : 7178258, nlj cost : 104000, join type : nested-loop-join
+[       OK ] SecureTpcHTest.tpch_q08 (5269 ms)
+[ RUN      ] SecureTpcHTest.tpch_q09
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7658, 65482 as 2
+connected
+Finished connecting!
+Operator (2). smj cost : 568804, nlj cost : 118720, join type : nested-loop-join
+Operator (5). smj cost : 6469542, nlj cost : 4569600, join type : nested-loop-join
+Operator (8). smj cost : 11233044, nlj cost : 5580000, join type : nested-loop-join
+[       OK ] SecureTpcHTest.tpch_q09 (5619 ms)
+[ RUN      ] SecureTpcHTest.tpch_q18
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7659, 65483 as 2
+connected
+Finished connecting!
+Operator (9). smj cost : 5960900, nlj cost : 6600000, join type : keyed-sort-merge-join
+[       OK ] SecureTpcHTest.tpch_q18 (2322 ms)
+[----------] 6 tests from SecureTpcHTest (24871 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (24871 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from FullyOptimizedTest
+[ RUN      ] FullyOptimizedTest.tpch_q1
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7654, 65482 as 2
+connected
+Finished connecting!
+Query tree: #4: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64 count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 4545, output card: 6
+    #3: Project<Bit> ((<0, P$0(8) shared-varchar>, <1, P$1(8) shared-varchar>, <2, $2 + $15 shared-float>, <3, $3 + $16 shared-float>, <4, $4 + $17 shared-float>, <5, $5 + $18 shared-float>, <6, ($6 + $19) / ($7 + $20) shared-float>, <7, ($8 + $21) / ($9 + $22) shared-float>, <8, ($10 + $23) / ($11 + $24) shared-float>, <9, $12 + $25 shared-int64>)) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64 count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 163596, output card: 6
+        #2: MergeJoin<Bit> (no-op) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt, #13 shared-varchar(1) l_returnflag, #14 shared-varchar(1) l_linestatus, #15 shared-float sum_qty, #16 shared-float sum_base_price, #17 shared-float sum_disc_price, #18 shared-float sum_charge, #19 shared-float avg_qty_sum, #20 shared-float avg_qty_cnt, #21 shared-float avg_price_sum, #22 shared-float avg_price_cnt, #23 shared-float avg_discount_sum, #24 shared-float avg_discount_cnt, #25 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 18, output card: 6
+            #0: SecureSqlInput<Bit> ("WITH output_domain AS (
+    SELECT  *
+    FROM (VALUES('R'::char(1), 'F'::char(1)), ('A', 'F'), ('N', 'F'), ('R', 'O'), ('A', 'O'), ('N', 'O')) AS li(l_returnflag, l_linestatus)
+    ORDER BY l_returnflag, l_linestatus),
+     partial_aggs AS (
+         SELECT l_returnflag, l_linestatus, SUM(l_quantity) sum_qty, SUM(l_extendedprice) sum_base_price,
+                SUM(l_extendedprice*(1-l_discount)) sum_disc_price, SUM(l_extendedprice*(1-l_discount)*(1+l_tax)) sum_charge,
+                SUM(l_quantity) avg_qty_sum, COUNT(l_quantity)::FLOAT4 avg_qty_cnt,
+                 SUM(l_extendedprice) avg_price_sum, COUNT(l_extendedprice)::FLOAT4 avg_price_cnt,
+                 SUM(l_discount) avg_discount_sum, COUNT(l_discount)::FLOAT4 avg_discount_cnt, COUNT(*) cnt
+         FROM lineitem
+         WHERE l_shipdate  <= date '1998-08-03'
+         GROUP BY l_returnflag, l_linestatus
+         ORDER BY l_returnflag, l_linestatus)
+SELECT o.l_returnflag, o.l_linestatus, COALESCE(sum_qty, 0) sum_qty, COALESCE(sum_base_price, 0) sum_base_price, COALESCE(sum_disc_price, 0) sum_disc_price, COALESCE(sum_charge, 0) sum_charge, COALESCE(avg_qty_sum, 0) avg_qty_sum, COALESCE(avg_qty_cnt, 0) avg_qty_cnt,  COALESCE(avg_price_sum, 0) avg_price_sum, COALESCE(avg_price_cnt, 0) avg_price_cnt,  COALESCE(avg_discount_sum, 0) avg_discount_sum, COALESCE(avg_discount_cnt, 0) avg_discount_cnt,  COALESCE(cnt, 0)::BIGINT cnt, CASE WHEN p.l_returnflag IS NULL THEN true ELSE false END AS dummy_tag
+FROM output_domain o LEFT JOIN partial_aggs p ON o.l_returnflag = p.l_returnflag AND o.l_linestatus = p.l_linestatus
+ORDER BY o.l_returnflag, o.l_linestatus", tuple_count=6) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 0, output card: 6
+            #1: SecureSqlInput<Bit> ("WITH output_domain AS (
+    SELECT  *
+    FROM (VALUES('R'::char(1), 'F'::char(1)), ('A', 'F'), ('N', 'F'), ('R', 'O'), ('A', 'O'), ('N', 'O')) AS li(l_returnflag, l_linestatus)
+    ORDER BY l_returnflag, l_linestatus),
+     partial_aggs AS (
+         SELECT l_returnflag, l_linestatus, SUM(l_quantity) sum_qty, SUM(l_extendedprice) sum_base_price,
+                SUM(l_extendedprice*(1-l_discount)) sum_disc_price, SUM(l_extendedprice*(1-l_discount)*(1+l_tax)) sum_charge,
+                SUM(l_quantity) avg_qty_sum, COUNT(l_quantity)::FLOAT4 avg_qty_cnt,
+                 SUM(l_extendedprice) avg_price_sum, COUNT(l_extendedprice)::FLOAT4 avg_price_cnt,
+                 SUM(l_discount) avg_discount_sum, COUNT(l_discount)::FLOAT4 avg_discount_cnt, COUNT(*) cnt
+         FROM lineitem
+         WHERE l_shipdate  <= date '1998-08-03'
+         GROUP BY l_returnflag, l_linestatus
+         ORDER BY l_returnflag, l_linestatus)
+SELECT o.l_returnflag, o.l_linestatus, COALESCE(sum_qty, 0) sum_qty, COALESCE(sum_base_price, 0) sum_base_price, COALESCE(sum_disc_price, 0) sum_disc_price, COALESCE(sum_charge, 0) sum_charge, COALESCE(avg_qty_sum, 0) avg_qty_sum, COALESCE(avg_qty_cnt, 0) avg_qty_cnt,  COALESCE(avg_price_sum, 0) avg_price_sum, COALESCE(avg_price_cnt, 0) avg_price_cnt,  COALESCE(avg_discount_sum, 0) avg_discount_sum, COALESCE(avg_discount_cnt, 0) avg_discount_cnt,  COALESCE(cnt, 0)::BIGINT cnt, CASE WHEN p.l_returnflag IS NULL THEN true ELSE false END AS dummy_tag
+FROM output_domain o LEFT JOIN partial_aggs p ON o.l_returnflag = p.l_returnflag AND o.l_linestatus = p.l_linestatus
+ORDER BY o.l_returnflag, o.l_linestatus", tuple_count=6) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 0, output card: 6
+
+Runtime: 0.634627 sec, CPU Time: 0.049845 sec, CPU clock ticks: 49845, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 168159. observed gates: 132300 gates, relative error (%)=27.1043
+Bandwidth: 3967.68 Bps
+[       OK ] FullyOptimizedTest.tpch_q1 (915 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q3
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7655, 65483 as 2
+connected
+Finished connecting!
+Operator (2). smj cost : 11979196, nlj cost : 4500000, join type : nested-loop-join
+Operator (5). smj cost : 101205766, nlj cost : 531442500, join type : keyed-sort-merge-join
+Cost : 76266518, combination : 0
+Cost : 174293819232, combination : 1
+Query tree: #9: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$3(32) shared-float>, <2, P$1(28) shared-int64>, <3, P$2(1) shared-int32>)) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float revenue, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32(1) orders.o_shippriority) order by: {<-1, ASC> , <1, DESC> , <2, ASC> }, cost est: 0, output card: 6005
+    #8: Sort<Bit> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32(1) orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }, cost est: 37028312, output card: 6005
+        #7: SortMergeAggregate<Bit> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32(1) orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> }, cost est: 7061880, output card: 6005
+            #-1: Sort<Bit> ({<0, ASC> , <1, ASC> , <2, ASC> }) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32(1) orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> , <1, ASC> , <2, ASC> }, cost est: 32176326, output card: 6005
+                #6: Project<Bit> ((<0, P$3(13) shared-int32>, <1, P$1(28) shared-int64>, <2, P$2(1) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32(1) orders.o_shippriority, #3 shared-float revenue) order by: {}, cost est: 0, output card: 6005
+                    #5: SortMergeJoin<Bit> (P$0(13) == P$3(13)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32(1) orders.o_shippriority, #3 shared-int32(13) lineitem.l_orderkey, #4 shared-float revenue) order by: {<0, ASC> , <3, ASC> }, cost est: 101205766, output card: 6005
+                        #3: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$2(28) shared-int64>, <2, P$3(1) shared-int32>)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32(1) orders.o_shippriority) order by: {}, cost est: 0, output card: 1500
+                            #2: KeyedJoin<Bit> (P$1(8) == P$4(8)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32(1) orders.o_shippriority, #4 shared-int32(8) customer.c_custkey) order by: {<1, ASC> , <4, ASC> }, cost est: 4500000, output card: 1500
+                                #0: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_custkey", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32(1) orders.o_shippriority) order by: {<1, ASC> }, cost est: 490606, output card: 1500
+                                #1: SecureSqlInput<Bit> ("SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer ORDER BY c_custkey", tuple_count=150) : (#0 shared-int32(8) customer.c_custkey) order by: {<0, ASC> }, cost est: 10840, output card: 150
+                        #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey", tuple_count=6005) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 2336594, output card: 6005
+
+Runtime: 48.014 sec, CPU Time: 33.6421 sec, CPU clock ticks: 3.36421e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.8481e+08. observed gates: 168127216 gates, relative error (%)=9.9229
+Bandwidth: 52349.8 Bps
+[       OK ] FullyOptimizedTest.tpch_q3 (48253 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q5
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7656, 65484 as 2
+connected
+Finished connecting!
+Operator (2). smj cost : 25115655, nlj cost : 9112500, join type : nested-loop-join
+Operator (5). smj cost : 259975444, nlj cost : 2116762500, join type : keyed-sort-merge-join
+Operator (8). smj cost : 200939124, nlj cost : 216180, join type : nested-loop-join
+Cost : 188714280, combination : 0
+Cost : 45640583, combination : 1
+Query tree: #11: Sort<Bit> ({<1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<1, DESC> }, cost est: 2583, output card: 5
+    #10: NestedLoopAggregate<Bit> (group-by: (0) aggs: (SUM($1) revenue)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {}, cost est: 45638000, output card: 5
+        #9: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$3(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {}, cost est: 0, output card: 6005
+            #8: KeyedJoin<Bit> ((P$1(5) == P$5(5)) AND (P$2(4) == P$4(4))) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(4) lineitem.l_suppkey, #3 shared-float revenue, #4 shared-int32(4) supplier.s_suppkey, #5 shared-int32(5) supplier.s_nationkey) order by: {}, cost est: 216180, output card: 6005
+                #6: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$1(5) shared-int32>, <2, P$4(4) shared-int32>, <3, P$5(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(4) lineitem.l_suppkey, #3 shared-float revenue) order by: {}, cost est: 0, output card: 6005
+                    #5: SortMergeJoin<Bit> (P$2(13) == P$3(13)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(13) orders.o_orderkey, #3 shared-int32(13) lineitem.l_orderkey, #4 shared-int32(4) lineitem.l_suppkey, #5 shared-float revenue) order by: {<2, ASC> , <3, ASC> }, cost est: 259975444, output card: 6005
+                        #3: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$2(5) shared-int32>, <2, P$3(13) shared-int32>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(13) orders.o_orderkey) order by: {}, cost est: 0, output card: 1500
+                            #2: KeyedJoin<Bit> (P$1(8) == P$4(8)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(5) customer.c_nationkey, #3 shared-int32(13) orders.o_orderkey, #4 shared-int32(8) orders.o_custkey) order by: {<4, ASC> , <1, ASC> }, cost est: 9112500, output card: 1500
+                                #0: SecureSqlInput<Bit> ("SELECT t1.n_name, t2.c_custkey, t2.c_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t2.c_custkey", tuple_count=27) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(5) customer.c_nationkey) order by: {<1, ASC> }, cost est: 14400, output card: 27
+                                #1: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders ORDER BY o_custkey", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey) order by: {<1, ASC> }, cost est: 261129, output card: 1500
+                        #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem ORDER BY l_orderkey, l_suppkey, revenue ASC", tuple_count=6005) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float revenue) order by: {<0, ASC> , <1, ASC> , <2, ASC> }, cost est: 4070196, output card: 6005
+                #7: SecureSqlInput<Bit> ("SELECT t2.s_suppkey, t2.s_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT s_suppkey, s_nationkey FROM supplier) AS t2 ON t1.n_nationkey = t2.s_nationkey ORDER BY t2.s_nationkey, t2.s_suppkey", tuple_count=1) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-int32(5) supplier.s_nationkey) order by: {<1, ASC> , <0, ASC> }, cost est: 0, output card: 1
+
+Runtime: 94.3305 sec, CPU Time: 66.6596 sec, CPU clock ticks: 6.66596e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 3.1929e+08. observed gates: 338430220 gates, relative error (%)=5.65546
+Bandwidth: 26641.1 Bps
+[       OK ] FullyOptimizedTest.tpch_q5 (94510 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q8
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7657, 65485 as 2
+connected
+Finished connecting!
+Operator (2). smj cost : 11021855, nlj cost : 870000, join type : nested-loop-join
+Operator (5). smj cost : 104876740, nlj cost : 558465000, join type : keyed-sort-merge-join
+Operator (8). smj cost : 81570214, nlj cost : 780650, join type : nested-loop-join
+Cost : 70393077, combination : 0
+Cost : 28399358, combination : 1
+Query tree: #12: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 100, output card: 2
+    #11: Project<Bit> ((<0, P$0(32) shared-int32>, <1, $1 / $2 shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {}, cost est: 7618, output card: 2
+        #10: NestedLoopAggregate<Bit> (group-by: (0) aggs: (SUM($1) null, SUM($2) null)) : (#0 shared-int32 orders.o_year, #1 shared-float null, #2 shared-float null) order by: {}, cost est: 28391640, output card: 2
+            #9: Project<Bit> ((<0, P$0(32) shared-int32>, <1, CASE($4, $2, SECRET FLOAT) shared-float>, <2, P$2(32) shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float nation_volume, #2 shared-float volume) order by: {}, cost est: 0, output card: 6005
+                #8: KeyedJoin<Bit> (P$1(4) == P$3(4)) : (#0 shared-int32 orders.o_year, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float volume, #3 shared-int32(4) supplier.s_suppkey, #4 shared-bool nation_check) order by: {}, cost est: 780650, output card: 6005
+                    #6: Project<Bit> ((<0, P$0(32) shared-int32>, <1, P$3(4) shared-int32>, <2, P$4(32) shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float volume) order by: {}, cost est: 0, output card: 6005
+                        #5: SortMergeJoin<Bit> (P$1(13) == P$2(13)) : (#0 shared-int32 orders.o_year, #1 shared-int32(13) orders.o_orderkey, #2 shared-int32(13) lineitem.l_orderkey, #3 shared-int32(4) lineitem.l_suppkey, #4 shared-float volume) order by: {<1, ASC> , <2, ASC> }, cost est: 104876740, output card: 6005
+                            #3: Project<Bit> ((<0, P$3(32) shared-int32>, <1, P$1(13) shared-int32>)) : (#0 shared-int32 orders.o_year, #1 shared-int32(13) orders.o_orderkey) order by: {}, cost est: 0, output card: 1500
+                                #2: KeyedJoin<Bit> (P$0(8) == P$2(8)) : (#0 shared-int32(8) customer.c_custkey, #1 shared-int32(13) orders.o_orderkey, #2 shared-int32(8) orders.o_custkey, #3 shared-int32 orders.o_year) order by: {<2, ASC> , <1, ASC> , <0, ASC> }, cost est: 870000, output card: 1500
+                                    #0: SecureSqlInput<Bit> ("SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA' ORDER BY c_custkey", tuple_count=29) : (#0 shared-int32(8) customer.c_custkey) order by: {<0, ASC> }, cost est: 1400, output card: 29
+                                    #1: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_custkey, o_orderkey", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int32 orders.o_year) order by: {<1, ASC> , <0, ASC> }, cost est: 640953, output card: 1500
+                            #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume, CASE WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE ELSE TRUE END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_orderkey", tuple_count=6005) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float volume) order by: {<0, ASC> }, cost est: 2487342, output card: 6005
+                    #7: SecureSqlInput<Bit> ("SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey ORDER BY s_suppkey", tuple_count=10) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-bool nation_check) order by: {<0, ASC> }, cost est: 208, output card: 10
+
+Runtime: 35.5457 sec, CPU Time: 26.5072 sec, CPU clock ticks: 2.65072e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.38057e+08. observed gates: 125961276 gates, relative error (%)=9.60246
+Bandwidth: 78447.4 Bps
+[       OK ] FullyOptimizedTest.tpch_q8 (35734 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q9
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7658, 65486 as 2
+connected
+Finished connecting!
+Operator (2). smj cost : 568804, nlj cost : 118720, join type : nested-loop-join
+Operator (5). smj cost : 144638445, nlj cost : 91468160, join type : nested-loop-join
+Operator (8). smj cost : 372857928, nlj cost : 558465000, join type : keyed-sort-merge-join
+Cost : 137769696, combination : 0
+Cost : 1665971772, combination : 1
+Query tree: #11: Sort<Bit> ({<0, ASC> , <1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, DESC> }, cost est: 128449936, output card: 6005
+    #10: SortMergeAggregate<Bit> (group-by: (0, 1) aggs: (SUM($2) sum_profit)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, DESC> }, cost est: 9319760, output card: 6005
+        #-1: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float amount) order by: {<0, ASC> , <1, ASC> }, cost est: 128449936, output card: 6005
+            #9: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$6(32) shared-int32>, <2, ($3 * (SECRET FLOAT - $4)) - ($1 * $5) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float amount) order by: {}, cost est: 109459140, output card: 6005
+                #8: SortMergeJoin<Bit> (P$2(13) == P$7(13)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float partsupp.ps_supplycost, #2 shared-int32(13) lineitem.l_orderkey, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float l_quantity, #6 shared-int32 o_year, #7 shared-int32(13) orders.o_orderkey) order by: {<2, ASC> , <7, ASC> }, cost est: 372857928, output card: 6005
+                    #6: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$3(32) shared-float>, <2, P$4(13) shared-int32>, <3, P$8(32) shared-float>, <4, P$9(32) shared-float>, <5, P$7(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float partsupp.ps_supplycost, #2 shared-int32(13) lineitem.l_orderkey, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float l_quantity) order by: {}, cost est: 0, output card: 6005
+                        #5: KeyedJoin<Bit> ((P$2(4) == P$6(4)) AND (P$1(8) == P$5(8))) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(8) partsupp.ps_partkey, #2 shared-int32(4) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost, #4 shared-int32(13) lineitem.l_orderkey, #5 shared-int32(8) lineitem.l_partkey, #6 shared-int32(4) lineitem.l_suppkey, #7 shared-float l_quantity, #8 shared-float lineitem.l_extendedprice, #9 shared-float lineitem.l_discount) order by: {<6, ASC> , <5, ASC> , <2, ASC> , <1, ASC> , <0, ASC> }, cost est: 91468160, output card: 6005
+                            #3: Project<Bit> ((<0, P$1(200) shared-varchar>, <1, P$2(8) shared-int32>, <2, P$3(4) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(8) partsupp.ps_partkey, #2 shared-int32(4) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost) order by: {<2, ASC> , <1, ASC> , <0, ASC> }, cost est: 0, output card: 56
+                                #2: KeyedJoin<Bit> (P$0(4) == P$3(4)) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(8) partsupp.ps_partkey, #3 shared-int32(4) partsupp.ps_suppkey, #4 shared-float partsupp.ps_supplycost) order by: {<3, ASC> , <2, ASC> , <1, ASC> , <0, ASC> }, cost est: 118720, output card: 56
+                                    #0: SecureSqlInput<Bit> ("SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY n_name, s_suppkey", tuple_count=10) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name) order by: {<1, ASC> , <0, ASC> }, cost est: 6640, output card: 10
+                                    #1: SecureSqlInput<Bit> ("SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%' ORDER BY ps_suppkey, ps_partkey", tuple_count=56) : (#0 shared-int32(8) partsupp.ps_partkey, #1 shared-int32(4) partsupp.ps_suppkey, #2 shared-float partsupp.ps_supplycost) order by: {<1, ASC> , <0, ASC> }, cost est: 10206, output card: 56
+                            #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice, l_discount FROM lineitem ORDER BY l_suppkey, l_partkey", tuple_count=6005) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(8) lineitem.l_partkey, #2 shared-int32(4) lineitem.l_suppkey, #3 shared-float l_quantity, #4 shared-float lineitem.l_extendedprice, #5 shared-float lineitem.l_discount) order by: {<2, ASC> , <1, ASC> }, cost est: 5276180, output card: 6005
+                    #7: SecureSqlInput<Bit> ("SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders ORDER BY o_orderkey", tuple_count=1500) : (#0 shared-int32 o_year, #1 shared-int32(13) orders.o_orderkey) order by: {<1, ASC> }, cost est: 490606, output card: 1500
+
+Runtime: 228.389 sec, CPU Time: 155.678 sec, CPU clock ticks: 1.55678e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 8.45907e+08. observed gates: 817537348 gates, relative error (%)=3.47016
+Bandwidth: 25630.5 Bps
+[       OK ] FullyOptimizedTest.tpch_q9 (228610 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q18
+Protocol: sh2pc
+Received storage flag of row, emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7659, 65487 as 2
+connected
+Finished connecting!
+Operator (9). smj cost : 37514056, nlj cost : 49500000, join type : keyed-sort-merge-join
+Query tree: #11: Sort<Bit> ({<-1, ASC> , <4, DESC> , <3, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(13) order_keys.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <4, DESC> , <3, ASC> }, cost est: 487532, output card: 100
+    #10: Project<Bit> ((<0, P$6(200) shared-varchar>, <1, P$5(8) shared-int32>, <2, P$0(13) shared-int32>, <3, P$3(28) shared-int64>, <4, P$2(32) shared-float>, <5, P$4(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(13) order_keys.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {}, cost est: 0, output card: 1500
+        #9: SortMergeJoin<Bit> (P$1(8) == P$5(8)) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-float sum_qty, #5 shared-int32(8) customer.c_custkey, #6 shared-varchar(25) customer.c_name) order by: {<1, ASC> , <5, ASC> }, cost est: 37514056, output card: 1500
+            #7: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$3(8) shared-int32>, <2, P$4(32) shared-float>, <3, P$5(28) shared-int64>, <4, P$1(32) shared-float>)) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-float sum_qty) order by: {<0, ASC> }, cost est: 0, output card: 1500
+                #6: MergeJoin<Bit> (no-op) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty, #2 shared-int32(13) orders.o_orderkey, #3 shared-int32(8) orders.o_custkey, #4 shared-float orders.o_totalprice, #5 shared-int64(28) orders.o_orderdate) order by: {<0, ASC> }, cost est: 4500, output card: 1500
+                    #4: Filter<Bit> (P$1(32) > SECRET FLOAT) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 319500, output card: 1500
+                        #3: Project<Bit> ((<0, P$0(13) shared-int32>, <1, $1 + $3 shared-float>)) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 1479000, output card: 1500
+                            #2: MergeJoin<Bit> (no-op) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty, #2 shared-int32(13) order_keys.o_orderkey, #3 shared-float sum_qty) order by: {<0, ASC> }, cost est: 4500, output card: 1500
+                                #0: SecureSqlInput<Bit> ("WITH all_keys AS (SELECT o_orderkey  FROM order_keys), sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag FROM lineitem GROUP BY l_orderkey ORDER BY l_orderkey) SELECT o_orderkey, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = o_orderkey ORDER BY o_orderkey ", tuple_count=1500) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 0, output card: 1500
+                                #1: SecureSqlInput<Bit> ("WITH all_keys AS (SELECT o_orderkey  FROM order_keys), sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag FROM lineitem GROUP BY l_orderkey ORDER BY l_orderkey) SELECT o_orderkey, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = o_orderkey ORDER BY o_orderkey ", tuple_count=1500) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 0, output card: 1500
+                    #5: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate, false dummy_tag FROM orders ORDER BY o_orderkey", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate) order by: {<0, ASC> }, cost est: 775474, output card: 1500
+            #8: SecureSqlInput<Bit> ("SELECT c_custkey, c_name FROM customer ORDER BY c_custkey", tuple_count=150) : (#0 shared-int32(8) customer.c_custkey, #1 shared-varchar(25) customer.c_name) order by: {}, cost est: 0, output card: 150
+
+Runtime: 17.4889 sec, CPU Time: 12.5425 sec, CPU clock ticks: 1.25425e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 4.05846e+07. observed gates: 61807624 gates, relative error (%)=34.3373
+Bandwidth: 143556 Bps
+[       OK ] FullyOptimizedTest.tpch_q18 (17732 ms)
+[----------] 6 tests from FullyOptimizedTest (425756 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (425756 ms total)
+[  PASSED  ] 6 tests.
