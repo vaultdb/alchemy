@@ -13,7 +13,7 @@ DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_string(storage, "column", "storage model for tables (row or column)");
 DEFINE_int32(cutoff, 5, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65450, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -54,33 +54,29 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_customer_orders) {
 
 
         std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
-                                                                             "orders_cte AS (" + orders_sql_ + ") "
-                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
-                                                                                                             "FROM customer_cte, orders_cte "
-                                                                                                             "WHERE NOT cdummy AND NOT odummy AND c_custkey = o_custkey "
-                                                                                                             "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
-
+                                          "orders_cte AS (" + orders_sql_ + ") "
+                                          "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
+                                          "FROM customer_cte, orders_cte "
+                                          "WHERE NOT cdummy AND NOT odummy AND c_custkey = o_custkey "
+                                          "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
     PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,false);
 
     auto customer_input = new SecureSqlInput(db_name_, customer_sql_, true);
-    auto orders_input= new SecureSqlInput(db_name_, orders_sql_, true);
+    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true);
 
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> *predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 1,
-                                                                                     customer_input, 4);
+    Expression<emp::Bit> *predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 1, customer_input, 4);
 
     auto join = new BasicJoin(orders_input, customer_input, predicate);
 
     auto join_res = join->run();
     if(FLAGS_validation) {
-
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
-        Sort sort(join_res->reveal(), sort_def);
-
-        PlainTable *observed = sort.run();
+        join_res->setSortOrder(sort_def); // reveal() will sort for this
+        PlainTable *observed = join_res->reveal();
         expected->setSortOrder(sort_def);
 
         ASSERT_EQ(*expected, *observed);
@@ -119,10 +115,9 @@ std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
     auto join = new BasicJoin(lineitem_input, orders_input, predicate);
     auto join_res = join->run();
     if(FLAGS_validation) {
-        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(
-                join->getOutputSchema().getFieldCount());
-        Sort sort(join_res->reveal(), sort_def);
-        PlainTable *observed = sort.run();
+        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
+        join_res->setSortOrder(sort_def); // reveal() will sort for this
+        PlainTable *observed = join_res->reveal();
 
         expected->setSortOrder(sort_def);
 
@@ -174,8 +169,9 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     auto join_res = full_join->run();
     if(FLAGS_validation) {
         SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(full_join->getOutputSchema().getFieldCount());
-        Sort sort(join_res->reveal(), sort_def);
-        PlainTable *observed = sort.run()->reveal();
+        join_res->setSortOrder(sort_def); // reveal() will sort for this
+        PlainTable *observed = join_res->reveal();
+
         expected->setSortOrder(sort_def);
 
         ASSERT_EQ(*expected, *observed);
