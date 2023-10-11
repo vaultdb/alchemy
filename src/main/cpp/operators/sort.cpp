@@ -62,22 +62,16 @@ QueryTable<B> *Sort<B>::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-    if(SystemConfiguration::getInstance().storageModel() == StorageModel::ROW_STORE) {
-        this->output_ = normalizeTable(input);
-        this->output_->setSortOrder(this->sort_definition_);
+    this->output_ = normalizeTable(input);
+    this->output_->setSortOrder(this->sort_definition_);
 
-        int counter = 0;
-        bitonicSortNormalized(0, this->output_->getTupleCount(), true, counter);
+    int counter = 0;
+    bitonicSortNormalized(0, this->output_->getTupleCount(), true, counter);
 
-        auto tmp = denormalizeTable(this->output_);
-        delete this->output_;
-        this->output_ = tmp;
-    }
-    else {
-        this->output_ = input->clone();
-        int counter = 0;
-        bitonicSort(0, this->output_->getTupleCount(), true, counter); // TODO: implement this for col store
-    }
+    auto tmp = denormalizeTable(this->output_);
+    delete this->output_;
+    this->output_ = tmp;
+
 
     this->output_->setSortOrder(this->sort_definition_);
 
@@ -216,19 +210,10 @@ Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_i
         return swapTuplesNormalizedOmpc(table, lhs_idx, rhs_idx, dir, sort_key_width_bits);
     }
 
-    // caution: only works with row store
-    RowTable<Bit> *row_table = (RowTable<Bit> *) table;
-
-    vector<Bit> placeholder(sort_key_width_bits+1); // +1 for sign bit in case it is packed
     // placeholder to avoid initializing public value for Integer
-    Integer lhs_key(placeholder);
-    Integer rhs_key(placeholder);
-
-    Bit *lhs = (Bit *) (row_table->tuple_data_.data() + row_table->tuple_size_bytes_ * lhs_idx);
-    Bit *rhs = (Bit *) (row_table->tuple_data_.data() + row_table->tuple_size_bytes_ * rhs_idx);
-
-    memcpy(lhs_key.bits.data(), lhs, sort_key_width_bits * TypeUtilities::getEmpBitSize());
-    memcpy(rhs_key.bits.data(), rhs, sort_key_width_bits * TypeUtilities::getEmpBitSize());
+    int col_cnt = table->getSortOrder().size();
+    Integer lhs_key = table->unpackRow(lhs_idx, col_cnt, sort_key_width_bits+1);
+    Integer rhs_key = table->unpackRow(rhs_idx, col_cnt, sort_key_width_bits+1);
 
     // set MSB to 1 for all to avoid losing MSBs that are zero
     lhs_key[sort_key_width_bits] = 1;
@@ -241,7 +226,6 @@ Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_i
 template <typename B>
 Bit Sort<B>::swapTuplesNormalizedOmpc(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir, const int & sort_key_width_bits) {
 
-        assert(table->storageModel() == StorageModel::ROW_STORE);
 
     int sort_col_cnt = table->getSortOrder().size();
 

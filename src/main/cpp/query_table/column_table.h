@@ -10,6 +10,7 @@
 #include "util/utilities.h"
 #include "plain_tuple.h"
 #include "query_table.h"
+#include "util/field_utilities.h"
 
 
 namespace  vaultdb {
@@ -133,6 +134,11 @@ namespace  vaultdb {
         void cloneRow(const bool & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row)  override;
         void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) override;
         void cloneTable(const int & dst_row, QueryTable<B> *src) override;
+        Integer unpackRow(const int & row, const int & col_cnt, const int & selection_length_bits) const override {
+            assert(this->isEncrypted());
+
+            return FieldUtilities::unpackRow(((QueryTable<Bit> *)this), row, col_cnt, selection_length_bits);
+        }
 
         QueryTable<B> *clone() override {
             return new ColumnTable<B>(*this);
