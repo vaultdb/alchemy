@@ -90,8 +90,8 @@ void SecureSortMergeAggregateTest::runDummiesTest(const string &expected_sql,
 
     size_t observed_gates = aggregate.getGateCount();
     size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
-    cout << "Input schema: " << input->getOutputSchema() << endl;
-    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
+//    cout << "Input schema: " << input->getOutputSchema() << endl;
+//    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false,  1);
