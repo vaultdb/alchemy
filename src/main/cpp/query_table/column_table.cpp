@@ -442,7 +442,6 @@ void ColumnTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int 
             *l ^= o;
             *r ^= o;
 
-
             ++l;
             ++r;
         }
