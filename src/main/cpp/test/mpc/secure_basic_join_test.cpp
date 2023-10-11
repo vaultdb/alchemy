@@ -14,7 +14,7 @@ DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
-DEFINE_int32(cutoff, 3, "limit clause for queries");
+DEFINE_int32(cutoff, 5, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65450, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");

@@ -384,7 +384,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionAndMergeTables() {
     auto normalized = sorter.normalizeTable(unioned); // normalize to move up table_id field
 
     int counter = 0;
-    sorter.bitonicMergeNormalized(normalized, sorter.getSortOrder(), 0, normalized->getTupleCount(), true, counter);
+    sorter.bitonicMerge(normalized, sorter.getSortOrder(), 0, normalized->getTupleCount(), true, counter);
     unioned =  sorter.denormalizeTable(normalized);
     unioned->setSortOrder(sort_def);
 

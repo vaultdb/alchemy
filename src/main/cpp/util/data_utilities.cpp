@@ -359,7 +359,7 @@ string DataUtilities::printTable(const SecureTable *table, int tuple_limit, bool
     return ss.str();
 }
 
-string DataUtilities::printTable(const PlainTable *table, bool show_dummies, int tuple_limit) {
+string DataUtilities::printTable(const PlainTable *table, int tuple_limit, bool show_dummies) {
     stringstream  ss;
     ss << table->toString(tuple_limit, show_dummies);
     return ss.str();

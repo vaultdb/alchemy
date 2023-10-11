@@ -24,8 +24,7 @@ namespace  vaultdb {
 
         virtual ~Sort() = default;
         QueryTable<B> *runSelf() override;
-//        static void bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_def, const int &lo, const int &cnt, const bool &invert_dir,  int & counter);
-        void bitonicMergeNormalized( QueryTable<B> *table, const SortDefinition & sort_def, const int &lo, const int &cnt, const bool &invert_dir,  int & counter);
+        void bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_def, const int &lo, const int &cnt, const bool &invert_dir,  int & counter);
 
         static int powerOfTwoLessThan(const int &n);
         QueryTable<B> *normalizeTable(QueryTable<B> *src);
@@ -55,14 +54,10 @@ namespace  vaultdb {
 
 
     private:
-//        void bitonicSort(const int &lo, const int &cnt, const bool &dir,  int & counter);
-        void bitonicSortNormalized(const int &lo, const int &cnt, const bool &dir,  int & counter);
+        void bitonicSort(const int &lo, const int &cnt, const bool &dir,  int & counter);
 
-//        static B swapTuples(const QueryTable<B> *table, const int & lhs_idx, const int & rhs_idx, const SortDefinition  & sort_definition, const bool & dir);
-        static Bit swapTuplesNormalized(const QueryTable<Bit> *table, const int & lhs_idx, const int & rhs_idx, const bool & dir, const int & sort_key_width_bits);
-        static bool swapTuplesNormalized(const QueryTable<bool> *table, const int & lhs_idx, const int & rhs_idx, const bool & dir, const int & sort_key_width_bits);
-//        static Bit swapTuplesNormalizedOmpc(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir,
-//                                            const int &sort_key_width_bits);
+        static Bit swapTuples(const QueryTable<Bit> *table, const int & lhs_idx, const int & rhs_idx, const bool & dir, const int & sort_key_width_bits);
+        static bool swapTuples(const QueryTable<bool> *table, const int & lhs_idx, const int & rhs_idx, const bool & dir, const int & sort_key_width_bits);
 
 
 

@@ -38,12 +38,13 @@ QueryTable<B> *BasicJoin<B>::runSelf() {
     this->output_ = TableFactory<B>::getTable(lhs->getTupleCount() * rhs->getTupleCount(), this->output_schema_,
                                               this->sort_definition_);
     int cursor = 0;
+    int rhs_col_offset = this->output_->getSchema().getFieldCount() - rhs->getSchema().getFieldCount();
 
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {
          lhs_dummy_tag  = lhs->getDummyTag(i);
         for(uint32_t j = 0; j < rhs->getTupleCount(); ++j) {
-            Join<B>::write_left(this->output_, cursor,  lhs, i);
-            Join<B>::write_right(this->output_, cursor,  rhs, j);
+            this->output_->cloneRow(cursor, 0, lhs, i); //   Join<B>::write_left(this->output_, cursor,  lhs, i);
+            this->output_->cloneRow(cursor, rhs_col_offset, rhs, j); // Join<B>::write_right(this->output_, cursor,  rhs, j);
             selected = Join<B>::predicate_->call(lhs, i, rhs, j).template getValue<B>();
             dst_dummy_tag = (!selected) | lhs_dummy_tag | rhs->getDummyTag(j);
 
