@@ -66,7 +66,7 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
         // if one is empty, then we are already sorted
         if(alice_tuple_cnt > 0 && bob_tuple_cnt > 0) {
 
-            if(SystemConfiguration::getInstance().storageModel() == StorageModel::ROW_STORE) {
+//            if(SystemConfiguration::getInstance().storageModel() == StorageModel::ROW_STORE) {
                 auto dst_sort = dst_table->getSortOrder();
                 Sort<Bit> sorter(dst_table, dst_sort);
                 auto normalized = sorter.normalizeTable(dst_table);
@@ -75,11 +75,11 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
                 dst_table = sorter.denormalizeTable(normalized);
                 delete normalized;
                 dst_table->setSortOrder(dst_sort);
-             }
-            else {// col store
-                assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COLUMN_STORE);
-                Sort<Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true,counter);
-            }
+//             }
+//            else {// col store
+//                assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COLUMN_STORE);
+//                Sort<Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true,counter);
+//            }
 
 //            float n = dst_table->getTupleCount();
 //            float rounds = log2(dst_table->getTupleCount());

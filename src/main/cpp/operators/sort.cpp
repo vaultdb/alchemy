@@ -114,16 +114,16 @@ QueryTable<B> *Sort<B>::runSelf() {
  * DESC => (dir == FALSE)
  **/
 
-template<typename B>
-void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &dir,  int & counter) {
-    if (cnt > 1) {
-        int m = cnt / 2;
-        bitonicSort(lo, m, !dir,   counter);
-        bitonicSort(lo + m, cnt - m, dir, counter);
-        bitonicMerge(this->output_, this->sort_definition_, lo, cnt, dir, counter);
-    }
-
-}
+//template<typename B>
+//void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &dir,  int & counter) {
+//    if (cnt > 1) {
+//        int m = cnt / 2;
+//        bitonicSort(lo, m, !dir,   counter);
+//        bitonicSort(lo + m, cnt - m, dir, counter);
+//        bitonicMerge(this->output_, this->sort_definition_, lo, cnt, dir, counter);
+//    }
+//
+//}
 
 template<typename B>
 void Sort<B>::bitonicSortNormalized(const int &lo, const int &cnt, const bool &dir,  int & counter) {
@@ -140,22 +140,22 @@ void Sort<B>::bitonicSortNormalized(const int &lo, const int &cnt, const bool &d
  * otherwise. The sequence to be sorted starts at index position lo,
  * the number of elements is cnt.
  **/
-template<typename B>
-void Sort<B>::bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_def, const int &lo, const int &n, const bool &dir,  int & counter) {
-
-    if (n > 1) {
-        int m = powerOfTwoLessThan(n);
-        for (int i = lo; i < lo + n - m; ++i) {
-            B to_swap = swapTuples(table, i, i+m, sort_def, dir);
-            table->compareSwap(to_swap, i, i+m);
-            ++counter;
-        }
-
-        bitonicMerge(table, sort_def, lo, m,  dir, counter);
-        bitonicMerge(table, sort_def, lo + m, n - m, dir, counter);
-    }
-}
-
+//template<typename B>
+//void Sort<B>::bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_def, const int &lo, const int &n, const bool &dir,  int & counter) {
+//
+//    if (n > 1) {
+//        int m = powerOfTwoLessThan(n);
+//        for (int i = lo; i < lo + n - m; ++i) {
+//            B to_swap = swapTuples(table, i, i+m, sort_def, dir);
+//            table->compareSwap(to_swap, i, i+m);
+//            ++counter;
+//        }
+//
+//        bitonicMerge(table, sort_def, lo, m,  dir, counter);
+//        bitonicMerge(table, sort_def, lo + m, n - m, dir, counter);
+//    }
+//}
+//
 
 template<typename B>
 void Sort<B>::bitonicMergeNormalized( QueryTable<B> *table, const SortDefinition & sort_def, const int &lo, const int &n, const bool &dir,  int & counter) {
@@ -175,40 +175,40 @@ void Sort<B>::bitonicMergeNormalized( QueryTable<B> *table, const SortDefinition
 
 
 
-template<typename B>
-B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int &rhs_idx,
-                      const SortDefinition &sort_definition, const bool &dir) {
-    B swap = false;
-    B not_init = true;
-
-    for (size_t i = 0; i < sort_definition.size(); ++i) {
-        bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
-        if(dir)
-            asc = !asc;
-
-        const Field<B> lhs_field = table->getPackedField(lhs_idx,sort_definition[i].first);
-        const Field<B> rhs_field = table->getPackedField(rhs_idx,sort_definition[i].first);
-
-        B eq = (lhs_field == rhs_field);
-
-        B to_swap =  ((lhs_field < rhs_field) == asc);
-
-
-        swap = FieldUtilities::select(not_init, to_swap, swap);
-        not_init = not_init & eq;
-    }
-
-
-    return swap;
-
-}
+//template<typename B>
+//B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int &rhs_idx,
+//                      const SortDefinition &sort_definition, const bool &dir) {
+//    B swap = false;
+//    B not_init = true;
+//
+//    for (size_t i = 0; i < sort_definition.size(); ++i) {
+//        bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
+//        if(dir)
+//            asc = !asc;
+//
+//        const Field<B> lhs_field = table->getPackedField(lhs_idx,sort_definition[i].first);
+//        const Field<B> rhs_field = table->getPackedField(rhs_idx,sort_definition[i].first);
+//
+//        B eq = (lhs_field == rhs_field);
+//
+//        B to_swap =  ((lhs_field < rhs_field) == asc);
+//
+//
+//        swap = FieldUtilities::select(not_init, to_swap, swap);
+//        not_init = not_init & eq;
+//    }
+//
+//
+//    return swap;
+//
+//}
 
 template <typename B>
 Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir, const int & sort_key_width_bits) {
 
-    if(SystemConfiguration::getInstance().wire_packing_enabled_) { // wire packing only enabled if we're in OUTSOURCED mode
-        return swapTuplesNormalizedOmpc(table, lhs_idx, rhs_idx, dir, sort_key_width_bits);
-    }
+//    if(SystemConfiguration::getInstance().wire_packing_enabled_) { // wire packing only enabled if we're in OUTSOURCED mode
+//        return swapTuplesNormalizedOmpc(table, lhs_idx, rhs_idx, dir, sort_key_width_bits);
+//    }
 
     // placeholder to avoid initializing public value for Integer
     int col_cnt = table->getSortOrder().size();
@@ -223,22 +223,22 @@ Bit Sort<B>::swapTuplesNormalized(const QueryTable<Bit> *table, const int &lhs_i
 
 }
 
-template <typename B>
-Bit Sort<B>::swapTuplesNormalizedOmpc(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir, const int & sort_key_width_bits) {
-
-
-    int sort_col_cnt = table->getSortOrder().size();
-
-    Integer lhs_key = FieldUtilities::unpackRow(table, lhs_idx, sort_col_cnt, sort_key_width_bits+1);
-    Integer rhs_key = FieldUtilities::unpackRow(table, rhs_idx, sort_col_cnt, sort_key_width_bits+1);
-
-    // set MSB to 1 for all to avoid losing MSBs that are zero
-    lhs_key[sort_key_width_bits] = 1;
-    rhs_key[sort_key_width_bits] = 1;
-
-    return ((lhs_key > rhs_key) == dir);
-
-}
+//template <typename B>
+//Bit Sort<B>::swapTuplesNormalizedOmpc(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir, const int & sort_key_width_bits) {
+//
+//
+//    int sort_col_cnt = table->getSortOrder().size();
+//
+//    Integer lhs_key = FieldUtilities::unpackRow(table, lhs_idx, sort_col_cnt, sort_key_width_bits+1);
+//    Integer rhs_key = FieldUtilities::unpackRow(table, rhs_idx, sort_col_cnt, sort_key_width_bits+1);
+//
+//    // set MSB to 1 for all to avoid losing MSBs that are zero
+//    lhs_key[sort_key_width_bits] = 1;
+//    rhs_key[sort_key_width_bits] = 1;
+//
+//    return ((lhs_key > rhs_key) == dir);
+//
+//}
 
 template<typename B>
 bool Sort<B>::swapTuplesNormalized(const QueryTable<bool> *table, const int &lhs_idx, const int &rhs_idx,
