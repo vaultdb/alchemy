@@ -243,7 +243,6 @@ Bit Sort<B>::swapTuplesNormalizedOmpc(const QueryTable<Bit> *table, const int &l
 template<typename B>
 bool Sort<B>::swapTuplesNormalized(const QueryTable<bool> *table, const int &lhs_idx, const int &rhs_idx,
                                    const bool &dir, const int &sort_key_width_bits) {
-    assert(table->storageModel() == StorageModel::ROW_STORE);
     auto row_table = (RowTable<bool> *) table;
 
 
