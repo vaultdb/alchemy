@@ -60,7 +60,7 @@ namespace  vaultdb {
         Operator(Operator *lhs, Operator *rhs, const SortDefinition & sorted_on = SortDefinition());
         // cloning children, omitting parent so as to not copy entire tree
         Operator(const Operator &o) :
-            sort_definition_(o.sort_definition_), system_conf_(SystemConfiguration::getInstance()), output_schema_(o.output_schema_),
+            sort_definition_(o.sort_definition_), output_schema_(o.output_schema_), system_conf_(SystemConfiguration::getInstance()),
             operator_executed_(o.operator_executed_), output_cardinality_(o.output_cardinality_), operator_id_(o.operator_id_)  {
 
             if(o.lhs_child_ != nullptr) lhs_child_ = o.lhs_child_->clone();

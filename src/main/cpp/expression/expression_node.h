@@ -71,7 +71,7 @@ namespace vaultdb {
         }
          // needed for binary (lhs, rhs) invocation
         InputReference(const uint32_t & read_idx, const QuerySchema & lhs_schema, const QuerySchema & rhs_schema)
-                : ExpressionNode<B>(nullptr), binary_mode_(true), output_idx_(read_idx), read_idx_(read_idx) {
+                : ExpressionNode<B>(nullptr), output_idx_(read_idx), binary_mode_(true), read_idx_(read_idx) {
 
             if(rhs_schema.getFieldCount() == -1) { // empty placeholder on rhs, treat it like single QuerySchema input
                 binary_mode_ = false;

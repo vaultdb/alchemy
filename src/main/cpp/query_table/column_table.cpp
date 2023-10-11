@@ -475,8 +475,6 @@ bool ColumnTable<B>::operator==(const QueryTable<B> &other) const {
     }
 
 
-    QuerySchema *schema = const_cast<QuerySchema *>(&this->schema_);
-
     auto *lhs =  (ColumnTable<bool> *) this;
     auto *rhs = (ColumnTable<bool> *) &other;
 

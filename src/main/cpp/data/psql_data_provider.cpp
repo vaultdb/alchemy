@@ -35,11 +35,6 @@ PsqlDataProvider::getQueryTable(std::string db_name, std::string sql, bool has_d
 
 
     pqxx::row first_row = *(res.begin());
-    int col_cnt = first_row.size();
-    if(has_dummy_tag)
-        --col_cnt;
-
-
     size_t row_cnt = res.size();
 
     schema_ = getSchema(res, has_dummy_tag);

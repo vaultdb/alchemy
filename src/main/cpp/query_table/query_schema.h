@@ -26,7 +26,7 @@ namespace  vaultdb {
         std::map<int32_t, size_t> offsets_;
 
         QuerySchema()  : tuple_size_(0) {         } // empty setup
-        QuerySchema(const QuerySchema & s) : tuple_size_(s.tuple_size_),  offsets_(s.offsets_), fields_(s.fields_) { }
+        QuerySchema(const QuerySchema & s) :   fields_(s.fields_), tuple_size_(s.tuple_size_), offsets_(s.offsets_) { }
 
         // parse the CSV schema, e.g.,
         // (field1:INT,field2:float,...,fieldN:varchar(10))

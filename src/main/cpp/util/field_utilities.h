@@ -223,7 +223,6 @@ namespace vaultdb {
 
 
             Bit *cursor = dst.bits.data();
-            Bit *start = cursor;
             for(int i = 0; i < col_cnt; ++i) {
                 SecureField f = table->getPackedField(row, i);
                 QueryFieldDesc desc = schema.getField(i);
