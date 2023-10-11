@@ -23,14 +23,14 @@ QueryTable<B> *MergeJoin<B>::runSelf() {
     bool one_side_empty = (lhs_card == 0 || rhs_card == 0); // other input is empty
     bool two_sided_input = (lhs_card == rhs_card && lhs_card > 0);
     bool one_sided_input = (one_side_empty & one_non_empty);
-
+    int rhs_col_offset = this->output_->getSchema().getFieldCount() - rhs->getSchema().getFieldCount();
     if (two_sided_input) {
 
         B selected, dst_dummy_tag;
 
         for (int i = 0; i < this->output_cardinality_; ++i) {
-            Join<B>::write_left(this->output_, i, lhs, i);
-            Join<B>::write_right(this->output_, i, rhs, i);
+            this->output_->cloneRow(i, 0, lhs, i); // Join<B>::write_left(this->output_, i, lhs, i);
+            this->output_->cloneRow(i, rhs_col_offset, rhs, i); //  Join<B>::write_right(this->output_, i, rhs, i);
             selected = Join<B>::predicate_->call(lhs, i, rhs, i).template getValue<B>();
 
             if (or_dummy_tags_)
