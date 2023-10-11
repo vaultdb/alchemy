@@ -121,7 +121,7 @@ namespace  vaultdb {
             assert(this->isEncrypted());
             Bit *src = (Bit *) getFieldPtr(row, 0);
             Integer dst(selection_length_bits, 0, PUBLIC);
-            memcpy(src, dst.bits.data(), selection_length_bits * TypeUtilities::getEmpBitSize());
+            memcpy(dst.bits.data(), src, selection_length_bits * TypeUtilities::getEmpBitSize());
             return dst;
         }
 
