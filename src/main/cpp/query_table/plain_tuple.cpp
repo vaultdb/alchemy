@@ -74,7 +74,7 @@ bool QueryTuple<bool>::operator==(const PlainTuple &other) const {
     // if both dummies, then ok
     if(this->getDummyTag() && other.getDummyTag()) return true;
 
-    for(size_t i = 0; i < schema_->getFieldCount(); ++i) {
+    for(int i = 0; i < schema_->getFieldCount(); ++i) {
         PlainField lhs_field = getField(i);
         PlainField  rhs_field = other.getField(i);
         if(lhs_field != rhs_field) {
@@ -100,7 +100,7 @@ string QueryTuple<bool>::toString(const bool &showDummies) const {
         f = getField(0);
         sstream <<   "(" <<  f;
 
-        for (size_t i = 1; i < schema_->getFieldCount(); ++i) {
+        for (int i = 1; i < schema_->getFieldCount(); ++i) {
             f = getField(i);
             sstream << ", " << f;
 

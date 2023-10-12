@@ -86,7 +86,7 @@ QuerySchema CsvReader::convertDatesToLong(const QuerySchema &input_schema) {
     QuerySchema dst_schema(input_schema);
 
     // replace dates with LONG
-    for(size_t i = 0; i < input_schema.getFieldCount(); ++i) {
+    for(int i = 0; i < input_schema.getFieldCount(); ++i) {
         if(input_schema.getField(i).getType() == FieldType::DATE) {
             QueryFieldDesc dst_field_desc(input_schema.getField(i), FieldType::LONG);
             dst_schema.putField(dst_field_desc);

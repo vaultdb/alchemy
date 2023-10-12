@@ -356,7 +356,7 @@ void PlanParser<B>::calculateAutoAggregate() {
             SortMergeAggregate<B> *real_sma = new SortMergeAggregate<B>(child, group_by_ordinals, aggregators, effective_sort, sma_vector_[i]->getCardinalityBound());
             operators_[agg_id_[i]] = real_sma;
 
-            if(agg_id_[i] + 1 == operators_.size())
+            if(agg_id_[i] + 1 == (int) operators_.size())
                 root_ = real_sma;
 
         } else {  // type == NestedLoopAggregate
@@ -368,14 +368,14 @@ void PlanParser<B>::calculateAutoAggregate() {
             NestedLoopAggregate<B> *real_nla = new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, effective_sort, cardBound);
             operators_[agg_id_[i]] = real_nla;
 
-            if(agg_id_[i] + 1 == operators_.size())
+            if(agg_id_[i] + 1 == (int) operators_.size())
                 root_ = real_nla;
         }
 
         operators_.at(agg_id_[i])->setOperatorId(agg_id_[i]);
 
         // set the parent of the next operator to this one
-        if (agg_id_[i] + 1 < operators_.size()){
+        if (agg_id_[i] + 1 < (int) operators_.size()){
             operators_[agg_id_[i] + 1]->setChild(operators_[agg_id_[i]]);
             operators_[agg_id_[i]]->setParent(operators_[agg_id_[i] + 1]);
         }
@@ -768,7 +768,7 @@ Operator<B> *PlanParser<B>::parseProjection(const int &operator_id, const ptree 
     QuerySchema schema = p->getOutputSchema();
 
     // add field names
-    if(output_names.size() == schema.getFieldCount()) {
+    if(output_names.size() == (size_t) schema.getFieldCount()) {
         for(int i = 0; i < schema.getFieldCount(); ++i) {
             QueryFieldDesc f = schema.getField(i);
             f.setName(f.getTableName(), output_names[i]);
@@ -1179,7 +1179,7 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
                     int lhs_col_cnt = lhs->getOutputSchema().getFieldCount();
                     SortDefinition lhs_sort = lhs->getSortOrder();
 
-                    for (int i = 0; i < join_key_idxs.size(); ++i) {
+                    for (size_t i = 0; i < join_key_idxs.size(); ++i) {
                         int idx = join_key_idxs[i].second;
                         rhs_sort.emplace_back(ColumnSort(idx - lhs_col_cnt, lhs_sort[i].second));
                     }
@@ -1203,7 +1203,7 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
                     vector<ColumnSort> lhs_sort;
                     SortDefinition rhs_sort = rhs->getSortOrder();
 
-                    for (int i = 0; i < join_key_idxs.size(); ++i) {
+                    for (size_t i = 0; i < join_key_idxs.size(); ++i) {
                         int idx = join_key_idxs[i].first;
                         lhs_sort.emplace_back(ColumnSort(idx, rhs_sort[i].second));
                     }
@@ -1248,7 +1248,7 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
                 int lhs_col_cnt = lhs->getOutputSchema().getFieldCount();
                 SortDefinition lhs_sort = lhs->getSortOrder();
 
-                for (int i = 0; i < join_key_idxs.size(); ++i) {
+                for (size_t i = 0; i < join_key_idxs.size(); ++i) {
                     int idx = join_key_idxs[i].second;
                     rhs_sort.emplace_back(ColumnSort(idx - lhs_col_cnt, lhs_sort[i].second));
                 }
@@ -1280,7 +1280,7 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
                 vector<ColumnSort> lhs_sort;
                 SortDefinition rhs_sort = rhs->getSortOrder();
 
-                for (int i = 0; i < join_key_idxs.size(); ++i) {
+                for (size_t i = 0; i < join_key_idxs.size(); ++i) {
                     int idx = join_key_idxs[i].first;
                     lhs_sort.emplace_back(ColumnSort(idx, rhs_sort[i].second));
                 }

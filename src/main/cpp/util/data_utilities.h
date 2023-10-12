@@ -76,7 +76,7 @@ namespace vaultdb {
 //        static emp::Integer toEmpInteger(const vector<int8_t> & src_bytes);
         static string printBitArray(const bool* bits, const size_t & bit_cnt) {
             std::stringstream ss;
-            for(int i = 0; i < bit_cnt; ++i) {
+            for(size_t i = 0; i < bit_cnt; ++i) {
                 if(i % 8 == 0) ss << " ";
                 ss << ((bits[i]) ? "1" : "0");
             }

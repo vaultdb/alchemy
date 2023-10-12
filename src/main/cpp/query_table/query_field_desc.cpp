@@ -188,7 +188,7 @@ void QueryFieldDesc::initializeFieldSizeWithCardinality(int cardinality) {
 
 // keep this in the cpp to avoid dependency loop in compilation
 bool QueryFieldDesc::bitPacked() const {
-     return field_size_ != TypeUtilities::getTypeSize(type_);
+     return field_size_ != (int) TypeUtilities::getTypeSize(type_);
 }
 
 

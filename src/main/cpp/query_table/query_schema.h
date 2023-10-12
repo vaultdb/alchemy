@@ -39,7 +39,7 @@ namespace  vaultdb {
         inline void  putField(const QueryFieldDesc &fd) {     fields_[fd.getOrdinal()]  = fd; }
 
         inline void setSchema(const QuerySchema & s) {
-            for (size_t i = 0; i < s.getFieldCount(); i++) {
+            for (int i = 0; i < s.getFieldCount(); i++) {
                 fields_[i] = s.getField(i);
             }
 
@@ -56,7 +56,7 @@ namespace  vaultdb {
             s << "(";
             if(getFieldCount() > 0) {
                 s << fields_.at(0).prettyPrint();
-                for (size_t i = 1; i < getFieldCount(); i++) {
+                for (int i = 1; i < getFieldCount(); i++) {
                     s  << ", " << fields_.at(i).prettyPrint();
                 }
             }
