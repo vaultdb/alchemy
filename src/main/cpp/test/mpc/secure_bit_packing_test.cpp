@@ -210,56 +210,8 @@ int main(int argc, char **argv) {
 
 	::testing::GTEST_FLAG(filter)=FLAGS_filter;
 
-    /*
-    if(FLAGS_bitpacking == "packed") {
-        switch(FLAGS_query) {
-            case 1:
-                ::testing::GTEST_FLAG(filter) = "SecureBitPackingTest.tpch_q1";
-                break;
-            case 2:
-                ::testing::GTEST_FLAG(filter) = "SecureBitPackingTest.tpch_q3";
-                break;
-            case 3:
-                ::testing::GTEST_FLAG(filter) = "SecureBitPackingTest.tpch_q5";
-                break;
-            case 4:
-                ::testing::GTEST_FLAG(filter) = "SecureBitPackingTest.tpch_q8";
-                break;
-            case 5:
-                ::testing::GTEST_FLAG(filter) = "SecureBitPackingTest.tpch_q9";
-                break;
-            case 6:
-                ::testing::GTEST_FLAG(filter) = "SecureBitPackingTest.tpch_q18";
-                break;
-            default:
-                // Handle unknown type
-                break;
-        }
-    } else {
-        switch(FLAGS_query) {
-            case 1:
-                ::testing::GTEST_FLAG(filter) = "SecureBitPackingTest.tpch_q1_non_bitpacked";
-                break;
-            case 2:
-                ::testing::GTEST_FLAG(filter) = "SecureBitPackingTest.tpch_q3_non_bitpacked";
-                break;
-            case 3:
-                ::testing::GTEST_FLAG(filter) = "SecureBitPackingTest.tpch_q5_non_bitpacked";
-                break;
-            case 4:
-                ::testing::GTEST_FLAG(filter) = "SecureBitPackingTest.tpch_q8_non_bitpacked";
-                break;
-            case 5:
-                ::testing::GTEST_FLAG(filter) = "SecureBitPackingTest.tpch_q9_non_bitpacked";
-                break;
-            case 6:
-                ::testing::GTEST_FLAG(filter) = "SecureBitPackingTest.tpch_q18_non_bitpacked";
-                break;
-            default:
-                // Handle unknown type
-                break;
-        }
-    }
-    */
-    return RUN_ALL_TESTS();
+    int i = RUN_ALL_TESTS();
+    google::ShutDownCommandLineFlags();
+    return i;
+
 }

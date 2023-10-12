@@ -5,7 +5,7 @@
 #include "query_table/table_factory.h"
 
 DEFINE_int32(cutoff, 100, "limit clause for queries");
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_string(storage, "column", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 class SortTest : public PlainBaseTest {};
@@ -64,7 +64,7 @@ TEST_F(SortTest, tpchQ3Sort) {
 
     auto sort = new Sort<bool>(input, sort_def);
     auto observed = sort->run();
-
+    cout << "Observed: " << *observed << endl;
     ASSERT_TRUE(DataUtilities::verifyCollation(observed));
 }
 
@@ -227,6 +227,8 @@ int main(int argc, char **argv) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
 
 	::testing::GTEST_FLAG(filter)=FLAGS_filter;
-    return RUN_ALL_TESTS();
+    int i = RUN_ALL_TESTS();
+    google::ShutDownCommandLineFlags();
+    return i;
 }
 

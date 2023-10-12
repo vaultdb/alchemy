@@ -102,7 +102,9 @@ TEST_F(TpcHTest, tpch_q18) {
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
+    int i = RUN_ALL_TESTS();
+    google::ShutDownCommandLineFlags();
+    return i;
 
-    return RUN_ALL_TESTS();
 }
 

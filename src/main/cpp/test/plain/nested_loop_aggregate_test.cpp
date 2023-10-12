@@ -310,6 +310,9 @@ int main(int argc, char **argv) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
 
 	::testing::GTEST_FLAG(filter)=FLAGS_filter;
-    return RUN_ALL_TESTS();
+    int i = RUN_ALL_TESTS();
+    google::ShutDownCommandLineFlags();
+    return i;
+
 }
 
