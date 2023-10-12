@@ -758,9 +758,6 @@ SecureTable *KeyedSortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, 
     weight_idx_ = schema.getFieldCount() - 2;
 
 
-    bool table_id = !(is_lhs);
-    // should always be false
-    bool is_foreign_key = (table_id == foreign_key_input_);
 
     Integer zero = zero_.getValue<Integer>();
     Integer one = one_.getValue<Integer>();
@@ -793,9 +790,6 @@ SecureTable *KeyedSortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, 
     tmp_row.setField(is_new_idx_, SecureField(bool_field_type_, one_b));
     // initialize it to first row in dst_table
     memcpy(tmp_row.getData(), ((RowTable<Bit> *) dst_table)->tuple_data_.data(), dst_table->tuple_size_bytes_);
-
-
-	size_t start_gates = this->system_conf_.andGateCount();
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
         Bit is_new_bit = dst_table->getField(i, is_new_idx_).getValue<Bit>();

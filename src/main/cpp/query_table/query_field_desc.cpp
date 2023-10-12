@@ -11,7 +11,7 @@ using namespace vaultdb;
 QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, const FieldType &type)
         : field_name_(f.field_name_), table_name_(f.table_name_),
           string_length_(f.getStringLength()),
-          type_(type), ordinal_(f.ordinal_), bit_packed_size_(f.bit_packed_size_), field_min_(f.field_min_), secure_field_min_(f.secure_field_min_), packed_wires_(f.packed_wires_)  { // carry over bit packed size
+          type_(type), ordinal_(f.ordinal_), field_min_(f.field_min_), secure_field_min_(f.secure_field_min_), bit_packed_size_(f.bit_packed_size_), packed_wires_(f.packed_wires_)  { // carry over bit packed size
     initializeFieldSize();
 }
 
@@ -22,9 +22,8 @@ QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, const int &  col_num)
         string_length_(f.string_length_),
         type_(f.type_), ordinal_(col_num),
         field_size_(f.field_size_),
-        bit_packed_size_(f.field_size_),
         field_min_(f.field_min_),
-        secure_field_min_(f.secure_field_min_), packed_wires_(f.packed_wires_)  {
+        secure_field_min_(f.secure_field_min_), bit_packed_size_(f.field_size_), packed_wires_(f.packed_wires_)  {
 }
 
 QueryFieldDesc::QueryFieldDesc(const int & ordinal, const string &col_name, const string &table_name, const FieldType &type,

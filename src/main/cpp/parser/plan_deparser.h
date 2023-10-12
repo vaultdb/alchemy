@@ -13,7 +13,7 @@ using namespace std;
 using boost::property_tree::ptree;
 using boost::property_tree::basic_ptree;
 
-namespace pt = boost::property_tree;
+//namespace pt = boost::property_tree;
 
 namespace vaultdb {
 // converts a query tree into a JSON plan
@@ -36,32 +36,32 @@ namespace vaultdb {
     private:
         string json_plan_;
         Operator<B> *root_;
-        pt::ptree rels_;
+        ptree rels_;
 
         void deparseTree();
         void deparseTreeHelper(const Operator<B> *node);
 
-        pt::ptree deparseNode(const Operator<B> *node);
-        pt::ptree deparseCollation(const SortDefinition & sort);
+        ptree deparseNode(const Operator<B> *node);
+        ptree deparseCollation(const SortDefinition & sort);
 
-        pt::ptree deparseSecureSqlInput(const Operator<B> *input);
-        pt::ptree deparseSort(const Operator<B> *sort);
-        pt::ptree deparseNestedLoopJoin(const Operator<B> *join);
-        pt::ptree deparseFilter(const Operator<B> *filter);
-        pt::ptree deparseProject(const Operator<B> *project);
-        pt::ptree deparseTableInput(const Operator<B> *input);
-        pt::ptree deparseCsvInput(const Operator<B> *input);
-        pt::ptree deparseUnion(const Operator<B> *input);
-        pt::ptree deparseShrinkwrap(const Operator<B> *input);
-        pt::ptree deparseSortMergeAggregate(const Operator<B> *input);
-        pt::ptree deparseNestedLoopAggregate(const Operator<B> *input);
-        pt::ptree deparseKeyedSortMergeJoin(const Operator<B> *input);
-        pt::ptree deparseMergeJoin(const Operator<B> *input);
-        pt::ptree deparseKeyedNestedLoopJoin(const Operator<B> *input);
-        pt::ptree deparseSqlInput(const Operator<B> *input);
-        pt::ptree deparseZkSqlInput(const Operator<B> *input);
-        pt::ptree deparseScalarAggregate(const Operator<B> *agg);
-        pt::ptree deparseMergeInput(const Operator<B> *input);
+        ptree deparseSecureSqlInput(const Operator<B> *input);
+        ptree deparseSort(const Operator<B> *sort);
+        ptree deparseNestedLoopJoin(const Operator<B> *join);
+        ptree deparseFilter(const Operator<B> *filter);
+        ptree deparseProject(const Operator<B> *project);
+        ptree deparseTableInput(const Operator<B> *input);
+        ptree deparseCsvInput(const Operator<B> *input);
+        ptree deparseUnion(const Operator<B> *input);
+        ptree deparseShrinkwrap(const Operator<B> *input);
+        ptree deparseSortMergeAggregate(const Operator<B> *input);
+        ptree deparseNestedLoopAggregate(const Operator<B> *input);
+        ptree deparseKeyedSortMergeJoin(const Operator<B> *input);
+        ptree deparseMergeJoin(const Operator<B> *input);
+        ptree deparseKeyedNestedLoopJoin(const Operator<B> *input);
+        ptree deparseSqlInput(const Operator<B> *input);
+        ptree deparseZkSqlInput(const Operator<B> *input);
+        ptree deparseScalarAggregate(const Operator<B> *agg);
+        ptree deparseMergeInput(const Operator<B> *input);
 
         void validateTree();
         void validateTreeHelper(Operator<B> *node, map<int, int> & known_ids);
@@ -79,10 +79,10 @@ namespace vaultdb {
             return fields;
         }
 
-        pt::ptree deparseSchema(const QuerySchema & schema);
+        ptree deparseSchema(const QuerySchema & schema);
 
         ptree deparseJoin(const Join<B> *join, const string &algo_name, const int &foreign_key_reln) {
-            pt::ptree join_node;
+            ptree join_node;
             writeHeader(join_node, join, "LogicalJoin");
             join_node.put("operator-algorithm", algo_name);
             if(foreign_key_reln == 0 || foreign_key_reln == 1) {
@@ -117,21 +117,21 @@ namespace vaultdb {
        }
 
        ptree deparseGroupByAggregate(GroupByAggregate<B> *agg, const string & algo_name) {
-           pt::ptree gb_agg_node;
+           ptree gb_agg_node;
            writeHeader(gb_agg_node, agg, "LogicalAggregate");
            gb_agg_node.put("operator-algorithm", algo_name);
            gb_agg_node.put<int>("cardinality-bound", agg->getCardinalityBound());
 
-           pt::ptree group_bys;
+           ptree group_bys;
            for(auto col : agg->group_by_) {
-               pt::ptree col_ordinal;
+               ptree col_ordinal;
                col_ordinal.put_value(col);
                group_bys.push_back(std::make_pair("", col_ordinal));
            }
 
            gb_agg_node.add_child("group", group_bys);
 
-            pt::ptree aggregates;
+            ptree aggregates;
             for(ScalarAggregateDefinition agg_def : agg->aggregate_definitions_) {
                 ptree agg_node = ScalarAggregateDefinition::aggregateDefinitionToPTree(agg_def, agg->getOutputSchema());
                 aggregates.push_back(std::make_pair("", agg_node));

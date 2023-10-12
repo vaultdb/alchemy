@@ -14,7 +14,7 @@ namespace vaultdb {
     template<typename B>
     class ExpressionCostModel : public ExpressionVisitor<B> {
     public:
-        ExpressionCostModel(ExpressionNode<B> *root, const QuerySchema & input_schema) : cumulative_cost_(0L), input_schema_(input_schema) {
+        ExpressionCostModel(ExpressionNode<B> *root, const QuerySchema & input_schema) : input_schema_(input_schema), cumulative_cost_(0L) {
             root->accept(this);
         }
 
@@ -139,10 +139,10 @@ namespace vaultdb {
        }
 
         inline static size_t getDivisionCost(const QueryFieldDesc & field) {
-            int field_size = field.size();
-            if(field.bitPacked()) {
-                field_size += 1; // +1 for sign bit
-            }
+//            int field_size = field.size();
+//            if(field.bitPacked()) {
+//                field_size += 1; // +1 for sign bit
+//            }
 
             switch(field.getType()) {
                 case FieldType::SECURE_INT:

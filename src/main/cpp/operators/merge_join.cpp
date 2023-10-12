@@ -54,7 +54,7 @@ QueryTable<B> *MergeJoin<B>::runSelf() {
         }
 
         for(int i = 0; i < this->getOutputCardinality(); ++i) {
-            Join<B>::write_left(this->output_, i, non_empty, i);
+            this->output_->cloneRow(i, 0, non_empty, i); // Join<B>::write_left(this->output_, i, non_empty, i);
             this->output_->setDummyTag(i, non_empty->getDummyTag(i));
         }
 

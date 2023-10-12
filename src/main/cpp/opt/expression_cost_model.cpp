@@ -160,7 +160,6 @@ void ExpressionCostModel<B>::comparison(ExpressionNode<B> *node) {
 
     assert(left_field_desc.getType() == right_field_desc.getType());
 
-    int field_size = TypeUtilities::getTypeSize(left_field_desc.getType());
     if(right_field_desc.bitPacked() || left_field_desc.bitPacked()) {
         size_t field_size = min(left_field_desc.size(), right_field_desc.size()) + 1;
         cumulative_cost_ += field_size;

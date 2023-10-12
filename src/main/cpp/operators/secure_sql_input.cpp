@@ -7,11 +7,9 @@
 using namespace vaultdb;
 using namespace std;
 
-SecureSqlInput::SecureSqlInput(const string & db, const string & sql, const bool & dummy_tag, const size_t &input_tuple_limit) :
-                                                                             input_query_(sql), db_name_(db),
-                                                                             has_dummy_tag_(dummy_tag),
-                                                                             input_tuple_limit_(input_tuple_limit),
-                                                                             original_input_query_(sql) {
+SecureSqlInput::SecureSqlInput(const string & db, const string & sql, const bool & dummy_tag, const size_t &input_tuple_limit) : original_input_query_(sql), input_query_(sql), db_name_(db),  has_dummy_tag_(dummy_tag),
+                                                                             input_tuple_limit_(input_tuple_limit)
+                                                                             {
     runQuery();
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
@@ -22,8 +20,8 @@ SecureSqlInput::SecureSqlInput(const string & db, const string & sql, const bool
 
 // assume that sql is sorted on given sort definition
 SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &dummy_tag,  const SortDefinition &sort_def, const size_t & input_tuple_limit) :
-        Operator(sort_def),  input_query_(sql), db_name_(db), has_dummy_tag_(dummy_tag), input_tuple_limit_(input_tuple_limit),
-        original_input_query_(sql), original_collation_(sort_def) {
+        Operator(sort_def), original_input_query_(sql), original_collation_(sort_def), input_query_(sql), db_name_(db), has_dummy_tag_(dummy_tag),
+         input_tuple_limit_(input_tuple_limit) {
 
     runQuery();
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
@@ -34,8 +32,8 @@ SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &
 }
 
 SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &dummy_tag, const int &input_party, const size_t & input_tuple_limit, const SortDefinition &sort_def) :
-        Operator(sort_def),  input_query_(sql), db_name_(db), has_dummy_tag_(dummy_tag), input_tuple_limit_(input_tuple_limit), input_party_(input_party),
-        original_input_query_(sql), original_collation_(sort_def) {
+        Operator(sort_def),  original_input_query_(sql), original_collation_(sort_def), input_query_(sql), db_name_(db), has_dummy_tag_(dummy_tag), input_party_(input_party), input_tuple_limit_(input_tuple_limit)
+         {
 
     runQuery();
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());

@@ -19,8 +19,7 @@ using namespace vaultdb;
 
 std::string Utilities::getCurrentWorkingDirectory() {
     char cwd[PATH_MAX];
-    char * ret = getcwd(cwd, sizeof(cwd));
-    ++ret; // for compile-time warnings
+    getcwd(cwd, sizeof(cwd));
 
     std::string  currentWorkingDirectory = std::string(cwd);
     std::string suffix = currentWorkingDirectory.substr(currentWorkingDirectory.length() - 4, 4);

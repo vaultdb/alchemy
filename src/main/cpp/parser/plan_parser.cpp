@@ -449,7 +449,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     SortDefinition effective_sort;
     if(aggregate_json.count("effective-collation") > 0) {
         boost::property_tree::ptree sort_payload = aggregate_json.get_child("effective-collation");
-        int limit = -1;
+//        int limit = -1;
 
         for (ptree::const_iterator it = sort_payload.begin(); it != sort_payload.end(); ++it) {
             ColumnSort cs;
@@ -586,8 +586,8 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
             size_t nlj_cost = OperatorCostModel::operatorCost((SecureOperator *) nlj);
 
             auto join_key_idxs = smj->joinKeyIdxs();
-            bool lhs_sort_compatible = smj->sortCompatible(lhs);
-            bool rhs_sort_compatible = smj->sortCompatible(rhs);
+//            bool lhs_sort_compatible = smj->sortCompatible(lhs);
+//            bool rhs_sort_compatible = smj->sortCompatible(rhs);
 
             delete nlj;
             delete smj;
@@ -794,7 +794,6 @@ template<typename B>
 Operator<B> *PlanParser<B>::parseLocalScan(const int & operator_id, const boost::property_tree::ptree &local_scan_tree) {
     string sql = "";
     int input_party = 0;
-    bool multiple_sort_ = false;
     B plain_has_dummy_tag = false;
     string merge_sql = "", op_algo = "";
     int local_tuple_limit = input_limit_;
@@ -1233,10 +1232,10 @@ void PlanParser<B>::recurseJoin(Operator<B> *join) {
             smj->setChild(rhs, 1);
             smj->updateCollation();
 
-            Expression<B> *predicate;
+//            Expression<B> *predicate;
             int foreign_key = smj->foreignKeyChild();
             int operatorId = smj->getOperatorId();
-            bool new_smj_flag = false;
+//            bool new_smj_flag = false;
 
             // check sort compatibility for SMJ
 

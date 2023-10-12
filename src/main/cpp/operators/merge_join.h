@@ -47,7 +47,7 @@ namespace  vaultdb {
             auto lhs_collation = lhs->getSortOrder();
             auto rhs_collation = rhs->getSortOrder();
             assert(lhs_collation.size() == rhs_collation.size());
-            for(int i = 0; i < lhs_collation.size(); ++i) {
+            for(size_t i = 0; i < lhs_collation.size(); ++i) {
                 assert(lhs_collation[i] == rhs_collation[i]);
             }
 

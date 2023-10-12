@@ -12,8 +12,6 @@ namespace  vaultdb {
 
     class SqlInput : public Operator<bool> {
 
-    protected:
-        StorageModel storage_model_ = SystemConfiguration::getInstance().storageModel();
 
     public:
         // bool denotes whether the last col of the SQL statement should be interpreted as a dummy tag

@@ -18,14 +18,6 @@ namespace  vaultdb {
         Join(const Join<B> & src) : Operator<B>(src), predicate_(src.predicate_->clone()) {}
         ~Join() { if(predicate_ != nullptr) delete predicate_; }
 
-        // if B write is true, then write to the left side of an output tuple with src_tuple
-        static void write_left(const B & write, QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
-        static void write_left(QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
-
-
-        static void write_right(const B & write, QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
-        static void write_right(QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
-
         Expression<B> *getPredicate() const { return predicate_; }
 
 

@@ -18,10 +18,10 @@ namespace vaultdb {
         SortDefinition effective_sort_;
 
 
-        GroupByAggregate(const GroupByAggregate<B> & src) : Operator<B>(src), aggregate_definitions_(src.aggregate_definitions_), group_by_(src.group_by_), cardinality_bound_(src.cardinality_bound_), effective_sort_(src.effective_sort_) {}
+        GroupByAggregate(const GroupByAggregate<B> & src) : Operator<B>(src), aggregate_definitions_(src.aggregate_definitions_), group_by_(src.group_by_), effective_sort_(src.effective_sort_), cardinality_bound_(src.cardinality_bound_) {}
 
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys, const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & effective_sort = SortDefinition(), const int & cardinality_bound = -1)
-            : Operator<B>(child),  aggregate_definitions_(aggregates), group_by_(group_bys), cardinality_bound_(cardinality_bound), effective_sort_(effective_sort) {
+            : Operator<B>(child),  aggregate_definitions_(aggregates), group_by_(group_bys), effective_sort_(effective_sort), cardinality_bound_(cardinality_bound) {
             if(cardinality_bound == -1) {
                 cardinality_bound_ = child->getOutputCardinality();
             }
@@ -29,7 +29,7 @@ namespace vaultdb {
         }
 
         GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys, const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & effective_sort = SortDefinition(), const int & cardinality_bound = -1)
-                : Operator<B>(child),  aggregate_definitions_(aggregates), group_by_(group_bys), cardinality_bound_(cardinality_bound), effective_sort_(effective_sort)
+                : Operator<B>(child),  aggregate_definitions_(aggregates), group_by_(group_bys), effective_sort_(effective_sort), cardinality_bound_(cardinality_bound)
         {
             if(cardinality_bound == -1) {
                 cardinality_bound_ = child->getTupleCount();
@@ -48,7 +48,7 @@ namespace vaultdb {
 
         // for use in plan parser before GroupByAggregate object constructed
         static bool sortCompatible(const SortDefinition & input_sort, const vector<int> & group_by, const SortDefinition & effective_sort = SortDefinition()) {
-            int col_cnt = (effective_sort.empty()) ? group_by.size() : effective_sort.size();
+            size_t col_cnt = (effective_sort.empty()) ? group_by.size() : effective_sort.size();
 
             if(input_sort.size() < col_cnt)
                 return false;
@@ -59,7 +59,7 @@ namespace vaultdb {
                     // effective_sort is output sort
                     int out_col_idx = effective_sort[idx].first;
                     int in_col_idx = -1;
-                    for(int i = 0; i < group_by.size(); ++i) {
+                    for(size_t i = 0; i < group_by.size(); ++i) {
                         if(out_col_idx == group_by[i]) {
                             in_col_idx = group_by[i];
                             break;
@@ -75,7 +75,7 @@ namespace vaultdb {
                 return true;
             } // end effective sort case
 
-            for(int i = 0; i < col_cnt; ++i) {
+            for(size_t i = 0; i < col_cnt; ++i) {
                 if(group_by[i] != input_sort[i].first) {
                     return false;
                 }
@@ -106,12 +106,12 @@ namespace vaultdb {
         inline string getParameters() const override {
             stringstream  ss;
             ss << "group-by: (" << group_by_[0];
-            for(uint32_t i = 1; i < group_by_.size(); ++i)
+            for(size_t i = 1; i < group_by_.size(); ++i)
                 ss << ", " << group_by_[i];
 
             ss << ") aggs: (" << aggregate_definitions_[0].toString();
 
-            for(uint32_t i = 1; i < aggregate_definitions_.size(); ++i) {
+            for(size_t i = 1; i < aggregate_definitions_.size(); ++i) {
                 ss << ", " << aggregate_definitions_[i].toString();
             }
 

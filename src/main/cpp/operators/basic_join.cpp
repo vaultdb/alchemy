@@ -24,7 +24,6 @@ QueryTable<B> *BasicJoin<B>::runSelf() {
     QueryTable<B> *lhs = Operator<B>::getChild(0)->getOutput();
     lhs->pinned_ = true;
     QueryTable<B> *rhs = Operator<B>::getChild(1)->getOutput();
-    B predicate_eval;
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();

@@ -62,16 +62,16 @@ namespace vaultdb {
         }
 
         InputReference(const uint32_t & read_idx, const QueryFieldDesc &schema)
-                : ExpressionNode<B>(nullptr),  output_idx_(read_idx_), read_idx_(read_idx) {
+                : ExpressionNode<B>(nullptr), read_idx_(read_idx),  output_idx_(read_idx_) {
             this->output_schema_ = schema;
         }
         InputReference(const uint32_t & read_idx, const QuerySchema &schema)
-            : ExpressionNode<B>(nullptr), output_idx_(read_idx), read_idx_(read_idx) {
+            : ExpressionNode<B>(nullptr), read_idx_(read_idx), output_idx_(read_idx) {
             this->output_schema_ = schema.getField(read_idx);
         }
          // needed for binary (lhs, rhs) invocation
         InputReference(const uint32_t & read_idx, const QuerySchema & lhs_schema, const QuerySchema & rhs_schema)
-                : ExpressionNode<B>(nullptr), output_idx_(read_idx), binary_mode_(true), read_idx_(read_idx) {
+                : ExpressionNode<B>(nullptr), read_idx_(read_idx), output_idx_(read_idx), binary_mode_(true) {
 
             if(rhs_schema.getFieldCount() == -1) { // empty placeholder on rhs, treat it like single QuerySchema input
                 binary_mode_ = false;
@@ -141,13 +141,13 @@ namespace vaultdb {
     public:
         PackedInputReference(const PackedInputReference<B> & src)
                 : ExpressionNode<B>(nullptr), read_idx_(src.read_idx_),
-                  binary_mode_(src.binary_mode_), output_idx_(src.output_idx_), read_lhs_(src.read_lhs_) {
+                   output_idx_(src.output_idx_), binary_mode_(src.binary_mode_), read_lhs_(src.read_lhs_) {
             this->output_schema_ = src.output_schema_;
         }
 
         PackedInputReference(const InputReference<B> & src)
-                : ExpressionNode<B>(nullptr), read_idx_(src.read_idx_),
-                  binary_mode_(src.binary_mode_), output_idx_(src.output_idx_), read_lhs_(src.read_lhs_) {
+                : ExpressionNode<B>(nullptr), read_idx_(src.read_idx_), output_idx_(src.output_idx_),
+                  binary_mode_(src.binary_mode_), read_lhs_(src.read_lhs_) {
             this->output_schema_ = src.output_schema_;
         }
 
@@ -186,7 +186,7 @@ namespace vaultdb {
             if(other.kind() != ExpressionKind::PACKED_INPUT_REF) {
                 return false;
             }
-            const PackedInputReference<B> &other_ref = static_cast<const PackedInputReference<B> &>(other);
+            auto other_ref = static_cast<const PackedInputReference<B> &>(other);
             return (other_ref.read_idx_ == read_idx_) && (other_ref.output_idx_ == output_idx_) &&
                    (other_ref.binary_mode_ == binary_mode_) && (other_ref.read_lhs_ == read_lhs_);
         }

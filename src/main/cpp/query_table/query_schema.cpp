@@ -132,7 +132,6 @@ void QuerySchema::initializeFieldOffsets()  {
     size_t running_offset = 0L;
     bool is_secure = TypeUtilities::isEncrypted(fields_[0].getType());
     // empty query table
-    EmpMode mode = SystemConfiguration::getInstance().emp_mode_;
     bool wire_packing = SystemConfiguration::getInstance().wire_packing_enabled_;
 
     // empty query table

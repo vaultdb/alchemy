@@ -7,7 +7,7 @@ using namespace vaultdb;
 
 // run this eagerly to get the schema
 SqlInput::SqlInput(std::string db, std::string sql, bool dummy_tag)
-  :  Operator<bool>(), input_query_(sql), db_name_(db), dummy_tagged_(dummy_tag), tuple_limit_(0), original_input_query_(sql) {
+  :  Operator<bool>(), input_query_(sql), original_input_query_(sql), db_name_(db),   dummy_tagged_(dummy_tag), tuple_limit_(0) {
     runQuery();
     output_schema_ = output_->getSchema();
     this->output_cardinality_ = this->output_->getTupleCount();
@@ -16,7 +16,7 @@ SqlInput::SqlInput(std::string db, std::string sql, bool dummy_tag)
 
 SqlInput::SqlInput(std::string db, std::string sql, bool dummy_tag, const SortDefinition &sort_def,
                    const size_t &tuple_limit) :
-        Operator<bool>(sort_def), input_query_(sql), db_name_(db), dummy_tagged_(dummy_tag), tuple_limit_(tuple_limit), original_input_query_(sql), original_collation_(sort_def) {
+        Operator<bool>(sort_def), input_query_(sql), original_input_query_(sql),  db_name_(db), original_collation_(sort_def), dummy_tagged_(dummy_tag),  tuple_limit_(tuple_limit){
 
     runQuery();
     output_schema_ = output_->getSchema();

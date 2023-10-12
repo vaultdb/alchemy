@@ -28,10 +28,10 @@ void PlanDeparser<B>::deparseTree() {
 
 
     deparseTreeHelper(root_);
-    pt::ptree base_node;
+    ptree base_node;
     base_node.add_child("rels", rels_);
     stringstream ss;
-    pt::write_json(ss, base_node);
+    write_json(ss, base_node);
     json_plan_ = ss.str();
 
     vector<string> search_strs = {"\"dummy-tag\"", "\"party\"", "\"input-limit\"", "\"field\"", "\"input\"", "\"foreign-key\"", "\"nullable\"", " \"literal\"", "precision", "\"scale\"", "\"output-cardinality\"", "\"no-op\""};
@@ -52,7 +52,7 @@ void PlanDeparser<B>::deparseTreeHelper(const Operator<B> *node) {
 
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseNode(const Operator<B> *node) {
+ptree PlanDeparser<B>::deparseNode(const Operator<B> *node) {
 
     switch(node->getType()) {
         case OperatorType::TABLE_INPUT:
@@ -98,10 +98,10 @@ pt::ptree PlanDeparser<B>::deparseNode(const Operator<B> *node) {
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseCollation(const SortDefinition &sort) {
-    pt::ptree  collation;
+ptree PlanDeparser<B>::deparseCollation(const SortDefinition &sort) {
+    ptree  collation;
     for(auto col_sort : sort) {
-        pt::ptree col;
+        ptree col;
         col.put("field", col_sort.first);
         col.put("direction", col_sort.second == SortDirection::ASCENDING ? "ASCENDING" : "DESCENDING");
         collation.push_back(std::make_pair("", col));
@@ -110,10 +110,10 @@ pt::ptree PlanDeparser<B>::deparseCollation(const SortDefinition &sort) {
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseSchema(const QuerySchema &schema) {
-    pt::ptree column_defs;
+ptree PlanDeparser<B>::deparseSchema(const QuerySchema &schema) {
+    ptree column_defs;
     for(int i = 0; i < schema.getFieldCount(); ++i) {
-        pt::ptree col;
+        ptree col;
         QueryFieldDesc field = schema.getField(i);
         col.put("type", TypeUtilities::getJSONTypeString(field.getType()));
         if(field.getType() == FieldType::STRING || field.getType() == FieldType::SECURE_STRING) {
@@ -128,10 +128,10 @@ pt::ptree PlanDeparser<B>::deparseSchema(const QuerySchema &schema) {
 
 
 template<typename B>
-pt::ptree  PlanDeparser<B>::deparseSecureSqlInput(const Operator<B> *input) {
+ptree  PlanDeparser<B>::deparseSecureSqlInput(const Operator<B> *input) {
     assert(input->getType() == OperatorType::SECURE_SQL_INPUT);
     auto in = (SecureSqlInput *) input;
-    pt::ptree input_node;
+    ptree input_node;
     writeHeader(input_node, input, "LogicalValues");
 //    auto schema = deparseSchema(in->getOutputSchema());
 //    input_node.add_child("type", schema);
@@ -148,10 +148,10 @@ pt::ptree  PlanDeparser<B>::deparseSecureSqlInput(const Operator<B> *input) {
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseSqlInput(const Operator<B> *input) {
+ptree PlanDeparser<B>::deparseSqlInput(const Operator<B> *input) {
     assert(input->getType() == OperatorType::SQL_INPUT);
     auto in = (SqlInput *) input;
-    pt::ptree input_node;
+    ptree input_node;
 
     writeHeader(input_node, input, "LogicalValues");
     // auto schema = deparseSchema(in->getOutputSchema());
@@ -170,10 +170,10 @@ pt::ptree PlanDeparser<B>::deparseSqlInput(const Operator<B> *input) {
 
 }
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseMergeInput(const Operator<B> *input) {
+ptree PlanDeparser<B>::deparseMergeInput(const Operator<B> *input) {
     assert(input->getType() == OperatorType::MERGE_INPUT);
     auto in = (MergeInput *) input;
-    pt::ptree  input_node;
+    ptree  input_node;
 
     writeHeader(input_node, input, "LogicalValues");
 //    auto schema = deparseSchema(in->getOutputSchema());
@@ -197,32 +197,32 @@ pt::ptree PlanDeparser<B>::deparseMergeInput(const Operator<B> *input) {
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseKeyedSortMergeJoin(const Operator<B> *input) {
+ptree PlanDeparser<B>::deparseKeyedSortMergeJoin(const Operator<B> *input) {
     assert(input->getType() == OperatorType::KEYED_SORT_MERGE_JOIN);
     auto smj = (KeyedSortMergeJoin<B> *) input;
     return deparseJoin(smj, "sort-merge-join", smj->foreignKeyChild());
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseMergeJoin(const Operator<B> *input) {
+ptree PlanDeparser<B>::deparseMergeJoin(const Operator<B> *input) {
     assert(input->getType() == OperatorType::MERGE_JOIN);
     auto mj = (MergeJoin<B> *) input;
     return deparseJoin(mj, "merge-join", -1);
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseNestedLoopAggregate(const Operator<B> *input) {
+ptree PlanDeparser<B>::deparseNestedLoopAggregate(const Operator<B> *input) {
     assert(input->getType() == OperatorType::NESTED_LOOP_AGGREGATE);
     auto nla = (NestedLoopAggregate<B> *) input;
     return deparseGroupByAggregate(nla, "nested-loop-aggregate");
  }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseShrinkwrap(const Operator<B> *input) {
+ptree PlanDeparser<B>::deparseShrinkwrap(const Operator<B> *input) {
     assert(input->getType() == OperatorType::SHRINKWRAP);
     auto shrinkwrap = (Shrinkwrap<B> *) input;
 
-    pt::ptree shrinkwrap_node;
+    ptree shrinkwrap_node;
     writeHeader(shrinkwrap_node, input, "LogicalShrinkwrap");
 
 
@@ -231,9 +231,8 @@ pt::ptree PlanDeparser<B>::deparseShrinkwrap(const Operator<B> *input) {
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseUnion(const Operator<B> *input) {
+ptree PlanDeparser<B>::deparseUnion(const Operator<B> *input) {
     assert(input->getType() == OperatorType::UNION);
-    auto union_op = (Union<B> *) input;
     ptree union_node;
     writeHeader(union_node, input, "LogicalUnion");
 
@@ -242,7 +241,7 @@ pt::ptree PlanDeparser<B>::deparseUnion(const Operator<B> *input) {
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseKeyedNestedLoopJoin(const Operator<B> *input) {
+ptree PlanDeparser<B>::deparseKeyedNestedLoopJoin(const Operator<B> *input) {
     assert(input->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN);
     auto kj = (KeyedJoin<B> *) input;
     return deparseJoin(kj, "nested-loop-join", kj->foreignKeyChild());
@@ -251,10 +250,10 @@ pt::ptree PlanDeparser<B>::deparseKeyedNestedLoopJoin(const Operator<B> *input) 
 
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseZkSqlInput(const Operator<B> *input) {
+ptree PlanDeparser<B>::deparseZkSqlInput(const Operator<B> *input) {
     assert(input->getType() == OperatorType::ZK_SQL_INPUT);
     auto in = (ZkSqlInput *) input;
-    pt::ptree input_node;
+    ptree input_node;
 
     writeHeader(input_node, input, "LogicalValues");
     // auto schema = deparseSchema(in->getOutputSchema());
@@ -273,29 +272,29 @@ pt::ptree PlanDeparser<B>::deparseZkSqlInput(const Operator<B> *input) {
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseCsvInput(const Operator<B> *input) {
+ptree PlanDeparser<B>::deparseCsvInput(const Operator<B> *input) {
     throw; // not yet implemented
 
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseScalarAggregate(const Operator<B> *agg) {
+ptree PlanDeparser<B>::deparseScalarAggregate(const Operator<B> *agg) {
     throw; // not yet implemented
 
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseTableInput(const Operator<B> *input) {
+ptree PlanDeparser<B>::deparseTableInput(const Operator<B> *input) {
     //  not yet implemented, this operator is largely for debugging anyway
     throw;
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseProject(const Operator<B> *project) {
+ptree PlanDeparser<B>::deparseProject(const Operator<B> *project) {
     assert(project->getType() == OperatorType::PROJECT);
     auto proj = (Project<B> *) project;
 
-    pt::ptree project_node;
+    ptree project_node;
     project_node.put("id", proj->getOperatorId());
     project_node.put("relOp", "LogicalProject");
 
@@ -322,10 +321,10 @@ pt::ptree PlanDeparser<B>::deparseProject(const Operator<B> *project) {
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseFilter(const Operator<B> *filter) {
+ptree PlanDeparser<B>::deparseFilter(const Operator<B> *filter) {
     assert(filter->getType() == OperatorType::FILTER);
 
-   pt:ptree filter_node;
+    ptree filter_node;
     filter_node.put("id", filter->getOperatorId());
     filter_node.put("relOp", "LogicalFilter");
     filter_node.put("inputFields", generateFieldList(filter->getChild()->getOutputSchema()));
@@ -339,17 +338,17 @@ pt::ptree PlanDeparser<B>::deparseFilter(const Operator<B> *filter) {
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseNestedLoopJoin(const Operator<B> *join) {
+ptree PlanDeparser<B>::deparseNestedLoopJoin(const Operator<B> *join) {
     assert(join->getType() == OperatorType::NESTED_LOOP_JOIN);
     auto nlj = (BasicJoin<B> *) join;
     return deparseJoin(nlj, "nested-loop-join", -1);
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseSort(const Operator<B> *sort) {
+ptree PlanDeparser<B>::deparseSort(const Operator<B> *sort) {
     assert(sort->getType() == OperatorType::SORT);
     auto sort_op = (Sort<B> *) sort;
-    pt::ptree sort_node;
+    ptree sort_node;
 
     writeHeader(sort_node, sort, "LogicalSort");
     auto collation = deparseCollation(sort_op->getSortOrder());
@@ -368,7 +367,7 @@ pt::ptree PlanDeparser<B>::deparseSort(const Operator<B> *sort) {
 }
 
 template<typename B>
-pt::ptree PlanDeparser<B>::deparseSortMergeAggregate(const Operator<B> *agg) {
+ptree PlanDeparser<B>::deparseSortMergeAggregate(const Operator<B> *agg) {
     assert(agg->getType() == OperatorType::SORT_MERGE_AGGREGATE);
     auto sma = (SortMergeAggregate<B> *) agg;
     return deparseGroupByAggregate(sma, "sort-merge-aggregate");
