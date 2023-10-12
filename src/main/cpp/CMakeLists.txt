@@ -11,15 +11,15 @@ include(cmake/common.cmake)
 
 include(FetchContent)
 FetchContent_Declare(
-  googletest
-  GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG        v1.13.0
+		googletest
+		GIT_REPOSITORY https://github.com/google/googletest.git
+		GIT_TAG        v1.13.0
 )
 
 FetchContent_GetProperties(googletest)
 if(NOT googletest_POPULATED)
-  FetchContent_Populate(googletest)
-  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+	FetchContent_Populate(googletest)
+	add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
 enable_testing()
@@ -52,7 +52,7 @@ set(sources
 		util/field_utilities.cpp
 		util/logger.cpp
 		util/system_configuration.cpp
-	    util/emp_manager/emp_manager.h
+		util/emp_manager/emp_manager.h
 		util/emp_manager/sh2pc_manager.cpp
 		util/emp_manager/zk_manager.cpp
 		util/emp_manager/outsourced_mpc_manager.cpp
@@ -70,12 +70,12 @@ set(sources
 		query_table/column_table.cpp
 		query_table/table_factory.h
 
-        data/psql_data_provider.cpp
+		data/psql_data_provider.cpp
 		data/csv_reader.cpp
 
 		operators/operator.cpp
 		operators/sql_input.cpp
-        operators/secure_sql_input.cpp
+		operators/secure_sql_input.cpp
 		operators/zk_sql_input.cpp
 		operators/filter.cpp
 		operators/project.cpp
@@ -91,7 +91,7 @@ set(sources
 		operators/sort_merge_aggregate.cpp
 		operators/support/group_by_aggregate_impl.cpp
 		operators/csv_input.cpp
-        operators/shrinkwrap.cpp
+		operators/shrinkwrap.cpp
 		operators/keyed_sort_merge_join.cpp
 		operators/nested_loop_aggregate.cpp
 		operators/support/unsorted_aggregate_impl.cpp
@@ -99,13 +99,13 @@ set(sources
 
 		expression/function_expression.cpp
 		expression/generic_expression.cpp
-        expression/expression_node.cpp
+		expression/expression_node.cpp
 		expression/case_node.h
 		expression/comparator_expression_nodes.cpp
 		expression/connector_expression_nodes.h
 		expression/math_expression_nodes.h
 
-        parser/plan_parser.cpp
+		parser/plan_parser.cpp
 		parser/expression_parser.cpp
 		parser/plan_deparser.cpp
 		parser/expression_deparser.cpp
@@ -122,7 +122,8 @@ set(sources
 
 		opt/plan_cost.h
 		opt/operator_cost_model.cpp
-		opt/expression_cost_model.cpp)
+		opt/expression_cost_model.cpp
+		opt/plan_enumerator.cpp)
 
 
 
@@ -131,7 +132,7 @@ set(sources
 add_library(${NAME} SHARED ${sources})
 
 if(APPLE)
-  target_compile_definitions(${NAME} PUBLIC "-D_GNU_SOURCE")
+	target_compile_definitions(${NAME} PUBLIC "-D_GNU_SOURCE")
 endif()
 
 add_executable(generate_enrich_data test/support/generate_enrich_data.cpp)
@@ -140,4 +141,3 @@ add_executable(generate_enrich_data test/support/generate_enrich_data.cpp)
 target_link_libraries(${NAME} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES}  ${EMP_ZK_LIBRARY}  ${PQXX_LIBRARY} ${GFLAGS_LIBRARY} pthread gtest gmock gtest_main Boost::date_time )
 
 install(TARGETS ${NAME} DESTINATION ${CMAKE_SOURCE_DIR}/lib)
-
