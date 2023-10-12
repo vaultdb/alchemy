@@ -59,7 +59,7 @@ include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/_deps/emp-rescu)
 #find_package(Boost REQUIRED COMPONENTS date_time system)
 
 #Compilation flags
-set(CMAKE_C_FLAGS "-pthread   -Wfatal-errors  -Wno-ignored-attributes ")
+set(CMAKE_C_FLAGS "-pthread   -Wfatal-errors  -Wno-ignored-attributes -Wno-stringop-overread ")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}  -fPIC")
 
 #message(STATUS "Target platform: ${CMAKE_SYSTEM_NAME}")
