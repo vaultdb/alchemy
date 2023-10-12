@@ -134,10 +134,23 @@ namespace  vaultdb {
         void cloneRow(const bool & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row)  override;
         void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) override;
         void cloneTable(const int & dst_row, QueryTable<B> *src) override;
-        Integer unpackRow(const int & row, const int & col_cnt, const int & selection_length_bits) const override {
+        vector<Bit> unpackRow(const int & row, const int & col_cnt, const int & selection_length_bits) const override {
             assert(this->isEncrypted());
 
-            return FieldUtilities::unpackRow(((QueryTable<Bit> *)this), row, col_cnt, selection_length_bits);
+            Integer i =  FieldUtilities::unpackRow(((QueryTable<Bit> *)this), row, col_cnt, selection_length_bits);
+            return i.bits;
+        }
+
+        vector<int8_t> unpackRowBytes(const int & row, const int & col_cnt) const override {
+             int read_len = 0;
+             for(int i = 0; i < col_cnt; ++i) {
+                 read_len += this->field_sizes_bytes_.at(i);
+             }
+             int8_t *src = getFieldPtr(row, 0);
+             vector<int8_t> dst(read_len);
+             memcpy(dst.data(), src, read_len);
+             return dst;
+
         }
 
         QueryTable<B> *clone() override {

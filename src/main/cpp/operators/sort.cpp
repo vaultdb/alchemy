@@ -136,7 +136,6 @@ void Sort<B>::bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_de
 template <typename B>
 Bit Sort<B>::swapTuples(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir, const int & sort_key_width_bits) {
 
-
     // placeholder to avoid initializing public value for Integer
     int col_cnt = table->getSortOrder().size();
     Integer lhs_key = table->unpackRow(lhs_idx, col_cnt, sort_key_width_bits+1);
@@ -148,17 +147,19 @@ Bit Sort<B>::swapTuples(const QueryTable<Bit> *table, const int &lhs_idx, const 
 
     return ((lhs_key > rhs_key) == dir);
 
+
 }
 
 template<typename B>
 bool Sort<B>::swapTuples(const QueryTable<bool> *table, const int &lhs_idx, const int &rhs_idx,
                                    const bool &dir, const int &sort_key_width_bits) {
-    auto row_table = (RowTable<bool> *) table;
 
+    vector<int8_t> lhs = table->unpackRowBytes(lhs_idx, table->getSortOrder().size());
+    vector<int8_t> rhs = table->unpackRowBytes(rhs_idx, table->getSortOrder().size());
+    assert(lhs.size() == rhs.size());
+    assert(lhs.size() == sort_key_width_bits/8);
 
-    int8_t *lhs =  (row_table->tuple_data_.data() + row_table->tuple_size_bytes_ * lhs_idx);
-    int8_t *rhs =  (row_table->tuple_data_.data() + row_table->tuple_size_bytes_ * rhs_idx);
-    int byte_cnt = sort_key_width_bits / 8;
+    int byte_cnt = lhs.size();
 
     // TODO: streamline this with memcmp over reversed keys
     bool lhs_gt = false;

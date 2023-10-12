@@ -221,14 +221,15 @@ namespace  vaultdb {
         virtual void cloneRow(const bool & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) = 0;
         virtual void cloneRow(const emp::Bit & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) = 0;
         virtual void cloneTable(const int & dst_row, QueryTable<B> *src) = 0; // for unioning 2 or more tables
-        Integer unpackRow(const int & row, const int & col_cnt) {
+        vector<Bit> unpackRow(const int & row, const int & col_cnt) {
             int selection_len = 0;
             for(int i = 0; i < col_cnt; ++i) {
                 selection_len += schema_.getField(i).size();
             }
             return unpackRow(row, col_cnt, selection_len);
         }
-        virtual Integer unpackRow(const int & row, const int & col_cnt, const int & selection_length_bits) const = 0;
+        virtual vector<Bit> unpackRow(const int & row, const int & col_cnt, const int & selection_length_bits) const = 0;
+        virtual vector<int8_t> unpackRowBytes(const int & row, const int & col_cnt) const = 0;
 
         virtual QueryTable *clone() = 0;
         virtual void compareSwap(const bool & swap, const int  & lhs_row, const int & rhs_row) = 0;

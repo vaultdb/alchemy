@@ -117,11 +117,21 @@ namespace  vaultdb {
         void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) override;
         void cloneTable(const int & dst_row, QueryTable<B> *src) override;
 
-        Integer unpackRow(const int & row, const int & col_cnt, const int & selection_length_bits) const override {
+        vector<Bit> unpackRow(const int & row, const int & col_cnt, const int & selection_length_bits) const override {
             assert(this->isEncrypted());
             Bit *src = (Bit *) getFieldPtr(row, 0);
             Integer dst(selection_length_bits, 0, PUBLIC);
             memcpy(dst.bits.data(), src, selection_length_bits * TypeUtilities::getEmpBitSize());
+            return dst.bits;
+        }
+
+        vector<int8_t> unpackRowBytes(const int & row, const int & col_cnt) const override {
+           size_t read_len = 0;
+           for(int i = 0; i < col_cnt; ++i) read_len += this->field_sizes_bytes_.at(i);
+
+            int8_t *src = getFieldPtr(row, 0);
+            vector<int8_t> dst(read_len);
+            memcpy(dst.data(), src, read_len);
             return dst;
         }
 
