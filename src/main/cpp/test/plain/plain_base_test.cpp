@@ -57,5 +57,6 @@ void PlainBaseTest::SetUp()  {
 
 void PlainBaseTest::TearDown() {
     // teardown covered in SystemConfiguration destructor
-
+    delete manager_;
+    SystemConfiguration::getInstance().emp_manager_ = nullptr;
 }
