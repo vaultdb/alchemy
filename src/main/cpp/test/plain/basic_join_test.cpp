@@ -5,7 +5,7 @@
 #include "util/field_utilities.h"
 #include <gflags/gflags.h>
 
-DEFINE_int32(cutoff, 3, "limit clause for queries");
+DEFINE_int32(cutoff, 5, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
@@ -150,7 +150,9 @@ int main(int argc, char **argv) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
 
 	::testing::GTEST_FLAG(filter)=FLAGS_filter;	
-    return RUN_ALL_TESTS();
+    int i =  RUN_ALL_TESTS();
+    google::ShutDownCommandLineFlags();
+    return i;
 }
 
 
