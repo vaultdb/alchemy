@@ -3,6 +3,7 @@
 #include <query_table/plain_tuple.h>
 #include <util/data_utilities.h>
 #include <query_table/row_table.h>
+#include <query_table/column_table.h>
 #include <operators/support/normalize_fields.h>
 
 
@@ -154,28 +155,30 @@ template<typename B>
 bool Sort<B>::swapTuples(const QueryTable<bool> *table, const int &lhs_idx, const int &rhs_idx,
                                    const bool &dir, const int &sort_key_width_bits) {
 
-    vector<int8_t> lhs = table->unpackRowBytes(lhs_idx, table->getSortOrder().size());
-    vector<int8_t> rhs = table->unpackRowBytes(rhs_idx, table->getSortOrder().size());
-    assert(lhs.size() == rhs.size());
-    assert(lhs.size() == sort_key_width_bits/8);
+    bool is_row_store = SystemConfiguration::getInstance().storageModel() == StorageModel::ROW_STORE;
 
-    int byte_cnt = lhs.size();
+    QueryTuple<bool> lhs_tuple = is_row_store ? ((RowTable<bool> *) table)->getPlainTuple(lhs_idx) : ((ColumnTable<bool> *) table)->getPlainTuple(lhs_idx);
+    QueryTuple<bool> rhs_tuple = is_row_store ? ((RowTable<bool> *) table)->getPlainTuple(rhs_idx) : ((ColumnTable<bool> *) table)->getPlainTuple(rhs_idx);
+
+    int8_t *lhs = lhs_tuple.getData();
+    int8_t *rhs = rhs_tuple.getData();
+    int byte_cnt = sort_key_width_bits / 8;
 
     // TODO: streamline this with memcmp over reversed keys
     bool lhs_gt = false;
-    for(int i = byte_cnt - 1; i >= 0; --i) {
+    for (int i = byte_cnt - 1; i >= 0; --i) {
         auto l = (unsigned int) lhs[i];
         auto r = (unsigned int) rhs[i];
 
-        if(l == r) continue;
-        if(l > r) {
+        if (l == r) continue;
+        if (l > r) {
             lhs_gt = true;
             break;
         }
         break;
     }
 
-    return  (lhs_gt == dir);
+    return (lhs_gt == dir);
 }
 
 
