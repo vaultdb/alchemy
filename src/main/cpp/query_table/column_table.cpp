@@ -80,24 +80,18 @@ PlainTable *ColumnTable<B>::reveal(const int & party)   {
         table = (ColumnTable<Bit> *)  sort.run()->clone();
     }
 
-    auto dst_table = new ColumnTable<bool>(this->tuple_cnt_, dst_schema, collation);
-    int write_cursor = 0;
-
-    for(uint32_t i = 0; i < this->tuple_cnt_; ++i)  {
-        if(!table->getDummyTag(i).reveal()) { // if real tuple (not a dummy), reveal it
-            for(auto col_pos : column_data_) {
-                SecureField s = table->getField(i, col_pos.first);
-                PlainField  p = s.reveal();
-                dst_table->setField(write_cursor, col_pos.first, p);
-            }
-            ++write_cursor;
-        }
-        else {
-            break;
-        }
+    // count # of real (not dummy) rows
+    int row_cnt = 0;
+    while(!table->getDummyTag(row_cnt).reveal()) {
+        ++row_cnt;
     }
 
-    dst_table->resize(write_cursor);
+    auto dst_table = new ColumnTable<bool>(row_cnt, dst_schema, collation);
+    for(int i = 0; i < row_cnt; ++i)  {
+        PlainTuple dst_tuple = table->revealRow(i, dst_schema, party);
+        dst_table->putTuple(i, dst_tuple);
+    }
+
     if(table != (ColumnTable<Bit> *) this) // extra sort
         delete table;
 
@@ -431,12 +425,14 @@ void ColumnTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int 
     // iterating on column_data to cover dummy tag at -1
     for(auto pos : column_data_) {
         int col_id = pos.first;
+        int field_len = this->schema_.getField(col_id).size();
+
         Bit *l = (Bit *) this->getFieldPtr(lhs_row, col_id);
-        Bit  *r = (Bit *) this->getFieldPtr(rhs_row, col_id);
+        Bit *r = (Bit *) this->getFieldPtr(rhs_row, col_id);
 
         // swap column bits in place
         // based on emp
-        for(int i = 0; i < this->schema_.getField(col_id).size(); ++i) {
+        for(int i = 0; i < field_len; ++i) {
             Bit o = emp::If(swap, *l, *r);
             o ^= *r;
             *l ^= o;

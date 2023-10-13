@@ -222,11 +222,6 @@ namespace  vaultdb {
         inline bool empty() const { return tuple_cnt_ == 0; }
          //intentionally giving these different names - not for used in generic (not bool/Bit-specific cases)
         virtual QueryTuple<bool> getPlainTuple(size_t idx) const = 0;
-        // hoping to refactor to get rid of getSecureTuple soon.
-        // need to set up expressions to support a "virtual" tuple in join
-        // that concats from two sources
-        // requires rejiggering InputReference
-//        virtual QueryTuple<Bit> getSecureTuple(size_t idx) const = 0;
 
         // memcpy a field from one table to another
         virtual void assignField(const int & dst_row, const int & dst_col, const  QueryTable<B> *src, const int & src_row, const int & src_col) = 0;

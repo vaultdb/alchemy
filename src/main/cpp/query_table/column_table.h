@@ -97,8 +97,6 @@ namespace  vaultdb {
         void cloneFields(const int &dst_row, const int &dst_start_col, const QueryTable<B> *src, const int &src_row, const int & src_start_col,
                          const int &col_cnt)  override;
 
-
-
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row)  override;
         void cloneRow(const bool & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row)  override;
         void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) override;

@@ -66,22 +66,19 @@ PlainTable *RowTable<B>::reveal(const int & party)   {
         table = (RowTable<Bit> *)  sort.run()->clone();
     }
 
-    auto dst_table = new RowTable<bool>(this->tuple_cnt_, dst_schema, collation);
-    int write_cursor = 0;
-
-    for(uint32_t i = 0; i < table->tuple_cnt_; ++i)  {
-        bool dummy_tag = table->getDummyTag(i).reveal();
-        if(!dummy_tag) { // if real tuple (not a dummy), reveal it
-            PlainTuple dst_tuple = table->revealRow(i, dst_schema, party);
-            dst_table->putTuple(write_cursor, dst_tuple);
-            ++write_cursor;
-        }
-        else {
-             break;
-        }
+    // count # of real (not dummy) rows
+    int row_cnt = 0;
+    while(!table->getDummyTag(row_cnt).reveal()) {
+        ++row_cnt;
     }
 
-    dst_table->resize(write_cursor);
+    auto dst_table = new RowTable<bool>(row_cnt, dst_schema, collation);
+
+    for(int i = 0; i < row_cnt; ++i)  {
+        PlainTuple dst_tuple = table->revealRow(i, dst_schema, party);
+        dst_table->putTuple(i, dst_tuple);
+    }
+
     if(table != (RowTable<Bit> *) this) // extra sort
         delete table;
 
@@ -420,7 +417,7 @@ void RowTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int &rh
         return;
     }
 
-    Bit *l = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * lhs_row );
+    Bit *l = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * lhs_row);
     Bit *r = (Bit *) (tuple_data_.data() + this->tuple_size_bytes_ * rhs_row);
 
     size_t write_size = this->schema_.size();
