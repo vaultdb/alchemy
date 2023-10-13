@@ -137,10 +137,11 @@ void Sort<B>::bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_de
 template <typename B>
 Bit Sort<B>::swapTuples(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir, const int & sort_key_width_bits) {
 
-    // placeholder to avoid initializing public value for Integer
     int col_cnt = table->getSortOrder().size();
-    Integer lhs_key = table->unpackRow(lhs_idx, col_cnt, sort_key_width_bits+1);
-    Integer rhs_key = table->unpackRow(rhs_idx, col_cnt, sort_key_width_bits+1);
+    // Integer lhs_key = table->unpackRow(lhs_idx, col_cnt, sort_key_width_bits+1);
+    // Integer rhs_key = table->unpackRow(rhs_idx, col_cnt, sort_key_width_bits+1);
+    Integer  lhs_key = FieldUtilities::unpackRow(table, lhs_idx, col_cnt, sort_key_width_bits + 1);
+    Integer  rhs_key = FieldUtilities::unpackRow(table, rhs_idx, col_cnt, sort_key_width_bits + 1);
 
     // set MSB to 1 for all to avoid losing MSBs that are zero
     lhs_key[sort_key_width_bits] = 1;
