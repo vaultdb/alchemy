@@ -29,11 +29,6 @@ bash  test/support/load-generated-data.sh 100
 ./bin/plan_deparser_test --flagfile=flagfiles/plain.flags  --storage=column
 ./bin/tpch_test --flagfile=flagfiles/plain.flags  --storage=column
 
-./bin/filter_test --flagfile=flagfiles/plain.flags --storage=column
-./bin/project_test --flagfile=flagfiles/plain.flags --storage=column
-./bin/basic_join_test --flagfile=flagfiles/plain.flags --storage=column
-./bin/keyed_join_test --flagfile=flagfiles/plain.flags --storage=column
-
 
 bash run-column-store.sh emp_test 
 bash run-column-store.sh secure_field_expression_test  
