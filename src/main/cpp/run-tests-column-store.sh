@@ -30,30 +30,30 @@ bash  test/support/load-generated-data.sh 100
 ./bin/tpch_test --flagfile=flagfiles/plain.flags  --storage=column
 
 
-bash run-column-store.sh emp_test 
-bash run-column-store.sh secure_field_expression_test  
-bash run-column-store.sh emp_table_test 
-bash run-column-store.sh secure_filter_test 
-bash run-column-store.sh secure_sort_test 
+bash run_column_store.sh emp_test 
+bash run_column_store.sh secure_field_expression_test  
+bash run_column_store.sh emp_table_test 
+bash run_column_store.sh secure_filter_test 
+bash run_column_store.sh secure_sort_test 
 ./bin/secure_basic_join_test --cutoff=5 --storage=column &
 ./bin/secure_basic_join_test --party=2 --cutoff=5 --storage=column
-bash run-column-store.sh secure_keyed_join_test 
-#bash run-column-store.sh secure_keyed_sort_merge_join_test
-bash run-column-store.sh secure_scalar_aggregate_test
-bash run-column-store.sh secure_sort_merge_aggregate_test
-bash run-column-store.sh secure_nested_loop_aggregate_test
-bash run-column-store.sh enrich_test
-bash run-column-store.sh secure_plan_deparser_test
-bash run-column-store.sh secure_tpch_test
-bash run-column-store.sh fully_optimized_test
+bash run_column_store.sh secure_keyed_join_test 
+#bash run_column_store.sh secure_keyed_sort_merge_join_test
+bash run_column_store.sh secure_scalar_aggregate_test
+bash run_column_store.sh secure_sort_merge_aggregate_test
+bash run_column_store.sh secure_nested_loop_aggregate_test
+bash run_column_store.sh enrich_test
+bash run_column_store.sh secure_plan_deparser_test
+bash run_column_store.sh secure_tpch_test
+bash run_column_store.sh fully_optimized_test
 
 # ZK Tests -- these are optional
-#bash run-column-store.sh zk_test
-#bash run-column-store.sh zk_filter_test
-#bash run-column-store.sh  zk_basic_join_test
-#bash run-column-store.sh zk_keyed_join_test
-#bash run-column-store.sh  zk_scalar_aggregate_test
-#bash run-column-store.sh zk_sort_merge_aggregate_test
-#bash run-column-store.sh zk_sort_test
-bash run-column-store.sh zk_tpch_test
+#bash run_column_store.sh zk_test
+#bash run_column_store.sh zk_filter_test
+#bash run_column_store.sh  zk_basic_join_test
+#bash run_column_store.sh zk_keyed_join_test
+#bash run_column_store.sh  zk_scalar_aggregate_test
+#bash run_column_store.sh zk_sort_merge_aggregate_test
+#bash run_column_store.sh zk_sort_test
+bash run_column_store.sh zk_tpch_test
 
