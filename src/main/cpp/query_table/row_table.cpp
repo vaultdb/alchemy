@@ -337,8 +337,7 @@ void RowTable<B>::cloneRow(const int &dst_row, const int &dst_col, const QueryTa
 }
 
 template<typename B>
-void RowTable<B>::cloneRow(const bool &write, const int &dst_row, const int &dst_col, const QueryTable<B> *src,
-                             const int &src_row) {
+void RowTable<B>::cloneRow(const bool &write, const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row) {
     if(write)
         cloneRow(dst_row, dst_col, src, src_row);
 
@@ -353,7 +352,7 @@ void RowTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &dst_
 
     auto src = (RowTable<Bit> *) s;
 
-    if(this->isEncrypted() && SystemConfiguration::getInstance().wire_packing_enabled_) {
+    if(SystemConfiguration::getInstance().wire_packing_enabled_) {
         // do one at a time to invoke unpacking
         for(int i = 0; i < s->getSchema().getFieldCount(); ++i) {
             SecureField src_field = src->getField(src_row, i);
