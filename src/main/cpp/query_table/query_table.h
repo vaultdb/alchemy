@@ -115,13 +115,29 @@ namespace  vaultdb {
        virtual std::vector<int8_t> serialize() const = 0;
 
 
-        virtual  Field<B> getField(const int  & row, const int & col)  const  = 0;
-        virtual  Field<B> getPackedField(const int  & row, const int & col)  const  = 0;
         virtual int8_t* getFieldPtr(const int  & row, const int & col)  const  = 0;
+        Field<B> getField(const int  & row, const int & col)  const {
+            int8_t *read_ptr = getFieldPtr(row, col);
+            return Field<B>::deserialize(this->schema_.getField(col), read_ptr );
+        }
 
-        virtual  void setField(const int  & row, const int & col, const Field<B> & f) = 0;
+        Field<B> getPackedField(const int  & row, const int & col)  const  {
+            int8_t *read_ptr = getFieldPtr(row, col);
+            // defaults to regular serialization if bit packing is disabled
+            return Field<B>::deserializePacked(this->schema_.getField(col), read_ptr );
+        }
 
-        virtual  void setPackedField(const int  & row, const int & col, const Field<B> & f) = 0;
+        void setField(const int  & row, const int & col, const Field<B> & f)  {
+            int8_t *write_ptr = getFieldPtr(row, col);
+            f.serialize(write_ptr, this->schema_.getField(col));
+
+        }
+
+        void setPackedField(const int  & row, const int & col, const Field<B> & f) {
+              int8_t *write_ptr = getFieldPtr(row, col);
+              f.serializePacked(write_ptr, this->schema_.getField(col));
+
+        }
 
         B getDummyTag(const int & row)  const {
             int8_t *dummy_tag =  getFieldPtr(row, -1);
@@ -131,6 +147,7 @@ namespace  vaultdb {
 
         void setDummyTag(const int & row, const B & val) {
             int8_t *write_ptr = getFieldPtr(row, -1);
+
             QueryFieldDesc desc = schema_.getField(-1);
             Field<B> f(desc.getType(), val);
             f.serialize(write_ptr, desc);

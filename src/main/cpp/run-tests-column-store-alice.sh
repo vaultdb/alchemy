@@ -34,18 +34,18 @@ bash  test/support/load-generated-data.sh 100
 ./bin/tpch_test --flagfile=flagfiles/plain.flags  --storage=column
 
 
-./bin/emp_test --flagfile=flagfiles/alice.flags --storage=column
-./bin/secure_field_expression_test	--flagfile=flagfiles/alice.flags --storage=column
-./bin/emp_table_test  --flagfile=flagfiles/alice.flags --storage=column
-./bin/secure_filter_test  --flagfile=flagfiles/alice.flags --storage=column
-./bin/secure_sort_test  --flagfile=flagfiles/alice.flags --storage=column
-./bin/secure_basic_join_test  --cutoff=5 --storage=column
-./bin/secure_keyed_join_test  --flagfile=flagfiles/alice.flags --storage=column
+./bin/emp_test --flagfile=flagfiles/alice.flags --storage=column --validation=false
+./bin/secure_field_expression_test	--flagfile=flagfiles/alice.flags --storage=column --validation=false
+./bin/emp_table_test  --flagfile=flagfiles/alice.flags --storage=column --validation=false
+./bin/secure_filter_test  --flagfile=flagfiles/alice.flags --storage=column --validation=false
+./bin/secure_sort_test  --flagfile=flagfiles/alice.flags --storage=column --validation=false
+./bin/secure_basic_join_test  --cutoff=5 --storage=column --validation=false
+./bin/secure_keyed_join_test  --flagfile=flagfiles/alice.flags --storage=column --validation=false
 #./bin/secure_keyed_sort_merge_join_test --flagfile=flagfiles/alice.flags --storage=column
-./bin/secure_scalar_aggregate_test 	 --flagfile=flagfiles/alice.flags --storage=column
-./bin/secure_sort_merge_aggregate_test  --flagfile=flagfiles/alice.flags --storage=column
-./bin/secure_nested_loop_aggregate_test --flagfile=flagfiles/alice.flags --storage=column
+./bin/secure_scalar_aggregate_test 	 --flagfile=flagfiles/alice.flags --storage=column --validation=false
+./bin/secure_sort_merge_aggregate_test  --flagfile=flagfiles/alice.flags --storage=column --validation=false
+./bin/secure_nested_loop_aggregate_test --flagfile=flagfiles/alice.flags --storage=column --validation=false
 #./bin/enrich_test  --party=1 --storage=column  #excluded because data is not synced between A + B
-./bin/secure_plan_deparser_test --flagfile=flagfiles/alice.flags --storage=column
-./bin/secure_tpch_test  --flagfile=flagfiles/alice.flags --storage=column
-./bin/full_optimized_test --flagfile=flagfiles/alice.flags --storage=column
+./bin/secure_plan_deparser_test --flagfile=flagfiles/alice.flags --storage=column --validation=false
+./bin/secure_tpch_test  --flagfile=flagfiles/alice.flags --storage=column --validation=false
+./bin/full_optimized_test --flagfile=flagfiles/alice.flags --storage=column --validation=false

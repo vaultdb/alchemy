@@ -55,44 +55,11 @@ namespace  vaultdb {
 
 
         std::vector<int8_t> serialize() const override;
-
-
-        inline Field<B> getField(const int  & row, const int & col)  const override {
-            int8_t *read_ptr = getFieldPtr(row, col);
-            return Field<B>::deserialize(this->schema_.getField(col), read_ptr );
-        }
-
-        inline Field<B> getPackedField(const int & row, const int & col) const override {
-
-            int8_t *read_ptr = getFieldPtr(row, col);
-            // defaults to regular serialization if bit packing is disabled
-            return Field<B>::deserializePacked(this->schema_.getField(col), read_ptr );
-
-        }
-
-        inline void setField(const int  & row, const int & col, const Field<B> & f)  override {
-            int8_t *write_ptr = getFieldPtr(row, col);
-            f.serialize(write_ptr, this->schema_.getField(col));
-        }
-
-        inline void setPackedField(const int  & row, const int & col, const Field<B> & f)  override {
-            int8_t *write_ptr = getFieldPtr(row, col);
-
-            if(SystemConfiguration::getInstance().bitPackingEnabled()) {
-                f.serializePacked(write_ptr, this->schema_.getField(col));
-                return;
-            }
-
-            f.serialize(write_ptr, this->schema_.getField(col));
-        }
-
-
         SecureTable *secretShare() override;
 
 
 
-        SecretShares
-        generateSecretShares() const override; // generate shares for alice and bob - for data sharing (non-computing) node
+        SecretShares generateSecretShares() const override; // generate shares for alice and bob - for data sharing (non-computing) node
 
         PlainTable *reveal(const int & party = emp::PUBLIC) override;
         PlainTable *revealInsecure(const int & party = emp::PUBLIC) const override;
@@ -100,7 +67,6 @@ namespace  vaultdb {
         QueryTable<B> &operator=(const QueryTable<B> &src) override;
 
         static RowTable<B> *deserialize(const QuerySchema &schema, const vector<int8_t> &table_bytes);
-
         static RowTable<B> *deserialize(const QuerySchema &schema, const vector<Bit> &table_bytes);
 
 
