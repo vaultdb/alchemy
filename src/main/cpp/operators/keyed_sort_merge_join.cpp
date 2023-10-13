@@ -86,9 +86,6 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
     lhs->pinned_ = true;
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
-//    cout << "LHS input: " << DataUtilities::printTable(lhs, false);
-//    cout << "RHS input: " << DataUtilities::printTable(rhs, false);
-
     this->start_time_ = clock_start();
 
     QuerySchema lhs_schema = lhs->getSchema();
@@ -165,7 +162,6 @@ QuerySchema KeyedSortMergeJoin<B>::deriveProjectedSchema() const {
     }
 
     projected_schema.initializeFieldOffsets();
-//    cout << "Derived projected schema: " << projected_schema << endl;
     return projected_schema;
 }
 
@@ -445,15 +441,10 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttrOmpc(QueryTable<B
     map<int, int> field_mapping;
     QuerySchema src_schema = src->getSchema();
     auto dst_schema = deriveProjectedSchema();
-    // get size of schema in bits - it will return it in packed wires for OMPC
-    // for Q3, 2nd join:
-    // lhs: o_orderkey(13) (#0), o_orderdate(28) (#1), o_shippriority(1) (#2) = 43 bits (13+28+1+1)
-    // rhs: l_orderkey(13) (#3), revenue(32) (#4) = 46 bits (13+32+1)
-    // neither reorders cols, lhs expands to 46
+
     int dst_row_len_bits = dst_schema.bitCnt(), src_row_len_bits = 0;
     map<int, int> src_field_offsets_bits;
 
-//    cout << "Projecting: " << DataUtilities::printTable(src) << endl;
     for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
         src_field_offsets_bits[i] = src_row_len_bits;
         src_row_len_bits += src->getSchema().getField(i).size();
@@ -493,8 +484,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttrOmpc(QueryTable<B
 
 
     if(simple_projection && (projection.getOutputSchema() == src_schema) && (dst_schema == src_schema)) {  return src->clone(); }// if no re-arranging needed, bypass this step
-//    cout << "Src schema: " << src_schema << endl;
-//    cout << "dst schema: " <<  dst_schema << endl;
+
     assert(src->isEncrypted());
     auto output = TableFactory<Bit>::getTable(src->getTupleCount(), dst_schema, projection.getSortOrder()); // retain sort order b/c we only care if we're sorted on the join keys
     RowTable<Bit> *src_rows = (RowTable<Bit> *) src;
@@ -517,7 +507,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttrOmpc(QueryTable<B
         to_pack[to_pack.size() - 1] = unpacked.bits[unpacked.bits.size() - 1]; // dummy tag
         FieldUtilities::packRow(output, i, to_pack);
     }
-//    cout << "Projected to " << DataUtilities::printTable(output) << endl;
+
     return (QueryTable<B> *) output;
 }
 
