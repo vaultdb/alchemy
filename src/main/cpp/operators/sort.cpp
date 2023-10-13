@@ -156,10 +156,8 @@ template<typename B>
 bool Sort<B>::swapTuples(const QueryTable<bool> *table, const int &lhs_idx, const int &rhs_idx,
                                    const bool &dir, const int &sort_key_width_bits) {
 
-    bool is_row_store = SystemConfiguration::getInstance().storageModel() == StorageModel::ROW_STORE;
-
-    QueryTuple<bool> lhs_tuple = is_row_store ? ((RowTable<bool> *) table)->getPlainTuple(lhs_idx) : ((ColumnTable<bool> *) table)->getPlainTuple(lhs_idx);
-    QueryTuple<bool> rhs_tuple = is_row_store ? ((RowTable<bool> *) table)->getPlainTuple(rhs_idx) : ((ColumnTable<bool> *) table)->getPlainTuple(rhs_idx);
+    QueryTuple<bool> lhs_tuple = table->getPlainTuple(lhs_idx);
+    QueryTuple<bool> rhs_tuple = table->getPlainTuple(rhs_idx);
 
     int8_t *lhs = lhs_tuple.getData();
     int8_t *rhs = rhs_tuple.getData();
