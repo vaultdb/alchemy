@@ -126,6 +126,7 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
             boost::property_tree::ptree type_tree = tree.get_child("type");
             int length =    type_tree.get_child("precision").get_value<int>();
             std::string literal_string =   literal.template get_value<std::string>();
+            while(literal_string.size() < length) literal_string += " ";
             Field<B> input_field =  Field<B>(FieldType::STRING, Value(literal_string), length);
 
             if(std::is_same_v<B, emp::Bit>) {
