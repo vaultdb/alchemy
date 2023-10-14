@@ -509,7 +509,7 @@ namespace vaultdb {
                 },
                 {18, "WITH high_quantity AS (\n"
                      " SELECT l_orderkey\n"
-                     " FROM (SELECT * FROM  lineitem ORDER BY l_orderkey,  l_partkey, l_suppkey LIMIT $LIMIT) \n"
+                     " FROM (SELECT * FROM  lineitem ORDER BY l_orderkey,  l_partkey, l_suppkey LIMIT $LIMIT) l \n"
                      " GROUP BY l_orderkey\n"
                      " HAVING SUM(l_quantity) > 7) \n"
                      " SELECT c.c_name,  c.c_custkey, o.o_orderkey,  o.o_orderdate, o.o_totalprice,  SUM(l.l_quantity) sum_qty\n"
