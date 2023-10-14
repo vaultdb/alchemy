@@ -284,16 +284,15 @@ std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
     long byte_cnt = bit_cnt / 8;
 
     bool *bools = new bool[bit_cnt];
-    for(int i = 0; i < bit_cnt; ++i) {
-        bools[i] = src[i].reveal(party);
-    }
+    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
+    manager->reveal(bools, party, (Bit *) src.bits.data(), bit_cnt);
 
     bool *byte_cursor = bools;
     string dst;
+    dst.resize(byte_cnt);
 
     for(int i = 0; i < byte_cnt; ++i) {
-        char byte = Utilities::boolsToByte(byte_cursor);
-        dst = dst + byte;
+        dst[i] =  Utilities::boolsToByte(byte_cursor);
         byte_cursor += 8;
     }
 

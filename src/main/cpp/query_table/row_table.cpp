@@ -346,8 +346,9 @@ void RowTable<B>::compareSwap(const bool &swap, const int &lhs_row, const int &r
 template<typename B>
 void RowTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) {
 
+    assert(this->isEncrypted());
 
-    if(this->isEncrypted() && SystemConfiguration::getInstance().wire_packing_enabled_) {
+    if(SystemConfiguration::getInstance().wire_packing_enabled_) {
         compareSwapOmpc(swap, lhs_row, rhs_row);
         return;
     }

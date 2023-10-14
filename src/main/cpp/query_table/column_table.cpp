@@ -353,13 +353,16 @@ void ColumnTable<B>::compareSwap(const bool &swap, const int &lhs_row, const int
 template<typename B>
 void ColumnTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) {
 
+    assert(this->isEncrypted());
+    int col_cnt = this->schema_.getFieldCount();
     // iterating on column_data to cover dummy tag at -1
-    for(auto pos : column_data_) {
-        int col_id = pos.first;
-        int field_len = this->schema_.getField(col_id).size();
+    // need to do this piecewise to avoid overhead we found in profiling from iterating over table
+    for(int col_id = 0; col_id < col_cnt; ++col_id) {
 
-        Bit *l = (Bit *) this->getFieldPtr(lhs_row, col_id);
-        Bit *r = (Bit *) this->getFieldPtr(rhs_row, col_id);
+        int field_len = this->schema_.fields_.at(col_id).size();
+
+        Bit *l = (Bit *) (column_data_.at(col_id).data() + lhs_row * this->field_sizes_bytes_.at(col_id));
+        Bit *r =  (Bit *) (column_data_.at(col_id).data() + rhs_row * this->field_sizes_bytes_.at(col_id));
 
         // swap column bits in place
         // based on emp
@@ -374,6 +377,14 @@ void ColumnTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int 
         }
 
     }
+    // dummy tag
+    Bit *l = (Bit *) (column_data_.at(-1).data() + lhs_row * this->field_sizes_bytes_.at(-1));
+    Bit *r = (Bit *) (column_data_.at(-1).data() + rhs_row * this->field_sizes_bytes_.at(-1));
+    Bit o = emp::If(swap, *l, *r);
+    o ^= *r;
+    *l ^= o;
+    *r ^= o;
+
 
 }
 

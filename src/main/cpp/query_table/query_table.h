@@ -118,24 +118,24 @@ namespace  vaultdb {
         virtual int8_t* getFieldPtr(const int  & row, const int & col)  const  = 0;
         Field<B> getField(const int  & row, const int & col)  const {
             int8_t *read_ptr = getFieldPtr(row, col);
-            return Field<B>::deserialize(this->schema_.getField(col), read_ptr );
+            return Field<B>::deserialize(this->schema_.fields_.at(col), read_ptr );
         }
 
         Field<B> getPackedField(const int  & row, const int & col)  const  {
             int8_t *read_ptr = getFieldPtr(row, col);
             // defaults to regular serialization if bit packing is disabled
-            return Field<B>::deserializePacked(this->schema_.getField(col), read_ptr );
+            return Field<B>::deserializePacked(this->schema_.fields_.at(col), read_ptr );
         }
 
         void setField(const int  & row, const int & col, const Field<B> & f)  {
             int8_t *write_ptr = getFieldPtr(row, col);
-            f.serialize(write_ptr, this->schema_.getField(col));
+            f.serialize(write_ptr, this->schema_.fields_.at(col));
 
         }
 
         void setPackedField(const int  & row, const int & col, const Field<B> & f) {
               int8_t *write_ptr = getFieldPtr(row, col);
-              f.serializePacked(write_ptr, this->schema_.getField(col));
+              f.serializePacked(write_ptr, this->schema_.fields_.at(col));
 
         }
 
@@ -148,7 +148,7 @@ namespace  vaultdb {
         void setDummyTag(const int & row, const B & val) {
             int8_t *write_ptr = getFieldPtr(row, -1);
 
-            QueryFieldDesc desc = schema_.getField(-1);
+            QueryFieldDesc desc = schema_.fields_.at(-1);
             Field<B> f(desc.getType(), val);
             f.serialize(write_ptr, desc);
         }
@@ -206,8 +206,8 @@ namespace  vaultdb {
             }
 
             PlainTuple plain(&dst_schema);
-
-            for(int i = 0; i < this->schema_.getFieldCount(); i++) {
+            int field_cnt = this->schema_.getFieldCount();
+            for(int i = 0; i < field_cnt; i++) {
                 PlainField p = this->getField(row, i).reveal(party);
                 plain.setField(i, p);
             }

@@ -14,12 +14,11 @@
 namespace  vaultdb {
     class QuerySchema {
 
-    protected:
-
+    public:
         std::map<int32_t, QueryFieldDesc> fields_;
         size_t tuple_size_; // in bits
 
-    public:
+
         // offsets are used to jump to the specified field in memory
         // In OMPC the unit of offsets is packed wires
         // In all others, it is bits

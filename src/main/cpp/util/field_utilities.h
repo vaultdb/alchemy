@@ -225,7 +225,7 @@ namespace vaultdb {
             Bit *cursor = dst.bits.data();
             for(int i = 0; i < col_cnt; ++i) {
                 SecureField f = table->getPackedField(row, i);
-                QueryFieldDesc desc = schema.getField(i);
+                QueryFieldDesc desc = schema.fields_[i];
 
                 switch(f.getType()) {
                     case FieldType::SECURE_BOOL: {
