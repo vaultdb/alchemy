@@ -64,7 +64,6 @@ TEST_F(SortTest, tpchQ3Sort) {
 
     auto sort = new Sort<bool>(input, sort_def);
     auto observed = sort->run();
-    cout << "Observed: " << *observed << endl;
     ASSERT_TRUE(DataUtilities::verifyCollation(observed));
 }
 
