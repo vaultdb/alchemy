@@ -32,14 +32,14 @@ class SecureTpcHTest : public EmpBaseTest {
 protected:
 
     // depends on truncate-tpch-set.sql
-    void runTest(const int &test_id, const string &test_name, const SortDefinition &expected_sort);
+    void runTest(const int &test_id, const SortDefinition &expected_sort);
     string  generateExpectedOutputQuery(const int & test_id);
 
     int input_tuple_limit_ = 150;
 
 };
 
-void SecureTpcHTest::runTest(const int &test_id, const string &test_name, const SortDefinition &expected_sort) {
+void SecureTpcHTest::runTest(const int &test_id, const SortDefinition &expected_sort) {
 
     string expected_sql = generateExpectedOutputQuery(test_id);
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 0);
@@ -47,7 +47,7 @@ void SecureTpcHTest::runTest(const int &test_id, const string &test_name, const 
 
     ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
-    string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
+    string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q" + std::to_string(test_id) + ".json";
 
     PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
    SecureOperator *root = parser.getRoot();
@@ -76,7 +76,7 @@ SecureTpcHTest::generateExpectedOutputQuery(const int &test_id) {
  // passes in ~17 secs on codd2
 TEST_F(SecureTpcHTest, tpch_q01) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort);
+    runTest(1, expected_sort);
 }
 
 
@@ -89,7 +89,7 @@ TEST_F(SecureTpcHTest, tpch_q03) {
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
-    runTest(3, "q3", expected_sort);
+    runTest(3, expected_sort);
 }
 
 
@@ -100,7 +100,7 @@ TEST_F(SecureTpcHTest, tpch_q05) {
 
 
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(5, "q5", expected_sort);
+    runTest(5, expected_sort);
 
 }
 
@@ -108,14 +108,14 @@ TEST_F(SecureTpcHTest, tpch_q05) {
 TEST_F(SecureTpcHTest, tpch_q08) {
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING)};
     input_tuple_limit_ = (emp_mode_ == EmpMode::SH2PC) ? 400 : 800;
-    runTest(8, "q8", expected_sort);
+    runTest(8, expected_sort);
 }
 
  // *passes in around ~42 secs on codd2
 TEST_F(SecureTpcHTest, tpch_q09) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(9, "q9", expected_sort);
+    runTest(9, expected_sort);
 
 }
 // passes in ~2.5 mins
@@ -128,7 +128,7 @@ TEST_F(SecureTpcHTest, tpch_q18) {
                                  ColumnSort(3, SortDirection::ASCENDING)};
 
 
-    runTest(18, "q18", expected_sort);
+    runTest(18, expected_sort);
 }
 
 
