@@ -46,7 +46,7 @@ void ZkTest::SetUp() {
     Logger* log = get_log();
 
     log->write("ZkTest::SetUp() complete", Level::INFO);
-    log->write("DB name: " + db_name_, Level::INFO);
+   // log->write("DB name: " + db_name_, Level::INFO);
 
 }
 

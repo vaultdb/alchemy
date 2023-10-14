@@ -12,12 +12,12 @@
 using namespace emp;
 using namespace vaultdb;
 
-#define TRUNCATE_INPUTS 0
+#define TRUNCATE_INPUTS 1
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54327, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
-DEFINE_string(unioned_db, "tpch_unioned_600", "unioned db name");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(empty_db, "tpch_empty", "empty db name");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -30,7 +30,7 @@ class ZkTpcHTest : public ZkTest {
 protected:
 
     // depends on truncate-tpch-set.sql
-    int tuple_limit_ = 1000; // when TRUNCATE_INPUTS == 1, tune this to change the size of our test input data
+    int input_tuple_limit_ = 1000; // when TRUNCATE_INPUTS == 1, tune this to change the size of our test input data
     void runTest(const int &test_id, const SortDefinition &expected_sort);
 
 };
@@ -40,14 +40,13 @@ protected:
 void
 ZkTpcHTest::runTest(const int &test_id, const SortDefinition &expected_sort) {
 
-    int limit = (TRUNCATE_INPUTS) ? tuple_limit_ : -1; // set to -1 for full test
+    int limit = (TRUNCATE_INPUTS) ? input_tuple_limit_ : -1; // set to -1 for full test
 
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/zk-q" + std::to_string(test_id) + ".json";
     PlanParser<Bit> parser(db_name_, plan_file, limit);
 
     SecureOperator *root = parser.getRoot();
 
-    clock_t start_time = clock();
     SecureTable *observed = root->run();
 
 
@@ -55,7 +54,7 @@ ZkTpcHTest::runTest(const int &test_id, const SortDefinition &expected_sort) {
         string expected_sql = tpch_queries[test_id];
         if(TRUNCATE_INPUTS) {
             expected_sql = truncated_tpch_queries[test_id];
-            boost::replace_all(expected_sql, "$LIMIT", std::to_string(tuple_limit_));
+            boost::replace_all(expected_sql, "$LIMIT", std::to_string(input_tuple_limit_));
         }
 
         // use alice DB since she's the prover
@@ -81,7 +80,7 @@ TEST_F(ZkTpcHTest, tpch_q01) {
 
 
 TEST_F(ZkTpcHTest, tpch_q03) {
-
+    input_tuple_limit_ = 1200;
     // dummy_tag (-1), 1 DESC, 2 ASC
     // aka revenue desc,  o.o_orderdate
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
@@ -96,12 +95,14 @@ TEST_F(ZkTpcHTest, tpch_q03) {
 
 
 TEST_F(ZkTpcHTest, tpch_q05) {
+    input_tuple_limit_ = 400;
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
     runTest(5, expected_sort);
 
 }
 
 TEST_F(ZkTpcHTest, tpch_q08) {
+    input_tuple_limit_ = 800;
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING)};
     runTest(8, expected_sort);
 }
@@ -117,11 +118,12 @@ TEST_F(ZkTpcHTest, tpch_q09) {
 
 TEST_F(ZkTpcHTest, tpch_q18) {
     // -1 ASC, $4 DESC, $3 ASC
+    input_tuple_limit_ =  400;
+
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(4, SortDirection::DESCENDING),
                                  ColumnSort(3, SortDirection::ASCENDING)};
 
-    string test_name = "q18";
     runTest(18, expected_sort);
 }
 
