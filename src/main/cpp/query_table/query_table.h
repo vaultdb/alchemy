@@ -160,9 +160,10 @@ namespace  vaultdb {
         virtual SecretShares
         generateSecretShares() const = 0; // generate shares for alice and bob - for data sharing (non-computing) node
 
-        virtual PlainTable *reveal(const int & party = emp::PUBLIC) = 0;
+        PlainTable *reveal(const int & party = emp::PUBLIC);
+
         // holds onto dummy rows
-        virtual PlainTable *revealInsecure(const int & party = emp::PUBLIC) const = 0;
+        PlainTable *revealInsecure(const int & party = emp::PUBLIC) const;
 
         virtual QueryTable<B> &operator=(const QueryTable<B> &src) = 0;
 
@@ -233,6 +234,7 @@ namespace  vaultdb {
         virtual void cloneRow(const bool & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) = 0;
         virtual void cloneRow(const emp::Bit & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) = 0;
         virtual void cloneTable(const int & dst_row, QueryTable<B> *src) = 0; // for unioning 2 or more tables
+
         vector<Bit> unpackRow(const int & row, const int & col_cnt) {
             int selection_len = 0;
             for(int i = 0; i < col_cnt; ++i) {
@@ -252,6 +254,9 @@ namespace  vaultdb {
 
 
     };
+
+
+
 
     static std::ostream &operator<<(std::ostream &os, const QueryTable<bool> &table)   {
         os << table.getOstringStream();

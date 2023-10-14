@@ -76,8 +76,6 @@ namespace  vaultdb {
         SecretShares
         generateSecretShares() const override; // generate shares for alice and bob - for data sharing (non-computing) node
 
-        PlainTable *reveal(const int & party = emp::PUBLIC) override;
-        PlainTable *revealInsecure(const int & party = emp::PUBLIC) const override;
 
 
         QueryTable<B> &operator=(const QueryTable<B> &src) override;
@@ -87,7 +85,6 @@ namespace  vaultdb {
 
 
         QueryTuple<bool> getPlainTuple(size_t idx) const override;
-        //QueryTuple<Bit> getSecureTuple(size_t idx) const override;
 
         // memcpy a field from one table to another
         void assignField(const int & dst_row, const int & dst_col,const  QueryTable<B> *src, const int & src_row, const int & src_col) override;

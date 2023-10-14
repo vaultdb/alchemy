@@ -61,9 +61,6 @@ namespace  vaultdb {
 
         SecretShares generateSecretShares() const override; // generate shares for alice and bob - for data sharing (non-computing) node
 
-        PlainTable *reveal(const int & party = emp::PUBLIC) override;
-        PlainTable *revealInsecure(const int & party = emp::PUBLIC) const override;
-
         QueryTable<B> &operator=(const QueryTable<B> &src) override;
 
         static RowTable<B> *deserialize(const QuerySchema &schema, const vector<int8_t> &table_bytes);

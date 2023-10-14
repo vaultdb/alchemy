@@ -42,71 +42,7 @@ RowTable<B>::RowTable(const QueryTable<B> &src) : QueryTable<B>(src) {
 }
 
 
-template <typename B>
-PlainTable *RowTable<B>::reveal(const int & party)   {
-    assert(this->storageModel() == StorageModel::ROW_STORE);
 
-    if(!this->isEncrypted()) {
-        return (RowTable<bool> *) this;
-    }
-
-
-    auto table = (RowTable<Bit> *) this;
-    SortDefinition collation = table->getSortOrder();
-    QuerySchema dst_schema = QuerySchema::toPlain(table->getSchema());
-
-    // if it is not sorted so that the dummies are at the end, sort it now.
-    if(collation.empty() || collation[0].first != -1) {
-        SortDefinition tmp{ColumnSort(-1, SortDirection::ASCENDING)};
-        for(int i = 0; i < collation.size(); ++i) {
-            tmp.emplace_back(collation[i]);
-        }
-        Sort sort(this->clone(), tmp);
-        sort.setOperatorId(-2); // don't print as part of query stats
-        table = (RowTable<Bit> *)  sort.run()->clone();
-    }
-
-    // count # of real (not dummy) rows
-    int row_cnt = 0;
-    while(!table->getDummyTag(row_cnt).reveal()) {
-        ++row_cnt;
-    }
-
-    auto dst_table = new RowTable<bool>(row_cnt, dst_schema, collation);
-
-    for(int i = 0; i < row_cnt; ++i)  {
-        PlainTuple dst_tuple = table->revealRow(i, dst_schema, party);
-        dst_table->putTuple(i, dst_tuple);
-    }
-
-    if(table != (RowTable<Bit> *) this) // extra sort
-        delete table;
-
-    return dst_table;
-
-}
-
-template<typename B>
-PlainTable *RowTable<B>::revealInsecure(const int &party) const {
-    assert(this->storageModel() == StorageModel::ROW_STORE);
-
-    if(!this->isEncrypted()) {
-        return (RowTable<bool> *) this;
-    }
-
-
-    auto table = (RowTable<Bit> *) this;
-    QuerySchema dst_schema = QuerySchema::toPlain(this->schema_);
-
-    auto dst_table = new RowTable<bool>(this->tuple_cnt_, dst_schema, this->getSortOrder());
-
-    for(uint32_t i = 0; i < this->tuple_cnt_; ++i)  {
-            PlainTuple t = table->revealRow(i, dst_schema, party);
-            dst_table->putTuple(i, t);
-    }
-    return dst_table;
-
-}
 
 
 
