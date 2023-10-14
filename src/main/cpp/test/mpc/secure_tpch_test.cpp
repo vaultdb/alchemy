@@ -63,8 +63,7 @@ void SecureTpcHTest::runTest(const int &test_id, const SortDefinition &expected_
 
 }
 
-string
-SecureTpcHTest::generateExpectedOutputQuery(const int &test_id) {
+string SecureTpcHTest::generateExpectedOutputQuery(const int &test_id) {
     string query = tpch_queries[test_id];
     if (input_tuple_limit_ > 0) {
         query = (emp_mode_ == EmpMode::SH2PC) ? truncated_tpch_queries[test_id] : truncated_tpch_queries_single_input_party[test_id];

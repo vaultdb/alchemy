@@ -7,7 +7,6 @@
 #include <operators/sort_merge_aggregate.h>
 #include <parser/plan_parser.h>
 #include <test/zk/zk_base_test.h>
-#include <ctime>
 
 using namespace emp;
 using namespace vaultdb;
@@ -35,10 +34,8 @@ protected:
 
 };
 
-// this runs the "hybrid" tpc-h plans from VaultDB - these ones perform some operators locally in the clear on the data provider.
-// for E2E ZK queries run conf/plans/zk-*.json or see https://github.com/vaultdb/zksql
-void
-ZkTpcHTest::runTest(const int &test_id, const SortDefinition &expected_sort) {
+
+void ZkTpcHTest::runTest(const int &test_id, const SortDefinition &expected_sort) {
 
     int limit = (TRUNCATE_INPUTS) ? input_tuple_limit_ : -1; // set to -1 for full test
 
@@ -46,19 +43,24 @@ ZkTpcHTest::runTest(const int &test_id, const SortDefinition &expected_sort) {
     PlanParser<Bit> parser(db_name_, plan_file, limit);
 
     SecureOperator *root = parser.getRoot();
+//    cout << "Query plan: " << root->printTree() << endl;
+
 
     SecureTable *observed = root->run();
 
 
     if(FLAGS_validation) {
         string expected_sql = tpch_queries[test_id];
-        if(TRUNCATE_INPUTS) {
-            expected_sql = truncated_tpch_queries[test_id];
+        if (limit > 0) {
+            expected_sql =  zk_tpch_queries[test_id];
             boost::replace_all(expected_sql, "$LIMIT", std::to_string(input_tuple_limit_));
         }
 
+//        cout << "Expected results query " << expected_sql << endl;
         // use alice DB since she's the prover
         PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
+        assert(!expected->empty());
+
         expected->setSortOrder(expected_sort);
         PlainTable *revealed = observed->reveal();
 
@@ -74,6 +76,7 @@ ZkTpcHTest::runTest(const int &test_id, const SortDefinition &expected_sort) {
 
 
 TEST_F(ZkTpcHTest, tpch_q01) {
+    input_tuple_limit_ = 150;
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest(1, expected_sort);
 }

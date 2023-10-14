@@ -712,19 +712,19 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
 
-        B result = (dst_table->getField(i, is_new_idx_) == one_b);
-        tmp_row.setDummyTag(FieldUtilities::select(result, tmp_row.getDummyTag(), dst_table->getDummyTag(i)));
+        B new_row = (dst_table->getField(i, is_new_idx_) == one_b);
+        tmp_row.setDummyTag(FieldUtilities::select(new_row, tmp_row.getDummyTag(), dst_table->getDummyTag(i)));
 
         for(int j = 0; j < schema.getFieldCount(); j++) {
             dst_table->setField(i, is_new_idx_, zero_b);
-            Field<B> to_write = Field<B>::If(result, tmp_row.getPackedField(j), dst_table->getPackedField(i, j));
+            Field<B> to_write = Field<B>::If(new_row, tmp_row.getPackedField(j), dst_table->getPackedField(i, j));
             tmp_row.setPackedField(j, to_write);
             dst_table->setPackedField(i, j, to_write);
 
         }
 		Field<B> write_index = FieldFactory<B>::getInt(i);
 		B end_matches = write_index >= s-one_;
-        dst_table->setDummyTag(i, FieldUtilities::select(result, tmp_row.getDummyTag() | end_matches, dst_table->getDummyTag(i) | end_matches));
+        dst_table->setDummyTag(i, FieldUtilities::select(new_row, tmp_row.getDummyTag() | end_matches, dst_table->getDummyTag(i) | end_matches));
     }
 
     return dst_table;
