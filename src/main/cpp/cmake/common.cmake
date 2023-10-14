@@ -59,13 +59,13 @@ include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/_deps/emp-rescu)
 #find_package(Boost REQUIRED COMPONENTS date_time system)
 
 #Compilation flags
-set(CMAKE_C_FLAGS "-pthread   -Wfatal-errors  -Wno-ignored-attributes -Wno-stringop-overread ")
+set(CMAKE_C_FLAGS "-pthread   -Wfatal-errors  -Wno-ignored-attributes -Wno-stringop-overread  -Wno-unused-result ")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}  -fPIC")
 
 #message(STATUS "Target platform: ${CMAKE_SYSTEM_NAME}")
 message("${Blue}-- Platform: ${CMAKE_SYSTEM_PROCESSOR}${ColourReset}")
 IF(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(aarch64)|(arm64)")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv8-a+simd+crypto+crc -Wno-deprecated-declarations -Wno-unused-result ")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv8-a+simd+crypto+crc -Wno-deprecated-declarations ")
 ELSE(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(aarch64)|(arm64)")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native -maes -mrdseed")
 ENDIF(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(aarch64)|(arm64)" )
