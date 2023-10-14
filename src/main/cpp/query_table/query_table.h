@@ -192,10 +192,6 @@ namespace  vaultdb {
         }
 
         inline PlainTuple revealRow(const int & row) const {
-            if(std::is_same_v<B, bool>) {
-                return getPlainTuple(row);
-            }
-
             QuerySchema plain_schema = QuerySchema::toPlain(schema_);
             return revealRow(row, plain_schema);
         }
