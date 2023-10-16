@@ -78,7 +78,6 @@ void SecureSqlInput::runQuery() {
         has_input = true;
     }
 
-
     string local_db = (!has_input) ? SystemConfiguration::getInstance().getEmptyDbName() : db_name_;
 
     // running the query on all parties to get the schema

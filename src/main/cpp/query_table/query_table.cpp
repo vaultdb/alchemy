@@ -17,10 +17,7 @@ using namespace vaultdb;
 template<typename B>
 PlainTable *QueryTable<B>::reveal(const int &party) {
     {
-
         if(!this->isEncrypted()) { return (QueryTable<bool> *) this;  }
-
-
         auto table = (QueryTable<Bit> *) this;
         QuerySchema dst_schema = QuerySchema::toPlain(this->schema_);
         SortDefinition collation = table->getSortOrder();
