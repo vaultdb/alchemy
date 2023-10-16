@@ -22,7 +22,6 @@ Operator<B>::Operator(QueryTable<B> *lhs, const SortDefinition & sorted_on)
 template<typename B>
 Operator<B>::Operator(QueryTable<B> *lhs, QueryTable<B> *rhs, const SortDefinition & sorted_on)
     : lhs_child_(new TableInput(lhs)), rhs_child_(new TableInput(rhs)), sort_definition_(sorted_on),  system_conf_(SystemConfiguration::getInstance())  {
-
 }
 
 template<typename B>
@@ -63,7 +62,7 @@ QueryTable<B> *Operator<B>::run() {
     if(std::is_same_v<B, Bit> && this->getOperatorId() >= -1) {
 		Logger* log = get_log();
 
-        log->write("Operator #" + std::to_string(this->getOperatorId()) + " " + getTypeString() + 
+        log->write("Operator #" + std::to_string(this->getOperatorId()) + " " + getTypeString() +
 				" ran for " + std::to_string(runtime_ms_) + " ms, " + 
 				"gate count: " + std::to_string(gate_cnt_) + 
 				" output cardinality: " + std::to_string(output_->getTupleCount()) + 
@@ -75,7 +74,6 @@ QueryTable<B> *Operator<B>::run() {
             log->write("Estimated cost for" + this->toString() + " : " + std::to_string(estimated_gates) +
                     ", Observed gates: " + std::to_string(gate_cnt_) +
                     ", Error rate(%) : " + std::to_string(relative_error) + "\n", Level::DEBUG);
-    //        if(relative_error > 25.0) cout << "***Warning: high cost model delta on operator (" << this->getOperatorId() << ") " << this->getTypeString() << endl;
         }
     }
 
@@ -163,11 +161,8 @@ std::string Operator<B>::toSortOptimizedString() const {
     ss << " order by: " << DataUtilities::printSortDefinition(sort_definition_);
 
     // if operator id is -1, then this sort is inserted
-    if(operator_id_ == -1){
-        if(parent_->getType() == OperatorType::SORT_MERGE_AGGREGATE)
-            ss << " | parent : " << parent_->getOperatorId() << ", child : " << lhs_child_->getOperatorId();
-        else if(parent_->getType() == OperatorType::KEYED_SORT_MERGE_JOIN)
-            ss << " | parent : " << parent_->getOperatorId() << ", child : " << lhs_child_->getOperatorId();
+    if(operator_id_ == -1 && parents_.size() == 1 && (parents_[0]->getType() == OperatorType::SORT_MERGE_AGGREGATE ||  parents_[0]->getType() == OperatorType::KEYED_SORT_MERGE_JOIN)) {
+            ss << " | parent : " << parents_[0]->getOperatorId() << ", child : " << lhs_child_->getOperatorId();
     }
     return ss.str();
 

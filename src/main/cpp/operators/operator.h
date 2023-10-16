@@ -27,7 +27,8 @@ namespace  vaultdb {
     class Operator {
 
     protected:
-        Operator *parent_ = nullptr;
+        // to enable CTEs we need to be able to have multiple parents
+        vector<Operator *> parents_;
         Operator *lhs_child_ = nullptr;
         Operator *rhs_child_ = nullptr;
         QueryTable<B> *output_ = nullptr;
@@ -45,12 +46,21 @@ namespace  vaultdb {
 
     public:
 
-        Operator(const SortDefinition & sorted_on = SortDefinition()) : sort_definition_(sorted_on), system_conf_(SystemConfiguration::getInstance()) {}
+        Operator(const SortDefinition & sorted_on = SortDefinition()) : sort_definition_(sorted_on), system_conf_(SystemConfiguration::getInstance()) { }
 
         virtual ~Operator() {
             if(output_ != nullptr)  delete output_;
-            if(lhs_child_  != nullptr)   delete lhs_child_;
-            if(rhs_child_ != nullptr)   delete rhs_child_;
+            if(lhs_child_  != nullptr) {
+                lhs_child_->removeParent(this);
+                if(lhs_child_->parents_.empty()) // reference counter is zero
+                    delete lhs_child_;
+            }
+
+            if(rhs_child_ != nullptr)   {
+                rhs_child_->removeParent(this);
+                if(rhs_child_->parents_.empty())
+                    delete rhs_child_;
+            }
         }
 
         Operator(QueryTable<B> * lhs, const SortDefinition & sorted_on = SortDefinition());
@@ -58,6 +68,7 @@ namespace  vaultdb {
 
         Operator(Operator *child, const SortDefinition & sorted_on = SortDefinition());
         Operator(Operator *lhs, Operator *rhs, const SortDefinition & sorted_on = SortDefinition());
+
         // cloning children, omitting parent so as to not copy entire tree
         Operator(const Operator &o) :
             sort_definition_(o.sort_definition_), output_schema_(o.output_schema_), system_conf_(SystemConfiguration::getInstance()),
@@ -105,7 +116,7 @@ namespace  vaultdb {
 
         virtual OperatorType getType() const = 0;
 
-        inline Operator *getParent() const { return parent_; }
+        inline Operator *getParent() const { return parents_[0]; }
 
         inline Operator *getChild(int idx = 0) const {
             if(idx == 0) return lhs_child_;
@@ -113,8 +124,12 @@ namespace  vaultdb {
         }
 
         void setParent(Operator *p) {
-            parent_ = p;
+            if(std::find(parents_.begin(), parents_.end(), p) == parents_.end())
+                parents_.push_back(p);
+        }
 
+        void removeParent(Operator *p) {
+            parents_.erase(std::remove(parents_.begin(), parents_.end(), p), parents_.end());
         }
 
         inline void setChild(Operator *c, int idx = 0) {
