@@ -43,11 +43,7 @@ void ZkTpcHTest::runTest(const int &test_id, const SortDefinition &expected_sort
     PlanParser<Bit> parser(db_name_, plan_file, limit);
 
     SecureOperator *root = parser.getRoot();
-//    cout << "Query plan: " << root->printTree() << endl;
-
-
     SecureTable *observed = root->run();
-
 
     if(FLAGS_validation) {
         string expected_sql = tpch_queries[test_id];
@@ -56,21 +52,17 @@ void ZkTpcHTest::runTest(const int &test_id, const SortDefinition &expected_sort
             boost::replace_all(expected_sql, "$LIMIT", std::to_string(input_tuple_limit_));
         }
 
-//        cout << "Expected results query " << expected_sql << endl;
         // use alice DB since she's the prover
         PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
-        assert(!expected->empty());
+        if(TRUNCATE_INPUTS) assert(!expected->empty()); // if we're just testing get non-empty inputs
 
         expected->setSortOrder(expected_sort);
         PlainTable *revealed = observed->reveal();
-
         ASSERT_EQ(*expected, *revealed);
         delete expected;
         delete revealed;
 
     }
-
-
     delete root;
 }
 
