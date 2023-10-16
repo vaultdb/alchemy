@@ -23,7 +23,7 @@
             "name": "$4"
           },
           {
-            "literal": "LARGE ANODIZED STEEL     ",
+            "literal": "LARGE ANODIZED STEEL",
             "type": {
               "type": "VARCHAR",
               "nullable": false,
@@ -366,14 +366,6 @@
     },
     {
       "id": "17",
-      "relOp": "JdbcTableScan",
-      "table": [
-        "nation"
-      ],
-      "inputs": []
-    },
-    {
-      "id": "18",
       "relOp": "LogicalProject",
       "fields": [
         "n_nationkey",
@@ -391,7 +383,7 @@
       ]
     },
     {
-      "id": "19",
+      "id": "18",
       "relOp": "LogicalJoin",
       "foreignKey": 0,
       "condition": {
@@ -414,11 +406,11 @@
       "joinType": "inner",
       "inputs": [
         "15",
-        "18"
+        "17"
       ]
     },
     {
-      "id": "20",
+      "id": "19",
       "relOp": "LogicalProject",
       "fields": [
         "n_nationkey",
@@ -439,7 +431,7 @@
       ]
     },
     {
-      "id": "21",
+      "id": "20",
       "relOp": "LogicalJoin",
       "foreignKey": 0,
       "condition": {
@@ -461,12 +453,12 @@
       },
       "joinType": "inner",
       "inputs": [
-        "19",
-        "20"
+        "18",
+        "19"
       ]
     },
     {
-      "id": "22",
+      "id": "21",
       "relOp": "JdbcTableScan",
       "table": [
         "region"
@@ -474,7 +466,7 @@
       "inputs": []
     },
     {
-      "id": "23",
+      "id": "22",
       "relOp": "LogicalFilter",
       "condition": {
         "op": {
@@ -499,7 +491,7 @@
       }
     },
     {
-      "id": "24",
+      "id": "23",
       "relOp": "LogicalProject",
       "fields": [
         "r_regionkey",
@@ -517,7 +509,7 @@
       ]
     },
     {
-      "id": "25",
+      "id": "24",
       "relOp": "LogicalJoin",
       "foreignKey": 0,
       "condition": {
@@ -539,12 +531,12 @@
       },
       "joinType": "inner",
       "inputs": [
-        "21",
-        "24"
+        "20",
+        "23"
       ]
     },
     {
-      "id": "26",
+      "id": "25",
       "relOp": "LogicalProject",
       "fields": [
         "o_year",
@@ -664,7 +656,7 @@
       ]
     },
     {
-      "id": "27",
+      "id": "26",
       "relOp": "LogicalAggregate",
       "group": [
         0
@@ -709,7 +701,7 @@
       ]
     },
     {
-      "id": "28",
+      "id": "27",
       "relOp": "LogicalSort",
       "collation": [
         {
@@ -720,7 +712,7 @@
       ]
     },
     {
-      "id": "29",
+      "id": "28",
       "relOp": "LogicalProject",
       "fields": [
         "o_year",
