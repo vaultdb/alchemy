@@ -491,8 +491,7 @@ namespace vaultdb {
                     "     FROM (SELECT * FROM orders ORDER BY o_orderkey LIMIT $LIMIT) o),\n"
                     "     yellow_parts AS (\n"
                     "         SELECT p_partkey\n"
-                    "	 FROM (SELECT * FROM part ORDER BY p_partkey LIMIT $LIMIT) p\n"
-                    "	 WHERE p_name like '%yellow%'),\n"
+                    "	 FROM (SELECT * FROM part ORDER BY p_partkey LIMIT $LIMIT) p),\n" // WHERE p_name like '%yellow%' - omitting this string comparison in circuits
                     "     profit AS (\n"
                     "         SELECT   n_name,  o_year,   l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity as amount\n"
                     "    	  FROM  yellow_parts p,\n"
