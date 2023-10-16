@@ -99,7 +99,7 @@ namespace  vaultdb {
         // recurses first, then invokes runSelf method
         QueryTable<B>  *run();
         std::string printTree() const;
-        std::string printMinCostPlan();
+        //std::string printMinCostPlan();
         std::string toString() const;
         std::string toSortOptimizedString() const;
         size_t getGateCount() const { return gate_cnt_; }

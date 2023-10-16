@@ -127,46 +127,48 @@ std::string Operator<B>::toString() const {
 
 }
 
-template<typename B>
-std::string Operator<B>::printMinCostPlan() {
-    return printMinCostHelper("");
+//template<typename B>
+//std::string Operator<B>::printMinCostPlan() {
+//    return printMinCostHelper("");
+//
+//}
+//*** commented out because print method is changing tree structure
+//*** need to modularize this.
 
-}
-
-template<typename B>
-std::string Operator<B>::printMinCostHelper(const string &prefix) {
-    stringstream  ss;
-    ss << prefix << toSortOptimizedString() << endl;
-    string indent = prefix + "    ";
-
-    if(lhs_child_){
-        if(lhs_child_->getParent() == nullptr)
-            lhs_child_->setParent(this);
-        ss << lhs_child_->printMinCostHelper(indent);
-    }
-    if(rhs_child_){
-        if(rhs_child_->getParent() == nullptr)
-            rhs_child_->setParent(this);
-        ss << rhs_child_->printMinCostHelper(indent);
-    }
-
-    return ss.str();
-}
-
-template<typename B>
-std::string Operator<B>::toSortOptimizedString() const {
-    stringstream  ss;
-
-    ss << "#" << operator_id_ << ": " << getTypeString();
-    ss << " order by: " << DataUtilities::printSortDefinition(sort_definition_);
-
-    // if operator id is -1, then this sort is inserted
-    if(operator_id_ == -1 && parents_.size() == 1 && (parents_[0]->getType() == OperatorType::SORT_MERGE_AGGREGATE ||  parents_[0]->getType() == OperatorType::KEYED_SORT_MERGE_JOIN)) {
-            ss << " | parent : " << parents_[0]->getOperatorId() << ", child : " << lhs_child_->getOperatorId();
-    }
-    return ss.str();
-
-}
+//template<typename B>
+//std::string Operator<B>::printMinCostHelper(const string &prefix) {
+//    stringstream  ss;
+//    ss << prefix << toSortOptimizedString() << endl;
+//    string indent = prefix + "    ";
+//
+//    if(lhs_child_){
+//        if(lhs_child_->getParent() == nullptr)
+//            lhs_child_->setParent(this);
+//        ss << lhs_child_->printMinCostHelper(indent);
+//    }
+//    if(rhs_child_){
+//        if(rhs_child_->getParent() == nullptr)
+//            rhs_child_->setParent(this);
+//        ss << rhs_child_->printMinCostHelper(indent);
+//    }
+//
+//    return ss.str();
+//}
+//
+//template<typename B>
+//std::string Operator<B>::toSortOptimizedString() const {
+//    stringstream  ss;
+//
+//    ss << "#" << operator_id_ << ": " << getTypeString();
+//    ss << " order by: " << DataUtilities::printSortDefinition(sort_definition_);
+//
+//    // if operator id is -1, then this sort is inserted
+//    if(operator_id_ == -1 && parents_.size() == 1 && (parents_[0]->getType() == OperatorType::SORT_MERGE_AGGREGATE ||  parents_[0]->getType() == OperatorType::KEYED_SORT_MERGE_JOIN)) {
+//            ss << " | parent : " << parents_[0]->getOperatorId() << ", child : " << lhs_child_->getOperatorId();
+//    }
+//    return ss.str();
+//
+//}
 
 /*
 template<typename B>
