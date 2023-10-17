@@ -47,7 +47,7 @@ ALICE_HOST=$1
 ./bin/emp_table_test  --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST --validation=false
 ./bin/secure_filter_test  --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST --validation=false
 ./bin/secure_sort_test  --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST --validation=false
-./bin/secure_basic_join_test  --cutoff=5 --storage=column --alice_host=$ALICE_HOST --validation=false
+./bin/secure_basic_join_test  --cutoff=5 --storage=column --alice_host=$ALICE_HOST --validation=false --party=2
 ./bin/secure_keyed_join_test  --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST --validation=false
 #./bin/secure_keyed_sort_merge_join_test --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST --validation=false
 ./bin/secure_scalar_aggregate_test   --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST --validation=false
