@@ -48,4 +48,4 @@ bash  test/support/load-generated-data.sh 100
 #./bin/enrich_test  --party=1 --storage=column  #excluded because data is not synced between A + B
 ./bin/secure_plan_deparser_test --flagfile=flagfiles/alice.flags --storage=column --validation=false
 ./bin/secure_tpch_test  --flagfile=flagfiles/alice.flags --storage=column --validation=false
-./bin/full_optimized_test --flagfile=flagfiles/alice.flags --storage=column --validation=false
+./bin/fully_optimized_test --flagfile=flagfiles/alice.flags --storage=column --validation=false

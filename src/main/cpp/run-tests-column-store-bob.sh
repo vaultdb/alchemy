@@ -56,5 +56,5 @@ ALICE_HOST=$1
 #./bin/enrich_test  --party=2 --storage=column --alice_host=$ALICE_HOST # excluded because data is not synced between A + B
 ./bin/secure_plan_deparser_test --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST --validation=false
 ./bin/secure_tpch_test  --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST --validation=false
-./bin/full_optimized_test --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST --validation=false
+./bin/fully_optimized_test --flagfile=flagfiles/bob.flags --storage=column --alice_host=$ALICE_HOST --validation=false
 
