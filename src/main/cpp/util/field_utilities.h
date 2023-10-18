@@ -217,6 +217,7 @@ namespace vaultdb {
 
         }
 
+        // does not include dummy tag
         static Integer unpackRow(const QueryTable<Bit> *table, const int & row, const int & col_cnt, const int & selection_length_bits) {
             QuerySchema schema = table->getSchema();
             Integer dst(selection_length_bits, 0, PUBLIC);
