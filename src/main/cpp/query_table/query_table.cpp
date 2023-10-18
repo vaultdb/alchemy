@@ -35,8 +35,8 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
 
         // count # of real (not dummy) rows
         int row_cnt = 0;
-        while(!table->getDummyTag(row_cnt).reveal()
-            && (row_cnt < table->getTupleCount())) {
+        while((row_cnt < table->getTupleCount()) &&
+	      !table->getDummyTag(row_cnt).reveal()) {
             ++row_cnt;
         }
 

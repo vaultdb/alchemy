@@ -77,10 +77,9 @@ TEST_F(EmpTest, emp_test_varchar) {
         ASSERT_EQ(initial_string, decoded_str);
     }
 
-
-    OMPCPackedWire packed[bit_cnt];
-
-    emp::Integer unpacked(bit_cnt, 0L, emp::PUBLIC);
+    if(SystemConfiguration::getInstance().wire_packing_enabled_) {
+      OMPCPackedWire packed[bit_cnt]; // TODO: get packed wire cnt for this
+      emp::Integer unpacked(bit_cnt, 0L, emp::PUBLIC);
 
     manager_->pack((Bit *) secret_shared.bits.data(), (Bit *) packed, bit_cnt);
     manager_->unpack((Bit *) packed, (Bit *) unpacked.bits.data(), bit_cnt);
@@ -90,6 +89,7 @@ TEST_F(EmpTest, emp_test_varchar) {
         string revealed = Field<Bit>::revealString(unpacked);
         ASSERT_EQ(initial_string, revealed);
     }
+   }
 }
 
 TEST_F(EmpTest, test_float_normalization) {
