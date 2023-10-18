@@ -300,7 +300,7 @@ namespace  vaultdb {
 
     private:
         std::string printHelper(const std::string & prefix) const;
-        std::string printMinCostHelper(const std::string & prefix);
+        //std::string printMinCostHelper(const std::string & prefix);
         int operator_id_ = -1;
 
     };
