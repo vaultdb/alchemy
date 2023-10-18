@@ -45,9 +45,9 @@ template <typename B>
 ColumnTable<B>::ColumnTable(const QueryTable<B> &s) : QueryTable<B>(s) {
     // only support copy constructor on tables with same storage
     assert(s.storageModel() == StorageModel::COLUMN_STORE);
-    auto src = (ColumnTable<B> *) &s;
+    ColumnTable<B> src = ((ColumnTable<B>) s);
 
-    for(auto col_entry : src->column_data_) {
+    for(auto col_entry : src.column_data_) {
         this->column_data_[col_entry.first] = col_entry.second;
     }
 
@@ -223,8 +223,8 @@ void ColumnTable<B>::assignField(const int &dst_row, const int &dst_col, const Q
     ColumnTable<B> *src = (ColumnTable<B> *) s;
 
     int read_size = src->field_sizes_bytes_[src_col];
-    int8_t *src_field = (int8_t *) (src->column_data_[src_col].data()  + read_size * src_row);
-    int8_t *dst_field = (int8_t *) (this->column_data_[dst_col].data() + read_size * dst_row);
+    int8_t *src_field = src->getFieldPtr(src_row, src_col);
+    int8_t *dst_field = getFieldPtr(dst_row, dst_col);
     memcpy(dst_field, src_field, read_size);
 
 
