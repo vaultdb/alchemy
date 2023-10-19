@@ -102,6 +102,14 @@ namespace  vaultdb {
             return new RowTable<B>(*this);
         }
 
+        vector<int8_t> unpackRowBytes(const int & row) const override {
+            int read_len = this->tuple_size_bytes_;
+            vector<int8_t> dst(read_len);
+            int8_t *src = getFieldPtr(row, 0);
+            memcpy(dst.data(), src, read_len);
+            return dst;
+        }
+
         void compareSwap(const bool & swap, const int  & lhs_row, const int & rhs_row)  override;
         void compareSwap(const Bit & swap, const int  & lhs_row, const int & rhs_row)  override;
         void compareSwapOmpc(const Bit &swap, const int & lhs_idx, const int & rhs_idx);

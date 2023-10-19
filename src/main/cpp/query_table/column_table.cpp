@@ -244,8 +244,8 @@ void ColumnTable<B>::assignField(const emp::Bit & write, const int &dst_row, con
     int read_size = src->field_sizes_bytes_[src_col];
     int field_bits = read_size / TypeUtilities::getEmpBitSize();
 
-    Bit *read_ptr = (Bit *) (src->column_data_[src_col].data()  + read_size * src_row);
-    Bit *write_ptr = (Bit *) (this->column_data_[dst_col].data() + read_size * dst_row);
+    Bit *read_ptr = (Bit *) src->getFieldPtr(src_row, src_col);
+    Bit *write_ptr = (Bit *) getFieldPtr(dst_row, dst_col);
 
     for(int i = 0; i < field_bits; ++i) {
         *write_ptr = emp::If(write, *read_ptr, *write_ptr);
@@ -276,33 +276,73 @@ ColumnTable<B>::cloneFields(const int &dst_row, const int &dst_col, const QueryT
 
 template<typename B>
 void ColumnTable<B>::cloneRow(const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row) {
+    // in some cases (SMJ) these might not have the same schema
+    // here we serialize the src tuple and then write it out bitwise over the dst bits
 
-    cloneFields(dst_row, dst_col, src, src_row, 0,src->getSchema().getFieldCount());
+    // dst >= src in size
+    assert(this->tuple_size_bytes_ >= src->tuple_size_bytes_);
+
+    //clone everything except dummy tag  - handle that separately to push to end
+    int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
+
+    int cursor = 0; // bytes
+    int write_idx = dst_col; // field indexes
+    vector<int8_t> row = src->unpackRowBytes(src_row);
+
+    // re-pack row
+    while(cursor < src_size) {
+        int8_t *write_pos = getFieldPtr(dst_row, write_idx);
+        int bytes_remaining = src_size - cursor;
+        int dst_len = this->field_sizes_bytes_.at(write_idx);
+        int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
+        memcpy(write_pos, row.data() + cursor, to_read);
+        cursor += to_read;
+        ++write_idx;
+    }
+
 }
 
+
+
+
 template<typename B>
-void ColumnTable<B>::cloneRow(const bool &write, const int &dst_row, const int &dst_col, const QueryTable<B> *src,
-                           const int &src_row) {
+void ColumnTable<B>::cloneRow(const bool &write, const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row) {
     if(write)
         cloneRow(dst_row, dst_col, src, src_row);
 
 }
 
 template<typename B>
-void ColumnTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &dst_col, const QueryTable<B> *s, const int &src_row) {
+void ColumnTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row) {
 
+    assert(this->tuple_size_bytes_ >= src->tuple_size_bytes_);
 
-    assert(s->storageModel() == StorageModel::COLUMN_STORE);
-    ColumnTable<B> *src = (ColumnTable<B> *) s;
+    //clone everything except dummy tag  - handle that separately to push to end
+    int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
 
-    int write_col = dst_col;
-    int read_col = 0;
+    int cursor = 0; // bytes
+    int write_idx = dst_col; // field indexes
+    vector<int8_t> row = src->unpackRowBytes(src_row);
 
-    for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
-        this->assignField(write, dst_row, write_col, src, src_row, read_col);
-        ++read_col;
-        ++write_col;
+    // re-pack row
+    while(cursor < src_size) {
+        Bit *write_pos = (Bit *) getFieldPtr(dst_row, write_idx);
+        Bit *read_pos = (Bit *) (row.data() + cursor);
+
+        int bytes_remaining = src_size - cursor;
+        int dst_len = this->field_sizes_bytes_.at(write_idx);
+        int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
+
+        int to_read_bits = to_read / TypeUtilities::getEmpBitSize();
+        for(int i = 0; i <  to_read_bits; ++i) {
+            *write_pos = emp::If(write, *read_pos, *write_pos);
+            ++write_pos;
+            ++read_pos;
+        }
+        cursor += to_read;
+        ++write_idx;
     }
+
 
 }
 
@@ -320,7 +360,7 @@ void ColumnTable<B>::cloneTable(const int & dst_row, QueryTable<B> *s) {
     for(auto pos : this->field_sizes_bytes_) {
         int col_id = pos.first;
         int field_size = pos.second;
-        write_pos = column_data_.at(col_id).data() + dst_row * field_size;
+        write_pos = getFieldPtr(dst_row, col_id);
         read_pos = src->column_data_.at(col_id).data();
         memcpy(write_pos, read_pos, field_size * src->getTupleCount());
     }

@@ -97,12 +97,14 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
     QueryTable<B> *s1, *s2;
 
+//    cout << "augmented sample: " << DataUtilities::printTable(augmented.second, 5, false) << endl;
     s1 = obliviousExpand(augmented.first, true);
 	s2 = obliviousExpand(augmented.second, false);
 
     delete augmented.first;
 	delete augmented.second;
 
+//    cout << "Expanded: " << endl << DataUtilities::printTable(s2) << endl;
 
     this->output_ = TableFactory<B>::getTable(foreign_key_cardinality_, out_schema);
 
@@ -112,6 +114,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
 
     delete s1;
     delete s2;
+    cout << "RHS reverted sample: " << DataUtilities::printTable(rhs_reverted, 4, false);
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
         B dummy_tag = lhs_reverted->getDummyTag(i) | rhs_reverted->getDummyTag(i);
@@ -210,7 +213,7 @@ QuerySchema KeyedSortMergeJoin<B>::getAugmentedSchema() {
     lhs_prime_ = projectJoinKeyToFirstAttr(lhs, lhs_keys, true);
     rhs_prime_ = projectJoinKeyToFirstAttr(rhs, rhs_keys, false);
 
-	QuerySchema augmented_schema = (lhs_smaller_) ? rhs_prime_->getSchema() : lhs_prime_->getSchema();
+    QuerySchema augmented_schema = (lhs_smaller_) ? rhs_prime_->getSchema() : lhs_prime_->getSchema();
 	
     if(!is_secure_) {
         QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_, 0);
@@ -241,10 +244,9 @@ QuerySchema KeyedSortMergeJoin<B>::getAugmentedSchema() {
 template<typename B>
 pair<QueryTable<B> *, QueryTable<B> *>  KeyedSortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
     assert(lhs->storageModel() == rhs->storageModel());
-    storage_model_ = lhs->storageModel();
 
     // only support row store for now - col store won't easily "stripe" the bits of the smaller relation over different schema
-    assert(storage_model_ == StorageModel::ROW_STORE);
+//    assert(storage_model_ == StorageModel::ROW_STORE);
 
 
     // set up extended schema
@@ -779,7 +781,12 @@ SecureTable *KeyedSortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, 
     SecureTuple tmp_row(&schema);
     tmp_row.setField(is_new_idx_, SecureField(bool_field_type_, one_b));
     // initialize it to first row in dst_table
-    memcpy(tmp_row.getData(), ((RowTable<Bit> *) dst_table)->tuple_data_.data(), dst_table->tuple_size_bytes_);
+    int schema_bits = dst_table->getSchema().bitCnt();
+    Integer tmp = dst_table->unpackRow(0, dst_table->getSchema().getFieldCount(), schema_bits);
+    tmp[schema_bits-1] = dst_table->getDummyTag(0);
+    memcpy(tmp_row.getData(), tmp.bits.data(),  schema_bits * sizeof(emp::Bit));
+
+//    memcpy(tmp_row.getData(), ((RowTable<Bit> *) dst_table)->tuple_data_.data(), dst_table->tuple_size_bytes_);
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
         Bit is_new_bit = dst_table->getField(i, is_new_idx_).getValue<Bit>();
@@ -852,17 +859,17 @@ QueryTable<B> *KeyedSortMergeJoin<B>::alignTable(QueryTable<B> *input) {
 */
 // Suspect that if there's a mismatch between wire packing boundaries of lhs and rhs, the results are getting corrupted.
 template<typename B>
-QueryTable<B> *KeyedSortMergeJoin<B>::revertProjection(QueryTable<B> *s, const map<int, int> &expr_map,
-                                                  const bool &is_lhs) const {
+QueryTable<B> *KeyedSortMergeJoin<B>::revertProjection(QueryTable<B> *src, const map<int, int> &expr_map,
+                                                       const bool &is_lhs) const {
 
-    if(SystemConfiguration::getInstance().wire_packing_enabled_ && std::is_same_v<B, Bit>) return revertProjectionOmpc(s, expr_map, is_lhs);
-    RowTable<B> *src = (RowTable<B> *) s;
+    if(SystemConfiguration::getInstance().wire_packing_enabled_ && std::is_same_v<B, Bit>) return revertProjectionOmpc(src, expr_map, is_lhs);
+    // cout << "Original schema: " << src->getSchema() << endl;
 
     // // create a synthetic schema.  pad it to make it the "right" row length for projection
     // for use with smaller width row
     if(lhs_smaller_ == is_lhs) {
         QuerySchema synthetic_schema = (is_lhs) ? lhs_projected_schema_ : rhs_projected_schema_;
-        int delta = s->getSchema().size() - synthetic_schema.size();
+        int delta = src->getSchema().size() - synthetic_schema.size();
         if(delta > 0) {
             QueryFieldDesc synthetic_attr(synthetic_schema.getFieldCount(), "anon", "",
                                           is_secure_ ? FieldType::SECURE_STRING : FieldType::STRING,
@@ -878,16 +885,18 @@ QueryTable<B> *KeyedSortMergeJoin<B>::revertProjection(QueryTable<B> *s, const m
         }
 
         synthetic_schema.initializeFieldOffsets();
-        s->setSchema(synthetic_schema);
+        src->setSchema(synthetic_schema);
 
     }
+//    cout << "Revert schema: " << src->getSchema() << endl;
 
-    ExpressionMapBuilder<B> builder(s->getSchema());
+    ExpressionMapBuilder<B> builder(src->getSchema());
     for(auto pos : expr_map) {
         builder.addMapping(pos.first, pos.second);
     }
 
     Project<B> projection(src->clone(), builder.getExprs());
+//    cout << "Projection mappings: " << projection.toString() << endl;
     projection.setOperatorId(-2);
     return projection.run()->clone();
 

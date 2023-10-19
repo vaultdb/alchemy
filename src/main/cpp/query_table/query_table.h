@@ -191,10 +191,6 @@ namespace  vaultdb {
 
         }
 
-        inline PlainTuple revealRow(const int & row) const {
-            QuerySchema plain_schema = QuerySchema::toPlain(schema_);
-            return revealRow(row, plain_schema);
-        }
 
         inline PlainTuple revealRow(const int & row,  QuerySchema & dst_schema, const int & party = PUBLIC) const  {
             if(std::is_same_v<B, bool>) {
@@ -240,6 +236,7 @@ namespace  vaultdb {
         }
         virtual vector<Bit> unpackRow(const int & row, const int & col_cnt, const int & selection_length_bits) const = 0;
         virtual vector<int8_t> unpackRowBytes(const int & row, const int & col_cnt) const = 0;
+        virtual vector<int8_t> unpackRowBytes(const int & row) const = 0;
 
         virtual QueryTable *clone() = 0;
         virtual void compareSwap(const bool & swap, const int  & lhs_row, const int & rhs_row) = 0;

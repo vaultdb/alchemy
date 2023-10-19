@@ -110,11 +110,34 @@ namespace  vaultdb {
              for(int i = 0; i < col_cnt; ++i) {
                  read_len += this->field_sizes_bytes_.at(i);
              }
-             int8_t *src = getFieldPtr(row, 0);
              vector<int8_t> dst(read_len);
-             memcpy(dst.data(), src, read_len);
+             int8_t *cursor = dst.data();
+
+             for(int i = 0; i < col_cnt; ++i) {
+                 int write_len = this->field_sizes_bytes_.at(i);
+                 memcpy(cursor, getFieldPtr(row, i), write_len);
+                 cursor += write_len;
+             }
+
              return dst;
 
+        }
+
+        // unpack entire row
+        vector<int8_t> unpackRowBytes(const int & row) const override {
+            vector<int8_t> dst(this->tuple_size_bytes_);
+            int col_cnt = this->schema_.getFieldCount();
+            int8_t *cursor = dst.data();
+
+            for(int i = 0; i < col_cnt; ++i) {
+                int write_len = this->field_sizes_bytes_.at(i);
+                memcpy(cursor, getFieldPtr(row, i), write_len);
+                cursor += write_len;
+            }
+
+            // copy dummy tag to last slot
+            memcpy(cursor, getFieldPtr(row, -1), this->field_sizes_bytes_.at(-1));
+            return dst;
         }
 
         QueryTable<B> *clone() override {
