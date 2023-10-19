@@ -7,7 +7,6 @@
 #include "util/field_utilities.h"
 #include "query_table/field/field_factory.h"
 #include "util/system_configuration.h"
-#include "operators/union.h"
 #include "util/logger.h"
 
 using namespace vaultdb;
@@ -97,14 +96,11 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
     QueryTable<B> *s1, *s2;
 
-//    cout << "augmented sample: " << DataUtilities::printTable(augmented.second, 5, false) << endl;
     s1 = obliviousExpand(augmented.first, true);
 	s2 = obliviousExpand(augmented.second, false);
 
     delete augmented.first;
 	delete augmented.second;
-
-//    cout << "Expanded: " << endl << DataUtilities::printTable(s2) << endl;
 
     this->output_ = TableFactory<B>::getTable(foreign_key_cardinality_, out_schema);
 
@@ -114,7 +110,6 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
 
     delete s1;
     delete s2;
-    cout << "RHS reverted sample: " << DataUtilities::printTable(rhs_reverted, 4, false);
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
         B dummy_tag = lhs_reverted->getDummyTag(i) | rhs_reverted->getDummyTag(i);
@@ -862,8 +857,8 @@ template<typename B>
 QueryTable<B> *KeyedSortMergeJoin<B>::revertProjection(QueryTable<B> *src, const map<int, int> &expr_map,
                                                        const bool &is_lhs) const {
 
-    if(SystemConfiguration::getInstance().wire_packing_enabled_ && std::is_same_v<B, Bit>) return revertProjectionOmpc(src, expr_map, is_lhs);
-    // cout << "Original schema: " << src->getSchema() << endl;
+    SystemConfiguration & config = SystemConfiguration::getInstance();
+    if(std::is_same_v<B, Bit> && (config.wire_packing_enabled_ || (config.storageModel() == StorageModel::COLUMN_STORE))) return revertProjectionOmpc(src, expr_map, is_lhs);
 
     // // create a synthetic schema.  pad it to make it the "right" row length for projection
     // for use with smaller width row
@@ -888,7 +883,6 @@ QueryTable<B> *KeyedSortMergeJoin<B>::revertProjection(QueryTable<B> *src, const
         src->setSchema(synthetic_schema);
 
     }
-//    cout << "Revert schema: " << src->getSchema() << endl;
 
     ExpressionMapBuilder<B> builder(src->getSchema());
     for(auto pos : expr_map) {
@@ -896,7 +890,6 @@ QueryTable<B> *KeyedSortMergeJoin<B>::revertProjection(QueryTable<B> *src, const
     }
 
     Project<B> projection(src->clone(), builder.getExprs());
-//    cout << "Projection mappings: " << projection.toString() << endl;
     projection.setOperatorId(-2);
     return projection.run()->clone();
 
