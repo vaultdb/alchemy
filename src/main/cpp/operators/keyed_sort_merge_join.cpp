@@ -240,9 +240,6 @@ template<typename B>
 pair<QueryTable<B> *, QueryTable<B> *>  KeyedSortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
     assert(lhs->storageModel() == rhs->storageModel());
 
-    // only support row store for now - col store won't easily "stripe" the bits of the smaller relation over different schema
-//    assert(storage_model_ == StorageModel::ROW_STORE);
-
 
     // set up extended schema
     QuerySchema augmented_schema = getAugmentedSchema();
@@ -780,8 +777,6 @@ SecureTable *KeyedSortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, 
     Integer tmp = dst_table->unpackRow(0, dst_table->getSchema().getFieldCount(), schema_bits);
     tmp[schema_bits-1] = dst_table->getDummyTag(0);
     memcpy(tmp_row.getData(), tmp.bits.data(),  schema_bits * sizeof(emp::Bit));
-
-//    memcpy(tmp_row.getData(), ((RowTable<Bit> *) dst_table)->tuple_data_.data(), dst_table->tuple_size_bytes_);
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
         Bit is_new_bit = dst_table->getField(i, is_new_idx_).getValue<Bit>();
