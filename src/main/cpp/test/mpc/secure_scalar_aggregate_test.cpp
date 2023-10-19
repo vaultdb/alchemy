@@ -43,8 +43,8 @@ void SecureScalarAggregateTest::runTest(const string &expected_sql,
   ScalarAggregate aggregate(input, aggregators);
   auto aggregated = aggregate.run();
 
-  size_t observed_gates = aggregate.getGateCount();
-  size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+//  size_t observed_gates = aggregate.getGateCount();
+//  size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
 //  cout << "Input schema: " << input->getOutputSchema() << endl;
 //  cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
@@ -65,7 +65,7 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expected_sql,
                                         const vector<ScalarAggregateDefinition> & aggregators) const {
 
   // produces 25 rows
-  std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+  std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff);
 
   // provide the aggregator with inputs:
   auto input = new SecureSqlInput(db_name_, query, true);
@@ -97,7 +97,7 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expected_sql,
 
 TEST_F(SecureScalarAggregateTest, test_count) {
     // set up expected output
-    std::string expected_sql = "SELECT COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= 10";
+    std::string expected_sql = "SELECT COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff);
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
     runTest(expected_sql, aggregators);
@@ -109,7 +109,7 @@ TEST_F(SecureScalarAggregateTest, test_count) {
 TEST_F(SecureScalarAggregateTest, test_count_dummies) {
     // set up expected output
     // count should be 8
-    std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+    std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff);
     std::string expected_sql = "SELECT COUNT(*)::BIGINT cnt_dummy FROM (" + query + ") subquery WHERE  NOT dummy";
 
 
@@ -121,13 +121,13 @@ TEST_F(SecureScalarAggregateTest, test_count_dummies) {
 
 
 TEST_F(SecureScalarAggregateTest, test_min) {
-    std::string expected_sql = "SELECT MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= 10";
+    std::string expected_sql = "SELECT MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff);
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno")};
     runTest(expected_sql, aggregators);
 }
 
 TEST_F(SecureScalarAggregateTest, test_min_dummies) {
-    std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+    std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff);
     std::string expected_sql = "SELECT MIN(l_linenumber) min_dummy FROM (" + query + ") subquery WHERE  NOT dummy";
 
 
@@ -137,14 +137,14 @@ TEST_F(SecureScalarAggregateTest, test_min_dummies) {
 
 
 TEST_F(SecureScalarAggregateTest, test_max) {
-    std::string expected_sql = "SELECT MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= 10";
+    std::string expected_sql = "SELECT MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff);
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno")};
     runTest(expected_sql, aggregators);
 }
 
 
 TEST_F(SecureScalarAggregateTest, test_max_dummies) {
-    std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+    std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff);
     std::string expected_sql = "SELECT MAX(l_linenumber) min_dummy FROM (" + query + ") subquery WHERE  NOT dummy";
 
 
@@ -156,7 +156,7 @@ TEST_F(SecureScalarAggregateTest, test_max_dummies) {
 
 TEST_F(SecureScalarAggregateTest, test_sum) {
     // set up expected outputs
-    std::string expected_sql = "SELECT SUM(l_linenumber)::INTEGER sum_lineno FROM lineitem WHERE l_orderkey <= 10";
+    std::string expected_sql = "SELECT SUM(l_linenumber)::INTEGER sum_lineno FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff);
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno")};
     runTest(expected_sql, aggregators);
@@ -167,7 +167,7 @@ TEST_F(SecureScalarAggregateTest, test_sum) {
 TEST_F(SecureScalarAggregateTest, test_sum_dummies) {
 
 
-    std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+    std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff);
     std::string expected_sql = "SELECT SUM(l_linenumber)::INTEGER sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy";
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno")};
@@ -177,7 +177,7 @@ TEST_F(SecureScalarAggregateTest, test_sum_dummies) {
 
 
 TEST_F(SecureScalarAggregateTest, test_avg) {
-  std::string expected_sql = "SELECT FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM lineitem WHERE l_orderkey <= 10";
+  std::string expected_sql = "SELECT FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff);
 
   std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(1, AggregateId::AVG, "avg_lineno")};
   runTest(expected_sql, aggregators);
@@ -187,7 +187,7 @@ TEST_F(SecureScalarAggregateTest, test_avg) {
 TEST_F(SecureScalarAggregateTest, test_avg_dummies) {
 
 
-  std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+  std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff);
   std::string expected_sql = "SELECT FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM (" + query + ") subquery WHERE  NOT dummy";
 
   std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(1, AggregateId::AVG, "avg_lineno")};
@@ -198,7 +198,7 @@ TEST_F(SecureScalarAggregateTest, test_avg_dummies) {
 TEST_F(SecureScalarAggregateTest, test_sum_baseprice_dummies) {
 
 
-  std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+  std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff);
   std::string expected_sql = "SELECT SUM(l_extendedprice) sum_base_price FROM (" + query + ") subquery WHERE  NOT dummy";
 
   std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(2, AggregateId::SUM, "sum_base_price")};
@@ -210,7 +210,7 @@ TEST_F(SecureScalarAggregateTest, test_sum_baseprice_dummies) {
 TEST_F(SecureScalarAggregateTest, test_sum_lineno_baseprice) {
 
 
-  std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+  std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff);
   std::string expected_sql = "SELECT SUM(l_linenumber)::INTEGER sum_lineno, SUM(l_extendedprice) sum_base_price FROM (" + query + ") subquery WHERE  NOT dummy";
 
   std::vector<ScalarAggregateDefinition> aggregators{
