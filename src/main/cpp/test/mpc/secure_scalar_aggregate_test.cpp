@@ -33,8 +33,8 @@ protected:
 void SecureScalarAggregateTest::runTest(const string &expected_sql,
                                          const vector<ScalarAggregateDefinition> & aggregators) const {
 
-  // produces 25 rows
-  std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
+  // produces 25 rows @ cutoff 10
+  std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=" + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
 
 
 
