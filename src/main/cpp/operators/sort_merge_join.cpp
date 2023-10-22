@@ -1,4 +1,16 @@
-#include "sort_merge_join.h" 
+#include "sort_merge_join.h"
+#include "query_table/table_factory.h"
+#include "operators/project.h"
+#include "expression/visitor/join_equality_condition_visitor.h"
+#include "operators/sort.h"
+#include "util/data_utilities.h"
+#include "util/field_utilities.h"
+#include "query_table/field/field_factory.h"
+#include "util/system_configuration.h"
+#include "util/logger.h"
+
+using namespace vaultdb;
+using namespace Logging;
 
 template<typename B>
 SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate,
@@ -68,7 +80,7 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     delete augmented.first;
 	delete augmented.second;
 
-    this->output_ = TableFactory<B>::getTable(foreign_key_cardinality_, out_schema);
+    this->output_ = TableFactory<B>::getTable(max_intermediate_cardinality_, out_schema);
 
     size_t lhs_field_cnt = lhs_schema.getFieldCount();
     QueryTable<B> *lhs_reverted = revertProjection(s1, lhs_field_mapping_, true);
@@ -77,7 +89,7 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     delete s1;
     delete s2;
 
-    for(int i = 0; i < foreign_key_cardinality_; i++) {
+    for(int i = 0; i < max_intermediate_cardinality_; i++) {
         B dummy_tag = lhs_reverted->getDummyTag(i) | rhs_reverted->getDummyTag(i);
         this->output_->cloneRow(!dummy_tag, i, 0, lhs_reverted, i);
         this->output_->cloneRow(!dummy_tag, i, lhs_field_cnt, rhs_reverted, i);
@@ -124,5 +136,5 @@ QueryTable<B> *SortMergeJoin<B>::revertProjection(QueryTable<B> *src, const map<
                                                        const bool &is_lhs) const {
 }
 
-template class vaultdb::KeyedSortMergeJoin<bool>;
-template class vaultdb::KeyedSortMergeJoin<emp::Bit>;
+template class vaultdb::SortMergeJoin<bool>;
+template class vaultdb::SortMergeJoin<emp::Bit>;
