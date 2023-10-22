@@ -92,6 +92,7 @@ set(sources
 		operators/support/group_by_aggregate_impl.cpp
 		operators/csv_input.cpp
 		operators/shrinkwrap.cpp
+		operators/sort_merge_join.cpp
 		operators/keyed_sort_merge_join.cpp
 		operators/nested_loop_aggregate.cpp
 		operators/support/unsorted_aggregate_impl.cpp

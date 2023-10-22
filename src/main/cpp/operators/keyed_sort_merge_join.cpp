@@ -91,14 +91,27 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
     QuerySchema rhs_schema = rhs->getSchema();
     QuerySchema out_schema = this->output_schema_;
 
+	Logger* log = get_log();
+
+    log->write("LHS: " + lhs->toString(true), Level::INFO);
+	log->write("RHS: " + rhs->toString(true), Level::INFO);
+
     foreign_key_cardinality_ = foreign_key_input_ ? rhs->getTupleCount() : lhs->getTupleCount();
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
     QueryTable<B> *s1, *s2;
 
+//    cout << "augmented sample: " << DataUtilities::printTable(augmented.second, 5, false) << endl;
     s1 = obliviousExpand(augmented.first, true);
+
+	log->write("LHS augmented: " + augmented.first->toString(true), Level::INFO);
+	log->write("RHS augmented: " + augmented.second->toString(true), Level::INFO);
+
+	s1 = obliviousExpand(augmented.first, true);
 	s2 = obliviousExpand(augmented.second, false);
 
+	log->write("LHS expanded: " + s1->toString(true), Level::INFO);
+	log->write("RHS expanded: " + s2->toString(true), Level::INFO);
     delete augmented.first;
 	delete augmented.second;
 
@@ -123,6 +136,8 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
 
     lhs->pinned_ = false;
     this->output_->setSortOrder(this->sort_definition_);
+
+	log->write("Output: " + this->output_->toString(true), Level::INFO);
     return this->output_;
 
 
