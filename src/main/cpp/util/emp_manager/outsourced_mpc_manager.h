@@ -159,7 +159,6 @@ namespace  vaultdb {
         void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {
             if(system_conf_.wire_packing_enabled_) {
                 protocol_->pack(src, (OMPCPackedWire *) dst, bit_cnt);
-                flush();
                 return;
             }
 
@@ -171,7 +170,6 @@ namespace  vaultdb {
         void unpack(Bit *src, Bit *dst, const int & bit_cnt) override {
             if (system_conf_.wire_packing_enabled_) {
                 protocol_->unpack(dst, (OMPCPackedWire *) src, bit_cnt);
-                flush();
                 return;
             }
             memcpy(dst, src, bit_cnt * sizeof(Bit));

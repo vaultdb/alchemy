@@ -33,11 +33,9 @@ ColumnTable<B>::ColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, 
 
     // initialize dummy tags to true
     B dummy_tag = B(true);
-    B *dummy_tags = (B *) getFieldPtr(0, -1);
 
     for(int i = 0; i < tuple_cnt; ++i) {
-        *dummy_tags = dummy_tag;
-        ++dummy_tags;
+        this->setPackedField(i, -1, dummy_tag);
     }
 }
 
