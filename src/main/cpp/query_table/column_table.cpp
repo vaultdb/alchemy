@@ -32,7 +32,9 @@ ColumnTable<B>::ColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, 
     }
 
     // initialize dummy tags to true
-    B dummy_tag = B(true);
+    B d = B(true);
+
+    Field<B> dummy_tag(std::is_same_v<B, Bit> ? FieldType::SECURE_BOOL : FieldType::BOOL, d);
 
     for(int i = 0; i < tuple_cnt; ++i) {
         this->setPackedField(i, -1, dummy_tag);
@@ -392,6 +394,21 @@ template<typename B>
 void ColumnTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) {
 
     assert(this->isEncrypted());
+
+    if(SystemConfiguration::getInstance().wire_packing_enabled_) {
+        assert(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED);
+
+        Integer lhs = FieldUtilities::unpackRow((ColumnTable<Bit> *) this, lhs_row);
+        Integer rhs = FieldUtilities::unpackRow((ColumnTable<Bit> *) this, rhs_row);
+
+        emp::swap(swap, lhs, rhs);
+
+        FieldUtilities::packRow((ColumnTable<Bit> *) this, lhs_row, lhs);
+        FieldUtilities::packRow((ColumnTable<Bit> *) this, rhs_row, rhs);
+
+        return;
+    }
+
     int col_cnt = this->schema_.getFieldCount();
     // iterating on column_data to cover dummy tag at -1
     // need to do this piecewise to avoid overhead we found in profiling from iterating over table

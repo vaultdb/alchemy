@@ -45,7 +45,7 @@ TEST_F(SecureFilterTest, test_table_scan) {
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
         expected->setSortOrder(collation);
 
-        PlainTable *revealed = scanned->reveal(emp::PUBLIC);
+        PlainTable *revealed = scanned->revealInsecure(emp::PUBLIC);
         ASSERT_EQ(*expected, *revealed);
         delete expected;
         delete revealed;
@@ -81,7 +81,8 @@ TEST_F(SecureFilterTest, test_filter) {
     auto fiiltered = filter.run();
 
     if(FLAGS_validation) {
-        PlainTable *revealed = fiiltered->reveal(emp::PUBLIC);
+        PlainTable *revealed = fiiltered->revealInsecure(emp::PUBLIC);
+        DataUtilities::removeDummies(revealed);
         ASSERT_EQ(*expected, *revealed);
         delete expected;
         delete revealed;
