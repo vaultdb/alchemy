@@ -109,14 +109,18 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 
 template<typename B>
 pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
+    return pair<QueryTable<B> *, QueryTable<B> *>();
+
 }
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
+    return nullptr;
 }
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs) {
+    return nullptr;
 }
 
 template<typename B>
@@ -125,15 +129,19 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_t target_size) {
+    return nullptr;
+
 }
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_lhs) {
+    return nullptr;
 }
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::revertProjection(QueryTable<B> *src, const map<int, int> &expr_map,
                                                        const bool &is_lhs) const {
+    return nullptr;
 }
 
 template class vaultdb::SortMergeJoin<bool>;
