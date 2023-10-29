@@ -31,7 +31,6 @@ find_package(EMP REQUIRED)
 find_library(EMP_LIBRARIES NAMES emp-tool)
 find_library(EMP_ZK_LIBRARY NAMES emp-zk)
 
-find_library(GFLAGS_LIBRARY gflags)
 find_library(DL dl)
 
 #depends on pqxx v6.2.5
@@ -127,7 +126,7 @@ set(sources
 
 
 
-#message("verify ${OPENSSL_LIBRARIES}:${PQXX_LIBRARY}:${GFLAGS_LIBRARY}: ${EMP_ZK_LIBRARY}  ${EMP_LIBRARIES} ${EMP_INCLUDE_DIR}")
+#message("verify ${OPENSSL_LIBRARIES}:${PQXX_LIBRARY}:${EMP_ZK_LIBRARY}  ${EMP_LIBRARIES} ${EMP_INCLUDE_DIR}")
 
 add_library(${NAME} SHARED ${sources})
 
@@ -138,6 +137,6 @@ endif()
 add_executable(generate_enrich_data test/support/generate_enrich_data.cpp)
 
 #shouldn't need this last one, should be in Boost_LIBRARIES var, debug this later
-target_link_libraries(${NAME} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES}  ${EMP_ZK_LIBRARY}  ${PQXX_LIBRARY} ${GFLAGS_LIBRARY} pthread gtest gmock gtest_main Boost::date_time )
+target_link_libraries(${NAME} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES}  ${EMP_ZK_LIBRARY}  ${PQXX_LIBRARY}  pthread Boost::date_time )
 
 install(TARGETS ${NAME} DESTINATION ${CMAKE_SOURCE_DIR}/lib)
