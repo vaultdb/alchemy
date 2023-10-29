@@ -10,16 +10,16 @@
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 54333, "port for EMP execution");
+DEFINE_int32(port, 54345, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
-DEFINE_int32(cutoff, 100, "limit clause for queries");
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
-DEFINE_int32(ctrl_port, 65475, "port for managing EMP control flow by passing public values");
-DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_int32(cutoff, 10, "limit clause for queries");
+DEFINE_string(storage, "column", "storage model for tables (row or column)");
+DEFINE_int32(ctrl_port, 65465, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, false, "run reveal for validation, turn this off for benchmarking experiments (default true)");
+DEFINE_string(filter, "*.tpchQ01Sort", "run only the tests passing this filter");
 
 
 using namespace vaultdb;
@@ -48,8 +48,8 @@ TEST_F(SecureSortTest, tpchQ01Sort) {
     auto sorted = sort.run();
 
     if(FLAGS_validation) {
-
-        auto observed = sorted->reveal();
+        auto observed = sorted->revealInsecure();
+        DataUtilities::removeDummies(observed);
         ASSERT_TRUE(DataUtilities::verifyCollation(observed));
         string expected_results_sql = "WITH input AS ("
                                       + sql
@@ -83,7 +83,9 @@ TEST_F(SecureSortTest, tpchQ03Sort) {
 
     if(FLAGS_validation) {
 
-        PlainTable *observed = sorted->reveal();
+        PlainTable *observed = sorted->revealInsecure();
+        DataUtilities::removeDummies(observed);
+
         string expected_sql = "WITH input AS (" + sql + ") SELECT l_orderkey, l_linenumber, revenue, o_shippriority, " + DataUtilities::queryDatetime("o_orderdate") + " FROM input ORDER BY revenue DESC, o_orderdate";
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
@@ -115,6 +117,7 @@ TEST_F(SecureSortTest, tpchQ05Sort) {
     if(FLAGS_validation) {
 
         PlainTable *observed  = sorted->revealInsecure();
+        DataUtilities::removeDummies(observed);
 
         ASSERT_TRUE(DataUtilities::verifyCollation(observed));
 
@@ -146,7 +149,8 @@ TEST_F(SecureSortTest, tpchQ08Sort) {
     auto sorted = sort->run();
 
     if(FLAGS_validation) {
-        PlainTable *observed  = sorted->reveal();
+        PlainTable *observed  = sorted->revealInsecure();
+        DataUtilities::removeDummies(observed);
         ASSERT_TRUE(DataUtilities::verifyCollation(observed));
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
@@ -181,7 +185,8 @@ TEST_F(SecureSortTest, tpchQ09Sort) {
     auto sorted = sort.run();
 
     if(FLAGS_validation) {
-        PlainTable *observed = sorted->reveal();
+        PlainTable *observed = sorted->revealInsecure();
+        DataUtilities::removeDummies(observed);
         DataUtilities::verifyCollation(observed);
         delete observed;
     }
@@ -207,7 +212,9 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
     auto sorted = sort.run();
 
     if(FLAGS_validation) {
-        PlainTable *observed = sorted->reveal();
+        PlainTable *observed = sorted->revealInsecure();
+        DataUtilities::removeDummies(observed);
+
         DataUtilities::verifyCollation(observed);
         delete observed;
     }

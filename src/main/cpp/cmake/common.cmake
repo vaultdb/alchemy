@@ -58,8 +58,8 @@ include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/_deps/emp-rescu)
 
 #find_package(Boost REQUIRED COMPONENTS date_time system)
 
-#Compilation flags
-set(CMAKE_C_FLAGS "-pthread   -Wfatal-errors  -Wno-ignored-attributes -Wno-stringop-overread  -Wno-unused-result  -funroll-loops  ")
+
+set(CMAKE_C_FLAGS "-Wfatal-errors  -Wno-ignored-attributes -Wno-unused-result  -funroll-loops  ")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}  -fPIC")
 
 #message(STATUS "Target platform: ${CMAKE_SYSTEM_NAME}")
@@ -67,12 +67,12 @@ message("${Blue}-- Platform: ${CMAKE_SYSTEM_PROCESSOR}${ColourReset}")
 IF(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(aarch64)|(arm64)")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv8-a+simd+crypto+crc -Wno-deprecated-declarations ")
 ELSE(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(aarch64)|(arm64)")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native -maes -mrdseed")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native -maes -mrdseed  -Wno-stringop-overread ")
 ENDIF(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(aarch64)|(arm64)" )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} ")
 
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g   -O0 -fno-omit-frame-pointer")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g   -O0 -fno-omit-frame-pointer --coverage")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O2")
 
 removeDuplicateSubstring(${CMAKE_CXX_FLAGS} CMAKE_CXX_FLAGS)

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 killall -q -9 $1 #clean up any previous instances
-
+sleep 0.05
 make -j  $1
 
 if [[ $? -ne 0 ]]; then #abort if build fails

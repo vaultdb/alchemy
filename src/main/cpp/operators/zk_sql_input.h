@@ -3,7 +3,6 @@
 
 
 #include "sql_input.h"
-#include <emp-zk/emp-zk.h>
 
 
 // reads SQL input and secret shares it
