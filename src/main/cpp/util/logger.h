@@ -6,8 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <string>
-//#include <gflags/gflags.h>
+#include <gflags/gflags.h>
 //#include <boost/move/utility.hpp>
 //#include <boost/log/sources/logger.hpp>
 //#include <boost/log/sources/record_ostream.hpp>
@@ -31,31 +30,31 @@
 
 //BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(vaultdb_logger, src::logger_mt)
 namespace Logging {
-	enum class Level {
-	ALL = 0,
-		DEBUG = 1,
-		INFO = 2,
-		WARN = 3,
-		ERROR = 4,
-		FATAL = 5,
-		OFF = 6
-	};	
+    enum class Level {
+        ALL = 0,
+        DEBUG = 1,
+        INFO = 2,
+        WARN = 3,
+        ERROR = 4,
+        FATAL = 5,
+        OFF = 6
+    };
 
-	class Logger {
+    class Logger {
 
-	public:
-		std::string log_file_ = "";
-		void write(const std::string & msg, Level request_level_ = Level::DEBUG); 
+    public:
 
-		~Logger() {
-		}
-	};
+        void write(const std::string & msg, Level request_level_ = Level::DEBUG);
+
+        ~Logger() {
+        }
+    };
 
 
-	inline Logger *get_log() {
-		static std::unique_ptr<Logger> log = std::make_unique<Logger>();
-		return log.get();
-	}
+    inline Logger *get_log() {
+        static std::unique_ptr<Logger> log = std::make_unique<Logger>();
+        return log.get();
+    }
 }
 
 
