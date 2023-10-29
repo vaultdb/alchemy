@@ -138,6 +138,6 @@ endif()
 add_executable(generate_enrich_data test/support/generate_enrich_data.cpp)
 
 #shouldn't need this last one, should be in Boost_LIBRARIES var, debug this later
-target_link_libraries(${NAME} ${OPENSSL_LIBRARIES}  ${EMP_LIBRARIES}  ${EMP_ZK_LIBRARY}  ${PQXX_LIBRARY}  ${GFLAGS_LIBRARY}  )
+target_link_libraries(${NAME} ${OPENSSL_LIBRARIES}  ${EMP_LIBRARIES}  ${EMP_ZK_LIBRARY}  ${PQXX_LIBRARY}  ${GFLAGS_LIBRARY}   ${Boost_LIBRARIES} Boost::date_time )
 
 install(TARGETS ${NAME} DESTINATION ${CMAKE_SOURCE_DIR}/lib)
