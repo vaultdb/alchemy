@@ -43,7 +43,9 @@ find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
 include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR})
 
 add_subdirectory(test)
-add_subdirectory(pilot)
+if(EXISTS "/usr/local/include/emp-sh2pc/emp-sh2pc.h")
+	add_subdirectory(pilot)
+endif()
 
 set(sources
 		util/utilities.cpp
