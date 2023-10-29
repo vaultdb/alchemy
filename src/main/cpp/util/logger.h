@@ -6,7 +6,8 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <gflags/gflags.h>
+#include <string>
+//#include <gflags/gflags.h>
 //#include <boost/move/utility.hpp>
 //#include <boost/log/sources/logger.hpp>
 //#include <boost/log/sources/record_ostream.hpp>
@@ -43,7 +44,7 @@ namespace Logging {
 	class Logger {
 
 	public:
-		
+		std::string log_file_ = "";
 		void write(const std::string & msg, Level request_level_ = Level::DEBUG); 
 
 		~Logger() {
