@@ -317,6 +317,18 @@ void ColumnTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &d
 
     assert(this->tuple_size_bytes_ >= src->tuple_size_bytes_);
 
+    if(SystemConfiguration::getInstance().wire_packing_enabled_) {
+        auto s = (ColumnTable<Bit> *) src;
+        for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+            SecureField src_field = s->getField(src_row, i);
+            SecureField dst_field = ((ColumnTable<Bit> *) this)->getField(dst_row, dst_col + i);
+            dst_field = Field<Bit>::If(write, src_field, dst_field);
+            ((ColumnTable<Bit> *) this)->setField(dst_row, dst_col + i, dst_field);
+        }
+
+        return;
+    }
+
     //clone everything except dummy tag  - handle that separately to push to end
     int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
 
