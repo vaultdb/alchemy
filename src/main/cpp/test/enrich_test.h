@@ -10,8 +10,6 @@
 #include <operators/filter.h>
 #include <test/mpc/emp_base_test.h>
 
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
-
 using namespace vaultdb;
 using namespace emp;
 

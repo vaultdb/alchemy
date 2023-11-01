@@ -26,7 +26,6 @@ DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(query, 1, "query number");
 DEFINE_string(bitpacking, "packed", "bit packed or non-bit packed");
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");

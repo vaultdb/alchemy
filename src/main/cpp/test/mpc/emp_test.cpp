@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include "emp-tool/emp-tool.h"
-#include "query_table/table_factory.h"
+#include "query_table/query_table.h"
 #include "operators/support/normalize_fields.h"
 #include "operators/sort.h"
 
@@ -14,7 +14,6 @@ DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65455, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
@@ -150,7 +149,7 @@ TEST_F(EmpTest, secret_share_table_one_column) {
 
 
 
-    plain = TableFactory<bool>::getTable(in_tuple_cnt, schema);
+    plain = new PlainTable(in_tuple_cnt, schema);
 
     for (uint32_t i = 0; i < in_tuple_cnt; ++i) {
             Field<bool> val(FieldType::INT, input[i]);
@@ -163,7 +162,7 @@ TEST_F(EmpTest, secret_share_table_one_column) {
     PlainTable *revealed = secret_shared->revealInsecure(emp::PUBLIC);
 
     // set up expected result by concatenating input tables
-    PlainTable *expected = TableFactory<bool>::getTable(all_input.size(), schema);
+    PlainTable *expected = new PlainTable(all_input.size(), schema);
 
     for (uint32_t i = 0; i < all_input.size(); ++i) {
         expected->setField(i, 0, Field<bool>(FieldType::INT, all_input[i]));
@@ -208,7 +207,7 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
     schema.initializeFieldOffsets();
 
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
-    PlainTable *input_table = TableFactory<bool>::getTable(tuple_cnt, schema, sort_def);
+    PlainTable *input_table = new PlainTable(tuple_cnt, schema, sort_def);
 
     for(uint32_t i = 0; i < tuple_cnt; ++i) {
         Field<bool> val(FieldType::INT, input[i]);
@@ -225,7 +224,7 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
     std::sort(all_input.begin(), all_input.end());
 
 
-    PlainTable *expected = TableFactory<bool>::getTable(all_input.size(), schema, sort_def);
+    PlainTable *expected = new PlainTable(all_input.size(), schema, sort_def);
 
     for(uint32_t i = 0; i < expected->getTupleCount(); ++i) {
         Field<bool> val(FieldType::INT, all_input[i]);

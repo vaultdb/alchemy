@@ -14,7 +14,6 @@ DECLARE_string(unioned_db);
 DECLARE_string(alice_db);
 DECLARE_string(bob_db);
 DECLARE_int32(cutoff);
-DECLARE_string(storage); // row || column
 DECLARE_string(filter); //run only the tests with names matching this regex.
 						//run ./{binary_name} --gtest_list_tests to get all unit test names
 
@@ -29,7 +28,7 @@ protected:
     EmpMode emp_mode_;
 
     std::string db_name_; // set in setUp()
-    StorageModel storage_model_ = StorageModel::ROW_STORE;
+    const StorageModel storage_model_ = StorageModel::COLUMN_STORE;
     EmpManager *manager_ = nullptr;
 
     void SetUp() override;

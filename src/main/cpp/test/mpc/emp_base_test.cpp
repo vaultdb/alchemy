@@ -23,8 +23,6 @@ const std::string EmpBaseTest::empty_db_ = "tpch_empty";
 using namespace Logging;
 
 void EmpBaseTest::SetUp()  {
-    assert(FLAGS_storage == "row" || FLAGS_storage == "column");
-    storage_model_ = (FLAGS_storage == "row") ? StorageModel::ROW_STORE : StorageModel::COLUMN_STORE;
     SystemConfiguration & s = SystemConfiguration::getInstance();
     s.emp_mode_ =  _emp_mode_;
     emp_mode_ =  _emp_mode_;
@@ -51,7 +49,7 @@ void EmpBaseTest::SetUp()  {
 
     std::stringstream ss;
 
-    ss << "Received storage flag of " << FLAGS_storage << ", emp mode: ";
+    ss << "Received emp mode: ";
     switch(emp_mode_) {
         case EmpMode::PLAIN:
             ss << "plain";

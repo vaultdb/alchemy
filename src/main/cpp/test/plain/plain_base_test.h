@@ -10,7 +10,6 @@
 #include <util/emp_manager/emp_manager.h>
 
 DECLARE_int32(cutoff);
-DECLARE_string(storage); // row || column
 DECLARE_string(filter);
 
 using namespace vaultdb;
@@ -24,7 +23,7 @@ protected:
 
     std::string current_working_directory_;
     const string db_name_ = "tpch_unioned_150";
-    StorageModel storage_model_ = StorageModel::ROW_STORE;
+    const StorageModel storage_model_ = StorageModel::COLUMN_STORE;
     EmpManager *manager_ = nullptr;
 
 

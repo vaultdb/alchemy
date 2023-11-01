@@ -26,7 +26,6 @@ DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_string(unioned_db, "tpch_unioned_300", "unioned db name");
 DEFINE_string(alice_db, "tpch_alice_300", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_300", "bob db name");
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_string(bitpacking, "packed", "bit packed or non-bit packed");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");

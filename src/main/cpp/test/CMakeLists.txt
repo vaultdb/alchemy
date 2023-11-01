@@ -51,7 +51,7 @@ endmacro()
 set(Labels "LABELS;UnitTest;LABELS;PlainTest")
 
 #non-private tests
-package_add_test(field_expression_test field_expression_test.cpp plain/plain_base_test.cpp)
+package_add_test(field_expression_test plain/field_expression_test.cpp plain/plain_base_test.cpp)
 package_add_test(csv_reader_test csv_reader_test.cpp plain/plain_base_test.cpp)
 package_add_test(filter_test plain/filter_test.cpp plain/plain_base_test.cpp)
 package_add_test(project_test plain/project_test.cpp plain/plain_base_test.cpp)
