@@ -43,7 +43,7 @@ TEST_F(SerializationTest, typesTest) {
     PlainTable *input = DataUtilities::getQueryResults(db_name_, inputQuery, false);
 
     vector<int8_t> table_data = input->serialize();
-    uint32_t expected_size = input->getSchema().size() / 8 * 10 + 1;
+    uint32_t expected_size = input->getSchema().size() / 8 * 10;
     ASSERT_EQ(table_data.size(), expected_size);
 
     PlainTable *deserialized = QueryTable<bool>::deserialize(input->getSchema(), table_data);
