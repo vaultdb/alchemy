@@ -8,8 +8,7 @@
 #include <util/logger.h>
 #include <boost/program_options.hpp>
 #include <operators/union.h>
-#include <operators/sort.h>
-#include <query_table/row_table.h>
+#include <query_table/query_table.h>
 
 
 

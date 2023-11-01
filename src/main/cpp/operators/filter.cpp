@@ -1,8 +1,8 @@
 #include "filter.h"
 #include <query_table/plain_tuple.h>
 // keep this file to ensure overloaded methods are visible
-#include <query_table/secure_tuple.h>
 #include "util/field_utilities.h"
+#include "query_table/query_table.h"
 
 using namespace vaultdb;
 

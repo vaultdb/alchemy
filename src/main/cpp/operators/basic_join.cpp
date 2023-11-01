@@ -1,6 +1,5 @@
 #include "basic_join.h"
-#include "query_table/table_factory.h"
-#include "util/field_utilities.h"
+#include <query_table/query_table.h>
 
 using namespace vaultdb;
 
@@ -34,7 +33,7 @@ QueryTable<B> *BasicJoin<B>::runSelf() {
 
     B selected, dst_dummy_tag, lhs_dummy_tag;
     // output size, colCount, is_encrypted
-    this->output_ = TableFactory<B>::getTable(lhs->getTupleCount() * rhs->getTupleCount(), this->output_schema_,
+    this->output_ = new QueryTable<B>(lhs->getTupleCount() * rhs->getTupleCount(), this->output_schema_,
                                               this->sort_definition_);
     int cursor = 0;
     int rhs_col_offset = this->output_->getSchema().getFieldCount() - rhs->getSchema().getFieldCount();

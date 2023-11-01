@@ -1,5 +1,5 @@
 #include "sort_merge_join.h"
-#include "query_table/table_factory.h"
+#include "query_table/query_table.h"
 #include "operators/project.h"
 #include "expression/visitor/join_equality_condition_visitor.h"
 #include "operators/sort.h"
@@ -80,7 +80,7 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     delete augmented.first;
 	delete augmented.second;
 
-    this->output_ = TableFactory<B>::getTable(max_intermediate_cardinality_, out_schema);
+    this->output_ = new QueryTable<B>(max_intermediate_cardinality_, out_schema);
 
     size_t lhs_field_cnt = lhs_schema.getFieldCount();
     QueryTable<B> *lhs_reverted = revertProjection(s1, lhs_field_mapping_, true);

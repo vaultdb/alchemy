@@ -10,7 +10,7 @@
 #include <boost/program_options.hpp>
 #include <unordered_map>
 #include <operators/sort.h>
-#include <query_table/row_table.h>
+#include <query_table/query_table.h>
 
 using namespace std;
 using namespace vaultdb;

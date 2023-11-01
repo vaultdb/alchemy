@@ -4,8 +4,7 @@
 #include <expression/expression_node.h>
 #include <expression/generic_expression.h>
 #include <util/data_utilities.h>
-#include "query_table/table_factory.h"
-
+#include <query_table/query_table.h>
 using namespace vaultdb;
 
 
@@ -22,7 +21,7 @@ QueryTable<B> *Project<B>::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-    this->output_ = TableFactory<B>::getTable(tuple_cnt, this->output_schema_, this->sort_definition_);
+    this->output_ = new QueryTable<B>(tuple_cnt, this->output_schema_, this->sort_definition_);
 
     for(uint32_t i = 0; i < tuple_cnt; ++i) {
         this->output_->setDummyTag(i, src_table->getDummyTag(i));

@@ -3,9 +3,6 @@
 #include <util/field_utilities.h>
 
 #include "sort_merge_aggregate.h"
-#include <query_table/plain_tuple.h>
-#include <query_table/secure_tuple.h>
-#include "query_table/table_factory.h"
 #include "util/system_configuration.h"
 
 
@@ -48,7 +45,7 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
     }
     this->setOutputCardinality(input->getTupleCount());
 
-    this->output_ = TableFactory<B>::getTable(input->getTupleCount(), this->output_schema_, this->sort_definition_);
+    this->output_ = new QueryTable<B>(input->getTupleCount(), this->output_schema_, this->sort_definition_);
     QueryTable<B> *output = this->output_; // shorthand
     // SMA: if all dummies at the end, this would be simpler.  But we can't do that if there are MPC joins, filters, etc before this op because they will sprinkle dummies throughout the table
     for(int j = 0; j < this->group_by_.size(); ++j) {

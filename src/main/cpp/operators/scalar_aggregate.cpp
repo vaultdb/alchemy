@@ -1,8 +1,7 @@
 #include <operators/support/scalar_aggregate_impl.h>
 #include "scalar_aggregate.h"
 #include <query_table/plain_tuple.h>
-#include <query_table/secure_tuple.h>
-#include "query_table/table_factory.h"
+#include "query_table/query_table.h"
 #include "util/system_configuration.h"
 
 using namespace vaultdb;
@@ -47,7 +46,7 @@ QueryTable<B> *ScalarAggregate<B>::runSelf() {
         this->output_schema_.initializeFieldOffsets();
     }
 
-    this->output_ = TableFactory<B>::getTable(1, Operator<B>::output_schema_);
+    this->output_ = new QueryTable<B>(1, Operator<B>::output_schema_);
     QueryTable<B> *output = this->output_;
 
     for(size_t i = 0; i < input->getTupleCount(); ++i) {

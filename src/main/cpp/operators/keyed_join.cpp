@@ -2,12 +2,10 @@
 
 #include <query_table/plain_tuple.h>
 // keep this file to ensure overloaded methods are visible
-#include <query_table/secure_tuple.h>
-#include <query_table/plain_tuple.h>
+#include "query_table/query_table.h"
 
 #include <util/data_utilities.h>
 #include <util/field_utilities.h>
-#include "query_table/table_factory.h"
 
 using namespace vaultdb;
 
@@ -68,7 +66,7 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
 
 
     uint32_t output_tuple_cnt = lhs_table->getTupleCount(); // foreignKeyTable = foreign key
-    this->output_ = TableFactory<B>::getTable(output_tuple_cnt, this->output_schema_, this->sort_definition_);
+    this->output_ = new QueryTable<B>(output_tuple_cnt, this->output_schema_, this->sort_definition_);
 
     B selected, to_update, lhs_dummy_tag, rhs_dummy_tag, dst_dummy_tag;
     int rhs_col_offset = this->output_->getSchema().getFieldCount() - rhs_table->getSchema().getFieldCount();
@@ -111,7 +109,7 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
     uint32_t output_tuple_cnt = rhs_table->getTupleCount(); // foreignKeyTable = foreign key
 
-    this->output_ = TableFactory<B>::getTable(output_tuple_cnt, this->output_schema_, this->sort_definition_);
+    this->output_ = new QueryTable<B>(output_tuple_cnt, this->output_schema_, this->sort_definition_);
     B selected, to_update, lhs_dummy_tag, rhs_dummy_tag, dst_dummy_tag;
     int rhs_col_offset = this->output_->getSchema().getFieldCount() - rhs_table->getSchema().getFieldCount();
 

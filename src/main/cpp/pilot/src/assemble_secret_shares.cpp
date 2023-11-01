@@ -2,8 +2,8 @@
 #include <query_table/query_schema.h>
 #include <util/data_utilities.h>
 #include <sstream>
-#include <query_table/row_table.h>
 #include <pilot/src/common/pilot_utilities.h>
+#include "query_table/query_table.h"
 
 using namespace std;
 using namespace vaultdb;
@@ -26,9 +26,9 @@ void revealRollup(const std::string & rollup_name) {
     assert(alice_bits.size() == bob_bits.size());
     revealed.resize(alice_bits.size());
 
-    vector<int8_t>::iterator  alice_pos = alice_bits.begin();
-    vector<int8_t>::iterator  bob_pos = bob_bits.begin();
-    vector<int8_t>::iterator  revealed_pos = revealed.begin();
+    auto alice_pos = alice_bits.begin();
+    auto bob_pos = bob_bits.begin();
+    auto revealed_pos = revealed.begin();
 
     while(alice_pos != alice_bits.end()) {
         *revealed_pos = *alice_pos ^ *bob_pos;
@@ -40,8 +40,7 @@ void revealRollup(const std::string & rollup_name) {
 
     QuerySchema rollup_schema = QuerySchema::fromFile(schema_file);
     rollup_schema = QuerySchema::toPlain(rollup_schema);
-    PlainTable *result = RowTable<bool>::deserialize(rollup_schema, revealed);
-
+    PlainTable *result = QueryTable<bool>::deserialize(rollup_schema, revealed);
 
     std::string csv;
     for(size_t i = 0; i < result->getTupleCount(); ++i) {

@@ -4,13 +4,9 @@
 #include <util/data_utilities.h>
 #include <operators/sort.h>
 #include "common/union_hybrid_data.h"
-#include "enrich_htn_query.h"
 #include <util/utilities.h>
 #include <util/logger.h>
-#include <data/csv_reader.h>
-#include <query_table/plain_tuple.h>
-#include <query_table/secure_tuple.h>
-#include <query_table/row_table.h>
+#include <query_table/query_table.h>
 #include <operators/sort_merge_aggregate.h>
 
 
@@ -20,7 +16,7 @@ using namespace std;
 using namespace vaultdb;
 using namespace emp;
 
-#define TESTBED 0
+#define TESTBED 1
 
 auto start_time_ = emp::clock_start();
 auto cumulative_runtime_ = emp::time_from(start_time_);
@@ -158,17 +154,11 @@ int main(int argc, char **argv) {
     // ship local, partial counts - alice, then bob
     if (party == 1) { // alice
         alice = local_partial_counts->secretShare();
-//               alice =  RowTable<Bit>::secret_share_send_table(local_partial_counts, netio, 1);
-      bob = empty->secretShare(); // secret share where we contribute no rows
-      //  bob = RowTable<Bit>::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(), netio,   2);
+        bob = empty->secretShare(); // secret share where we contribute no rows
 
     } else { // bob
         alice = empty->secretShare();
-//        alice = RowTable<Bit>::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(),
-//                                                     netio, 1);
-
-            bob = local_partial_counts->secretShare();
-//        bob = RowTable<Bit>::secret_share_send_table(local_partial_counts, netio, 2);
+        bob = local_partial_counts->secretShare();
     }
 
 

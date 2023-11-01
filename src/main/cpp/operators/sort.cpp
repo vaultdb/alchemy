@@ -2,8 +2,6 @@
 #include "project.h"
 #include <query_table/plain_tuple.h>
 #include <util/data_utilities.h>
-#include <query_table/row_table.h>
-#include <query_table/column_table.h>
 #include <operators/support/normalize_fields.h>
 
 

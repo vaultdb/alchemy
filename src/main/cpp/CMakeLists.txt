@@ -68,9 +68,7 @@ set(sources
 		query_table/query_field_desc.cpp
 		query_table/query_schema.cpp
 		query_table/query_table.cpp
-		query_table/row_table.cpp
-		query_table/column_table.cpp
-		query_table/table_factory.h
+		
 
 		data/psql_data_provider.cpp
 		data/csv_reader.cpp

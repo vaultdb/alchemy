@@ -1,6 +1,5 @@
 #include "merge_join.h"
 #include "expression/visitor/join_equality_condition_visitor.h"
-#include "query_table/table_factory.h"
 #include "util/field_utilities.h"
 
 using namespace vaultdb;
@@ -13,7 +12,7 @@ QueryTable<B> *MergeJoin<B>::runSelf() {
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
-    this->output_ = TableFactory<B>::getTable(this->output_cardinality_, this->output_schema_,
+    this->output_ = new QueryTable<B>(this->output_cardinality_, this->output_schema_,
                                               this->sort_definition_);
 
     int lhs_card = lhs->getTupleCount();

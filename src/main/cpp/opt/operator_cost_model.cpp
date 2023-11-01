@@ -1,6 +1,6 @@
 #include "opt/operator_cost_model.h"
 #include "opt/expression_cost_model.h"
-#include "query_table/row_table.h"
+#include "query_table/query_table.h"
 #include <expression/generic_expression.h>
 #include "expression/visitor/join_equality_condition_visitor.h"
 

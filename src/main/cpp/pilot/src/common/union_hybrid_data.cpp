@@ -8,13 +8,11 @@
 #include <query_table/secure_tuple.h>
 #include <operators/union.h>
 #include <operators/sort.h>
-#include "query_table/row_table.h"
+#include <query_table/query_table.h>
 
-UnionHybridData::UnionHybridData(const QuerySchema & srcSchema)  {
-    QuerySchema inputSchema = srcSchema;
-    SortDefinition emptySortDefinition;
+UnionHybridData::UnionHybridData(const QuerySchema & src_schema)  {
     // placeholder, retains schema
-    input_table_ = new RowTable<Bit>(0, inputSchema, emptySortDefinition);
+    input_table_ = new SecureTable(0, src_schema);
 
 }
 
@@ -104,7 +102,8 @@ SecureTable *UnionHybridData::readSecretSharedInput(const string &secretSharesFi
     Integer shared_data = alice ^ bob;
     // remove padding
     shared_data.bits.resize(dst_bit_cnt);
-    SecureTable *shared_table = RowTable<Bit>::deserialize(secure_schema, shared_data.bits);
+
+    SecureTable *shared_table = QueryTable<Bit>::deserialize(secure_schema, shared_data.bits);
 
 
      delete [] dst_bools;

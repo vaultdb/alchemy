@@ -5,9 +5,8 @@
 #include <query_table/plain_tuple.h>
 #include "query_table/field/field.h"
 #include "boost/date_time/gregorian/gregorian.hpp"
-#include "query_table/table_factory.h"
+#include "query_table/query_table.h"
 #include "util/system_configuration.h"
-//typedef std::chrono::steady_clock::time_point time_point;
 
 
 // if has_dummy_tag == true, then last column needs to be a boolean that denotes whether the tuple was selected
@@ -38,7 +37,7 @@ PsqlDataProvider::getQueryTable(std::string db_name, std::string sql, bool has_d
     size_t row_cnt = res.size();
 
     schema_ = getSchema(res, has_dummy_tag);
-    PlainTable *dst_table = TableFactory<bool>::getTable(row_cnt, schema_);
+    PlainTable *dst_table = new PlainTable(row_cnt, schema_);
 
 
     int counter = 0;

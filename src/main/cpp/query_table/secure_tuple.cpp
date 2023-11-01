@@ -81,7 +81,7 @@ PlainTuple QueryTuple<emp::Bit>::revealInsecure(QuerySchema *dst_schema, const i
 
 }
 
-// TODO: update this for OMPC - model it after RowTable's C&S
+// TODO: update this for OMPC - model it after QueryTable's C&S
 void QueryTuple<emp::Bit>::compareSwap(const Bit &cmp, SecureTuple  & lhs, SecureTuple  & rhs) {
     size_t tuple_size = lhs.getSchema()->size(); // size in bits
 

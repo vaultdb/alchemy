@@ -1,5 +1,5 @@
 #include "merge_input.h"
-#include "query_table/table_factory.h"
+#include "query_table/query_table.h"
 
 
 MergeInput::MergeInput(const string &db, const string &sql, const bool &dummy_tag,
@@ -24,7 +24,7 @@ QueryTable<Bit> *MergeInput::runSelf() {
     // ensure they line up
     assert (tuple_cnt == rhs->getTupleCount());
 
-    this->output_ = TableFactory<Bit>::getTable(lhs->getTupleCount(), this->output_schema_, this->sort_definition_);
+    this->output_ = new QueryTable<Bit>(lhs->getTupleCount(), this->output_schema_, this->sort_definition_);
 
     for(int i = 0; i < tuple_cnt; ++i) {
         Bit lhs_dummy = lhs->getDummyTag(i);
