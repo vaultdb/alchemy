@@ -66,13 +66,13 @@ vector<int8_t> QueryTable<B>::serialize() const {
     int8_t *write_ptr = dst.data();
     int write_size;
     for(int i = 0; i < schema_.getFieldCount(); ++i) {
-        write_size = column_data_.size();  // this->field_sizes_bytes_.at(i) * this->tuple_cnt_;
+        write_size = field_sizes_bytes_.at(i) * tuple_cnt_;
         memcpy(write_ptr, column_data_.at(i).data(), write_size);
         write_ptr += write_size;
     }
 
     // dummy tag
-    memcpy(write_ptr, column_data_.at(-1).data(), column_data_.at(-1).size());
+    memcpy(write_ptr, column_data_.at(-1).data(), field_sizes_bytes_.at(-1) * tuple_cnt_);
     return dst;
 }
 
