@@ -5,7 +5,6 @@
 #include <expression/comparator_expression_nodes.h>
 
 DEFINE_int32(cutoff, 10, "limit clause for queries");
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 class KeyedJoinTest :  public PlainBaseTest  {

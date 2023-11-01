@@ -4,8 +4,6 @@
 #include "parser/plan_parser.h"
 #include "test/support/tpch_queries.h"
 
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
-
 
 class TpcHTest : public PlainBaseTest {
 

@@ -1,15 +1,10 @@
 #include <util/data_utilities.h>
-#include "plain/plain_base_test.h"
+#include "plain_base_test.h"
 #include "operators/support/normalize_fields.h"
 #include "query_table/query_table.h"
 
 
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
-
 class FieldExpressionTest : public  PlainBaseTest { };
-
-
-
 
 
 TEST_F(FieldExpressionTest, test_int32) {

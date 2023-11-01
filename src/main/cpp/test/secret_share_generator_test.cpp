@@ -4,9 +4,7 @@
 #include "plain/plain_base_test.h"
 #include <util/data_utilities.h>
 #include <query_table/query_table.h>
-#include "query_table/table_factory.h"
 
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 // generates secret shares for a table - one for alice and one for bob
 // then zips them together and verifies that it produces the same table
@@ -29,14 +27,14 @@ PlainTable *SecretShareGeneratorTest::assembleSecretShares(const QuerySchema &sc
     result_shares.resize(share_cnt);
 
     int8_t *result = result_shares.data();
-    const int8_t *aliceShares = shares.first.data();
-    const int8_t *bobShares = shares.second.data();
+    const int8_t *alice_shares = shares.first.data();
+    const int8_t *bob_shares = shares.second.data();
 
     for(size_t i = 0; i < share_cnt; ++i) {
-        result[i] = aliceShares[i] ^ bobShares[i];
+        result[i] = alice_shares[i] ^ bob_shares[i];
     }
 
-    return TableFactory<bool>::deserialize(schema, result_shares, storage_model_);
+    return QueryTable<bool>::deserialize(schema, result_shares);
 
 }
 

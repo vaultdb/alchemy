@@ -2,10 +2,8 @@
 #include <operators/sql_input.h>
 #include <operators/sort.h>
 #include <operators/project.h>
-#include "query_table/table_factory.h"
 
 DEFINE_int32(cutoff, 100, "limit clause for queries");
-DEFINE_string(storage, "column", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 class SortTest : public PlainBaseTest {};
@@ -185,7 +183,7 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
     schema.initializeFieldOffsets();
 
 
-    PlainTable *input_table = TableFactory<bool>::getTable(input_tuples.size(), schema, sort_definition);
+    PlainTable *input_table = new PlainTable(input_tuples.size(), schema, sort_definition);
 
 
     for(uint32_t i = 0; i < input_tuples.size(); ++i) {
@@ -201,7 +199,7 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
 
     //set up expected results
     std::sort(input_tuples.begin(), input_tuples.end());
-    auto expected_table = TableFactory<bool>::getTable(input_tuples.size(), schema, sort_definition);
+    auto expected_table = new PlainTable(input_tuples.size(), schema, sort_definition);
 
     for(uint32_t i = 0; i < input_tuples.size(); ++i) {
         Field<bool> val(FieldType::INT, input_tuples[i]);

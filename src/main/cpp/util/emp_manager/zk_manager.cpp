@@ -1,6 +1,5 @@
 #include "zk_manager.h"
 #include "query_table/query_table.h"
-#include "query_table/table_factory.h"
 #include "util/field_utilities.h"
 
 #if __has_include("emp-zk/emp-zk.h")
@@ -54,7 +53,7 @@ QueryTable<Bit> *ZKManager::secretShare(const QueryTable<bool> *src) {
     //assert(alice_tuple_cnt > 0);
 
     QuerySchema dst_schema = QuerySchema::toSecure(src->getSchema());
-    SecureTable *dst_table = TableFactory<Bit>::getTable(alice_tuple_cnt, dst_schema, src->getSortOrder());
+    SecureTable *dst_table = new SecureTable(alice_tuple_cnt, dst_schema, src->getSortOrder());
 
     if (party == emp::ALICE) {
         secret_share_send(emp::ALICE,  (PlainTable *) src, dst_table);

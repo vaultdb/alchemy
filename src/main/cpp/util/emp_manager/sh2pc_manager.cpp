@@ -3,7 +3,6 @@
 #if __has_include("emp-sh2pc/emp-sh2pc.h")
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <query_table/query_table.h>
-#include <query_table/table_factory.h>
 #include <util/field_utilities.h>
 #include <operators/sort.h>
 
@@ -48,8 +47,7 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
 
     QuerySchema dst_schema = QuerySchema::toSecure(src->getSchema());
 
-    auto dst_table =
-           TableFactory<Bit>::getTable(alice_tuple_cnt + bob_tuple_cnt, dst_schema, src->getSortOrder());
+    auto dst_table = new QueryTable<Bit>(alice_tuple_cnt + bob_tuple_cnt, dst_schema, src->getSortOrder());
 
     if(!src->getSortOrder().empty()) {
         if (party_ == emp::ALICE) {

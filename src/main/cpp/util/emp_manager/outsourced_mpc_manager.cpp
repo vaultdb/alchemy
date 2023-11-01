@@ -3,7 +3,6 @@
 #ifdef __OMPC_BACKEND__
 #include "emp-rescu/emp-rescu.h"
 #include <query_table/query_table.h>
-#include <query_table/table_factory.h>
 #include <util/field_utilities.h>
 #include <operators/sort.h>
 
@@ -42,7 +41,7 @@ QueryTable<Bit> *OutsourcedMpcManager::secretShare(const QueryTable<bool> *src) 
 
     QuerySchema plain_schema = src->getSchema();
     QuerySchema dst_schema = QuerySchema::toSecure(plain_schema);
-    QueryTable<Bit> *dst = TableFactory<Bit>::getTable(tuple_cnt, dst_schema, src->getSortOrder());
+    QueryTable<Bit> *dst = QueryTable<Bit>(tuple_cnt, dst_schema, src->getSortOrder());
     if(tuple_cnt == 0) return dst;
 
     if(party_ == emp::TP) {

@@ -5,9 +5,6 @@
 #include "data_utilities.h"
 #include <algorithm>
 #include <query_table/query_table.h>
-#include <query_table/row_table.h>
-#include <query_table/table_factory.h>
-
 
 
 using namespace vaultdb;
@@ -297,7 +294,7 @@ bool DataUtilities::verifyCollation(PlainTable *sorted) {
     SortDefinition  collation = sorted->getSortOrder();
     // delete dummies
     int true_card = sorted->getTrueTupleCount();
-    QueryTable<bool> *no_dummies = TableFactory<bool>::getTable(true_card, sorted->getSchema(), sorted->getSortOrder());
+    auto no_dummies = new QueryTable<bool>(true_card, sorted->getSchema(), sorted->getSortOrder());
     int cursor = 0;
     for(int i = 0; i < sorted->getTupleCount(); ++i) {
         if(!sorted->getDummyTag(i)) {

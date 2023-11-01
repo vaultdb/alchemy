@@ -10,7 +10,6 @@
 #include "parser/expression_parser.h"
 
 DEFINE_string(filter, "*", "run only the tests passing this filter");
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 
 class PlanDeparserTest : public PlainBaseTest {

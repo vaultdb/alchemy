@@ -1,12 +1,10 @@
 #include <operators/sql_input.h>
 #include <operators/basic_join.h>
-#include <util/utilities.h>
 #include "plain_base_test.h"
 #include "util/field_utilities.h"
 #include <gflags/gflags.h>
 
 DEFINE_int32(cutoff, 5, "limit clause for queries");
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 class BasicJoinTest : public PlainBaseTest {

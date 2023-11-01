@@ -7,7 +7,6 @@
 #include "plain_base_test.h"
 
 DEFINE_int32(cutoff, 100, "limit clause for queries");
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
