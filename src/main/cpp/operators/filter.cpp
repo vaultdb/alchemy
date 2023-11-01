@@ -21,25 +21,24 @@ Filter<B>::Filter(QueryTable<B> *child, Expression<B> *predicate) :
 
 template<typename B>
 QueryTable<B> *Filter<B>::runSelf() {
-    QueryTable<B> *input = Operator<B>::getChild()->getOutput();
+    QueryTable<B> *input = this->getChild()->getOutput();
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
     // deep copy new output, then just modify the dummy tag
-    this-> output_ = input->clone();
+    this->output_ = input->clone();
     int tuple_cnt = input->getTupleCount();
 
     for(int i = 0; i < tuple_cnt; ++i) {
-		
-        Field<B> selected = predicate_->call(Operator<B>::output_, i);
-        B dummy_tag =  ((!(selected.template getValue<B>())) | Operator<B>::output_->getDummyTag(i)); // (!) because dummyTag is false if our selection criteria is satisfied
-        Operator<B>::output_->setDummyTag(i, dummy_tag);
+        Field<B> selected = predicate_->call(this->output_, i);
+        B dummy_tag =  ((!(selected.template getValue<B>())) | this->output_->getDummyTag(i)); // (!) because dummyTag is false if our selection criteria is satisfied
+        this->output_->setDummyTag(i, dummy_tag);
     }
 
 
-    Operator<B>::output_->setSortOrder(input->getSortOrder());
-    return Operator<B>::output_;
+    this->output_->setSortOrder(input->getSortOrder());
+    return this->output_;
 
 }
 

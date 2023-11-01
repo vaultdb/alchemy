@@ -42,7 +42,9 @@ QueryTable<B>::QueryTable(const size_t &tuple_cnt, const QuerySchema &schema, co
 }
 
 template <typename B>
-QueryTable<B>::QueryTable(const QueryTable<B> &src) : order_by_(src.order_by_), tuple_size_bytes_(src.tuple_size_bytes_), tuple_cnt_(src.tuple_cnt_){
+QueryTable<B>::QueryTable(const QueryTable<B> &src) : order_by_(src.order_by_), tuple_size_bytes_(src.tuple_size_bytes_), tuple_cnt_(src.tuple_cnt_) {
+    setSchema(src.schema_);
+
     // only support copy constructor on tables with same storage
     for(auto col_entry : src.column_data_) {
         column_data_[col_entry.first] = col_entry.second;
