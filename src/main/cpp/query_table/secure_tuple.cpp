@@ -171,12 +171,6 @@ QueryTuple<emp::Bit>::QueryTuple(QuerySchema *schema) {
     managed_data_ = new emp::Bit[schema->bitCnt()];
 
     fields_ = managed_data_;
-
-    // Warning: this will cause issues if used for mutable tuples
-    // only doing shallow copy of schema!
-    // formerly:
-    // schema_ = std::make_shared<QuerySchema>(schema);
-    // thus const'ing it above
     schema_ = schema;
     initializeFieldOffsets();
 
