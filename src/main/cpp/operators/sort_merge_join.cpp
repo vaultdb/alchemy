@@ -60,23 +60,20 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 
 	Logger* log = get_log();
 
-    log->write("LHS: " + lhs->toString(true), Level::INFO);
-	log->write("RHS: " + rhs->toString(true), Level::INFO);
+    log->write("LHS: " + DataUtilities::printTable(lhs, -1, true), Level::INFO);
+	log->write("RHS: " + DataUtilities::printTable(rhs, -1, true), Level::INFO);
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
     QueryTable<B> *s1, *s2;
 
-//    cout << "augmented sample: " << DataUtilities::printTable(augmented.second, 5, false) << endl;
-    s1 = obliviousExpand(augmented.first, true);
-
-	log->write("LHS augmented: " + augmented.first->toString(true), Level::INFO);
-	log->write("RHS augmented: " + augmented.second->toString(true), Level::INFO);
+	log->write("LHS augmented: " +DataUtilities::printTable(augmented.first, -1, true), Level::INFO);
+	log->write("RHS augmented: " + DataUtilities::printTable(augmented.second, -1, true), Level::INFO);
 
 	s1 = obliviousExpand(augmented.first, true);
 	s2 = obliviousExpand(augmented.second, false);
 
-	log->write("LHS expanded: " + s1->toString(true), Level::INFO);
-	log->write("RHS expanded: " + s2->toString(true), Level::INFO);
+	log->write("LHS expanded: " + DataUtilities::printTable(s1, -1, true), Level::INFO);
+	log->write("RHS expanded: " + DataUtilities::printTable(s2, -1, true), Level::INFO);
     delete augmented.first;
 	delete augmented.second;
 
@@ -102,7 +99,7 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     lhs->pinned_ = false;
     this->output_->setSortOrder(this->sort_definition_);
 
-	log->write("Output: " + this->output_->toString(true), Level::INFO);
+	log->write("Output: " + DataUtilities::printTable(this->output_, -1, true), Level::INFO);
     return this->output_;
 
 }
