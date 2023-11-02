@@ -69,6 +69,8 @@ void KeyedSortMergeJoin<B>::setup() {
 
     max_intermediate_cardinality_ =  this->getChild(0)->getOutputCardinality() + this->getChild(1)->getOutputCardinality();
 
+    foreign_key_cardinality_ =  this->getChild(foreign_key_input_)->getOutputCardinality();
+
     if(is_secure_ && bit_packed_) {
         int card_bits = ceil(log2(max_intermediate_cardinality_)) + 1; // + 1 for sign bit
         emp::Integer zero_tmp(card_bits, 0, emp::PUBLIC);
@@ -91,7 +93,6 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
     QuerySchema rhs_schema = rhs->getSchema();
     QuerySchema out_schema = this->output_schema_;
 
-    foreign_key_cardinality_ = foreign_key_input_ ? rhs->getTupleCount() : lhs->getTupleCount();
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
     QueryTable<B> *s1, *s2;
@@ -102,7 +103,6 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
     delete augmented.first;
 	delete augmented.second;
 
-    this->output_ = new QueryTable<B>(foreign_key_cardinality_, out_schema);
 
     size_t lhs_field_cnt = lhs_schema.getFieldCount();
     QueryTable<B> *lhs_reverted = revertProjection(s1, lhs_field_mapping_, true);
@@ -110,6 +110,8 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
 
     delete s1;
     delete s2;
+
+    this->output_ = new QueryTable<B>(foreign_key_cardinality_, out_schema);
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
         B dummy_tag = lhs_reverted->getDummyTag(i) | rhs_reverted->getDummyTag(i);
@@ -124,8 +126,6 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
     lhs->pinned_ = false;
     this->output_->setSortOrder(this->sort_definition_);
     return this->output_;
-
-
 }
 
 template<typename B>
@@ -484,7 +484,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttrOmpc(QueryTable<B
     QueryTable<Bit> *src_rows = (QueryTable<Bit> *) src;
 
     for(int i = 0; i < src_rows->getTupleCount(); ++i) {
-        auto unpacked = FieldUtilities::unpackRow(src_rows, i);
+        auto unpacked = src_rows->unpackRow(i);
 
         Integer to_pack(dst_row_len_bits, 0);
         Bit *write_ptr = to_pack.bits.data();
@@ -499,7 +499,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttrOmpc(QueryTable<B
             write_ptr += write_size;
         }
         to_pack[to_pack.size() - 1] = unpacked.bits[unpacked.bits.size() - 1]; // dummy tag
-        FieldUtilities::packRow(output, i, to_pack);
+        output->packRow(i, to_pack);
     }
 
     return (QueryTable<B> *) output;
@@ -847,15 +847,11 @@ QueryTable<B> *KeyedSortMergeJoin<B>::alignTable(QueryTable<B> *input) {
     return sorter.run()->clone();
 }
 */
-// Suspect that if there's a mismatch between wire packing boundaries of lhs and rhs, the results are getting corrupted.
-template<typename B>
-QueryTable<B> *KeyedSortMergeJoin<B>::revertProjection(QueryTable<B> *src, const map<int, int> &expr_map,
+template<>
+QueryTable<bool> *KeyedSortMergeJoin<bool>::revertProjection(QueryTable<bool> *src, const map<int, int> &expr_map,
                                                        const bool &is_lhs) const {
 
-    SystemConfiguration & config = SystemConfiguration::getInstance();
-    if(std::is_same_v<B, Bit> && (config.wire_packing_enabled_ || (config.storageModel() == StorageModel::COLUMN_STORE))) return revertProjectionOmpc(src, expr_map, is_lhs);
-
-    // // create a synthetic schema.  pad it to make it the "right" row length for projection
+     // create a synthetic schema.  pad it to make it the "right" row length for projection
     // for use with smaller width row
     if(lhs_smaller_ == is_lhs) {
         QuerySchema synthetic_schema = (is_lhs) ? lhs_projected_schema_ : rhs_projected_schema_;
@@ -879,24 +875,22 @@ QueryTable<B> *KeyedSortMergeJoin<B>::revertProjection(QueryTable<B> *src, const
 
     }
 
-    ExpressionMapBuilder<B> builder(src->getSchema());
+    ExpressionMapBuilder<bool> builder(src->getSchema());
     for(auto pos : expr_map) {
         builder.addMapping(pos.first, pos.second);
     }
 
-    Project<B> projection(src->clone(), builder.getExprs());
+    Project<bool> projection(src->clone(), builder.getExprs());
     projection.setOperatorId(-2);
     return projection.run()->clone();
 
 }
 
 // if we are in OMPC packed wires mode,
-// then we need to serialize each row into a bit array using unpackRow, then manually project it to the correct offsets.
-template<typename B>
-QueryTable<B> *KeyedSortMergeJoin<B>::revertProjectionOmpc(QueryTable<B> *src, const map<int, int> &expr_map,
+// then we need to serialize each row into a bit array using unpackRow, then manually project it to the correct offsets.*/
+template<>
+QueryTable<Bit> *KeyedSortMergeJoin<Bit>::revertProjection(QueryTable<Bit> *src, const map<int, int> &expr_map,
                                                            const bool &is_lhs) const {
-    assert(src->isEncrypted()); // for casting
-
     map<int, int> src_field_offsets_bits;
     map<int, int> dst_to_src;
     int child_id = is_lhs ? 0 : 1;
@@ -924,21 +918,21 @@ QueryTable<B> *KeyedSortMergeJoin<B>::revertProjectionOmpc(QueryTable<B> *src, c
     Integer dst_row(row_len, 0);
 
     for(int i = 0; i < row_cnt; ++i) {
-        auto unpacked = src->unpackRow(i, src->getSchema().getFieldCount());
+        auto unpacked = src->unpackRow(i);
         Bit *write_ptr = dst_row.bits.data();
         for(int j = 0; j < dst_schema.getFieldCount(); ++j) {
             int src_ordinal = dst_to_src[j];
             int src_offset = src_field_offsets_bits.at(src_ordinal);
-            Bit *read_ptr = unpacked.data() + src_offset;
+            Bit *read_ptr = unpacked.bits.data() + src_offset;
             int write_size = dst_schema.getField(j).size();
             memcpy(write_ptr, read_ptr, write_size * sizeof(emp::Bit));
             write_ptr += write_size;
         }
         // copy out dummy tag
-        *(dst_row.bits.data() + dst_row.size() - 1) = *(unpacked.data() + unpacked.size() - 1); // if this table has the smaller of the two input schemas, then the dummy tag is at the end.
-        FieldUtilities::packRow(dst, i, dst_row);
+        *(dst_row.bits.data() + dst_row.size() - 1) = unpacked[unpacked.size() - 1]; // if this table has the smaller of the two input schemas, then the dummy tag is at the end.
+        dst->packRow(i, dst_row);
     }
-    return (QueryTable<B> *) dst;
+    return  dst;
 }
 
 

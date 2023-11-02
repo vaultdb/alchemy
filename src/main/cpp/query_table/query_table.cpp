@@ -416,13 +416,13 @@ void QueryTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int &
     if(SystemConfiguration::getInstance().wire_packing_enabled_) {
         assert(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED);
 
-        Integer lhs = FieldUtilities::unpackRow((QueryTable<Bit> *) this, lhs_row);
-        Integer rhs = FieldUtilities::unpackRow((QueryTable<Bit> *) this, rhs_row);
+        Integer lhs = unpackRow(lhs_row);
+        Integer rhs = unpackRow(rhs_row);
 
         emp::swap(swap, lhs, rhs);
 
-        FieldUtilities::packRow((QueryTable<Bit> *) this, lhs_row, lhs);
-        FieldUtilities::packRow((QueryTable<Bit> *) this, rhs_row, rhs);
+        packRow(lhs_row, lhs);
+        packRow(rhs_row, rhs);
 
         return;
     }
@@ -519,40 +519,21 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
 
 }
 
-template<typename B>
-string QueryTable<B>::getOstringStream() const {
-    assert(!isEncrypted());
-    stringstream ss;
-    ss << schema_ << " isEncrypted? " << isEncrypted() <<  " order by: " << DataUtilities::printSortDefinition(order_by_) << std::endl;
-    QueryTable<bool> *plain_table = (QueryTable<bool> *) this;
-
-    for(int i = 0; i < tuple_cnt_; ++i) {
-        ss <<  getPlainTuple(i);
-
-        if(!plain_table->getDummyTag(i))
-            ss << std::endl;
-    }
-
-    return ss.str();
-}
 
 
 template <typename B>
 string QueryTable<B>::toString(const bool & show_dummies) const {
 
+    assert(!isEncrypted());
     std::ostringstream os;
-
-    if(!show_dummies) {
-        return getOstringStream();
-    }
-
-    // show dummies case
     os << schema_ << " isEncrypted? " << isEncrypted() <<  " order by: " << DataUtilities::printSortDefinition(order_by_) << std::endl;
 
-
+    PlainTable *plain_table = (PlainTable *) this;
     for(uint32_t i = 0; i < tuple_cnt_; ++i) {
-        PlainTuple tuple = getPlainTuple(i);
-        os << tuple.toString(show_dummies) << std::endl;
+            os <<  getPlainTuple(i);
+
+            if(!plain_table->getDummyTag(i)  || show_dummies)
+                os << std::endl;
     }
 
     return os.str();
@@ -585,14 +566,6 @@ std::string QueryTable<B>::toString(const size_t &limit, const bool &show_dummie
 
 
 
-
-template<typename B>
-vector<Bit> QueryTable<B>::unpackRow(const int &row, const int &col_cnt, const int &selection_length_bits) const {
-    assert(isEncrypted());
-
-    Integer i =  FieldUtilities::unpackRow(((QueryTable<Bit> *)this), row, col_cnt, selection_length_bits);
-    return i.bits;
-}
 
 
 
@@ -655,6 +628,9 @@ PlainTable *QueryTable<B>::revealInsecure(const int &party) const {
     return dst_table;
 
 }
+
+
+
 
 
 template class vaultdb::QueryTable<bool>;

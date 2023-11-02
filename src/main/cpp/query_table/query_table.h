@@ -8,6 +8,7 @@
 #include <ostream>
 #include "util/utilities.h"
 #include "plain_tuple.h"
+#include "util/data_utilities.h"
 
 namespace  vaultdb {
 
@@ -190,16 +191,89 @@ namespace  vaultdb {
         void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
         void cloneTable(const int & dst_row, QueryTable<B> *src);
 
-        vector<Bit> unpackRow(const int & row, const int & col_cnt) {
-            int selection_len = 0;
-            for(int i = 0; i < col_cnt; ++i) {
-                selection_len += schema_.getField(i).size();
+       Integer unpackRow(const int & row, const int & col_cnt=-1) const {
+           assert(isEncrypted());
+           auto src = (SecureTable *) this;
+            int to_unpack = (col_cnt < 1) ? schema_.getFieldCount() : col_cnt;
+
+            Integer dst(schema_.bitCnt(), 0, PUBLIC);
+            Bit *cursor = dst.bits.data();
+
+            for(int i = 0; i < to_unpack; ++i) {
+                SecureField f = src->getPackedField(row, i);
+                QueryFieldDesc desc = schema_.getField(i);
+
+                switch(f.getType()) {
+                    case FieldType::SECURE_BOOL: {
+                        Bit b = f.getValue<emp::Bit>();
+                        *cursor = b;
+                        break;
+                    }
+                    case FieldType::SECURE_INT:
+                    case FieldType::SECURE_LONG:
+                    case FieldType::SECURE_STRING: {
+                        Integer i_field = f.getValue<Integer>();
+                        memcpy(cursor, i_field.bits.data(), desc.size() * sizeof(Bit));
+                        break;
+                    }
+                    case FieldType::SECURE_FLOAT: {
+                        Float f_field = f.getValue<Float>();
+                        memcpy(cursor, f_field.value.data(), desc.size() * sizeof(Bit));
+                        break;
+                    }
+                    default:
+                        throw;
+
+                }
+                cursor += desc.size();
             }
-            return unpackRow(row, col_cnt, selection_len);
+
+            // do dummy tag last
+            SecureField b_field = src->getDummyTag(row);
+            Bit b = b_field.getValue<emp::Bit>();
+            *cursor = b;
+            return dst.bits;
+        }
+
+        // does not include dummy tag
+        Integer unpackRow(const int & row, const int & col_cnt, const int & selection_length_bits) const {
+            assert(isEncrypted());
+            auto src = (SecureTable *) this;
+            Integer dst(selection_length_bits, 0, PUBLIC);
+
+            Bit *cursor = dst.bits.data();
+            for(int i = 0; i < col_cnt; ++i) {
+                SecureField f = src->getPackedField(row, i);
+                QueryFieldDesc desc = schema_.fields_.at(i);
+
+                switch(f.getType()) {
+                    case FieldType::SECURE_BOOL: {
+                        Bit b = f.getValue<emp::Bit>();
+                        *cursor = b;
+                        break;
+                    }
+                    case FieldType::SECURE_INT:
+                    case FieldType::SECURE_LONG:
+                    case FieldType::SECURE_STRING: {
+                        Integer i_field = f.getValue<Integer>();
+                        memcpy(cursor, i_field.bits.data(), desc.size() * sizeof(Bit));
+                        break;
+                    }
+                    case FieldType::SECURE_FLOAT: {
+                        Float f_field = f.getValue<Float>();
+                        memcpy(cursor, f_field.value.data(), desc.size() * sizeof(Bit));
+                        break;
+                    }
+                    default:
+                        throw;
+
+                }
+                cursor += desc.size();
+            }
+            return dst;
         }
 
 
-        vector<Bit> unpackRow(const int & row, const int & col_cnt, const int & selection_length_bits) const;
 
         vector<int8_t> unpackRowBytes(const int & row, const int & col_cnt) const {
              int read_len = 0;
@@ -234,6 +308,49 @@ namespace  vaultdb {
             // copy dummy tag to last slot
             memcpy(cursor, getFieldPtr(row, -1), field_sizes_bytes_.at(-1));
             return dst;
+        }
+
+         void packRow(const int & row, Integer src) {
+           assert(isEncrypted());
+           auto dst = (SecureTable *) this;
+            Bit *cursor = src.bits.data();
+
+            for(int i = 0; i < schema_.getFieldCount(); ++i) {
+                QueryFieldDesc desc = schema_.getField(i);
+                switch(desc.getType()) {
+                    case FieldType::SECURE_BOOL: {
+                        Bit b = *cursor;
+                        SecureField f(desc.getType(), b);
+                        dst->setPackedField(row, i, f);
+                        break;
+                    }
+                    case FieldType::SECURE_INT:
+                    case FieldType::SECURE_LONG:
+                    case FieldType::SECURE_STRING: {
+                        Integer i_field(desc.size() + desc.bitPacked(), 0, PUBLIC);
+                        memcpy(i_field.bits.data(), cursor, desc.size() * sizeof(Bit));
+                        SecureField f(desc.getType(), i_field, desc.getStringLength());
+                        dst->setPackedField(row, i, f);
+                        break;
+                    }
+                    case FieldType::SECURE_FLOAT: {
+                        Float f_field;
+                        memcpy(f_field.value.data(), cursor, desc.size() * sizeof(Bit));
+                        SecureField f(desc.getType(), f_field);
+                        dst->setPackedField(row, i, f);
+                        break;
+                    }
+                    default:
+                        throw;
+
+                }
+                cursor += desc.size();
+
+            }
+
+            // do dummy tag last
+            Bit dummy_tag = *cursor;
+            dst->setDummyTag(row, dummy_tag);
         }
 
         QueryTable<B> *clone() {
@@ -290,11 +407,28 @@ namespace  vaultdb {
         SortDefinition order_by_;
         QuerySchema schema_;
 
-        string getOstringStream() const;
+
 
 
 
     };
+
+    static std::ostream &operator<<(std::ostream &os, const QueryTable<bool> &table)   {
+        os << table.getSchema() << " isEncrypted? false, order by: " << DataUtilities::printSortDefinition(table.getSortOrder()) << std::endl;
+
+        for(int i = 0; i < table.tuple_cnt_; ++i) {
+            os <<  table.getPlainTuple(i);
+
+            if(!table.getDummyTag(i))
+                os << std::endl;
+        }
+
+        return os;
+    }
+
+    static std::ostream &operator<<(std::ostream &os, const QueryTable<Bit> &table)   {
+        throw std::runtime_error("secret shared table!");
+    }
 
 
 }

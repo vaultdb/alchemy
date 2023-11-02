@@ -135,8 +135,8 @@ namespace  vaultdb {
         QuerySchema getAugmentedSchema();
 
         //QueryTable<B> *alignTable(QueryTable<B> *input);
-        QueryTable<B> *revertProjection(QueryTable<B> *src, const map<int, int> &expr_map, const bool &is_lhs) const;
-        QueryTable<B> *revertProjectionOmpc(QueryTable<B> *s, const map<int, int> &expr_map, const bool &is_lhs) const;
+        QueryTable<bool> *revertProjection(QueryTable<bool> *src, const map<int, int> &expr_map, const bool &is_lhs) const;
+        QueryTable<Bit> *revertProjection(QueryTable<Bit> *src, const map<int, int> &expr_map, const bool &is_lhs) const;
 
         QueryTable<B> *projectJoinKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs);
         QueryTable<B> *projectJoinKeyToFirstAttrOmpc(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs);
