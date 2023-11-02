@@ -168,7 +168,7 @@ emp::Bit QueryTuple<emp::Bit>::operator==(const SecureTuple &other) const {
 
 
 QueryTuple<emp::Bit>::QueryTuple(QuerySchema *schema) {
-    managed_data_ = new emp::Bit[schema->size()];
+    managed_data_ = new emp::Bit[schema->bitCnt()];
 
     fields_ = managed_data_;
 
