@@ -6,7 +6,7 @@ file='log/all-tests-'$now'.log'
 
 echo 'Writing to '$file
 
-bash run-tests.sh 2>&1 > $file
+bash scripts/run-tests.sh 2>&1 > $file
 
 #print results
 grep '^\[' $file
