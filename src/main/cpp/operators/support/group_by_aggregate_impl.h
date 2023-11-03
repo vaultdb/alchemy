@@ -141,7 +141,9 @@ namespace vaultdb {
         }
 
          inline void initialize(const QueryTable<B> *table) override{
-            running_sum_ = Field<B>::If(table->getDummyTag(0), running_sum_, table->getField(0, this->aggregate_ordinal_));
+            auto f = table->getField(0, this->aggregate_ordinal_);
+            f.unpack(table->getSchema().getField(this->aggregate_ordinal_));
+            running_sum_ = Field<B>::If(table->getDummyTag(0), running_sum_, f);
         }
 
         //virtual void accumulate(const QueryTuple<B> & tuple, const B &group_by_match) override;

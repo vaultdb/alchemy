@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="EmpFloatToInt" type="CompoundRunConfigurationType">
-    <toRun name="emp_float_to_int A" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="emp_float_to_int B" type="CMakeGoogleTestRunConfigurationType" />
-    <method v="2" />
-  </configuration>
-</component>

@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="SecureGroupByAggregateTest " type="CompoundRunConfigurationType">
-    <toRun name="secure_group_by_aggregate_test A" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="secure_group_by_aggregate_test B" type="CMakeGoogleTestRunConfigurationType" />
-    <method v="2" />
-  </configuration>
-</component>

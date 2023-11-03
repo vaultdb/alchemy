@@ -95,7 +95,6 @@ void UnsortedAvgImpl<B>::update(QueryTable<B> *src,  const int & src_row,  Query
     B to_initialize = (!input_dummy) & dst->getDummyTag(dst_row)  & !match_found;
     B to_write = to_accumulate | to_initialize;
 
-
     // if initialize or accumulate, add 1 to count and add input_field to running sum
     tuple_count_ = Field<B>::If(to_write, tuple_count_ + this->one_, tuple_count_);
     running_sum_ = Field<B>::If(to_write, running_sum_ + input_field, running_sum_);
