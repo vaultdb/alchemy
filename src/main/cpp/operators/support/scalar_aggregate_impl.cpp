@@ -38,8 +38,8 @@ void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & sr
     Field<B> one;
     Field<B> accumulated;
 
-    B to_accumulate = (!input_dummy) & (!not_initialized);
-    B to_initialize = (!input_dummy) & not_initialized;
+    B to_accumulate = (!input_dummy) & (!not_initialized_);
+    B to_initialize = (!input_dummy) & not_initialized_;
 
     switch(ScalarAggregateImpl<B>::agg_type_) {
         case AggregateId::AVG:
@@ -58,11 +58,12 @@ void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & sr
             accumulated = Field<B>::If(to_accumulate & (input_field > output_field), input_field, accumulated);
             break;
         case AggregateId::SUM:
+            input_field.unpack(src->getSchema().getField(this->input_ordinal_));
             accumulated = Field<B>::If(to_initialize, input_field, output_field);
             accumulated = Field<B>::If(to_accumulate, accumulated + input_field, accumulated);
 
     }
-    not_initialized = (to_initialize & !not_initialized) | (to_accumulate & not_initialized);
+    not_initialized_ = (to_initialize & !not_initialized_) | (to_accumulate & not_initialized_);
     dst->setField(0, this->output_ordinal_, accumulated);
     Field<B> output_field_checking = dst->getField(0, this->output_ordinal_);
 }
@@ -79,6 +80,7 @@ template<typename B>
 void ScalarAvgImpl<B>::update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst){
     B input_dummy = src->getDummyTag(src_row);
     Field<B> input_field = src->getField(src_row, this->input_ordinal_);
+    input_field.unpack(src->getSchema().getField(this->input_ordinal_));
 
     B to_accumulate = (!input_dummy) & (!not_initialized);
     B to_initialize = (!input_dummy) & not_initialized;

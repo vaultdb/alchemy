@@ -427,8 +427,8 @@ size_t OperatorCostModel::scalarAggregateCost(const ScalarAggregate<Bit> *aggreg
         AggregateId agg_type = agg_def.type;
 
         /* condition_write in scalar_aggregate_impl.cpp :
-         * to_accumulate = (!input_dummy) & (!not_initialized);
-         * B to_initialize = (!input_dummy) & not_initialized;
+         * to_accumulate = (!input_dummy) & (!not_initialized_);
+         * B to_initialize = (!input_dummy) & not_initialized_;
         */
         size_t conditional_write;
         size_t initialize_cost;
@@ -499,7 +499,7 @@ size_t OperatorCostModel::scalarAggregateCost(const ScalarAggregate<Bit> *aggreg
                 aggregator_cost = 0;
 
         }
-        // not_initialized = (to_initialize & !not_initialized) | (to_accumulate & not_initialized);
+        // not_initialized_ = (to_initialize & !not_initialized_) | (to_accumulate & not_initialized_);
         aggregator_cost += 4;
 
         per_row_cost += aggregator_cost;
