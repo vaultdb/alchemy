@@ -63,7 +63,6 @@ void KeyedSortMergeJoin<B>::setup() {
 
     one_ = FieldFactory<B>::getOne(int_field_type_);
     zero_ = FieldFactory<B>::getZero(int_field_type_);
-    bit_packed_ = SystemConfiguration::getInstance().bitPackingEnabled();
 
     updateCollation();
 
@@ -71,7 +70,7 @@ void KeyedSortMergeJoin<B>::setup() {
 
     foreign_key_cardinality_ =  this->getChild(foreign_key_input_)->getOutputCardinality();
 
-    if(is_secure_ && bit_packed_) {
+    if(is_secure_) {
         int card_bits = ceil(log2(max_intermediate_cardinality_)) + 1; // + 1 for sign bit
         emp::Integer zero_tmp(card_bits, 0, emp::PUBLIC);
         emp::Integer one_tmp(card_bits, 1, emp::PUBLIC);
@@ -181,7 +180,7 @@ QuerySchema KeyedSortMergeJoin<B>::deriveAugmentedSchema() const {
     else {
         QueryFieldDesc alpha(write_cursor, "alpha", "", int_field_type_);
         int max_alpha =  lhs_child->getOutputCardinality() + rhs_child->getOutputCardinality();
-        if(bit_packed_) alpha.initializeFieldSizeWithCardinality(max_alpha);
+        alpha.initializeFieldSizeWithCardinality(max_alpha);
         ++write_cursor;
 
         augmented_schema.putField(alpha);
@@ -220,7 +219,7 @@ QuerySchema KeyedSortMergeJoin<B>::getAugmentedSchema() {
     else {
         QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_);
 	    int max_alpha =  lhs->getTupleCount() + rhs->getTupleCount();
-        if(bit_packed_) alpha.initializeFieldSizeWithCardinality(max_alpha);	
+        alpha.initializeFieldSizeWithCardinality(max_alpha);
 
         augmented_schema.putField(alpha);
         QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::SECURE_BOOL);	
@@ -593,7 +592,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, 
     }
 
     int j = Sort<B>::powerOfTwoLessThan(target_size);
-    int weight_width = (is_secure_ && bit_packed_) ? zero_.template getValue<Integer>().size() : 32;
+    int weight_width = (is_secure_) ? zero_.template getValue<Integer>().size() : 32;
 
 
     while(j >= 1) {
@@ -618,6 +617,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool
     QuerySchema schema = input->getSchema();
 
     QueryFieldDesc weight(schema.getFieldCount(), "weight", "", int_field_type_);
+    weight.initializeFieldSizeWithCardinality(max_intermediate_cardinality_);
     schema.putField(weight);
     QueryFieldDesc is_new(schema.getFieldCount(), "is_new", "", bool_field_type_);
     schema.putField(is_new);
@@ -646,6 +646,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool
     QueryTuple<B> tmp_row(&schema);
 
     tmp_row.setField(is_new_idx_, one_b);
+    int weight_width = schema.getField(weight_idx_).size() + schema.getField(weight_idx_).bitPacked();
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
 
@@ -659,8 +660,9 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool
             dst_table->setField(i, j, to_write);
 
         }
-		Field<B> write_index = FieldFactory<B>::getInt(i);
-		B end_matches = write_index >= s-one_;
+
+		Field<B> write_index = FieldFactory<B>::getInt(i, weight_width);
+		B end_matches = write_index >= (s - one_);
         dst_table->setDummyTag(i, FieldUtilities::select(new_row, tmp_row.getDummyTag() | end_matches, dst_table->getDummyTag(i) | end_matches));
     }
 

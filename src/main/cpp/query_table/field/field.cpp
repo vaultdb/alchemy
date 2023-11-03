@@ -980,7 +980,6 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
     FieldType type = desc.getType();
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
 
-
     switch (type) {
         case FieldType::BOOL: {
             bool val = *((bool *) src);
