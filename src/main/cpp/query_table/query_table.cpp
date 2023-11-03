@@ -67,14 +67,12 @@ vector<int8_t> QueryTable<B>::serialize() const {
     int write_size;
     for(int i = 0; i < schema_.getFieldCount(); ++i) {
         write_size = field_sizes_bytes_.at(i) * tuple_cnt_;
-        cout << "Writing to offset " << (write_ptr - dst.data()) << " bytes, write size: " << write_size << " bytes for " << schema_.getField(i) << endl;
         memcpy(write_ptr, column_data_.at(i).data(), write_size);
         write_ptr += write_size;
     }
 
     // dummy tag
     write_size =  field_sizes_bytes_.at(-1) * tuple_cnt_;
-    cout << "Writing to offset " << (write_ptr - dst.data()) << " bytes, write size: " << write_size <<  " bytes for dummy tag." <<  endl;
     memcpy(write_ptr, column_data_.at(-1).data(), write_size);
     return dst;
 }
@@ -139,8 +137,6 @@ SecretShares QueryTable<B>::generateSecretShares() const {
         bob[i] = alice[i] ^ secrets[i];
     }
 
-    cout << "Secret sharing " << share_size << " bytes." << endl;
-    cout << "Schema bit count: " << schema_.bitCnt() << " bytes " << share_size / tuple_cnt_ << endl;
     return SecretShares(alice_shares, bob_shares);
 }
 
@@ -186,14 +182,12 @@ QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vecto
 
     for(int i = 0; i < schema.getFieldCount(); ++i) {
         write_size = result->field_sizes_bytes_[i] * tuple_cnt;
-        cout << "Reading from offset " << (read_ptr - table_bits.data()) << " bits, write size: " << write_size << " bytes, " << write_size / sizeof(emp::Bit) << " bits for column " << schema.getField(i) <<   endl;
         memcpy(result->column_data_[i].data(), read_ptr, write_size);
         read_ptr += (write_size / sizeof(emp::Bit));
     }
 
     // dummy tag
     write_size = result->field_sizes_bytes_[-1] * tuple_cnt;
-    cout << "Reading from offset " << (read_ptr - table_bits.data()) << " bits, write size: " << write_size << " bytes, " << write_size / sizeof(emp::Bit) << " bits for column " << schema.getField(-1) <<   endl;
     memcpy(result->column_data_.at(-1).data(), read_ptr, write_size);
     return result;
 }

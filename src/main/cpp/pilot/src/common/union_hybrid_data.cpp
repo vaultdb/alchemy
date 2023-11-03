@@ -57,16 +57,13 @@ UnionHybridData::readLocalInput(const string &localInputFile, const QuerySchema 
 
 // plaintext input schema, setup for XOR-shared data
 SecureTable *UnionHybridData::readSecretSharedInput(const string &secret_shares_input, const QuerySchema &plain_schema) {
-    cout << "RSS: Plain schema: " << plain_schema << endl;
     QuerySchema secure_schema = QuerySchema::toSecure(plain_schema);
-    cout << "Secure schema: " << secure_schema << endl;
 
     // read in binary and then xor it with other side to secret share it.
     std::vector<int8_t> src_data = DataUtilities::readFile(secret_shares_input);
     size_t src_byte_cnt = src_data.size();
     size_t src_bit_cnt = src_byte_cnt * 8;
     size_t tuple_cnt = src_bit_cnt / plain_schema.size();
-    cout << "reading secret shares for " << tuple_cnt << " rows." << endl;
 
     // convert serialized representation from byte-aligned to bit-by-bit
     size_t dst_bit_cnt = tuple_cnt * secure_schema.bitCnt();
@@ -79,7 +76,7 @@ SecureTable *UnionHybridData::readSecretSharedInput(const string &secret_shares_
     for(int i = 0; i < plain_schema.getFieldCount(); ++i) {
         auto plain_field = plain_schema.getField(i);
         auto secure_field = secure_schema.getField(i);
-        cout << "Reading field " << i << " " << plain_field << " " << secure_field << ", plain offset: " << (src_cursor - src_data.data()) << ", sec offset: " << (dst_cursor - dst_bools) << endl;
+
         if(plain_field.size() == secure_field.size()) { // 1:1, just serialize it
             int write_size = secure_schema.getField(i).size() * tuple_cnt;
             emp::to_bool<int8_t>(dst_cursor, src_cursor, write_size, false);
@@ -125,7 +122,6 @@ SecureTable *UnionHybridData::readSecretSharedInput(const string &secret_shares_
    //    shared_data.bits.resize(dst_bit_cnt);
 
     SecureTable *shared_table = QueryTable<Bit>::deserialize(secure_schema, shared_data.bits);
-    cout << "First rows: " << DataUtilities::printTable(shared_table,  10, true) << endl;
 
      delete [] dst_bools;
      return shared_table;
@@ -154,7 +150,6 @@ SecureTable *UnionHybridData::unionHybridData(const QuerySchema &schema, const s
                                                         const string &secretSharesFile) {
 
     SecureTable *local = UnionHybridData::readLocalInput(localInputFile, schema);
-
 
     if(!secretSharesFile.empty()) {
      SecureTable *remote = UnionHybridData::readSecretSharedInput(secretSharesFile, schema);
