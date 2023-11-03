@@ -10,4 +10,4 @@ then
    exit 0 
 fi
 
-./$1 --flagfile=flagfiles/alice.flags 
+./bin/$1 --flagfile=flagfiles/alice.flags 

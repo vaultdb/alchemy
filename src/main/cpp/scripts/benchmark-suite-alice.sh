@@ -1,14 +1,14 @@
 #!/bin/bash
 
 now=`date +"%Y%m%d%H%M"`
-file='log/all-tests-alice-'$now'.log'
+file='log/all-tests-alice-column-store-'$now'.log'
 
 cmake -DCMAKE_BUILD_TYPE=Release .
 make all
 
 echo 'Writing to '$file
 
-bash run-tests-alice.sh 2>&1 > $file
+bash scripts/run-tests-alice.sh 2>&1 > $file
 
 #print results
 grep '^\[' $file

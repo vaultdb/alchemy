@@ -10,4 +10,4 @@ then
    exit 0 
 fi
 
-./$1 --flagfile=flagfiles/bob.flags --alice_host=$2
+./bin/$1 --flagfile=flagfiles/bob.flags --alice_host=$2

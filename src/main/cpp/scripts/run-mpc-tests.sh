@@ -1,7 +1,7 @@
 #!/bin/bash -x
 
-RUNNER='run.sh'
-#RUNNER='run-ompc.sh'
+RUNNER='scripts/run.sh'
+#RUNNER='scripts/run-ompc.sh'
 
 bash $RUNNER emp_test
 bash $RUNNER secure_field_expression_test

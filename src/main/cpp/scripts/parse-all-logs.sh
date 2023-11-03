@@ -4,7 +4,7 @@ rm log/*.csv
 for FILE in $(ls log/all-tests-alice-*.log log/all-tests-bob-*.log)
    do
      OUT_FILE=$(echo $FILE | sed 's/.log/.csv/')
-     python parse-log.py -input $FILE -output $OUT_FILE
+     python scripts/parse-log.py -input $FILE -output $OUT_FILE
 done
 
 

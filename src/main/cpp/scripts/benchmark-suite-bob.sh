@@ -21,14 +21,14 @@ fi
 
        
 now=`date +"%Y%m%d%H%M"`
-FILE='log/all-tests-bob-'$now'.log'
+FILE='log/all-tests-bob-column-store-'$now'.log'
 
 cmake -DCMAKE_BUILD_TYPE=Release .
 make all
 
 echo 'Writing to '$FILE
 
-bash run-tests-bob.sh $ALICE_HOST 2>&1 > $FILE
+bash scripts/run-tests-bob.sh $ALICE_HOST 2>&1 > $FILE
 
 #print results
 grep '^\[' $FILE

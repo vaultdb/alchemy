@@ -24,9 +24,9 @@ else:
     print("party name not found!")
     exit(-1)
 
-storage_model='column'
-#if(re.search('-column-store-', input_file)):
-#    storage_model='column'
+storage_model='row'
+if(re.search('-column-store-', input_file)):
+    storage_model='column'
 
 timestamp_str = re.findall('-(\d+).log', input_file)[0]
 datetime_obj = datetime.strptime(timestamp_str, '%Y%m%d%H%M%S')
