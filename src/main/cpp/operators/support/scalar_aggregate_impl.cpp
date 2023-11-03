@@ -30,10 +30,10 @@ void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & sr
         input_field = src->getField(src_row, this->input_ordinal_);
     }
     else {
-        input_field = src->getPackedField(src_row, this->input_ordinal_);
+        input_field = src->getField(src_row, this->input_ordinal_);
     }
 
-    Field<B> output_field = dst->getPackedField(0, this->output_ordinal_);
+    Field<B> output_field = dst->getField(0, this->output_ordinal_);
 
     Field<B> one;
     Field<B> accumulated;
@@ -63,8 +63,8 @@ void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & sr
 
     }
     not_initialized = (to_initialize & !not_initialized) | (to_accumulate & not_initialized);
-    dst->setPackedField(0, this->output_ordinal_, accumulated);
-    Field<B> output_field_checking = dst->getPackedField(0, this->output_ordinal_);
+    dst->setField(0, this->output_ordinal_, accumulated);
+    Field<B> output_field_checking = dst->getField(0, this->output_ordinal_);
 }
 
 template<typename B>

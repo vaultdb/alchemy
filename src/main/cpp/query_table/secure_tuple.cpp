@@ -34,7 +34,7 @@ QueryTuple<emp::Bit>::reveal(const int &party, QuerySchema *dst_schema, int8_t *
 
     for(size_t i = 0; i < dst_schema->getFieldCount(); ++i) {
         SecureField src = getField(i);
-        PlainField revealed = src.reveal(party);
+        PlainField revealed = src.reveal(schema_->getField(i), party);
         dst_tuple.setField(i, revealed);
     }
     return dst_tuple;
@@ -56,7 +56,7 @@ PlainTuple QueryTuple<emp::Bit>::reveal(QuerySchema *dst_schema, const int &part
 
     for(size_t i = 0; i < dst_schema->getFieldCount(); ++i) {
         SecureField src = getField(i);
-        PlainField revealed = src.reveal(party);
+        PlainField revealed = src.reveal(schema_->getField(i), party);
         dst_tuple.setField(i, revealed);
     }
 
@@ -73,7 +73,7 @@ PlainTuple QueryTuple<emp::Bit>::revealInsecure(QuerySchema *dst_schema, const i
 
     for(size_t i = 0; i < dst_schema->getFieldCount(); ++i) {
         SecureField src = getField(i);
-        PlainField revealed = src.reveal(party);
+        PlainField revealed = src.reveal(schema_->getField(i), party);
         dst_tuple.setField(i, revealed);
     }
 

@@ -102,18 +102,25 @@ namespace vaultdb {
 
 
         inline Field<B> call(const QueryTuple<B> & target) const override {
-            return target.getField(read_idx_);
+            auto f =  target.getField(read_idx_);
+            f.unpack(this->output_schema_);
+            return f;
         }
+
         inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
             assert(!binary_mode_);
-            return src->getField(row, read_idx_);
+            auto f =  src->getField(row, read_idx_);
+            f.unpack(this->output_schema_);
+            return f;
         }
 
         Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
             assert(binary_mode_);
-            return (read_lhs_) ?
+            auto f =  (read_lhs_) ?
                 lhs->getField(lhs_row, read_idx_) :
                 rhs->getField(rhs_row, read_idx_);
+            f.unpack(this->output_schema_);
+            return f;
         }
 
 
@@ -192,19 +199,20 @@ namespace vaultdb {
         }
 
         inline Field<B> call(const QueryTuple<B> & target) const override {
-            return target.getPackedField(read_idx_);
+            return target.getField(read_idx_);
+
         }
 
         inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
             assert(!binary_mode_);
-            return src->getPackedField(row, read_idx_);
+            return src->getField(row, read_idx_);
         }
 
         Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
             assert(binary_mode_);
             return (read_lhs_) ?
-                   lhs->getPackedField(lhs_row, read_idx_) :
-                   rhs->getPackedField(rhs_row, read_idx_);        
+                   lhs->getField(lhs_row, read_idx_) :
+                   rhs->getField(rhs_row, read_idx_);
 		}
 
 

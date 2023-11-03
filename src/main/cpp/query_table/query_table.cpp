@@ -37,7 +37,7 @@ QueryTable<B>::QueryTable(const size_t &tuple_cnt, const QuerySchema &schema, co
     Field<B> dummy_tag(std::is_same_v<B, Bit> ? FieldType::SECURE_BOOL : FieldType::BOOL, d);
 
     for(int i = 0; i < tuple_cnt; ++i) {
-        setPackedField(i, -1, dummy_tag);
+        setField(i, -1, dummy_tag);
     }
 }
 

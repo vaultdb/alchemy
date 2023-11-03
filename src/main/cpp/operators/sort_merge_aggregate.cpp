@@ -58,7 +58,7 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
     // for first row only
     for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
         aggregator->initialize(input); // don't need group_by_match, only for first pass
-        output->setPackedField(0, cursor, aggregator->getResult());
+        output->setField(0, cursor, aggregator->getResult());
         ++cursor;
     }
 
@@ -71,10 +71,10 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
         matched = true;
         input_dummy_tag = input->getDummyTag(i);
         for(int j = 0; j < this->group_by_.size(); ++j) {
-            matched = matched & (input->getPackedField(i, this->group_by_[j]) == output->getPackedField(i-1, j));
+            matched = matched & (input->getField(i, this->group_by_[j]) == output->getField(i-1, j));
             // initialize output - if input is dummy, copy from predecessor, otherwise copy from input
-            Field<B> dst_group_by = Field<B>::If(input_dummy_tag, output->getPackedField(i-1, j), input->getPackedField(i, this->group_by_[j]));
-            output->setPackedField(i, j, dst_group_by);
+            Field<B> dst_group_by = Field<B>::If(input_dummy_tag, output->getField(i-1, j), input->getField(i, this->group_by_[j]));
+            output->setField(i, j, dst_group_by);
         }
 
         //  if uninitialized (seen no non-dummies yet), don't create a new group-by bin
@@ -85,7 +85,7 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
 
         for(auto agg : aggregators_) {
             agg->accumulate(input, i, matched);
-            output->setPackedField(i, cursor, agg->getResult());
+            output->setField(i, cursor, agg->getResult());
             ++cursor;
         }
         B out_dummy_tag = output->getDummyTag(i-1) & input_dummy_tag; // both need to be dummies for current cell to remain dummy

@@ -38,7 +38,7 @@ template<typename B>
 void ExpressionDeparser<B>::visit(LiteralNode<B>&  node) {
     ptree literal_node;
 
-    PlainField l = node.payload_.reveal();
+    PlainField l = node.payload_.reveal(node.output_schema_);
     literal_node.put("literal", l.toString());
     ptree subtree;
     subtree.put("type", TypeUtilities::getJSONTypeString(node.payload_.getType()));

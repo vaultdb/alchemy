@@ -101,7 +101,7 @@ TEST_F(SecureFieldExpressionTest, test_emp_int_math) {
 
     SecureField result = (lhs + rhs) * multiplier_field;
     if(FLAGS_validation) {
-        PlainField revealed = result.reveal(emp::PUBLIC);
+        PlainField revealed = result.reveal(QueryFieldDesc(0, "", "", FieldType::SECURE_INT, 0), emp::PUBLIC);
         ASSERT_EQ(revealed.getValue<int32_t>(), 19 * 2);
     }
 

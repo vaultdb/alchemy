@@ -40,12 +40,6 @@ namespace  vaultdb {
             return Field<bool>::deserialize(field_desc, fields_ + (schema_->getFieldOffset(ordinal) / 8));
 
         }
-
-        inline const PlainField getPackedField(const int &ordinal) const {
-            QueryFieldDesc field_desc = schema_->getField(ordinal);
-            return Field<bool>::deserializePacked(field_desc, fields_ + (schema_->getFieldOffset(ordinal) / 8));
-        }
-
         inline const PlainField getField(const int &ordinal) const {
             QueryFieldDesc field_desc = schema_->getField(ordinal);
             return Field<bool>::deserialize(field_desc, fields_ + (schema_->getFieldOffset(ordinal) / 8));
@@ -53,7 +47,6 @@ namespace  vaultdb {
         }
 
         void setField(const int &idx, const PlainField &f);
-        void setPackedField(const int &idx, const PlainField &f) { setField(idx, f); } // no bit packing for plaintext
 
         inline void setDummyTag(const bool & b) {
             size_t dummy_tag_size = sizeof(bool);

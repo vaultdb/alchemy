@@ -136,26 +136,27 @@ namespace vaultdb {
     class GroupBySumImpl : public  GroupByAggregateImpl<B> {
     public:
         explicit GroupBySumImpl(const int32_t & ordinal, const FieldType & agg_type) : GroupByAggregateImpl<B>(ordinal, agg_type) {
-            running_sum_ = GroupByAggregateImpl<B>::zero_;
+            running_sum_ = this->zero_;
             assert(agg_type != FieldType::STRING && agg_type != FieldType::SECURE_STRING);
         }
 
          inline void initialize(const QueryTable<B> *table) override{
-            running_sum_ = Field<B>::If(table->getDummyTag(0), running_sum_, table->getField(0, GroupByAggregateImpl<B>::aggregate_ordinal_));
+            running_sum_ = Field<B>::If(table->getDummyTag(0), running_sum_, table->getField(0, this->aggregate_ordinal_));
         }
 
         //virtual void accumulate(const QueryTuple<B> & tuple, const B &group_by_match) override;
          inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
-
-            Field<B> incr = Field<B>::If(table->getDummyTag(row), GroupByAggregateImpl<B>::zero_, table->getField(row, GroupByAggregateImpl<B>::aggregate_ordinal_));
-            running_sum_ = Field<B>::If(group_by_match, running_sum_, GroupByAggregateImpl<B>::zero_);
+            auto f = table->getField(row, this->aggregate_ordinal_);
+            f.unpack(table->getSchema().getField(this->aggregate_ordinal_));
+            Field<B> incr = Field<B>::If(table->getDummyTag(row), this->zero_, f);
+            running_sum_ = Field<B>::If(group_by_match, running_sum_, this->zero_);
 
             running_sum_ = running_sum_ + incr;
         }
         inline Field<B> getResult() override {
             return running_sum_;
         }
-        inline FieldType getType() const override { return GroupByAggregateImpl<B>::aggregate_type_; }
+        inline FieldType getType() const override { return this->aggregate_type_; }
 
         ~GroupBySumImpl() = default;
 
@@ -168,26 +169,28 @@ namespace vaultdb {
     class GroupByAvgImpl : public  GroupByAggregateImpl<B> {
     public:
         GroupByAvgImpl(const int32_t & ordinal, const FieldType & agg_type) : GroupByAggregateImpl<B>(ordinal, agg_type)  {
-            running_sum_ = GroupByAggregateImpl<B>::zero_;
-            running_count_ = GroupByAggregateImpl<B>::zero_;
+            running_sum_ = this->zero_;
+            running_count_ = this->zero_;
         }
 
          inline void initialize(const QueryTable<B> *table) override {
-           running_count_ = Field<B>::If(table->getDummyTag(0),  GroupByAggregateImpl<B>::zero_,  GroupByAggregateImpl<B>::one_);
-           running_sum_ = Field<B>::If(table->getDummyTag(0), running_sum_, table->getField(0, GroupByAggregateImpl<B>::aggregate_ordinal_));
+           running_count_ = Field<B>::If(table->getDummyTag(0),  this->zero_,  this->one_);
+           running_sum_ = Field<B>::If(table->getDummyTag(0), running_sum_, table->getField(0, this->aggregate_ordinal_));
         }
 
          inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
             // count
-            Field<B> cnt_incr = Field<B>::If(table->getDummyTag(row), GroupByAggregateImpl<B>::zero_, GroupByAggregateImpl<B>::one_);
-            running_count_ = Field<B>::If(group_by_match, running_count_, GroupByAggregateImpl<B>::zero_);
+            Field<B> cnt_incr = Field<B>::If(table->getDummyTag(row), this->zero_, this->one_);
+            running_count_ = Field<B>::If(group_by_match, running_count_, this->zero_);
             running_count_ = running_count_ + cnt_incr;
 
 
             // sum
-            Field<B> sum_incr = Field<B>::If(table->getDummyTag(row), GroupByAggregateImpl<B>::zero_, table->getField(row, GroupByAggregateImpl<B>::aggregate_ordinal_));
+             auto f = table->getField(row, this->aggregate_ordinal_);
+             f.unpack(table->getSchema().getField(this->aggregate_ordinal_));
+             Field<B> sum_incr = Field<B>::If(table->getDummyTag(row), this->zero_, f);
 
-            running_sum_ = Field<B>::If(group_by_match, running_sum_, GroupByAggregateImpl<B>::zero_);
+            running_sum_ = Field<B>::If(group_by_match, running_sum_, this->zero_);
 
             running_sum_ = running_sum_ + sum_incr;
 
@@ -225,13 +228,13 @@ namespace vaultdb {
         }
 
         inline void initialize(const QueryTable<B> *table) override {
-            Field<B> first = table->getPackedField(0, GroupByAggregateImpl<B>::aggregate_ordinal_);
+            Field<B> first = table->getField(0, this->aggregate_ordinal_);
             running_min_ = Field<B>::If(table->getDummyTag(0), running_min_, first);
         }
 
         inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
             // if a match and not a dummy
-            Field<B> agg_input = table->getPackedField(row, GroupByAggregateImpl<B>::aggregate_ordinal_);
+            Field<B> agg_input = table->getField(row, this->aggregate_ordinal_);
 
 
             Field<B> new_min = Field<B>::If(agg_input < running_min_, agg_input, running_min_);
@@ -269,13 +272,13 @@ namespace vaultdb {
         }
 
         inline void initialize(const QueryTable<B> *table) override {
-            running_max_ = Field<B>::If(table->getDummyTag(0), running_max_, table->getPackedField(0, GroupByAggregateImpl<B>::aggregate_ordinal_));
+            running_max_ = Field<B>::If(table->getDummyTag(0), running_max_, table->getField(0, this->aggregate_ordinal_));
         }
 
 
         inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
             // if a match and not a dummy
-            Field<B> agg_input = table->getPackedField(row, GroupByAggregateImpl<B>::aggregate_ordinal_);
+            Field<B> agg_input = table->getField(row, this->aggregate_ordinal_);
             Field<B> new_min = Field<B>::If(agg_input > running_max_, agg_input, running_max_);
             B input_dummy_tag = table->getDummyTag(row);
 
@@ -295,4 +298,22 @@ namespace vaultdb {
 
     };
 }
+
+template class vaultdb::GroupByAggregateImpl<bool>;
+template class vaultdb::GroupByAggregateImpl<emp::Bit>;
+
+template class vaultdb::GroupBySumImpl<bool>;
+template class vaultdb::GroupBySumImpl<emp::Bit>;
+
+template class vaultdb::GroupByMinImpl<bool>;
+template class vaultdb::GroupByMinImpl<emp::Bit>;
+
+template class vaultdb::GroupByMaxImpl<bool>;
+template class vaultdb::GroupByMaxImpl<emp::Bit>;
+
+template class vaultdb::GroupByAvgImpl<bool>;
+template class vaultdb::GroupByAvgImpl<emp::Bit>;
+
+
 #endif //_GROUP_BY_AGGREGATE_IMPL_H
+

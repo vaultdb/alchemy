@@ -57,12 +57,6 @@ namespace vaultdb {
 
         }
 
-        const inline SecureField getPackedField(const int & ordinal) const {
-
-            return Field<emp::Bit>::deserializePacked(schema_->getField(ordinal),
-                                                      ((int8_t *) fields_) + field_offset_bytes_.at(ordinal));
-
-        }
 
 
         inline void setField(const int &ordinal, const SecureField &f) {
@@ -70,10 +64,6 @@ namespace vaultdb {
 
         }
 
-        inline void setPackedField(const int &idx, const SecureField &f) {
-            f.serializePacked(((int8_t *) fields_) + field_offset_bytes_[idx], schema_->getField(idx));
-
-        }
 
         inline void setDummyTag(const emp::Bit & d) {
             SecureField f(FieldType::SECURE_BOOL, d);

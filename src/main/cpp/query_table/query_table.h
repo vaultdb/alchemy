@@ -79,11 +79,6 @@ namespace  vaultdb {
             return Field<B>::deserialize(schema_.fields_.at(col), read_ptr );
         }
 
-        Field<B> getPackedField(const int  & row, const int & col)  const  {
-            int8_t *read_ptr = getFieldPtr(row, col);
-            // defaults to regular serialization if bit packing is disabled
-            return Field<B>::deserializePacked(schema_.fields_.at(col), read_ptr );
-        }
 
         void setField(const int  & row, const int & col, const Field<B> & f)  {
             int8_t *write_ptr = getFieldPtr(row, col);
@@ -91,11 +86,6 @@ namespace  vaultdb {
 
         }
 
-        void setPackedField(const int  & row, const int & col, const Field<B> & f) {
-            int8_t *write_ptr = getFieldPtr(row, col);
-            f.serializePacked(write_ptr, schema_.fields_.at(col));
-
-        }
 
         B getDummyTag(const int & row)  const {
             int8_t *dummy_tag =  getFieldPtr(row, -1);
@@ -161,11 +151,11 @@ namespace  vaultdb {
             PlainTuple plain(&dst_schema);
             int field_cnt = schema_.getFieldCount();
             for(int i = 0; i < field_cnt; i++) {
-                PlainField p = getField(row, i).reveal(party);
+                PlainField p = getField(row, i).reveal(schema_.getField(i), party);
                 plain.setField(i, p);
             }
 
-            PlainField dummy_tag = getField(row, -1).reveal(party);
+            PlainField dummy_tag = getField(row, -1).reveal(schema_.getField(-1), party);
             plain.setDummyTag(dummy_tag);
 
             return plain;
@@ -191,6 +181,7 @@ namespace  vaultdb {
         void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
         void cloneTable(const int & dst_row, QueryTable<B> *src);
 
+        // for serializing a row from its wire packed form
        Integer unpackRow(const int & row, const int & col_cnt=-1) const {
            assert(isEncrypted());
            auto src = (SecureTable *) this;
@@ -200,7 +191,7 @@ namespace  vaultdb {
             Bit *cursor = dst.bits.data();
 
             for(int i = 0; i < to_unpack; ++i) {
-                SecureField f = src->getPackedField(row, i);
+                SecureField f = src->getField(row, i);
                 QueryFieldDesc desc = schema_.getField(i);
 
                 switch(f.getType()) {
@@ -243,7 +234,7 @@ namespace  vaultdb {
 
             Bit *cursor = dst.bits.data();
             for(int i = 0; i < col_cnt; ++i) {
-                SecureField f = src->getPackedField(row, i);
+                SecureField f = src->getField(row, i);
                 QueryFieldDesc desc = schema_.fields_.at(i);
 
                 switch(f.getType()) {
@@ -321,7 +312,7 @@ namespace  vaultdb {
                     case FieldType::SECURE_BOOL: {
                         Bit b = *cursor;
                         SecureField f(desc.getType(), b);
-                        dst->setPackedField(row, i, f);
+                        dst->setField(row, i, f);
                         break;
                     }
                     case FieldType::SECURE_INT:
@@ -330,14 +321,14 @@ namespace  vaultdb {
                         Integer i_field(desc.size() + desc.bitPacked(), 0, PUBLIC);
                         memcpy(i_field.bits.data(), cursor, desc.size() * sizeof(Bit));
                         SecureField f(desc.getType(), i_field, desc.getStringLength());
-                        dst->setPackedField(row, i, f);
+                        dst->setField(row, i, f);
                         break;
                     }
                     case FieldType::SECURE_FLOAT: {
                         Float f_field;
                         memcpy(f_field.value.data(), cursor, desc.size() * sizeof(Bit));
                         SecureField f(desc.getType(), f_field);
-                        dst->setPackedField(row, i, f);
+                        dst->setField(row, i, f);
                         break;
                     }
                     default:

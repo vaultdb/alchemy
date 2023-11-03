@@ -249,8 +249,7 @@ pair<QueryTable<B> *, QueryTable<B> *>  KeyedSortMergeJoin<B>::augmentTables(Que
 
     auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
 
-    if(is_secure_ && bit_packed_) initializeAlphasPacked(sorted);
-    else initializeAlphas(sorted);
+    initializeAlphas(sorted);
 
     SortDefinition sort_def;
     sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
@@ -525,11 +524,11 @@ void KeyedSortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
     alpha_2 = Field<B>::If(same_group, Field<B>::If(!is_foreign_key, alpha_2 + one_, zero_),
                            Field<B>::If(!is_foreign_key, one_, zero_));
 
-    dst->setPackedField(0, alpha_idx_, Field<B>::If(is_foreign_key, alpha_2, alpha_1));
+    dst->setField(0, alpha_idx_, Field<B>::If(is_foreign_key, alpha_2, alpha_1));
 
 
     for(int i = 1; i < dst->getTupleCount(); i++) {
-		table_id = dst->getPackedField(i, table_id_idx_).template getValue<B>();
+		table_id = dst->getField(i, table_id_idx_).template getValue<B>();
 		is_foreign_key = (table_id == fkey_check);
         B dummy = dst->getDummyTag(i);
 
@@ -538,12 +537,12 @@ void KeyedSortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
                                Field<B>::If(is_foreign_key & !dummy, one_, zero_));
 		alpha_2 = Field<B>::If(same_group, Field<B>::If(!is_foreign_key, alpha_2 + one_, zero_),
                                Field<B>::If(!is_foreign_key, one_, zero_));
-		dst->setPackedField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_2, alpha_1));
+		dst->setField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_2, alpha_1));
 	}
 
     int last_idx = dst->getTupleCount() - 1;
 
-    table_id = dst->getPackedField(last_idx, table_id_idx_).template getValue<B>();
+    table_id = dst->getField(last_idx, table_id_idx_).template getValue<B>();
     is_foreign_key = (table_id == fkey_check);
     same_group = one_b;
     dummy = dst->getDummyTag(last_idx);
@@ -551,72 +550,20 @@ void KeyedSortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
     // inputs are sorted fkey --> pkey
     //if we are on the last entry and it is fkey, then we know there are no matches so we set alpha_2 to 0
     alpha_1 = Field<B>::If(is_foreign_key, zero_, Field<B>::If(!is_foreign_key & !dummy, one_, zero_));
-    dst->setPackedField(last_idx, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getPackedField(last_idx, alpha_idx_)));
-    dst->setPackedField(last_idx, alpha_idx_, Field<B>::If(dst->getDummyTag(last_idx), zero_, dst->getPackedField(last_idx, alpha_idx_)));
+    dst->setField(last_idx, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getField(last_idx, alpha_idx_)));
+    dst->setField(last_idx, alpha_idx_, Field<B>::If(dst->getDummyTag(last_idx), zero_, dst->getField(last_idx, alpha_idx_)));
 
 
 	for(int i = last_idx-1; i >= 0; i--) {
-        table_id = dst->getPackedField(i, table_id_idx_).template getValue<B>();
+        table_id = dst->getField(i, table_id_idx_).template getValue<B>();
 		is_foreign_key = (table_id == fkey_check);
 		B same_group = joinMatch(dst,  i+1, i);
         B dummy = dst->getDummyTag(i);
 		alpha_1 = Field<B>::If(is_foreign_key & same_group, alpha_1, Field<B>::If(!is_foreign_key & !dummy, one_, zero_));
-		dst->setPackedField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getPackedField(i, alpha_idx_)));
-		dst->setPackedField(i, alpha_idx_, Field<B>::If(dst->getDummyTag(i), zero_, dst->getPackedField(i, alpha_idx_)));
+		dst->setField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getField(i, alpha_idx_)));
+		dst->setField(i, alpha_idx_, Field<B>::If(dst->getDummyTag(i), zero_, dst->getField(i, alpha_idx_)));
     }
 }
-
-template<>
-void KeyedSortMergeJoin<bool>::initializeAlphasPacked(PlainTable *dst) {
-    throw; // should never get here - packing not supported for plaintext
-}
-
-
-template<>
-void KeyedSortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
-	Integer zero = zero_.getValue<Integer>();
-	Integer one = one_.getValue<Integer>();
-
-	Integer alpha_1 = zero;
-	Integer alpha_2 = zero;
-	Bit one_b(true), zero_b(false);
-
-	Bit table_id = dst->getField(0, table_id_idx_).template getValue<Bit>();
-    Bit fkey_check = (foreign_key_input_ == 0 ? zero_b : one_b);
-	Bit is_foreign_key = (table_id == fkey_check);
-
-	for(int i = 0; i < dst->getTupleCount(); i++) {
-		table_id = dst->getPackedField(i, table_id_idx_).template getValue<Bit>();
-		is_foreign_key = (table_id == fkey_check);
-		Bit same_group = joinMatch(dst, (i==0 ? i : i-1), i);
-		Bit dummy = dst->getDummyTag(i);
-		alpha_1 = emp::If(same_group, emp::If(is_foreign_key & !dummy, alpha_1 + one, alpha_1),
-                          emp::If(is_foreign_key & !dummy, one, zero));
-
-		alpha_2 = emp::If(same_group, emp::If(!is_foreign_key, alpha_2 + one, zero), emp::If(!is_foreign_key, one, zero));
-
-		Integer to_write = emp::If(is_foreign_key, alpha_2, alpha_1);
-		dst->setPackedField(i, alpha_idx_, SecureField(int_field_type_, to_write));
-
-	}
-
-    int cutoff = dst->getTupleCount() -1;
-	for(int i = cutoff; i >= 0; i--) {
-		table_id = dst->getPackedField(i, table_id_idx_).template getValue<Bit>();
-		is_foreign_key = (table_id == fkey_check);
-		Bit same_group = joinMatch(dst, (i == cutoff) ? i : i+1, i);
-        Bit dummy = dst->getDummyTag(i);
-		alpha_1 = emp::If(is_foreign_key & same_group, alpha_1, emp::If(!is_foreign_key & !dummy, one, zero));
-
-		Integer to_write = emp::If(is_foreign_key, alpha_1, dst->getPackedField(i, alpha_idx_).template getValue<Integer>());
-		dst->setPackedField(i, alpha_idx_, SecureField(int_field_type_, to_write));
-		to_write = emp::If(dst->getDummyTag(i), zero, dst->getPackedField(i, alpha_idx_).template getValue<Integer>());
-		dst->setPackedField(i, alpha_idx_, SecureField(int_field_type_, to_write));
-
-	}
-
-}
-
 
 
 
@@ -652,7 +599,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, 
     while(j >= 1) {
         for(int i = target_size - j - 1; i >= 0; i--) {
 
-            Field<B> weight = dst_table->getPackedField(i,weight_idx_);
+            Field<B> weight = dst_table->getField(i,weight_idx_);
             Field<B> pos = FieldFactory<B>::getInt(i + j + 1, weight_width);
             B result = (weight >= pos);
             dst_table->compareSwap(result, i, i+j);
@@ -668,10 +615,6 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, 
 
 template<typename B>
 QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_lhs) {
-
-    if(is_secure_ && bit_packed_) return obliviousExpandPacked(input, is_lhs);
-
-
     QuerySchema schema = input->getSchema();
 
     QueryFieldDesc weight(schema.getFieldCount(), "weight", "", int_field_type_);
@@ -689,7 +632,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool
     Field<B> one_b(bool_field_type_, B(true)), zero_b(bool_field_type_, B(false));
     for(int i = 0; i < input->getTupleCount(); i++) {
         intermediate_table->cloneRow(i, 0, input, i); // copy input row
-        Field<B> cnt = input->getPackedField(i, alpha_idx_); // cnt = alpha
+        Field<B> cnt = input->getField(i, alpha_idx_); // cnt = alpha
         B null_val = (cnt == zero_); // is count empty?  If no, set weight to running count, else set weight to zero
         intermediate_table->setField(i, weight_idx_,
                                      Field<B>::If(null_val, zero_, s));
@@ -711,9 +654,9 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool
 
         for(int j = 0; j < schema.getFieldCount(); j++) {
             dst_table->setField(i, is_new_idx_, zero_b);
-            Field<B> to_write = Field<B>::If(new_row, tmp_row.getPackedField(j), dst_table->getPackedField(i, j));
-            tmp_row.setPackedField(j, to_write);
-            dst_table->setPackedField(i, j, to_write);
+            Field<B> to_write = Field<B>::If(new_row, tmp_row.getField(j), dst_table->getField(i, j));
+            tmp_row.setField(j, to_write);
+            dst_table->setField(i, j, to_write);
 
         }
 		Field<B> write_index = FieldFactory<B>::getInt(i);
@@ -724,129 +667,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool
     return dst_table;
 }
 
-template<>
-SecureTable *KeyedSortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool is_lhs) {
 
-    QuerySchema schema = input->getSchema();
-
-    QueryFieldDesc weight(schema.getFieldCount(), "weight", "", int_field_type_);
-    weight.initializeFieldSizeWithCardinality(max_intermediate_cardinality_);
-    schema.putField(weight);
-    QueryFieldDesc is_new(schema.getFieldCount(), "is_new", "", bool_field_type_);
-    schema.putField(is_new);
-    schema.initializeFieldOffsets();
-
-    QueryTable<Bit> *intermediate_table = new QueryTable<Bit>(input->getTupleCount(), schema);
-
-    is_new_idx_ = schema.getFieldCount() - 1;
-    weight_idx_ = schema.getFieldCount() - 2;
-
-
-
-    Integer zero = zero_.getValue<Integer>();
-    Integer one = one_.getValue<Integer>();
-    Bit one_b(true), zero_b(false);
-
-    Integer s = one;
-    Integer cnt;
-
-    for(int i = 0; i < input->getTupleCount(); i++) {
-        intermediate_table->cloneRow(i, 0, input, i);
-        cnt = input->getPackedField(i, alpha_idx_).getValue<Integer>();
-        Bit zero_cnt = (cnt == zero);
-
-        Integer weight_int = emp::If(zero_cnt, zero, s);
-        Bit is_new_bit = emp::If(zero_cnt, one_b, zero_b);
-
-        intermediate_table->setPackedField(i, weight_idx_, SecureField(weight.getType(), weight_int));
-        intermediate_table->setField(i, is_new_idx_, SecureField(bool_field_type_, is_new_bit));
-        intermediate_table->setDummyTag(i, input->getDummyTag(i) | zero_cnt);
-        s = s + cnt;
-
-    }
-
-
-    SecureTable *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
-
-    schema = dst_table->getSchema();
-
-    SecureTuple tmp_row(&schema);
-    tmp_row.setField(is_new_idx_, SecureField(bool_field_type_, one_b));
-    // initialize it to first row in dst_table
-    int schema_bits = dst_table->getSchema().bitCnt();
-    Integer tmp = dst_table->unpackRow(0, dst_table->getSchema().getFieldCount(), schema_bits);
-    tmp[schema_bits-1] = dst_table->getDummyTag(0);
-    memcpy(tmp_row.getData(), tmp.bits.data(),  schema_bits * sizeof(emp::Bit));
-
-    for(int i = 0; i < foreign_key_cardinality_; i++) {
-        Bit is_new_bit = dst_table->getField(i, is_new_idx_).getValue<Bit>();
-        Bit new_write = (is_new_bit == one_b);
-        tmp_row.setDummyTag(FieldUtilities::select(new_write, tmp_row.getDummyTag(), dst_table->getDummyTag(i)));
-
-        for(int j = 0; j < schema.getFieldCount(); j++) {
-            SecureField to_write = SecureField::If(new_write, tmp_row.getPackedField(j), dst_table->getPackedField(i, j));
-            tmp_row.setPackedField(j, to_write);
-            dst_table->setPackedField(i, j, to_write);
-
-        }
-        dst_table->setPackedField(i, is_new_idx_, SecureField(bool_field_type_, zero_b));
-		
-		Integer write_index(schema.getField(weight_idx_).size() + 1, i);
-		
-		Bit end_matches = write_index >= (s - one);
-        dst_table->setDummyTag(i, FieldUtilities::select(new_write, tmp_row.getDummyTag() | end_matches,
-                                                         dst_table->getDummyTag(i) | end_matches));
-    }
-
-    return dst_table;
-}
-
-template<>
-PlainTable *KeyedSortMergeJoin<bool>::obliviousExpandPacked(PlainTable *input, bool is_lhs) {
-    throw; // should never get here - this method for secure runs only
-}
-
-/*template<typename B>
-QueryTable<B> *KeyedSortMergeJoin<B>::alignTable(QueryTable<B> *input) {
-    QuerySchema schema = input->getSchema();
-
-    QueryFieldDesc weight(schema.getFieldCount(), "ii", "", is_secure_ ? FieldType::SECURE_INT : FieldType::INT);
-
-
-    schema.putField(weight);
-    schema.initializeFieldOffsets();
-
-    size_t ii_idx = schema.getFieldCount() - 1;
-
-    Field<B> count = zero_ - one_;
-
-
-    QueryTable<B> *dst_table = new QueryTable<B>(input->getTupleCount(), schema, storage_model_);
-
-
-    for(int i = 0; i < input->getTupleCount(); i++) {
-
-        B same_group = joinMatch(input, i-1, i);
-
-        count = Field<B>::If(same_group, count+one_, zero_);
-
-        Field<B> alpha_1 = input->getField(i, alpha_1_idx_); input->getField(i, alpha_1_idx_);
-        Field<B> alpha_2 = input->getField(i, alpha_2_idx_);
-
-        alpha_2 = Field<B>::If(alpha_2 == zero_, one_, alpha_2);
-
-        dst_table->setField(i, ii_idx, count/alpha_2 + (count % alpha_2) * alpha_1);
-        dst_table->setDummyTag(i, input->getDummyTag(i));
-
-        dst_table->cloneRow(i, 0, input, i);
-    }
-
-    SortDefinition s =  DataUtilities::getDefaultSortDefinition(join_idxs_.size());
-    s.emplace_back(ii_idx, SortDirection::ASCENDING);
-    Sort<B> sorter(dst_table, s);
-    return sorter.run()->clone();
-}
-*/
 template<>
 QueryTable<bool> *KeyedSortMergeJoin<bool>::revertProjection(QueryTable<bool> *src, const map<int, int> &expr_map,
                                                        const bool &is_lhs) const {

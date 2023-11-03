@@ -89,7 +89,7 @@ set(sources
 		operators/scalar_aggregate.cpp
 		operators/union.cpp
 		operators/sort_merge_aggregate.cpp
-		operators/support/group_by_aggregate_impl.cpp
+		operators/support/group_by_aggregate_impl.h
 		operators/csv_input.cpp
 		operators/shrinkwrap.cpp
 		operators/sort_merge_join.cpp

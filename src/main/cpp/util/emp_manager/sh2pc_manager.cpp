@@ -118,7 +118,7 @@ void SH2PCManager::secret_share_recv(const size_t &tuple_count, const int &party
                 PlainField placeholder = src_tuple.getField(j);
                 auto field_desc = dst_schema.getField(j);
                 auto dst_field = SecureField::secretShareHelper(placeholder, field_desc, party, false);
-                dst_table->setPackedField(cursor, j, dst_field);
+                dst_table->setField(cursor, j, dst_field);
             }
 
             emp::Bit b(0, party);
@@ -134,7 +134,7 @@ void SH2PCManager::secret_share_recv(const size_t &tuple_count, const int &party
             PlainField placeholder = src_tuple.getField(j);
             auto field_desc = dst_schema.getField(j);
             auto dst_field = SecureField::secretShareHelper(placeholder, field_desc, party, false);
-            dst_table->setPackedField(cursor, j, dst_field);
+            dst_table->setField(cursor, j, dst_field);
         }
 
         emp::Bit b(0, party);
@@ -165,7 +165,7 @@ SH2PCManager::secret_share_send(const int &party,const PlainTable *src_table, Se
                 auto field_desc = dst_schema.getField(j);
 
                 auto dst_field = SecureField::secretShareHelper(src_field, field_desc, party, true);
-                dst_table->setPackedField(cursor, j, dst_field);
+                dst_table->setField(cursor, j, dst_field);
             }
             emp::Bit b(src_table->getDummyTag(i), party);
             dst_table->setDummyTag(cursor, b);
@@ -181,7 +181,7 @@ SH2PCManager::secret_share_send(const int &party,const PlainTable *src_table, Se
             auto src_field = src_table->getField(i, j);
             auto field_desc = dst_schema.getField(j);
             auto dst_field = SecureField::secretShareHelper(src_field, field_desc, party, true);
-            dst_table->setPackedField(cursor, j, dst_field);
+            dst_table->setField(cursor, j, dst_field);
         }
 
         emp::Bit b(src_table->getDummyTag(i), party);

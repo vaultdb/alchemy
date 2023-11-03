@@ -70,7 +70,7 @@ namespace vaultdb {
             // this will only invoke bit packed predicate when packing is enabled
             B match = true;
             for(int i = 0; i < join_idxs_.size(); ++i) {
-                match = match & (t->getPackedField(lhs_row, i) == t->getPackedField(rhs_row, i));
+                match = match & (t->getField(lhs_row, i) == t->getField(rhs_row, i));
             }
             return match;
         }

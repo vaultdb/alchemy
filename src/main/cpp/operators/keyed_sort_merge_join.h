@@ -130,11 +130,8 @@ namespace  vaultdb {
         pair<QueryTable<B> *, QueryTable<B> *> augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs);
         QueryTable<B> *obliviousDistribute(QueryTable<B> *input, size_t target_size);
         QueryTable<B> *obliviousExpand(QueryTable<B> *input, bool is_lhs);
-        // only for use when bit_packed_ = true and is_secure_ = true
-        QueryTable<B> *obliviousExpandPacked(QueryTable<B> *input, bool is_lhs);
         QuerySchema getAugmentedSchema();
 
-        //QueryTable<B> *alignTable(QueryTable<B> *input);
         QueryTable<bool> *revertProjection(QueryTable<bool> *src, const map<int, int> &expr_map, const bool &is_lhs) const;
         QueryTable<Bit> *revertProjection(QueryTable<Bit> *src, const map<int, int> &expr_map, const bool &is_lhs) const;
 
@@ -142,7 +139,6 @@ namespace  vaultdb {
         QueryTable<B> *projectJoinKeyToFirstAttrOmpc(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs);
 
         void initializeAlphas(QueryTable<B> *dst); // update in place
-        void initializeAlphasPacked(QueryTable<B> *dst); // update in place
 
         QueryTable<B> *unionAndSortTables();
         QueryTable<B> *unionAndMergeTables();
@@ -152,7 +148,7 @@ namespace  vaultdb {
             // this will only invoke bit packed predicate when packing is enabled
             B match = true;
             for(int i = 0; i < join_idxs_.size(); ++i) {
-                match = match & (t->getPackedField(lhs_row, i) == t->getPackedField(rhs_row, i));
+                match = match & (t->getField(lhs_row, i) == t->getField(rhs_row, i));
             }
             return match;
         }

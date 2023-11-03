@@ -230,7 +230,7 @@ B Field<B>::operator>=(const Field &r) const {
 
 
 template<typename B>
-PlainField Field<B>::reveal(const int &party) const {
+PlainField Field<B>::reveal( const QueryFieldDesc &desc, const int &party) const {
 
     FieldType resType = TypeUtilities::toPlain(type_);
     size_t str_len = 0;
@@ -256,10 +256,16 @@ PlainField Field<B>::reveal(const int &party) const {
         case FieldType::SECURE_INT:
             i = getValue<emp::Integer>();
             v =  i.reveal<int32_t>(party);
+            if(desc.bitPacked()) {
+                v = (int32_t) (boost::get<int32_t>(v) + desc.getFieldMin());
+            }
             break;
         case FieldType::SECURE_LONG:
             i = getValue<emp::Integer>();
             v = i.reveal<int64_t>(party);
+            if(desc.bitPacked()) {
+                v = boost::get<int64_t>(v) + desc.getFieldMin();
+            }
             break;
         case FieldType::SECURE_STRING:
             i = getValue<emp::Integer>();
@@ -343,7 +349,7 @@ B Field<B>::operator==(const Field<B> &r) const {
 }
 
 
-template<typename B>
+/*template<typename B>
 void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
     assert(dst != nullptr);
 
@@ -393,9 +399,11 @@ void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
             throw;
     }
 }
+*/
 
+// formerly serializePacked
 template<typename B>
-void Field<B>::serializePacked(int8_t *dst, const QueryFieldDesc &schema) const {
+void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
     assert(dst != nullptr);
 
     string s;
@@ -885,89 +893,90 @@ B Field<B>::operator||(const Field &cmp) const {
 
 }
 
+//
+//
+//template<typename B>
+//Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
+//    FieldType type = desc.getType();
+//    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
+//
+//    switch (type) {
+//        case FieldType::BOOL: {
+//            bool val = *((bool *) src);
+//            return Field<B>(type, val);
+//        }
+//        case FieldType::INT: {
+//            int32_t val = *((int32_t *) src);
+//            return Field<B>(type, val);
+//        }
+//        case FieldType::DATE:
+//        case FieldType::LONG: {
+//            int64_t val = *((int64_t *) src);
+//            return Field<B>(type, val);
+//        }
+//        case FieldType::FLOAT: {
+//            float_t val = *((float_t *) src);
+//            return Field<B>(type, val);
+//        }
+//
+//        case FieldType::STRING: {
+//            char *val = (char *) src;
+//            std::string str(val, desc.getStringLength());
+//            std::reverse(str.begin(), str.end());
+//            return Field<B>(type, str, desc.getStringLength());
+//
+//        }
+//        case FieldType::SECURE_BOOL: {
+//            emp::Bit my_bit(0, PUBLIC);
+//            manager->unpack((Bit *) src,  &my_bit, 1);
+//            return Field<B>(type, my_bit);
+//        }
+//        case FieldType::SECURE_INT: {
+//            // add one more bit for two's complement
+//            emp::Integer payload(desc.size() + desc.bitPacked(), 0);
+//            manager->unpack((Bit *) src, payload.bits.data(), desc.size());
+//            if(desc.bitPacked()) {
+//                payload.resize(32);
+//                emp::Integer unpacked = desc.getSecureFieldMin();
+//                unpacked = unpacked + payload;
+//                return Field<B>(type, unpacked);
+//            }
+//            return Field<B>(type, payload);
+//        }
+//        case FieldType::SECURE_LONG: {
+//            emp::Integer payload(desc.size() + desc.bitPacked(), 0);
+//            manager->unpack((Bit *) src, payload.bits.data(), desc.size());
+//            if(desc.bitPacked()) {
+//                payload.resize(64);
+//                emp::Integer unpacked = desc.getSecureFieldMin(); // secure_long = 64 bits
+//                unpacked = unpacked + payload;
+//                return Field<B>(type, unpacked);
+//            }
+//            return Field<B>(type, payload);
+//        }
+//        case FieldType::SECURE_FLOAT: {
+//            emp::Float v(0, emp::PUBLIC);
+//            manager->unpack((Bit *) src, v.value.data(), desc.size());
+//            return Field<B>(type, v);
+//        }
+//
+//        case FieldType::SECURE_STRING: {
+//            size_t bit_cnt = desc.getStringLength() * 8;
+//            emp::Integer v(bit_cnt, 0, emp::PUBLIC);
+//            manager->unpack((Bit *) src, v.bits.data(), bit_cnt);
+//            return Field<B>(type, v, desc.getStringLength());
+//
+//        }
+//        default:
+//            throw std::invalid_argument("Field type " + TypeUtilities::getTypeString(type) + " not supported by deserialize()!");
+//
+//    }
+//
+//}
 
-
+// formerly deserializePacked
 template<typename B>
 Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
-    FieldType type = desc.getType();
-    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
-
-    switch (type) {
-        case FieldType::BOOL: {
-            bool val = *((bool *) src);
-            return Field<B>(type, val);
-        }
-        case FieldType::INT: {
-            int32_t val = *((int32_t *) src);
-            return Field<B>(type, val);
-        }
-        case FieldType::DATE:
-        case FieldType::LONG: {
-            int64_t val = *((int64_t *) src);
-            return Field<B>(type, val);
-        }
-        case FieldType::FLOAT: {
-            float_t val = *((float_t *) src);
-            return Field<B>(type, val);
-        }
-
-        case FieldType::STRING: {
-            char *val = (char *) src;
-            std::string str(val, desc.getStringLength());
-            std::reverse(str.begin(), str.end());
-            return Field<B>(type, str, desc.getStringLength());
-
-        }
-        case FieldType::SECURE_BOOL: {
-            emp::Bit my_bit(0, PUBLIC);
-            manager->unpack((Bit *) src,  &my_bit, 1);
-            return Field<B>(type, my_bit);
-        }
-        case FieldType::SECURE_INT: {
-            // add one more bit for two's complement
-            emp::Integer payload(desc.size() + desc.bitPacked(), 0);
-            manager->unpack((Bit *) src, payload.bits.data(), desc.size());
-            if(desc.bitPacked()) {
-                payload.resize(32);
-                emp::Integer unpacked = desc.getSecureFieldMin();
-                unpacked = unpacked + payload;
-                return Field<B>(type, unpacked);
-            }
-            return Field<B>(type, payload);
-        }
-        case FieldType::SECURE_LONG: {
-            emp::Integer payload(desc.size() + desc.bitPacked(), 0);
-            manager->unpack((Bit *) src, payload.bits.data(), desc.size());
-            if(desc.bitPacked()) {
-                payload.resize(64);
-                emp::Integer unpacked = desc.getSecureFieldMin(); // secure_long = 64 bits
-                unpacked = unpacked + payload;
-                return Field<B>(type, unpacked);
-            }
-            return Field<B>(type, payload);
-        }
-        case FieldType::SECURE_FLOAT: {
-            emp::Float v(0, emp::PUBLIC);
-            manager->unpack((Bit *) src, v.value.data(), desc.size());
-            return Field<B>(type, v);
-        }
-
-        case FieldType::SECURE_STRING: {
-            size_t bit_cnt = desc.getStringLength() * 8;
-            emp::Integer v(bit_cnt, 0, emp::PUBLIC);
-            manager->unpack((Bit *) src, v.bits.data(), bit_cnt);
-            return Field<B>(type, v, desc.getStringLength());
-
-        }
-        default:
-            throw std::invalid_argument("Field type " + TypeUtilities::getTypeString(type) + " not supported by deserialize()!");
-
-    }
-
-}
-
-template<typename B>
-Field<B> Field<B>::deserializePacked(const QueryFieldDesc &desc, const int8_t *src) {
     FieldType type = desc.getType();
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
 

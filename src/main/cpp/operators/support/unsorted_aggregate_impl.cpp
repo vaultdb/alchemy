@@ -37,14 +37,15 @@ void UnsortedStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & 
     // input is NOT a dummy AND (output IS a dummy AND !matched)
     B input_dummy = src->getDummyTag(src_row);
     Field<B> input_field, output_field;
-    output_field = dst->getPackedField(dst_row, this->output_ordinal_);
+    output_field = dst->getField(dst_row, this->output_ordinal_);
 
     if(this->agg_type_ == AggregateId::SUM) {
-        input_field =  src->getField(src_row, UnsortedAggregateImpl<B>::input_ordinal_);
+        input_field =  src->getField(src_row, this->input_ordinal_);
+        input_field.unpack(src->getSchema().getField(this->input_ordinal_));
         output_field = dst->getField(dst_row, this->output_ordinal_);
     }
     else if(this->agg_type_ != AggregateId::COUNT) { // no input field for cnt
-        input_field =  src->getPackedField(src_row, UnsortedAggregateImpl<B>::input_ordinal_);
+        input_field =  src->getField(src_row, this->input_ordinal_);
     }
 
     B to_accumulate = (!input_dummy) & group_by_match;
@@ -53,7 +54,7 @@ void UnsortedStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & 
 
     Field<B> accumulated;
 
-    switch(UnsortedAggregateImpl<B>::agg_type_) {
+    switch(this->agg_type_) {
         case AggregateId::AVG:
             throw; // should use specialized UnsortedAvgImpl for this
         case AggregateId::COUNT:
@@ -73,21 +74,22 @@ void UnsortedStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & 
             accumulated = Field<B>::If(to_accumulate, accumulated + input_field, accumulated);
     }
 
-     dst->setPackedField(dst_row, this->output_ordinal_, accumulated);
+     dst->setField(dst_row, this->output_ordinal_, accumulated);
 }
 
 template<typename B>
 UnsortedAvgImpl<B>::UnsortedAvgImpl(const AggregateId & id, const FieldType & type, const int32_t & input_ordinal, const int32_t & output_ordinal)
         : UnsortedAggregateImpl<B>(id, type, input_ordinal, output_ordinal){
 
-    tuple_count_ = FieldFactory<B>::getZero(UnsortedAggregateImpl<B>::field_type_);
+    tuple_count_ = FieldFactory<B>::getZero(this->field_type_);
     running_sum_ = tuple_count_;
 }
 
 template<typename B>
 void UnsortedAvgImpl<B>::update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst, const int & dst_row, const B & match_found, const B & group_by_match){
     B input_dummy = src->getDummyTag(src_row);
-    Field<B> input_field = src->getField(src_row,UnsortedAggregateImpl<B>::input_ordinal_);
+    Field<B> input_field = src->getField(src_row, this->input_ordinal_);
+    input_field.unpack(src->getSchema().getField(this->input_ordinal_));
 
     B to_accumulate = (!input_dummy) & group_by_match;
     B to_initialize = (!input_dummy) & dst->getDummyTag(dst_row)  & !match_found;
@@ -99,9 +101,7 @@ void UnsortedAvgImpl<B>::update(QueryTable<B> *src,  const int & src_row,  Query
     running_sum_ = Field<B>::If(to_write, running_sum_ + input_field, running_sum_);
 
     Field<B> output_field = running_sum_ / tuple_count_;
-
-    dst->setField(dst_row, UnsortedAggregateImpl<B>::output_ordinal_, output_field);
-
+    dst->setField(dst_row, this->output_ordinal_, output_field);
 
 }
 

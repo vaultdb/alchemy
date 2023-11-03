@@ -246,9 +246,9 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src) {
     // normalize the fields for the sort key
     for(int i = 0; i < dst->getTupleCount(); ++i) {
         for(int j = 0; j < this->sort_definition_.size(); ++j)  {
-            Field<B> s = projected->getPackedField(i, j);
+            Field<B> s = projected->getField(i, j);
             Field<B> d = NormalizeFields::normalize(s, this->sort_definition_[j].second, normed_schema.getField(j).bitPacked());
-            dst->setPackedField(i, j, d);
+            dst->setField(i, j, d);
 
         }
 
@@ -267,9 +267,9 @@ QueryTable<B> *Sort<B>::denormalizeTable(QueryTable<B> *src) {
     dst->setSchema(dst_schema);
     for(int i = 0; i < src->getTupleCount(); ++i) {
         for(int j = 0; j < this->sort_definition_.size(); ++j)  {
-            Field<B> s = src->getPackedField(i, j);
+            Field<B> s = src->getField(i, j);
             Field<B> d = NormalizeFields::denormalize(s, dst_schema.getField(j).getType(), this->sort_definition_[j].second, dst_schema.getField(j).bitPacked());
-            dst->setPackedField(i, j, d);
+            dst->setField(i, j, d);
         }
     }
 

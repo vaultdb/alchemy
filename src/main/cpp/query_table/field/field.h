@@ -84,7 +84,7 @@ namespace vaultdb {
         static void compareAndSwap(const B & choice, Field & lhs, Field & rhs);
 
 
-        PlainField reveal(const int &party = emp::PUBLIC) const;
+        PlainField reveal( const QueryFieldDesc &desc, const int &party = emp::PUBLIC) const;
         SecureField secret_share() const; // secret share as public
 
         static SecureField
@@ -98,13 +98,38 @@ namespace vaultdb {
 
         std::string toString() const;
 
+        // packs field by default
         void serialize(int8_t *dst, const QueryFieldDesc &schema) const;
-        void serializePacked(int8_t *dst, const QueryFieldDesc &schema) const;
+//        void serializePacked(int8_t *dst, const QueryFieldDesc &schema) const;
+        void pack(const QueryFieldDesc & schema) {// update this to a packed version of field
+            if(type_ != FieldType::SECURE_INT && type_ != FieldType::SECURE_LONG) return;
+            Integer si = boost::get<emp::Integer>(payload_);
+            if(si.size() == schema.size()) return; // already packed
 
+            if(schema.bitPacked() && schema.getFieldMin() != 0) {
+                si = si - schema.getSecureFieldMin();
+            }
+            si.resize(schema.size());
+            payload_ = si;
+        }
+
+
+        // keep the field as its in-table representation.  If packed, don't unpack to its original size
         static Field<B> deserialize(const QueryFieldDesc &desc, const int8_t *src);
 
-        // keep the field as its in-table representation.  If packed, don't unpack to its logical size
-        static Field<B> deserializePacked(const QueryFieldDesc &desc, const int8_t *src);
+        void unpack(const QueryFieldDesc & schema)  { // update to an unpacked version of this
+            if(type_ != FieldType::SECURE_INT && type_ != FieldType::SECURE_LONG) return;
+            Integer si = boost::get<emp::Integer>(payload_);
+            if(si.size() > schema.size()) return; // already unpacked
+
+            si.resize(type_ == FieldType::SECURE_INT ? 32 : 64);
+            if(schema.bitPacked() && schema.getFieldMin() != 0) {
+                si = si + schema.getSecureFieldMin();
+            }
+            payload_ = si;
+        }
+
+//        static Field<B> deserializePacked(const QueryFieldDesc &desc, const int8_t *src);
 
         static std::string revealString(const emp::Integer & src, const int & party = PUBLIC);
         static emp::Integer

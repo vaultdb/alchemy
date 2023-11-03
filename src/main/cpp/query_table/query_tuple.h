@@ -32,9 +32,7 @@ namespace vaultdb {
         Field<B> operator[](const int32_t & idx ) { throw; }
         Field<B> operator[](const int32_t & idx ) const {throw; }
         void setField(const size_t & idx, const Field<B> & field) { throw; }
-        void setPackedField(const size_t & idx, const Field<B> & field) { throw; }
         Field<B> getField(const int & ordinal) const { throw; }
-        Field<B> getPackedField(const int & ordinal) const { throw; }
         void setDummyTag(const bool & b) { throw; }
         void setDummyTag(const emp::Bit & b) { throw; }
         static void writeSubset(const QueryTuple<B> & src_tuple, const QueryTuple<B> & dst_tuple, uint32_t src_start_idx, uint32_t src_attr_cnt, uint32_t dst_start_idx) { throw; }
