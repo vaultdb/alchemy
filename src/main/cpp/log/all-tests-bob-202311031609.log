@@ -1,0 +1,1669 @@
+-- Build type: Release
+-- CXX release flags: -Wfatal-errors  -Wno-ignored-attributes -Wno-unused-result -funroll-loops -fPIC -march=native -maes -mrdseed -Wno-stringop-overread -O2
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp
+[  0%] Built target generate_enrich_data
+[  1%] Built target gtest
+[  2%] Built target gtest_main
+[  3%] Built target gmock
+[ 28%] Built target vaultdb-emp
+[ 29%] Built target csv_reader_test
+[ 30%] Built target project_test
+[ 31%] Built target field_expression_test
+[ 32%] Built target filter_test
+[ 33%] Built target scalar_aggregate_test
+[ 34%] Built target sort_test
+[ 35%] Built target basic_join_test
+[ 36%] Built target sort_merge_aggregate_test
+[ 38%] Built target sort_merge_join_test
+[ 39%] Built target keyed_sort_merge_join_test
+[ 40%] Built target nested_loop_aggregate_test
+[ 41%] Built target keyed_join_test
+[ 44%] Built target merge_join_test
+[ 44%] Built target secret_share_generator_test
+[ 45%] Built target plan_parser_test
+[ 47%] Built target plan_deparser_test
+[ 48%] Built target tpch_test
+[ 50%] Built target serialization_test
+[ 51%] Built target secure_field_expression_test
+[ 52%] Built target emp_test
+[ 54%] Built target emp_table_test
+[ 55%] Built target secure_filter_test
+[ 56%] Built target secure_sort_test
+[ 57%] Built target secure_basic_join_test
+[ 58%] Built target secure_merge_join_test
+[ 59%] Built target secure_keyed_join_test
+[ 61%] Built target secure_keyed_sort_merge_join_test
+[ 63%] Built target secure_scalar_aggregate_test
+[ 64%] Built target secure_sort_merge_aggregate_test
+[ 65%] Built target secure_nested_loop_aggregate_test
+[ 67%] Built target secure_tpch_test
+[ 68%] Built target enrich_test
+[ 69%] Built target secure_plan_deparser_test
+[ 70%] Built target secure_aggregate_comparison_test
+[ 71%] Built target true_cardinality_test
+[ 73%] Built target secure_bit_packing_test
+[ 74%] Built target baseline_comparison_test
+[ 75%] Built target generate_enrich_data_three_parties
+[ 79%] Built target operator_cost_model_test
+[ 79%] Built target fully_optimized_test
+[ 79%] Built target expression_cost_model_test
+[ 80%] Built target plan_cost_test
+[ 81%] Built target secure_plan_enumeration_test
+[ 83%] Built target zk_tpch_test
+[ 84%] Built target secret_share_csv
+[ 86%] Built target secret_share_from_query
+[ 88%] Built target load_tuples_data_partner
+[ 89%] Built target join_cost_comparison_test
+[ 91%] Built target secret_share_batch_from_query
+[ 92%] Built target assemble_secret_shares
+[ 94%] Built target run_data_partner_aggregation
+[ 97%] Built target run_data_partner
+[100%] Built target run_data_partner_batch
+[ 96%] Built target vaultdb-emp
+[100%] Built target generate_enrich_data_three_parties
+[ 92%] Built target vaultdb-emp
+[100%] Built target secret_share_from_query
+[ 92%] Built target vaultdb-emp
+[100%] Built target secret_share_batch_from_query
+Finished generating 1000 patients per host!
+DROP TABLE
+CREATE TABLE
+COPY 1000
+COPY 1000
+COPY 1000
+UPDATE 1832
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+CREATE EXTENSION
+ALTER TABLE
+UPDATE 3000
+COPY 1000
+COPY 1000
+COPY 1000
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_chi" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+Writing multisite tables!
+preparing for aggregate-only test
+Chi secret sharing 511 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 0, 4, U, N, 4, true, true, false) (dummy=0)
+1: (2018, 7, 6, M, Y, 1, true, true, false) (dummy=0)
+2: (2018, 9, 5, F, N, 5, true, true, false) (dummy=0)
+3: (2018, 14, 1, F, N, 1, false, true, true) (dummy=0)
+4: (2018, 30, 7, F, N, 5, false, true, true) (dummy=0)
+5: (2018, 34, 2, U, Y, 3, true, true, true) (dummy=0)
+6: (2018, 62, 3, M, U, 3, false, true, false) (dummy=0)
+7: (2018, 66, 1, F, N, 7, false, false, false) (dummy=0)
+8: (2018, 76, 1, U, U, 7, true, true, false) (dummy=0)
+9: (2018, 83, 3, M, Y, 1, false, true, false) (dummy=0)
+
+Chi secret sharing 157 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 0, 4, U, N, 4, true, true, false) (dummy=0)
+1: (2018, 7, 6, M, Y, 1, true, true, false) (dummy=0)
+2: (2018, 9, 5, F, N, 5, true, true, false) (dummy=0)
+3: (2018, 14, 1, F, N, 1, false, true, true) (dummy=0)
+4: (2018, 30, 7, F, N, 5, false, true, true) (dummy=0)
+5: (2018, 34, 2, U, Y, 3, true, true, true) (dummy=0)
+6: (2018, 62, 3, M, U, 3, false, true, false) (dummy=0)
+7: (2018, 66, 1, F, N, 7, false, false, false) (dummy=0)
+8: (2018, 76, 1, U, U, 7, true, true, false) (dummy=0)
+9: (2018, 83, 3, M, Y, 1, false, true, false) (dummy=0)
+
+Setting up semi-join optimization
+Chi secret sharing 1323 tuples.
+First rows: (#0 int32 demographics_domain.study_year, #1 varchar(1) demographics_domain.age_strata, #2 varchar(1) demographics_domain.sex, #3 varchar(1) demographics_domain.ethnicity, #4 varchar(1) demographics_domain.race, #5 int32 numerator_cnt, #6 int32 denominator_cnt, #7 int32 numerator_multisite_cnt, #8 int32 denominator_multisite_cnt) order by: {}
+0: (2018, 1, F, N, 1, 0, 0, 0, 0) (dummy=0)
+1: (2018, 1, F, N, 2, 1, 1, 0, 0) (dummy=0)
+2: (2018, 1, F, N, 3, 0, 0, 0, 0) (dummy=0)
+3: (2018, 1, F, N, 4, 0, 0, 0, 0) (dummy=0)
+4: (2018, 1, F, N, 5, 1, 1, 0, 0) (dummy=0)
+5: (2018, 1, F, N, 6, 0, 0, 0, 0) (dummy=0)
+6: (2018, 1, F, N, 7, 0, 1, 0, 0) (dummy=0)
+7: (2018, 1, F, U, 1, 0, 0, 0, 0) (dummy=0)
+8: (2018, 1, F, U, 2, 2, 2, 0, 0) (dummy=0)
+9: (2018, 1, F, U, 3, 0, 0, 0, 0) (dummy=0)
+
+Chi secret sharing 107 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 30, 7, F, N, 5, false, true, true) (dummy=0)
+1: (2018, 172, 5, F, Y, 4, false, true, false) (dummy=0)
+2: (2018, 207, 6, U, N, 5, false, true, true) (dummy=0)
+3: (2018, 319, 4, U, U, 4, false, true, false) (dummy=0)
+4: (2018, 344, 7, U, N, 2, true, true, false) (dummy=0)
+5: (2018, 395, 1, F, N, 6, true, true, true) (dummy=0)
+6: (2018, 450, 2, F, U, 4, false, true, false) (dummy=0)
+7: (2018, 505, 3, U, N, 4, false, true, true) (dummy=0)
+8: (2018, 690, 3, M, U, 1, false, true, false) (dummy=0)
+9: (2018, 829, 3, F, Y, 7, false, true, false) (dummy=0)
+
+Chi secret sharing 99 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 14, 1, F, N, 1, false, true, true) (dummy=0)
+1: (2018, 34, 2, U, Y, 3, true, true, true) (dummy=0)
+2: (2018, 83, 3, M, Y, 1, false, true, false) (dummy=0)
+3: (2018, 180, 6, U, U, 6, false, true, false) (dummy=0)
+4: (2018, 185, 6, U, U, 1, false, true, false) (dummy=0)
+5: (2018, 229, 7, U, N, 4, false, false, false) (dummy=0)
+6: (2018, 248, 5, M, N, 6, false, true, false) (dummy=0)
+7: (2018, 263, 3, F, Y, 2, true, true, false) (dummy=0)
+8: (2018, 347, 5, U, U, 7, false, false, true) (dummy=0)
+9: (2018, 429, 5, F, U, 6, false, true, true) (dummy=0)
+
+Chi secret sharing 83 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 62, 3, M, U, 3, false, true, false) (dummy=0)
+1: (2018, 181, 7, F, N, 7, false, true, false) (dummy=0)
+2: (2018, 246, 3, U, Y, 3, false, true, true) (dummy=0)
+3: (2018, 511, 6, F, N, 7, false, true, false) (dummy=0)
+4: (2018, 550, 6, F, Y, 3, false, true, false) (dummy=0)
+5: (2018, 580, 3, M, Y, 5, false, true, false) (dummy=0)
+6: (2018, 693, 2, U, U, 7, true, true, false) (dummy=0)
+7: (2018, 712, 7, U, U, 6, false, true, true) (dummy=0)
+8: (2018, 938, 1, F, Y, 4, false, true, false) (dummy=0)
+9: (2018, 940, 7, F, Y, 5, false, true, false) (dummy=0)
+
+Chi secret sharing 94 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 9, 5, F, N, 5, true, true, false) (dummy=0)
+1: (2018, 281, 3, F, Y, 1, true, false, true) (dummy=0)
+2: (2018, 333, 6, M, U, 7, false, false, false) (dummy=0)
+3: (2018, 372, 2, M, U, 3, false, true, false) (dummy=0)
+4: (2018, 452, 2, M, U, 1, true, true, false) (dummy=0)
+5: (2018, 512, 1, M, U, 3, true, true, true) (dummy=0)
+6: (2018, 751, 2, F, U, 6, false, true, true) (dummy=0)
+7: (2018, 764, 7, F, N, 2, true, true, false) (dummy=0)
+8: (2018, 869, 1, M, U, 6, false, true, false) (dummy=0)
+9: (2018, 1204, 4, U, U, 4, false, true, false) (dummy=0)
+
+Chi secret sharing 87 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 167, 3, F, N, 3, false, true, false) (dummy=0)
+1: (2018, 216, 2, U, U, 2, false, true, true) (dummy=0)
+2: (2018, 451, 4, M, Y, 3, true, true, false) (dummy=0)
+3: (2018, 600, 5, U, U, 7, false, true, false) (dummy=0)
+4: (2018, 634, 4, U, Y, 7, false, false, true) (dummy=0)
+5: (2018, 743, 4, M, Y, 4, true, true, true) (dummy=0)
+6: (2018, 752, 2, U, Y, 3, false, true, false) (dummy=0)
+7: (2018, 754, 7, U, Y, 1, false, true, false) (dummy=0)
+8: (2018, 757, 2, F, Y, 5, false, true, true) (dummy=0)
+9: (2018, 960, 7, F, Y, 1, true, true, false) (dummy=0)
+
+Chi secret sharing 121 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 0, 4, U, N, 4, true, true, false) (dummy=0)
+1: (2018, 93, 4, F, Y, 2, true, true, false) (dummy=0)
+2: (2018, 226, 6, F, N, 4, false, false, true) (dummy=0)
+3: (2018, 335, 6, M, N, 1, false, false, false) (dummy=0)
+4: (2018, 574, 4, F, Y, 7, false, true, true) (dummy=0)
+5: (2018, 874, 6, M, N, 1, false, true, false) (dummy=0)
+6: (2018, 881, 6, F, Y, 3, false, true, true) (dummy=0)
+7: (2018, 887, 4, U, U, 6, false, true, true) (dummy=0)
+8: (2018, 892, 6, F, N, 1, true, true, false) (dummy=0)
+9: (2018, 1071, 6, U, U, 1, true, true, false) (dummy=0)
+
+Chi secret sharing 91 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 66, 1, F, N, 7, false, false, false) (dummy=0)
+1: (2018, 297, 6, M, Y, 1, true, true, true) (dummy=0)
+2: (2018, 536, 2, F, N, 1, true, true, false) (dummy=0)
+3: (2018, 577, 1, M, N, 1, false, true, true) (dummy=0)
+4: (2018, 708, 1, F, N, 5, true, true, false) (dummy=0)
+5: (2018, 723, 1, F, Y, 2, false, true, false) (dummy=0)
+6: (2018, 740, 3, F, N, 3, false, true, true) (dummy=0)
+7: (2018, 862, 5, M, N, 3, true, true, false) (dummy=0)
+8: (2018, 926, 2, F, Y, 2, false, true, true) (dummy=0)
+9: (2018, 956, 6, F, Y, 5, false, true, true) (dummy=0)
+
+Chi secret sharing 97 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 7, 6, M, Y, 1, true, true, false) (dummy=0)
+1: (2018, 262, 6, U, U, 2, true, true, false) (dummy=0)
+2: (2018, 351, 2, M, N, 5, false, true, false) (dummy=0)
+3: (2018, 502, 3, F, Y, 4, false, true, true) (dummy=0)
+4: (2018, 526, 1, F, U, 2, false, true, true) (dummy=0)
+5: (2018, 544, 2, F, U, 5, false, true, false) (dummy=0)
+6: (2018, 584, 5, U, Y, 2, true, true, false) (dummy=0)
+7: (2018, 618, 4, M, N, 3, false, true, true) (dummy=0)
+8: (2018, 626, 7, F, N, 1, false, true, false) (dummy=0)
+9: (2018, 631, 5, F, N, 3, true, true, false) (dummy=0)
+
+Chi secret sharing 106 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 76, 1, U, U, 7, true, true, false) (dummy=0)
+1: (2018, 321, 7, U, N, 3, false, true, false) (dummy=0)
+2: (2018, 403, 5, U, N, 1, false, false, false) (dummy=0)
+3: (2018, 523, 1, U, U, 5, false, true, false) (dummy=0)
+4: (2018, 582, 7, U, N, 3, false, true, false) (dummy=0)
+5: (2018, 583, 7, M, Y, 4, false, true, true) (dummy=0)
+6: (2018, 669, 6, U, U, 3, false, true, true) (dummy=0)
+7: (2018, 747, 7, M, U, 1, false, true, false) (dummy=0)
+8: (2018, 1136, 1, U, N, 2, true, true, false) (dummy=0)
+9: (2018, 1339, 1, M, N, 3, true, true, true) (dummy=0)
+
+Chi secret sharing 115 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 164, 5, U, U, 7, false, true, false) (dummy=0)
+1: (2018, 363, 4, U, N, 7, false, true, true) (dummy=0)
+2: (2018, 551, 7, F, N, 6, false, true, false) (dummy=0)
+3: (2018, 732, 1, F, U, 4, true, true, false) (dummy=0)
+4: (2018, 775, 1, U, Y, 7, false, true, false) (dummy=0)
+5: (2018, 951, 5, M, U, 7, false, true, false) (dummy=0)
+6: (2018, 1007, 3, M, N, 5, false, true, false) (dummy=0)
+7: (2018, 1038, 1, M, N, 5, false, true, false) (dummy=0)
+8: (2018, 1072, 5, M, N, 6, false, true, false) (dummy=0)
+9: (2018, 1083, 7, U, Y, 5, false, true, true) (dummy=0)
+
+Chi secret sharing 441 tuples.
+First rows: (#0 int32 demographics_domain.study_year, #1 varchar(1) demographics_domain.age_strata, #2 varchar(1) demographics_domain.sex, #3 varchar(1) demographics_domain.ethnicity, #4 varchar(1) demographics_domain.race, #5 int32 numerator_cnt, #6 int32 denominator_cnt, #7 int32 numerator_multisite_cnt, #8 int32 denominator_multisite_cnt) order by: {}
+0: (2018, 1, F, N, 1, 0, 0, 0, 0) (dummy=0)
+1: (2018, 1, F, N, 2, 1, 1, 0, 0) (dummy=0)
+2: (2018, 1, F, N, 3, 0, 0, 0, 0) (dummy=0)
+3: (2018, 1, F, N, 4, 0, 0, 0, 0) (dummy=0)
+4: (2018, 1, F, N, 5, 1, 1, 0, 0) (dummy=0)
+5: (2018, 1, F, N, 6, 0, 0, 0, 0) (dummy=0)
+6: (2018, 1, F, N, 7, 0, 1, 0, 0) (dummy=0)
+7: (2018, 1, F, U, 1, 0, 0, 0, 0) (dummy=0)
+8: (2018, 1, F, U, 2, 2, 2, 0, 0) (dummy=0)
+9: (2018, 1, F, U, 3, 0, 0, 0, 0) (dummy=0)
+
+Chi secret sharing 35 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 30, 7, F, N, 5, false, true, true) (dummy=0)
+1: (2018, 172, 5, F, Y, 4, false, true, false) (dummy=0)
+2: (2018, 207, 6, U, N, 5, false, true, true) (dummy=0)
+3: (2018, 319, 4, U, U, 4, false, true, false) (dummy=0)
+4: (2018, 344, 7, U, N, 2, true, true, false) (dummy=0)
+5: (2018, 395, 1, F, N, 6, true, true, true) (dummy=0)
+6: (2018, 450, 2, F, U, 4, false, true, false) (dummy=0)
+7: (2018, 505, 3, U, N, 4, false, true, true) (dummy=0)
+8: (2018, 690, 3, M, U, 1, false, true, false) (dummy=0)
+9: (2018, 829, 3, F, Y, 7, false, true, false) (dummy=0)
+
+Chi secret sharing 41 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 14, 1, F, N, 1, false, true, true) (dummy=0)
+1: (2018, 34, 2, U, Y, 3, true, true, true) (dummy=0)
+2: (2018, 83, 3, M, Y, 1, false, true, false) (dummy=0)
+3: (2018, 180, 6, U, U, 6, false, true, false) (dummy=0)
+4: (2018, 185, 6, U, U, 1, false, true, false) (dummy=0)
+5: (2018, 229, 7, U, N, 4, false, false, false) (dummy=0)
+6: (2018, 248, 5, M, N, 6, false, true, false) (dummy=0)
+7: (2018, 263, 3, F, Y, 2, true, true, false) (dummy=0)
+8: (2018, 347, 5, U, U, 7, false, false, true) (dummy=0)
+9: (2018, 429, 5, F, U, 6, false, true, true) (dummy=0)
+
+Chi secret sharing 22 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 62, 3, M, U, 3, false, true, false) (dummy=0)
+1: (2018, 181, 7, F, N, 7, false, true, false) (dummy=0)
+2: (2018, 246, 3, U, Y, 3, false, true, true) (dummy=0)
+3: (2018, 511, 6, F, N, 7, false, true, false) (dummy=0)
+4: (2018, 550, 6, F, Y, 3, false, true, false) (dummy=0)
+5: (2018, 580, 3, M, Y, 5, false, true, false) (dummy=0)
+6: (2018, 693, 2, U, U, 7, true, true, false) (dummy=0)
+7: (2018, 712, 7, U, U, 6, false, true, true) (dummy=0)
+8: (2018, 938, 1, F, Y, 4, false, true, false) (dummy=0)
+9: (2018, 940, 7, F, Y, 5, false, true, false) (dummy=0)
+
+Chi secret sharing 31 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 9, 5, F, N, 5, true, true, false) (dummy=0)
+1: (2018, 281, 3, F, Y, 1, true, false, true) (dummy=0)
+2: (2018, 333, 6, M, U, 7, false, false, false) (dummy=0)
+3: (2018, 372, 2, M, U, 3, false, true, false) (dummy=0)
+4: (2018, 452, 2, M, U, 1, true, true, false) (dummy=0)
+5: (2018, 512, 1, M, U, 3, true, true, true) (dummy=0)
+6: (2018, 751, 2, F, U, 6, false, true, true) (dummy=0)
+7: (2018, 764, 7, F, N, 2, true, true, false) (dummy=0)
+8: (2018, 869, 1, M, U, 6, false, true, false) (dummy=0)
+9: (2018, 1204, 4, U, U, 4, false, true, false) (dummy=0)
+
+Chi secret sharing 26 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 167, 3, F, N, 3, false, true, false) (dummy=0)
+1: (2018, 216, 2, U, U, 2, false, true, true) (dummy=0)
+2: (2018, 451, 4, M, Y, 3, true, true, false) (dummy=0)
+3: (2018, 600, 5, U, U, 7, false, true, false) (dummy=0)
+4: (2018, 634, 4, U, Y, 7, false, false, true) (dummy=0)
+5: (2018, 743, 4, M, Y, 4, true, true, true) (dummy=0)
+6: (2018, 752, 2, U, Y, 3, false, true, false) (dummy=0)
+7: (2018, 754, 7, U, Y, 1, false, true, false) (dummy=0)
+8: (2018, 757, 2, F, Y, 5, false, true, true) (dummy=0)
+9: (2018, 960, 7, F, Y, 1, true, true, false) (dummy=0)
+
+Chi secret sharing 44 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 0, 4, U, N, 4, true, true, false) (dummy=0)
+1: (2018, 93, 4, F, Y, 2, true, true, false) (dummy=0)
+2: (2018, 226, 6, F, N, 4, false, false, true) (dummy=0)
+3: (2018, 335, 6, M, N, 1, false, false, false) (dummy=0)
+4: (2018, 574, 4, F, Y, 7, false, true, true) (dummy=0)
+5: (2018, 874, 6, M, N, 1, false, true, false) (dummy=0)
+6: (2018, 881, 6, F, Y, 3, false, true, true) (dummy=0)
+7: (2018, 887, 4, U, U, 6, false, true, true) (dummy=0)
+8: (2018, 892, 6, F, N, 1, true, true, false) (dummy=0)
+9: (2018, 1071, 6, U, U, 1, true, true, false) (dummy=0)
+
+Chi secret sharing 26 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 66, 1, F, N, 7, false, false, false) (dummy=0)
+1: (2018, 297, 6, M, Y, 1, true, true, true) (dummy=0)
+2: (2018, 536, 2, F, N, 1, true, true, false) (dummy=0)
+3: (2018, 577, 1, M, N, 1, false, true, true) (dummy=0)
+4: (2018, 708, 1, F, N, 5, true, true, false) (dummy=0)
+5: (2018, 723, 1, F, Y, 2, false, true, false) (dummy=0)
+6: (2018, 740, 3, F, N, 3, false, true, true) (dummy=0)
+7: (2018, 862, 5, M, N, 3, true, true, false) (dummy=0)
+8: (2018, 926, 2, F, Y, 2, false, true, true) (dummy=0)
+9: (2018, 956, 6, F, Y, 5, false, true, true) (dummy=0)
+
+Chi secret sharing 32 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 7, 6, M, Y, 1, true, true, false) (dummy=0)
+1: (2018, 262, 6, U, U, 2, true, true, false) (dummy=0)
+2: (2018, 351, 2, M, N, 5, false, true, false) (dummy=0)
+3: (2018, 502, 3, F, Y, 4, false, true, true) (dummy=0)
+4: (2018, 526, 1, F, U, 2, false, true, true) (dummy=0)
+5: (2018, 544, 2, F, U, 5, false, true, false) (dummy=0)
+6: (2018, 584, 5, U, Y, 2, true, true, false) (dummy=0)
+7: (2018, 618, 4, M, N, 3, false, true, true) (dummy=0)
+8: (2018, 626, 7, F, N, 1, false, true, false) (dummy=0)
+9: (2018, 631, 5, F, N, 3, true, true, false) (dummy=0)
+
+Chi secret sharing 22 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 76, 1, U, U, 7, true, true, false) (dummy=0)
+1: (2018, 321, 7, U, N, 3, false, true, false) (dummy=0)
+2: (2018, 403, 5, U, N, 1, false, false, false) (dummy=0)
+3: (2018, 523, 1, U, U, 5, false, true, false) (dummy=0)
+4: (2018, 582, 7, U, N, 3, false, true, false) (dummy=0)
+5: (2018, 583, 7, M, Y, 4, false, true, true) (dummy=0)
+6: (2018, 669, 6, U, U, 3, false, true, true) (dummy=0)
+7: (2018, 747, 7, M, U, 1, false, true, false) (dummy=0)
+8: (2018, 1136, 1, U, N, 2, true, true, false) (dummy=0)
+9: (2018, 1339, 1, M, N, 3, true, true, true) (dummy=0)
+
+Chi secret sharing 31 tuples.
+First rows: (#0 int32 patient.study_year, #1 int32 patient.pat_id, #2 varchar(1) patient.age_strata, #3 varchar(1) patient.sex, #4 varchar(1) patient.ethnicity, #5 varchar(1) patient.race, #6 bool patient.numerator, #7 bool patient.denominator, #8 bool patient.denom_excl) order by: {}
+0: (2018, 164, 5, U, U, 7, false, true, false) (dummy=0)
+1: (2018, 363, 4, U, N, 7, false, true, true) (dummy=0)
+2: (2018, 551, 7, F, N, 6, false, true, false) (dummy=0)
+3: (2018, 732, 1, F, U, 4, true, true, false) (dummy=0)
+4: (2018, 775, 1, U, Y, 7, false, true, false) (dummy=0)
+5: (2018, 951, 5, M, U, 7, false, true, false) (dummy=0)
+6: (2018, 1007, 3, M, N, 5, false, true, false) (dummy=0)
+7: (2018, 1038, 1, M, N, 5, false, true, false) (dummy=0)
+8: (2018, 1072, 5, M, N, 6, false, true, false) (dummy=0)
+9: (2018, 1083, 7, U, Y, 5, false, true, true) (dummy=0)
+
+Chi secret sharing 441 tuples.
+First rows: (#0 int32 demographics_domain.study_year, #1 varchar(1) demographics_domain.age_strata, #2 varchar(1) demographics_domain.sex, #3 varchar(1) demographics_domain.ethnicity, #4 varchar(1) demographics_domain.race, #5 int32 numerator_cnt, #6 int32 denominator_cnt) order by: {}
+0: (2018, 1, F, N, 1, 0, 0) (dummy=0)
+1: (2018, 1, F, N, 2, 1, 1) (dummy=0)
+2: (2018, 1, F, N, 3, 0, 0) (dummy=0)
+3: (2018, 1, F, N, 4, 0, 0) (dummy=0)
+4: (2018, 1, F, N, 5, 2, 2) (dummy=0)
+5: (2018, 1, F, N, 6, 0, 0) (dummy=0)
+6: (2018, 1, F, N, 7, 0, 1) (dummy=0)
+7: (2018, 1, F, U, 1, 0, 0) (dummy=0)
+8: (2018, 1, F, U, 2, 2, 2) (dummy=0)
+9: (2018, 1, F, U, 3, 0, 0) (dummy=0)
+
+Chi secret sharing 1323 tuples.
+First rows: (#0 int32 demographics_domain.study_year, #1 varchar(1) demographics_domain.age_strata, #2 varchar(1) demographics_domain.sex, #3 varchar(1) demographics_domain.ethnicity, #4 varchar(1) demographics_domain.race, #5 int32 numerator_cnt, #6 int32 denominator_cnt) order by: {}
+0: (2018, 1, F, N, 1, 0, 0) (dummy=0)
+1: (2018, 1, F, N, 2, 1, 1) (dummy=0)
+2: (2018, 1, F, N, 3, 0, 0) (dummy=0)
+3: (2018, 1, F, N, 4, 0, 0) (dummy=0)
+4: (2018, 1, F, N, 5, 2, 2) (dummy=0)
+5: (2018, 1, F, N, 6, 0, 0) (dummy=0)
+6: (2018, 1, F, N, 7, 0, 1) (dummy=0)
+7: (2018, 1, F, U, 1, 0, 0) (dummy=0)
+8: (2018, 1, F, U, 2, 2, 2) (dummy=0)
+9: (2018, 1, F, U, 3, 0, 0) (dummy=0)
+
+Chi secret sharing 882 tuples.
+First rows: (#0 int32 demographics_domain.study_year, #1 varchar(1) demographics_domain.age_strata, #2 varchar(1) demographics_domain.sex, #3 varchar(1) demographics_domain.ethnicity, #4 varchar(1) demographics_domain.race, #5 int32 numerator_cnt, #6 int32 denominator_cnt) order by: {}
+0: (2018, 1, F, N, 1, 0, 0) (dummy=0)
+1: (2018, 1, F, N, 2, 1, 1) (dummy=0)
+2: (2018, 1, F, N, 3, 0, 0) (dummy=0)
+3: (2018, 1, F, N, 4, 0, 0) (dummy=0)
+4: (2018, 1, F, N, 5, 2, 2) (dummy=0)
+5: (2018, 1, F, N, 6, 0, 0) (dummy=0)
+6: (2018, 1, F, N, 7, 0, 1) (dummy=0)
+7: (2018, 1, F, U, 1, 0, 0) (dummy=0)
+8: (2018, 1, F, U, 2, 2, 2) (dummy=0)
+9: (2018, 1, F, U, 3, 0, 0) (dummy=0)
+
+finished generating 100 patients per host!
+You are now connected to database "enrich_htn_test_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_test_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_unioned" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from CsvReaderTest
+[ RUN      ] CsvReaderTest.lineitemTest
+Received emp_mode: sh2pc
+[       OK ] CsvReaderTest.lineitemTest (224 ms)
+[ RUN      ] CsvReaderTest.quotedStringTest
+Received emp_mode: sh2pc
+[       OK ] CsvReaderTest.quotedStringTest (173 ms)
+[ RUN      ] CsvReaderTest.customerTest
+Received emp_mode: sh2pc
+[       OK ] CsvReaderTest.customerTest (176 ms)
+[ RUN      ] CsvReaderTest.ordersTest
+Received emp_mode: sh2pc
+[       OK ] CsvReaderTest.ordersTest (143 ms)
+[----------] 4 tests from CsvReaderTest (718 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (718 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from FieldExpressionTest
+[ RUN      ] FieldExpressionTest.test_int32
+Received emp_mode: sh2pc
+[       OK ] FieldExpressionTest.test_int32 (60 ms)
+[ RUN      ] FieldExpressionTest.test_int32_comparator
+Received emp_mode: sh2pc
+[       OK ] FieldExpressionTest.test_int32_comparator (59 ms)
+[ RUN      ] FieldExpressionTest.test_int32_expr
+Received emp_mode: sh2pc
+[       OK ] FieldExpressionTest.test_int32_expr (57 ms)
+[ RUN      ] FieldExpressionTest.cmp_swap
+Received emp_mode: sh2pc
+[       OK ] FieldExpressionTest.cmp_swap (288 ms)
+[----------] 4 tests from FieldExpressionTest (465 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (466 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from FilterTest
+[ RUN      ] FilterTest.test_table_scan
+Received emp_mode: sh2pc
+[       OK ] FilterTest.test_table_scan (119 ms)
+[ RUN      ] FilterTest.test_filter
+Received emp_mode: sh2pc
+[       OK ] FilterTest.test_filter (116 ms)
+[----------] 2 tests from FilterTest (236 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (236 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ProjectionTest
+[ RUN      ] ProjectionTest.q3Lineitem
+Received emp_mode: sh2pc
+[       OK ] ProjectionTest.q3Lineitem (323 ms)
+[----------] 1 test from ProjectionTest (323 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (323 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from BasicJoinTest
+[ RUN      ] BasicJoinTest.test_tpch_q3_customer_orders
+Received emp_mode: sh2pc
+[       OK ] BasicJoinTest.test_tpch_q3_customer_orders (146 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders
+Received emp_mode: sh2pc
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders (286 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Received emp_mode: sh2pc
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer (531 ms)
+[----------] 3 tests from BasicJoinTest (964 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (964 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from KeyedJoinTest
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders
+Received emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders (169 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders
+Received emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders (1027 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Received emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer (985 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed
+Received emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed (139 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed
+Received emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed (1347 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+Received emp_mode: sh2pc
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (1038 ms)
+[----------] 6 tests from KeyedJoinTest (4706 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (4706 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from KeyedSortMergeJoinTest
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders
+Received emp_mode: sh2pc
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders (768 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders
+Received emp_mode: sh2pc
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders (5508 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+Received emp_mode: sh2pc
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (8085 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders_reversed
+Received emp_mode: sh2pc
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders_reversed (807 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_reversed
+Received emp_mode: sh2pc
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_reversed (5310 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+Received emp_mode: sh2pc
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (8058 ms)
+[----------] 6 tests from KeyedSortMergeJoinTest (28540 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (28540 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MergeJoinTest
+[ RUN      ] MergeJoinTest.merge_q18
+Received emp_mode: sh2pc
+[       OK ] MergeJoinTest.merge_q18 (95 ms)
+[----------] 1 test from MergeJoinTest (95 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (95 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from SortTest
+[ RUN      ] SortTest.testSingleIntColumn
+Received emp_mode: sh2pc
+[       OK ] SortTest.testSingleIntColumn (70 ms)
+[ RUN      ] SortTest.tpchQ1Sort
+Received emp_mode: sh2pc
+[       OK ] SortTest.tpchQ1Sort (134 ms)
+[ RUN      ] SortTest.tpchQ3Sort
+Received emp_mode: sh2pc
+[       OK ] SortTest.tpchQ3Sort (82 ms)
+[ RUN      ] SortTest.tpchQ5Sort
+Received emp_mode: sh2pc
+[       OK ] SortTest.tpchQ5Sort (131 ms)
+[ RUN      ] SortTest.tpchQ8Sort
+Received emp_mode: sh2pc
+[       OK ] SortTest.tpchQ8Sort (108 ms)
+[ RUN      ] SortTest.tpchQ9Sort
+Received emp_mode: sh2pc
+[       OK ] SortTest.tpchQ9Sort (169 ms)
+[ RUN      ] SortTest.tpchQ18Sort
+Received emp_mode: sh2pc
+[       OK ] SortTest.tpchQ18Sort (111 ms)
+[ RUN      ] SortTest.sort_and_encrypt_table_one_column
+Received emp_mode: sh2pc
+[       OK ] SortTest.sort_and_encrypt_table_one_column (72 ms)
+[----------] 8 tests from SortTest (882 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (882 ms total)
+[  PASSED  ] 8 tests.
+[==========] Running 12 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 12 tests from ScalarAggregateTest
+[ RUN      ] ScalarAggregateTest.test_count
+Received emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_count (117 ms)
+[ RUN      ] ScalarAggregateTest.test_count_dummies
+Received emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_count_dummies (104 ms)
+[ RUN      ] ScalarAggregateTest.test_min
+Received emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_min (84 ms)
+[ RUN      ] ScalarAggregateTest.test_max
+Received emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_max (83 ms)
+[ RUN      ] ScalarAggregateTest.test_sum
+Received emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_sum (94 ms)
+[ RUN      ] ScalarAggregateTest.test_sum_dummies
+Received emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_sum_dummies (120 ms)
+[ RUN      ] ScalarAggregateTest.test_avg
+Received emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_avg (86 ms)
+[ RUN      ] ScalarAggregateTest.test_avg_dummies
+Received emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_avg_dummies (86 ms)
+[ RUN      ] ScalarAggregateTest.test_all_sum_dummies
+Received emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_all_sum_dummies (111 ms)
+[ RUN      ] ScalarAggregateTest.test_all_avg_dummies
+Received emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_all_avg_dummies (120 ms)
+[ RUN      ] ScalarAggregateTest.test_tpch_q1_avg_cnt
+Received emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_tpch_q1_avg_cnt (164 ms)
+[ RUN      ] ScalarAggregateTest.test_all_aggs_tpch_q1
+Received emp_mode: sh2pc
+[       OK ] ScalarAggregateTest.test_all_aggs_tpch_q1 (130 ms)
+[----------] 12 tests from ScalarAggregateTest (1303 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (1304 ms total)
+[  PASSED  ] 12 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from SortMergeAggregateTest
+[ RUN      ] SortMergeAggregateTest.test_count
+Received emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_count (85 ms)
+[ RUN      ] SortMergeAggregateTest.test_count_dummies
+Received emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_count_dummies (96 ms)
+[ RUN      ] SortMergeAggregateTest.test_sum
+Received emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_sum (104 ms)
+[ RUN      ] SortMergeAggregateTest.test_sum_dummies
+Received emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_sum_dummies (99 ms)
+[ RUN      ] SortMergeAggregateTest.test_avg
+Received emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_avg (103 ms)
+[ RUN      ] SortMergeAggregateTest.test_avg_dummies
+Received emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_avg_dummies (103 ms)
+[ RUN      ] SortMergeAggregateTest.test_min
+Received emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_min (97 ms)
+[ RUN      ] SortMergeAggregateTest.test_min_dummies
+Received emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_min_dummies (94 ms)
+[ RUN      ] SortMergeAggregateTest.test_max
+Received emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_max (89 ms)
+[ RUN      ] SortMergeAggregateTest.test_max_dummies
+Received emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_max_dummies (91 ms)
+[ RUN      ] SortMergeAggregateTest.test_tpch_q1_sums
+Received emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_tpch_q1_sums (203 ms)
+[ RUN      ] SortMergeAggregateTest.test_tpch_q1_avg_cnt
+Received emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.test_tpch_q1_avg_cnt (204 ms)
+[ RUN      ] SortMergeAggregateTest.tpch_q1
+Received emp_mode: sh2pc
+[       OK ] SortMergeAggregateTest.tpch_q1 (219 ms)
+[----------] 13 tests from SortMergeAggregateTest (1593 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (1593 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from NestedLoopAggregateTest
+[ RUN      ] NestedLoopAggregateTest.test_count
+Received emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_count (167 ms)
+[ RUN      ] NestedLoopAggregateTest.test_count_dummies
+Received emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_count_dummies (145 ms)
+[ RUN      ] NestedLoopAggregateTest.test_sum
+Received emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_sum (138 ms)
+[ RUN      ] NestedLoopAggregateTest.test_sum_dummies
+Received emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_sum_dummies (149 ms)
+[ RUN      ] NestedLoopAggregateTest.test_avg
+Received emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_avg (163 ms)
+[ RUN      ] NestedLoopAggregateTest.test_avg_dummies
+Received emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_avg_dummies (134 ms)
+[ RUN      ] NestedLoopAggregateTest.test_min
+Received emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_min (138 ms)
+[ RUN      ] NestedLoopAggregateTest.test_min_dummies
+Received emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_min_dummies (193 ms)
+[ RUN      ] NestedLoopAggregateTest.test_max
+Received emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_max (161 ms)
+[ RUN      ] NestedLoopAggregateTest.test_max_dummies
+Received emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_max_dummies (147 ms)
+[ RUN      ] NestedLoopAggregateTest.test_tpch_q1_sums
+Received emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_tpch_q1_sums (206 ms)
+[ RUN      ] NestedLoopAggregateTest.test_tpch_q1_avg_cnt
+Received emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.test_tpch_q1_avg_cnt (206 ms)
+[ RUN      ] NestedLoopAggregateTest.tpch_q1
+Received emp_mode: sh2pc
+[       OK ] NestedLoopAggregateTest.tpch_q1 (243 ms)
+[----------] 13 tests from NestedLoopAggregateTest (2196 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (2196 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecretShareGeneratorTest
+[ RUN      ] SecretShareGeneratorTest.lineitem_sample
+Received emp_mode: sh2pc
+[       OK ] SecretShareGeneratorTest.lineitem_sample (115 ms)
+[ RUN      ] SecretShareGeneratorTest.lineitem_dummy_tag_sample
+Received emp_mode: sh2pc
+[       OK ] SecretShareGeneratorTest.lineitem_dummy_tag_sample (104 ms)
+[----------] 2 tests from SecretShareGeneratorTest (219 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (219 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from SerializationTest
+[ RUN      ] SerializationTest.typesTest
+Received emp_mode: sh2pc
+[       OK ] SerializationTest.typesTest (108 ms)
+[ RUN      ] SerializationTest.capricorn_test
+Received emp_mode: sh2pc
+[       OK ] SerializationTest.capricorn_test (65 ms)
+[ RUN      ] SerializationTest.xored_serialization_test
+Received emp_mode: sh2pc
+[       OK ] SerializationTest.xored_serialization_test (67 ms)
+[ RUN      ] SerializationTest.capricorn_deserialization
+Received emp_mode: sh2pc
+[       OK ] SerializationTest.capricorn_deserialization (59 ms)
+[----------] 4 tests from SerializationTest (302 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (302 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from PlanParserTest
+[ RUN      ] PlanParserTest.tpch_q01
+Received emp_mode: sh2pc
+[       OK ] PlanParserTest.tpch_q01 (142 ms)
+[ RUN      ] PlanParserTest.tpch_q03
+Received emp_mode: sh2pc
+[       OK ] PlanParserTest.tpch_q03 (110 ms)
+[ RUN      ] PlanParserTest.tpch_q05
+Received emp_mode: sh2pc
+[       OK ] PlanParserTest.tpch_q05 (215 ms)
+[ RUN      ] PlanParserTest.tpch_q08
+Received emp_mode: sh2pc
+[       OK ] PlanParserTest.tpch_q08 (143 ms)
+[ RUN      ] PlanParserTest.tpch_q09
+Received emp_mode: sh2pc
+[       OK ] PlanParserTest.tpch_q09 (152 ms)
+[ RUN      ] PlanParserTest.tpch_q18
+Received emp_mode: sh2pc
+[       OK ] PlanParserTest.tpch_q18 (181 ms)
+[----------] 6 tests from PlanParserTest (945 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (945 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from PlanDeparserTest
+[ RUN      ] PlanDeparserTest.conjunction_expression
+Received emp_mode: sh2pc
+[       OK ] PlanDeparserTest.conjunction_expression (217 ms)
+[ RUN      ] PlanDeparserTest.math_expression
+Received emp_mode: sh2pc
+[       OK ] PlanDeparserTest.math_expression (256 ms)
+[ RUN      ] PlanDeparserTest.tpch_q01
+Received emp_mode: sh2pc
+[       OK ] PlanDeparserTest.tpch_q01 (232 ms)
+[ RUN      ] PlanDeparserTest.tpch_q03
+Received emp_mode: sh2pc
+[       OK ] PlanDeparserTest.tpch_q03 (191 ms)
+[ RUN      ] PlanDeparserTest.tpch_q05
+Received emp_mode: sh2pc
+[       OK ] PlanDeparserTest.tpch_q05 (346 ms)
+[ RUN      ] PlanDeparserTest.tpch_q08
+Received emp_mode: sh2pc
+[       OK ] PlanDeparserTest.tpch_q08 (293 ms)
+[ RUN      ] PlanDeparserTest.tpch_q09
+Received emp_mode: sh2pc
+[       OK ] PlanDeparserTest.tpch_q09 (364 ms)
+[ RUN      ] PlanDeparserTest.tpch_q18
+Received emp_mode: sh2pc
+[       OK ] PlanDeparserTest.tpch_q18 (305 ms)
+[----------] 8 tests from PlanDeparserTest (2209 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (2209 ms total)
+[  PASSED  ] 8 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from TpcHTest
+[ RUN      ] TpcHTest.tpch_q01
+Received emp_mode: sh2pc
+[       OK ] TpcHTest.tpch_q01 (410 ms)
+[ RUN      ] TpcHTest.tpch_q03
+Received emp_mode: sh2pc
+[       OK ] TpcHTest.tpch_q03 (6185 ms)
+[ RUN      ] TpcHTest.tpch_q05
+Received emp_mode: sh2pc
+[       OK ] TpcHTest.tpch_q05 (2533 ms)
+[ RUN      ] TpcHTest.tpch_q08
+Received emp_mode: sh2pc
+[       OK ] TpcHTest.tpch_q08 (2493 ms)
+[ RUN      ] TpcHTest.tpch_q09
+Received emp_mode: sh2pc
+[       OK ] TpcHTest.tpch_q09 (6689 ms)
+[ RUN      ] TpcHTest.tpch_q18
+Received emp_mode: sh2pc
+[       OK ] TpcHTest.tpch_q18 (953 ms)
+[----------] 6 tests from TpcHTest (19266 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (19266 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from EmpTest
+[ RUN      ] EmpTest.emp_test_int
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54345, 65455 as 2
+connected
+[       OK ] EmpTest.emp_test_int (450 ms)
+[ RUN      ] EmpTest.emp_test_varchar
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54346, 65456 as 2
+connected
+[       OK ] EmpTest.emp_test_varchar (180 ms)
+[ RUN      ] EmpTest.test_float_normalization
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54347, 65457 as 2
+connected
+[       OK ] EmpTest.test_float_normalization (244 ms)
+[ RUN      ] EmpTest.secret_share_table_one_column
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54348, 65458 as 2
+connected
+[       OK ] EmpTest.secret_share_table_one_column (191 ms)
+[ RUN      ] EmpTest.sort_and_share_table_one_column
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54349, 65459 as 2
+connected
+[       OK ] EmpTest.sort_and_share_table_one_column (210 ms)
+[----------] 5 tests from EmpTest (1277 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (1277 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from SecureFieldExpressionTest
+[ RUN      ] SecureFieldExpressionTest.test_value_assignment
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54323, 65482 as 2
+connected
+[       OK ] SecureFieldExpressionTest.test_value_assignment (179 ms)
+[ RUN      ] SecureFieldExpressionTest.test_string_compare
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54324, 65483 as 2
+connected
+[       OK ] SecureFieldExpressionTest.test_string_compare (185 ms)
+[ RUN      ] SecureFieldExpressionTest.test_emp_int_math
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54325, 65484 as 2
+connected
+[       OK ] SecureFieldExpressionTest.test_emp_int_math (186 ms)
+[ RUN      ] SecureFieldExpressionTest.test_millionaires
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54326, 65485 as 2
+connected
+[       OK ] SecureFieldExpressionTest.test_millionaires (183 ms)
+[ RUN      ] SecureFieldExpressionTest.test_char_comparison
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54327, 65486 as 2
+connected
+[       OK ] SecureFieldExpressionTest.test_char_comparison (183 ms)
+[----------] 5 tests from SecureFieldExpressionTest (918 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (918 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from EmpTableTest
+[ RUN      ] EmpTableTest.secret_share_table_one_column
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54334, 65428 as 2
+connected
+[       OK ] EmpTableTest.secret_share_table_one_column (215 ms)
+[ RUN      ] EmpTableTest.secret_share_table_varchar
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54335, 65429 as 2
+connected
+[       OK ] EmpTableTest.secret_share_table_varchar (322 ms)
+[ RUN      ] EmpTableTest.secret_share_table
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54336, 65430 as 2
+connected
+[       OK ] EmpTableTest.secret_share_table (397 ms)
+[ RUN      ] EmpTableTest.secret_share_table_dummy_tag
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54337, 65431 as 2
+connected
+[       OK ] EmpTableTest.secret_share_table_dummy_tag (396 ms)
+[ RUN      ] EmpTableTest.bit_packing_test
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54338, 65432 as 2
+connected
+[       OK ] EmpTableTest.bit_packing_test (245 ms)
+[----------] 5 tests from EmpTableTest (1578 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (1578 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecureFilterTest
+[ RUN      ] SecureFilterTest.test_table_scan
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54325, 65454 as 2
+connected
+[       OK ] SecureFilterTest.test_table_scan (284 ms)
+[ RUN      ] SecureFilterTest.test_filter
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54326, 65455 as 2
+connected
+[       OK ] SecureFilterTest.test_filter (347 ms)
+[----------] 2 tests from SecureFilterTest (632 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (632 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureSortTest
+[ RUN      ] SecureSortTest.tpchQ01Sort
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54345, 65465 as 2
+connected
+[       OK ] SecureSortTest.tpchQ01Sort (295 ms)
+[ RUN      ] SecureSortTest.tpchQ03Sort
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54346, 65466 as 2
+connected
+[       OK ] SecureSortTest.tpchQ03Sort (335 ms)
+[ RUN      ] SecureSortTest.tpchQ05Sort
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54347, 65467 as 2
+connected
+[       OK ] SecureSortTest.tpchQ05Sort (264 ms)
+[ RUN      ] SecureSortTest.tpchQ08Sort
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54348, 65468 as 2
+connected
+[       OK ] SecureSortTest.tpchQ08Sort (218 ms)
+[ RUN      ] SecureSortTest.tpchQ09Sort
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54349, 65469 as 2
+connected
+[       OK ] SecureSortTest.tpchQ09Sort (7908 ms)
+[ RUN      ] SecureSortTest.tpchQ18Sort
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54350, 65470 as 2
+connected
+[       OK ] SecureSortTest.tpchQ18Sort (208 ms)
+[----------] 6 tests from SecureSortTest (9232 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (9232 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureBasicJoinTest
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_customer_orders
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43443, 65450 as 2
+connected
+[       OK ] SecureBasicJoinTest.test_tpch_q3_customer_orders (297 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43444, 65451 as 2
+connected
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders (471 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43445, 65452 as 2
+connected
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer (1010 ms)
+[----------] 3 tests from SecureBasicJoinTest (1778 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (1779 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureKeyedJoinTest
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_customer_orders
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43442, 65458 as 2
+connected
+Predicted gate count: 1928520
+Observed gate count: 1928520
+Runtime: 530.160000
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_customer_orders (975 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43443, 65459 as 2
+connected
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders (70950 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43444, 65460 as 2
+connected
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer (78530 ms)
+[----------] 3 tests from SecureKeyedJoinTest (150457 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (150457 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureKeyedSortMergeJoinTest
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_customer_orders
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43455, 65470 as 2
+connected
+Predicted gate count: 7144019
+Observed gate count: 7411120
+Runtime: 1969.785000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_customer_orders (2356 ms)
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43456, 65471 as 2
+connected
+Predicted gate count: 49127665
+Observed gate count: 48077380
+Runtime: 12594.183000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders (13880 ms)
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43457, 65472 as 2
+connected
+Predicted gate count: 68117628
+Observed gate count: 73496920
+Runtime: 17820.629000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (21417 ms)
+[----------] 3 tests from SecureKeyedSortMergeJoinTest (37654 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (37654 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SecureMergeJoinTest
+[ RUN      ] SecureMergeJoinTest.merge_q18
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43450, 65458 as 2
+connected
+[       OK ] SecureMergeJoinTest.merge_q18 (575 ms)
+[----------] 1 test from SecureMergeJoinTest (575 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (575 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureScalarAggregateTest
+[ RUN      ] SecureScalarAggregateTest.test_count
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54312, 65466 as 2
+connected
+[       OK ] SecureScalarAggregateTest.test_count (328 ms)
+[ RUN      ] SecureScalarAggregateTest.test_count_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54313, 65467 as 2
+connected
+[       OK ] SecureScalarAggregateTest.test_count_dummies (246 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54314, 65468 as 2
+connected
+[       OK ] SecureScalarAggregateTest.test_min (221 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54315, 65469 as 2
+connected
+[       OK ] SecureScalarAggregateTest.test_min_dummies (240 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54316, 65470 as 2
+connected
+[       OK ] SecureScalarAggregateTest.test_max (223 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54317, 65471 as 2
+connected
+[       OK ] SecureScalarAggregateTest.test_max_dummies (230 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54318, 65472 as 2
+connected
+[       OK ] SecureScalarAggregateTest.test_sum (235 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54319, 65473 as 2
+connected
+[       OK ] SecureScalarAggregateTest.test_sum_dummies (232 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54320, 65474 as 2
+connected
+[       OK ] SecureScalarAggregateTest.test_avg (267 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54321, 65475 as 2
+connected
+[       OK ] SecureScalarAggregateTest.test_avg_dummies (275 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_baseprice_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54322, 65476 as 2
+connected
+[       OK ] SecureScalarAggregateTest.test_sum_baseprice_dummies (278 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_lineno_baseprice
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54323, 65477 as 2
+connected
+[       OK ] SecureScalarAggregateTest.test_sum_lineno_baseprice (268 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_sums
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54324, 65478 as 2
+connected
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 477840 observed gates: 464200
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_sums (467 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54325, 65479 as 2
+connected
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 3569946 observed gates: 3551968
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt (1298 ms)
+[ RUN      ] SecureScalarAggregateTest.tpch_q1
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 54326, 65480 as 2
+connected
+Input schema: (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge)
+Estimated cost: 2421540 observed gates: 2398112
+[       OK ] SecureScalarAggregateTest.tpch_q1 (984 ms)
+[----------] 15 tests from SecureScalarAggregateTest (5803 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (5803 ms total)
+[  PASSED  ] 15 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from SecureSortMergeAggregateTest
+[ RUN      ] SecureSortMergeAggregateTest.test_count
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43440, 65454 as 2
+connected
+[       OK ] SecureSortMergeAggregateTest.test_count (204 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_count_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43441, 65455 as 2
+connected
+[       OK ] SecureSortMergeAggregateTest.test_count_dummies (246 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_sum
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43442, 65456 as 2
+connected
+[       OK ] SecureSortMergeAggregateTest.test_sum (237 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_sum_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43443, 65457 as 2
+connected
+[       OK ] SecureSortMergeAggregateTest.test_sum_dummies (254 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_avg
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43444, 65458 as 2
+connected
+[       OK ] SecureSortMergeAggregateTest.test_avg (279 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_avg_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43445, 65459 as 2
+connected
+[       OK ] SecureSortMergeAggregateTest.test_avg_dummies (269 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_min
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43446, 65460 as 2
+connected
+[       OK ] SecureSortMergeAggregateTest.test_min (225 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_min_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43447, 65461 as 2
+connected
+[       OK ] SecureSortMergeAggregateTest.test_min_dummies (238 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_max
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43448, 65462 as 2
+connected
+[       OK ] SecureSortMergeAggregateTest.test_max (230 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_max_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43449, 65463 as 2
+connected
+[       OK ] SecureSortMergeAggregateTest.test_max_dummies (243 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_tpch_q1_sums
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43450, 65464 as 2
+connected
+[       OK ] SecureSortMergeAggregateTest.test_tpch_q1_sums (516 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_tpch_q1_avg_cnt
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43451, 65465 as 2
+connected
+[       OK ] SecureSortMergeAggregateTest.test_tpch_q1_avg_cnt (887 ms)
+[ RUN      ] SecureSortMergeAggregateTest.tpch_q1
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43452, 65466 as 2
+connected
+[       OK ] SecureSortMergeAggregateTest.tpch_q1 (989 ms)
+[----------] 13 tests from SecureSortMergeAggregateTest (4823 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (4823 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureNestedLoopAggregateTest
+[ RUN      ] SecureNestedLoopAggregateTest.test_count
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43440, 65462 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.test_count (414 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_count_no_bit_packing
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43441, 65463 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.test_count_no_bit_packing (1010 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_count_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43442, 65464 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.test_count_dummies (374 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_sum
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43443, 65465 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.test_sum (686 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_sum_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43444, 65466 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.test_sum_dummies (795 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_avg
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43445, 65467 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.test_avg (4425 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_avg_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43446, 65468 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.test_avg_dummies (4426 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43447, 65469 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.test_min (404 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min_no_bit_packing
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43448, 65470 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.test_min_no_bit_packing (711 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43449, 65471 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.test_min_dummies (404 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_max
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43450, 65472 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.test_max (408 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_max_dummies
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43451, 65473 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.test_max_dummies (422 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_tpch_q1_sums
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43452, 65474 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.test_tpch_q1_sums (1119 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_tpch_q1_avg_cnt
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43453, 65475 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.test_tpch_q1_avg_cnt (3519 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.tpch_q1
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 43454, 65476 as 2
+connected
+[       OK ] SecureNestedLoopAggregateTest.tpch_q1 (4261 ms)
+[----------] 15 tests from SecureNestedLoopAggregateTest (23386 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (23386 ms total)
+[  PASSED  ] 15 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureTpcHTest
+[ RUN      ] SecureTpcHTest.tpch_q01
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7654, 65478 as 2
+connected
+[       OK ] SecureTpcHTest.tpch_q01 (2468 ms)
+[ RUN      ] SecureTpcHTest.tpch_q03
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7655, 65479 as 2
+connected
+[       OK ] SecureTpcHTest.tpch_q03 (20274 ms)
+[ RUN      ] SecureTpcHTest.tpch_q05
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7656, 65480 as 2
+connected
+[       OK ] SecureTpcHTest.tpch_q05 (2882 ms)
+[ RUN      ] SecureTpcHTest.tpch_q08
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7657, 65481 as 2
+connected
+[       OK ] SecureTpcHTest.tpch_q08 (12537 ms)
+[ RUN      ] SecureTpcHTest.tpch_q09
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7658, 65482 as 2
+connected
+[       OK ] SecureTpcHTest.tpch_q09 (5630 ms)
+[ RUN      ] SecureTpcHTest.tpch_q18
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7659, 65483 as 2
+connected
+[       OK ] SecureTpcHTest.tpch_q18 (2677 ms)
+[----------] 6 tests from SecureTpcHTest (46471 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (46472 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from FullyOptimizedTest
+[ RUN      ] FullyOptimizedTest.tpch_q1
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7654, 65482 as 2
+connected
+Runtime: 0.634065 sec, CPU Time: 0.039118 sec, CPU clock ticks: 39118, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 168159. observed gates: 132300 gates, relative error (%)=27.1043
+Bandwidth: 3971.2 Bps
+[       OK ] FullyOptimizedTest.tpch_q1 (916 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q3
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7655, 65483 as 2
+connected
+Cost : 76266518, combination : 0
+Cost : 174293819232, combination : 1
+Runtime: 168.754 sec, CPU Time: 116.708 sec, CPU clock ticks: 1.16708e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 6.15047e+08. observed gates: 608948460 gates, relative error (%)=1.00149
+Bandwidth: 14894.6 Bps
+[       OK ] FullyOptimizedTest.tpch_q3 (168966 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q5
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7656, 65484 as 2
+connected
+Cost : 188714280, combination : 0
+Cost : 45640583, combination : 1
+Runtime: 596.538 sec, CPU Time: 404.972 sec, CPU clock ticks: 4.04972e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 2.17608e+09. observed gates: 2174505816 gates, relative error (%)=0.0722849
+Bandwidth: 4212.76 Bps
+[       OK ] FullyOptimizedTest.tpch_q5 (596720 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q8
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7657, 65485 as 2
+connected
+Cost : 70393077, combination : 0
+Cost : 28399358, combination : 1
+Runtime: 161.991 sec, CPU Time: 123.304 sec, CPU clock ticks: 1.23304e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 5.91645e+08. observed gates: 589381668 gates, relative error (%)=0.384001
+Bandwidth: 17213.7 Bps
+[       OK ] FullyOptimizedTest.tpch_q8 (162154 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q9
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7658, 65486 as 2
+connected
+Cost : 137769696, combination : 0
+Cost : 1665971772, combination : 1
+Runtime: 267.983 sec, CPU Time: 182.834 sec, CPU clock ticks: 1.82834e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.03151e+09. observed gates: 960256512 gates, relative error (%)=7.4207
+Bandwidth: 21843.6 Bps
+[       OK ] FullyOptimizedTest.tpch_q9 (268179 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q18
+Protocol: sh2pc
+Received emp mode: sh2pc
+Connecting to 129.105.61.184 on ports 7659, 65487 as 2
+connected
+Runtime: 19.1877 sec, CPU Time: 12.3984 sec, CPU clock ticks: 1.23984e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 5.25705e+07. observed gates: 68655128 gates, relative error (%)=23.4281
+Bandwidth: 130846 Bps
+[       OK ] FullyOptimizedTest.tpch_q18 (19414 ms)
+[----------] 6 tests from FullyOptimizedTest (1216352 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (1216352 ms total)
+[  PASSED  ] 6 tests.
