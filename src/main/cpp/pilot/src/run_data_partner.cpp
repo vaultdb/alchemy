@@ -245,16 +245,15 @@ int main(int argc, char **argv) {
 
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
-
     patient_input_query = PilotUtilities::replaceSelection(patient_input_query, selection_clause);
-    SecureTable *inputData = UnionHybridData::unionHybridData(db_name, patient_input_query, remote_patient_file);
+    SecureTable *input_data = UnionHybridData::unionHybridData(db_name, patient_input_query, remote_patient_file);
 
     cumulative_runtime_ = time_from(start_time_);
 
 
     // validate it against the DB for testing
     if(TESTBED) {
-        PlainTable *revealed = inputData->reveal();
+        PlainTable *revealed = input_data->reveal();
         SortDefinition patient_sort_def = DataUtilities::getDefaultSortDefinition(9);
 
         Sort sorter(revealed, patient_sort_def);
@@ -274,8 +273,8 @@ int main(int argc, char **argv) {
     // create output dir:
     Utilities::mkdir(output_path);
 
-    // don't free inputData later, EnrichHtnQuery will do it
-    EnrichHtnQuery enrich(inputData, cardinality_bound);
+    // don't free input_data later, EnrichHtnQuery will do it
+    EnrichHtnQuery enrich(input_data, cardinality_bound);
 
     assert(enrich.data_cube_->getTupleCount() <= cardinality_bound);
 

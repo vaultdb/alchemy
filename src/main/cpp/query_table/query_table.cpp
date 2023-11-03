@@ -67,12 +67,15 @@ vector<int8_t> QueryTable<B>::serialize() const {
     int write_size;
     for(int i = 0; i < schema_.getFieldCount(); ++i) {
         write_size = field_sizes_bytes_.at(i) * tuple_cnt_;
+        cout << "Writing to offset " << (write_ptr - dst.data()) << " bytes, write size: " << write_size << " bytes for " << schema_.getField(i) << endl;
         memcpy(write_ptr, column_data_.at(i).data(), write_size);
         write_ptr += write_size;
     }
 
     // dummy tag
-    memcpy(write_ptr, column_data_.at(-1).data(), field_sizes_bytes_.at(-1) * tuple_cnt_);
+    write_size =  field_sizes_bytes_.at(-1) * tuple_cnt_;
+    cout << "Writing to offset " << (write_ptr - dst.data()) << " bytes, write size: " << write_size <<  " bytes for dummy tag." <<  endl;
+    memcpy(write_ptr, column_data_.at(-1).data(), write_size);
     return dst;
 }
 
@@ -123,11 +126,11 @@ SecretShares QueryTable<B>::generateSecretShares() const {
     int8_t *secrets = serialized.data();
     size_t share_size = serialized.size();
 
-    vector<int8_t> aliceShares, bobShares;
-    aliceShares.resize(share_size);
-    bobShares.resize(share_size);
-    int8_t *alice = aliceShares.data();
-    int8_t *bob = bobShares.data();
+    vector<int8_t> alice_shares, bob_shares;
+    alice_shares.resize(share_size);
+    bob_shares.resize(share_size);
+    int8_t *alice = alice_shares.data();
+    int8_t *bob = bob_shares.data();
 
     emp::PRG prg; // initializes with a random seed
     prg.random_data(alice, share_size);
@@ -136,8 +139,9 @@ SecretShares QueryTable<B>::generateSecretShares() const {
         bob[i] = alice[i] ^ secrets[i];
     }
 
-
-    return SecretShares(aliceShares, bobShares);
+    cout << "Secret sharing " << share_size << " bytes." << endl;
+    cout << "Schema bit count: " << schema_.bitCnt() << " bytes " << share_size / tuple_cnt_ << endl;
+    return SecretShares(alice_shares, bob_shares);
 }
 
 
@@ -173,21 +177,23 @@ template <typename B>
 QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vector<Bit> & table_bits) {
     const Bit *read_ptr = table_bits.data();
     assert(!SystemConfiguration::getInstance().wire_packing_enabled_);
+    bool is_plain = std::is_same_v<B, bool>;
+    assert(!is_plain);
 
-
-    uint32_t row_size = (std::is_same_v<B, bool>) ? schema.size() / 8 : schema.size();
-    uint32_t tuple_cnt =  table_bits.size() /  row_size;
+    uint32_t tuple_cnt =  table_bits.size() /  schema.bitCnt();
     auto result = new QueryTable<B>(tuple_cnt, schema);
     int write_size;
 
     for(int i = 0; i < schema.getFieldCount(); ++i) {
-        write_size = result->column_data_.at(i).size();
+        write_size = result->field_sizes_bytes_[i] * tuple_cnt;
+        cout << "Reading from offset " << (read_ptr - table_bits.data()) << " bits, write size: " << write_size << " bytes, " << write_size / sizeof(emp::Bit) << " bits for column " << schema.getField(i) <<   endl;
         memcpy(result->column_data_[i].data(), read_ptr, write_size);
-        read_ptr += write_size;
+        read_ptr += (write_size / sizeof(emp::Bit));
     }
 
     // dummy tag
-    write_size = result->column_data_.at(-1).size();
+    write_size = result->field_sizes_bytes_[-1] * tuple_cnt;
+    cout << "Reading from offset " << (read_ptr - table_bits.data()) << " bits, write size: " << write_size << " bytes, " << write_size / sizeof(emp::Bit) << " bits for column " << schema.getField(-1) <<   endl;
     memcpy(result->column_data_.at(-1).data(), read_ptr, write_size);
     return result;
 }

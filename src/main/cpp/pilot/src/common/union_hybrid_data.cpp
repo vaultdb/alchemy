@@ -56,37 +56,58 @@ UnionHybridData::readLocalInput(const string &localInputFile, const QuerySchema 
 
 
 // plaintext input schema, setup for XOR-shared data
-SecureTable *UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const QuerySchema &plain_schema) {
+SecureTable *UnionHybridData::readSecretSharedInput(const string &secret_shares_input, const QuerySchema &plain_schema) {
+    cout << "RSS: Plain schema: " << plain_schema << endl;
+    QuerySchema secure_schema = QuerySchema::toSecure(plain_schema);
+    cout << "Secure schema: " << secure_schema << endl;
 
     // read in binary and then xor it with other side to secret share it.
-    std::vector<int8_t> src_data = DataUtilities::readFile(secretSharesFile);
+    std::vector<int8_t> src_data = DataUtilities::readFile(secret_shares_input);
     size_t src_byte_cnt = src_data.size();
     size_t src_bit_cnt = src_byte_cnt * 8;
-    size_t tuple_cnt = src_bit_cnt / plain_schema.bitCnt();
+    size_t tuple_cnt = src_bit_cnt / plain_schema.size();
+    cout << "reading secret shares for " << tuple_cnt << " rows." << endl;
 
-    assert(src_bit_cnt % plain_schema.size() == 8); // 8 left over for storage model header
-    bool *src_bools = new bool[src_bit_cnt];
-    emp::to_bool<int8_t>(src_bools, src_data.data(), src_bit_cnt, false);
     // convert serialized representation from byte-aligned to bit-by-bit
-    QuerySchema secure_schema = QuerySchema::toSecure(plain_schema);
+    size_t dst_bit_cnt = tuple_cnt * secure_schema.bitCnt();
+//    size_t dst_bit_alloc = dst_bit_cnt + (dst_bit_cnt % 128);  // pad it to 128-bit increments for emp
+    bool *dst_bools = new bool[dst_bit_cnt]; // dst_bit_alloc
+    bool *dst_cursor = dst_bools;
+    int8_t *src_cursor = src_data.data();
 
-    size_t dst_bit_cnt = tuple_cnt * secure_schema.bitCnt() + 8;
-    size_t remainder = dst_bit_cnt % 128; // pad it to 128-bit increments
-    size_t dst_bit_alloc = dst_bit_cnt + remainder;
+    assert(src_bit_cnt % plain_schema.size() == 0);
+    for(int i = 0; i < plain_schema.getFieldCount(); ++i) {
+        auto plain_field = plain_schema.getField(i);
+        auto secure_field = secure_schema.getField(i);
+        cout << "Reading field " << i << " " << plain_field << " " << secure_field << ", plain offset: " << (src_cursor - src_data.data()) << ", sec offset: " << (dst_cursor - dst_bools) << endl;
+        if(plain_field.size() == secure_field.size()) { // 1:1, just serialize it
+            int write_size = secure_schema.getField(i).size() * tuple_cnt;
+            emp::to_bool<int8_t>(dst_cursor, src_cursor, write_size, false);
+            dst_cursor += write_size;
+            src_cursor += write_size/8;
+        }
+        else {
+            assert(plain_field.size() == (secure_field.size() + 7)); // only for bools
+            for(int j = 0; j < tuple_cnt; ++j) {
+                *dst_cursor =   ((*src_cursor & 1) != 0); // (bool) *src_cursor;
+                ++dst_cursor;
+                ++src_cursor;
+            }
+        } // end for each tuple
+    } // end for all fields
 
-    bool *dst_bools = new bool[dst_bit_alloc];
-    assert(dst_bools != nullptr);
+    // copy dummy tag
+    for(int i = 0; i < tuple_cnt; ++i) {
+        *dst_cursor = ((*src_cursor & 1) != 0);
+        ++dst_cursor;
+        ++src_cursor;
+    }
 
-    memcpy(dst_bools, src_bools, 8); // copy over storage model header
-    plain_to_secure_bits(src_bools+8, dst_bools+8, plain_schema, secure_schema, tuple_cnt);
-
-    delete [] src_bools;
 
     Integer alice(dst_bit_cnt, 0L, emp::PUBLIC);
     Integer bob(dst_bit_cnt, 0L, emp::PUBLIC);
     int party = SystemConfiguration::getInstance().party_;
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
-
 
     if(party == ALICE) {
         // feed through Alice's data, then wait for Bob's
@@ -101,10 +122,10 @@ SecureTable *UnionHybridData::readSecretSharedInput(const string &secretSharesFi
 
     Integer shared_data = alice ^ bob;
     // remove padding
-    shared_data.bits.resize(dst_bit_cnt);
+   //    shared_data.bits.resize(dst_bit_cnt);
 
     SecureTable *shared_table = QueryTable<Bit>::deserialize(secure_schema, shared_data.bits);
-
+    cout << "First rows: " << DataUtilities::printTable(shared_table,  10, true) << endl;
 
      delete [] dst_bools;
      return shared_table;
@@ -145,39 +166,12 @@ SecureTable *UnionHybridData::unionHybridData(const QuerySchema &schema, const s
 
 }
 
-void UnionHybridData::plain_to_secure_bits(bool *src, bool *dst, const QuerySchema &plain_schema,
-                                           const QuerySchema &secure_schema, const size_t &tuple_cnt) {
-
-    // issue: serialize this to byte-aligned bitstring.   Hence bools and dummy tags have 8 bits instead of 1.
-    // solution: only retain the bits we need
-    size_t src_pos = 0;
-    size_t dst_pos = 0;
-
-
-    for(size_t i = 0; i < tuple_cnt; ++i) {
-        for(size_t j = 0; j < plain_schema.getFieldCount(); ++j) {
-            QueryFieldDesc plain_field = plain_schema.getField(j);
-            QueryFieldDesc secure_field = secure_schema.getField(j);
-            memcpy(dst + dst_pos, src + src_pos, secure_field.size());
-            dst_pos += secure_field.size(); // size in bits
-            src_pos += plain_field.size();
-        }
-        // handle dummy tag
-        dst[dst_pos] = src[src_pos + 7];
-        memcpy(dst + dst_pos, src + src_pos, 1);
-        src_pos += 8; // original, byte-aligned bool
-        dst_pos += 1; // emp::Bit, semantically a bool
-    }
-
-
-
-}
 
 SecureTable *
-UnionHybridData::unionHybridData(const string &dbName, const string &inputQuery, const string &secretSharesFile) {
+UnionHybridData::unionHybridData(const string &db_name, const string &input_query, const string &secret_shares_file) {
 
 
-    PlainTable *local_plain = DataUtilities::getQueryResults(dbName, inputQuery, false);
+    PlainTable *local_plain = DataUtilities::getQueryResults(db_name, input_query, false);
     size_t total_tuples = local_plain->getTupleCount();
 
     cout << "Reading in " << local_plain->getTupleCount() << " tuples from local db." << endl;
@@ -193,9 +187,9 @@ UnionHybridData::unionHybridData(const string &dbName, const string &inputQuery,
     QuerySchema local_plain_schema = local_plain->getSchema();
     delete local_plain;
 
-    if(!secretSharesFile.empty()) {
-        SecureTable *remote = UnionHybridData::readSecretSharedInput(secretSharesFile, local_plain_schema);
-        cout << "Reading in " << remote->getTupleCount() << " secret-shared records from " <<  secretSharesFile << endl;
+    if(!secret_shares_file.empty()) {
+        SecureTable *remote = UnionHybridData::readSecretSharedInput(secret_shares_file, local_plain_schema);
+        cout << "Reading in " << remote->getTupleCount() << " secret-shared records from " << secret_shares_file << endl;
         total_tuples += remote->getTupleCount();
         Union<emp::Bit> union_op(local, remote);
         cout << "Total tuples read: " << total_tuples << endl;

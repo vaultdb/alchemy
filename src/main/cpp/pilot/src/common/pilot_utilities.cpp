@@ -81,11 +81,7 @@ void PilotUtilities::validateTable(const std::string & db_name, const std::strin
     PlainTable *observed = sort.run();
     DataUtilities::removeDummies(observed);
 
-    bool res = (*expected == *observed);
-    if(!res) {
-        cout << "Failed to match at " << Utilities::getStackTrace() << endl;
-    }
-    assert(res);
+    assert(*expected == *observed);
 
     delete expected;
 
@@ -105,6 +101,8 @@ void PilotUtilities::secretShareFromCsv(const string &src_csv, const QuerySchema
 
 void PilotUtilities::secretShareFromQuery(const string &db_name, const string &query, const string &dst_root) {
     PlainTable *table = DataUtilities::getQueryResults(db_name, query, false);
+    cout << "Chi secret sharing " << table->getTupleCount() << " tuples." << endl;
+    cout << "First rows: " << table->toString(10, true) << endl;
     SecretShares shares = table->generateSecretShares();
 
     DataUtilities::writeFile(dst_root + ".alice", shares.first);
@@ -212,7 +210,7 @@ void PilotUtilities::redactCellCounts(SecureTable *input, const int &min_cell_cn
 void PilotUtilities::setupSystemConfiguration(int & party, string & host, int & port) {
     SystemConfiguration & conf = SystemConfiguration::getInstance();
     conf.emp_mode_ = EmpMode::SH2PC;
-    conf.setStorageModel(StorageModel::ROW_STORE);
+    conf.setStorageModel(StorageModel::COLUMN_STORE);
     SH2PCManager *manager = new SH2PCManager(party == ALICE ? "" : host, party, port);
     conf.emp_manager_ = manager;
 }
@@ -220,7 +218,7 @@ void PilotUtilities::setupSystemConfiguration(int & party, string & host, int & 
 void PilotUtilities::setupSystemConfiguration() {
     SystemConfiguration & conf = SystemConfiguration::getInstance();
     conf.emp_mode_ = EmpMode::SH2PC;
-    conf.setStorageModel(StorageModel::ROW_STORE);
+    conf.setStorageModel(StorageModel::COLUMN_STORE);
 
     SH2PCManager *manager = new SH2PCManager();
     conf.emp_manager_ = manager;
