@@ -104,7 +104,7 @@ namespace vaultdb {
         void pack(const QueryFieldDesc & schema) {// update this to a packed version of field
             if(type_ != FieldType::SECURE_INT && type_ != FieldType::SECURE_LONG) return;
             Integer si = boost::get<emp::Integer>(payload_);
-            if(si.size() == schema.size()) return; // already packed
+            if(si.size() == (schema.size() + schema.bitPacked())) return; // already packed
 
             if(schema.bitPacked() && schema.getFieldMin() != 0) {
                 si = si - schema.getSecureFieldMin();
@@ -120,9 +120,10 @@ namespace vaultdb {
         void unpack(const QueryFieldDesc & schema)  { // update to an unpacked version of this
             if(type_ != FieldType::SECURE_INT && type_ != FieldType::SECURE_LONG) return;
             Integer si = boost::get<emp::Integer>(payload_);
-            if(si.size() > schema.size()) return; // already unpacked
+            int dst_size = type_ == FieldType::SECURE_INT ? 32 : 64;
+            if(si.size() == dst_size) return; // already unpacked
 
-            si.resize(type_ == FieldType::SECURE_INT ? 32 : 64);
+            si.resize(dst_size);
             if(schema.bitPacked() && schema.getFieldMin() != 0) {
                 si = si + schema.getSecureFieldMin();
             }
