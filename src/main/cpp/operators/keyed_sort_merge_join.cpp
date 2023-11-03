@@ -180,7 +180,7 @@ QuerySchema KeyedSortMergeJoin<B>::deriveAugmentedSchema() const {
     else {
         QueryFieldDesc alpha(write_cursor, "alpha", "", int_field_type_);
         int max_alpha =  lhs_child->getOutputCardinality() + rhs_child->getOutputCardinality();
-        alpha.initializeFieldSizeWithCardinality(max_alpha);
+        if(is_secure_) alpha.initializeFieldSizeWithCardinality(max_alpha);
         ++write_cursor;
 
         augmented_schema.putField(alpha);
@@ -219,7 +219,7 @@ QuerySchema KeyedSortMergeJoin<B>::getAugmentedSchema() {
     else {
         QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_);
 	    int max_alpha =  lhs->getTupleCount() + rhs->getTupleCount();
-        alpha.initializeFieldSizeWithCardinality(max_alpha);
+        if(is_secure_) alpha.initializeFieldSizeWithCardinality(max_alpha);
 
         augmented_schema.putField(alpha);
         QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::SECURE_BOOL);	
@@ -617,7 +617,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool
     QuerySchema schema = input->getSchema();
 
     QueryFieldDesc weight(schema.getFieldCount(), "weight", "", int_field_type_);
-    weight.initializeFieldSizeWithCardinality(max_intermediate_cardinality_);
+    if(is_secure_) weight.initializeFieldSizeWithCardinality(max_intermediate_cardinality_);
     schema.putField(weight);
     QueryFieldDesc is_new(schema.getFieldCount(), "is_new", "", bool_field_type_);
     schema.putField(is_new);
