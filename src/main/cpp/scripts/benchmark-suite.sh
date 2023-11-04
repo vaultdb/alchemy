@@ -9,7 +9,7 @@ echo 'Writing to '$file
 bash scripts/run-tests.sh 2>&1 > $file
 
 #print results
-grep '^\[' $file
+#grep '^\[' $file
 grep FAIL $file
 
 # to record test in git
