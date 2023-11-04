@@ -24,7 +24,7 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
                                                                    input_schema.getField(agg.ordinal));
 
         // if an aggregator operates on packed bits (e.g. min/max/count), then copy its output definition from source
-        if (std::is_same_v<Bit, B> && SystemConfiguration::getInstance().bitPackingEnabled()) {
+        if (std::is_same_v<Bit, B>) {
             if ((agg.type == AggregateId::MIN || agg.type == AggregateId::MAX)){
                 QueryFieldDesc packed_field(input_schema.getField(agg.ordinal), output_cursor);
                 packed_field.setName("", agg.alias);

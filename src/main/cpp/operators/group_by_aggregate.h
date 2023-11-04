@@ -122,7 +122,6 @@ namespace vaultdb {
         QuerySchema generateOutputSchema(const QuerySchema & input_schema) const {
             QuerySchema output_schema;
             size_t i;
-            bool bit_packing = SystemConfiguration::getInstance().bitPackingEnabled();
             int input_row_cnt = this->getChild(0)->getOutputCardinality();
 
             for(i = 0; i < group_by_.size(); ++i) {

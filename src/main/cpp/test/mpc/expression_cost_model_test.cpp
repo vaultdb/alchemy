@@ -57,8 +57,6 @@ TEST_F(ExpressionCostModelTest, test_equality_int32) {
 
 
 TEST_F(ExpressionCostModelTest, test_equality_literal_packed) {
-    ASSERT_TRUE(SystemConfiguration::getInstance().bitPackingEnabled());
-
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem   WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + "  ORDER BY (1), (2)";
     std::string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input WHERE l_linenumber = 1";
     SortDefinition collation = DataUtilities::getDefaultSortDefinition(2);

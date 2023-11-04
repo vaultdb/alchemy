@@ -32,7 +32,7 @@ QueryTable<B> *ScalarAggregate<B>::runSelf() {
 
     // use input card to determine how many bits we need for count
     // only needed in secure mode
-    if(std::is_same_v<B, Bit> && SystemConfiguration::getInstance().bitPackingEnabled()) {
+    if(std::is_same_v<B, Bit>) {
         for (int i = 0; i < aggregate_definitions_.size(); ++i) {
             auto agg = aggregate_definitions_[i];
 

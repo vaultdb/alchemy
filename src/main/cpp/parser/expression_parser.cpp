@@ -36,7 +36,7 @@ Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const Qu
     expression_root->accept(&visitor);
 
     GenericExpression<B> *g;
-    if(expression_root->kind() == ExpressionKind::INPUT_REF && std::is_same_v<B, emp::Bit> && SystemConfiguration::getInstance().bitPackingEnabled()) {
+    if(expression_root->kind() == ExpressionKind::INPUT_REF && std::is_same_v<B, emp::Bit>) {
         InputReference<B> *input_ref = (InputReference<B> *) expression_root;
         auto packed = new PackedInputReference<B>(*input_ref);
         delete input_ref;

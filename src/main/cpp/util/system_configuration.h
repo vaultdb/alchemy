@@ -35,7 +35,6 @@ namespace vaultdb{
                         const StorageModel &model) {
             unioned_db_name_ = db_name;
             bit_packing_ = bp;
-            bit_packing_enabled_ = true;
             storage_model_ = model;
             if(emp_mode_ != EmpMode::OUTSOURCED) { wire_packing_enabled_ = false; }
         }
@@ -50,17 +49,6 @@ namespace vaultdb{
 
         inline void clearBitPacking() {
             bit_packing_.clear();
-            bit_packing_enabled_ = false;
-            packed_expressions_ = false;
-        }
-
-        inline bool bitPackingEnabled() const {
-            return bit_packing_enabled_;
-        }
-
-
-        inline bool packedExpressions() const {
-            return packed_expressions_;
         }
 
         inline StorageModel storageModel() const {
@@ -91,8 +79,6 @@ namespace vaultdb{
 
         StorageModel storage_model_ = StorageModel::ROW_STORE; // only support one storage model at a time
         std::map<ColumnReference, BitPackingDefinition> bit_packing_;
-        bool bit_packing_enabled_ = false;
-        bool packed_expressions_ = false;
     };
 
 }

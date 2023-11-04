@@ -44,7 +44,6 @@ namespace vaultdb {
         map<int, int> rhs_field_mapping_; // normalized --> original
         map<int, int> lhs_field_mapping_; // normalized --> original
         QuerySchema lhs_projected_schema_, rhs_projected_schema_; // cache the schema of the smaller input relation
-        bool bit_packed_ = false;
         long max_intermediate_cardinality_ = 0;
 		QueryTable<B> *lhs_prime_;
 		QueryTable<B> *rhs_prime_;

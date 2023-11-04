@@ -46,7 +46,7 @@ namespace vaultdb {
         {
             GroupByAggregateImpl<Bit>::aggregate_type_ = FieldType::SECURE_LONG;
 
-            int bit_cnt = (max_count == 0 || !SystemConfiguration::getInstance().bitPackingEnabled()) ? 64 : (int) (ceil(log2(max_count)) + 1);
+            int bit_cnt = (max_count == 0) ? 64 : (int) (ceil(log2(max_count)) + 1);
             running_count_ =   emp::Integer(bit_cnt, 0, PUBLIC);// publicly initialize to zero
 
             zero_i_ = Integer(bit_cnt, 0, PUBLIC);
@@ -177,7 +177,9 @@ namespace vaultdb {
 
          inline void initialize(const QueryTable<B> *table) override {
            running_count_ = Field<B>::If(table->getDummyTag(0),  this->zero_,  this->one_);
-           running_sum_ = Field<B>::If(table->getDummyTag(0), running_sum_, table->getField(0, this->aggregate_ordinal_));
+           auto f = table->getField(0, this->aggregate_ordinal_);
+           f.unpack(table->getSchema().getField(this->aggregate_ordinal_));
+           running_sum_ = Field<B>::If(table->getDummyTag(0), running_sum_, f);
         }
 
          inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
@@ -213,7 +215,7 @@ namespace vaultdb {
     class GroupByMinImpl : public  GroupByAggregateImpl<B> {
     public:
         explicit GroupByMinImpl(const int32_t & ordinal, const QueryFieldDesc & input_schema) : GroupByAggregateImpl<B>(ordinal, input_schema.getType()) {
-            if(input_schema.bitPacked() && SystemConfiguration::getInstance().bitPackingEnabled()) {
+            if(input_schema.bitPacked()) {
                 // generate max
                 assert(this->aggregate_type_ == FieldType::SECURE_LONG || this->aggregate_type_ == FieldType::SECURE_INT);
                 Integer max = emp::Integer(input_schema.size() + 1, 0);
@@ -263,7 +265,7 @@ namespace vaultdb {
     public:
         GroupByMaxImpl(const int32_t & ordinal, const QueryFieldDesc & input_schema)  : GroupByAggregateImpl<B>(ordinal, input_schema.getType()) {
 
-            if(input_schema.bitPacked() && SystemConfiguration::getInstance().bitPackingEnabled()) {
+            if(input_schema.bitPacked()) {
                 // generate max
                 assert(this->aggregate_type_ == FieldType::SECURE_LONG || this->aggregate_type_ == FieldType::SECURE_INT);
                 Integer min = emp::Integer(input_schema.size() + 1, input_schema.getFieldMin()); // +1 for 2's complement

@@ -8,7 +8,7 @@ UnsortedAggregateImpl<B>::UnsortedAggregateImpl(const AggregateId &id, const Fie
                                                 const int32_t &input_ordinal, const int32_t &output_ordinal, const int & max_value)
         : agg_type_(id), field_type_(type), input_ordinal_(input_ordinal), output_ordinal_(output_ordinal) {
 
-    if(max_value > 0 && std::is_same_v<B, Bit> && SystemConfiguration::getInstance().bitPackingEnabled()) {
+    if(max_value > 0 && std::is_same_v<B, Bit>) {
         bit_packed_size_ =  ceil(log2((float) max_value)) + 1; // for sign bit
         if(this->field_type_ == FieldType::SECURE_INT || this->field_type_ == FieldType::SECURE_LONG)
             one_ = Field<B>(this->field_type_, Integer(bit_packed_size_, 1));

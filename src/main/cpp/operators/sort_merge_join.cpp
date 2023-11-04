@@ -30,13 +30,12 @@ void SortMergeJoin<B>::setup() {
 
     one_ = FieldFactory<B>::getOne(int_field_type_);
     zero_ = FieldFactory<B>::getZero(int_field_type_);
-    bit_packed_ = SystemConfiguration::getInstance().bitPackingEnabled();
 
     updateCollation();
 
     max_intermediate_cardinality_ =  this->getChild(0)->getOutputCardinality() * this->getChild(1)->getOutputCardinality();
 
-    if(is_secure_ && bit_packed_) {
+    if(is_secure_) {
         int card_bits = ceil(log2(max_intermediate_cardinality_)) + 1; // + 1 for sign bit
         emp::Integer zero_tmp(card_bits, 0, emp::PUBLIC);
         emp::Integer one_tmp(card_bits, 1, emp::PUBLIC);
