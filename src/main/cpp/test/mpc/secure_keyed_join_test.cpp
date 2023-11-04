@@ -37,20 +37,15 @@ protected:
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' l_dummy \n"
                                       "FROM lineitem \n"
                                       "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < " + std::to_string(FLAGS_cutoff) + ")  \n"
-                                                                                                                                          " ORDER BY l_orderkey, revenue ";
+                                      " ORDER BY l_orderkey, revenue ";
 
-
-    void runCustomerOrdersTest();
-    void runLineitemOrdersTest();
-    void runLineitemOrdersCustomerTest();
 
 
 
 };
 
 
-
-void SecureKeyedJoinTest::runCustomerOrdersTest() {
+TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
                                      "orders_cte AS (" + orders_sql_ + ") "
                                 "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
@@ -82,9 +77,12 @@ void SecureKeyedJoinTest::runCustomerOrdersTest() {
 
 
     if(FLAGS_validation) {
-        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,  false);
+        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
+        joined->setSortOrder(sort_def); // reveal() will sort for this
         PlainTable *observed = joined->reveal();
-        expected->setSortOrder(observed->getSortOrder());
+
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
+        expected->setSortOrder(sort_def);
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
@@ -95,8 +93,7 @@ void SecureKeyedJoinTest::runCustomerOrdersTest() {
 
 }
 
-
-void SecureKeyedJoinTest::runLineitemOrdersTest() {
+TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 // get inputs from local oblivious ops
 // first 3 customers, propagate this constraint up the join tree for the test
     std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), "
@@ -120,12 +117,13 @@ void SecureKeyedJoinTest::runLineitemOrdersTest() {
 
 
     if(FLAGS_validation) {
-        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,  false);
+
+        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
+        joined->setSortOrder(sort_def); // reveal() will sort for this
         PlainTable *observed = joined->reveal();
-        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(6);
-        Sort<bool> observed_sort(observed, sort_def);
-        observed = observed_sort.run();
-        expected->setSortOrder(observed->getSortOrder());
+
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
+        expected->setSortOrder(sort_def);
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
@@ -134,7 +132,8 @@ void SecureKeyedJoinTest::runLineitemOrdersTest() {
 
 }
 
-void SecureKeyedJoinTest::runLineitemOrdersCustomerTest() {
+// compose C-O-L join
+TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
                                      "lineitem_cte AS (" + lineitem_sql_ + "), \n"
                                      "customer_cte AS (" + customer_sql_ + ")\n "
@@ -170,13 +169,12 @@ void SecureKeyedJoinTest::runLineitemOrdersCustomerTest() {
     auto joined = col_join->run();
 
     if(FLAGS_validation) {
-        PlainTable *observed = col_join->run()->reveal();
-        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(7);
-        Sort<bool> observed_sort(observed, sort_def);
-        observed = observed_sort.run();
+        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(col_join->getOutputSchema().getFieldCount());
+        joined->setSortOrder(sort_def); // reveal() will sort for this
+        PlainTable *observed = joined->reveal();
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
-        expected->setSortOrder(observed->getSortOrder());
+        expected->setSortOrder(sort_def);
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
@@ -186,23 +184,13 @@ void SecureKeyedJoinTest::runLineitemOrdersCustomerTest() {
 
 }
 
-TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
-    runCustomerOrdersTest();
-}
 
 
 
 
-TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
-    runLineitemOrdersTest();
-}
 
 
 
-// compose C-O-L join
-TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
-        runLineitemOrdersCustomerTest();
-}
 
 
 int main(int argc, char **argv) {
