@@ -137,10 +137,10 @@ namespace vaultdb {
                                      input_schema.getField(agg.ordinal).getType() :
                                      (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
                 QueryFieldDesc f;
-                if((agg.type == AggregateId::MIN || agg.type == AggregateId::MAX) && std::is_same_v<B, Bit> && bit_packing) {
+                if((agg.type == AggregateId::MIN || agg.type == AggregateId::MAX) && std::is_same_v<B, Bit>) {
                     f = QueryFieldDesc(input_schema.getField(agg.ordinal), i + group_by_.size()); // copy out bit packing info
                 }
-                else if (agg.type == AggregateId::COUNT && std::is_same_v<B, Bit> && bit_packing) {
+                else if (agg.type == AggregateId::COUNT && std::is_same_v<B, Bit>) {
                     f = QueryFieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
                     f.initializeFieldSizeWithCardinality(input_row_cnt);
                 }
