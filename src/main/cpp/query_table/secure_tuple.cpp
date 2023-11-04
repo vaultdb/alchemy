@@ -88,13 +88,13 @@ void QueryTuple<emp::Bit>::compareSwap(const Bit &cmp, SecureTuple  & lhs, Secur
     emp::Integer lhs_payload(tuple_size, 0, emp::PUBLIC);
     emp::Integer rhs_payload(tuple_size, 0, emp::PUBLIC);
 
-    memcpy(lhs_payload.bits.data(), lhs.getData(), tuple_size * TypeUtilities::getEmpBitSize());
-    memcpy(rhs_payload.bits.data(), rhs.getData(), tuple_size * TypeUtilities::getEmpBitSize());
+    memcpy(lhs_payload.bits.data(), lhs.getData(), tuple_size * sizeof(emp::Bit));
+    memcpy(rhs_payload.bits.data(), rhs.getData(), tuple_size * sizeof(emp::Bit));
 
     emp::swap(cmp, lhs_payload, rhs_payload);
 
-    memcpy(lhs.getData(), lhs_payload.bits.data(), tuple_size * TypeUtilities::getEmpBitSize());
-    memcpy(rhs.getData(), rhs_payload.bits.data(), tuple_size * TypeUtilities::getEmpBitSize());
+    memcpy(lhs.getData(), lhs_payload.bits.data(), tuple_size * sizeof(emp::Bit));
+    memcpy(rhs.getData(), rhs_payload.bits.data(), tuple_size * sizeof(emp::Bit));
 
 
 
@@ -102,7 +102,7 @@ void QueryTuple<emp::Bit>::compareSwap(const Bit &cmp, SecureTuple  & lhs, Secur
 
 SecureTuple QueryTuple<emp::Bit>::deserialize(emp::Bit *dst_tuple_bits, QuerySchema *schema, const emp::Bit *src_tuple_bits) {
     SecureTuple result(schema, dst_tuple_bits);
-    size_t tuple_size = schema->size() * TypeUtilities::getEmpBitSize();
+    size_t tuple_size = schema->size() * sizeof(emp::Bit);
     memcpy(dst_tuple_bits, src_tuple_bits, tuple_size);
     return result;
 
@@ -121,7 +121,7 @@ QueryTuple<emp::Bit> &QueryTuple<emp::Bit>::operator=(const SecureTuple &other) 
     emp::Bit *dst = this->fields_;
     emp::Bit *src = other.fields_;
 
-    memcpy(dst, src, schema_->size() * TypeUtilities::getEmpBitSize());
+    memcpy(dst, src, schema_->size() * sizeof(emp::Bit));
 
     return *this;
 
@@ -168,7 +168,7 @@ emp::Bit QueryTuple<emp::Bit>::operator==(const SecureTuple &other) const {
 
 
 QueryTuple<emp::Bit>::QueryTuple(QuerySchema *schema) {
-    managed_data_ = new emp::Bit[schema->bitCnt()];
+    managed_data_ = new emp::Bit[schema->size()];
 
     fields_ = managed_data_;
     schema_ = schema;
@@ -189,7 +189,7 @@ QueryTuple<emp::Bit>::QueryTuple(const QueryTuple & src) {
         emp::Bit *d = this->fields_;
         emp::Bit *s = src.fields_;
         // initialize vals
-        memcpy(d, s, schema_->size() * TypeUtilities::getEmpBitSize());
+        memcpy(d, s, schema_->size() * sizeof(emp::Bit));
     }
     else
         fields_ = src.fields_; // point to the original fields

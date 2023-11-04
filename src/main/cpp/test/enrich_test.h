@@ -29,7 +29,6 @@ DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
 
-
 class EnrichTest : public EmpBaseTest  {
 
 protected:

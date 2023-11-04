@@ -121,10 +121,10 @@ namespace vaultdb {
             // based on QueryTable::setSchema
             for(auto pos : schema_->offsets_) {
                 auto desc = schema_->getField(pos.first);
-                auto field_size_bytes = (packed_wires) ? desc.packedWires() * TypeUtilities::getEmpBitSize() : desc.size() * TypeUtilities::getEmpBitSize();
+                auto field_size_bytes = (packed_wires) ? desc.packedWires() * sizeof(emp::Bit) : desc.size() * sizeof(emp::Bit);
                 tuple_size_bytes_ += field_size_bytes;
                 // offset units are packed wires for OMPC (Bits o.w.)
-                field_offset_bytes_[pos.first] = pos.second * TypeUtilities::getEmpBitSize();
+                field_offset_bytes_[pos.first] = pos.second * sizeof(emp::Bit);
             }
         }
 

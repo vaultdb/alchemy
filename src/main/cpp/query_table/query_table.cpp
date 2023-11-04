@@ -147,7 +147,7 @@ template <typename B>
 QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vector<int8_t> & table_bytes) {
     const int8_t *read_ptr = table_bytes.data();
 
-    uint32_t row_size = (std::is_same_v<B, bool>) ? schema.size() / 8 : schema.size() * TypeUtilities::getEmpBitSize();
+    uint32_t row_size = (std::is_same_v<B, bool>) ? schema.size() / 8 : schema.size() * sizeof(emp::Bit);
     uint32_t tuple_cnt =  table_bytes.size() /  row_size;
     auto result = new QueryTable<B>(tuple_cnt, schema);
     int write_size;
@@ -176,7 +176,7 @@ QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vecto
     bool is_plain = std::is_same_v<B, bool>;
     assert(!is_plain);
 
-    uint32_t tuple_cnt =  table_bits.size() /  schema.bitCnt();
+    uint32_t tuple_cnt =  table_bits.size() /  schema.size();
     auto result = new QueryTable<B>(tuple_cnt, schema);
     int write_size;
 
@@ -249,7 +249,7 @@ void QueryTable<B>::assignField(const emp::Bit & write, const int &dst_row, cons
 
 
     int read_size = src->field_sizes_bytes_[src_col];
-    int field_bits = read_size / TypeUtilities::getEmpBitSize();
+    int field_bits = read_size / sizeof(emp::Bit);
 
     Bit *read_ptr = (Bit *) src->getFieldPtr(src_row, src_col);
     Bit *write_ptr = (Bit *) getFieldPtr(dst_row, dst_col);
@@ -352,7 +352,7 @@ void QueryTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &ds
         int dst_len = field_sizes_bytes_.at(write_idx);
         int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
 
-        int to_read_bits = to_read / TypeUtilities::getEmpBitSize();
+        int to_read_bits = to_read / sizeof(emp::Bit);
         for(int i = 0; i <  to_read_bits; ++i) {
             *write_pos = emp::If(write, *read_pos, *write_pos);
             ++write_pos;

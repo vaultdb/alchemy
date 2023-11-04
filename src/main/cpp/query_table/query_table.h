@@ -188,7 +188,7 @@ namespace  vaultdb {
            auto src = (SecureTable *) this;
             int to_unpack = (col_cnt < 1) ? schema_.getFieldCount() : col_cnt;
 
-            Integer dst(schema_.bitCnt(), 0, PUBLIC);
+            Integer dst(schema_.size(), 0, PUBLIC);
             Bit *cursor = dst.bits.data();
 
             for(int i = 0; i < to_unpack; ++i) {
@@ -374,10 +374,10 @@ namespace  vaultdb {
                 for(auto pos : schema_.offsets_) {
                     desc = schema_.getField(pos.first);
                     field_size_bytes = (packed_wires) ? desc.packedWires()  : desc.size();
-                    field_size_bytes *=  TypeUtilities::getEmpBitSize();
+                    field_size_bytes *=  sizeof(emp::Bit);
                     tuple_size_bytes_ += field_size_bytes;
                     // offset units are packed wires for OMPC (Bits o.w.)
-                    field_offsets_bytes_[pos.first] = pos.second * TypeUtilities::getEmpBitSize();
+                    field_offsets_bytes_[pos.first] = pos.second * sizeof(emp::Bit);
                     field_sizes_bytes_[pos.first] = field_size_bytes;
                 }
                 return;

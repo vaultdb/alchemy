@@ -26,11 +26,11 @@ size_t FieldUtilities::getPhysicalSize(const FieldType &id, const size_t &str_le
             return sizeof(emp::block);
         case FieldType::SECURE_INT:
         case FieldType::SECURE_FLOAT:
-            return TypeUtilities::getEmpBitSize() * 32;
+            return sizeof(emp::Bit) * 32;
         case FieldType::SECURE_LONG:
-            return TypeUtilities::getEmpBitSize() * 64;
+            return sizeof(emp::Bit) * 64;
         case FieldType::SECURE_STRING:
-            return TypeUtilities::getEmpBitSize() * str_length * 8;
+            return sizeof(emp::Bit) * str_length * 8;
         case FieldType::INVALID:
         default: // unsupported type
             throw;

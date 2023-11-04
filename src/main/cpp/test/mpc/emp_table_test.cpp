@@ -102,7 +102,7 @@ TEST_F(EmpTableTest, bit_packing_test) {
     input->setSortOrder(collation);
 
     SecureTable *secret_shared = input->secretShare();
-    //    cout << "Packed wire size: " << sizeof(emp::OMPCPackedWire) << " bytes, bit size: " << sizeof(emp::Bit) << " bytes, configured: " << TypeUtilities::getEmpBitSize() << endl;
+    //    cout << "Packed wire size: " << sizeof(emp::OMPCPackedWire) << " bytes, bit size: " << sizeof(emp::Bit) << " bytes, configured: " << sizeof(emp::Bit) << endl;
     // Expect: Packed wire size: 48 bytes, bit size: 192 bytes, configured: 48
 
     // c_custkey has 150 distinct vals, should have 8 bits
@@ -116,10 +116,10 @@ TEST_F(EmpTableTest, bit_packing_test) {
     ASSERT_EQ(secret_shared->getTupleCount(),  expected->getTupleCount());
     // tuple_cnt * (5+8+1 (for dummy tag) )*sizeof(emp::Bit)
     if(emp_mode_ == vaultdb::EmpMode::SH2PC)
-        ASSERT_EQ(expected->getTupleCount() * 14 * TypeUtilities::getEmpBitSize(),  secret_shared->getTupleCount() * secret_shared->tuple_size_bytes_);
+        ASSERT_EQ(expected->getTupleCount() * 14 * sizeof(emp::Bit),  secret_shared->getTupleCount() * secret_shared->tuple_size_bytes_);
     // 3 packed wires per tuple
     if(emp_mode_ == vaultdb::EmpMode::OUTSOURCED && SystemConfiguration::getInstance().wire_packing_enabled_)
-        ASSERT_EQ(expected->getTupleCount() * 3 * TypeUtilities::getEmpBitSize(),  secret_shared->getTupleCount() * secret_shared->tuple_size_bytes_);
+        ASSERT_EQ(expected->getTupleCount() * 3 * sizeof(emp::OMPCPackedWire),  secret_shared->getTupleCount() * secret_shared->tuple_size_bytes_);
 
     if(FLAGS_validation) {
         PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);

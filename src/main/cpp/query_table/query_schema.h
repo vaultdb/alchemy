@@ -16,7 +16,8 @@ namespace  vaultdb {
 
     public:
         std::map<int32_t, QueryFieldDesc> fields_;
-        size_t tuple_size_; // in bits
+        size_t tuple_size_bits_; // in bits
+        size_t packed_wires_; // in packed wires
 
 
         // offsets are used to jump to the specified field in memory
@@ -24,8 +25,8 @@ namespace  vaultdb {
         // In all others, it is bits
         std::map<int32_t, size_t> offsets_;
 
-        QuerySchema()  : tuple_size_(0) {         } // empty setup
-        QuerySchema(const QuerySchema & s) :   fields_(s.fields_), tuple_size_(s.tuple_size_), offsets_(s.offsets_) { }
+        QuerySchema()  : tuple_size_bits_(0) {         } // empty setup
+        QuerySchema(const QuerySchema & s) : fields_(s.fields_), tuple_size_bits_(s.tuple_size_bits_), offsets_(s.offsets_) { }
 
         // parse the CSV schema, e.g.,
         // (field1:INT,field2:float,...,fieldN:varchar(10))
@@ -64,7 +65,7 @@ namespace  vaultdb {
         }
 
         // returns size in bits
-        inline size_t size() const { return tuple_size_; }
+        inline size_t size() const { return tuple_size_bits_; }
 
         inline bool   isSecure() const {
             return (fields_.at(0).getType() == TypeUtilities::toSecure(fields_.at(0).getType())); }
@@ -97,7 +98,7 @@ namespace  vaultdb {
         inline void reset() {
             fields_.clear();
             offsets_.clear();
-            tuple_size_ = 0;
+            tuple_size_bits_ = 0;
         }
 
 
@@ -108,21 +109,9 @@ namespace  vaultdb {
 
         // schema width in packed wires
         size_t packedWires() const {
-            size_t running_cnt = 0;
-           for(auto & field : fields_) {
-               running_cnt += field.second.packedWires();
-           }
-           return running_cnt;
+            return packed_wires_;
         }
 
-        // schema width in bits
-        size_t bitCnt() const {
-            size_t running_cnt = 0;
-            for(auto & field : fields_) {
-                running_cnt += field.second.size();
-            }
-            return running_cnt;
-        }
 
     };
 

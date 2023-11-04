@@ -66,7 +66,7 @@ SecureTable *UnionHybridData::readSecretSharedInput(const string &secret_shares_
     size_t tuple_cnt = src_bit_cnt / plain_schema.size();
 
     // convert serialized representation from byte-aligned to bit-by-bit
-    size_t dst_bit_cnt = tuple_cnt * secure_schema.bitCnt();
+    size_t dst_bit_cnt = tuple_cnt * secure_schema.size();
 //    size_t dst_bit_alloc = dst_bit_cnt + (dst_bit_cnt % 128);  // pad it to 128-bit increments for emp
     bool *dst_bools = new bool[dst_bit_cnt]; // dst_bit_alloc
     bool *dst_cursor = dst_bools;

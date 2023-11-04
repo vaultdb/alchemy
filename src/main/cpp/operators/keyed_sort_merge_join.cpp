@@ -59,7 +59,7 @@ void KeyedSortMergeJoin<B>::setup() {
     JoinEqualityConditionVisitor<B> join_visitor(p->root_);
     join_idxs_  = join_visitor.getEqualities();
 
-    lhs_smaller_ = (this->getChild(0)->getOutputSchema().bitCnt() < this->getChild(1)->getOutputSchema().bitCnt());
+    lhs_smaller_ = (this->getChild(0)->getOutputSchema().size() < this->getChild(1)->getOutputSchema().size());
 
     one_ = FieldFactory<B>::getOne(int_field_type_);
     zero_ = FieldFactory<B>::getZero(int_field_type_);
@@ -434,7 +434,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttrOmpc(QueryTable<B
     QuerySchema src_schema = src->getSchema();
     auto dst_schema = deriveProjectedSchema();
 
-    int dst_row_len_bits = dst_schema.bitCnt(), src_row_len_bits = 0;
+    int dst_row_len_bits = dst_schema.size(), src_row_len_bits = 0;
     map<int, int> src_field_offsets_bits;
 
     for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {

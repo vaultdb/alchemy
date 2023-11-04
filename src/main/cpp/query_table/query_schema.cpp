@@ -130,12 +130,10 @@ void QuerySchema::initializeFieldOffsets()  {
     // populate ordinal --> offset mapping
 
     size_t running_offset = 0L;
-    bool is_secure = TypeUtilities::isEncrypted(fields_[0].getType());
-    // empty query table
-    bool wire_packing = SystemConfiguration::getInstance().wire_packing_enabled_;
 
     // empty query table
     if(fields_.empty()) return;
+    packed_wires_ = 0L;
 
     size_t col_count = fields_.size();
     if(fields_.find(-1) != fields_.end()) --col_count;
@@ -143,21 +141,20 @@ void QuerySchema::initializeFieldOffsets()  {
     for(int i = 0; i < col_count; ++i) {
         QueryFieldDesc fd = fields_.at(i);
         offsets_[i] = running_offset;
-        running_offset +=  (is_secure && wire_packing) ? fd.packedWires() : fd.size();
+        running_offset +=  fd.size();
+        packed_wires_ += fd.packedWires();
 
     }
     // dummy tag at end
     offsets_[-1] = running_offset;
 
-     QueryFieldDesc dummy_tag(-1, "dummy_tag", fields_[0].getTableName(),
-                   isSecure() ?
-                   FieldType::SECURE_BOOL :
-                   FieldType::BOOL, 0);
+    FieldType bool_type = isSecure() ? FieldType::SECURE_BOOL : FieldType::BOOL;
+     QueryFieldDesc dummy_tag(-1, "dummy_tag", fields_[0].getTableName(), bool_type, 0);
     fields_[-1] = dummy_tag;
+    ++packed_wires_;
 
-    int dummy_size = isSecure() ?   TypeUtilities::getTypeSize(FieldType::SECURE_BOOL) :  TypeUtilities::getTypeSize(FieldType::BOOL);
-
-    tuple_size_ = running_offset +  dummy_size;
+    int dummy_size = TypeUtilities::getTypeSize(bool_type);
+    tuple_size_bits_ = running_offset + dummy_size;
 
 }
 

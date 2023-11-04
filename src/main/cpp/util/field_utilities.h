@@ -121,7 +121,7 @@ namespace vaultdb {
             if(src.size() == (size_t) len) return src;
 
             emp::Integer dst(len, 0, PUBLIC);
-            memcpy(dst.bits.data(), src.bits.data(), src.size() * TypeUtilities::getEmpBitSize());
+            memcpy(dst.bits.data(), src.bits.data(), src.size() * sizeof(emp::Bit));
             return dst;
         }
 
