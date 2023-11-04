@@ -115,7 +115,7 @@ namespace  vaultdb {
 
         template<typename B>
         static inline Field<B> projectNumeratorMultisiteTable(const QueryTable<B> * src, const int & row) {
-
+            // bool for numerator
             Field<B> inNumerator = src->getField(row, 6);
             Field<B> siteCount = src->getField(row, 8);
             auto desc = src->getSchema().getField(8);
@@ -126,7 +126,7 @@ namespace  vaultdb {
             B multisite = (siteCount > one);
             // only 0 || 1
             auto in_num_desc = src->getSchema().getField(6);
-            B numeratorTrue = inNumerator > FieldFactory<B>::getInt(0, in_num_desc.size() + in_num_desc.bitPacked());
+            B numeratorTrue = inNumerator.template getValue<B>(); //inNumerator > FieldFactory<B>::getInt(0, in_num_desc.size() + in_num_desc.bitPacked());
             B condition = multisite & numeratorTrue;
 
             return Field<B>::If(condition, FieldFactory<B>::getInt(1), FieldFactory<B>::getInt(0));
@@ -145,7 +145,7 @@ namespace  vaultdb {
 
             B multisite = (siteCount > FieldFactory<B>::getOne(siteCount.getType()));
             // only 0 || 1
-            B denominatorTrue = inDenominator > FieldFactory<B>::getZero(inDenominator.getType());
+            B denominatorTrue = inDenominator.template getValue<B>(); //inDenominator > FieldFactory<B>::getZero(inDenominator.getType());
             B condition = multisite & denominatorTrue;
 
             return Field<B>::If(condition, one, zero);
