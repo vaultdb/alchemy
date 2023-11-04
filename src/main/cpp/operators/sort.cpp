@@ -192,6 +192,9 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src) {
     // if one or more of the sort keys are floats, need to do a projection that creates a new column for sign_bit for each one
     // this is needed so we can reverse the process later
 
+    // TODO: add a check here to see if projection is needed.  If collating on (N, N-1, ..., 1)
+    //  then we don't need to reorder columns to have sort key "first"
+
     vector<int> sort_cols;
     for(int i = this->sort_definition_.size()-1; i >= 0; --i) {
             auto key = this->sort_definition_[i];
@@ -206,6 +209,7 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src) {
             sort_key_size_bits_ += src->getSchema().getField(key.first).size();
             ++write_cursor;
         }
+
         std::reverse(this->sort_definition_.begin(), this->sort_definition_.end());
 
     for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {

@@ -118,16 +118,18 @@ namespace  vaultdb {
 
             Field<B> inNumerator = src->getField(row, 6);
             Field<B> siteCount = src->getField(row, 8);
-            Field<B> zero = FieldFactory<B>::getInt(0);
-            Field<B> one = FieldFactory<B>::getInt(1);
+            auto desc = src->getSchema().getField(8);
+            Field<B> zero = FieldFactory<B>::getInt(0, desc.size() + desc.bitPacked());
+            Field<B> one = FieldFactory<B>::getInt(1, desc.size() + desc.bitPacked());
 
 
-            B multisite = (siteCount > FieldFactory<B>::getOne(siteCount.getType()));
+            B multisite = (siteCount > one);
             // only 0 || 1
-            B numeratorTrue = inNumerator > FieldFactory<B>::getZero(inNumerator.getType());
+            auto in_num_desc = src->getSchema().getField(6);
+            B numeratorTrue = inNumerator > FieldFactory<B>::getInt(0, in_num_desc.size() + in_num_desc.bitPacked());
             B condition = multisite & numeratorTrue;
 
-            return Field<B>::If(condition, one, zero);
+            return Field<B>::If(condition, FieldFactory<B>::getInt(1), FieldFactory<B>::getInt(0));
 
         }
 
@@ -152,19 +154,20 @@ namespace  vaultdb {
 
         template<typename B>
         static inline Field<B> projectDenominatorMultisiteTable(const QueryTable<B> *src, const int & row) {
-
             Field<B> inDenominator = src->getField(row, 7);
             Field<B> siteCount = src->getField(row, 8);
-            Field<B> zero = FieldFactory<B>::getInt(0);
-            Field<B> one = FieldFactory<B>::getInt(1);
+            auto desc = src->getSchema().getField(8);
+            Field<B> zero = FieldFactory<B>::getInt(0, desc.size() + desc.bitPacked());
+            Field<B> one = FieldFactory<B>::getInt(1, desc.size() + desc.bitPacked());
 
 
-            B multisite = (siteCount > FieldFactory<B>::getOne(siteCount.getType()));
+            B multisite = (siteCount > one);
             // only 0 || 1
-            B denominatorTrue = inDenominator > FieldFactory<B>::getZero(inDenominator.getType());
+            auto in_denom_desc = src->getSchema().getField(7);
+            B denominatorTrue = inDenominator > FieldFactory<B>::getInt(0, in_denom_desc.size() + in_denom_desc.bitPacked());
             B condition = multisite & denominatorTrue;
 
-            return Field<B>::If(condition, one, zero);
+            return Field<B>::If(condition, FieldFactory<B>::getInt(1), FieldFactory<B>::getInt(0));
 
         }
     };
