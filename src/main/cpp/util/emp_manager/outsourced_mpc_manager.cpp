@@ -41,7 +41,7 @@ QueryTable<Bit> *OutsourcedMpcManager::secretShare(const QueryTable<bool> *src) 
 
     QuerySchema plain_schema = src->getSchema();
     QuerySchema dst_schema = QuerySchema::toSecure(plain_schema);
-    QueryTable<Bit> *dst = QueryTable<Bit>(tuple_cnt, dst_schema, src->getSortOrder());
+    QueryTable<Bit> *dst = new QueryTable<Bit>(tuple_cnt, dst_schema, src->getSortOrder());
     if(tuple_cnt == 0) return dst;
 
     if(party_ == emp::TP) {
