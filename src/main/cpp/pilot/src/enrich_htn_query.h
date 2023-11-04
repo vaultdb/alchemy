@@ -164,7 +164,7 @@ namespace  vaultdb {
             B multisite = (siteCount > one);
             // only 0 || 1
             auto in_denom_desc = src->getSchema().getField(7);
-            B denominatorTrue = inDenominator > FieldFactory<B>::getInt(0, in_denom_desc.size() + in_denom_desc.bitPacked());
+            B denominatorTrue = inDenominator.template getValue<B>(); //inDenominator > FieldFactory<B>::getZero(inDenominator.getType());
             B condition = multisite & denominatorTrue;
 
             return Field<B>::If(condition, FieldFactory<B>::getInt(1), FieldFactory<B>::getInt(0));
