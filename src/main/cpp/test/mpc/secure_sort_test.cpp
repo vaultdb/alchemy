@@ -19,7 +19,7 @@ DEFINE_int32(cutoff, 10, "limit clause for queries");
 DEFINE_string(storage, "column", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65465, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, false, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*.tpchQ01Sort", "run only the tests passing this filter");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
 using namespace vaultdb;
