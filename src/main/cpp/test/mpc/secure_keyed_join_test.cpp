@@ -77,7 +77,7 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
 
 
     if(FLAGS_validation) {
-        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
+        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join.getOutputSchema().getFieldCount());
         joined->setSortOrder(sort_def); // reveal() will sort for this
         PlainTable *observed = joined->reveal();
 
@@ -118,7 +118,7 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 
     if(FLAGS_validation) {
 
-        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
+        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join.getOutputSchema().getFieldCount());
         joined->setSortOrder(sort_def); // reveal() will sort for this
         PlainTable *observed = joined->reveal();
 
