@@ -39,10 +39,10 @@ Field<B> EnrichTestSupport<B>::projectAgeStrataTable(const QueryTable<B> *src, c
 
     Field<B> ageStrata = Field<B>::If(ageDays <= FieldFactory<B>::getInt(28*365), FieldFactory<B>::getInt(0),
                                       Field<B>::If(ageDays <= FieldFactory<B>::getInt(39*365), FieldFactory<B>::getInt(1),
-                                                   Field<B>::If(ageDays <= FieldFactory<B>::getInt(50*365), FieldFactory<B>::getInt(2),
-                                                                Field<B>::If(ageDays <= FieldFactory<B>::getInt(61*365), FieldFactory<B>::getInt(3),
-                                                                             Field<B>::If(ageDays <= FieldFactory<B>::getInt(72*365), FieldFactory<B>::getInt(4),
-                                                                                          Field<B>::If(ageDays <= FieldFactory<B>::getInt(83*365), FieldFactory<B>::getInt(5), FieldFactory<B>::getInt(6)))))));
+                                             Field<B>::If(ageDays <= FieldFactory<B>::getInt(50*365), FieldFactory<B>::getInt(2),
+                                                      Field<B>::If(ageDays <= FieldFactory<B>::getInt(61*365), FieldFactory<B>::getInt(3),
+                                                              Field<B>::If(ageDays <= FieldFactory<B>::getInt(72*365), FieldFactory<B>::getInt(4),
+                                                                       Field<B>::If(ageDays <= FieldFactory<B>::getInt(83*365), FieldFactory<B>::getInt(5), FieldFactory<B>::getInt(6)))))));
 
     return ageStrata;
 }
@@ -53,12 +53,13 @@ template<typename B>
 Field<B> EnrichTestSupport<B>::projectMultisiteTable(const QueryTable<B> *src, const int &row) {
     // int32_t
     Field<B> siteCount = src->getField(row, 7);
-    Field<B> zero =  FieldFactory<B>::getInt(0);
-    Field<B> one =  FieldFactory<B>::getInt(1);
+    QueryFieldDesc desc = src->getSchema().getField(7);
 
-    B cmp = siteCount > FieldFactory<B>::getOne(siteCount.getType());
+    Field<B> one = FieldFactory<B>::getInt(1, desc.size() + desc.bitPacked());
 
-    return Field<B>::If(cmp, one, zero);
+    B cmp = siteCount > one;
+
+    return Field<B>::If(cmp, FieldFactory<B>::getInt(1), FieldFactory<B>::getInt(0));
 
 }
 
@@ -98,16 +99,19 @@ template<typename B>
 Field<B> EnrichTestSupport<B>::projectNumeratorMultisiteTable(const QueryTable<B> *src, const int &row) {
     Field<B> inNumerator = src->getField(row, 6);
     Field<B> siteCount = src->getField(row, 7);
-    Field<B> zero = FieldFactory<B>::getInt(0);
-    Field<B> one = FieldFactory<B>::getInt(1);
+    auto desc = src->getSchema().getField(7);
+    Field<B> zero = FieldFactory<B>::getInt(0, desc.size() + desc.bitPacked());
+    Field<B> one = FieldFactory<B>::getInt(1, desc.size() + desc.bitPacked());
 
 
-    B multisite = (siteCount > FieldFactory<B>::getOne(siteCount.getType()));
+    B multisite = (siteCount > one);
     // only 0 || 1
-    B numeratorTrue = inNumerator > FieldFactory<B>::getZero(inNumerator.getType());
+    auto in_num_desc = src->getSchema().getField(6);
+    B numeratorTrue = inNumerator > FieldFactory<B>::getInt(0, in_num_desc.size() + in_num_desc.bitPacked());
     B condition = multisite & numeratorTrue;
 
-    return Field<B>::If(condition, one, zero);
+    return Field<B>::If(condition, FieldFactory<B>::getInt(1), FieldFactory<B>::getInt(0));
+
 
 
 }

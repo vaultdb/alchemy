@@ -180,7 +180,7 @@ QuerySchema KeyedSortMergeJoin<B>::deriveAugmentedSchema() const {
     else {
         QueryFieldDesc alpha(write_cursor, "alpha", "", int_field_type_);
         int max_alpha =  lhs_child->getOutputCardinality() + rhs_child->getOutputCardinality();
-        if(is_secure_) alpha.initializeFieldSizeWithCardinality(max_alpha);
+        alpha.initializeFieldSizeWithCardinality(max_alpha);
         ++write_cursor;
 
         augmented_schema.putField(alpha);
@@ -219,7 +219,7 @@ QuerySchema KeyedSortMergeJoin<B>::getAugmentedSchema() {
     else {
         QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_);
 	    int max_alpha =  lhs->getTupleCount() + rhs->getTupleCount();
-        if(is_secure_) alpha.initializeFieldSizeWithCardinality(max_alpha);
+        alpha.initializeFieldSizeWithCardinality(max_alpha);
 
         augmented_schema.putField(alpha);
         QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::SECURE_BOOL);	
