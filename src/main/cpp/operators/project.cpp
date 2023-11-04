@@ -23,13 +23,14 @@ QueryTable<B> *Project<B>::runSelf() {
 
     this->output_ = new QueryTable<B>(tuple_cnt, this->output_schema_, this->sort_definition_);
 
-    for(uint32_t i = 0; i < tuple_cnt; ++i) {
-        this->output_->setDummyTag(i, src_table->getDummyTag(i));
+    // copy out whole columns
+    this->output_->cloneColumn(-1, src_table, -1);
 
-        // simply exec column mappings first with memcpy
-        for(auto pos : column_mappings_) {
-            this->output_->assignField(i, pos.second, src_table, i, pos.first); // to invoke memcpy
-        }
+    for(auto pos : column_mappings_) {
+        this->output_->cloneColumn(pos.second, src_table, pos.first);
+    }
+
+    for(uint32_t i = 0; i < tuple_cnt; ++i) {
 
         for(uint32_t j : exprs_to_exec_) {
             Expression<B> *expression = expressions_.at(j);
@@ -40,7 +41,7 @@ QueryTable<B> *Project<B>::runSelf() {
     }
 
 
-    return Operator<B>::output_;
+    return this->output_;
 }
 
 

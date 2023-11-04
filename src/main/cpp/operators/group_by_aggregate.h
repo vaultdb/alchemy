@@ -130,7 +130,6 @@ namespace vaultdb {
                 output_schema.putField(dst);
             }
 
-
             for(i = 0; i < aggregate_definitions_.size(); ++i) {
                 ScalarAggregateDefinition agg = aggregate_definitions_[i];
                 FieldType agg_type = (agg.ordinal >= 0) ?

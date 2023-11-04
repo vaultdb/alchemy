@@ -179,6 +179,7 @@ namespace  vaultdb {
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
         void cloneRow(const bool & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
         void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
+        void cloneColumn(const int & dst_col, const QueryTable<B> *src, const int & src_col);
         void cloneTable(const int & dst_row, QueryTable<B> *src);
 
         // for serializing a row from its wire packed form
@@ -403,6 +404,7 @@ namespace  vaultdb {
 
 
     };
+
 
     static std::ostream &operator<<(std::ostream &os, const QueryTable<bool> &table)   {
         os << table.getSchema() << " isEncrypted? false, order by: " << DataUtilities::printSortDefinition(table.getSortOrder()) << std::endl;

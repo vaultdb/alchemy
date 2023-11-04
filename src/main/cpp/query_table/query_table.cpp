@@ -365,6 +365,15 @@ void QueryTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &ds
 
 }
 
+template<typename B>
+void QueryTable<B>::cloneColumn(const int &dst_col, const QueryTable<B> *src, const int &src_col) {
+    assert(src->getTupleCount() == getTupleCount());
+    assert(src->getSchema().getField(src_col).size() == getSchema().getField(dst_col).size());
+
+    column_data_[dst_col] = src->column_data_.at(src_col);
+}
+
+
 // copy entire table to offset in QueryTable
 template<typename B>
 void QueryTable<B>::cloneTable(const int & dst_row, QueryTable<B> *s) {
