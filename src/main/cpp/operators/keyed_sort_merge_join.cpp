@@ -643,13 +643,15 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool
     }
     QueryTable<B> *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
     schema = dst_table->getSchema();
+    auto schema_bits = schema.size();
     QueryTuple<B> tmp_row(&schema);
+    Integer t = dst_table->unpackRow(0, schema.getFieldCount(), schema_bits);
+    memcpy(tmp_row.getData(), t.bits.data(), schema_bits * sizeof(emp::Bit));
 
     tmp_row.setField(is_new_idx_, one_b);
     int weight_width = schema.getField(weight_idx_).size() + schema.getField(weight_idx_).bitPacked();
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
-
         B new_row = (dst_table->getField(i, is_new_idx_) == one_b);
         tmp_row.setDummyTag(FieldUtilities::select(new_row, tmp_row.getDummyTag(), dst_table->getDummyTag(i)));
 
