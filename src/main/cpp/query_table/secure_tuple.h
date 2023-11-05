@@ -44,23 +44,64 @@ namespace vaultdb {
 
         inline bool hasManagedStorage() const { return managed_data_ != nullptr; }
 
-        inline SecureField getField(const int &ordinal) {
 
-            return Field<emp::Bit>::deserialize(schema_->getField(ordinal),
-                                                ((int8_t *) fields_) + field_offset_bytes_[ordinal]);
-
-        }
         const inline SecureField getField(const int & ordinal) const {
 
-            return Field<emp::Bit>::deserialize(schema_->getField(ordinal),
-                                                ((int8_t *) fields_) + field_offset_bytes_.at(ordinal));
+            auto cursor = ((int8_t *) fields_) + field_offset_bytes_.at(ordinal);
+            auto field_desc = schema_->getField(ordinal);
+            auto field_size_bits = field_desc.size();
+            auto f_type = field_desc.getType();
+
+            switch(f_type) {
+                case FieldType::SECURE_BOOL: {
+                    Bit b = *cursor;
+                    return SecureField(FieldType::SECURE_BOOL, b);
+                }
+                case FieldType::SECURE_INT:
+                case FieldType::SECURE_LONG:
+                case FieldType::SECURE_STRING: {
+                    Integer i(field_size_bits, cursor);
+                    memcpy(i.bits.data(), cursor, field_size_bits * sizeof(emp::Bit));
+                    return SecureField(f_type, i, field_desc.getStringLength());
+                }
+                case FieldType::SECURE_FLOAT: {
+                    Float f;
+                    memcpy(f.value.data(), cursor, field_size_bits * sizeof(emp::Bit));
+                    return SecureField(f_type, f);
+                }
+                default:
+                    throw;
+            }
 
         }
 
 
 
         inline void setField(const int &ordinal, const SecureField &f) {
-            f.serialize(((int8_t *) fields_) + field_offset_bytes_[ordinal], schema_->getField(ordinal));
+            auto cursor = ((int8_t *) fields_) + field_offset_bytes_[ordinal];
+            auto write_size_bytes = schema_->getField(ordinal).size() * sizeof(emp::Bit);
+
+            switch(f.getType()) {
+                case FieldType::SECURE_BOOL: {
+                    Bit b = f.template getValue<emp::Bit>();
+                    memcpy(cursor, &b, write_size_bytes);
+                    break;
+                }
+                case FieldType::SECURE_INT:
+                case FieldType::SECURE_LONG:
+                case FieldType::SECURE_STRING: {
+                    Integer i = f.template getValue<Integer>();
+                    memcpy(cursor, i.bits.data(), write_size_bytes);
+                    break;
+                }
+                case FieldType::SECURE_FLOAT: {
+                    Float f_tmp = f.template getValue<Float>();
+                    memcpy(cursor, f_tmp.value.data(), write_size_bytes);
+                    break;
+                }
+                default:
+                    throw;
+            }
 
         }
 
@@ -91,7 +132,7 @@ namespace vaultdb {
         QueryTuple<bool> reveal(QuerySchema *dst_schema, const int &party = emp::PUBLIC) const;
         QueryTuple<bool> revealInsecure(QuerySchema *dst_schema, const int &party = emp::PUBLIC) const;
 
-        string toString(const bool &showDummies = false) const;
+        string toString(const bool &show_dummies = false) const;
 
         void serialize(int8_t *dst) {
             memcpy((emp::Bit *) dst, fields_, tuple_size_bytes_); }

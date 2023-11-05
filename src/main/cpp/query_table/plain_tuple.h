@@ -77,7 +77,7 @@ namespace  vaultdb {
         inline QuerySchema *getSchema() const {     return schema_; }
 
 
-        string toString(const bool &showDummies = false) const;
+        string toString(const bool &show_dummies = false) const;
 
         inline void serialize(int8_t *dst) {
             memcpy(dst, fields_, schema_->size() / 8);

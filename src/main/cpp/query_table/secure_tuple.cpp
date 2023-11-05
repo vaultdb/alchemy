@@ -129,7 +129,7 @@ QueryTuple<emp::Bit> &QueryTuple<emp::Bit>::operator=(const SecureTuple &other) 
 
 
 
-string QueryTuple<emp::Bit>::toString(const bool &showDummies) const {
+string QueryTuple<emp::Bit>::toString(const bool &show_dummies) const {
     std::stringstream sstream;
 
 
@@ -140,7 +140,7 @@ string QueryTuple<emp::Bit>::toString(const bool &showDummies) const {
 
     sstream << ")";
 
-    if(showDummies) {
+    if(show_dummies) {
         sstream <<  " (dummy=" << "SECRET BIT" << ")";
     }
 
