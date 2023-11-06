@@ -102,7 +102,7 @@ void PilotUtilities::secretShareFromCsv(const string &src_csv, const QuerySchema
 void PilotUtilities::secretShareFromQuery(const string &db_name, const string &query, const string &dst_root) {
     PlainTable *table = DataUtilities::getQueryResults(db_name, query, false);
     cout << "Chi secret sharing " << table->getTupleCount() << " tuples." << endl;
-    cout << "First rows: " << table->toString(10, true) << endl;
+
     SecretShares shares = table->generateSecretShares();
 
     DataUtilities::writeFile(dst_root + ".alice", shares.first);
