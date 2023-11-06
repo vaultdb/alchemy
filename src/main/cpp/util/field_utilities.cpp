@@ -115,14 +115,7 @@ void FieldUtilities::secret_share_recv(SecureTable *dst, const int & idx, const 
 }
 
 
-// to compute sort
-bool FieldUtilities::select(const bool &choice, const bool &lhs, const bool &rhs) {
-    return choice ? lhs : rhs;
-}
 
-emp::Bit FieldUtilities::select(const Bit &choice, const Bit &lhs, const Bit &rhs) {
-    return emp::If(choice, lhs, rhs);
-}
 
 
 

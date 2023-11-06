@@ -55,24 +55,18 @@ protected:
     SortDefinition orders_lineitem_sort_{ColumnSort (0, SortDirection::ASCENDING)};
     SortDefinition lineitem_sort_ = DataUtilities::getDefaultSortDefinition(2);
 
-    void runCustomerOrdersTest();
-    void runLineitemOrdersTest();
-    void runLineitemOrdersCustomerTest();
-
 
 
 
 };
 
-void SecureKeyedSortMergeJoinTest::runCustomerOrdersTest() {
-	
+TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_customer_orders) {
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
-                                                                          "orders_cte AS (" + orders_cust_sql_ + ") "
-                                                                                                            "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
-                                                                                                            "FROM  orders_cte JOIN customer_cte ON c_custkey = o_custkey "
-                                                                                                            "WHERE NOT o_dummy AND NOT c_dummy "
-                                                                                                            "ORDER BY o_orderkey";
-
+                                     "orders_cte AS (" + orders_cust_sql_ + ") "
+                               "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
+                               "FROM  orders_cte JOIN customer_cte ON c_custkey = o_custkey "
+                               "WHERE NOT o_dummy AND NOT c_dummy "
+                               "ORDER BY o_orderkey";
 
 
     auto customer_input = new SecureSqlInput(db_name_, customer_sql_, true, customer_sort_);
@@ -85,32 +79,35 @@ void SecureKeyedSortMergeJoinTest::runCustomerOrdersTest() {
                                                                                                                        customer_input, 4);
 
     KeyedSortMergeJoin join(orders_input, customer_input, predicate);
-    // Join output schema: (#0 encrypted-int32(13) orders.o_orderkey, #1 encrypted-int32(8) orders.o_custkey, #2 encrypted-int64(28) orders.o_orderdate, #3 encrypted-int32(1) orders.o_shippriority, #4 encrypted-int32(8) customer.c_custkey)
-
+    // Join output schema: (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32(1) orders.o_shippriority, #4 shared-int32(8) customer.c_custkey)
     auto joined = join.run();
 
 
-	Logger* log = get_log();	
+    Logger* log = get_log();
 
     log->write("Predicted gate count: " + std::to_string(OperatorCostModel::operatorCost(&join)), Level::INFO);
-	log->write("Observed gate count: " + std::to_string(join.getGateCount()), Level::INFO);
-	log->write("Runtime: " + std::to_string(join.getRuntimeMs()), Level::INFO);
+    log->write("Observed gate count: " + std::to_string(join.getGateCount()), Level::INFO);
+    log->write("Runtime: " + std::to_string(join.getRuntimeMs()), Level::INFO);
 
     if(FLAGS_validation) {
+        auto sort_def = DataUtilities::getDefaultSortDefinition(1);
+        joined->setSortOrder(sort_def);
         PlainTable *observed = joined->reveal();
-        Sort sorter(observed, DataUtilities::getDefaultSortDefinition(1));
-        observed = sorter.run();
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
-        expected->setSortOrder(observed->getSortOrder());
+        expected->setSortOrder(sort_def);
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
+        delete observed;
     }
 
 }
 
-void SecureKeyedSortMergeJoinTest::runLineitemOrdersTest() {
+
+
+
+TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
     // get inputs from local oblivious ops
     // first N customers, propagate this constraint up the join tree for the test
     std::string expected_sql = "WITH orders_cte AS (" + orders_lineitem_sql_ + "), "
@@ -142,22 +139,23 @@ void SecureKeyedSortMergeJoinTest::runLineitemOrdersTest() {
 	log->write("Runtime: " + std::to_string(join.getRuntimeMs()), Level::INFO);
 
     if(FLAGS_validation) {
-        PlainTable *observed = joined->reveal();
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(6);
-        Sort observed_sort(observed, sort_def);
-        observed = observed_sort.run();
+        joined->setSortOrder(sort_def);
+        PlainTable *observed = joined->reveal();
 
         expected->setSortOrder(sort_def);
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
+        delete observed;
 
     }
 
 
 }
 
-void SecureKeyedSortMergeJoinTest::runLineitemOrdersCustomerTest() {
+// compose C-O-L join
+TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::string expected_sql = "WITH orders_cte AS (" + orders_cust_sql_ + "), \n"
                                      "lineitem_cte AS (" + lineitem_sql_ + "), \n"
                                      "customer_cte AS (" + customer_sql_ + ")\n "
@@ -199,36 +197,18 @@ void SecureKeyedSortMergeJoinTest::runLineitemOrdersCustomerTest() {
 	log->write("Runtime: " + std::to_string(col_join.getRuntimeMs()), Level::INFO);
 
     if(FLAGS_validation) {
-        PlainTable *observed = joined->reveal();
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(7);
-        Sort<bool> observed_sort(observed, sort_def);
-        observed = observed_sort.run();
+        joined->setSortOrder(sort_def);
+        PlainTable *observed = joined->reveal();
 
         expected->setSortOrder(observed->getSortOrder());
         ASSERT_EQ(*expected, *observed);
         delete expected;
+        delete observed;
     }
 
 }
 
-TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_customer_orders) {
-    runCustomerOrdersTest();
-
-}
-
-
-
-TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
-    runLineitemOrdersTest();
-}
-
-
-
-// compose C-O-L join
-TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
-
-    runLineitemOrdersCustomerTest();
-}
 
 
 

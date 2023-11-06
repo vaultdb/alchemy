@@ -641,31 +641,31 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool
         intermediate_table->setDummyTag(i, input->getDummyTag(i) | null_val);
 		s = s + cnt;
     }
+
     QueryTable<B> *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
     schema = dst_table->getSchema();
+    auto schema_field_cnt = schema.getFieldCount();
     auto schema_bits = schema.size();
-    QueryTuple<B> tmp_row(&schema);
-    Integer t = dst_table->unpackRow(0, schema.getFieldCount(), schema_bits);
-    memcpy(tmp_row.getData(), t.bits.data(), schema_bits * sizeof(emp::Bit));
+    // creates a row with self-managed memory
+    QueryTuple<B> tmp_row = dst_table->getRow(0);
 
     tmp_row.setField(is_new_idx_, one_b);
     int weight_width = schema.getField(weight_idx_).size() + schema.getField(weight_idx_).bitPacked();
+    Field<B> bound = s - one_;
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
-        B new_row = (dst_table->getField(i, is_new_idx_) == one_b);
-        tmp_row.setDummyTag(FieldUtilities::select(new_row, tmp_row.getDummyTag(), dst_table->getDummyTag(i)));
+        B new_row = dst_table->getField(i, is_new_idx_).template getValue<B>();
+        // if it is a new row, copy down previous value
+        QueryTuple<B> table_row = dst_table->getRow(i);
 
-        for(int j = 0; j < schema.getFieldCount(); j++) {
-            dst_table->setField(i, is_new_idx_, zero_b);
-            Field<B> to_write = Field<B>::If(new_row, tmp_row.getField(j), dst_table->getField(i, j));
-            tmp_row.setField(j, to_write);
-            dst_table->setField(i, j, to_write);
-
-        }
+        tmp_row = QueryTuple<B>::If(new_row, tmp_row, table_row);
+        dst_table->setRow(i, tmp_row);
+        dst_table->setField(i, is_new_idx_, zero_b);
 
 		Field<B> write_index = FieldFactory<B>::getInt(i, weight_width);
-		B end_matches = write_index >= (s - one_);
-        dst_table->setDummyTag(i, FieldUtilities::select(new_row, tmp_row.getDummyTag() | end_matches, dst_table->getDummyTag(i) | end_matches));
+		B end_matches = (write_index >= bound);
+        B dummy_tag = tmp_row.getDummyTag() | end_matches;
+        dst_table->setDummyTag(i, dummy_tag);
     }
 
     return dst_table;

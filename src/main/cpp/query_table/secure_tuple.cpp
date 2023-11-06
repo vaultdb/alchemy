@@ -135,7 +135,7 @@ string QueryTuple<emp::Bit>::toString(const bool &show_dummies) const {
 
     sstream <<   "(" <<  getField(0).toString();
 
-    for (size_t i = 1; i < getFieldCount(); ++i)
+    for (size_t i = 1; i < schema_->getFieldCount(); ++i)
         sstream << ", " << getField(i);
 
     sstream << ")";
@@ -177,6 +177,8 @@ QueryTuple<emp::Bit>::QueryTuple(QuerySchema *schema) {
     this->setDummyTag(true);
 }
 
+
+
 QueryTuple<emp::Bit>::QueryTuple(const QueryTuple & src) {
     schema_ = src.getSchema();
     field_offset_bytes_ = src.field_offset_bytes_;
@@ -196,17 +198,20 @@ QueryTuple<emp::Bit>::QueryTuple(const QueryTuple & src) {
 
 }
 
-SecureTuple QueryTuple<emp::Bit>::If(const Bit &cond, const SecureTuple &lhs, const SecureTuple &rhs) {
+SecureTuple QueryTuple<emp::Bit>::If(const emp::Bit &cond, const SecureTuple &lhs, const SecureTuple &rhs) {
     assert(*lhs.schema_ == *rhs.schema_);
-    SecureTuple output(lhs.getSchema());
+    size_t tuple_size = lhs.getSchema()->size(); // size in bits
 
-    for(int i = 0; i < output.schema_->getFieldCount(); ++i) {
-        output[i] = SecureField::If(cond, lhs[i], rhs[i]);
-    }
+    emp::Integer lhs_payload(tuple_size, 0, emp::PUBLIC);
+    emp::Integer rhs_payload(tuple_size, 0, emp::PUBLIC);
 
-    emp::Bit dummy_tag = emp::If(cond, lhs.getDummyTag(), rhs.getDummyTag());
-    output.setDummyTag(dummy_tag);
-    return output;
+    memcpy(lhs_payload.bits.data(), lhs.getData(), tuple_size * sizeof(emp::Bit));
+    memcpy(rhs_payload.bits.data(), rhs.getData(), tuple_size * sizeof(emp::Bit));
+
+    Integer dst_int = emp::If(cond, lhs_payload, rhs_payload);
+    SecureTuple dst(lhs.getSchema());
+    memcpy(dst.getData(), dst_int.bits.data(), tuple_size * sizeof(emp::Bit));
+    return dst;
 }
 
 

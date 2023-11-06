@@ -106,16 +106,15 @@ namespace vaultdb {
         static bool getBoolPrimitive(const Field<bool> & input) { return input.getValue<bool>(); }
         static emp::Bit getBoolPrimitive(const Field<emp::Bit> & input) { return input.getValue<emp::Bit>(); }
 
-        static bool select(const bool & choice, const bool & lhs, const bool & rhs);
-        static emp::Bit select(const emp::Bit & choice, const emp::Bit & lhs, const emp::Bit & rhs);
+        static bool select(const bool & choice, const bool & lhs, const bool & rhs) {
+            return choice ? lhs : rhs;
+        }
+        static emp::Bit select(const emp::Bit & choice, const emp::Bit & lhs, const emp::Bit & rhs) {
+            return emp::If(choice, lhs, rhs);
+        }
 
         static BitPackingMetadata getBitPackingMetadata(const std::string & db_name);
 
-        static inline emp::Integer addSignBit(const emp::Integer & src) {
-            emp::Integer dst(src);
-            dst.resize(src.bits.size() + 1);
-            return dst;
-        }
 
         static inline emp::Integer padInteger(const emp::Integer & src, const int & len) {
             if(src.size() == (size_t) len) return src;

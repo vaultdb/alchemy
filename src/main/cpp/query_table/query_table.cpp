@@ -7,6 +7,7 @@
 #include "plain_tuple.h"
 #include <operators/sort.h>
 #include <util/system_configuration.h>
+#include "secure_tuple.h"
 
 
 
@@ -640,7 +641,45 @@ PlainTable *QueryTable<B>::revealInsecure(const int &party) const {
 
 
 
+template<>
+QueryTuple<emp::Bit> QueryTable<Bit>::getRow(const int &idx)  {
+     SecureTuple row(&schema_);
+     Integer row_bits = unpackRow(idx);
+     memcpy(row.getData(), row_bits.bits.data(), row_bits.size() * sizeof(emp::Bit));
+     return row;
+}
 
+
+template<>
+QueryTuple<bool> QueryTable<bool>::getRow(const int &idx)  {
+    PlainTuple row(&schema_);
+    vector<int8_t> row_bytes = unpackRowBytes(idx);
+    memcpy(row.getData(), row_bytes.data(), row_bytes.size());
+    return row;
+}
+
+
+template <>
+void QueryTable<bool>::setRow(const int &idx, const QueryTuple<bool> &tuple) {
+    auto read_pos = tuple.getData();
+    for(int i = 0; i < schema_.getFieldCount(); ++i) {
+        auto write_pos = getFieldPtr(idx, i);
+        memcpy(write_pos, read_pos, field_sizes_bytes_[i]);
+        read_pos += field_sizes_bytes_[i];
+    }
+    // dummy tag
+    auto write_pos = getFieldPtr(idx, -1);
+    memcpy(write_pos, read_pos, field_sizes_bytes_[-1]);
+}
+
+template<>
+void QueryTable<Bit>::setRow(const int &idx, const QueryTuple<Bit> &tuple) {
+    auto read_pos = tuple.getData();
+    int row_bits = schema_.size();
+    emp::Integer i_tuple(row_bits, 0L);
+    memcpy(i_tuple.bits.data(), read_pos, row_bits * sizeof(emp::Bit));
+    packRow(idx, i_tuple);
+}
 
 template class vaultdb::QueryTable<bool>;
 template class vaultdb::QueryTable<emp::Bit>;

@@ -41,8 +41,9 @@ namespace vaultdb {
         int8_t *getData() const { return nullptr; }
         static void compareSwap(const B &cmp, QueryTuple<B>  & lhs, QueryTuple<B>  & rhs){ throw; } // implemented in template specializations
 
-        static QueryTuple<B> If(const B & cond, const QueryTuple<B> & lhs, const QueryTuple<B> & rhs);
+        static QueryTuple<B> If(const B & cond, const QueryTuple<B> & lhs, const QueryTuple<B> & rhs) { throw; }
     };
+
 
 
 

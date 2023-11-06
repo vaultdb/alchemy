@@ -38,7 +38,7 @@ namespace vaultdb {
         QueryTuple(QuerySchema *query_schema, const int8_t *src);
         explicit QueryTuple(QuerySchema *schema); // self-managed memory
 
-        emp::Bit *getData() const  { return fields_; }
+        int8_t *getData() const { return (int8_t *) fields_; }
 
         inline bool  isEncrypted() const { return true; }
 
@@ -60,7 +60,7 @@ namespace vaultdb {
                 case FieldType::SECURE_INT:
                 case FieldType::SECURE_LONG:
                 case FieldType::SECURE_STRING: {
-                    Integer i(field_size_bits, cursor);
+                    Integer i(field_size_bits + field_desc.bitPacked(), 0L);
                     memcpy(i.bits.data(), cursor, field_size_bits * sizeof(emp::Bit));
                     return SecureField(f_type, i, field_desc.getStringLength());
                 }
@@ -121,8 +121,8 @@ namespace vaultdb {
 
 
         inline emp::Bit getDummyTag() const {
-            auto tmp = getField(-1);
-            return tmp.template getValue<emp::Bit>();
+            auto pos =  (emp::Bit *) (((int8_t *) fields_) + field_offset_bytes_.at(-1));
+            return *pos;
         }
 
         QuerySchema *getSchema() const { return schema_; }

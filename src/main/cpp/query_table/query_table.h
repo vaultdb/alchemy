@@ -95,7 +95,6 @@ namespace  vaultdb {
 
         void setDummyTag(const int & row, const B & val) {
             int8_t *write_ptr = getFieldPtr(row, -1);
-
             QueryFieldDesc desc = schema_.fields_.at(-1);
             Field<B> f(desc.getType(), val);
             f.serialize(write_ptr, desc);
@@ -345,6 +344,9 @@ namespace  vaultdb {
             dst->setDummyTag(row, dummy_tag);
         }
 
+        QueryTuple<B> getRow(const int & idx);
+        void setRow(const int & idx, const QueryTuple<B> &tuple);
+
         QueryTable<B> *clone() {
             return new QueryTable<B>(*this);
         }
@@ -404,6 +406,7 @@ namespace  vaultdb {
 
 
     };
+
 
 
     static std::ostream &operator<<(std::ostream &os, const QueryTable<bool> &table)   {
