@@ -47,53 +47,7 @@ namespace vaultdb {
 
         void setField(const int  & row, const int & col, const Field<B> & f)  override {
             int8_t *dst = getFieldPtr(row, col);
-            string s;
-            Integer *si = nullptr;
-            Float *sf = nullptr;
-            Bit *sb = nullptr;
-
-            switch (f.getType()) {
-                case FieldType::BOOL:
-                    *((bool *) dst) = f.template getValue<bool>();
-                    break;
-                case FieldType::INT:
-                    *((int32_t *) dst) = f.template getValue<int32_t>();
-                    break;
-                case FieldType::LONG:
-                    *((int64_t *) dst) = f.template getValue<int64_t>();
-                    break;
-                case FieldType::FLOAT:
-                    *((float_t *) dst) = f.template getValue<float_t>();
-                    break;
-                case FieldType::STRING:
-                    s = f.template getValue<string>();
-                    std::reverse(s.begin(), s.end());
-                    memcpy(dst, (int8_t *) s.c_str(), s.size()); // null termination chopped
-                    break;
-
-                case FieldType::SECURE_BOOL:
-                    sb = new emp::Bit;
-                    *sb = f.template getValue<Bit>();
-                    memcpy(dst, &sb, sizeof(emp::Bit));
-                    delete sb;
-                    break;
-                case FieldType::SECURE_INT:
-                case FieldType::SECURE_LONG:
-                case FieldType::SECURE_STRING:
-                    si = new emp::Integer;
-                    *si = f.template getValue<Integer>();
-                    memcpy(dst, si->bits.data(), si->size() * sizeof(emp::Bit));
-                    delete si;
-                    break;
-                case FieldType::SECURE_FLOAT:
-                    sf = new Float;
-                    *sf = f.template getValue<Float>();
-                    memcpy(dst, sf->value.data(), sf->value.size() * sizeof(emp::Bit));
-                    delete sf;
-                    break;
-                default:
-                    throw;
-            }
+            writeField(dst, f, this->schema_.getField(col));
         }
 
 
@@ -257,7 +211,53 @@ namespace vaultdb {
         }
 
         StorageModel storageModel() const override { return StorageModel::COLUMN_STORE; }
-
+    private:
+        // need static context to avoid needlessly invoking default constructors for Bits
+        static void writeField(int8_t *dst, const Field<B> & f, const QueryFieldDesc & desc) {
+            switch (f.getType()) {
+                case FieldType::BOOL: {
+                    *((bool *) dst) = f.template getValue<bool>();
+                    break;
+                }
+                case FieldType::INT: {
+                    *((int32_t *) dst) = f.template getValue<int32_t>();
+                    break;
+                }
+                case FieldType::LONG: {
+                    *((int64_t *) dst) = f.template getValue<int64_t>();
+                    break;
+                }
+                case FieldType::FLOAT: {
+                    *((float_t *) dst) = f.template getValue<float_t>();
+                    break;
+                }
+                case FieldType::STRING: {
+                    string s = f.template getValue<string>();
+                    std::reverse(s.begin(), s.end());
+                    memcpy(dst, (int8_t *) s.c_str(), s.size()); // null termination chopped
+                    break;
+                }
+                case FieldType::SECURE_BOOL: {
+                    Bit b  = f.template getValue<Bit>();
+                    memcpy(dst, &b, sizeof(emp::Bit));
+                    break;
+            }
+            case FieldType::SECURE_INT:
+            case FieldType::SECURE_LONG:
+            case FieldType::SECURE_STRING: {
+                Integer i = f.template getValue<Integer>();
+                memcpy(dst, i.bits.data(), desc.size() * sizeof(emp::Bit));
+                break;
+            }
+                case FieldType::SECURE_FLOAT: {
+                    Float fl = f.template getValue<Float>();
+                    memcpy(dst, fl.value.data(), fl.value.size() * sizeof(emp::Bit));
+                    break;
+                }
+                default:
+                    throw;
+            }
+        }
 
     };
 }

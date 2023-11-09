@@ -219,8 +219,8 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src) {
             ++write_cursor;
         }
     }
-
-    Project<B> projection(src->clone(), builder.getExprs());
+    auto projection_input = src->clone();
+    Project<B> projection(projection_input, builder.getExprs());
     projection.setOperatorId(-2);
 
     auto projected = projection.run();
