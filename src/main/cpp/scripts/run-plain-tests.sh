@@ -8,9 +8,9 @@ set +x
 ./bin/project_test --flagfile=flagfiles/plain.flags
 ./bin/basic_join_test --cutoff=5
 ./bin/keyed_join_test --flagfile=flagfiles/plain.flags
+./bin/sort_test --flagfile=flagfiles/plain.flags
 ./bin/keyed_sort_merge_join_test --flagfile=flagfiles/plain.flags
 ./bin/merge_join_test --flagfile=flagfiles/plain.flags
-./bin/sort_test --flagfile=flagfiles/plain.flags
 ./bin/scalar_aggregate_test --flagfile=flagfiles/plain.flags
 ./bin/sort_merge_aggregate_test --flagfile=flagfiles/plain.flags
 ./bin/nested_loop_aggregate_test --flagfile=flagfiles/plain.flags

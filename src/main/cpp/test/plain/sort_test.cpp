@@ -18,7 +18,7 @@ TEST_F(SortTest, testSingleIntColumn) {
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
     SortDefinition sort_def{ ColumnSort(0, SortDirection::ASCENDING)};
-    expected->setSortOrder(sort_def);
+    expected->order_by_  = sort_def;
 
     auto input = new SqlInput(db_name_, sql, false);
     Sort<bool> sort(input, sort_def);
@@ -36,7 +36,7 @@ TEST_F(SortTest, tpchQ1Sort) {
 
 
     SortDefinition sort_def{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::ASCENDING)};
-    expected->setSortOrder(sort_def);
+    expected->order_by_ = sort_def;
 
     auto input = new SqlInput(db_name_, sql, false);
     Sort<bool> sort(input, sort_def);
@@ -81,7 +81,8 @@ TEST_F(SortTest, tpchQ5Sort) {
 
     string expected_sql = "SELECT * FROM (" + sql + ") subquery ORDER BY revenue DESC";
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
-    expected->setSortOrder(observed->getSortOrder());
+    expected->order_by_ = observed->order_by_;
+
     ASSERT_EQ(*expected, *observed);
     delete expected;
 
@@ -97,7 +98,7 @@ TEST_F(SortTest, tpchQ8Sort) {
 
     SortDefinition sort_def{ ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
 
-    expected->setSortOrder(SortDefinition{ColumnSort (0, SortDirection::ASCENDING)});
+    expected->order_by_ = SortDefinition{ColumnSort (0, SortDirection::ASCENDING)};
 
 
     auto input = new SqlInput(db_name_, sql, false);
@@ -137,7 +138,7 @@ TEST_F(SortTest, tpchQ9Sort) {
 
     string expected_sql = "SELECT * FROM (" + sql + ") subquery ORDER BY n_name, o_orderyear DESC, o_orderkey";
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
-    expected->setSortOrder(observed->getSortOrder());
+    expected->order_by_ = observed->order_by_;
     ASSERT_EQ(*expected, *observed);
 
 }
@@ -158,7 +159,7 @@ TEST_F(SortTest, tpchQ18Sort) {
     // schema: o_orderkey, o_orderdate, o_totalprice
     SortDefinition sort_def{ColumnSort(2, SortDirection::DESCENDING),  // o_totalprince
         ColumnSort(1, SortDirection::ASCENDING)}; // o_orderdate
-    expected->setSortOrder(sort_def);
+    expected->order_by_ = sort_def;
 
 
     auto input = new SqlInput(db_name_, sql, false);
@@ -183,7 +184,7 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
     schema.initializeFieldOffsets();
 
 
-    PlainTable *input_table = new PlainTable(input_tuples.size(), schema, sort_definition);
+    PlainTable *input_table =  PlainTable::getTable(input_tuples.size(), schema, sort_definition);
 
 
     for(uint32_t i = 0; i < input_tuples.size(); ++i) {
@@ -199,7 +200,7 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
 
     //set up expected results
     std::sort(input_tuples.begin(), input_tuples.end());
-    auto expected_table = new PlainTable(input_tuples.size(), schema, sort_definition);
+    auto expected_table =  PlainTable::getTable(input_tuples.size(), schema, sort_definition);
 
     for(uint32_t i = 0; i < input_tuples.size(); ++i) {
         Field<bool> val(FieldType::INT, input_tuples[i]);
@@ -213,7 +214,6 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
     delete expected_table;
 
 }
-
 
 
 

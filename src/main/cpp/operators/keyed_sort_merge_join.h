@@ -127,8 +127,8 @@ namespace  vaultdb {
 		Field<B> table_id_field_;
 
         pair<QueryTable<B> *, QueryTable<B> *> augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs);
-        QueryTable<B> *obliviousDistribute(QueryTable<B> *input, size_t target_size);
-        QueryTable<B> *obliviousExpand(QueryTable<B> *input, bool is_lhs);
+        QueryTable<B> *distribute(QueryTable<B> *input, size_t target_size);
+        QueryTable<B> *expand(QueryTable<B> *input);
         QuerySchema getAugmentedSchema();
 
         QueryTable<bool> *revertProjection(QueryTable<bool> *src, const map<int, int> &expr_map, const bool &is_lhs) const;
@@ -141,6 +141,10 @@ namespace  vaultdb {
 
         QueryTable<B> *unionAndSortTables();
         QueryTable<B> *unionAndMergeTables();
+
+        // union tables with disparate schemas into a new table with augmented schema
+        // unions into a bitonic sequence
+        QueryTable<B> *unionTables(QueryTable<B> *lhs, QueryTable<B> *rhs, const QuerySchema & dst_schema);
 
         inline B joinMatch(QueryTable<B> *t, int lhs_row, int rhs_row) {
             // previous alignment step will make join keys in first n columns

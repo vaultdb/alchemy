@@ -10,7 +10,7 @@ SqlInput::SqlInput(std::string db, std::string sql, bool dummy_tag)
   :  Operator<bool>(), input_query_(sql), original_input_query_(sql), db_name_(db),   dummy_tagged_(dummy_tag), tuple_limit_(0) {
     runQuery();
     output_schema_ = output_->getSchema();
-    this->output_cardinality_ = this->output_->getTupleCount();
+    this->output_cardinality_ = this->output_->tuple_cnt_;
 
 }
 
@@ -20,7 +20,7 @@ SqlInput::SqlInput(std::string db, std::string sql, bool dummy_tag, const SortDe
 
     runQuery();
     output_schema_ = output_->getSchema();
-    this->output_cardinality_ = this->output_->getTupleCount();
+    this->output_cardinality_ = this->output_->tuple_cnt_;
 }
 
 
@@ -30,7 +30,7 @@ PlainTable  *SqlInput::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-    if(this->output_ == nullptr || this->output_->getSortOrder() != this->sort_definition_) {
+    if(this->output_ == nullptr || this->output_->order_by_ != this->sort_definition_) {
         runQuery();
     }
 
@@ -50,7 +50,7 @@ void SqlInput::runQuery() {
     }
 
     output_ = dataProvider.getQueryTable(db_name_, sql, dummy_tagged_);
-    output_->setSortOrder(Operator<bool>::sort_definition_);
+    output_->order_by_ = this->sort_definition_;
 
 
 }

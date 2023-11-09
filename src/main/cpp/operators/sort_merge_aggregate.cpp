@@ -12,13 +12,14 @@ using namespace std;
 
 template<typename B>
 QueryTable<B> *SortMergeAggregate<B>::runSelf() {
-    QueryTable<B> *input = Operator<B>::getChild()->getOutput();
+    QueryTable<B> *input = this->getChild()->getOutput();
     QuerySchema input_schema = input->getSchema();
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
     int output_cursor = this->group_by_.size();
+
     for (ScalarAggregateDefinition agg: this->aggregate_definitions_) {
         GroupByAggregateImpl<B> *agg_impl = this->aggregateFactory(agg.type, agg.ordinal,
                                                                    input_schema.getField(agg.ordinal));
@@ -34,7 +35,7 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
 
             if (agg.type == AggregateId::COUNT) {
                 QueryFieldDesc packed_field(output_cursor, agg.alias, "", FieldType::SECURE_LONG);
-                packed_field.initializeFieldSizeWithCardinality(input->getTupleCount());
+                packed_field.initializeFieldSizeWithCardinality(input->tuple_cnt_);
                 this->output_schema_.putField(packed_field);
             }
 
@@ -43,13 +44,14 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
         aggregators_.push_back(agg_impl);
         ++output_cursor;
     }
-    this->setOutputCardinality(input->getTupleCount());
+    this->setOutputCardinality(input->tuple_cnt_);
 
-    this->output_ = new QueryTable<B>(input->getTupleCount(), this->output_schema_, this->sort_definition_);
+    this->output_ =  QueryTable<B>::getTable(input->tuple_cnt_, this->output_schema_, this->sort_definition_);
     QueryTable<B> *output = this->output_; // shorthand
     // SMA: if all dummies at the end, this would be simpler.  But we can't do that if there are MPC joins, filters, etc before this op because they will sprinkle dummies throughout the table
     for(int j = 0; j < this->group_by_.size(); ++j) {
-        output->assignField(0, j, input, 0, this->group_by_[j]); //memcpy the input values
+        auto f = input->getField(0, this->group_by_[j]);
+        output->setField(0, j, f);
     }
 
     int cursor = this->group_by_.size();
@@ -67,7 +69,7 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
     B matched, input_dummy_tag;
 
 
-    for(int i = 1; i < input->getTupleCount(); ++i) {
+    for(int i = 1; i < input->tuple_cnt_; ++i) {
         matched = true;
         input_dummy_tag = input->getDummyTag(i);
         for(int j = 0; j < this->group_by_.size(); ++j) {

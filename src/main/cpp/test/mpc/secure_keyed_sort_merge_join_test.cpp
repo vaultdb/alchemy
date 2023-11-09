@@ -91,11 +91,11 @@ TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_customer_orders) {
 
     if(FLAGS_validation) {
         auto sort_def = DataUtilities::getDefaultSortDefinition(1);
-        joined->setSortOrder(sort_def);
+        joined->order_by_ = sort_def;
         PlainTable *observed = joined->reveal();
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
-        expected->setSortOrder(sort_def);
+        expected->order_by_ = sort_def;
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
@@ -140,10 +140,10 @@ TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(6);
-        joined->setSortOrder(sort_def);
+        joined->order_by_ = sort_def;
         PlainTable *observed = joined->reveal();
 
-        expected->setSortOrder(sort_def);
+        expected->order_by_ = sort_def;
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
@@ -198,10 +198,10 @@ TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(7);
-        joined->setSortOrder(sort_def);
+        joined->order_by_ = sort_def;
         PlainTable *observed = joined->reveal();
 
-        expected->setSortOrder(observed->getSortOrder());
+        expected->order_by_ = sort_def;
         ASSERT_EQ(*expected, *observed);
         delete expected;
         delete observed;

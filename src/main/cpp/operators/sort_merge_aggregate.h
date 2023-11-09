@@ -80,7 +80,7 @@ namespace vaultdb {
 
             switch (aggregator_type) {
                 case AggregateId::COUNT:
-                    return new GroupByCountImpl<B>(ordinal, input_type, this->getChild(0)->getOutput()->getTupleCount());
+                    return new GroupByCountImpl<B>(ordinal, input_type, this->getChild(0)->getOutput()->tuple_cnt_);
                 case AggregateId::SUM:
                     return new GroupBySumImpl<B>(ordinal, input_type);
                 case AggregateId::AVG:

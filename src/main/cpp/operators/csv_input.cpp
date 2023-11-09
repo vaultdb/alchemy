@@ -9,7 +9,7 @@ PlainTable *CsvInput::runSelf() {
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
     this->output_ = CsvReader::readCsv(input_file_, output_schema_);
-    this->output_cardinality_ = this->output_->getTupleCount();
+    this->output_cardinality_ = this->output_->tuple_cnt_;
     return this->output_;
 }
 

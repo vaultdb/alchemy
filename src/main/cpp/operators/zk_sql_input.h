@@ -16,7 +16,7 @@ namespace  vaultdb {
 
         OperatorType getType() const override { return OperatorType::ZK_SQL_INPUT; }
         string getParameters() const override {
-            return "\"" + input_query_ + "\", tuple_count=" + std::to_string(plain_input_->getTupleCount());
+            return "\"" + input_query_ + "\", tuple_count=" + std::to_string(plain_input_->tuple_cnt_);
         }
 
         PlainTable *plain_input_;

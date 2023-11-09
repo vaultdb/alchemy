@@ -161,7 +161,7 @@ namespace  vaultdb {
         bool isLeaf() const { return  (lhs_child_ == nullptr); }
         
         inline SortDefinition  getSortOrder() const {
-            assert(output_ == nullptr || sort_definition_ == output_->getSortOrder()); // check that output table is aligned with operator's sort order
+            assert(output_ == nullptr || sort_definition_ == output_->order_by_); // check that output table is aligned with operator's sort order
             // need to cache this locally in case output not initialized yet
             return sort_definition_;
         }
@@ -316,9 +316,9 @@ namespace  vaultdb {
 
            this->output_ = input; // point to input table
             this->output_schema_ = input->getSchema();
-            this->sort_definition_ = Operator<B>::output_->getSortOrder();
+            this->sort_definition_ = this->output_->order_by_;
             this->operator_executed_ = true;
-            this->output_cardinality_ = input->getTupleCount();
+            this->output_cardinality_ = input->tuple_cnt_;
         }
 
         QueryTable<B> *runSelf() override {
@@ -330,7 +330,7 @@ namespace  vaultdb {
         }
 
         void updateCollation() override {
-            this->sort_definition_ = this->output_->getSortOrder();
+            this->sort_definition_ = this->output_->order_by_;
         }
 
         virtual ~TableInput() = default;

@@ -16,7 +16,7 @@ Operator<B>::Operator(QueryTable<B> *lhs, const SortDefinition & sorted_on)
     output_schema_ = lhs->getSchema(); // copy up child schema by default
 
     if(sorted_on.empty())
-        sort_definition_ = lhs->getSortOrder();
+        sort_definition_ = lhs->order_by_;
 }
 
 template<typename B>
@@ -65,7 +65,7 @@ QueryTable<B> *Operator<B>::run() {
         log->write("Operator #" + std::to_string(this->getOperatorId()) + " " + getTypeString() +
 				" ran for " + std::to_string(runtime_ms_) + " ms, " + 
 				"gate count: " + std::to_string(gate_cnt_) + 
-				" output cardinality: " + std::to_string(output_->getTupleCount()) + 
+				" output cardinality: " + std::to_string(output_->tuple_cnt_) +
 				", row width=" + std::to_string(output_schema_.size()) + "\n", Level::DEBUG);
 
         if (gate_cnt_ > 0  && this->getOperatorId() >= -1) {
@@ -78,7 +78,7 @@ QueryTable<B> *Operator<B>::run() {
     }
 
     operator_executed_ = true;
-    sort_definition_ = output_->getSortOrder(); // update this if needed
+    sort_definition_ = output_->order_by_; // update this if needed
 
     if(lhs_child_)     lhs_child_->reset();
     if(rhs_child_)     rhs_child_->reset();

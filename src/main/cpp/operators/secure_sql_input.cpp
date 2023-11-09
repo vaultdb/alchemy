@@ -13,7 +13,7 @@ SecureSqlInput::SecureSqlInput(const string & db, const string & sql, const bool
     runQuery();
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
-    this->output_cardinality_ = manager->getTableCardinality(plain_input_->getTupleCount());
+    this->output_cardinality_ = manager->getTableCardinality(plain_input_->tuple_cnt_);
 
 
 }
@@ -26,7 +26,7 @@ SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &
     runQuery();
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
-    this->output_cardinality_ = manager->getTableCardinality(plain_input_->getTupleCount());
+    this->output_cardinality_ = manager->getTableCardinality(plain_input_->tuple_cnt_);
 
 
 }
@@ -38,14 +38,14 @@ SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &
     runQuery();
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
-    this->output_cardinality_ = manager->getTableCardinality(plain_input_->getTupleCount());
+    this->output_cardinality_ = manager->getTableCardinality(plain_input_->tuple_cnt_);
 
 }
 
 
 SecureTable *SecureSqlInput::runSelf() {
 
-    if(plain_input_ == nullptr || plain_input_->getSortOrder() != this->sort_definition_) {
+    if(plain_input_ == nullptr || plain_input_->order_by_ != this->sort_definition_) {
         runQuery();
     }
 
@@ -88,7 +88,7 @@ void SecureSqlInput::runQuery() {
     }
 
     plain_input_ = data_provider.getQueryTable(local_db, sql, has_dummy_tag_);
-    plain_input_->setSortOrder(this->sort_definition_);
+    plain_input_->order_by_ = this->sort_definition_;
 
     if(!has_input) plain_input_->resize(0); // just to double-check - some cases like Q1 might need this for fixed domain from supporting table like order_keys
 

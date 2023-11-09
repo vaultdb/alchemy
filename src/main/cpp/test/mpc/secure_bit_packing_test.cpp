@@ -53,7 +53,7 @@ SecureBitPackingTest::runTest(const int &test_id, const string & test_name, cons
 
 
     PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0);
-    expected->setSortOrder(expected_sort);
+    expected->order_by_ = expected_sort;
 
     //ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 

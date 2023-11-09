@@ -49,7 +49,7 @@ namespace vaultdb {
         static SecureField getMax(const FieldType & type);
 
         static SecureField getInt(const int32_t & src, const int & field_bits = 32) {
-            return  SecureField(FieldType::SECURE_INT, emp::Integer(field_bits, src));
+            return  SecureField(FieldType::SECURE_INT, emp::Integer(field_bits, src, PUBLIC));
         }
 
 

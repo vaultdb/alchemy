@@ -32,7 +32,29 @@ QueryTuple<bool>::QueryTuple(QuerySchema *query_schema, const int8_t *table_data
 void QueryTuple<bool>::setField(const int &idx, const PlainField &f) {
     size_t field_offset = schema_->getFieldOffset(idx) / 8;
     int8_t *write_pos = fields_ + field_offset;
-    f.serialize(write_pos, schema_->getField(idx));
+    string str;
+
+    switch(schema_->getField(idx).getType()) {
+        case FieldType::BOOL:
+            *(bool *)write_pos = f.template getValue<bool>();
+            break;
+        case FieldType::INT:
+            *(int32_t *)write_pos = f.template getValue<int32_t>();
+            break;
+        case FieldType::LONG:
+            *(int64_t *)write_pos = f.template getValue<int64_t>();
+            break;
+        case FieldType::FLOAT:
+            *(float_t *)write_pos = f.template getValue<float_t>();
+            break;
+        case FieldType::STRING:
+            str = f.template getValue<string>();
+            std::reverse(str.begin(), str.end()); // reverse the string
+            memcpy(write_pos, str.c_str(), str.size());
+            break;
+        default:
+            throw;
+    }
 }
 
 
@@ -147,8 +169,8 @@ PlainTuple &QueryTuple<bool>::operator=(const PlainTuple &other) {
     if(&other == this)
         return *this;
 
-    int8_t *dst = getData();
-    int8_t *src = other.getData();
+    int8_t *dst = fields_;
+    int8_t *src = other.fields_;
 
     memcpy(dst, src, schema_->size() / 8);
 

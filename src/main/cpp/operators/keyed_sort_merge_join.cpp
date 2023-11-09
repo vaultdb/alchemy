@@ -8,6 +8,7 @@
 #include "query_table/field/field_factory.h"
 #include "util/system_configuration.h"
 #include "util/logger.h"
+#include "operators/union.h"
 
 using namespace vaultdb;
 using namespace Logging;
@@ -24,7 +25,7 @@ KeyedSortMergeJoin<B>::KeyedSortMergeJoin(Operator<B> *foreign_key, Operator<B> 
 template<typename B>
 KeyedSortMergeJoin<B>::KeyedSortMergeJoin(QueryTable<B> *foreign_key, QueryTable<B> *primary_key, Expression<B> *predicate,
                                 const SortDefinition &sort)  : Join<B>(foreign_key, primary_key, predicate, sort) {
-    this->output_cardinality_ = foreign_key->getTupleCount();
+    this->output_cardinality_ = foreign_key->tuple_cnt_;
     setup();
 }
 
@@ -44,7 +45,7 @@ KeyedSortMergeJoin<B>::KeyedSortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs
               const SortDefinition &sort)  : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey != 0) {
 
     assert(fkey == 0 || fkey == 1);
-    this->output_cardinality_ = (fkey == 0) ? lhs->getTupleCount() : rhs->getTupleCount();
+    this->output_cardinality_ = (fkey == 0) ? lhs->tuple_cnt_ : rhs->tuple_cnt_;
     setup();
 }
 
@@ -94,23 +95,22 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
 
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
-    QueryTable<B> *s1, *s2;
+    QueryTable<B> *expanded_lhs, *expanded_rhs;
 
-	s1 = obliviousExpand(augmented.first, true);
-	s2 = obliviousExpand(augmented.second, false);
+    expanded_lhs = expand(augmented.first);
+    expanded_rhs = expand(augmented.second);
 
     delete augmented.first;
 	delete augmented.second;
 
-
     size_t lhs_field_cnt = lhs_schema.getFieldCount();
-    QueryTable<B> *lhs_reverted = revertProjection(s1, lhs_field_mapping_, true);
-    QueryTable<B> *rhs_reverted = revertProjection(s2, rhs_field_mapping_, false);
+    QueryTable<B> *lhs_reverted = revertProjection(expanded_lhs, lhs_field_mapping_, true);
+    QueryTable<B> *rhs_reverted = revertProjection(expanded_rhs, rhs_field_mapping_, false);
 
-    delete s1;
-    delete s2;
+    delete expanded_lhs;
+    delete expanded_rhs;
 
-    this->output_ = new QueryTable<B>(foreign_key_cardinality_, out_schema);
+    this->output_ = QueryTable<B>::getTable(foreign_key_cardinality_, out_schema);
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
         B dummy_tag = lhs_reverted->getDummyTag(i) | rhs_reverted->getDummyTag(i);
@@ -123,7 +123,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
     delete rhs_reverted;
 
     lhs->pinned_ = false;
-    this->output_->setSortOrder(this->sort_definition_);
+    this->output_->order_by_ = this->sort_definition_;
     return this->output_;
 }
 
@@ -194,18 +194,6 @@ QuerySchema KeyedSortMergeJoin<B>::deriveAugmentedSchema() const {
 
 template<typename B>
 QuerySchema KeyedSortMergeJoin<B>::getAugmentedSchema() {
-	QueryTable<B> * lhs = this->getChild(0)->getOutput();
-	QueryTable<B> * rhs = this->getChild(1)->getOutput();
-	vector<int> lhs_keys, rhs_keys;	
-
-    for(auto key_pair : join_idxs_) {
-        // visitor always outputs lhs, rhs
-        lhs_keys.emplace_back(key_pair.first);
-        rhs_keys.emplace_back(key_pair.second - lhs->getSchema().getFieldCount());
-    }
-
-    lhs_prime_ = projectJoinKeyToFirstAttr(lhs, lhs_keys, true);
-    rhs_prime_ = projectJoinKeyToFirstAttr(rhs, rhs_keys, false);
 
     QuerySchema augmented_schema = (lhs_smaller_) ? rhs_prime_->getSchema() : lhs_prime_->getSchema();
 	
@@ -218,7 +206,7 @@ QuerySchema KeyedSortMergeJoin<B>::getAugmentedSchema() {
     }
     else {
         QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_);
-	    int max_alpha =  lhs->getTupleCount() + rhs->getTupleCount();
+	    int max_alpha =  this->getChild(0)->getOutputCardinality() + this->getChild(1)->getOutputCardinality();
         alpha.initializeFieldSizeWithCardinality(max_alpha);
 
         augmented_schema.putField(alpha);
@@ -239,6 +227,16 @@ template<typename B>
 pair<QueryTable<B> *, QueryTable<B> *>  KeyedSortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
     assert(lhs->storageModel() == rhs->storageModel());
 
+    vector<int> lhs_keys, rhs_keys;
+
+    for(auto key_pair : join_idxs_) {
+        // visitor always outputs lhs, rhs
+        lhs_keys.emplace_back(key_pair.first);
+        rhs_keys.emplace_back(key_pair.second - lhs->getSchema().getFieldCount());
+    }
+
+    lhs_prime_ = projectJoinKeyToFirstAttr(lhs, lhs_keys, true);
+    rhs_prime_ = projectJoinKeyToFirstAttr(rhs, rhs_keys, false);
 
     // set up extended schema
     QuerySchema augmented_schema = getAugmentedSchema();
@@ -247,9 +245,9 @@ pair<QueryTable<B> *, QueryTable<B> *>  KeyedSortMergeJoin<B>::augmentTables(Que
     alpha_idx_ = augmented_schema.getFieldCount() - 2;
 
     auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
-
     initializeAlphas(sorted);
 
+    // sort by table ID followed by join key
     SortDefinition sort_def;
     sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
     for(int i = 0; i < join_idxs_.size(); ++i) {
@@ -258,27 +256,25 @@ pair<QueryTable<B> *, QueryTable<B> *>  KeyedSortMergeJoin<B>::augmentTables(Que
 
     Sort<B> sort_by_table_id(sorted, sort_def);
     sort_by_table_id.setOperatorId(-2);
-    QueryTable<B> *sort_table = sort_by_table_id.run();
+    QueryTable<B> *sorted_table = sort_by_table_id.run();
 
     pair<QueryTable<B> *, QueryTable<B> *> output;
     //split union table into S1 and S2
-    auto s1 = new QueryTable<B>(lhs->getTupleCount(), augmented_schema);
-    auto s2 = new QueryTable<B>(rhs->getTupleCount(), augmented_schema);
-    int read_cursor = 0;
+    output.first = QueryTable<B>::getTable(lhs->tuple_cnt_, augmented_schema);
+    output.second = QueryTable<B>::getTable(rhs->tuple_cnt_, augmented_schema);
 
-    for (int i = 0; i < lhs->getTupleCount(); i++) {
-        s1->cloneRow(i, 0, sort_table, read_cursor);
-        s1->assignField(i, -1, sort_table, read_cursor, -1);
-        ++read_cursor;
-    }
+    // copy over first |s1| col entries from sorted_table to s1
+    // remaining ones go to s2
+    int read_offset = output.first->tuple_cnt_;
+    int field_cnt = augmented_schema.getFieldCount();
 
-    for (int i = 0; i < rhs->getTupleCount(); i++) {
-        s2->cloneRow(i, 0, sort_table, read_cursor);
-        s2->assignField(i, -1, sort_table, read_cursor, -1);
-        ++read_cursor;
+    for(int i = 0; i < field_cnt; ++i) {
+        output.first->cloneColumn(i, 0, sorted_table, i);
+        output.second->cloneColumn(i, 0, sorted_table, i, read_offset);
     }
-    output.first = s1;
-    output.second = s2;
+    output.first->cloneColumn(-1, 0, sorted_table, -1);
+    output.second->cloneColumn(-1, 0, sorted_table, -1, read_offset);
+
 
     return output;
 }
@@ -286,21 +282,12 @@ pair<QueryTable<B> *, QueryTable<B> *>  KeyedSortMergeJoin<B>::augmentTables(Que
 
 template<typename B>
 QueryTable<B> *KeyedSortMergeJoin<B>::unionAndSortTables() {
-    int cursor = 0;
     QuerySchema augmented_schema = deriveAugmentedSchema();
-    int unioned_len = lhs_prime_->getTupleCount() + rhs_prime_->getTupleCount();
+    int unioned_len = lhs_prime_->tuple_cnt_ + rhs_prime_->tuple_cnt_;
+    auto unioned = unionTables(lhs_prime_, rhs_prime_, augmented_schema);
+    int cursor = lhs_prime_->tuple_cnt_;
 
-    QueryTable<B> *unioned = new QueryTable<B>(unioned_len, augmented_schema);
-
-    for(int i = 0; i < lhs_prime_->getTupleCount(); ++i) {
-        unioned->cloneRow(cursor, 0, lhs_prime_, i);
-        unioned->assignField(cursor, -1, lhs_prime_, i, -1);
-        ++cursor;
-    }
-
-    for(int i = 0; i < rhs_prime_->getTupleCount(); ++i) {
-        unioned->cloneRow(cursor, 0, rhs_prime_, i);
-        unioned->assignField(cursor, -1, rhs_prime_, i, -1);
+    while(cursor < unioned_len) {
         unioned->setField(cursor, table_id_idx_, table_id_field_);
         ++cursor;
     }
@@ -322,44 +309,32 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionAndSortTables() {
 
 template<typename B>
 QueryTable<B> *KeyedSortMergeJoin<B>::unionAndMergeTables() {
-    int cursor = 0;
     QuerySchema augmented_schema = deriveAugmentedSchema();
-    int unioned_len = lhs_prime_->getTupleCount() + rhs_prime_->getTupleCount();
+    int unioned_len = lhs_prime_->tuple_cnt_ + rhs_prime_->tuple_cnt_;
     bool lhs_is_foreign_key = (foreign_key_input_ == 0);
-    QueryTable<B> *unioned = new QueryTable<B>(unioned_len, augmented_schema);
-
+    // always FK --> PK
+    QueryTable<B> *unioned;
     if(lhs_is_foreign_key) {
-        // always FK --> PK
-        for(int i = lhs_prime_->getTupleCount() - 1; i >= 0; --i) {
-            unioned->cloneRow(cursor, 0, lhs_prime_, i);
-            unioned->assignField(cursor, -1, lhs_prime_, i, -1);
-            ++cursor;
-        }
-        for(int i = 0; i < rhs_prime_->getTupleCount(); ++i) {
-            unioned->cloneRow(cursor, 0, rhs_prime_, i);
-            unioned->assignField(cursor, -1, rhs_prime_, i, -1);
-            unioned->setField(cursor, table_id_idx_, table_id_field_);
+        unioned = unionTables(lhs_prime_, rhs_prime_, augmented_schema);
+        int cursor = lhs_prime_->tuple_cnt_;
+        while(cursor < unioned_len) {
+            unioned->setField(cursor, table_id_idx_, table_id_field_); // TODO: add batch write method for this
             ++cursor;
         }
     }
     else {
-        for(int i = rhs_prime_->getTupleCount() - 1; i >= 0; --i) {
-            unioned->cloneRow(cursor, 0, rhs_prime_, i);
-            unioned->assignField(cursor, -1, rhs_prime_, i, -1);
+        unioned = unionTables(rhs_prime_, lhs_prime_, augmented_schema);
+        int cursor = 0;
+
+        while (cursor < rhs_prime_->tuple_cnt_) {
             unioned->setField(cursor, table_id_idx_, table_id_field_);
             ++cursor;
         }
 
-        for(int i = 0; i < lhs_prime_->getTupleCount(); ++i) {
-            unioned->cloneRow(cursor, 0, lhs_prime_, i);
-            unioned->assignField(cursor, -1, lhs_prime_, i, -1);
-            ++cursor;
-        }
     }
 
     delete lhs_prime_;
     delete rhs_prime_;
-
 
     // do bitonic merge instead of full sort
     SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
@@ -372,13 +347,36 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionAndMergeTables() {
     auto normalized = sorter.normalizeTable(unioned); // normalize to move up table_id field
 
     int counter = 0;
-    sorter.bitonicMerge(normalized, sorter.getSortOrder(), 0, normalized->getTupleCount(), true, counter);
+    sorter.bitonicMerge(normalized, sorter.getSortOrder(), 0, normalized->tuple_cnt_, true, counter);
+
     unioned =  sorter.denormalizeTable(normalized);
-    unioned->setSortOrder(sort_def);
+    unioned->order_by_ = sort_def;
 
     delete normalized;
-    return unioned;
+    return unioned->clone();
 
+}
+
+template<typename B>
+QueryTable<B> *KeyedSortMergeJoin<B>::unionTables(QueryTable<B> *lhs, QueryTable<B> *rhs, const QuerySchema & dst_schema) {
+
+    auto unioned_len = lhs->tuple_cnt_ + rhs->tuple_cnt_;
+    QueryTable<B> *unioned =  QueryTable<B>::getTable(unioned_len, dst_schema);
+
+    // always FK --> PK
+    int cursor = 0;
+    for(int i = lhs->tuple_cnt_ - 1; i >= 0; --i) {
+        unioned->cloneRow(cursor, 0, lhs, i);
+        ++cursor;
+    }
+
+
+    for(int i = 0; i < rhs->tuple_cnt_; ++i) {
+        unioned->cloneRow(cursor, 0, rhs, i);
+        ++cursor;
+    }
+
+    return unioned;
 }
 
 template<typename B>
@@ -478,10 +476,10 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttrOmpc(QueryTable<B
     if(simple_projection && (projection.getOutputSchema() == src_schema) && (dst_schema == src_schema)) {  return src->clone(); }// if no re-arranging needed, bypass this step
 
     assert(src->isEncrypted());
-    auto output = new QueryTable<Bit>(src->getTupleCount(), dst_schema, projection.getSortOrder()); // retain sort order b/c we only care if we're sorted on the join keys
+    auto output =  QueryTable<Bit>::getTable(src->tuple_cnt_, dst_schema, projection.getSortOrder()); // retain sort order b/c we only care if we're sorted on the join keys
     QueryTable<Bit> *src_rows = (QueryTable<Bit> *) src;
 
-    for(int i = 0; i < src_rows->getTupleCount(); ++i) {
+    for(int i = 0; i < src_rows->tuple_cnt_; ++i) {
         auto unpacked = src_rows->unpackRow(i);
 
         Integer to_pack(dst_row_len_bits, 0);
@@ -510,12 +508,9 @@ void KeyedSortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
     B one_b(true), zero_b(false);
 
 	B table_id = dst->getField(0, table_id_idx_).template getValue<B>();
-    B fkey_check = ((foreign_key_input_ == 0) ? zero_b : one_b);
-
+    B fkey_check = ((!foreign_key_input_) ? zero_b : one_b);
 	B is_foreign_key = (table_id == fkey_check);
-
     B dummy = dst->getDummyTag(0);
-
     B same_group = one_b;
 
     alpha_1 = Field<B>::If(same_group, Field<B>::If(is_foreign_key & !dummy, alpha_1 + one_, alpha_1),
@@ -525,21 +520,24 @@ void KeyedSortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
     dst->setField(0, alpha_idx_, Field<B>::If(is_foreign_key, alpha_2, alpha_1));
 
+    // rhs has table_id = true
 
-    for(int i = 1; i < dst->getTupleCount(); i++) {
+    for(int i = 1; i < dst->tuple_cnt_; i++) {
 		table_id = dst->getField(i, table_id_idx_).template getValue<B>();
 		is_foreign_key = (table_id == fkey_check);
-        B dummy = dst->getDummyTag(i);
+        dummy = dst->getDummyTag(i);
 
-		B same_group = joinMatch(dst,  i-1, i);
+		same_group = joinMatch(dst,  i-1, i);
 		alpha_1 = Field<B>::If(same_group, Field<B>::If(is_foreign_key & !dummy, alpha_1 + one_, alpha_1),
                                Field<B>::If(is_foreign_key & !dummy, one_, zero_));
 		alpha_2 = Field<B>::If(same_group, Field<B>::If(!is_foreign_key, alpha_2 + one_, zero_),
                                Field<B>::If(!is_foreign_key, one_, zero_));
-		dst->setField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_2, alpha_1));
+
+        Field<B> to_write = Field<B>::If(is_foreign_key, alpha_2, alpha_1);
+        dst->setField(i, alpha_idx_, to_write);
 	}
 
-    int last_idx = dst->getTupleCount() - 1;
+    int last_idx = dst->tuple_cnt_ - 1;
 
     table_id = dst->getField(last_idx, table_id_idx_).template getValue<B>();
     is_foreign_key = (table_id == fkey_check);
@@ -552,12 +550,13 @@ void KeyedSortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
     dst->setField(last_idx, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getField(last_idx, alpha_idx_)));
     dst->setField(last_idx, alpha_idx_, Field<B>::If(dst->getDummyTag(last_idx), zero_, dst->getField(last_idx, alpha_idx_)));
 
-
+    // copy up max alpha
 	for(int i = last_idx-1; i >= 0; i--) {
         table_id = dst->getField(i, table_id_idx_).template getValue<B>();
 		is_foreign_key = (table_id == fkey_check);
 		B same_group = joinMatch(dst,  i+1, i);
         B dummy = dst->getDummyTag(i);
+
 		alpha_1 = Field<B>::If(is_foreign_key & same_group, alpha_1, Field<B>::If(!is_foreign_key & !dummy, one_, zero_));
 		dst->setField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getField(i, alpha_idx_)));
 		dst->setField(i, alpha_idx_, Field<B>::If(dst->getDummyTag(i), zero_, dst->getField(i, alpha_idx_)));
@@ -568,25 +567,21 @@ void KeyedSortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
 
 template<typename B>
-QueryTable<B> *KeyedSortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_t target_size) {
+QueryTable<B> *KeyedSortMergeJoin<B>::distribute(QueryTable<B> *input, size_t target_size) {
     QuerySchema schema = input->getSchema();
 
     SortDefinition sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
     Sort<B> sorted(input, sort_def);
     sorted.setOperatorId(-2);
-    auto sorted_input = sorted.run();
+    auto dst_table = sorted.run();
+    int base_card = dst_table->tuple_cnt_;
+    dst_table->resize(target_size);
 
-    QueryTable<B> *dst_table = new QueryTable<B>(target_size, schema);
-
-    for(int i = 0; i < sorted_input->getTupleCount(); i++) {
-        dst_table->cloneRow(i, 0, sorted_input, i);
-        dst_table->assignField(i, -1, sorted_input, i, -1);
-    }
-
-    Field<B> table_idx = sorted_input->getField(0, table_id_idx_);
+    Field<B> table_idx = dst_table->getField(0, table_id_idx_);
     Field<B> one_b(bool_field_type_, B(true));
 
-    for(int i = sorted_input->getTupleCount(); i < target_size; i++) {
+
+    for(int i = base_card; i < target_size; i++) {
         dst_table->setField(i, is_new_idx_, one_b);
         dst_table->setField(i, table_id_idx_, table_idx);
     }
@@ -594,11 +589,10 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, 
     int j = Sort<B>::powerOfTwoLessThan(target_size);
     int weight_width = (is_secure_) ? zero_.template getValue<Integer>().size() : 32;
 
-
     while(j >= 1) {
         for(int i = target_size - j - 1; i >= 0; i--) {
 
-            Field<B> weight = dst_table->getField(i,weight_idx_);
+            Field<B> weight = dst_table->getField(i, weight_idx_);
             Field<B> pos = FieldFactory<B>::getInt(i + j + 1, weight_width);
             B result = (weight >= pos);
             dst_table->compareSwap(result, i, i+j);
@@ -606,32 +600,29 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, 
         }
         j = j/2;
     }
-
-    return dst_table;
+    return dst_table->clone();
 
 }
 
 
 template<typename B>
-QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_lhs) {
-    QuerySchema schema = input->getSchema();
+QueryTable<B> *KeyedSortMergeJoin<B>::expand(QueryTable<B> *input) {
+    QueryTable<B> *intermediate_table = input->clone();
+    weight_idx_ = input->getSchema().getFieldCount();
+    is_new_idx_ = weight_idx_ + 1;
 
-    QueryFieldDesc weight(schema.getFieldCount(), "weight", "", int_field_type_);
+    QueryFieldDesc weight(weight_idx_, "weight", "", int_field_type_);
     if(is_secure_) weight.initializeFieldSizeWithCardinality(max_intermediate_cardinality_);
-    schema.putField(weight);
-    QueryFieldDesc is_new(schema.getFieldCount(), "is_new", "", bool_field_type_);
-    schema.putField(is_new);
-    schema.initializeFieldOffsets();
+    intermediate_table->appendColumn(weight);
 
-    QueryTable<B> *intermediate_table = new QueryTable<B>(input->getTupleCount(), schema);
+    QueryFieldDesc is_new(is_new_idx_, "is_new", "", bool_field_type_);
+    intermediate_table->appendColumn(is_new);
 
-    is_new_idx_ = schema.getFieldCount() - 1;
-    weight_idx_ = schema.getFieldCount() - 2;
 
     Field<B> s = one_;
     Field<B> one_b(bool_field_type_, B(true)), zero_b(bool_field_type_, B(false));
-    for(int i = 0; i < input->getTupleCount(); i++) {
-        intermediate_table->cloneRow(i, 0, input, i); // copy input row
+
+    for(int i = 0; i < input->tuple_cnt_; i++) {
         Field<B> cnt = input->getField(i, alpha_idx_); // cnt = alpha
         B null_val = (cnt == zero_); // is count empty?  If no, set weight to running count, else set weight to zero
         intermediate_table->setField(i, weight_idx_,
@@ -639,13 +630,13 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool
         intermediate_table->setField(i, is_new_idx_,
                                      Field<B>::If(null_val, one_b, zero_b));
         intermediate_table->setDummyTag(i, input->getDummyTag(i) | null_val);
-		s = s + cnt;
+        s = s + cnt;
     }
 
-    QueryTable<B> *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
-    schema = dst_table->getSchema();
-    auto schema_field_cnt = schema.getFieldCount();
-    auto schema_bits = schema.size();
+
+    QueryTable<B> *dst_table = distribute(intermediate_table, foreign_key_cardinality_);
+
+    auto schema = dst_table->getSchema();
     // creates a row with self-managed memory
     QueryTuple<B> tmp_row = dst_table->getRow(0);
 
@@ -654,20 +645,20 @@ QueryTable<B> *KeyedSortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool
     Field<B> bound = s - one_;
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
+
         B new_row = dst_table->getField(i, is_new_idx_).template getValue<B>();
         // if it is a new row, copy down previous value
         QueryTuple<B> table_row = dst_table->getRow(i);
-
         tmp_row = QueryTuple<B>::If(new_row, tmp_row, table_row);
+
         dst_table->setRow(i, tmp_row);
         dst_table->setField(i, is_new_idx_, zero_b);
 
-		Field<B> write_index = FieldFactory<B>::getInt(i, weight_width);
-		B end_matches = (write_index >= bound);
-        B dummy_tag = tmp_row.getDummyTag() | end_matches;
+        Field<B> write_index = FieldFactory<B>::getInt(i, weight_width);
+        B end_matches = (write_index >= bound);
+        B dummy_tag = tmp_row.getDummyTag()| end_matches;
         dst_table->setDummyTag(i, dummy_tag);
     }
-
     return dst_table;
 }
 
@@ -737,8 +728,8 @@ QueryTable<Bit> *KeyedSortMergeJoin<Bit>::revertProjection(QueryTable<Bit> *src,
 
     // if we are in OMPC packed wires mode, then we need to unpackRow into a bit array using unpackRow, then manually project the bit array to the correct offsets.
     auto row_len = running_offset + 1;
-    auto row_cnt = src->getTupleCount();
-    auto dst = new QueryTable<Bit>(row_cnt, dst_schema);
+    auto row_cnt = src->tuple_cnt_;
+    auto dst =  QueryTable<Bit>::getTable(row_cnt, dst_schema);
 
     Integer dst_row(row_len, 0);
 
@@ -754,7 +745,8 @@ QueryTable<Bit> *KeyedSortMergeJoin<Bit>::revertProjection(QueryTable<Bit> *src,
             write_ptr += write_size;
         }
         // copy out dummy tag
-        *(dst_row.bits.data() + dst_row.size() - 1) = unpacked[unpacked.size() - 1]; // if this table has the smaller of the two input schemas, then the dummy tag is at the end.
+        *(dst_row.bits.data() + dst_row.size() - 1) = unpacked[unpacked.size() - 1];
+        // if this table has the smaller of the two input schemas, then the dummy tag is at the end.
         dst->packRow(i, dst_row);
     }
     return  dst;

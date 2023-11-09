@@ -42,7 +42,7 @@ TEST_F(SecureFilterTest, test_table_scan) {
     auto scanned = input.run();
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
-        expected->setSortOrder(collation);
+        expected->order_by_ = collation;
 
         PlainTable *revealed = scanned->revealInsecure(emp::PUBLIC);
         ASSERT_EQ(*expected, *revealed);
@@ -63,7 +63,7 @@ TEST_F(SecureFilterTest, test_filter) {
 
 
     PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
-    expected->setSortOrder(collation);
+    expected->order_by_ = collation;
 
     SecureSqlInput *input = new SecureSqlInput(db_name_, sql, false, collation);
 

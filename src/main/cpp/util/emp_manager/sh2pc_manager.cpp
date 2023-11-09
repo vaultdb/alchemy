@@ -29,7 +29,7 @@ size_t SH2PCManager::getTableCardinality(const int &local_cardinality) {
 
 
 QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
-    size_t alice_tuple_cnt =  src->getTupleCount();
+    size_t alice_tuple_cnt =  src->tuple_cnt_;
     size_t bob_tuple_cnt = alice_tuple_cnt;
 
     if (party_ == ALICE) {
@@ -47,9 +47,9 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
 
     QuerySchema dst_schema = QuerySchema::toSecure(src->getSchema());
 
-    auto dst_table = new QueryTable<Bit>(alice_tuple_cnt + bob_tuple_cnt, dst_schema, src->getSortOrder());
+    auto dst_table = new QueryTable<Bit>(alice_tuple_cnt + bob_tuple_cnt, dst_schema, src->order_by_);
 
-    if(!src->getSortOrder().empty()) {
+    if(!src->order_by_.empty()) {
         if (party_ == emp::ALICE) {
             if(alice_tuple_cnt > 0) secret_share_send(emp::ALICE, src, dst_table, 0, (bob_tuple_cnt > 0));
             if(bob_tuple_cnt > 0) secret_share_recv(bob_tuple_cnt, emp::BOB, dst_table, alice_tuple_cnt, false);
@@ -64,17 +64,17 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
         // if one is empty, then we are already sorted
         if(alice_tuple_cnt > 0 && bob_tuple_cnt > 0) {
 
-            auto dst_sort = dst_table->getSortOrder();
+            auto dst_sort = dst_table->order_by_;
             Sort<Bit> sorter(dst_table, dst_sort);
             auto normalized = sorter.normalizeTable(dst_table);
 
-            sorter.bitonicMerge(normalized, sorter.getSortOrder(), 0, normalized->getTupleCount(), true, counter);
+            sorter.bitonicMerge(normalized, sorter.order_by_, 0, normalized->tuple_cnt_, true, counter);
             dst_table = sorter.denormalizeTable(normalized);
             delete normalized;
             dst_table->setSortOrder(dst_sort);
 
-//            float n = dst_table->getTupleCount();
-//            float rounds = log2(dst_table->getTupleCount());
+//            float n = dst_table->tuple_cnt_;
+//            float rounds = log2(dst_table->tuple_cnt_);
 //
 //            float comparisons_per_stage = n / 2;
 //            float total_comparisons = rounds * comparisons_per_stage;
@@ -159,7 +159,7 @@ SH2PCManager::secret_share_send(const int &party,const PlainTable *src_table, Se
 
 
     if(reverse_read_order) {
-        for(int i = src_table->getTupleCount() - 1; i >= 0; --i) {
+        for(int i = src_table->tuple_cnt_ - 1; i >= 0; --i) {
             for(int j = 0; j < src_table->getSchema().getFieldCount(); ++j) {
                 auto src_field = src_table->getField(i, j);
                 auto field_desc = dst_schema.getField(j);
@@ -176,7 +176,7 @@ SH2PCManager::secret_share_send(const int &party,const PlainTable *src_table, Se
     }
 
     // else
-    for(size_t i = 0; i < src_table->getTupleCount(); ++i) {
+    for(size_t i = 0; i < src_table->tuple_cnt_; ++i) {
         for(int j = 0; j < src_table->getSchema().getFieldCount(); ++j) {
             auto src_field = src_table->getField(i, j);
             auto field_desc = dst_schema.getField(j);

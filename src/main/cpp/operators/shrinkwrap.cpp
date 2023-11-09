@@ -23,13 +23,13 @@ Shrinkwrap<B>::Shrinkwrap( QueryTable<B>*input, const size_t &output_cardinality
 template<typename B>
 QueryTable<B>*Shrinkwrap<B>::runSelf() {
 
-    QueryTable<B> *input = Operator<B>::getChild(0)->getOutput();
+    QueryTable<B> *input = this->getChild(0)->getOutput();
 
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-    if(input->getTupleCount() <= this->output_cardinality_) {
+    if(input->tuple_cnt_ <= this->output_cardinality_) {
         Operator<B>::output_ =  input->clone();
         return Operator<B>::output_;
     }

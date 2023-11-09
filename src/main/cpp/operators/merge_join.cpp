@@ -12,11 +12,11 @@ QueryTable<B> *MergeJoin<B>::runSelf() {
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
-    this->output_ = new QueryTable<B>(this->output_cardinality_, this->output_schema_,
+    this->output_ = QueryTable<B>::getTable(this->output_cardinality_, this->output_schema_,
                                               this->sort_definition_);
 
-    int lhs_card = lhs->getTupleCount();
-    int rhs_card = rhs->getTupleCount();
+    int lhs_card = lhs->tuple_cnt_;
+    int rhs_card = rhs->tuple_cnt_;
 
     bool one_non_empty = (lhs_card > 0 || rhs_card > 0);  // need at least one non-empty input
     bool one_side_empty = (lhs_card == 0 || rhs_card == 0); // other input is empty

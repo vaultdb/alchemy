@@ -76,7 +76,7 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     delete augmented.first;
 	delete augmented.second;
 
-    this->output_ = new QueryTable<B>(max_intermediate_cardinality_, out_schema);
+    this->output_ = QueryTable<B>::getTable(max_intermediate_cardinality_, out_schema);
 
     size_t lhs_field_cnt = lhs_schema.getFieldCount();
     QueryTable<B> *lhs_reverted = revertProjection(s1, lhs_field_mapping_, true);
@@ -96,7 +96,7 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     delete rhs_reverted;
 
     lhs->pinned_ = false;
-    this->output_->setSortOrder(this->sort_definition_);
+    this->output_->order_by_ = this->sort_definition_;
 
 	log->write("Output: " + DataUtilities::printTable(this->output_, -1, true), Level::INFO);
     return this->output_;

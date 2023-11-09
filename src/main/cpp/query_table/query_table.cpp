@@ -1,60 +1,17 @@
 #include <memory>
 #include <utility>
 #include <util/data_utilities.h>
-#include <util/type_utilities.h>
 #include <util/field_utilities.h>
 #include <util/logger.h>
 #include "plain_tuple.h"
 #include <operators/sort.h>
 #include <util/system_configuration.h>
 #include "secure_tuple.h"
-
+#include "column_table.h"
+#include "packed_column_table.h"
 
 
 using namespace vaultdb;
-
-
-template <typename B>
-QueryTable<B>::QueryTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition & sort_def)
-        : order_by_(sort_def), tuple_cnt_(tuple_cnt) {
-
-     setSchema(schema);
-
-    if(tuple_cnt == 0)
-        return;
-
-    int write_size;
-    for(auto col_entry : field_sizes_bytes_) {
-        vector<int8_t> fields;
-        write_size = tuple_cnt * col_entry.second;
-        fields.resize(write_size);
-        memset(fields.data(), 0, write_size);
-        column_data_[col_entry.first] = fields;
-    }
-
-    // initialize dummy tags to true
-    B d = B(true);
-
-    Field<B> dummy_tag(std::is_same_v<B, Bit> ? FieldType::SECURE_BOOL : FieldType::BOOL, d);
-
-    for(int i = 0; i < tuple_cnt; ++i) {
-        setField(i, -1, dummy_tag);
-    }
-}
-
-template <typename B>
-QueryTable<B>::QueryTable(const QueryTable<B> &src) : order_by_(src.order_by_), tuple_size_bytes_(src.tuple_size_bytes_), tuple_cnt_(src.tuple_cnt_) {
-    setSchema(src.schema_);
-
-    // only support copy constructor on tables with same storage
-    for(auto col_entry : src.column_data_) {
-        column_data_[col_entry.first] = col_entry.second;
-    }
-}
-
-
-
-
 
 // iterate over all tuples and produce one long bit array for encrypting/decrypting in emp
 // only tested in PUBLIC or XOR mode
@@ -150,7 +107,7 @@ QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vecto
 
     uint32_t row_size = (std::is_same_v<B, bool>) ? schema.size() / 8 : schema.size() * sizeof(emp::Bit);
     uint32_t tuple_cnt =  table_bytes.size() /  row_size;
-    auto result = new QueryTable<B>(tuple_cnt, schema);
+    auto result = QueryTable<B>::getTable(tuple_cnt, schema);
     int write_size;
 
     for(int i = 0; i < schema.getFieldCount(); ++i) {
@@ -178,7 +135,7 @@ QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vecto
     assert(!is_plain);
 
     uint32_t tuple_cnt =  table_bits.size() /  schema.size();
-    auto result = new QueryTable<B>(tuple_cnt, schema);
+    auto result = QueryTable<B>::getTable(tuple_cnt, schema);
     int write_size;
 
     for(int i = 0; i < schema.getFieldCount(); ++i) {
@@ -194,14 +151,7 @@ QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vecto
 }
 
 
-template<typename B>
-void QueryTable<B>::resize(const size_t &cnt) {
-    tuple_cnt_ = cnt;
 
-    for(auto col_entry : column_data_) {
-        column_data_[col_entry.first].resize(cnt * field_sizes_bytes_[col_entry.first]);
-    }
-}
 
 
 
@@ -221,256 +171,158 @@ PlainTuple QueryTable<B>::getPlainTuple(size_t idx) const {
 
 
 
+//
+//template<>
+//void QueryTable<bool>::cloneRow(const bool &write, const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row) {
+//    if(write) {
+//        vector<int8_t> bytes;
+//    }
+//}
 
+//template<typename B>
+//void QueryTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row) {
+//
+//    assert(tuple_size_bytes_ >= src->tuple_size_bytes_);
+//
+//    if(SystemConfiguration::getInstance().wire_packing_enabled_) {
+//        auto s = (QueryTable<Bit> *) src;
+//        for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+//            SecureField src_field = s->getField(src_row, i);
+//            SecureField dst_field = ((QueryTable<Bit> *) this)->getField(dst_row, dst_col + i);
+//            dst_field = Field<Bit>::If(write, src_field, dst_field);
+//            ((QueryTable<Bit> *) this)->setField(dst_row, dst_col + i, dst_field);
+//        }
+//
+//        return;
+//    }
+//
+//    //clone everything except dummy tag  - handle that separately to push to end
+//    int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
+//
+//    int cursor = 0; // bytes
+//    int write_idx = dst_col; // field indexes
+//    vector<int8_t> row = src->unpackRowBytes(src_row);
+//
+//    // re-pack row
+//    while(cursor < src_size) {
+//        Bit *write_pos = (Bit *) getFieldPtr(dst_row, write_idx);
+//        Bit *read_pos = (Bit *) (row.data() + cursor);
+//
+//        int bytes_remaining = src_size - cursor;
+//        int dst_len = field_sizes_bytes_.at(write_idx);
+//        int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
+//
+//        int to_read_bits = to_read / sizeof(emp::Bit);
+//        for(int i = 0; i <  to_read_bits; ++i) {
+//            *write_pos = emp::If(write, *read_pos, *write_pos);
+//            ++write_pos;
+//            ++read_pos;
+//        }
+//        cursor += to_read;
+//        ++write_idx;
+//    }
+//
+//
+//}
+//
 
-template<typename B>
-void QueryTable<B>::assignField(const int &dst_row, const int &dst_col, const QueryTable<B> *s, const int &src_row,
-                              const int &src_col) {
-
-    assert(s->storageModel() == StorageModel::COLUMN_STORE);
-    QueryTable<B> *src = (QueryTable<B> *) s;
-
-    int read_size = src->field_sizes_bytes_[src_col];
-    int8_t *src_field = src->getFieldPtr(src_row, src_col);
-    int8_t *dst_field = getFieldPtr(dst_row, dst_col);
-    memcpy(dst_field, src_field, read_size);
-
-
-}
-
-// conditional write
-template<typename B>
-void QueryTable<B>::assignField(const emp::Bit & write, const int &dst_row, const int &dst_col, const QueryTable<B> *s, const int &src_row,
-                                 const int &src_col) {
-
-    assert(s->storageModel() == StorageModel::COLUMN_STORE);
-    assert(isEncrypted()); // safe to cast to bits
-
-    QueryTable<B> *src = (QueryTable<B> *) s;
-
-
-    int read_size = src->field_sizes_bytes_[src_col];
-    int field_bits = read_size / sizeof(emp::Bit);
-
-    Bit *read_ptr = (Bit *) src->getFieldPtr(src_row, src_col);
-    Bit *write_ptr = (Bit *) getFieldPtr(dst_row, dst_col);
-
-    for(int i = 0; i < field_bits; ++i) {
-        *write_ptr = emp::If(write, *read_ptr, *write_ptr);
-        ++read_ptr;
-        ++write_ptr;
-    }
-
-}
-
-template<typename B>
-void
-QueryTable<B>::cloneFields(const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row, const int & src_col,
-                         const int &col_cnt) {
-
-    assert(src->storageModel() == StorageModel::COLUMN_STORE);
-
-    int write_col = dst_col;
-    int read_col = src_col;
-
-    for(int i = 0; i < col_cnt; ++i) {
-        assignField(dst_row, write_col, src, src_row, read_col);
-        ++read_col;
-        ++write_col;
-    }
-}
-
-
-
-template<typename B>
-void QueryTable<B>::cloneRow(const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row) {
-    // in some cases (SMJ) these might not have the same schema
-    // here we serialize the src tuple and then write it out bitwise over the dst bits
-
-    // dst >= src in size
-    assert(tuple_size_bytes_ >= src->tuple_size_bytes_);
-
-    //clone everything except dummy tag  - handle that separately to push to end
-    int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
-
-    int cursor = 0; // bytes
-    int write_idx = dst_col; // field indexes
-    vector<int8_t> row = src->unpackRowBytes(src_row);
-
-    // re-pack row
-    while(cursor < src_size) {
-        int8_t *write_pos = getFieldPtr(dst_row, write_idx);
-        int bytes_remaining = src_size - cursor;
-        int dst_len = field_sizes_bytes_.at(write_idx);
-        int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
-        memcpy(write_pos, row.data() + cursor, to_read);
-        cursor += to_read;
-        ++write_idx;
-    }
-
-}
-
-
-
-
-template<typename B>
-void QueryTable<B>::cloneRow(const bool &write, const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row) {
-    if(write)
-        cloneRow(dst_row, dst_col, src, src_row);
-
-}
-
-template<typename B>
-void QueryTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row) {
-
-    assert(tuple_size_bytes_ >= src->tuple_size_bytes_);
-
-    if(SystemConfiguration::getInstance().wire_packing_enabled_) {
-        auto s = (QueryTable<Bit> *) src;
-        for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
-            SecureField src_field = s->getField(src_row, i);
-            SecureField dst_field = ((QueryTable<Bit> *) this)->getField(dst_row, dst_col + i);
-            dst_field = Field<Bit>::If(write, src_field, dst_field);
-            ((QueryTable<Bit> *) this)->setField(dst_row, dst_col + i, dst_field);
-        }
-
-        return;
-    }
-
-    //clone everything except dummy tag  - handle that separately to push to end
-    int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
-
-    int cursor = 0; // bytes
-    int write_idx = dst_col; // field indexes
-    vector<int8_t> row = src->unpackRowBytes(src_row);
-
-    // re-pack row
-    while(cursor < src_size) {
-        Bit *write_pos = (Bit *) getFieldPtr(dst_row, write_idx);
-        Bit *read_pos = (Bit *) (row.data() + cursor);
-
-        int bytes_remaining = src_size - cursor;
-        int dst_len = field_sizes_bytes_.at(write_idx);
-        int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
-
-        int to_read_bits = to_read / sizeof(emp::Bit);
-        for(int i = 0; i <  to_read_bits; ++i) {
-            *write_pos = emp::If(write, *read_pos, *write_pos);
-            ++write_pos;
-            ++read_pos;
-        }
-        cursor += to_read;
-        ++write_idx;
-    }
-
-
-}
-
-template<typename B>
-void QueryTable<B>::cloneColumn(const int &dst_col, const QueryTable<B> *src, const int &src_col) {
-    assert(src->getTupleCount() == getTupleCount());
-    assert(src->getSchema().getField(src_col).size() == getSchema().getField(dst_col).size());
-
-    column_data_[dst_col] = src->column_data_.at(src_col);
-}
 
 
 // copy entire table to offset in QueryTable
-template<typename B>
-void QueryTable<B>::cloneTable(const int & dst_row, QueryTable<B> *s) {
-    assert(s->getSchema() == getSchema());
-    assert((s->getTupleCount() + dst_row) <= tuple_cnt_);
+//template<typename B>
+//void QueryTable<B>::cloneTable(const int & dst_row, QueryTable<B> *s) {
+//    assert(s->getSchema() == getSchema());
+//    assert((s->getTupleCount() + dst_row) <= tuple_cnt_);
+//
+//    QueryTable<B> *src = (QueryTable<B> *) s;
+//    int8_t *write_pos, *read_pos;
+//
+//    // copy out entire cols
+//    for(auto pos : field_sizes_bytes_) {
+//        int col_id = pos.first;
+//        int field_size = pos.second;
+//        write_pos = getFieldPtr(dst_row, col_id);
+//        read_pos = src->column_data_.at(col_id).data();
+//        memcpy(write_pos, read_pos, field_size * src->getTupleCount());
+//    }
+//
+//}
 
-    QueryTable<B> *src = (QueryTable<B> *) s;
-    int8_t *write_pos, *read_pos;
-
-    // copy out entire cols
-    for(auto pos : field_sizes_bytes_) {
-        int col_id = pos.first;
-        int field_size = pos.second;
-        write_pos = getFieldPtr(dst_row, col_id);
-        read_pos = src->column_data_.at(col_id).data();
-        memcpy(write_pos, read_pos, field_size * src->getTupleCount());
-    }
-
-}
-
-template<typename B>
-void QueryTable<B>::compareSwap(const bool &swap, const int &lhs_row, const int &rhs_row) {
-    if(swap) {
-        // iterating on column_data to cover dummy tag at -1
-        for(auto pos : column_data_) {
-            int col_id = pos.first;
-            int8_t *l = getFieldPtr(lhs_row, col_id);
-            int8_t *r = getFieldPtr(rhs_row, col_id);
-
-            // swap in place
-            for(int i = 0; i < field_sizes_bytes_[col_id]; ++i) {
-                *l = *l ^ *r;
-                *r = *r ^ *l;
-                *l = *l ^ *r;
-
-                ++l;
-                ++r;
-            }
-
-        }
-    }
-}
-
-template<typename B>
-void QueryTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) {
-
-    assert(isEncrypted());
-
-    if(SystemConfiguration::getInstance().wire_packing_enabled_) {
-        assert(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED);
-
-        Integer lhs = unpackRow(lhs_row);
-        Integer rhs = unpackRow(rhs_row);
-
-        emp::swap(swap, lhs, rhs);
-
-        packRow(lhs_row, lhs);
-        packRow(rhs_row, rhs);
-
-        return;
-    }
-
-    int col_cnt = schema_.getFieldCount();
-    // iterating on column_data to cover dummy tag at -1
-    // need to do this piecewise to avoid overhead we found in profiling from iterating over table
-    for(int col_id = 0; col_id < col_cnt; ++col_id) {
-
-        int field_len = schema_.fields_.at(col_id).size();
-
-        Bit *l = (Bit *) getFieldPtr(lhs_row, col_id);
-        Bit *r = (Bit *) getFieldPtr(rhs_row, col_id);
-
-        // swap column bits in place
-        // based on emp
-        for(int i = 0; i < field_len; ++i) {
-            Bit o = emp::If(swap, *l, *r);
-            o ^= *r;
-            *l ^= o;
-            *r ^= o;
-
-            ++l;
-            ++r;
-        }
-
-    }
-    // dummy tag
-    Bit *l = (Bit *)  getFieldPtr(lhs_row, -1);
-    Bit *r = (Bit *) getFieldPtr(rhs_row, -1);
-    Bit o = emp::If(swap, *l, *r);
-    o ^= *r;
-    *l ^= o;
-    *r ^= o;
-
-
-}
-
+//template<>
+//void QueryTable<bool>::compareSwap(const bool &swap, const int &lhs_row, const int &rhs_row) {
+//    if(swap) {
+//        // iterating on column_data to cover dummy tag at -1
+//        for(auto pos : column_data_) {
+//            int col_id = pos.first;
+//            int8_t *l = getFieldPtr(lhs_row, col_id);
+//            int8_t *r = getFieldPtr(rhs_row, col_id);
+//
+//            // swap in place
+//            for(int i = 0; i < field_sizes_bytes_[col_id]; ++i) {
+//                *l = *l ^ *r;
+//                *r = *r ^ *l;
+//                *l = *l ^ *r;
+//
+//                ++l;
+//                ++r;
+//            }
+//
+//        }
+//    }
+//}
+//
+//template<>
+//void QueryTable<Bit>::compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) {
+//
+//
+//    if(SystemConfiguration::getInstance().wire_packing_enabled_) {
+//        assert(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED);
+//
+//        Integer lhs = unpackRow(lhs_row);
+//        Integer rhs = unpackRow(rhs_row);
+//
+//        emp::swap(swap, lhs, rhs);
+//
+//        packRow(lhs_row, lhs);
+//        packRow(rhs_row, rhs);
+//
+//        return;
+//    }
+//
+//    int col_cnt = schema_.getFieldCount();
+//    // iterating on column_data to cover dummy tag at -1
+//    // need to do this piecewise to avoid overhead we found in profiling from iterating over table
+//    for(int col_id = 0; col_id < col_cnt; ++col_id) {
+//
+//        int field_len = schema_.fields_.at(col_id).size();
+//
+//        Bit *l = (Bit *) getFieldPtr(lhs_row, col_id);
+//        Bit *r = (Bit *) getFieldPtr(rhs_row, col_id);
+//
+//        // swap column bits in place
+//        // based on emp
+//        for(int i = 0; i < field_len; ++i) {
+//            Bit o = emp::If(swap, *l, *r);
+//            o ^= *r;
+//            *l ^= o;
+//            *r ^= o;
+//
+//            ++l;
+//            ++r;
+//        }
+//
+//    }
+//    // dummy tag
+//    Bit *l = (Bit *)  getFieldPtr(lhs_row, -1);
+//    Bit *r = (Bit *) getFieldPtr(rhs_row, -1);
+//    Bit o = emp::If(swap, *l, *r);
+//    o ^= *r;
+//    *l ^= o;
+//    *r ^= o;
+//
+//
+//}
+//
 
 template <typename B>
 bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
@@ -484,14 +336,14 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
         return false;
     }
 
-    if(getSortOrder() != other.getSortOrder()) {
-        std::cout << "Failed to match on sort order expected="  << DataUtilities::printSortDefinition(getSortOrder())
-                  << "observed=" << DataUtilities::printSortDefinition(other.getSortOrder()) <<  std::endl;
+    if(order_by_ != other.order_by_) {
+        std::cout << "Failed to match on sort order expected="  << DataUtilities::printSortDefinition(order_by_)
+                  << "observed=" << DataUtilities::printSortDefinition(other.order_by_) <<  std::endl;
         return false;
     }
 
-    if(tuple_cnt_ != other.getTupleCount()) {
-        std::cout  << "Failed to match on tuple count " << getTupleCount() << " vs " << other.getTupleCount() << std::endl;
+    if(tuple_cnt_ != other.tuple_cnt_) {
+        std::cout  << "Failed to match on tuple count " << tuple_cnt_ << " vs " << other.tuple_cnt_ << std::endl;
         return false;
     }
 
@@ -540,7 +392,7 @@ string QueryTable<B>::toString(const bool & show_dummies) const {
 
     PlainTable *plain_table = (PlainTable *) this;
     for(uint32_t i = 0; i < tuple_cnt_; ++i) {
-            os <<  getPlainTuple(i);
+            os <<  getPlainTuple(i).toString(show_dummies);
 
             if(!plain_table->getDummyTag(i)  || show_dummies)
                 os << std::endl;
@@ -585,7 +437,7 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
         if(!isEncrypted()) { return (QueryTable<bool> *) this;  }
         auto table = (QueryTable<Bit> *) this;
         QuerySchema dst_schema = QuerySchema::toPlain(schema_);
-        SortDefinition collation = table->getSortOrder();
+        SortDefinition collation = table->order_by_;
 
         // if it is not sorted so that the dummies are at the end, sort it now.
         if(collation.empty() || collation[0].first != -1) {
@@ -600,12 +452,12 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
 
         // count # of real (not dummy) rows
         int row_cnt = 0;
-        while((row_cnt < table->getTupleCount()) &&
+        while((row_cnt < table->tuple_cnt_) &&
               !table->getDummyTag(row_cnt).reveal()) {
             ++row_cnt;
         }
 
-        auto dst_table = new QueryTable<bool>(row_cnt, dst_schema, collation);
+        auto dst_table = new ColumnTable<bool>(row_cnt, dst_schema, collation);
 
         for(int i = 0; i < row_cnt; ++i)  {
             PlainTuple dst_tuple = table->revealRow(i, dst_schema, party);
@@ -629,7 +481,7 @@ PlainTable *QueryTable<B>::revealInsecure(const int &party) const {
 
     QuerySchema dst_schema = QuerySchema::toPlain(schema_);
 
-    auto dst_table = new QueryTable<bool>(tuple_cnt_, dst_schema, order_by_);
+    auto dst_table = PlainTable::getTable(tuple_cnt_, dst_schema, order_by_);
 
     for(uint32_t i = 0; i < tuple_cnt_; ++i)  {
         PlainTuple t = revealRow(i, dst_schema, party);
@@ -641,44 +493,12 @@ PlainTable *QueryTable<B>::revealInsecure(const int &party) const {
 
 
 
-template<>
-QueryTuple<emp::Bit> QueryTable<Bit>::getRow(const int &idx)  {
-     SecureTuple row(&schema_);
-     Integer row_bits = unpackRow(idx);
-     memcpy(row.getData(), row_bits.bits.data(), row_bits.size() * sizeof(emp::Bit));
-     return row;
-}
-
-
-template<>
-QueryTuple<bool> QueryTable<bool>::getRow(const int &idx)  {
-    PlainTuple row(&schema_);
-    vector<int8_t> row_bytes = unpackRowBytes(idx);
-    memcpy(row.getData(), row_bytes.data(), row_bytes.size());
-    return row;
-}
-
-
-template <>
-void QueryTable<bool>::setRow(const int &idx, const QueryTuple<bool> &tuple) {
-    auto read_pos = tuple.getData();
-    for(int i = 0; i < schema_.getFieldCount(); ++i) {
-        auto write_pos = getFieldPtr(idx, i);
-        memcpy(write_pos, read_pos, field_sizes_bytes_[i]);
-        read_pos += field_sizes_bytes_[i];
+template<typename B>
+QueryTable<B> *QueryTable<B>::getTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def) {
+    if(std::is_same_v<B, Bit> && SystemConfiguration::getInstance().wire_packing_enabled_) {
+        return (QueryTable<B> *) new PackedColumnTable(tuple_cnt, schema, sort_def);
     }
-    // dummy tag
-    auto write_pos = getFieldPtr(idx, -1);
-    memcpy(write_pos, read_pos, field_sizes_bytes_[-1]);
-}
-
-template<>
-void QueryTable<Bit>::setRow(const int &idx, const QueryTuple<Bit> &tuple) {
-    auto read_pos = tuple.getData();
-    int row_bits = schema_.size();
-    emp::Integer i_tuple(row_bits, 0L);
-    memcpy(i_tuple.bits.data(), read_pos, row_bits * sizeof(emp::Bit));
-    packRow(idx, i_tuple);
+    else return new ColumnTable<B>(tuple_cnt, schema, sort_def);
 }
 
 template class vaultdb::QueryTable<bool>;

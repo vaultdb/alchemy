@@ -42,7 +42,7 @@ void SecureTpcHTest::runTest(const int &test_id, const SortDefinition &expected_
 
     string expected_sql = generateExpectedOutputQuery(test_id);
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 0);
-    expected->setSortOrder(expected_sort);
+    expected->order_by_ = expected_sort;
 
     ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 

@@ -88,7 +88,7 @@ TEST_F(MergeJoinTest, merge_q18) {
     auto joined = join.run();
 
     auto expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
-    expected->setSortOrder(collation);
+    expected->order_by_ = collation;
 
     ASSERT_EQ(*expected, *joined);
 

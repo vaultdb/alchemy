@@ -21,7 +21,7 @@ Union<B>::Union(QueryTable<B> *lhs, QueryTable<B> *rhs) : Operator<B>(lhs, rhs) 
     }
     this->output_schema_  = lhs->getSchema();
     this->sort_definition_.clear();
-    this->output_cardinality_ = lhs->getTupleCount() + rhs->getTupleCount();
+    this->output_cardinality_ = lhs->tuple_cnt_ + rhs->tuple_cnt_;
 
 }
 
@@ -36,18 +36,20 @@ QueryTable<B> * Union<B>::runSelf() {
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
+    cout << "LHS schema: " << lhs->getSchema() << endl;
+    cout << "RHS schema: " << rhs->getSchema() << endl;
 
     assert(lhs->getSchema() == rhs->getSchema()); // union compatible
     assert(lhs->storageModel() == rhs->storageModel());
 
     QuerySchema output_schema = lhs->getSchema();
-    size_t tuple_cnt = lhs->getTupleCount() + rhs->getTupleCount();
+    size_t tuple_cnt = lhs->tuple_cnt_ + rhs->tuple_cnt_;
 
     // intentionally empty sort definition
-    this->output_ = new QueryTable<B>(tuple_cnt, output_schema);
+    this->output_ =  QueryTable<B>::getTable(tuple_cnt, output_schema);
 
     this->output_->cloneTable(0, lhs);
-    this->output_->cloneTable(lhs->getTupleCount(), rhs);
+    this->output_->cloneTable(lhs->tuple_cnt_, rhs);
     lhs->pinned_ = false;
     return this->output_;
 }

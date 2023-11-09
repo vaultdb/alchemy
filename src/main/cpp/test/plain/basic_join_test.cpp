@@ -12,11 +12,6 @@ class BasicJoinTest : public PlainBaseTest {
 
 protected:
 
-    // SELECT c_custkey,  (c_mktsegment != 'HOUSEHOLD') cdummy
-    // FROM customer
-    // ORDER BY c_custkey;
-    // input is equal to all tuples in table
-
     const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
                                     "FROM customer  "
                                     "WHERE c_custkey <= " + std::to_string(FLAGS_cutoff) + " "

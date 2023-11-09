@@ -78,11 +78,11 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join.getOutputSchema().getFieldCount());
-        joined->setSortOrder(sort_def); // reveal() will sort for this
+        joined->order_by_ = sort_def; // reveal() will sort for this
         PlainTable *observed = joined->reveal();
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
-        expected->setSortOrder(sort_def);
+        expected->order_by_ = sort_def;
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
@@ -119,11 +119,11 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
     if(FLAGS_validation) {
 
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join.getOutputSchema().getFieldCount());
-        joined->setSortOrder(sort_def); // reveal() will sort for this
+        joined->order_by_ = sort_def; // reveal() will sort for this
         PlainTable *observed = joined->reveal();
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
-        expected->setSortOrder(sort_def);
+        expected->order_by_ = sort_def;
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
@@ -170,11 +170,11 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(col_join->getOutputSchema().getFieldCount());
-        joined->setSortOrder(sort_def); // reveal() will sort for this
+        joined->order_by_ = sort_def; // reveal() will sort for this
         PlainTable *observed = joined->reveal();
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
-        expected->setSortOrder(sort_def);
+        expected->order_by_ = sort_def;
 
         ASSERT_EQ(*expected, *observed);
         delete expected;

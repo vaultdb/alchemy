@@ -74,9 +74,9 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_customer_orders) {
     auto join_res = join->run();
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
-        join_res->setSortOrder(sort_def); // reveal() will sort for this
+        join_res->order_by_ = sort_def; // reveal() will sort for this
         PlainTable *observed = join_res->reveal();
-        expected->setSortOrder(sort_def);
+        expected->order_by_ = sort_def;
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
@@ -115,10 +115,9 @@ std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
     auto join_res = join->run();
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
-        join_res->setSortOrder(sort_def); // reveal() will sort for this
+        join_res->order_by_ = sort_def; // reveal() will sort for this
         PlainTable *observed = join_res->reveal();
-
-        expected->setSortOrder(sort_def);
+        expected->order_by_ = sort_def;
 
         ASSERT_EQ(*expected, *observed);
 
@@ -168,10 +167,9 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     auto join_res = full_join->run();
     if(FLAGS_validation) {
         SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(full_join->getOutputSchema().getFieldCount());
-        join_res->setSortOrder(sort_def); // reveal() will sort for this
+        join_res->order_by_ = sort_def; // reveal() will sort for this
         PlainTable *observed = join_res->reveal();
-
-        expected->setSortOrder(sort_def);
+        expected->order_by_ = sort_def;
 
         ASSERT_EQ(*expected, *observed);
         delete expected;

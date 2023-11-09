@@ -18,102 +18,73 @@ namespace  vaultdb {
     typedef QueryTable<bool> PlainTable;
     typedef QueryTable<emp::Bit> SecureTable;
 
-
-
     template<typename B>
     class QueryTable {
 
 
 
-    public:
-        // size of each tuple in bytes
-        size_t tuple_size_bytes_;
-        size_t tuple_cnt_;
-        std::map<int, int> field_sizes_bytes_;
-        std::map<int, int> field_offsets_bytes_;
-        bool pinned_ = false; // if set to true, do not delete table automatically.  For use in binary operators with CTEs
+        public:
+            size_t tuple_size_bytes_;
+            size_t tuple_cnt_;
+            std::map<int, int> field_sizes_bytes_;
+            bool pinned_ = false; // if set to true, do not delete table automatically.  For use in binary operators with CTEs
+            SortDefinition order_by_;
+            std::map<int, std::vector<int8_t> > column_data_;
 
-
-        std::map<int, std::vector<int8_t> > column_data_;
-
-        // empty sort definition for default case
-        QueryTable(const size_t &tuple_cnt, const QuerySchema &schema,
-                 const SortDefinition &sort_def = SortDefinition());
-
-        // deep copy
-        explicit QueryTable(const QueryTable<B> &src);
-
-        virtual ~QueryTable() {}
-        inline  bool isEncrypted() const {     return std::is_same_v<B, emp::Bit>; }
-
-        void resize(const size_t &tuple_cnt);
-
-
-
-        void putTuple(const int &idx, const QueryTuple<B> &tuple) {
-            assert(*tuple.getSchema() == schema_);
-
-            int8_t *write_ptr;
-            int write_size;
-            int8_t *read_ptr = (int8_t *) tuple.getData();
-
-            for(int i = 0; i < schema_.getFieldCount(); ++i) {
-                write_ptr = column_data_[i].data() + idx * field_sizes_bytes_[i];
-                write_size = field_sizes_bytes_[i];
-                memcpy(write_ptr, read_ptr, write_size);
-                read_ptr += write_size;
+            QueryTable<B>(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition & sort_def) : order_by_(sort_def), tuple_cnt_(tuple_cnt) {
+              // all other logic needs to be done in child classes because setSchema is class-dependant
             }
-            write_size =  field_sizes_bytes_[-1];
-            write_ptr = column_data_[-1].data() +  write_size * idx;
-            memcpy(write_ptr, read_ptr, write_size);
 
-        }
+            QueryTable<B>(const QueryTable<B> &src) : order_by_(src.order_by_), tuple_cnt_(src.tuple_cnt_) {
+                pinned_ = false;
+
+                for(auto col_entry : src.column_data_) {
+                    column_data_[col_entry.first] = col_entry.second;
+                }
+            }
+
+            virtual ~QueryTable() {}
+            inline  bool isEncrypted() const {     return std::is_same_v<B, emp::Bit>; }
+
+            virtual void resize(const size_t &tuple_cnt) = 0;
+            virtual StorageModel storageModel() const = 0;
+            void putTuple(const int &idx, const QueryTuple<B> &tuple) {
+                assert(*tuple.getSchema() == schema_);
+
+                int8_t *write_ptr;
+                int write_size;
+                int8_t *read_ptr = (int8_t *) tuple.getData();
+
+                for(int i = 0; i < schema_.getFieldCount(); ++i) {
+                    write_ptr = column_data_[i].data() + idx * field_sizes_bytes_[i];
+                    write_size = field_sizes_bytes_[i];
+                    memcpy(write_ptr, read_ptr, write_size);
+                    read_ptr += write_size;
+                }
+                write_size =  field_sizes_bytes_[-1];
+                write_ptr = column_data_[-1].data() +  write_size * idx;
+                memcpy(write_ptr, read_ptr, write_size);
+
+            }
 
         inline const  QuerySchema getSchema() const  { return schema_; }
-        inline SortDefinition getSortOrder() const { return order_by_; }
-        inline void setSortOrder(const SortDefinition &order_by) { order_by_ = order_by; }
-
-        inline size_t getTupleCount() const { return tuple_cnt_; }
-        Field<B> getField(const int  & row, const int & col)  const {
-            int8_t *read_ptr = getFieldPtr(row, col);
-            return Field<B>::deserialize(schema_.fields_.at(col), read_ptr );
-        }
 
 
-        void setField(const int  & row, const int & col, const Field<B> & f)  {
-            int8_t *write_ptr = getFieldPtr(row, col);
-            f.serialize(write_ptr, schema_.fields_.at(col));
-
-        }
+        virtual Field<B> getField(const int  & row, const int & col)  const = 0;
+        virtual void setField(const int  & row, const int & col, const Field<B> & f)  = 0;
 
 
-        B getDummyTag(const int & row)  const {
-            int8_t *dummy_tag =  getFieldPtr(row, -1);
-            Field<B> res = Field<B>::deserialize(schema_.getField(-1), dummy_tag);
-            return res.template getValue<B>();
-        }
-
-        void setDummyTag(const int & row, const B & val) {
-            int8_t *write_ptr = getFieldPtr(row, -1);
-            QueryFieldDesc desc = schema_.fields_.at(-1);
-            Field<B> f(desc.getType(), val);
-            f.serialize(write_ptr, desc);
-        }
-
+        virtual B getDummyTag(const int & row)  const = 0;
+        virtual void setDummyTag(const int & row, const B & val) = 0;
+        virtual void appendColumn(const QueryFieldDesc & desc) = 0;
 
         vector<int8_t> serialize() const;
 
-        inline int8_t *getFieldPtr(const int & row, const int & col) const {
-            return const_cast<int8_t *>(column_data_.at(col).data() + row * field_sizes_bytes_.at(col));
-        }
 
         SecureTable *secretShare();
 
 
-        SecretShares
-        generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
-
-
+        SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
 
         QueryTable<B> &operator=(const QueryTable<B> &src);
 
@@ -167,21 +138,26 @@ namespace  vaultdb {
 
         QueryTuple<bool> getPlainTuple(size_t idx) const;
 
-        // memcpy a field from one table to another
-        void assignField(const int & dst_row, const int & dst_col,const  QueryTable<B> *src, const int & src_row, const int & src_col);
-        // conditional write
-        void assignField(const emp::Bit & write, const int & dst_row, const int & dst_col,const  QueryTable<B> *src, const int & src_row, const int & src_col);
+        // includes dummy tag for cloneRow
+        virtual void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) = 0;
 
-        void cloneFields(const int &dst_row, const int &dst_start_col, const QueryTable<B> *src, const int &src_row, const int & src_start_col,
-                         const int &col_cnt);
+        // conditional writes
+        virtual void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) = 0;
 
-        void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
-        void cloneRow(const bool & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
-        void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
-        void cloneColumn(const int & dst_col, const QueryTable<B> *src, const int & src_col);
-        void cloneTable(const int & dst_row, QueryTable<B> *src);
+        void cloneColumn(const int & dst_col, const QueryTable<B> *src, const int & src_col) {
+            assert(src->tuple_cnt_ == this->tuple_cnt_);
+            assert(src->getSchema().getField(src_col).size() == getSchema().getField(dst_col).size());
 
-        // for serializing a row from its wire packed form
+            column_data_[dst_col] = src->column_data_.at(src_col);
+        }
+
+        // copy all src_col entries from src_offset until end (or until we run out of slots)
+        // to self at dst_col starting at dst_idx.
+        virtual void cloneColumn(const int & dst_col, const int & dst_idx, const QueryTable<B> *src, const int & src_col, const int & src_offset = 0) = 0;
+
+        virtual void cloneTable(const int & dst_row, QueryTable<B> *src) = 0;
+
+        // for serializing a row
        Integer unpackRow(const int & row, const int & col_cnt=-1) const {
            assert(isEncrypted());
            auto src = (SecureTable *) this;
@@ -265,8 +241,7 @@ namespace  vaultdb {
         }
 
 
-
-        vector<int8_t> unpackRowBytes(const int & row, const int & col_cnt) const {
+        /* vector<int8_t> unpackRowBytes(const int & row, const int & col_cnt) const  {
              int read_len = 0;
              for(int i = 0; i < col_cnt; ++i) {
                  read_len += field_sizes_bytes_.at(i);
@@ -300,8 +275,8 @@ namespace  vaultdb {
             memcpy(cursor, getFieldPtr(row, -1), field_sizes_bytes_.at(-1));
             return dst;
         }
-
-         void packRow(const int & row, Integer src) {
+*/
+         inline void packRow(const int & row, Integer src) {
            assert(isEncrypted());
            auto dst = (SecureTable *) this;
             Bit *cursor = src.bits.data();
@@ -311,7 +286,7 @@ namespace  vaultdb {
                 switch(desc.getType()) {
                     case FieldType::SECURE_BOOL: {
                         Bit b = *cursor;
-                        SecureField f(desc.getType(), b);
+                        SecureField f(FieldType::SECURE_BOOL, b);
                         dst->setField(row, i, f);
                         break;
                     }
@@ -327,7 +302,7 @@ namespace  vaultdb {
                     case FieldType::SECURE_FLOAT: {
                         Float f_field;
                         memcpy(f_field.value.data(), cursor, desc.size() * sizeof(Bit));
-                        SecureField f(desc.getType(), f_field);
+                        SecureField f(FieldType::SECURE_FLOAT, f_field);
                         dst->setField(row, i, f);
                         break;
                     }
@@ -344,17 +319,11 @@ namespace  vaultdb {
             dst->setDummyTag(row, dummy_tag);
         }
 
-        QueryTuple<B> getRow(const int & idx);
-        void setRow(const int & idx, const QueryTuple<B> &tuple);
+        virtual QueryTuple<B> getRow(const int & idx) = 0;
+        virtual void setRow(const int & idx, const QueryTuple<B> &tuple) = 0;
 
-        QueryTable<B> *clone() {
-            return new QueryTable<B>(*this);
-        }
-
-        void compareSwap(const bool & swap, const int  & lhs_row, const int & rhs_row);
-        void compareSwap(const Bit & swap, const int  & lhs_row, const int & rhs_row);
-
-        inline virtual StorageModel storageModel() const { return StorageModel::COLUMN_STORE; }
+        virtual QueryTable<B> *clone() = 0;
+        virtual void compareSwap(const B & swap, const int  & lhs_row, const int & rhs_row) = 0;
 
         bool operator==(const QueryTable<B> &other) const;
         string toString(const bool &show_dummies = false) const;
@@ -363,42 +332,11 @@ namespace  vaultdb {
 
 
 
-        void setSchema(const QuerySchema &schema) {
-            schema_ = schema;
+       virtual void setSchema(const QuerySchema &schema) = 0;
 
-            if(isEncrypted()) {
-                // covers dummy tag as -1
-                tuple_size_bytes_ = 0;
-                QueryFieldDesc desc;
-                bool packed_wires = SystemConfiguration::getInstance().wire_packing_enabled_ && (std::is_same_v<B, Bit>);
-                int field_size_bytes;
-
-                for(auto pos : schema_.offsets_) {
-                    desc = schema_.getField(pos.first);
-                    field_size_bytes = (packed_wires) ? desc.packedWires()  : desc.size();
-                    field_size_bytes *=  (packed_wires) ? sizeof(emp::OMPCPackedWire) : sizeof(emp::Bit);
-                    tuple_size_bytes_ += field_size_bytes;
-                    // offset units are packed wires for OMPC (Bits o.w.)
-                    field_offsets_bytes_[pos.first] = pos.second * sizeof(emp::Bit);
-                    field_sizes_bytes_[pos.first] = field_size_bytes;
-                }
-                return;
-            }
-
-
-            // plaintext case
-            tuple_size_bytes_ = schema_.size() / 8; // bytes for plaintext
-
-            for(auto pos : schema_.offsets_) {
-                field_offsets_bytes_[pos.first] = pos.second / 8;
-                field_sizes_bytes_[pos.first] = schema_.getField(pos.first).size() / 8;
-            }
-
-
-        }
+       static QueryTable<B> *getTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition());
 
     protected:
-        SortDefinition order_by_;
         QuerySchema schema_;
 
 
@@ -410,7 +348,7 @@ namespace  vaultdb {
 
 
     static std::ostream &operator<<(std::ostream &os, const QueryTable<bool> &table)   {
-        os << table.getSchema() << " isEncrypted? false, order by: " << DataUtilities::printSortDefinition(table.getSortOrder()) << std::endl;
+        os << table.getSchema() << " isEncrypted? false, order by: " << DataUtilities::printSortDefinition(table.order_by_) << std::endl;
 
         for(int i = 0; i < table.tuple_cnt_; ++i) {
             os <<  table.getPlainTuple(i);

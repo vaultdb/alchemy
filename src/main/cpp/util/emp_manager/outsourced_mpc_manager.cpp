@@ -26,7 +26,7 @@ size_t OutsourcedMpcManager::getTableCardinality(const int & local_cardinality) 
 }
 
 QueryTable<Bit> *OutsourcedMpcManager::secretShare(const QueryTable<bool> *src) {
-    int tuple_cnt = src->getTupleCount();
+    int tuple_cnt = src->tuple_cnt_;
 
     if(party_ == emp::TP) {
         for(int i = 0; i < emp::N; ++i) {
@@ -41,7 +41,7 @@ QueryTable<Bit> *OutsourcedMpcManager::secretShare(const QueryTable<bool> *src) 
 
     QuerySchema plain_schema = src->getSchema();
     QuerySchema dst_schema = QuerySchema::toSecure(plain_schema);
-    QueryTable<Bit> *dst = new QueryTable<Bit>(tuple_cnt, dst_schema, src->getSortOrder());
+    QueryTable<Bit> *dst = QueryTable<Bit>::getTable(tuple_cnt, dst_schema, src->order_by_);
     if(tuple_cnt == 0) return dst;
 
     if(party_ == emp::TP) {

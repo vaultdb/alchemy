@@ -37,7 +37,7 @@ Sort<B>::Sort(Operator<B> *child, const SortDefinition &sort_def, const int & li
 template<typename B>
 Sort<B>::Sort(QueryTable<B> *child, const SortDefinition &sort_def, const int & limit)
   : Operator<B>(child, sort_def), limit_(limit) {
-    this->output_cardinality_ = child->getTupleCount();
+    this->output_cardinality_ = child->tuple_cnt_;
 
     for(ColumnSort s : Operator<B>::sort_definition_) {
         if(s.second == SortDirection::INVALID)
@@ -59,31 +59,31 @@ QueryTable<B> *Sort<B>::runSelf() {
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
     this->output_ = normalizeTable(input);
-    this->output_->setSortOrder(this->sort_definition_);
+    this->output_->order_by_ = this->sort_definition_;
 
     int counter = 0;
-    bitonicSort(0, this->output_->getTupleCount(), true, counter);
+    bitonicSort(0, this->output_->tuple_cnt_, true, counter);
 
     auto tmp = denormalizeTable(this->output_);
     delete this->output_;
     this->output_ = tmp;
 
 
-    this->output_->setSortOrder(this->sort_definition_);
+    this->output_->order_by_ = this->sort_definition_;
 
     // implement LIMIT
     if(limit_ > 0) {
         size_t cutoff = limit_;
 
         // can't have more tuples than are initialized
-        if(cutoff > Operator<B>::output_->getTupleCount())
-            cutoff = Operator<B>::output_->getTupleCount();
+        if(cutoff > Operator<B>::output_->tuple_cnt_)
+            cutoff = Operator<B>::output_->tuple_cnt_;
 
         // if in plaintext, truncate to true length or limit_, whichever one is lower
         if(std::is_same_v<B, bool>) {
             int first_dummy = -1;
             uint32_t cursor = 0;
-            while(first_dummy < 0 && cursor < Operator<B>::output_->getTupleCount()) {
+            while(first_dummy < 0 && cursor < Operator<B>::output_->tuple_cnt_) {
                 if(Operator<B>::output_->getPlainTuple(cursor).getDummyTag()) {
                     first_dummy = cursor; // break
                 }
@@ -135,7 +135,7 @@ void Sort<B>::bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_de
 template <typename B>
 Bit Sort<B>::swapTuples(const QueryTable<Bit> *table, const int &lhs_idx, const int &rhs_idx, const bool &dir, const int & sort_key_width_bits) {
 
-    int col_cnt = table->getSortOrder().size();
+    int col_cnt = table->order_by_.size();
     Integer  lhs_key = table->unpackRow(lhs_idx, col_cnt, sort_key_width_bits + 1);
     Integer  rhs_key = table->unpackRow(rhs_idx, col_cnt, sort_key_width_bits + 1);
 
@@ -248,7 +248,7 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src) {
     dst->setSchema(normed_schema);
 
     // normalize the fields for the sort key
-    for(int i = 0; i < dst->getTupleCount(); ++i) {
+    for(int i = 0; i < dst->tuple_cnt_; ++i) {
         for(int j = 0; j < this->sort_definition_.size(); ++j)  {
             Field<B> s = projected->getField(i, j);
             Field<B> d = NormalizeFields::normalize(s, this->sort_definition_[j].second, normed_schema.getField(j).bitPacked());
@@ -257,7 +257,7 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src) {
         }
 
     }
-    dst->setSortOrder(this->sort_definition_);
+    dst->order_by_ = this->sort_definition_;
     return dst;
 }
 
@@ -269,7 +269,7 @@ QueryTable<B> *Sort<B>::denormalizeTable(QueryTable<B> *src) {
 
     QuerySchema dst_schema = projected_schema_;
     dst->setSchema(dst_schema);
-    for(int i = 0; i < src->getTupleCount(); ++i) {
+    for(int i = 0; i < src->tuple_cnt_; ++i) {
         for(int j = 0; j < this->sort_definition_.size(); ++j)  {
             Field<B> s = src->getField(i, j);
             Field<B> d = NormalizeFields::denormalize(s, dst_schema.getField(j).getType(), this->sort_definition_[j].second, dst_schema.getField(j).bitPacked());

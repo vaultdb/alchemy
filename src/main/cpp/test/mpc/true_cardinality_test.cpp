@@ -59,7 +59,7 @@ TrueCardinalityTest::runTest(const int &test_id, const string & test_name, const
     cout << " Observed DB : "<< local_db << " - Non-Bit Packed" << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_dbname, expected_query, false, 0);
-    expected->setSortOrder(expected_sort);
+    expected->order_by_ = expected_sort;
 
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_3/True_Cardinality/truecard-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_3/True_Cardinality/truecard-"  + test_name + ".json";

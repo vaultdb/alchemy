@@ -57,7 +57,7 @@ void SecureNestedLoopAggregateTest::runTest(const string &expected_sql,
     // cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
-        aggregated->setSortOrder(DataUtilities::getDefaultSortDefinition(1));
+        aggregated->order_by_ = DataUtilities::getDefaultSortDefinition(1);
         auto observed = aggregated->reveal(); // reveal will sort the results
         PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 1);
 
@@ -91,7 +91,7 @@ void SecureNestedLoopAggregateTest::runDummiesTest(const string &expected_sql,
     // cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
-        aggregated->setSortOrder(DataUtilities::getDefaultSortDefinition(1));
+        aggregated->order_by_ = DataUtilities::getDefaultSortDefinition(1);
         auto observed = aggregated->reveal(); // reveal will sort the results
         PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 1);
 
@@ -249,7 +249,7 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_sums) {
     // cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
-        aggregated->setSortOrder(collation);
+        aggregated->order_by_ = collation;
         PlainTable *observed = aggregated->reveal(PUBLIC);
         PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 2);
 
@@ -304,11 +304,9 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
 
     size_t observed_gates = aggregate.getGateCount();
     size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
-    // cout << "Input schema: " << input->getOutputSchema() << endl;
-    // cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
-        aggregated->setSortOrder(sort_def);
+        aggregated->order_by_ = sort_def;
         PlainTable *observed = aggregated->reveal(PUBLIC);
         PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 2);
 
@@ -380,7 +378,7 @@ TEST_F(SecureNestedLoopAggregateTest, tpch_q1) {
     // cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
-        aggregated->setSortOrder(sort_def);
+        aggregated->order_by_ = sort_def;
         PlainTable *observed = aggregated->reveal(PUBLIC);
         PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 2);
 

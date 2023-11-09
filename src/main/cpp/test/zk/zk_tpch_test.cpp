@@ -56,7 +56,7 @@ void ZkTpcHTest::runTest(const int &test_id, const SortDefinition &expected_sort
         PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
         if(TRUNCATE_INPUTS) assert(!expected->empty()); // if we're just testing get non-empty inputs
 
-        expected->setSortOrder(expected_sort);
+        expected->order_by_ = expected_sort;
         PlainTable *revealed = observed->reveal();
         ASSERT_EQ(*expected, *revealed);
         delete expected;

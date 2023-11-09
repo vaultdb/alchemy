@@ -9,14 +9,6 @@
 
 using namespace vaultdb;
 
-
-
-
-
-
-
-
-
 // in some cases, like with LIMIT, we can't just run over tpch_unioned
 PlainTable *
 DataUtilities::getUnionedResults(const std::string &alice_db, const std::string &bob_db, const std::string &sql,
@@ -113,11 +105,11 @@ SortDefinition DataUtilities::getDefaultSortDefinition(const uint32_t &colCount)
 void DataUtilities::removeDummies(PlainTable *table) {
     // only works for plaintext tables
     int out_tuple_cnt = table->getTrueTupleCount();
-    if(out_tuple_cnt == table->getTupleCount()) return;
+    if(out_tuple_cnt == table->tuple_cnt_) return;
 
     int write_cursor = 0;
 
-    for(int i = 0; i < table->getTupleCount(); ++i) {
+    for(int i = 0; i < table->tuple_cnt_; ++i) {
         if(!table->getDummyTag(i)) {
             table->cloneRow(write_cursor, 0, table, i );
             table->setDummyTag(write_cursor, false);
@@ -136,7 +128,7 @@ DataUtilities::getExpectedResults(const string &db_name, const string &sql, cons
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name, sql, has_dummy_tag);
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(sort_col_cnt);
-    expected->setSortOrder(expected_sort);
+    expected->order_by_ = expected_sort;
     return expected;
 }
 
@@ -291,12 +283,12 @@ string DataUtilities::printByteArray(const int8_t *bytes, const size_t &byte_cnt
 }
 
 bool DataUtilities::verifyCollation(PlainTable *sorted) {
-    SortDefinition  collation = sorted->getSortOrder();
+    SortDefinition  collation = sorted->order_by_;
     // delete dummies
     int true_card = sorted->getTrueTupleCount();
-    auto no_dummies = new QueryTable<bool>(true_card, sorted->getSchema(), sorted->getSortOrder());
+    auto no_dummies = QueryTable<bool>::getTable(true_card, sorted->getSchema(), sorted->order_by_);
     int cursor = 0;
-    for(int i = 0; i < sorted->getTupleCount(); ++i) {
+    for(int i = 0; i < sorted->tuple_cnt_; ++i) {
         if(!sorted->getDummyTag(i)) {
             no_dummies->cloneRow(cursor, 0, sorted, i);
             no_dummies->setDummyTag(cursor, false);
@@ -305,7 +297,7 @@ bool DataUtilities::verifyCollation(PlainTable *sorted) {
     }
 
 
-    for(int i = 1; i < no_dummies->getTupleCount(); ++i) {
+    for(int i = 1; i < no_dummies->tuple_cnt_; ++i) {
 //        cout << "Comparing row " << no_dummies.getPlainTuple(i-1) << " with " << no_dummies.getPlainTuple(i) << endl;
         for(auto col_sort : collation) {
                 auto lhs_field = no_dummies->getField(i-1, col_sort.first);
@@ -349,7 +341,7 @@ string DataUtilities::printBitArray(const int8_t *bits, const size_t &byte_cnt) 
 }
 
 string DataUtilities::printTable(const SecureTable *table, int tuple_limit, bool show_dummies) {
-    if(tuple_limit <= 0 || tuple_limit > table->getTupleCount()) {
+    if(tuple_limit <= 0 || tuple_limit > table->tuple_cnt_) {
         auto tmp = table->revealInsecure();
         stringstream ss;
         ss << tmp->toString(tuple_limit, show_dummies);

@@ -16,12 +16,12 @@ template<typename B>
 QueryTable<B> *Project<B>::runSelf() {
 
     QueryTable<B> *src_table = Operator<B>::getChild()->getOutput();
-    uint32_t tuple_cnt = src_table->getTupleCount();
+    uint32_t tuple_cnt = src_table->tuple_cnt_;
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-    this->output_ = new QueryTable<B>(tuple_cnt, this->output_schema_, this->sort_definition_);
+    this->output_ = QueryTable<B>::getTable(tuple_cnt, this->output_schema_, this->sort_definition_);
 
     // copy out whole columns
     this->output_->cloneColumn(-1, src_table, -1);

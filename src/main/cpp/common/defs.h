@@ -77,7 +77,8 @@ namespace vaultdb {
 
     enum class  StorageModel {
         ROW_STORE,
-        COLUMN_STORE
+        COLUMN_STORE,
+        PACKED_COLUMN_STORE
     };
 
 

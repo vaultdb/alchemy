@@ -15,8 +15,8 @@ Filter<B>::Filter(Operator<B> *child, Expression<B> *predicate) :
 
 template<typename B>
 Filter<B>::Filter(QueryTable<B> *child, Expression<B> *predicate) :
-     Operator<B>(child, child->getSortOrder()), predicate_(predicate) {
-         this->output_cardinality_ = child->getTupleCount();
+     Operator<B>(child, child->order_by_), predicate_(predicate) {
+         this->output_cardinality_ = child->tuple_cnt_;
      }
 
 template<typename B>
@@ -28,7 +28,7 @@ QueryTable<B> *Filter<B>::runSelf() {
 
     // deep copy new output, then just modify the dummy tag
     this->output_ = input->clone();
-    int tuple_cnt = input->getTupleCount();
+    int tuple_cnt = input->tuple_cnt_;
 
     for(int i = 0; i < tuple_cnt; ++i) {
         Field<B> selected = predicate_->call(this->output_, i);
@@ -37,7 +37,7 @@ QueryTable<B> *Filter<B>::runSelf() {
     }
 
 
-    this->output_->setSortOrder(input->getSortOrder());
+    this->output_->order_by_ = input->order_by_;
     return this->output_;
 
 }

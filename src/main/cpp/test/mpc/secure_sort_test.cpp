@@ -56,7 +56,7 @@ TEST_F(SecureSortTest, tpchQ01Sort) {
                                       + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_results_sql, false);
-        expected->setSortOrder(sort_def);
+        expected->order_by_ = sort_def;
 
         ASSERT_EQ(*expected, *observed);
 
@@ -89,7 +89,7 @@ TEST_F(SecureSortTest, tpchQ03Sort) {
         string expected_sql = "WITH input AS (" + sql + ") SELECT l_orderkey, l_linenumber, revenue, o_shippriority, " + DataUtilities::queryDatetime("o_orderdate") + " FROM input ORDER BY revenue DESC, o_orderdate";
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
-        expected->setSortOrder(sort_def);
+        expected->order_by_ = sort_def;
 
 //     commented out because of floating point comparison issues, validating with *expected instead
 //        ASSERT_TRUE(DataUtilities::verifyCollation(observed));
@@ -123,7 +123,7 @@ TEST_F(SecureSortTest, tpchQ05Sort) {
 
         string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY revenue DESC";
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
-        expected->setSortOrder(observed->getSortOrder());
+        expected->order_by_ = observed->order_by_;
 
         ASSERT_EQ(*expected, *observed);
 
@@ -154,7 +154,7 @@ TEST_F(SecureSortTest, tpchQ08Sort) {
         ASSERT_TRUE(DataUtilities::verifyCollation(observed));
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
-        expected->setSortOrder(observed->getSortOrder());
+        expected->order_by_ = observed->order_by_;
 
         ASSERT_EQ(*expected, *observed);
 

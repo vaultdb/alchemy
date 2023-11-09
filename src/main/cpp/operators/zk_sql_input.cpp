@@ -7,7 +7,7 @@ ZkSqlInput::ZkSqlInput(string db, string sql, bool dummy_tag,  const size_t &inp
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
 
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
-    this->output_cardinality_ = manager->getTableCardinality(plain_input_->getTupleCount());
+    this->output_cardinality_ = manager->getTableCardinality(plain_input_->tuple_cnt_);
 
 }
 
@@ -19,7 +19,7 @@ ZkSqlInput::ZkSqlInput(const string &db, const string &sql, const bool &dummy_ta
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
 
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
-    this->output_cardinality_ = manager->getTableCardinality(plain_input_->getTupleCount());
+    this->output_cardinality_ = manager->getTableCardinality(plain_input_->tuple_cnt_);
 }
 
 
@@ -41,7 +41,7 @@ void ZkSqlInput::runQuery() {
     }
 
     plain_input_ = dataProvider.getQueryTable(db_name_, input_query_);
-    plain_input_->setSortOrder(getSortOrder());
+    plain_input_->order_by_ = this->sort_definition_;
 }
 
 

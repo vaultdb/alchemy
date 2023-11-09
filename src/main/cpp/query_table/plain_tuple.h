@@ -68,8 +68,7 @@ namespace  vaultdb {
 
 
         inline bool getDummyTag() const {
-            size_t dummy_tag_size = sizeof(bool);
-            int8_t *src = fields_ + schema_->size() / 8 - dummy_tag_size;
+            int8_t *src = fields_ + (schema_->size() / 8) - 1;
             return *((bool *) src);
 
         }

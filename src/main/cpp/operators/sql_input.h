@@ -29,7 +29,7 @@ namespace  vaultdb {
             auto collation = this->sort_definition_;
             // take current sql and wrap it in ORDER BY
             if(this->sort_definition_.empty())  {
-                this->output_->setSortOrder(this->sort_definition_); // if sort is empty it does not really matter how it is stored now
+                this->output_->order_by_ = this->sort_definition_; // if sort is empty it does not really matter how it is stored now
                 this->input_query_ = original_input_query_;
                 return;
             }
@@ -49,7 +49,7 @@ namespace  vaultdb {
                 }
                 this->input_query_ = sql;
                 // signal we need to refresh for updated SQL query
-                if(output_ != nullptr && output_->getSortOrder() != this->sort_definition_)  {
+                if(output_ != nullptr && output_->order_by_ != this->sort_definition_)  {
                     delete output_;
                     output_ = nullptr;
                 }

@@ -19,12 +19,12 @@ QueryTable<Bit> *MergeInput::runSelf() {
     SecureTable *lhs = lhs_->run();
     lhs->pinned_ = true;
     SecureTable *rhs = rhs_->run();
-    int tuple_cnt = lhs->getTupleCount();
+    int tuple_cnt = lhs->tuple_cnt_;
 
     // ensure they line up
-    assert (tuple_cnt == rhs->getTupleCount());
+    assert (tuple_cnt == rhs->tuple_cnt_);
 
-    this->output_ = new QueryTable<Bit>(lhs->getTupleCount(), this->output_schema_, this->sort_definition_);
+    this->output_ =  QueryTable<Bit>::getTable(lhs->tuple_cnt_, this->output_schema_, this->sort_definition_);
 
     for(int i = 0; i < tuple_cnt; ++i) {
         Bit lhs_dummy = lhs->getDummyTag(i);

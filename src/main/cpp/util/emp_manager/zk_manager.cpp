@@ -29,7 +29,7 @@ size_t ZKManager::getTableCardinality(const int &local_cardinality) {
 
 QueryTable<Bit> *ZKManager::secretShare(const QueryTable<bool> *src) {
 
-    size_t alice_tuple_cnt = src->getTupleCount();
+    size_t alice_tuple_cnt = src->tuple_cnt_;
     SystemConfiguration &s = SystemConfiguration::getInstance();
     int party = s.party_;
 
@@ -53,7 +53,7 @@ QueryTable<Bit> *ZKManager::secretShare(const QueryTable<bool> *src) {
     //assert(alice_tuple_cnt > 0);
 
     QuerySchema dst_schema = QuerySchema::toSecure(src->getSchema());
-    SecureTable *dst_table = new SecureTable(alice_tuple_cnt, dst_schema, src->getSortOrder());
+    SecureTable *dst_table = new SecureTable(alice_tuple_cnt, dst_schema, src->order_by_);
 
     if (party == emp::ALICE) {
         secret_share_send(emp::ALICE,  (PlainTable *) src, dst_table);
@@ -87,7 +87,7 @@ ZKManager::secret_share_send(const int &party,const PlainTable *src_table, Secur
 
     int cursor = 0;
 
-    for(size_t i = 0; i < src_table->getTupleCount(); ++i) {
+    for(size_t i = 0; i < src_table->tuple_cnt_; ++i) {
         FieldUtilities::secret_share_send(src_table, i, dst_table,  cursor, party);
         ++cursor;
     }

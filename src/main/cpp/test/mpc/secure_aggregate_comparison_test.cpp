@@ -65,7 +65,7 @@ SecureAggregateComparisonTest::runTest_SMA(const int &test_id, const string & te
     cout << " Observed DB : "<< local_db << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
-    expected->setSortOrder(expected_sort);
+    expected->order_by_ = expected_sort;
 
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_2/SMA/queries-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_2/SMA/mpc-"  + test_name + ".json";
@@ -111,7 +111,7 @@ SecureAggregateComparisonTest::runTest_NLA(const int &test_id, const string & te
     cout << " Observed DB : "<< local_db << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
-    expected->setSortOrder(expected_sort);
+    expected->order_by_ = expected_sort;
 
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_2/NLA/queries-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_2/NLA/mpc-"  + test_name + ".json";

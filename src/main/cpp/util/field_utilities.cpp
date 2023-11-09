@@ -150,7 +150,7 @@ BitPackingMetadata FieldUtilities::getBitPackingMetadata(const std::string & db_
         return bit_packing; //  skip this step if the table isn't configured
     }
 
-    for(int i = 0; i < p->getTupleCount(); ++i) {
+    for(int i = 0; i < p->tuple_cnt_; ++i) {
         //PlainTuple t = p->getTuple(i);
 
         BitPackingDefinition bp;

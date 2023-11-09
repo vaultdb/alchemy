@@ -52,7 +52,7 @@ JoinCostComparisonTest::runTest(const int &test_id, const string & test_name, co
     cout << " Observed DB : "<< local_db << " - Bit Packed" << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_dbname, expected_query, false, 0);
-    expected->setSortOrder(expected_sort);
+    expected->order_by_ = expected_sort;
 
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_4/Join_Cost_Comparison/" + test_name + "/join_cost-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_4/Join_Cost_Comparison/" + test_name + "/join_cost-" + test_name + "_" + join_index + ".json";

@@ -38,7 +38,7 @@ QueryTable<B> *ScalarAggregate<B>::runSelf() {
 
             if (agg.type == AggregateId::COUNT) {
                 QueryFieldDesc f = this->output_schema_.getField(i);
-                f.initializeFieldSizeWithCardinality(input->getTupleCount());
+                f.initializeFieldSizeWithCardinality(input->tuple_cnt_);
                 this->output_schema_.putField(f);
                 ((ScalarStatelessAggregateImpl<B> *) aggregators_[i])->bit_packed_size_ = f.size() + 1; // +1 for sign bit
             }
@@ -46,10 +46,10 @@ QueryTable<B> *ScalarAggregate<B>::runSelf() {
         this->output_schema_.initializeFieldOffsets();
     }
 
-    this->output_ = new QueryTable<B>(1, Operator<B>::output_schema_);
+    this->output_ =  QueryTable<B>::getTable(1, Operator<B>::output_schema_);
     QueryTable<B> *output = this->output_;
 
-    for(size_t i = 0; i < input->getTupleCount(); ++i) {
+    for(size_t i = 0; i < input->tuple_cnt_; ++i) {
         for(ScalarAggregateImpl<B> *aggregator : aggregators_) {
             aggregator->update(input, i, output);
         }

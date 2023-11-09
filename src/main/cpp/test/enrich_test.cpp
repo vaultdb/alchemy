@@ -282,7 +282,7 @@ void EnrichTest::validateTable(const std::string & db_name, const std::string & 
 
     PsqlDataProvider data_provider;
     PlainTable *expected = data_provider.getQueryTable(db_name, sql);
-    expected->setSortOrder(expected_sortDefinition);
+    expected->order_by_ = expected_sortDefinition;
 
     ASSERT_EQ(*expected, *observed);
     delete expected;
@@ -444,7 +444,7 @@ TEST_F(EnrichTest, testPatientCohort) {
     SecureTable *pat_cohort = getPatientCohort();
     // give it a collation w/o sorting on dummy tag to trigger sort in reveal()
     auto collation = DataUtilities::getDefaultSortDefinition(7);
-    pat_cohort->setSortOrder(collation);
+    pat_cohort->order_by_ = collation;
     PlainTable *observed = pat_cohort->reveal();
 
 
@@ -496,14 +496,14 @@ TEST_F(EnrichTest, testRollups) {
     // roll-ups:
     // age_strata (1)
     SecureTable *tmp = rollUpAggregate(1, aggregator->clone());
-    tmp->setSortOrder(order_by);
+    tmp->order_by_ = order_by;
     PlainTable *age = tmp->reveal();
     std::string expected_sql = getRollupExpectedResultsSql("age_strata");
     validateTable(unioned_enrich_db_, expected_sql, order_by, age);
 
     // gender (2)
     tmp = rollUpAggregate(2, aggregator->clone());
-    tmp->setSortOrder(order_by);
+    tmp->order_by_ = order_by;
     PlainTable *gender = tmp->reveal();
     expected_sql = getRollupExpectedResultsSql("sex");
     validateTable(unioned_enrich_db_, expected_sql, order_by, gender);
@@ -511,14 +511,14 @@ TEST_F(EnrichTest, testRollups) {
 
     // ethnicity (3)
     tmp = rollUpAggregate(3, aggregator->clone());
-    tmp->setSortOrder(order_by);
+    tmp->order_by_ = order_by;
     PlainTable *ethnicity = tmp->reveal();
     expected_sql = getRollupExpectedResultsSql("ethnicity");
     validateTable(unioned_enrich_db_, expected_sql, order_by, ethnicity);
 
     // race (4)
     tmp = rollUpAggregate(4, aggregator->clone());
-    tmp->setSortOrder(order_by);
+    tmp->order_by_ = order_by;
     PlainTable *race = tmp->reveal();
     expected_sql = getRollupExpectedResultsSql("race");
     validateTable(unioned_enrich_db_, expected_sql, order_by, race);
@@ -526,7 +526,7 @@ TEST_F(EnrichTest, testRollups) {
 
     // zip marker (0)
     tmp = rollUpAggregate(0, aggregator->clone());
-    tmp->setSortOrder(order_by);
+    tmp->order_by_ = order_by;
     PlainTable *zip_marker = tmp->reveal();
     expected_sql = getRollupExpectedResultsSql("zip_marker");
     validateTable(unioned_enrich_db_, expected_sql, order_by, zip_marker);

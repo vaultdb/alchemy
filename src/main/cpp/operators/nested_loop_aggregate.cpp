@@ -22,7 +22,7 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-    this->output_ = new QueryTable<B>(this->output_cardinality_, Operator<B>::output_schema_);
+    this->output_ = QueryTable<B>::getTable(this->output_cardinality_, Operator<B>::output_schema_);
     QueryTable<B> *output = this->output_;
 
     // one per aggregator, one per output bin
@@ -41,7 +41,7 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     }
 
     // create output tuples with managed memory for ease of use
-    for(int i = 0; i < input->getTupleCount(); ++i) {
+    for(int i = 0; i < input->tuple_cnt_; ++i) {
 
         B input_dummy = input->getDummyTag(i);
         B matched = input_dummy;// already "matched" if dummy

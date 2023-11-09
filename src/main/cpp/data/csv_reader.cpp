@@ -67,7 +67,7 @@ void CsvReader::parseTuple(const std::string &csv_line, const QuerySchema &src_s
 PlainTable *CsvReader::readCsvFromBatch(const vector<string> &input, const QuerySchema &schema) {
     QuerySchema dst_schema = convertDatesToLong(schema);
    
-    PlainTable *result = new QueryTable<bool>(input.size(), dst_schema);
+    PlainTable *result = PlainTable::getTable(input.size(), dst_schema);
     int cursor = 0;
 
     for(std::string line : input) {

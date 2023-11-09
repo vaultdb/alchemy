@@ -73,7 +73,7 @@ namespace  vaultdb {
             // take current sql and wrap it in ORDER BY
             if(this->sort_definition_.empty())  {
                 if(plain_input_ != nullptr)
-                   plain_input_->setSortOrder(this->sort_definition_); // if sort is empty it does not really matter how it is stored now
+                   plain_input_->order_by_ = this->sort_definition_; // if sort is empty it does not really matter how it is stored now
                 this->input_query_ = original_input_query_;
                 return;
             }
@@ -94,7 +94,7 @@ namespace  vaultdb {
 
            this->input_query_ = sql;
           // signal we need to refresh for updated SQL query
-          if(plain_input_ != nullptr && plain_input_->getSortOrder() != this->sort_definition_) {
+          if(plain_input_ != nullptr && plain_input_->order_by_ != this->sort_definition_) {
             delete plain_input_;
              plain_input_ = nullptr;
           }

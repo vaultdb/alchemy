@@ -77,12 +77,12 @@ TEST_F(EmpTableTest, secret_share_table_dummy_tag) {
     SortDefinition  collation = DataUtilities::getDefaultSortDefinition(2);
     PlainTable *input = DataUtilities::getQueryResults(db_name_, sql, true);
 
-    input->setSortOrder(collation);
+    input->order_by_ = collation;
     SecureTable *secret_shared = input->secretShare();
     if(FLAGS_validation) {
         PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, true);
-        expected->setSortOrder(collation);
+        expected->order_by_ = collation;
         DataUtilities::removeDummies(expected);
         ASSERT_EQ(*expected, *revealed);
     }
@@ -99,7 +99,7 @@ TEST_F(EmpTableTest, bit_packing_test) {
     PlainTable *input = DataUtilities::getQueryResults(db_name_,
                                                           sql, false);
     SortDefinition collation = DataUtilities::getDefaultSortDefinition(1);
-    input->setSortOrder(collation);
+    input->order_by_ = collation;
 
     SecureTable *secret_shared = input->secretShare();
     //    cout << "Packed wire size: " << sizeof(emp::OMPCPackedWire) << " bytes, bit size: " << sizeof(emp::Bit) << " bytes, configured: " << sizeof(emp::Bit) << endl;
@@ -111,15 +111,15 @@ TEST_F(EmpTableTest, bit_packing_test) {
     ASSERT_EQ(5, secret_shared->getSchema().getField(1).size());
 
     PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
-    expected->setSortOrder(collation);
+    input->order_by_ = collation;
 
-    ASSERT_EQ(secret_shared->getTupleCount(),  expected->getTupleCount());
+    ASSERT_EQ(secret_shared->tuple_cnt_,  expected->tuple_cnt_);
     // tuple_cnt * (5+8+1 (for dummy tag) )*sizeof(emp::Bit)
     if(emp_mode_ == vaultdb::EmpMode::SH2PC)
-        ASSERT_EQ(expected->getTupleCount() * 14 * sizeof(emp::Bit),  secret_shared->getTupleCount() * secret_shared->tuple_size_bytes_);
+        ASSERT_EQ(expected->tuple_cnt_ * 14 * sizeof(emp::Bit),  secret_shared->tuple_cnt_ * secret_shared->tuple_size_bytes_);
     // 3 packed wires per tuple
     if(emp_mode_ == vaultdb::EmpMode::OUTSOURCED && SystemConfiguration::getInstance().wire_packing_enabled_)
-        ASSERT_EQ(expected->getTupleCount() * 3 * sizeof(emp::OMPCPackedWire),  secret_shared->getTupleCount() * secret_shared->tuple_size_bytes_);
+        ASSERT_EQ(expected->tuple_cnt_ * 3 * sizeof(emp::OMPCPackedWire),  secret_shared->tuple_cnt_ * secret_shared->tuple_size_bytes_);
 
     if(FLAGS_validation) {
         PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
@@ -137,13 +137,13 @@ void EmpTableTest::secretShareAndValidate(const std::string & sql, const SortDef
 
     PlainTable *input = DataUtilities::getQueryResults(db_name_, sql, false);
 
-    input->setSortOrder(sort);
+    input->order_by_ = sort;
     SecureTable *secret_shared = input->secretShare();
 
     if(FLAGS_validation) {
         PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
-        expected->setSortOrder(sort);
+        expected->order_by_ = sort;
 
         ASSERT_EQ(*expected, *revealed);
         delete revealed;

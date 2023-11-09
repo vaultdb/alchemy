@@ -53,8 +53,7 @@ TEST_F(OperatorCostModelTest, test_table_scan) {
 
 	if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
-        expected->setSortOrder(collation);
-
+        expected->order_by_ = collation;
         PlainTable *revealed = scanned->reveal(emp::PUBLIC);
         ASSERT_EQ(*expected, *revealed);
         delete expected;
@@ -71,7 +70,7 @@ TEST_F(OperatorCostModelTest, test_filter) {
 
 
     PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
-    expected->setSortOrder(collation);
+    expected->order_by_ = collation;
 
     SecureSqlInput *input = new SecureSqlInput(db_name_, sql, false, collation);
 
@@ -137,8 +136,7 @@ TEST_F(OperatorCostModelTest, test_sort) { //from tpchQ01Sort
     if(FLAGS_validation) {
         auto observed = sorted->reveal();
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_results_sql, false);
-        expected->setSortOrder(sort_def);
-
+        expected->order_by_ = sort_def;
         ASSERT_EQ(*expected, *observed);
 
         delete expected;
@@ -188,7 +186,7 @@ TEST_F(OperatorCostModelTest, test_basic_join) { //from test_tpch_q3_customer_or
         Sort sort(join_res->reveal(), sort_def);
 
         PlainTable *observed = sort.run();
-        expected->setSortOrder(sort_def);
+        expected->order_by_ = sort_def;
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
@@ -235,7 +233,7 @@ TEST_F(OperatorCostModelTest, test_keyed_join) {
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,  false);
         PlainTable *observed = joined->reveal();
-        expected->setSortOrder(observed->getSortOrder());
+        expected->order_by_ = observed->order_by_;
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
@@ -289,7 +287,7 @@ TEST_F(OperatorCostModelTest, test_keyed_sort_merge_join) {
         observed = sorter.run();
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
-        expected->setSortOrder(observed->getSortOrder());
+        expected->order_by_ = observed->order_by_;
 
         ASSERT_EQ(*expected, *observed);
         delete expected;

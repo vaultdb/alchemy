@@ -46,7 +46,7 @@ SecurePlanEnumerationTest::runTest(const int &test_id, const SortDefinition &exp
 
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
-    expected->setSortOrder(expected_sort);
+    expected->order_by_ = expected_sort;
 
     //ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
@@ -76,9 +76,6 @@ SecurePlanEnumerationTest::runTest(const int &test_id, const SortDefinition &exp
     root = parser.optimizeTree();
 
     double PlanEnumerationDuration = time_from(BeforePlanEnumeration) / 1e6;
-
-//    std::cout << "Sort Optimized Plan : " << endl;
-//    std::cout << root->printTree() << endl;
 
     SecureTable *result = root->run();
 
@@ -131,7 +128,7 @@ SecurePlanEnumerationTest::runMultiAggregatesTest(const int &test_id, const stri
     auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
-    expected->setSortOrder(expected_sort);
+    expected->order_by_ = expected_sort;
 
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();

@@ -54,7 +54,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     auto start_comm_cost = SystemConfiguration::getInstance().emp_manager_->getCommCost();
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
-    expected->setSortOrder(expected_sort);
+    expected->order_by_ = expected_sort;
 
     //ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 

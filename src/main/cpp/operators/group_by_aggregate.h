@@ -32,7 +32,7 @@ namespace vaultdb {
                 : Operator<B>(child),  aggregate_definitions_(aggregates), group_by_(group_bys), effective_sort_(effective_sort), cardinality_bound_(cardinality_bound)
         {
             if(cardinality_bound == -1) {
-                cardinality_bound_ = child->getTupleCount();
+                cardinality_bound_ = child->tuple_cnt_;
             }
         }
 

@@ -56,7 +56,7 @@ size_t vaultdb::OperatorCostModel::secureSqlInputCost(const SecureSqlInput *inpu
         return 0;
 
     if(input->plain_input_ != nullptr) {
-        int local_input_card = input->plain_input_->getTupleCount();
+        int local_input_card = input->plain_input_->tuple_cnt_;
         if(local_input_card == 0 || local_input_card == input->getOutputCardinality()) {
             return 0;
         }
@@ -190,7 +190,7 @@ size_t OperatorCostModel::keyedSortMergeJoinCost(KeyedSortMergeJoin<Bit> *join) 
 
     cost += 2 * distribute_cost;
 	
-	//cost of conditional write step from obliviousExpand
+	//cost of conditional write step from expand
 	InputReference<Bit> read_field(is_new_idx, augmented_schema);
 	Field<Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
 	LiteralNode<Bit> constant_input(one);

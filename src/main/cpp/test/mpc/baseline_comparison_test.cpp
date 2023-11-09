@@ -65,7 +65,7 @@ void BaselineComparisonTest::runTest_all_mpc(const int &test_id,
     //cout << " Observed DB : "<< local_db << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
-    expected->setSortOrder(expected_sort);
+    expected->order_by_ = expected_sort;
 
 //    ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
@@ -107,7 +107,7 @@ void BaselineComparisonTest::runTest_baseline(const int &test_id,
     //cout << " Observed DB : "<< local_db << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
-    expected->setSortOrder(expected_sort);
+    expected->order_by_ = expected_sort;
 
 //    ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
@@ -148,7 +148,7 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const SortDefinitio
     cout << " Observed DB : "<< db_name_ << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
-    expected->setSortOrder(expected_sort);
+    expected->order_by_ = expected_sort;
 
     // ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 

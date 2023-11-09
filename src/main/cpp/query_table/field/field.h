@@ -10,7 +10,7 @@
 
 // carries payload for each attribute
 //  generic for storing heterogeneous types in the same container
-//  downcast to impl (e.g., IntField, FloatField, etc.) as needed for expressions
+// TODO: consider making this an interface with classes for Int/Float/etc.
 namespace vaultdb {
 
 
@@ -55,9 +55,6 @@ namespace vaultdb {
            payload_ = src;
         }
 
-
-
-
         // delegate to visitor
         B  operator == (const Field &cmp) const;
         B  operator != (const Field &cmp) const;
@@ -98,9 +95,6 @@ namespace vaultdb {
 
         std::string toString() const;
 
-        // packs field by default
-        void serialize(int8_t *dst, const QueryFieldDesc &schema) const;
-//        void serializePacked(int8_t *dst, const QueryFieldDesc &schema) const;
         void pack(const QueryFieldDesc & schema) {// update this to a packed version of field
             if(type_ != FieldType::SECURE_INT && type_ != FieldType::SECURE_LONG) return;
             Integer si = boost::get<emp::Integer>(payload_);
@@ -130,7 +124,6 @@ namespace vaultdb {
             payload_ = si;
         }
 
-//        static Field<B> deserializePacked(const QueryFieldDesc &desc, const int8_t *src);
 
         static std::string revealString(const emp::Integer & src, const int & party = PUBLIC);
         static emp::Integer
