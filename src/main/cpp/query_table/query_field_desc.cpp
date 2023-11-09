@@ -11,7 +11,7 @@ using namespace vaultdb;
 QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, const FieldType &type)
         : field_name_(f.field_name_), table_name_(f.table_name_),
           string_length_(f.getStringLength()),
-          type_(type), ordinal_(f.ordinal_), field_min_(f.field_min_), secure_field_min_(f.secure_field_min_), bit_packed_size_(f.bit_packed_size_), packed_wires_(f.packed_wires_)  { // carry over bit packed size
+          type_(type), ordinal_(f.ordinal_), field_min_(f.field_min_), packed_wires_(f.packed_wires_)  { // carry over bit packed size
     initializeFieldSize();
 }
 
@@ -22,8 +22,7 @@ QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, const int &  col_num)
         string_length_(f.string_length_),
         type_(f.type_), ordinal_(col_num),
         field_size_(f.field_size_),
-        field_min_(f.field_min_),
-        secure_field_min_(f.secure_field_min_), bit_packed_size_(f.field_size_), packed_wires_(f.packed_wires_)  {
+        field_min_(f.field_min_), packed_wires_(f.packed_wires_)  {
 }
 
 QueryFieldDesc::QueryFieldDesc(const int & ordinal, const string &col_name, const string &table_name, const FieldType &type,
@@ -97,9 +96,7 @@ QueryFieldDesc& QueryFieldDesc::operator=(const QueryFieldDesc& src)  {
     this->table_name_ = src.table_name_;
     this->string_length_ = src.string_length_;
     this->field_size_ = src.field_size_;
-    this->bit_packed_size_ = src.bit_packed_size_;
     this->field_min_ = src.field_min_;
-    this->secure_field_min_ = src.secure_field_min_;
     this->packed_wires_ = src.packed_wires_;
 
 
@@ -133,7 +130,6 @@ bool QueryFieldDesc::operator==(const QueryFieldDesc& other) const {
 
 void QueryFieldDesc::initializeFieldSize() {
     field_size_ = TypeUtilities::getTypeSize(type_);
-    bit_packed_size_ = field_size_;
 
     if(table_name_ != "bit_packing") {
 
@@ -149,9 +145,7 @@ void QueryFieldDesc::initializeFieldSize() {
                 if ((bit_packing_def.domain_size_ == (bit_packing_def.max_ - bit_packing_def.min_ + 1) )
                   || (bit_packing_def.min_ >= 0 && bit_packing_def.max_ > bit_packing_def.min_)){ // sparser key space, happens with some of the < SF1 instance of TPC-H
                     field_min_ = bit_packing_def.min_;
-                    secure_field_min_ = emp::Integer(field_size_, field_min_, PUBLIC);
-                    bit_packed_size_ = ceil(log2((float) (bit_packing_def.max_ - bit_packing_def.min_ + 1)));
-                    if(bit_packed_size_ == 0) bit_packed_size_ = 1;
+
 
                 }
 
@@ -159,7 +153,8 @@ void QueryFieldDesc::initializeFieldSize() {
 
 
             if (type_ == FieldType::SECURE_INT || type_ == FieldType::SECURE_LONG) {
-                field_size_ = bit_packed_size_;
+                field_size_ = ceil(log2((float) (bit_packing_def.max_ - bit_packing_def.min_ + 1)));
+                if(field_size_ == 0) field_size_ = 1;
             }
         }
     }
@@ -174,14 +169,12 @@ void QueryFieldDesc::initializeFieldSizeWithCardinality(int cardinality) {
     assert(type_ == FieldType::SECURE_INT || type_ == FieldType::SECURE_LONG);
 
     this->field_size_ = TypeUtilities::getTypeSize(type_);
-    this->bit_packed_size_ = this->field_size_;
     this->field_min_ = 0;
-    this->secure_field_min_ = emp::Integer(field_size_, field_min_, PUBLIC);
 
     if(this->table_name_ != "bit_packing"){
-        this->bit_packed_size_ = ceil(log2((float) (cardinality )));
-        if(bit_packed_size_ == 0) bit_packed_size_ = 1;
-        this->field_size_ = this->bit_packed_size_;
+       int packed_size = ceil(log2((float) (cardinality )));
+        if(packed_size == 0) packed_size = 1;
+        this->field_size_ = packed_size;
     }
 
 }

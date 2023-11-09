@@ -23,8 +23,6 @@ namespace  vaultdb {
         int ordinal_;
         int field_size_ = 0; // size in bits
         int64_t field_min_ = 0; // if bits are packed and min != 0
-        emp::Integer secure_field_min_;
-        int bit_packed_size_ = 0;
         int packed_wires_ = 1;
 
 
@@ -58,7 +56,6 @@ namespace  vaultdb {
             initializeFieldSize();
         }
         inline int64_t getFieldMin() const { return field_min_; }
-        inline emp::Integer  getSecureFieldMin() const { return secure_field_min_; }
 
         size_t getStringLength() const { return string_length_; }
 
@@ -80,14 +77,13 @@ namespace  vaultdb {
         inline static bool storageCompatible(const QueryFieldDesc & lhs, const QueryFieldDesc & rhs) {
             if((lhs != rhs) || (lhs.bitPacked() != rhs.bitPacked())) return false;
             if(lhs.bitPacked()) {
-                if(lhs.bit_packed_size_ != rhs.bit_packed_size_) return false;
+                if(lhs.size() != rhs.size()) return false;
                 if(lhs.field_min_ != rhs.field_min_) return false;
             }
             return true;
         }
         void initializeFieldSizeWithCardinality(int cardinality);
         string prettyPrint() const;
-        inline int getBitPackedSize() const { return bit_packed_size_; }
         int packedWires() const { return packed_wires_; }
 
     private:

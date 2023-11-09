@@ -416,7 +416,6 @@ SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDes
 
     Value v;
     FieldType type;
-
     switch (f.type_) {
         case FieldType::BOOL:
             v =  emp::Bit(f.getValue<bool>(), party);
@@ -424,7 +423,7 @@ SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDes
             break;
         case FieldType::INT: {
             int32_t val = (send) ? boost::get<int32_t>(f.payload_) : 0;
-            int bit_packed_size = src_field_desc.getBitPackedSize();
+            int bit_packed_size = src_field_desc.size();
             bool bit_packed = src_field_desc.bitPacked();
             if (bit_packed && send) val = val - src_field_desc.getFieldMin();
             // + bit_packed to add one bit if we are padding it for two's complement
@@ -434,10 +433,8 @@ SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDes
         }
         case FieldType::LONG: {
             int64_t val = (send) ? boost::get<int64_t>(f.payload_) : 0L;
-            int bit_packed_size = src_field_desc.getBitPackedSize();
-            bool bit_packed = src_field_desc.bitPacked();
-            if (bit_packed && send) val = val - src_field_desc.getFieldMin();
-            v = emp::Integer(bit_packed_size + bit_packed, val, party);
+            if ( src_field_desc.bitPacked() && send) val = val - src_field_desc.getFieldMin();
+            v = emp::Integer( src_field_desc.size() +  src_field_desc.bitPacked(), val, party);
             type = FieldType::SECURE_LONG;
             break;
         }
@@ -451,7 +448,7 @@ SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDes
             type = FieldType::SECURE_FLOAT;
             break;
         default: // type alignment error
-            throw;
+            throw ;
     }
     return SecureField(type, v, f.string_length_);
 

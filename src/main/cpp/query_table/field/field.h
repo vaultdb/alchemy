@@ -101,7 +101,7 @@ namespace vaultdb {
             if(si.size() == (schema.size() + schema.bitPacked())) return; // already packed
 
             if(schema.bitPacked() && schema.getFieldMin() != 0) {
-                si = si - schema.getSecureFieldMin();
+                si = si - Integer(si.size(), schema.getFieldMin(), PUBLIC);
             }
             si.resize(schema.size());
             payload_ = si;
@@ -119,7 +119,7 @@ namespace vaultdb {
 
             si.resize(dst_size);
             if(schema.bitPacked() && schema.getFieldMin() != 0) {
-                si = si + schema.getSecureFieldMin();
+                si = si + Integer(si.size(), schema.getFieldMin(), PUBLIC);
             }
             payload_ = si;
         }

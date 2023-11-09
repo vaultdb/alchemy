@@ -207,8 +207,8 @@ namespace  vaultdb {
             assert(isEncrypted());
             auto src = (SecureTable *) this;
             Integer dst(selection_length_bits, 0, PUBLIC);
+            Bit *write_cursor = dst.bits.data();
 
-            Bit *cursor = dst.bits.data();
             for(int i = 0; i < col_cnt; ++i) {
                 SecureField f = src->getField(row, i);
                 QueryFieldDesc desc = schema_.fields_.at(i);
@@ -216,66 +216,33 @@ namespace  vaultdb {
                 switch(f.getType()) {
                     case FieldType::SECURE_BOOL: {
                         Bit b = f.getValue<emp::Bit>();
-                        *cursor = b;
+                        *write_cursor = b;
                         break;
                     }
                     case FieldType::SECURE_INT:
                     case FieldType::SECURE_LONG:
                     case FieldType::SECURE_STRING: {
                         Integer i_field = f.getValue<Integer>();
-                        memcpy(cursor, i_field.bits.data(), desc.size() * sizeof(Bit));
+                        memcpy(write_cursor, i_field.bits.data(), desc.size() * sizeof(Bit));
                         break;
                     }
                     case FieldType::SECURE_FLOAT: {
                         Float f_field = f.getValue<Float>();
-                        memcpy(cursor, f_field.value.data(), desc.size() * sizeof(Bit));
+                        memcpy(write_cursor, f_field.value.data(), desc.size() * sizeof(Bit));
                         break;
                     }
                     default:
                         throw;
 
                 }
-                cursor += desc.size();
+                write_cursor += desc.size();
+                if((write_cursor - dst.bits.data()) >= selection_length_bits)
+                    break;
             }
             return dst;
         }
 
 
-        /* vector<int8_t> unpackRowBytes(const int & row, const int & col_cnt) const  {
-             int read_len = 0;
-             for(int i = 0; i < col_cnt; ++i) {
-                 read_len += field_sizes_bytes_.at(i);
-             }
-             vector<int8_t> dst(read_len);
-             int8_t *cursor = dst.data();
-
-             for(int i = 0; i < col_cnt; ++i) {
-                 int write_len = field_sizes_bytes_.at(i);
-                 memcpy(cursor, getFieldPtr(row, i), write_len);
-                 cursor += write_len;
-             }
-
-             return dst;
-
-        }
-
-        // unpack entire row
-        vector<int8_t> unpackRowBytes(const int & row) const {
-            vector<int8_t> dst(tuple_size_bytes_);
-            int col_cnt = schema_.getFieldCount();
-            int8_t *cursor = dst.data();
-
-            for(int i = 0; i < col_cnt; ++i) {
-                int write_len = field_sizes_bytes_.at(i);
-                memcpy(cursor, getFieldPtr(row, i), write_len);
-                cursor += write_len;
-            }
-
-            // copy dummy tag to last slot
-            memcpy(cursor, getFieldPtr(row, -1), field_sizes_bytes_.at(-1));
-            return dst;
-        }
-*/
          inline void packRow(const int & row, Integer src) {
            assert(isEncrypted());
            auto dst = (SecureTable *) this;

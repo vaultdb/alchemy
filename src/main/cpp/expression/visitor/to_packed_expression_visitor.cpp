@@ -25,7 +25,7 @@ void ToPackedExpressionVisitor<B>::visit(LiteralNode<B> & node) {
     // if field min, subtract this from literal
     if(convert_literal_ && std::is_same_v<B, Bit> && (last_schema_.getType() == FieldType::SECURE_INT || last_schema_.getType() == FieldType::SECURE_LONG)) {
             emp::Integer val = node.payload_.template getValue<emp::Integer>();
-            val = val - last_schema_.getSecureFieldMin();
+            val = val - Integer(val.size(), last_schema_.getFieldMin(), PUBLIC);
             val.resize(last_schema_.size() + 1); // for sign bit
             Field<B> dst(node.payload_.getType(),val,  0);
             root_ = new LiteralNode<B>(dst);

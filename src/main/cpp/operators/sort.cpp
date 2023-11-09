@@ -250,7 +250,7 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src) {
     // normalize the fields for the sort key
     for(int i = 0; i < dst->tuple_cnt_; ++i) {
         for(int j = 0; j < this->sort_definition_.size(); ++j)  {
-            Field<B> s = projected->getField(i, j);
+            Field<B> s = dst->getField(i, j);
             Field<B> d = NormalizeFields::normalize(s, this->sort_definition_[j].second, normed_schema.getField(j).bitPacked());
             dst->setField(i, j, d);
 
