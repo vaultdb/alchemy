@@ -86,15 +86,7 @@ namespace vaultdb {
         template<typename B>
         static FieldType getBoolType();
 
-        template<>
-         FieldType getBoolType<bool>() {
-            return FieldType::BOOL;
-        }
 
-        template<>
-         FieldType getBoolType<emp::Bit>() {
-            return FieldType::SECURE_BOOL;
-        }
     };
 
 }

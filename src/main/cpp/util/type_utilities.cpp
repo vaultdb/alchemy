@@ -194,4 +194,13 @@ string TypeUtilities::getJSONTypeString(const FieldType &type_id) {
     }
 }
 
+template<>
+FieldType TypeUtilities::getBoolType<bool>() {
+    return FieldType::BOOL;
+}
+
+template<>
+FieldType TypeUtilities::getBoolType<emp::Bit>() {
+    return FieldType::SECURE_BOOL;
+}
 
