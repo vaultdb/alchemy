@@ -80,7 +80,8 @@ TEST_F(EmpTableTest, secret_share_table_dummy_tag) {
     input->order_by_ = collation;
     SecureTable *secret_shared = input->secretShare();
     if(FLAGS_validation) {
-        PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
+        PlainTable *revealed = secret_shared->revealInsecure(emp::PUBLIC);
+        DataUtilities::removeDummies(revealed);
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, true);
         expected->order_by_ = collation;
         DataUtilities::removeDummies(expected);
@@ -96,8 +97,7 @@ TEST_F(EmpTableTest, bit_packing_test) {
     std::string sql = "SELECT c_custkey, c_nationkey FROM customer WHERE c_custkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY (1)";
 
 
-    PlainTable *input = DataUtilities::getQueryResults(db_name_,
-                                                          sql, false);
+    PlainTable *input = DataUtilities::getQueryResults(db_name_, sql, false);
     SortDefinition collation = DataUtilities::getDefaultSortDefinition(1);
     input->order_by_ = collation;
 
@@ -111,7 +111,7 @@ TEST_F(EmpTableTest, bit_packing_test) {
     ASSERT_EQ(5, secret_shared->getSchema().getField(1).size());
 
     PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
-    input->order_by_ = collation;
+    expected->order_by_ = collation;
 
     ASSERT_EQ(secret_shared->tuple_cnt_,  expected->tuple_cnt_);
     // tuple_cnt * (5+8+1 (for dummy tag) )*sizeof(emp::Bit)
@@ -122,7 +122,8 @@ TEST_F(EmpTableTest, bit_packing_test) {
         ASSERT_EQ(expected->tuple_cnt_ * 3 * sizeof(emp::OMPCPackedWire),  secret_shared->tuple_cnt_ * secret_shared->tuple_size_bytes_);
 
     if(FLAGS_validation) {
-        PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
+        PlainTable *revealed = secret_shared->revealInsecure(emp::PUBLIC);
+        DataUtilities::removeDummies(revealed);
         ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
         delete revealed;
     }
@@ -141,7 +142,8 @@ void EmpTableTest::secretShareAndValidate(const std::string & sql, const SortDef
     SecureTable *secret_shared = input->secretShare();
 
     if(FLAGS_validation) {
-        PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
+        PlainTable *revealed = secret_shared->revealInsecure(emp::PUBLIC);
+        DataUtilities::removeDummies(revealed);
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
         expected->order_by_ = sort;
 
