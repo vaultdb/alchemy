@@ -245,6 +245,7 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src) {
     }
 
     normed_schema.initializeFieldOffsets();
+
     dst->setSchema(normed_schema);
 
     // normalize the fields for the sort key

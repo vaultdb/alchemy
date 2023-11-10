@@ -72,12 +72,10 @@ TEST_F(SecureSortTest, tpchQ01Sort) {
 TEST_F(SecureSortTest, tpchQ03Sort) {
     string sql = "SELECT l_orderkey, l_linenumber, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= "  + std::to_string(FLAGS_cutoff) +  " ORDER BY l_comment";
 
-    SortDefinition sort_def{ColumnSort (2, SortDirection::DESCENDING),
-        ColumnSort (4, SortDirection::ASCENDING)};
-
+    SortDefinition sort_def{ColumnSort (2, SortDirection::DESCENDING), // revenue
+        ColumnSort (4, SortDirection::ASCENDING)}; // o_orderdate
 
     auto input = new SecureSqlInput(db_name_, sql, false);
-
     Sort<Bit> sort(input, sort_def);
      auto sorted = sort.run();
 
