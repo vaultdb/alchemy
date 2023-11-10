@@ -93,19 +93,18 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
     QuerySchema out_schema = this->output_schema_;
 
    pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
-    cout << "Augmented: " << DataUtilities::printTable(augmented.first) << ", " << DataUtilities::printTable(augmented.second) << endl;
     QueryTable<B> *expanded_lhs, *expanded_rhs;
 
     expanded_lhs = expand(augmented.first);
     expanded_rhs = expand(augmented.second);
-    cout << "Expanded: " << DataUtilities::printTable(expanded_lhs) << ", " << DataUtilities::printTable(expanded_rhs) << endl;
+
     delete augmented.first;
 	delete augmented.second;
 
     size_t lhs_field_cnt = lhs_schema.getFieldCount();
     QueryTable<B> *lhs_reverted = revertProjection(expanded_lhs, lhs_field_mapping_, true);
     QueryTable<B> *rhs_reverted = revertProjection(expanded_rhs, rhs_field_mapping_, false);
-    cout << "Reverted: " << DataUtilities::printTable(lhs_reverted) << ", " << DataUtilities::printTable(rhs_reverted) << endl;
+
     delete expanded_lhs;
     delete expanded_rhs;
 
@@ -365,25 +364,16 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionTables(QueryTable<B> *lhs, QueryTable
     // always FK --> PK
     int cursor = 0;
     for(int i = lhs->tuple_cnt_ - 1; i >= 0; --i) {
-        auto tmp = lhs->unpackRow(i);
-        cout << "LHS input " << cursor << ": " << FieldUtilities::revealAndPrintTuple<B>(lhs, i) << " --> " << FieldUtilities::printInt(tmp) << endl;
         unioned->cloneRow(cursor, 0, lhs, i);
-        tmp = unioned->unpackRow(cursor);
-        cout << "    Output: "  << FieldUtilities::revealAndPrintTuple<B>(unioned, cursor) << " --> " << FieldUtilities::printInt(tmp) << endl;
         ++cursor;
     }
 
 
     for(int i = 0; i < rhs->tuple_cnt_; ++i) {
-        auto tmp = rhs->unpackRow(i);
-        cout << "RHS input: " << FieldUtilities::revealAndPrintTuple<B>(rhs, i) << " --> " << FieldUtilities::printInt(tmp) << endl;
         unioned->cloneRow(cursor, 0, rhs, i);
-        tmp = unioned->unpackRow(cursor);
-        cout << "    Output: "  << FieldUtilities::revealAndPrintTuple<B>(unioned, cursor) << " --> " << FieldUtilities::printInt(tmp);
         ++cursor;
     }
 
-    cout << "Unioned: " << DataUtilities::printTable(unioned) << endl;
     return unioned;
 }
 
@@ -419,102 +409,11 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *s
         lhs_field_mapping_ = field_mapping;
     }
     else {
-        cout << "RHS Projecting from " << src->getSchema() << " to " << projection.getOutputSchema() << endl;
-        for(int i = 0; i < output->tuple_cnt_; ++i) {
-            if(!FieldUtilities::extract_bool(output->getDummyTag(i))) {
-                Integer tmp = output->unpackRow(i);
-                cout << "RHS row " << i << ": " << FieldUtilities::revealAndPrintTuple<B>(output, i) << " -> "
-                    <<  FieldUtilities::printInt(tmp) << endl;
-            }
-        }
-
         rhs_field_mapping_ = field_mapping;
         rhs_projected_schema_ = projection.getOutputSchema();
     }
     return output;
 }
-
-/*
-template<typename B>
-QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttrOmpc(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs) {
-
-    // because when we push the attrs to the first column it may change the column boundaries on the serialized bits
-    // we need to unpack each row and re-pack it along the boundaries of the larger input
-    // first |join_key| entries will have same lengths.  It's only subsequent entries that need to be greedily packed into cols
-    ExpressionMapBuilder<B> builder(src->getSchema());
-    int write_cursor = 0;
-    map<int, int> field_mapping;
-    QuerySchema src_schema = src->getSchema();
-    auto dst_schema = deriveProjectedSchema();
-
-    int dst_row_len_bits = dst_schema.size(), src_row_len_bits = 0;
-    map<int, int> src_field_offsets_bits;
-
-    for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
-        src_field_offsets_bits[i] = src_row_len_bits;
-        src_row_len_bits += src->getSchema().getField(i).size();
-    }
-
-    src_field_offsets_bits[-1] = src_row_len_bits; // dummy tag
-    ++src_row_len_bits;
-
-    bool simple_projection = true; // no data movement
-    for(auto key : join_cols) {
-        builder.addMapping(key, write_cursor);
-        if(key != write_cursor) simple_projection = false;
-        field_mapping[write_cursor] = key;
-        ++write_cursor;
-    }
-
-    for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
-        if(std::find(join_cols.begin(), join_cols.end(),i) == join_cols.end()) {
-            builder.addMapping(i, write_cursor);
-            if(i != write_cursor) simple_projection = false;
-            field_mapping[write_cursor] = i;
-            ++write_cursor;
-        }
-    }
-
-    Project<B> projection(src->clone(), builder.getExprs());
-
-    // not used directly by running projection - need to retain this for deserializing rows later
-    if(is_lhs) {
-        lhs_projected_schema_ = projection.getOutputSchema();
-        lhs_field_mapping_ = field_mapping;
-    }
-    else {
-        rhs_field_mapping_ = field_mapping;
-        rhs_projected_schema_ = projection.getOutputSchema();
-    }
-
-
-    if(simple_projection && (projection.getOutputSchema() == src_schema) && (dst_schema == src_schema)) {  return src->clone(); }// if no re-arranging needed, bypass this step
-
-    assert(src->isEncrypted());
-    auto output =  QueryTable<Bit>::getTable(src->tuple_cnt_, dst_schema, projection.getSortOrder()); // retain sort order b/c we only care if we're sorted on the join keys
-    QueryTable<Bit> *src_rows = (QueryTable<Bit> *) src;
-
-    for(int i = 0; i < src_rows->tuple_cnt_; ++i) {
-        auto unpacked = src_rows->unpackRow(i);
-
-        Integer to_pack(dst_row_len_bits, 0);
-        Bit *write_ptr = to_pack.bits.data();
-
-        for(int j = 0; j < src_schema.getFieldCount(); ++j) {
-            // just serialize it as if you were writing to the old schema.  packRow will take care of new offsets later
-            // first: dst, second: src
-            int read_ordinal = field_mapping[j];
-            Bit *read_ptr = unpacked.bits.data() + src_field_offsets_bits[read_ordinal];
-            int write_size = src_schema.getField(read_ordinal).size();
-            memcpy(write_ptr, read_ptr, write_size * sizeof(emp::Bit));
-            write_ptr += write_size;
-        }
-        to_pack[to_pack.size() - 1] = unpacked.bits[unpacked.bits.size() - 1]; // dummy tag
-        output->packRow(i, to_pack);
-    }
-
-    return (QueryTable<B> *) output;
-}*/
 
 template<typename B>
 void KeyedSortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
@@ -727,18 +626,8 @@ QueryTable<Bit> *KeyedSortMergeJoin<Bit>::revertProjection(QueryTable<Bit> *src,
     int child_id = is_lhs ? 0 : 1;
     QuerySchema dst_schema = this->getChild(child_id)->getOutputSchema();
     QuerySchema src_schema = (is_lhs) ? lhs_projected_schema_ : rhs_projected_schema_;
-    if(!is_lhs) {
-        cout << "RHS Reverting with src schema: " << src_schema << " to " << dst_schema << endl;
-        for(int i = 0; i < src->tuple_cnt_; ++i) {
-            if(!FieldUtilities::extract_bool(src->getDummyTag(i))) {
-                Integer tmp = src->unpackRow(i);
-                cout << "RHS row " << i << ": " << FieldUtilities::revealAndPrintTuple<Bit>(src, i) << " -> "
-                    <<  FieldUtilities::printInt(tmp) << endl;
-            }
-        }
-    }
-    cout << "Reverting with src schema: " << src_schema << " to " << dst_schema << endl;
     size_t running_offset = 0;
+
     for(int i = 0; i < src_schema.getFieldCount(); ++i) {
         src_field_offsets_bits[i] =  running_offset;
         QueryFieldDesc f = src_schema.getField(i);
