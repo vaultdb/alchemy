@@ -176,19 +176,28 @@ namespace vaultdb {
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * s, const int & src_row) override{
             assert(s->storageModel() == StorageModel::COLUMN_STORE);
             auto src = (ColumnTable<B> *) s;
+            int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
 
-            int dst_pos = dst_col;
+            int cursor = 0; // bytes
+            int write_idx = dst_col; // field indexes
 
-            for(int src_pos = 0; src_pos < src->schema_.getFieldCount(); ++src_pos) {
-                auto write_pos = getFieldPtr(dst_row, dst_pos);
-                auto read_pos = src->getFieldPtr(src_row, src_pos);
-                memcpy(write_pos, read_pos, this->field_sizes_bytes_[dst_pos]);
-                ++dst_pos;
+            // serialize src vals into a temp row
+            // does not include dummy tag - handle further down in this method
+            vector<int8_t> row = src->unpackRowBytes(src_row, src->schema_.getFieldCount());
+
+            // re-pack row
+            while(cursor < src_size) {
+                int8_t *write_pos = getFieldPtr(dst_row, write_idx);
+                int bytes_remaining = src_size - cursor;
+                int dst_len = this->field_sizes_bytes_.at(write_idx);
+                int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
+                memcpy(write_pos, row.data() + cursor, to_read);
+                cursor += to_read;
+                ++write_idx;
             }
 
             B *dummy_tag = (B*) src->getFieldPtr(src_row, -1);
             *((B *) getFieldPtr(dst_row, -1)) = *dummy_tag;
-
         }
 
         void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) override;
@@ -258,6 +267,43 @@ namespace vaultdb {
                     throw;
             }
         }
+
+        vector<int8_t> unpackRowBytes(const int & row, const int & col_cnt) const {
+            int read_len = 0;
+            for(int i = 0; i < col_cnt; ++i) {
+                read_len += this->field_sizes_bytes_.at(i);
+            }
+
+            vector<int8_t> dst(read_len);
+            int8_t *cursor = dst.data();
+
+            for(int i = 0; i < col_cnt; ++i) {
+                int write_len = this->field_sizes_bytes_.at(i);
+                memcpy(cursor, getFieldPtr(row, i), write_len);
+                cursor += write_len;
+            }
+
+            return dst;
+
+        }
+
+        // unpack entire row
+        vector<int8_t> unpackRowBytes(const int & row) const {
+            vector<int8_t> dst(this->tuple_size_bytes_);
+            int col_cnt = this->schema_.getFieldCount();
+            int8_t *cursor = dst.data();
+
+            for(int i = 0; i < col_cnt; ++i) {
+                int write_len = this->field_sizes_bytes_.at(i);
+                memcpy(cursor, getFieldPtr(row, i), write_len);
+                cursor += write_len;
+            }
+
+            // copy dummy tag to last slot
+            memcpy(cursor, getFieldPtr(row, -1), this->field_sizes_bytes_.at(-1));
+            return dst;
+        }
+
 
     };
 }

@@ -142,7 +142,7 @@ namespace  vaultdb {
 
         string revealToString(const emp::Integer & in, const int & party = PUBLIC)  const override {
             bool *b = new bool[in.size()];
-            in.reveal(b, party);
+            in.revealBools(b, party);
             stringstream s;
             for(int i = 0; i < in.size(); ++i) {
                 if(i % 8 == 0) s << " ";

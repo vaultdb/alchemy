@@ -156,7 +156,7 @@ namespace vaultdb {
             stringstream ss;
             ss << "(";
             for (int i = 0; i < table->getSchema().getFieldCount(); ++i) {
-                Field<bool> f = table->getField(idx, i).reveal();
+                PlainField f = table->getField(idx, i).reveal(table->getSchema().getField(i));
                 ss << f.toString();
                 if (i < table->getSchema().getFieldCount() - 1) ss << ", ";
             }
