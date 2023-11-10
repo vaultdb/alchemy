@@ -253,8 +253,8 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
 
     size_t observed_gates = aggregate.getGateCount();
     size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
-    cout << "Input schema: " << input->getOutputSchema() << endl;
-    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
+//    cout << "Input schema: " << input->getOutputSchema() << endl;
+//    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
   if(FLAGS_validation) {
       auto observed = aggregated->reveal();
@@ -298,8 +298,8 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_avg_cnt) {
 
     size_t observed_gates = aggregate.getGateCount();
     size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
-    cout << "Input schema: " << input->getOutputSchema() << endl;
-    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
+//    cout << "Input schema: " << input->getOutputSchema() << endl;
+//    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
     if(FLAGS_validation) {
         auto observed = aggregated->reveal();
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
@@ -351,8 +351,8 @@ TEST_F(SecureScalarAggregateTest, tpch_q1) {
 
     size_t observed_gates = aggregate.getGateCount();
     size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
-    cout << "Input schema: " << input->getOutputSchema() << endl;
-    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
+//    cout << "Input schema: " << input->getOutputSchema() << endl;
+//    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
     if(FLAGS_validation) {
         auto observed = aggregated->reveal();
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
