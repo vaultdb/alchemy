@@ -72,6 +72,7 @@ namespace  vaultdb {
         int party_;
         OMPCBackend<N> *protocol_ = nullptr;
         SystemConfiguration & system_conf_ = SystemConfiguration::getInstance();
+        bool wire_packing_ = false;
 
         OutsourcedMpcManager(string hosts[], int party, int comm_port, int ctrl_port)  : party_(party) {
             ios_ = emp::setup_netio(tpio_, hosts, comm_port, party_, N);
@@ -79,7 +80,8 @@ namespace  vaultdb {
             emp::backend = new OMPCBackend<N>(ios_, tpio_, party_);
             protocol_ = (OMPCBackend<N> *) emp::backend;
             SystemConfiguration & s = SystemConfiguration::getInstance();
-            s.emp_bit_size_bytes_  =  (system_conf_.wire_packing_enabled_) ? sizeof(OMPCPackedWire) : sizeof(emp::Bit);
+            wire_packing_ =  (system_conf_.storageModel() == StorageModel::PACKED_COLUMN_STORE);
+            s.emp_bit_size_bytes_  = wire_packing_ ? sizeof(OMPCPackedWire) : sizeof(emp::Bit);
             s.party_ = party;
             s.emp_mode_ = EmpMode::OUTSOURCED;
         }
@@ -157,7 +159,7 @@ namespace  vaultdb {
         size_t getTableCardinality(const int & local_cardinality) override;
 
         void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {
-            if(system_conf_.wire_packing_enabled_) {
+            if(wire_packing_) {
                 protocol_->pack(src, (OMPCPackedWire *) dst, bit_cnt);
                 return;
             }
@@ -168,7 +170,7 @@ namespace  vaultdb {
         }
 
         void unpack(Bit *src, Bit *dst, const int & bit_cnt) override {
-            if (system_conf_.wire_packing_enabled_) {
+            if (wire_packing_) {
                 protocol_->unpack(dst, (OMPCPackedWire *) src, bit_cnt);
                 return;
             }

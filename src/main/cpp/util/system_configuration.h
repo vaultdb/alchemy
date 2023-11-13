@@ -23,7 +23,6 @@ namespace vaultdb{
         // value to be maintained by EMPManager
         int emp_bit_size_bytes_ = sizeof(emp::Bit);
         // making this public to avoid function call with each memory access
-        bool wire_packing_enabled_ = false;
 
 
         static SystemConfiguration& getInstance() {
@@ -36,7 +35,9 @@ namespace vaultdb{
             unioned_db_name_ = db_name;
             bit_packing_ = bp;
             storage_model_ = model;
-            if(emp_mode_ != EmpMode::OUTSOURCED) { wire_packing_enabled_ = false; }
+            if(emp_mode_ != EmpMode::OUTSOURCED) {
+                storage_model_ = StorageModel::COLUMN_STORE; // default storage model
+            }
         }
 
         string getUnionedDbName() const { return unioned_db_name_; }
@@ -73,11 +74,12 @@ namespace vaultdb{
 
 
     private:
-        SystemConfiguration() {
-        }
+        SystemConfiguration() { }
+
         string unioned_db_name_, empty_db_name_; // empty DB used for schema lookups (for public info)
 
-        StorageModel storage_model_ = StorageModel::ROW_STORE; // only support one storage model at a time
+        StorageModel storage_model_ = StorageModel::COLUMN_STORE; // only support one storage model at a time
+
         std::map<ColumnReference, BitPackingDefinition> bit_packing_;
     };
 

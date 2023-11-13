@@ -76,7 +76,7 @@ TEST_F(EmpTest, emp_test_varchar) {
         ASSERT_EQ(initial_string, decoded_str);
     }
 
-    if(SystemConfiguration::getInstance().wire_packing_enabled_) {
+    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
       OMPCPackedWire packed[bit_cnt]; // TODO: get packed wire cnt for this
       emp::Integer unpacked(bit_cnt, 0L, emp::PUBLIC);
 

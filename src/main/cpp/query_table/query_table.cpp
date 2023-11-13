@@ -9,6 +9,7 @@
 #include "secure_tuple.h"
 #include "column_table.h"
 #include "packed_column_table.h"
+#include "compression/compressed_table.h"
 
 
 using namespace vaultdb;
@@ -130,7 +131,7 @@ QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vecto
 template <typename B>
 QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vector<Bit> & table_bits) {
     const Bit *read_ptr = table_bits.data();
-    assert(!SystemConfiguration::getInstance().wire_packing_enabled_);
+    assert(!(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE));
     bool is_plain = std::is_same_v<B, bool>;
     assert(!is_plain);
 
@@ -170,159 +171,6 @@ PlainTuple QueryTable<B>::getPlainTuple(size_t idx) const {
 }
 
 
-
-//
-//template<>
-//void QueryTable<bool>::cloneRow(const bool &write, const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row) {
-//    if(write) {
-//        vector<int8_t> bytes;
-//    }
-//}
-
-//template<typename B>
-//void QueryTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row) {
-//
-//    assert(tuple_size_bytes_ >= src->tuple_size_bytes_);
-//
-//    if(SystemConfiguration::getInstance().wire_packing_enabled_) {
-//        auto s = (QueryTable<Bit> *) src;
-//        for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
-//            SecureField src_field = s->getField(src_row, i);
-//            SecureField dst_field = ((QueryTable<Bit> *) this)->getField(dst_row, dst_col + i);
-//            dst_field = Field<Bit>::If(write, src_field, dst_field);
-//            ((QueryTable<Bit> *) this)->setField(dst_row, dst_col + i, dst_field);
-//        }
-//
-//        return;
-//    }
-//
-//    //clone everything except dummy tag  - handle that separately to push to end
-//    int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
-//
-//    int cursor = 0; // bytes
-//    int write_idx = dst_col; // field indexes
-//    vector<int8_t> row = src->unpackRowBytes(src_row);
-//
-//    // re-pack row
-//    while(cursor < src_size) {
-//        Bit *write_pos = (Bit *) getFieldPtr(dst_row, write_idx);
-//        Bit *read_pos = (Bit *) (row.data() + cursor);
-//
-//        int bytes_remaining = src_size - cursor;
-//        int dst_len = field_sizes_bytes_.at(write_idx);
-//        int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
-//
-//        int to_read_bits = to_read / sizeof(emp::Bit);
-//        for(int i = 0; i <  to_read_bits; ++i) {
-//            *write_pos = emp::If(write, *read_pos, *write_pos);
-//            ++write_pos;
-//            ++read_pos;
-//        }
-//        cursor += to_read;
-//        ++write_idx;
-//    }
-//
-//
-//}
-//
-
-
-
-// copy entire table to offset in QueryTable
-//template<typename B>
-//void QueryTable<B>::cloneTable(const int & dst_row, QueryTable<B> *s) {
-//    assert(s->getSchema() == getSchema());
-//    assert((s->getTupleCount() + dst_row) <= tuple_cnt_);
-//
-//    QueryTable<B> *src = (QueryTable<B> *) s;
-//    int8_t *write_pos, *read_pos;
-//
-//    // copy out entire cols
-//    for(auto pos : field_sizes_bytes_) {
-//        int col_id = pos.first;
-//        int field_size = pos.second;
-//        write_pos = getFieldPtr(dst_row, col_id);
-//        read_pos = src->column_data_.at(col_id).data();
-//        memcpy(write_pos, read_pos, field_size * src->getTupleCount());
-//    }
-//
-//}
-
-//template<>
-//void QueryTable<bool>::compareSwap(const bool &swap, const int &lhs_row, const int &rhs_row) {
-//    if(swap) {
-//        // iterating on column_data to cover dummy tag at -1
-//        for(auto pos : column_data_) {
-//            int col_id = pos.first;
-//            int8_t *l = getFieldPtr(lhs_row, col_id);
-//            int8_t *r = getFieldPtr(rhs_row, col_id);
-//
-//            // swap in place
-//            for(int i = 0; i < field_sizes_bytes_[col_id]; ++i) {
-//                *l = *l ^ *r;
-//                *r = *r ^ *l;
-//                *l = *l ^ *r;
-//
-//                ++l;
-//                ++r;
-//            }
-//
-//        }
-//    }
-//}
-//
-//template<>
-//void QueryTable<Bit>::compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) {
-//
-//
-//    if(SystemConfiguration::getInstance().wire_packing_enabled_) {
-//        assert(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED);
-//
-//        Integer lhs = unpackRow(lhs_row);
-//        Integer rhs = unpackRow(rhs_row);
-//
-//        emp::swap(swap, lhs, rhs);
-//
-//        packRow(lhs_row, lhs);
-//        packRow(rhs_row, rhs);
-//
-//        return;
-//    }
-//
-//    int col_cnt = schema_.getFieldCount();
-//    // iterating on column_data to cover dummy tag at -1
-//    // need to do this piecewise to avoid overhead we found in profiling from iterating over table
-//    for(int col_id = 0; col_id < col_cnt; ++col_id) {
-//
-//        int field_len = schema_.fields_.at(col_id).size();
-//
-//        Bit *l = (Bit *) getFieldPtr(lhs_row, col_id);
-//        Bit *r = (Bit *) getFieldPtr(rhs_row, col_id);
-//
-//        // swap column bits in place
-//        // based on emp
-//        for(int i = 0; i < field_len; ++i) {
-//            Bit o = emp::If(swap, *l, *r);
-//            o ^= *r;
-//            *l ^= o;
-//            *r ^= o;
-//
-//            ++l;
-//            ++r;
-//        }
-//
-//    }
-//    // dummy tag
-//    Bit *l = (Bit *)  getFieldPtr(lhs_row, -1);
-//    Bit *r = (Bit *) getFieldPtr(rhs_row, -1);
-//    Bit o = emp::If(swap, *l, *r);
-//    o ^= *r;
-//    *l ^= o;
-//    *r ^= o;
-//
-//
-//}
-//
 
 template <typename B>
 bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
@@ -495,10 +343,16 @@ PlainTable *QueryTable<B>::revealInsecure(const int &party) const {
 
 template<typename B>
 QueryTable<B> *QueryTable<B>::getTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def) {
-    if(std::is_same_v<B, Bit> && SystemConfiguration::getInstance().wire_packing_enabled_) {
-        return (QueryTable<B> *) new PackedColumnTable(tuple_cnt, schema, sort_def);
+    StorageModel s = SystemConfiguration::getInstance().storageModel();
+    if(s == StorageModel::PACKED_COLUMN_STORE) {
+            bool is_encrypted = std::is_same_v<B, emp::Bit>;
+            assert(is_encrypted);
+            return (QueryTable<B> *)  new PackedColumnTable(tuple_cnt, schema, sort_def);
     }
-    else return new ColumnTable<B>(tuple_cnt, schema, sort_def);
+    if(s == StorageModel::COMPRESSED_STORE) {
+        return new CompressedTable<B>(tuple_cnt, schema, sort_def);
+    }
+    return new ColumnTable<B>(tuple_cnt, schema, sort_def);
 }
 
 template class vaultdb::QueryTable<bool>;

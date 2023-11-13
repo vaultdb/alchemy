@@ -26,7 +26,7 @@ namespace vaultdb {
 
 
         PackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<Bit>(tuple_cnt, schema, sort_def) {
-            assert(SystemConfiguration::getInstance().wire_packing_enabled_);
+            assert(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE);
             setSchema(schema);
 
             if(tuple_cnt == 0)

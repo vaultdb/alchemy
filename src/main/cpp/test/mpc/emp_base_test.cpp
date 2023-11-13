@@ -78,8 +78,10 @@ void EmpBaseTest::SetUp()  {
 //                          "129.105.61.176" // codd2 (TP)
 //                           };
         string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
-	s.wire_packing_enabled_ = false; // TODO: give this a gflag
-	manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
+        // TODO: give this a gflag
+        // to enable wire packing set storage model to StorageModel::PACKED_COLUMN_STORE
+        s.setStorageModel(StorageModel::COLUMN_STORE);
+    manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
         db_name_ = (FLAGS_party == emp::TP) ? FLAGS_unioned_db : empty_db_;
         
         FLAGS_port += N;

@@ -40,14 +40,13 @@ namespace vaultdb {
         Field<B> getField(const int  & row, const int & col)  const override {
             int8_t *src = getFieldPtr(row, col);
             QueryFieldDesc desc = this->schema_.getField(col);
-
             return Field<B>::deserialize(desc, src);
         }
 
 
         void setField(const int  & row, const int & col, const Field<B> & f)  override {
             int8_t *dst = getFieldPtr(row, col);
-            writeField(dst, f, this->schema_.getField(col));
+            Field<B>::writeField(dst, f, this->schema_.getField(col));
         }
 
 
@@ -75,7 +74,6 @@ namespace vaultdb {
                      this->tuple_size_bytes_ += field_size_bytes;
                      this->field_sizes_bytes_[pos.first] = field_size_bytes;
                      running_count += field_size_bytes;
-
                  }
 
                  return;
@@ -222,51 +220,6 @@ namespace vaultdb {
         StorageModel storageModel() const override { return StorageModel::COLUMN_STORE; }
     private:
         // need static context to avoid needlessly invoking default constructors for Bits
-        static void writeField(int8_t *dst, const Field<B> & f, const QueryFieldDesc & desc) {
-            switch (f.getType()) {
-                case FieldType::BOOL: {
-                    *((bool *) dst) = f.template getValue<bool>();
-                    break;
-                }
-                case FieldType::INT: {
-                    *((int32_t *) dst) = f.template getValue<int32_t>();
-                    break;
-                }
-                case FieldType::LONG: {
-                    *((int64_t *) dst) = f.template getValue<int64_t>();
-                    break;
-                }
-                case FieldType::FLOAT: {
-                    *((float_t *) dst) = f.template getValue<float_t>();
-                    break;
-                }
-                case FieldType::STRING: {
-                    string s = f.template getValue<string>();
-                    std::reverse(s.begin(), s.end());
-                    memcpy(dst, (int8_t *) s.c_str(), s.size()); // null termination chopped
-                    break;
-                }
-                case FieldType::SECURE_BOOL: {
-                    Bit b  = f.template getValue<Bit>();
-                    memcpy(dst, &b, sizeof(emp::Bit));
-                    break;
-            }
-            case FieldType::SECURE_INT:
-            case FieldType::SECURE_LONG:
-            case FieldType::SECURE_STRING: {
-                Integer i = f.template getValue<Integer>();
-                memcpy(dst, i.bits.data(), desc.size() * sizeof(emp::Bit));
-                break;
-            }
-                case FieldType::SECURE_FLOAT: {
-                    Float fl = f.template getValue<Float>();
-                    memcpy(dst, fl.value.data(), fl.value.size() * sizeof(emp::Bit));
-                    break;
-                }
-                default:
-                    throw;
-            }
-        }
 
         vector<int8_t> unpackRowBytes(const int & row, const int & col_cnt) const {
             int read_len = 0;

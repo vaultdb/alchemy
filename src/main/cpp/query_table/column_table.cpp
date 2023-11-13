@@ -12,7 +12,7 @@ void ColumnTable<bool>::cloneRow(const bool & write, const int & dst_row, const 
 
 template<>
 void ColumnTable<Bit>::cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<Bit> *s, const int & src_row)  {
-//clone everything except dummy tag  - handle that separately to push to end
+
     assert(s->storageModel() == StorageModel::COLUMN_STORE);
     auto src = (ColumnTable<Bit> *) s;
     int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);

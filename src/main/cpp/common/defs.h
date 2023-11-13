@@ -78,10 +78,17 @@ namespace vaultdb {
     enum class  StorageModel {
         ROW_STORE,
         COLUMN_STORE,
-        PACKED_COLUMN_STORE
+        PACKED_COLUMN_STORE,
+        COMPRESSED_STORE
     };
 
-
+    enum class ColumnEncodingModel {
+        PLAIN,
+        RLE,
+        DICTIONARY,
+        DELTA,
+        BIT_PACKED // this may replace our current impl bit packing
+    };
     enum class EmpMode {
         PLAIN,
         SH2PC,

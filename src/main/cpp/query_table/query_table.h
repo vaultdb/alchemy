@@ -21,8 +21,6 @@ namespace  vaultdb {
     template<typename B>
     class QueryTable {
 
-
-
         public:
             size_t tuple_size_bytes_;
             size_t tuple_cnt_;

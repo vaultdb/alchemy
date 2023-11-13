@@ -129,6 +129,52 @@ namespace vaultdb {
         static emp::Integer
         secretShareString(const string &s, const bool &to_send, const int &src_party, const int &str_length);
 
+        static void writeField(int8_t *dst, const Field<B> & f, const QueryFieldDesc & desc) {
+            switch (f.getType()) {
+                case FieldType::BOOL: {
+                    *((bool *) dst) = f.template getValue<bool>();
+                    break;
+                }
+                case FieldType::INT: {
+                    *((int32_t *) dst) = f.template getValue<int32_t>();
+                    break;
+                }
+                case FieldType::LONG: {
+                    *((int64_t *) dst) = f.template getValue<int64_t>();
+                    break;
+                }
+                case FieldType::FLOAT: {
+                    *((float_t *) dst) = f.template getValue<float_t>();
+                    break;
+                }
+                case FieldType::STRING: {
+                    string s = f.template getValue<string>();
+                    std::reverse(s.begin(), s.end());
+                    memcpy(dst, (int8_t *) s.c_str(), s.size()); // null termination chopped
+                    break;
+                }
+                case FieldType::SECURE_BOOL: {
+                    Bit b  = f.template getValue<Bit>();
+                    memcpy(dst, &b, sizeof(emp::Bit));
+                    break;
+                }
+                case FieldType::SECURE_INT:
+                case FieldType::SECURE_LONG:
+                case FieldType::SECURE_STRING: {
+                    Integer i = f.template getValue<Integer>();
+                    memcpy(dst, i.bits.data(), desc.size() * sizeof(emp::Bit));
+                    break;
+                }
+                case FieldType::SECURE_FLOAT: {
+                    Float fl = f.template getValue<Float>();
+                    memcpy(dst, fl.value.data(), fl.value.size() * sizeof(emp::Bit));
+                    break;
+                }
+                default:
+                    throw;
+            }
+        }
+
         private:
 
         template<typename T>
@@ -214,6 +260,7 @@ namespace vaultdb {
 
             return res;
         }
+
 
     };
 
