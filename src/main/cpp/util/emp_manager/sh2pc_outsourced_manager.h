@@ -22,7 +22,7 @@ namespace  vaultdb {
             SystemConfiguration & s = SystemConfiguration::getInstance();
             s.emp_bit_size_bytes_ = sizeof(emp::block);
             s.party_ = party;
-            s.emp_mode_ = EmpMode::SH2PC;
+            s.emp_mode_ = EmpMode::SH2PC_OUTSOURCED;
         }
 
         // set up EMP for insecure execution
@@ -31,6 +31,10 @@ namespace  vaultdb {
             SystemConfiguration & s = SystemConfiguration::getInstance();
             s.emp_mode_ = EmpMode::PLAIN;
 
+        }
+
+         int sendingParty() const override {
+            return ALICE;
         }
 
         size_t andGateCount() const override {
@@ -101,6 +105,7 @@ namespace  vaultdb {
         }
 
         SH2PCOutsourcedManager()  { throw; }
+        int sendingParty() const override { throw; }
 
         size_t andGateCount() const override { return 0; }
 

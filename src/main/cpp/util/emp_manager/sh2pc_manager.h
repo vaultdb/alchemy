@@ -34,6 +34,10 @@ namespace  vaultdb {
 
         }
 
+        int sendingParty() const override {
+            return 0; // both are senders
+        }
+
         size_t andGateCount() const override {
            return  emp::CircuitExecution::circ_exec->num_and();
         }
@@ -102,6 +106,8 @@ namespace  vaultdb {
         }
 
          SH2PCManager()  { throw; }
+
+        int sendingParty() const override { throw; }
 
         size_t andGateCount() const override { return 0; }
 

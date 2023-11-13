@@ -39,8 +39,7 @@ namespace vaultdb {
                                               const int &sortColCount);
 
 
-        static std::string
-        queryDatetime(const std::string &colName); // transform a column into an int64 for our expected output
+        static std::string queryDatetime(const std::string &colName); // transform a column into an int64 for our expected output
 
         // filenames have full path, otherwise in standard testing framework filenames are relative to src/main/cpp/bin
         static void locallySecretShareTable(const std::unique_ptr<PlainTable> &table, const std::string &aliceFile,

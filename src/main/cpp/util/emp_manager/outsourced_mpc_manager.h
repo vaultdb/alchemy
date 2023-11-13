@@ -19,6 +19,10 @@ namespace  vaultdb {
             throw;
         }
 
+        int sendingParty() const override {
+            throw;
+        }
+
         size_t andGateCount() const override { return 0; }
 
         size_t getCommCost() const override { return 0; }
@@ -92,6 +96,10 @@ namespace  vaultdb {
             SystemConfiguration & s = SystemConfiguration::getInstance();
             s.emp_mode_ = EmpMode::PLAIN;
 
+        }
+
+        int sendingParty() const override {
+            return TP;
         }
 
         size_t andGateCount() const override {

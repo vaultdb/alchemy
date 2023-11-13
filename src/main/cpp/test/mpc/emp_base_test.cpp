@@ -28,42 +28,12 @@ void EmpBaseTest::SetUp()  {
     emp_mode_ =  _emp_mode_;
     s.setStorageModel(storage_model_);
 
-    cout << "Protocol: ";
-    switch(emp_mode_) {
-        case EmpMode::PLAIN:
-            cout << "plain";
-            break;
-        case EmpMode::SH2PC:
-            cout << "sh2pc";
-            break;
-        case EmpMode::ZK:
-            cout << "zk";
-            break;
-        case EmpMode::OUTSOURCED:
-            cout << "outsourced";
-            break;
-    }
-    cout << endl;
-
-	Logger* log = get_log();	
+    cout << "Protocol: " << EmpManager::empModeString(emp_mode_) << endl;
+	Logger* log = get_log();
 
     std::stringstream ss;
 
-    ss << "Received emp mode: ";
-    switch(emp_mode_) {
-        case EmpMode::PLAIN:
-            ss << "plain";
-            break;
-        case EmpMode::SH2PC:
-            ss << "sh2pc";
-            break;
-        case EmpMode::ZK:
-            ss << "zk";
-            break;
-        case EmpMode::OUTSOURCED:
-            ss << "outsourced";
-            break;
-    }
+    ss << "Received emp mode: " << EmpManager::empModeString(emp_mode_) << endl;
 
     log->write(ss.str(), Level::INFO);
     log->write("Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party), Level::INFO);

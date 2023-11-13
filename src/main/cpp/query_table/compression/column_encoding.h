@@ -28,8 +28,8 @@ namespace vaultdb {
         // only compress where B == bool, not emp::Bit
         virtual void compress(QueryTable<B> *src, const int & src_col) = 0;
         static ColumnEncoding<B> *compress(QueryTable<B> *src, const int & src_col, QueryTable<B> *dst, const int & dst_col, const ColumnEncodingModel & dst_encoding);
-
-        virtual void secretShare(const int & party, QueryTable<Bit> *dst, QueryTable<Bit> *dst_col) = 0;
+        // get party info from system configuration
+        virtual void secretShare(QueryTable<Bit> *dst, const int & dst_col) = 0;
 
     };
 

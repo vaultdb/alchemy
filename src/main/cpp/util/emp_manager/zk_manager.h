@@ -33,7 +33,10 @@ namespace vaultdb {
             s.emp_mode_ = EmpMode::PLAIN;
         }
 
-
+        int sendingParty() const override {
+            return ALICE;
+        }
+        
         size_t andGateCount() const override {
             return emp::CircuitExecution::circ_exec->num_and();
         }
@@ -114,6 +117,8 @@ namespace  vaultdb {
 
         // set up EMP for insecure execution
         ZKManager()  { throw; }
+
+        int sendingParty() const override { throw; }
 
         size_t andGateCount() const override { return 0; }
 
