@@ -2,7 +2,7 @@
 
 
 cmake -DCMAKE_BUILD_TYPE=Release .
-make -j
+make -j4
 
 bash test/support/setup-csv.sh
 bash pilot/test/generate-and-load-test-data.sh 1000

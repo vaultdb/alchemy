@@ -118,7 +118,7 @@ TEST_F(EmpTableTest, bit_packing_test) {
     if(emp_mode_ == vaultdb::EmpMode::SH2PC)
         ASSERT_EQ(expected->tuple_cnt_ * 14 * sizeof(emp::Bit),  secret_shared->tuple_cnt_ * secret_shared->tuple_size_bytes_);
     // 3 packed wires per tuple
-    if(emp_mode_ == vaultdb::EmpMode::OUTSOURCED && SystemConfiguration::getInstance().wire_packing_enabled_)
+    if(emp_mode_ == vaultdb::EmpMode::OUTSOURCED && SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE)
         ASSERT_EQ(expected->tuple_cnt_ * 3 * sizeof(emp::OMPCPackedWire),  secret_shared->tuple_cnt_ * secret_shared->tuple_size_bytes_);
 
     if(FLAGS_validation) {
