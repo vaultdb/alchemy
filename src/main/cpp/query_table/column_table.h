@@ -138,6 +138,12 @@ namespace vaultdb {
 
             this->column_data_[ordinal] = std::vector<int8_t>(this->tuple_cnt_ * field_size_bytes);
         }
+// up to two-way secret share - both Alice and Bob providing private inputs
+        SecureTable *secretShare() override  {
+            assert(!this->isEncrypted());
+            SystemConfiguration & conf = SystemConfiguration::getInstance();
+            return conf.emp_manager_->secretShare((PlainTable *) this);
+        }
 
         B getDummyTag(const int & row)  const override {
             auto dummy_tags = (B*) this->column_data_.at(-1).data();

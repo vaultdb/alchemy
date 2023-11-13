@@ -18,11 +18,19 @@ namespace vaultdb {
         ColumnEncoding(QueryTable<B> *parent, const int & col_idx) : parent_table_(parent), column_idx_(col_idx) {
             column_data_ = parent->column_data_.at(col_idx).data();
         }
+        virtual ~ColumnEncoding() = default;
 
         virtual Field<B> getField(const int & row) = 0;
         virtual void setField(const int & row, const Field<B> & f) = 0;
         virtual ColumnEncodingModel columnEncoding() = 0;
-        static ColumnEncoding<B> *encode(QueryTable<B> *src, const int & src_col, QueryTable<B> *dst, const int & dst_col, const ColumnEncodingModel & dst_encoding);
+        virtual void resize(const int & tuple_cnt) = 0;
+        // initialize column with contents of an uncompressed one
+        // only compress where B == bool, not emp::Bit
+        virtual void compress(QueryTable<B> *src, const int & src_col) = 0;
+        static ColumnEncoding<B> *compress(QueryTable<B> *src, const int & src_col, QueryTable<B> *dst, const int & dst_col, const ColumnEncodingModel & dst_encoding);
+
+        virtual void secretShare(const int & party, QueryTable<Bit> *dst, QueryTable<Bit> *dst_col) = 0;
+
     };
 
 

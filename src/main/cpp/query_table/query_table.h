@@ -79,7 +79,7 @@ namespace  vaultdb {
         vector<int8_t> serialize() const;
 
 
-        SecureTable *secretShare();
+        virtual SecureTable *secretShare() = 0;
 
 
         SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node

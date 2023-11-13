@@ -84,6 +84,12 @@ namespace vaultdb {
 
         }
 
+        SecureTable *secretShare() override  {
+            assert(!this->isEncrypted());
+            SystemConfiguration & conf = SystemConfiguration::getInstance();
+            return conf.emp_manager_->secretShare((PlainTable *) this);
+        }
+
         void appendColumn(const QueryFieldDesc & desc) override {
             // NYI
             throw;

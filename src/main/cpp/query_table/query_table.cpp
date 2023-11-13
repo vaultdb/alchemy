@@ -61,13 +61,7 @@ QueryTable<B> & QueryTable<B>::operator=(const QueryTable<B> & s) {
 
 
 
-// up to two-way secret share - both Alice and Bob providing private inputs
-template<typename B>
-SecureTable *QueryTable<B>::secretShare()  {
-    assert(!isEncrypted());
-    SystemConfiguration & conf = SystemConfiguration::getInstance();
-    return conf.emp_manager_->secretShare((PlainTable *) this);
-}
+
 
 
 

@@ -3,6 +3,7 @@
 
 #include "query_table/query_table.h"
 #include "column_encoding.h"
+#include "plain_encoding.h"
 
 namespace vaultdb {
 
@@ -11,18 +12,35 @@ namespace vaultdb {
     class CompressedTable : public QueryTable<B> {
 
         public:
-        vector<ColumnEncoding<B> *> column_encodings_; // algos for accessing compressed data in-situ
+        map<int, ColumnEncoding<B> *> column_encodings_; // algos for accessing compressed data in-situ
 
-        CompressedTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition())
-            : QueryTable<B>(tuple_cnt, schema, sort_def) {
+        CompressedTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<B>(tuple_cnt, schema, sort_def) {
             assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COMPRESSED_STORE);
             setSchema(schema);
 
             if (tuple_cnt == 0)
                 return;
-           // TODO: initialize compressed columns here
-           // each CompressedColumn has a pointer to column_data_ in parent table
-           // column_data_ will be malloc'd according to compressed size
+
+            // each CompressedColumn has a pointer to column_data_ in parent table
+            // column_data_ will be malloc'd according to compressed size
+            for(int i = 0; i < schema.getFieldCount(); ++i) {
+                column_encodings_[i] = new PlainEncoding<B>(this, i);
+            }
+
+            column_encodings_[-1] = new PlainEncoding<B>(this, -1); // dummy tag
+
+        }
+
+        CompressedTable(QueryTable<B> *src, const map<int, ColumnEncodingModel> & encodings) : QueryTable<B>(src->tuple_cnt_, src->getSchema(), src->order_by_) {
+            assert(src->getSchema().getFieldCount() == encodings.size());
+            assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COMPRESSED_STORE);
+
+            setSchema(src->getSchema());
+
+            for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+              column_encodings_[i] = ColumnEncoding<B>::compress(src, i, this, i, encodings.at(i));
+            }
+
         }
 
         explicit CompressedTable(const QueryTable<B> &src) : QueryTable<B>(src) {
@@ -32,7 +50,19 @@ namespace vaultdb {
             // TODO: invoke constructors on column encodings here
         }
 
-        void resize(const size_t &tuple_cnt) override {}
+        ~CompressedTable() override {
+            // just deletes the ColumnEncodings - leaves this->column_data_ intact in case pinned.
+            for(auto &col : column_encodings_) {
+                delete col.second;
+            }
+        }
+        void resize(const size_t &tuple_cnt) override {
+            for(auto pos : column_encodings_) {
+                column_encodings_[pos.first]->resize(tuple_cnt);
+            }
+        }
+
+
         StorageModel storageModel() const override { return  StorageModel::COMPRESSED_STORE; }
         Field<B> getField(const int  & row, const int & col)  const override {
             return column_encodings_.at(col)->getField(row);
@@ -48,6 +78,10 @@ namespace vaultdb {
         void setDummyTag(const int & row, const B & val) override {
             Field<B> f(TypeUtilities::getBoolType<B>(), val);
             column_encodings_.at(-1)->setField(row, f);
+        }
+
+        SecureTable *secretShare() override  {
+            throw std::invalid_argument("NYI!");
         }
 
         void appendColumn(const QueryFieldDesc & desc) override {
@@ -80,7 +114,6 @@ namespace vaultdb {
         void compareSwap(const B & swap, const int  & lhs_row, const int & rhs_row) override {}
         void cloneColumn(const int & dst_col, const int & dst_idx, const QueryTable<B> *src, const int & src_col, const int & src_offset = 0) override {}
         void setSchema(const QuerySchema &schema) override {
-            // TODO: set up metadata for compressed columns here
             // for now just using default settings for this
             this->schema_ = schema;
             int running_count = 0;
@@ -114,5 +147,11 @@ namespace vaultdb {
 
 
     };
+
+//    template<typename B>
+//    CompressedTable<B>::CompressedTable(const size_t &tuple_cnt, const QuerySchema &schema,
+//                                        const SortDefinition &sort_def)
+//            : QueryTable<B>(tuple_cnt, schema, sort_def) {
+//    }
 }
 #endif

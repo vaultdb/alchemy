@@ -87,8 +87,10 @@ namespace vaultdb {
         RLE,
         DICTIONARY,
         DELTA,
+        BITMAP,
         BIT_PACKED // this may replace our current impl bit packing
     };
+
     enum class EmpMode {
         PLAIN,
         SH2PC,

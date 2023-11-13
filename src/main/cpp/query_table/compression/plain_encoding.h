@@ -15,11 +15,6 @@ namespace vaultdb {
             parent->column_data_[col_idx].resize(dst_size);
         }
 
-        void setData(int8_t *src) {
-            auto dst_size = col_field_size_bytes_ * this->parent_table_->tuple_cnt_;
-            memcpy(this->column_data_, src, dst_size);
-        }
-
 
         Field<B> getField(const int & row) override {
             int8_t *src =  this->column_data_ + col_field_size_bytes_ * row;
@@ -34,6 +29,18 @@ namespace vaultdb {
         }
 
         ColumnEncodingModel columnEncoding() override { return ColumnEncodingModel::PLAIN; }
+        void resize(const int & tuple_cnt) override {
+            this->parent_table_->column_data_[this->column_idx_].resize(tuple_cnt * col_field_size_bytes_);
+        }
+        void compress(QueryTable<B> *src, const int & src_col) override {
+            auto dst_size = col_field_size_bytes_ * this->parent_table_->tuple_cnt_;
+            auto src_ptr = src->column_data_.at(src_col).data();
+            memcpy(this->column_data_, src_ptr, dst_size);
+        }
+
+        void secretShare(const int & party, QueryTable<Bit> *dst, QueryTable<Bit> *dst_col) override {
+            throw std::invalid_argument("NYI!");
+        }
 
     private:
         int col_field_size_bytes_;
