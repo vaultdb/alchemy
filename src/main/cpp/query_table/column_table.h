@@ -37,14 +37,14 @@ namespace vaultdb {
             setSchema(src.schema_);
         }
 
-        Field<B> getField(const int  & row, const int & col)  const override {
+        inline Field<B> getField(const int  & row, const int & col)  const override {
             int8_t *src = getFieldPtr(row, col);
             QueryFieldDesc desc = this->schema_.getField(col);
             return Field<B>::deserialize(desc, src);
         }
 
 
-        void setField(const int  & row, const int & col, const Field<B> & f)  override {
+        inline void setField(const int  & row, const int & col, const Field<B> & f)  override {
             int8_t *dst = getFieldPtr(row, col);
             Field<B>::writeField(dst, f, this->schema_.getField(col));
         }

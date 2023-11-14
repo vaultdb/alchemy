@@ -4,6 +4,7 @@
 #include "query_table/query_table.h"
 #include "column_encoding.h"
 #include "plain_encoding.h"
+#include "bit_packed_encoding.h"
 #include "query_table/secure_tuple.h"
 #include "query_table/plain_tuple.h"
 
@@ -21,17 +22,15 @@ namespace vaultdb {
             assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COMPRESSED_STORE);
             setSchema(schema);
 
-//            if (tuple_cnt == 0)
-//                return;
-
             // each CompressedColumn has a pointer to column_data_ in parent table
             // column_data_ will be malloc'd according to compressed size
             for(int i = 0; i < schema.getFieldCount(); ++i) {
-                column_encodings_[i] = new PlainEncoding<B>(this, i);
+                if(schema.getField(i).bitPacked() && std::is_same_v<B, Bit>)
+                    column_encodings_[i] = (ColumnEncoding<B> * ) new BitPackedEncoding((QueryTable<Bit> *) this, i);
+                else
+                    column_encodings_[i] = new PlainEncoding<B>(this, i);
             }
-
             column_encodings_[-1] = new PlainEncoding<B>(this, -1); // dummy tag
-
         }
 
         CompressedTable(QueryTable<B> *src, const map<int, ColumnEncodingModel> & encodings) : QueryTable<B>(src->tuple_cnt_, src->getSchema(), src->order_by_) {

@@ -74,6 +74,8 @@ set(sources
 		query_table/compression/compressed_table.cpp
 		query_table/compression/column_encoding.cpp
 		query_table/compression/plain_encoding.cpp
+		query_table/compression/bit_packed_encoding.cpp
+
 
 		data/psql_data_provider.cpp
 		data/csv_reader.cpp

@@ -50,7 +50,7 @@ namespace vaultdb {
                 ++write_cursor;
                 read_cursor += 8;
             }
-            delete [] bools;
+                delete [] bools;
         }
 
         static void reverseStrings(char *src, const int & str_len, const int & row_cnt) {
