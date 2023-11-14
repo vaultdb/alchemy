@@ -338,9 +338,7 @@ PlainTable *QueryTable<B>::revealInsecure(const int &party) const {
 template<typename B>
 QueryTable<B> *QueryTable<B>::getTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def) {
     StorageModel s = SystemConfiguration::getInstance().storageModel();
-    if(s == StorageModel::PACKED_COLUMN_STORE) {
-            bool is_encrypted = std::is_same_v<B, emp::Bit>;
-            assert(is_encrypted);
+    if(std::is_same_v<B, emp::Bit> && s == StorageModel::PACKED_COLUMN_STORE) {
             return (QueryTable<B> *)  new PackedColumnTable(tuple_cnt, schema, sort_def);
     }
     if(s == StorageModel::COMPRESSED_STORE) {
