@@ -4,6 +4,9 @@
 #include "query_table/query_table.h"
 #include "column_encoding.h"
 #include "plain_encoding.h"
+#include "query_table/secure_tuple.h"
+#include "query_table/plain_tuple.h"
+
 
 namespace vaultdb {
 
@@ -18,8 +21,8 @@ namespace vaultdb {
             assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COMPRESSED_STORE);
             setSchema(schema);
 
-            if (tuple_cnt == 0)
-                return;
+//            if (tuple_cnt == 0)
+//                return;
 
             // each CompressedColumn has a pointer to column_data_ in parent table
             // column_data_ will be malloc'd according to compressed size
@@ -41,13 +44,18 @@ namespace vaultdb {
               column_encodings_[i] = ColumnEncoding<B>::compress(src, i, this, i, encodings.at(i));
             }
 
+            column_encodings_[-1] = ColumnEncoding<B>::compress(src, -1, this, -1, encodings.at(-1));
+
         }
 
         explicit CompressedTable(const QueryTable<B> &src) : QueryTable<B>(src) {
-            assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COMPRESSED_STORE);
+            assert(src.storageModel() == StorageModel::COMPRESSED_STORE);
             setSchema(src.getSchema());
-            resize(src.tuple_cnt_);
-            // TODO: invoke constructors on column encodings here
+            auto src_table = (CompressedTable<B> *) &src;
+
+            for(auto pos : src_table->column_encodings_) {
+                column_encodings_[pos.first] = src_table->column_encodings_.at(pos.first)->clone(this, pos.first);
+            }
         }
 
         ~CompressedTable() override {
@@ -80,8 +88,29 @@ namespace vaultdb {
             column_encodings_.at(-1)->setField(row, f);
         }
 
+        // take a plain table (that may or may not be compressed) and secret share it
         SecureTable *secretShare() override  {
-            throw std::invalid_argument("NYI!");
+            if(this->isEncrypted()) return (SecureTable *) this->clone();
+            auto dst_schema = QuerySchema::toSecure(this->schema_);
+            SystemConfiguration &s = SystemConfiguration::getInstance();
+            EmpManager *manager = s.emp_manager_;
+            auto row_cnt = manager->getTableCardinality(this->tuple_cnt_);
+
+            cout << "Secret sharing table with schema: " << dst_schema << " and " << row_cnt << " rows." << endl;
+            SecureTable *dst_table = new CompressedTable<Bit>(row_cnt, dst_schema, this->order_by_);
+            for(auto pos : column_encodings_) {
+                pos.second->secretShare(dst_table, pos.first);
+            }
+            return dst_table;
+        }
+
+        PlainTable *revealInsecure(const int & party = emp::PUBLIC) const override {
+            PlainTable *dst = new CompressedTable<bool>(this->tuple_cnt_, QuerySchema::toPlain(this->schema_), this->order_by_);
+            for(auto pos : column_encodings_) {
+                pos.second->revealInsecure(dst, pos.first, party);
+            }
+
+            return dst;
         }
 
         void appendColumn(const QueryFieldDesc & desc) override {
@@ -91,6 +120,7 @@ namespace vaultdb {
 
         // include dummy tag for this
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) override {
+
             throw std::invalid_argument("NYI!");
         }
 
@@ -104,15 +134,36 @@ namespace vaultdb {
         }
         QueryTuple<B> getRow(const int & idx) override {
 
-            throw std::invalid_argument("NYI!");
+            QueryTuple<B>  row(&this->schema_);
+
+            for(int i = 0; i < this->schema_.getFieldCount(); ++i) {
+                Field<B> field = column_encodings_.at(i)->getField(idx);
+                row.setField(i, field);
+            }
+            Field<B> dummy_tag = column_encodings_.at(-1)->getField(idx);
+            row.setField(-1, dummy_tag);
+            return row;
         }
 
         void setRow(const int & idx, const QueryTuple<B> & tuple) override {
-            throw std::invalid_argument("NYI!");
+            assert(*tuple.schema_ == this->schema_);
+            for(int i = 0; i < this->schema_.getFieldCount(); ++i) {
+                Field<B> field = tuple.getField(i);
+                column_encodings_.at(i)->setField(idx, field);
+            }
+            Field<B> dummy_tag = tuple.getField(-1);
+            column_encodings_.at(-1)->setField(idx, dummy_tag);
         }
+
         QueryTable<B> *clone() override { return new CompressedTable<B>(*this); }
-        void compareSwap(const B & swap, const int  & lhs_row, const int & rhs_row) override {}
-        void cloneColumn(const int & dst_col, const int & dst_idx, const QueryTable<B> *src, const int & src_col, const int & src_offset = 0) override {}
+        void compareSwap(const B & swap, const int  & lhs_row, const int & rhs_row) override {
+            throw;
+        }
+
+        void cloneColumn(const int & dst_col, const int & dst_idx, const QueryTable<B> *src, const int & src_col, const int & src_offset = 0) override {
+            throw;
+        }
+
         void setSchema(const QuerySchema &schema) override {
             // for now just using default settings for this
             this->schema_ = schema;
@@ -148,10 +199,5 @@ namespace vaultdb {
 
     };
 
-//    template<typename B>
-//    CompressedTable<B>::CompressedTable(const size_t &tuple_cnt, const QuerySchema &schema,
-//                                        const SortDefinition &sort_def)
-//            : QueryTable<B>(tuple_cnt, schema, sort_def) {
-//    }
 }
 #endif

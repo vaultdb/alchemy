@@ -121,6 +121,7 @@ namespace vaultdb {
 
             return row;
         }
+
         void setRow(const int & idx, const QueryTuple<B> &tuple) override;
 
         void compareSwap(const B & swap, const int  & lhs_row, const int & rhs_row) override;
