@@ -65,7 +65,7 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
     QueryTable<B> *s1, *s2;
 
-	log->write("LHS augmented: " +DataUtilities::printTable(augmented.first, -1, true), Level::INFO);
+	log->write("LHS augmented: " + DataUtilities::printTable(augmented.first, -1, true), Level::INFO);
 	log->write("RHS augmented: " + DataUtilities::printTable(augmented.second, -1, true), Level::INFO);
 
 	s1 = obliviousExpand(augmented.first, true);
@@ -104,23 +104,203 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 }
 
 template<typename B>
-pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
-    return pair<QueryTable<B> *, QueryTable<B> *>();
+QuerySchema SortMergeJoin<B>::getAugmentedSchema() {
 
+    QuerySchema augmented_schema = (lhs_smaller_) ? rhs_prime_->getSchema() : lhs_prime_->getSchema();
+	
+    if(!is_secure_) {
+        QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_, 0);
+        augmented_schema.putField(alpha);
+        QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::BOOL, 0);
+        augmented_schema.putField(table_id);
+        table_id_field_ = Field<B>(FieldType::BOOL, true);
+    }
+    else {
+        QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_);
+	    int max_alpha =  this->getChild(0)->getOutputCardinality() + this->getChild(1)->getOutputCardinality();
+        alpha.initializeFieldSizeWithCardinality(max_alpha);
+
+        augmented_schema.putField(alpha);
+        QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::SECURE_BOOL);	
+
+        augmented_schema.putField(table_id);
+        table_id_field_ = Field<B>(FieldType::SECURE_BOOL, Bit(true));
+    }
+
+    augmented_schema.initializeFieldOffsets();	
+
+	return augmented_schema;
+
+}
+
+template<typename B>
+QueryTable<B> *SortMergeJoin<B>::unionTables(QueryTable<B> *lhs, QueryTable<B> *rhs, const QuerySchema & dst_schema) {
+
+    auto unioned_len = lhs->tuple_cnt_ + rhs->tuple_cnt_;
+    QueryTable<B> *unioned =  QueryTable<B>::getTable(unioned_len, dst_schema);
+
+    int cursor = 0;
+    for(int i = lhs->tuple_cnt_ - 1; i >= 0; --i) {
+        unioned->cloneRow(cursor, 0, lhs, i);
+        ++cursor;
+    }
+
+
+    for(int i = 0; i < rhs->tuple_cnt_; ++i) {
+        unioned->cloneRow(cursor, 0, rhs, i);
+        ++cursor;
+    }
+
+    return unioned;
 }
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
-    return nullptr;
-}
+    QuerySchema augmented_schema = deriveAugmentedSchema();
+    auto unioned = unionTables(lhs_prime_, rhs_prime_, augmented_schema);
 
-template<typename B>
-QueryTable<B> *SortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs) {
-    return nullptr;
+    // Set the table_id_field for distinguishing rows from lhs and rhs
+    for (int i = lhs_prime_->tuple_cnt_; i < unioned->tuple_cnt_; ++i) {
+        unioned->setField(i, table_id_idx_, table_id_field_);
+    }
+
+    delete lhs_prime_;
+    delete rhs_prime_;
+
+    // Sort based on join keys
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size());
+    for(auto &join_idx : join_idxs_) {
+        sort_def.emplace_back(join_idx.first, SortDirection::ASCENDING);  // Sorting on lhs keys
+        sort_def.emplace_back(join_idx.second, SortDirection::ASCENDING); // Sorting on rhs keys
+    }
+
+    Sort<B> sorter(unioned, sort_def);
+    sorter.setOperatorId(-2);
+
+    return sorter.run()->clone();
 }
 
 template<typename B>
 void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
+    Field<B> alpha = zero_;
+    B one_b(true), zero_b(false);
+
+    // Initialize alpha for each row based on join condition
+    for (int i = 0; i < dst->tuple_cnt_; i++) {
+        B dummy = dst->getDummyTag(i);
+        B same_group = (i > 0) ? joinMatch(dst, i - 1, i) : one_b;
+
+        // Update alpha based on the match with previous row
+        alpha = Field<B>::If(same_group, Field<B>::If(!dummy, alpha + one_, alpha),
+                             Field<B>::If(!dummy, one_, zero_));
+
+        dst->setField(i, alpha_idx_, alpha);
+    }
+
+    // Copy up max alpha in reverse order to handle duplicates correctly
+    for (int i = dst->tuple_cnt_ - 2; i >= 0; i--) {
+        B same_group = joinMatch(dst, i, i + 1);
+        B dummy = dst->getDummyTag(i);
+
+        // Carry the alpha value from the next row if it's the same group and not a dummy
+        alpha = Field<B>::If(same_group & !dummy, dst->getField(i + 1, alpha_idx_), dst->getField(i, alpha_idx_));
+        dst->setField(i, alpha_idx_, alpha);
+    }
+}
+
+
+template<typename B>
+QueryTable<B> *SortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs) {
+
+    ExpressionMapBuilder<B> builder(src->getSchema());
+    int write_cursor = 0;
+    map<int, int> field_mapping;
+
+    for(auto key : join_cols) {
+        builder.addMapping(key, write_cursor);
+        field_mapping[write_cursor] = key;
+        ++write_cursor;
+    }	
+
+    for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+        if(std::find(join_cols.begin(), join_cols.end(),i) == join_cols.end()) {
+            builder.addMapping(i, write_cursor);
+            field_mapping[write_cursor] = i;
+            ++write_cursor;
+        }
+    }
+
+    Project<B> projection(src->clone(), builder.getExprs());
+    projection.setOperatorId(-2);
+    auto output = projection.run()->clone();
+
+    if(is_lhs) {
+        lhs_projected_schema_ = projection.getOutputSchema();
+        lhs_field_mapping_ = field_mapping;
+    }
+    else {
+        rhs_field_mapping_ = field_mapping;
+        rhs_projected_schema_ = projection.getOutputSchema();
+    }
+    return output;
+}
+
+template<typename B>
+pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
+
+    assert(lhs->storageModel() == rhs->storageModel());
+
+    vector<int> lhs_keys, rhs_keys;
+
+    for(auto key_pair : join_idxs_) {
+        // visitor always outputs lhs, rhs
+        lhs_keys.emplace_back(key_pair.first);
+        rhs_keys.emplace_back(key_pair.second - lhs->getSchema().getFieldCount());
+    }
+
+    lhs_prime_ = projectJoinKeyToFirstAttr(lhs, lhs_keys, true);
+    rhs_prime_ = projectJoinKeyToFirstAttr(rhs, rhs_keys, false);
+
+    // set up extended schema
+    QuerySchema augmented_schema = getAugmentedSchema();
+
+	table_id_idx_ = augmented_schema.getFieldCount() - 1;
+    alpha_idx_ = augmented_schema.getFieldCount() - 2;
+
+    QueryTable<B> sorted = unionAndSortTables();
+    initializeAlphas(sorted);
+
+    // sort by table ID followed by join key
+    SortDefinition sort_def;
+    sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
+    for(int i = 0; i < join_idxs_.size(); ++i) {
+        sort_def.emplace_back(i, SortDirection::ASCENDING);
+    }
+
+    Sort<B> sort_by_table_id(sorted, sort_def);
+    sort_by_table_id.setOperatorId(-2);
+    QueryTable<B> *sorted_table = sort_by_table_id.run();
+
+    pair<QueryTable<B> *, QueryTable<B> *> output;
+    //split union table into S1 and S2
+    output.first = QueryTable<B>::getTable(lhs->tuple_cnt_, augmented_schema);
+    output.second = QueryTable<B>::getTable(rhs->tuple_cnt_, augmented_schema);
+
+    // copy over first |s1| col entries from sorted_table to s1
+    // remaining ones go to s2
+    int read_offset = output.first->tuple_cnt_;
+    int field_cnt = augmented_schema.getFieldCount();
+
+    for(int i = 0; i < field_cnt; ++i) {
+        output.first->cloneColumn(i, 0, sorted_table, i);
+        output.second->cloneColumn(i, 0, sorted_table, i, read_offset);
+    }
+    output.first->cloneColumn(-1, 0, sorted_table, -1);
+    output.second->cloneColumn(-1, 0, sorted_table, -1, read_offset);
+
+
+    return output;
+
 }
 
 template<typename B>

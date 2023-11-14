@@ -62,6 +62,8 @@ namespace vaultdb {
 
         void initializeAlphas(QueryTable<B> *dst);
 
+        QueryTable<B> *unionTables(QueryTable<B> *lhs, QueryTable<B> *rhs, const QuerySchema & dst_schema);
+
         QueryTable<B> *unionAndSortTables();
 
         inline B joinMatch(QueryTable<B> *t, int lhs_row, int rhs_row) {
