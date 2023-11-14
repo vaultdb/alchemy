@@ -53,6 +53,15 @@ namespace vaultdb {
             delete [] bools;
         }
 
+        static void reverseStrings(char *src, const int & str_len, const int & row_cnt) {
+            for(int i = 0; i < row_cnt; ++i) {
+                string str(str_len, 0);
+                memcpy((int8_t *) str.c_str(), src + i * str_len, str_len);
+                std::reverse(str.begin(), str.end());
+                memcpy(src + i * str_len, (int8_t *) str.c_str(), str_len);
+            }
+        }
+
     };
 
 

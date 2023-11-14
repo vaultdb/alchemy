@@ -32,18 +32,11 @@ void PlainEncoding<B>::secretShare(QueryTable<Bit> *dst, const int &dst_col) {
             break;
         }
         case FieldType::STRING: {
-            // reverse all strings and then follow process of INT/LONG
+            // temporarily reverse all strings and then follow process of INT/LONG
+            int str_len = dst->getSchema().getField(dst_col).getStringLength();
+            dst_col_size_bits *= str_len;
             if(sender) {
-                int str_len = dst->getSchema().getField(dst_col).getStringLength();
-                dst_col_size_bits *= str_len;
-                char *cursor = (char *) this->column_data_;
-                for (int i = 0; i < row_cnt; ++i) {
-                    string str(str_len, 0);
-                    memcpy((int8_t *) str.c_str(), cursor, str_len);
-                    std::reverse(str.begin(), str.end());
-                    memcpy(cursor, (int8_t *) str.c_str(), str_len);
-                    cursor += str_len;
-                }
+                ColumnEncoding<B>::reverseStrings((char *) this->column_data_, str_len, row_cnt);
             }
             // fall through to INT/LONG
         }
@@ -84,6 +77,12 @@ void PlainEncoding<B>::secretShare(QueryTable<Bit> *dst, const int &dst_col) {
         }
         default:
             throw std::invalid_argument("Can't secret share with type " + TypeUtilities::getTypeString(f_type));
+    }
+
+    if(f_type == FieldType::STRING && sender) {
+        // undo string reversal
+        int str_len = this->parent_table_->getSchema().getField(dst_col).getStringLength();
+        ColumnEncoding<B>::reverseStrings((char *) this->column_data_, str_len, row_cnt);
     }
 }
 
