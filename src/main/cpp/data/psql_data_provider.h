@@ -14,8 +14,7 @@ using namespace vaultdb;
 class  PsqlDataProvider  {
 public:
 
-    PlainTable *
-    getQueryTable(std::string db_name, std::string sql, bool has_dummy_tag = false);
+    PlainTable *getQueryTable(std::string db_name, std::string sql, bool has_dummy_tag = false);
 
 private:
     void getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_table, const size_t &idx);

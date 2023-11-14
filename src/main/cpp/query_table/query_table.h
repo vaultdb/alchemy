@@ -79,7 +79,7 @@ namespace  vaultdb {
         vector<int8_t> serialize() const;
 
 
-        SecureTable *secretShare();
+        virtual SecureTable *secretShare() = 0;
 
 
         SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
@@ -109,7 +109,7 @@ namespace  vaultdb {
         PlainTable *reveal(const int & party = emp::PUBLIC);
 
         // holds onto dummy rows
-        PlainTable *revealInsecure(const int & party = emp::PUBLIC) const;
+        virtual PlainTable *revealInsecure(const int & party = emp::PUBLIC) const;
 
         inline PlainTuple revealRow(const int & row,  QuerySchema & dst_schema, const int & party = PUBLIC) const  {
             if(std::is_same_v<B, bool>) {

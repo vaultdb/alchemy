@@ -33,7 +33,7 @@ namespace vaultdb {
                 return;
 
 
-            for(int i = 0; i < schema_.fields_.size(); ++i) {
+            for(int i = 0; i < schema_.getFieldCount(); ++i) {
                 auto desc = schema_.fields_.at(i);
                 int packed_wires = desc.packedWires();
 
@@ -82,6 +82,12 @@ namespace vaultdb {
             // TODO: update column cache and write as needed
 //            f.serialize(write_ptr, this->schema_.fields_.at(col));
 
+        }
+
+        SecureTable *secretShare() override  {
+            assert(!this->isEncrypted());
+            SystemConfiguration & conf = SystemConfiguration::getInstance();
+            return conf.emp_manager_->secretShare((PlainTable *) this);
         }
 
         void appendColumn(const QueryFieldDesc & desc) override {

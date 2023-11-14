@@ -87,11 +87,14 @@ namespace vaultdb {
         RLE,
         DICTIONARY,
         DELTA,
+        BITMAP,
         BIT_PACKED // this may replace our current impl bit packing
     };
+
     enum class EmpMode {
         PLAIN,
         SH2PC,
+        SH2PC_OUTSOURCED, // just one sending party, ALICE
         ZK, // ZK only enabled manually during unit test
         OUTSOURCED
     };

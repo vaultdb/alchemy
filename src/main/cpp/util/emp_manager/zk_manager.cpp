@@ -53,7 +53,7 @@ QueryTable<Bit> *ZKManager::secretShare(const QueryTable<bool> *src) {
     //assert(alice_tuple_cnt > 0);
 
     QuerySchema dst_schema = QuerySchema::toSecure(src->getSchema());
-    SecureTable *dst_table = new SecureTable(alice_tuple_cnt, dst_schema, src->order_by_);
+    SecureTable *dst_table = SecureTable::getTable(alice_tuple_cnt, dst_schema, src->order_by_);
 
     if (party == emp::ALICE) {
         secret_share_send(emp::ALICE,  (PlainTable *) src, dst_table);

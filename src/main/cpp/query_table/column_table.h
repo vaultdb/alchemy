@@ -37,14 +37,14 @@ namespace vaultdb {
             setSchema(src.schema_);
         }
 
-        Field<B> getField(const int  & row, const int & col)  const override {
+        inline Field<B> getField(const int  & row, const int & col)  const override {
             int8_t *src = getFieldPtr(row, col);
             QueryFieldDesc desc = this->schema_.getField(col);
             return Field<B>::deserialize(desc, src);
         }
 
 
-        void setField(const int  & row, const int & col, const Field<B> & f)  override {
+        inline void setField(const int  & row, const int & col, const Field<B> & f)  override {
             int8_t *dst = getFieldPtr(row, col);
             Field<B>::writeField(dst, f, this->schema_.getField(col));
         }
@@ -121,6 +121,7 @@ namespace vaultdb {
 
             return row;
         }
+
         void setRow(const int & idx, const QueryTuple<B> &tuple) override;
 
         void compareSwap(const B & swap, const int  & lhs_row, const int & rhs_row) override;
@@ -137,6 +138,12 @@ namespace vaultdb {
             this->field_sizes_bytes_[ordinal] = field_size_bytes;
 
             this->column_data_[ordinal] = std::vector<int8_t>(this->tuple_cnt_ * field_size_bytes);
+        }
+// up to two-way secret share - both Alice and Bob providing private inputs
+        SecureTable *secretShare() override  {
+            assert(!this->isEncrypted());
+            SystemConfiguration & conf = SystemConfiguration::getInstance();
+            return conf.emp_manager_->secretShare((PlainTable *) this);
         }
 
         B getDummyTag(const int & row)  const override {

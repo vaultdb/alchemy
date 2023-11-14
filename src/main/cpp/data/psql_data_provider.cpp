@@ -11,8 +11,7 @@
 
 // if has_dummy_tag == true, then last column needs to be a boolean that denotes whether the tuple was selected
 // tableName == nullptr if query result from more than one table
-PlainTable *
-PsqlDataProvider::getQueryTable(std::string db_name, std::string sql, bool has_dummy_tag) {
+PlainTable *PsqlDataProvider::getQueryTable(std::string db_name, std::string sql, bool has_dummy_tag) {
 
     db_name_ = db_name;
     storage_model_ = SystemConfiguration::getInstance().storageModel();

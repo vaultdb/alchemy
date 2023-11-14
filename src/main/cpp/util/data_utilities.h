@@ -32,15 +32,13 @@ namespace vaultdb {
         getUnionedResults(const std::string &alice_db, const std::string &bob_db, const std::string &sql,
                           const bool &has_dummy_tag, const size_t &limit = 0);
 
-        static PlainTable *
-        getQueryResults(const std::string &dbName, const std::string &sql,  const bool &has_dummy_tag = false);
+        static PlainTable *getQueryResults(const std::string &db_name, const std::string &sql,  const bool &has_dummy_tag = false);
 
-        static PlainTable *getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag,
+        static PlainTable *getExpectedResults(const string &db_name, const string &sql, const bool &hasDummyTag,
                                               const int &sortColCount);
 
 
-        static std::string
-        queryDatetime(const std::string &colName); // transform a column into an int64 for our expected output
+        static std::string queryDatetime(const std::string &colName); // transform a column into an int64 for our expected output
 
         // filenames have full path, otherwise in standard testing framework filenames are relative to src/main/cpp/bin
         static void locallySecretShareTable(const std::unique_ptr<PlainTable> &table, const std::string &aliceFile,

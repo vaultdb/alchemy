@@ -13,21 +13,20 @@ DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65428, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
-DEFINE_string(storage, "column", "storage model for columns (column, wire_packed or compressed)");
+DEFINE_string(storage, "compressed", "storage model for tables (column, wire_packed or compressed)");
 
 using namespace vaultdb;
 
-class EmpTableTest : public EmpBaseTest {
+// EmpTableTest but to test out basic compression framework
+class EmpCompressionSetupTest : public EmpBaseTest {
 protected:
     void secretShareAndValidate(const std::string & sql, const SortDefinition & sort = SortDefinition());
 };
 
 
 
-
-
 // test encrypting a query table with a single int in EMP
-TEST_F(EmpTableTest, secret_share_table_one_column) {
+TEST_F(EmpCompressionSetupTest, secret_share_table_one_column) {
 
     std::string sql =  "SELECT l_orderkey FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY l_orderkey, l_linenumber";
 
@@ -35,14 +34,12 @@ TEST_F(EmpTableTest, secret_share_table_one_column) {
 
     secretShareAndValidate(sql, collation);
 
-
-
 }
 
 
 // test secret a query table with a single string in EMP
 // bitonic merge the inputs
-TEST_F(EmpTableTest, secret_share_table_varchar) {
+TEST_F(EmpCompressionSetupTest, secret_share_table_varchar) {
 
     string sql = "SELECT l_orderkey, l_linenumber, l_comment FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY l_orderkey, l_linenumber";
     SortDefinition  collation = DataUtilities::getDefaultSortDefinition(2);
@@ -54,7 +51,7 @@ TEST_F(EmpTableTest, secret_share_table_varchar) {
 
 
 // test more column types
-TEST_F(EmpTableTest, secret_share_table) {
+TEST_F(EmpCompressionSetupTest, secret_share_table) {
 
     std::string sql =  "SELECT l_orderkey, l_linenumber, l_comment, l_returnflag, l_discount, "
                                "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate "  // handle timestamps by converting them to longs using SQL
@@ -66,7 +63,7 @@ TEST_F(EmpTableTest, secret_share_table) {
 }
 
 
-TEST_F(EmpTableTest, secret_share_table_dummy_tag) {
+TEST_F(EmpCompressionSetupTest, secret_share_table_dummy_tag) {
 
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_comment, l_returnflag, l_discount, "
@@ -92,7 +89,7 @@ TEST_F(EmpTableTest, secret_share_table_dummy_tag) {
 }
 
 
-TEST_F(EmpTableTest, bit_packing_test) {
+TEST_F(EmpCompressionSetupTest, bit_packing_test) {
 
 
     std::string sql = "SELECT c_custkey, c_nationkey FROM customer WHERE c_custkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY (1)";
@@ -135,18 +132,26 @@ TEST_F(EmpTableTest, bit_packing_test) {
 
 }
 
-void EmpTableTest::secretShareAndValidate(const std::string & sql, const SortDefinition & sort) {
+void EmpCompressionSetupTest::secretShareAndValidate(const std::string & sql, const SortDefinition & sort) {
 
     PlainTable *input = DataUtilities::getQueryResults(db_name_, sql, false);
-
     input->order_by_ = sort;
+    if(FLAGS_validation && (FLAGS_party == manager_->sendingParty())) {
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
+        expected->order_by_ = sort;
+        ASSERT_EQ(*input, *expected);
+    }
+
     SecureTable *secret_shared = input->secretShare();
 
     if(FLAGS_validation) {
-        PlainTable *revealed = secret_shared->revealInsecure(emp::PUBLIC);
-        DataUtilities::removeDummies(revealed);
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
         expected->order_by_ = sort;
+        if(FLAGS_party == manager_->sendingParty())
+            ASSERT_EQ(*input, *expected);
+
+        PlainTable *revealed = secret_shared->revealInsecure(emp::PUBLIC);
+        DataUtilities::removeDummies(revealed);
 
         ASSERT_EQ(*expected, *revealed);
         delete revealed;

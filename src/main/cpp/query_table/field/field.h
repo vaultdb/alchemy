@@ -126,8 +126,7 @@ namespace vaultdb {
 
 
         static std::string revealString(const emp::Integer & src, const int & party = PUBLIC);
-        static emp::Integer
-        secretShareString(const string &s, const bool &to_send, const int &src_party, const int &str_length);
+        static emp::Integer secretShareString(const string &s, const bool &to_send, const int &src_party, const int &str_length);
 
         static void writeField(int8_t *dst, const Field<B> & f, const QueryFieldDesc & desc) {
             switch (f.getType()) {

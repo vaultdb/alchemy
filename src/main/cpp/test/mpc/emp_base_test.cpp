@@ -3,6 +3,7 @@
 #include <util/system_configuration.h>
 #include "util/field_utilities.h"
 #include "util/emp_manager/sh2pc_manager.h"
+#include "util/emp_manager/sh2pc_outsourced_manager.h"
 #include "util/emp_manager/zk_manager.h"
 #include "util/emp_manager/outsourced_mpc_manager.h"
 #include "query_table/secure_tuple.h" // for use in child classes
@@ -26,44 +27,21 @@ void EmpBaseTest::SetUp()  {
     SystemConfiguration & s = SystemConfiguration::getInstance();
     s.emp_mode_ =  _emp_mode_;
     emp_mode_ =  _emp_mode_;
+    // defaults to column store
+    if(FLAGS_storage == "wire_packed") {
+        storage_model_ = StorageModel::PACKED_COLUMN_STORE;
+    }
+    else if(FLAGS_storage == "compressed") {
+        storage_model_ = StorageModel::COMPRESSED_STORE;
+    }
+
     s.setStorageModel(storage_model_);
 
-    cout << "Protocol: ";
-    switch(emp_mode_) {
-        case EmpMode::PLAIN:
-            cout << "plain";
-            break;
-        case EmpMode::SH2PC:
-            cout << "sh2pc";
-            break;
-        case EmpMode::ZK:
-            cout << "zk";
-            break;
-        case EmpMode::OUTSOURCED:
-            cout << "outsourced";
-            break;
-    }
-    cout << endl;
-
-	Logger* log = get_log();	
+	Logger* log = get_log();
 
     std::stringstream ss;
 
-    ss << "Received emp mode: ";
-    switch(emp_mode_) {
-        case EmpMode::PLAIN:
-            ss << "plain";
-            break;
-        case EmpMode::SH2PC:
-            ss << "sh2pc";
-            break;
-        case EmpMode::ZK:
-            ss << "zk";
-            break;
-        case EmpMode::OUTSOURCED:
-            ss << "outsourced";
-            break;
-    }
+    ss << "Received emp mode: " << EmpManager::empModeString(emp_mode_) << endl;
 
     log->write(ss.str(), Level::INFO);
     log->write("Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party), Level::INFO);
@@ -78,30 +56,36 @@ void EmpBaseTest::SetUp()  {
 //                          "129.105.61.176" // codd2 (TP)
 //                           };
         string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
-        // TODO: give this a gflag
         // to enable wire packing set storage model to StorageModel::PACKED_COLUMN_STORE
-        s.setStorageModel(StorageModel::COLUMN_STORE);
-    manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
+        //s.setStorageModel(StorageModel::PACKED_COLUMN_STORE);
+        manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
         db_name_ = (FLAGS_party == emp::TP) ? FLAGS_unioned_db : empty_db_;
         
         FLAGS_port += N;
         FLAGS_ctrl_port += N;
     }
     else if(emp_mode_ == EmpMode::SH2PC) {
-        manager_ = new SH2PCManager(FLAGS_alice_host, FLAGS_party, FLAGS_port);
-        db_name_ = (FLAGS_party == emp::ALICE) ? FLAGS_alice_db : FLAGS_bob_db;
+        assert(storage_model_ != StorageModel::PACKED_COLUMN_STORE);
+        if(storage_model_ == StorageModel::COMPRESSED_STORE) {
+            manager_ = new SH2PCOutsourcedManager(FLAGS_alice_host, FLAGS_party, FLAGS_port);
+            db_name_ = (FLAGS_party == ALICE) ? FLAGS_unioned_db : empty_db_;
+        }
+        else {
+            manager_ = new SH2PCManager(FLAGS_alice_host, FLAGS_party, FLAGS_port);
+            db_name_ = (FLAGS_party == emp::ALICE) ? FLAGS_alice_db : FLAGS_bob_db;
+        }
         // increment the port for each new test
         ++FLAGS_port;
 		++FLAGS_ctrl_port;
     }
     else if(emp_mode_ == EmpMode::ZK) {
+        assert(storage_model_ != StorageModel::PACKED_COLUMN_STORE);
         manager_ = new ZKManager(FLAGS_alice_host, FLAGS_party, FLAGS_port);
 
         // Alice gets unioned DB to query entire dataset for ZK proof
         db_name_ = (FLAGS_party == ALICE) ? FLAGS_unioned_db : empty_db_;
         Utilities::mkdir("data");
-        s.emp_manager_ = manager_;
-
+        s.emp_manager_ = manager_; // probably not needed
     }
     else {
         throw std::runtime_error("No EMP backend found.");

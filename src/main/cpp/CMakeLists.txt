@@ -58,6 +58,7 @@ set(sources
 		util/emp_manager/sh2pc_manager.cpp
 		util/emp_manager/zk_manager.cpp
 		util/emp_manager/outsourced_mpc_manager.cpp
+		util/emp_manager/sh2pc_outsourced_manager.cpp
 
 		query_table/field/field_type.h
 		query_table/field/field.cpp
@@ -72,6 +73,9 @@ set(sources
 		query_table/packed_column_table.cpp
 		query_table/compression/compressed_table.cpp
 		query_table/compression/column_encoding.cpp
+		query_table/compression/plain_encoding.cpp
+		query_table/compression/bit_packed_encoding.cpp
+
 
 		data/psql_data_provider.cpp
 		data/csv_reader.cpp

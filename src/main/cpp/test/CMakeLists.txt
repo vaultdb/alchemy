@@ -112,7 +112,7 @@ package_add_test(plan_cost_test mpc/plan_cost_test.cpp  mpc/emp_base_test.cpp)
 package_add_test(fully_optimized_test mpc/fully_optimized_test.cpp  mpc/emp_base_test.cpp)
 package_add_test(secure_plan_enumeration_test mpc/secure_plan_enumeration_test.cpp  mpc/emp_base_test.cpp)
 package_add_test(join_cost_comparison_test mpc/join_cost_comparison_test.cpp mpc/emp_base_test.cpp)
-
+package_add_test(emp_compression_setup_test mpc/emp_compression_setup_test.cpp  mpc/emp_base_test.cpp)
 unset(Labels)
 set(Labels "LABELS;UnitTest;LABELS;EmpTest;LABELS;ZkTest")
 

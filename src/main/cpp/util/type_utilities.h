@@ -19,8 +19,7 @@ namespace vaultdb {
 
         static string getJSONTypeString(const FieldType & aTypeId);
 
-        // logical size, hence secure bit will be 1 byte (byte-aligned). needs to be unified between encrypted and plain sizes for reveal/secret share methods
-        // See FieldType::getPhysicalSize() for physical, allocated size
+        // size is in bits
         static size_t getTypeSize(const FieldType & id);
 
         //static inline size_t getEmpBitSize() { return  SystemConfiguration::getInstance().emp_bit_size_bytes_; } // byte size
