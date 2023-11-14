@@ -18,24 +18,7 @@ static EmpMode _emp_mode_ = EmpMode::ZK;
 
 void PlainBaseTest::SetUp()  {
 
-    std::cout << "Received emp_mode: ";
-    std::stringstream ss;
-    switch(_emp_mode_) {
-        case EmpMode::PLAIN:
-            ss << "plain";
-            break;
-        case EmpMode::SH2PC:
-            ss << "sh2pc";
-            break;
-        case EmpMode::ZK:
-            ss << "zk";
-            break;
-        case EmpMode::OUTSOURCED:
-            ss << "outsourced";
-            break;
-    }
-
-    cout << ss.str() << endl;
+    std::cout << "Received emp_mode: " << EmpManager::empModeString(_emp_mode_) << std::endl;
 
     if(_emp_mode_ == EmpMode::OUTSOURCED) {
         manager_ = new OutsourcedMpcManager();
