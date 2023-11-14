@@ -33,7 +33,7 @@ namespace vaultdb {
                 return;
 
 
-            for(int i = 0; i < schema_.fields_.size(); ++i) {
+            for(int i = 0; i < schema_.getFieldCount(); ++i) {
                 auto desc = schema_.fields_.at(i);
                 int packed_wires = desc.packedWires();
 
