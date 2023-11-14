@@ -170,7 +170,7 @@ void EnrichHtnQuery::aggregatePatients(SecureTable *src) {
     auto aggregator = new SortMergeAggregate (sort, groupByCols, aggregators);
     data_cube_ = aggregator->run();
 
-    if(cardinality_bound_ < data_cube_->getTupleCount()) {
+    if(cardinality_bound_ < data_cube_->tuple_cnt_) {
 
         Shrinkwrap wrapper(aggregator, cardinality_bound_);
         data_cube_ = wrapper.run()->clone();
@@ -252,7 +252,7 @@ void EnrichHtnQuery::unionWithPartialAggregates(vector<SecureTable *> partials) 
     auto aggregator = new SortMergeAggregate(sort, groupByCols, aggregators);
     data_cube_ = aggregator->run();
 
-    if(cardinality_bound_ < data_cube_->getTupleCount()) {
+    if(cardinality_bound_ < data_cube_->tuple_cnt_) {
         Shrinkwrap wrapper(data_cube_, cardinality_bound_);
         data_cube_ = wrapper.run()->clone();
     }
@@ -265,11 +265,11 @@ void EnrichHtnQuery::unionWithPartialAggregates(vector<SecureTable *> partials) 
 
 SecureTable *EnrichHtnQuery::addPartialAggregates(vector<SecureTable *> partials) {
     SecureTable *summed_partials = partials[0]->clone();
-    size_t tuple_cnt = summed_partials->getTupleCount();
+    size_t tuple_cnt = summed_partials->tuple_cnt_;
 
     for(size_t i = 1; i < partials.size(); ++i) {
         SecureTable *partial = partials[i];
-        assert(tuple_cnt == partial->getTupleCount()); // check that they line up
+        assert(tuple_cnt == partial->tuple_cnt_); // check that they line up
         assert(QuerySchema::toPlain(partial->getSchema()) == SharedSchema::getPartialCountSchema());
     }
 

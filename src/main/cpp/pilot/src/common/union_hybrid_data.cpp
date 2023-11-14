@@ -12,7 +12,7 @@
 
 UnionHybridData::UnionHybridData(const QuerySchema & src_schema)  {
     // placeholder, retains schema
-    input_table_ = new SecureTable(0, src_schema);
+    input_table_ =  SecureTable::getTable(0, src_schema);
 
 }
 
@@ -133,13 +133,13 @@ SecureTable *UnionHybridData::getInputTable() {
 }
 
 void UnionHybridData::resizeAndAppend(SecureTable *to_add) {
-    size_t old_tuple_cnt = input_table_->getTupleCount();
-    size_t new_tuple_cnt = old_tuple_cnt + to_add->getTupleCount();
+    size_t old_tuple_cnt = input_table_->tuple_cnt_;
+    size_t new_tuple_cnt = old_tuple_cnt + to_add->tuple_cnt_;
     input_table_->resize(new_tuple_cnt);
 
     int write_idx = old_tuple_cnt;
 
-    for(size_t i = 0; i < to_add->getTupleCount(); ++i) {
+    for(size_t i = 0; i < to_add->tuple_cnt_; ++i) {
         input_table_->cloneRow(write_idx, 0, to_add, i);
         ++write_idx;
     }
@@ -167,25 +167,25 @@ UnionHybridData::unionHybridData(const string &db_name, const string &input_quer
 
 
     PlainTable *local_plain = DataUtilities::getQueryResults(db_name, input_query, false);
-    size_t total_tuples = local_plain->getTupleCount();
+    size_t total_tuples = local_plain->tuple_cnt_;
 
-    cout << "Reading in " << local_plain->getTupleCount() << " tuples from local db." << endl;
+    cout << "Reading in " << local_plain->tuple_cnt_ << " tuples from local db." << endl;
 
     SecureTable *local = local_plain->secretShare();
     int party = SystemConfiguration::getInstance().party_;
 
     string other_party = (party == ALICE) ? "Bob" : "Alice";
-    cout <<  other_party << " read in " << local->getTupleCount() - local_plain->getTupleCount() << " tuples." << endl;
+    cout <<  other_party << " read in " << local->tuple_cnt_ - local_plain->tuple_cnt_ << " tuples." << endl;
 
-    total_tuples += local->getTupleCount() - local_plain->getTupleCount();
+    total_tuples += local->tuple_cnt_ - local_plain->tuple_cnt_;
 
     QuerySchema local_plain_schema = local_plain->getSchema();
     delete local_plain;
 
     if(!secret_shares_file.empty()) {
         SecureTable *remote = UnionHybridData::readSecretSharedInput(secret_shares_file, local_plain_schema);
-        cout << "Reading in " << remote->getTupleCount() << " secret-shared records from " << secret_shares_file << endl;
-        total_tuples += remote->getTupleCount();
+        cout << "Reading in " << remote->tuple_cnt_ << " secret-shared records from " << secret_shares_file << endl;
+        total_tuples += remote->tuple_cnt_;
         Union<emp::Bit> union_op(local, remote);
         cout << "Total tuples read: " << total_tuples << endl;
         // deep copy so it isn't deleted with union_op

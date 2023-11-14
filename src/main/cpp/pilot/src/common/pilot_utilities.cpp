@@ -73,7 +73,7 @@ void PilotUtilities::validateTable(const std::string & db_name, const std::strin
 
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name, sql, false);
-    expected->setSortOrder(expected_sort);
+    expected->order_by_ = expected_sort;
 
     // sort the inputs
     // ops deleted later using Operator framework
@@ -101,7 +101,7 @@ void PilotUtilities::secretShareFromCsv(const string &src_csv, const QuerySchema
 
 void PilotUtilities::secretShareFromQuery(const string &db_name, const string &query, const string &dst_root) {
     PlainTable *table = DataUtilities::getQueryResults(db_name, query, false);
-    cout << "Chi secret sharing " << table->getTupleCount() << " tuples." << endl;
+    cout << "Chi secret sharing " << table->tuple_cnt_ << " tuples." << endl;
 
     SecretShares shares = table->generateSecretShares();
 
@@ -197,7 +197,7 @@ void PilotUtilities::redactCellCounts(SecureTable *input, const int &min_cell_cn
     SecureField cutoff_field(FieldType::SECURE_INT, cutoff);
 
     // null out the ones with cell count below threshold
-    for(int i = 0; i < input->getTupleCount(); ++i) {
+    for(int i = 0; i < input->tuple_cnt_; ++i) {
         // numerator_cnt and denom_cnt
         Bit b = (input->getField(i, 2) < cutoff_field) | (input->getField(i, 3) < cutoff_field);
         Bit dummy_tag = (input->getDummyTag(i) | b);
