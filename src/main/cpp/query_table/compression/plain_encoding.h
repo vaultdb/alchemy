@@ -20,7 +20,7 @@ namespace vaultdb {
             col_field_size_bytes_ = (std::is_same_v<B, bool>) ? (field_size_bits / 8) : (field_size_bits * sizeof(emp::Bit));
 
             auto dst_size = col_field_size_bytes_ * parent->tuple_cnt_;
-            cout << "Malloc'ing " << dst_size << " bytes for column " << parent->getSchema().getField(col_idx)  << " or " << col_field_size_bytes_ << " bytes per field." <<  endl;
+//            cout << "Malloc'ing " << dst_size << " bytes for column " << parent->getSchema().getField(col_idx)  << " or " << col_field_size_bytes_ << " bytes per field." <<  endl;
 
             parent->column_data_[col_idx] = vector<int8_t>(dst_size);
             this->column_data_ = parent->column_data_[col_idx].data();

@@ -96,7 +96,7 @@ namespace vaultdb {
             EmpManager *manager = s.emp_manager_;
             auto row_cnt = manager->getTableCardinality(this->tuple_cnt_);
 
-            cout << "Secret sharing table with schema: " << dst_schema << " and " << row_cnt << " rows." << endl;
+//            cout << "Secret sharing table with schema: " << dst_schema << " and " << row_cnt << " rows." << endl;
             SecureTable *dst_table = new CompressedTable<Bit>(row_cnt, dst_schema, this->order_by_);
             for(auto pos : column_encodings_) {
                 pos.second->secretShare(dst_table, pos.first);
