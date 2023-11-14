@@ -8,7 +8,7 @@
 
 using namespace vaultdb;
 
-size_t SH2PCManager::getTableCardinality(const int &local_cardinality) {
+size_t SH2PCOutsourcedManager::getTableCardinality(const int &local_cardinality) {
     int tuple_cnt = local_cardinality;
     if (party_ == ALICE) {
         netio_->send_data(&tuple_cnt, 4);
@@ -23,7 +23,7 @@ size_t SH2PCManager::getTableCardinality(const int &local_cardinality) {
 }
 
 
-QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
+QueryTable<Bit> *SH2PCOutsourcedManager::secretShare(const QueryTable<bool> *src) {
 //    size_t local_tuple_cnt =  src->tuple_cnt_;
 //
 //    if (party_ == ALICE) {
@@ -57,7 +57,7 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
 
 }
 
-void SH2PCManager::secret_share_recv(const size_t &tuple_count, const int &party,
+void SH2PCOutsourcedManager::secret_share_recv(const size_t &tuple_count, const int &party,
                                     SecureTable *dst_table, const size_t &write_offset,
                                     const bool &reverse_read_order)  {
 
