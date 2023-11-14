@@ -99,7 +99,7 @@ namespace  vaultdb {
         }
 
         int sendingParty() const override {
-            return TP;
+            return TP; // 10086
         }
 
         size_t andGateCount() const override {

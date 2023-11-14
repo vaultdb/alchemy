@@ -32,10 +32,9 @@ namespace vaultdb {
         getUnionedResults(const std::string &alice_db, const std::string &bob_db, const std::string &sql,
                           const bool &has_dummy_tag, const size_t &limit = 0);
 
-        static PlainTable *
-        getQueryResults(const std::string &dbName, const std::string &sql,  const bool &has_dummy_tag = false);
+        static PlainTable *getQueryResults(const std::string &db_name, const std::string &sql,  const bool &has_dummy_tag = false);
 
-        static PlainTable *getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag,
+        static PlainTable *getExpectedResults(const string &db_name, const string &sql, const bool &hasDummyTag,
                                               const int &sortColCount);
 
 

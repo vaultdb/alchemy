@@ -16,8 +16,7 @@ DataUtilities::getUnionedResults(const std::string &alice_db, const std::string 
 
     PsqlDataProvider dataProvider;
 
-    PlainTable *alice = dataProvider.getQueryTable(alice_db, sql,
-                                                   has_dummy_tag); // dummyTag true not yet implemented
+    PlainTable *alice = dataProvider.getQueryTable(alice_db, sql, has_dummy_tag); // dummyTag true not yet implemented
     PlainTable *bob = dataProvider.getQueryTable(bob_db, sql, has_dummy_tag);
 
     if(limit > 0) {
@@ -35,10 +34,10 @@ DataUtilities::getUnionedResults(const std::string &alice_db, const std::string 
 
 
 
-PlainTable *DataUtilities::getQueryResults(const std::string &dbName, const std::string &sql,
+PlainTable *DataUtilities::getQueryResults(const std::string &db_name, const std::string &sql,
                                            const bool &has_dummy_tag) {
     PsqlDataProvider dataProvider;
-    return dataProvider.getQueryTable(dbName, sql, has_dummy_tag);
+    return dataProvider.getQueryTable(db_name, sql, has_dummy_tag);
 }
 
 std::string DataUtilities::queryDatetime(const string &colName) {
