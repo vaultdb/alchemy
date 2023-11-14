@@ -129,6 +129,17 @@ void PlainEncoding<B>::revealInsecure(QueryTable<bool> *dst, const int & dst_col
             }
             break;
         }
+        case FieldType::SECURE_FLOAT: {
+            Float *src_flts = (Float *) this->column_data_;
+            float *dst_ptr = (float *) dst->column_data_.at(dst_col).data();
+            cout << "Revealing " << row_cnt << " rows of floats for column " << this->column_idx_ <<  endl;
+            for(int i = 0; i < row_cnt; ++i) {
+                Float flt = src_flts[i];
+                dst_ptr[i] = flt.reveal<float>();
+            }
+            break;
+        }
+
         default:
             throw;
 

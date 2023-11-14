@@ -120,8 +120,12 @@ namespace vaultdb {
 
         // include dummy tag for this
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) override {
-
-            throw std::invalid_argument("NYI!");
+            for(int i = 0; i < this->schema_.getFieldCount(); ++i) {
+                Field<B> field = src->getField(src_row, i);
+                column_encodings_.at(dst_col)->setField(dst_row, field);
+            }
+            Field<B> dummy_tag = src->getField(src_row, -1);
+            column_encodings_.at(-1)->setField(dst_row, dummy_tag);
         }
 
         void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) override {
