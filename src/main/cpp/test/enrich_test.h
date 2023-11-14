@@ -26,6 +26,7 @@ DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(ctrl_port, 65486, "port for managing EMP control flow by passing public values");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(storage, "column", "storage model for columns (column, wire_packed or compressed)");
 
 
 

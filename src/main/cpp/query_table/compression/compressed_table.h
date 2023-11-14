@@ -19,7 +19,9 @@ namespace vaultdb {
         map<int, ColumnEncoding<B> *> column_encodings_; // algos for accessing compressed data in-situ
 
         CompressedTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<B>(tuple_cnt, schema, sort_def) {
-            assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COMPRESSED_STORE);
+            SystemConfiguration & s = SystemConfiguration::getInstance();
+            assert(s.storageModel() == StorageModel::COMPRESSED_STORE);
+            assert(s.emp_manager_->sendingParty() != 0); // allow only one party to secret share at a time
             setSchema(schema);
 
             // each CompressedColumn has a pointer to column_data_ in parent table
@@ -35,7 +37,9 @@ namespace vaultdb {
 
         CompressedTable(QueryTable<B> *src, const map<int, ColumnEncodingModel> & encodings) : QueryTable<B>(src->tuple_cnt_, src->getSchema(), src->order_by_) {
             assert(src->getSchema().getFieldCount() == encodings.size());
-            assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COMPRESSED_STORE);
+            SystemConfiguration & s = SystemConfiguration::getInstance();
+            assert(s.storageModel() == StorageModel::COMPRESSED_STORE);
+            assert(s.emp_manager_->sendingParty() != 0); // allow only one party to secret share at a time
 
             setSchema(src->getSchema());
 
@@ -49,6 +53,10 @@ namespace vaultdb {
 
         explicit CompressedTable(const QueryTable<B> &src) : QueryTable<B>(src) {
             assert(src.storageModel() == StorageModel::COMPRESSED_STORE);
+            SystemConfiguration & s = SystemConfiguration::getInstance();
+            assert(s.storageModel() == StorageModel::COMPRESSED_STORE);
+            assert(s.emp_manager_->sendingParty() != 0); // allow only one party to secret share at a time
+
             setSchema(src.getSchema());
             auto src_table = (CompressedTable<B> *) &src;
 

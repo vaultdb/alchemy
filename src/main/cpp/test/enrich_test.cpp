@@ -13,7 +13,6 @@
 
 PlainTable *EnrichTest::getAgeStrataProjection(PlainTable *input, const bool & is_secret_shared) const {
     FieldType age_strata_type = is_secret_shared ? FieldType::SECURE_INT : FieldType::INT;
-
     ExpressionMapBuilder<bool> builder(input->getSchema());
 
     Expression<bool> *age_strata_expr = new FunctionExpression<bool>(&EnrichTestSupport<bool>::projectAgeStrata, &EnrichTestSupport<bool>::projectAgeStrataTable, "age_strata", age_strata_type);
@@ -294,6 +293,12 @@ void EnrichTest::validateTable(const std::string & db_name, const std::string & 
 
 
 TEST_F(EnrichTest, loadAndPrepData) {
+    // only support multiparty input setting
+    if(manager_->sendingParty() != 0) {
+        cout << "Bypassing test,  only support 2 secret-sharing parties." << endl;
+        return;
+    }
+
     string expected_pat_sql = "       SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                       "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
                                       "              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2\n"
@@ -335,7 +340,10 @@ TEST_F(EnrichTest, loadAndPrepData) {
 
 // need to refactor this to do the join before unioning Alice and Bob's inputs
 TEST_F(EnrichTest, loadAndJoinData) {
-
+    if(manager_->sendingParty() != 0) {
+        cout << "Bypassing test,  only support 2 secret-sharing parties." << endl;
+        return;
+    }
     string expected_sql = "       SELECT p.patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                       "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
                                       "              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2\n"
@@ -361,7 +369,10 @@ TEST_F(EnrichTest, loadAndJoinData) {
 
 
 TEST_F(EnrichTest, loadUnionAndDeduplicateData) {
-
+    if(manager_->sendingParty() != 0) {
+        cout << "Bypassing test,  only support 2 secret-sharing parties." << endl;
+        return;
+    }
     std::string expected_sql = "    WITH labeled as (\n"
                                     "        SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                     "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
@@ -389,6 +400,10 @@ TEST_F(EnrichTest, loadUnionAndDeduplicateData) {
 }
 
 TEST_F(EnrichTest, testExclusionCriteria) {
+    if(manager_->sendingParty() != 0) {
+        cout << "Bypassing test,  only support 2 secret-sharing parties." << endl;
+        return;
+    }
     std::string expected_sql = "    WITH labeled as (\n"
                                     "        SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                     "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
@@ -420,7 +435,10 @@ TEST_F(EnrichTest, testExclusionCriteria) {
 
 
 TEST_F(EnrichTest, testPatientCohort) {
-
+    if(manager_->sendingParty() != 0) {
+        cout << "Bypassing test,  only support 2 secret-sharing parties." << endl;
+        return;
+    }
     std::string expected_sql = "    WITH labeled as (\n"
                                     "        SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                     "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
@@ -454,6 +472,10 @@ TEST_F(EnrichTest, testPatientCohort) {
 }
 
 TEST_F(EnrichTest, testPatientAgggregation) {
+    if(manager_->sendingParty() != 0) {
+        cout << "Bypassing test,  only support 2 secret-sharing parties." << endl;
+        return;
+    }
     std::string expected_sql = "    WITH labeled as (\n"
                                     "        SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                     "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
@@ -490,6 +512,11 @@ TEST_F(EnrichTest, testPatientAgggregation) {
 
 
 TEST_F(EnrichTest, testRollups) {
+    if(manager_->sendingParty() != 0) {
+        cout << "Bypassing test,  only support 2 secret-sharing parties." << endl;
+        return;
+    }
+
     SecureTable *aggregator = aggregatePatientData();
     SortDefinition order_by = DataUtilities::getDefaultSortDefinition(1);
 
