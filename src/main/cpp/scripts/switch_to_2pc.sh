@@ -1,3 +1,5 @@
+#!/bin/bash -x
+
 cd /usr/local/include
 sudo rm -rf emp-tool/
 sudo  cp -r emp-2pc/* .

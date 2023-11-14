@@ -141,7 +141,6 @@ void PlainEncoding<B>::revealInsecure(QueryTable<bool> *dst, const int & dst_col
         case FieldType::SECURE_BOOL: {
             Bit *src_ptr = (Bit *) this->column_data_;
             bool *dst_ptr = (bool *) dst->column_data_.at(dst_col).data();
-//            cout << "Revealing " << row_cnt << " rows of bools for column " << this->column_idx_ <<  endl;
             manager->reveal(dst_ptr, party, src_ptr, row_cnt);
             break; }
         case FieldType::SECURE_INT:
@@ -149,7 +148,6 @@ void PlainEncoding<B>::revealInsecure(QueryTable<bool> *dst, const int & dst_col
             int byte_cnt = row_cnt * dst->field_sizes_bytes_[dst_col];
             Bit *src_ptr = (Bit *) this->column_data_;
             int8_t *dst_ptr = dst->column_data_.at(dst_col).data();
-//            cout << "Revealing " << byte_cnt << " bytes or " << byte_cnt * 8 << " bits for column " << this->column_idx_ << endl;
             ColumnEncoding<B>::revealToBytes(dst_ptr, src_ptr, byte_cnt, party);
             break;
         }
@@ -171,10 +169,9 @@ void PlainEncoding<B>::revealInsecure(QueryTable<bool> *dst, const int & dst_col
         case FieldType::SECURE_FLOAT: {
             Float *src_flts = (Float *) this->column_data_;
             float *dst_ptr = (float *) dst->column_data_.at(dst_col).data();
-//            cout << "Revealing " << row_cnt << " rows of floats for column " << this->column_idx_ <<  endl;
             for(int i = 0; i < row_cnt; ++i) {
                 Float flt = src_flts[i];
-                dst_ptr[i] = flt.reveal<float>();
+                dst_ptr[i] = flt.reveal<double>();
             }
             break;
         }
