@@ -41,7 +41,7 @@ QueryTable<Bit> *SH2PCOutsourcedManager::secretShare(const QueryTable<bool> *src
     int tuple_cnt = getTableCardinality(src->tuple_cnt_);
     QuerySchema dst_schema = QuerySchema::toSecure(src->getSchema());
 
-    auto dst_table = new QueryTable<Bit>::getTable(tuple_cnt, dst_schema, src->order_by_);
+    auto dst_table = QueryTable<Bit>::getTable(tuple_cnt, dst_schema, src->order_by_);
 
     if(tuple_cnt > 0) {
         if (party_ == emp::ALICE) {
@@ -49,7 +49,7 @@ QueryTable<Bit> *SH2PCOutsourcedManager::secretShare(const QueryTable<bool> *src
         } else { // bob
             secret_share_recv(tuple_cnt, emp::ALICE, dst_table, 0, tuple_cnt);
         }
-
+    }
     netio_->flush();
 
     return dst_table;
@@ -106,7 +106,7 @@ void SH2PCOutsourcedManager::secret_share_recv(const size_t &tuple_count, const 
 
 
 void
-SH2PCManager::secret_share_send(const int &party,const PlainTable *src_table, SecureTable *dst_table, const int &write_offset,
+SH2PCOutsourcedManager::secret_share_send(const int &party,const PlainTable *src_table, SecureTable *dst_table, const int &write_offset,
                                const bool &reverse_read_order)  {
 
     int cursor = (int) write_offset;

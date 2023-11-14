@@ -47,7 +47,7 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
 
     QuerySchema dst_schema = QuerySchema::toSecure(src->getSchema());
 
-    auto dst_table = new QueryTable<Bit>(alice_tuple_cnt + bob_tuple_cnt, dst_schema, src->order_by_);
+    auto dst_table = QueryTable<Bit>::getTable(alice_tuple_cnt + bob_tuple_cnt, dst_schema, src->order_by_);
 
     if(!src->order_by_.empty()) {
         if (party_ == emp::ALICE) {
@@ -68,10 +68,10 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
             Sort<Bit> sorter(dst_table, dst_sort);
             auto normalized = sorter.normalizeTable(dst_table);
 
-            sorter.bitonicMerge(normalized, sorter.order_by_, 0, normalized->tuple_cnt_, true, counter);
+            sorter.bitonicMerge(normalized, sorter.getSortOrder(), 0, normalized->tuple_cnt_, true, counter);
             dst_table = sorter.denormalizeTable(normalized);
             delete normalized;
-            dst_table->setSortOrder(dst_sort);
+            dst_table->order_by_ = dst_sort;
 
 //            float n = dst_table->tuple_cnt_;
 //            float rounds = log2(dst_table->tuple_cnt_);
