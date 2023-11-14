@@ -50,7 +50,7 @@ void BitPackedEncoding::revealBitPackedInts(T *dst, emp::Bit *src, const int &ro
     T one = 1;
 
     for (int i = 0; i < row_cnt; ++i) {
-        T to_write;
+        T to_write = 0;
         for (int j = 0; j < field_size_bits_; ++j) {
             if (*read_cursor) {
                 to_write = to_write | (one << j);
@@ -58,6 +58,7 @@ void BitPackedEncoding::revealBitPackedInts(T *dst, emp::Bit *src, const int &ro
             ++read_cursor;
         }
         *write_cursor = to_write;
+        *write_cursor += field_min_;
         ++write_cursor;
     }
 

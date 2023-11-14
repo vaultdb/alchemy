@@ -94,7 +94,6 @@ void PlainEncoding<B>::secretShare(QueryTable<Bit> *dst, const int &dst_col) {
 template<typename B>
 void PlainEncoding<B>::secretShareForBitPacking(QueryTable<Bit> *dst, const int &dst_col) {
     assert(dst->storageModel() == StorageModel::COMPRESSED_STORE);
-    assert(dst->tuple_cnt_ == this->parent_table_->tuple_cnt_);
 
     SystemConfiguration &s = SystemConfiguration::getInstance();
     auto  manager = s.emp_manager_;
