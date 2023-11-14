@@ -23,6 +23,7 @@ DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(storage, "column", "storage model for columns (column, wire_packed or compressed)");
 
 
 class FullyOptimizedTest : public EmpBaseTest {

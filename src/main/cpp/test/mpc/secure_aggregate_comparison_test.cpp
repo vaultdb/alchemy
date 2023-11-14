@@ -31,6 +31,7 @@ DEFINE_string(bitpacking, "packed", "bit packed or non-bit packed");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_int32(cutoff, 10, "cutoff for Operator Comparison");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(storage, "column", "storage model for columns (column, wire_packed or compressed)");
 
 
 class SecureAggregateComparisonTest : public EmpBaseTest {
