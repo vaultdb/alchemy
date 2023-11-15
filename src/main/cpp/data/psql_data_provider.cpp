@@ -36,7 +36,7 @@ PlainTable *PsqlDataProvider::getQueryTable(std::string db_name, std::string sql
     size_t row_cnt = res.size();
 
     schema_ = getSchema(res, has_dummy_tag);
-    PlainTable *dst_table = PlainTable::getTable(row_cnt, schema_);
+    QueryTable<bool> *dst_table = QueryTable<bool>::getTable(row_cnt, schema_);
 
 
     int counter = 0;
