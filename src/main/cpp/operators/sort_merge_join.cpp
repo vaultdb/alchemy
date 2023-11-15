@@ -157,6 +157,78 @@ QueryTable<B> *SortMergeJoin<B>::unionTables(QueryTable<B> *lhs, QueryTable<B> *
 }
 
 template<typename B>
+QuerySchema SortMergeJoin<B>::deriveAugmentedSchema() const {
+    QuerySchema augmented_schema = deriveProjectedSchema();
+    int write_cursor = augmented_schema.getFieldCount();
+    Operator<B> *lhs_child = this->getChild(0);
+    Operator<B> *rhs_child = this->getChild(1);
+
+
+    if(!is_secure_) {
+        QueryFieldDesc alpha1(write_cursor, "alpha1", "", int_field_type_, 0);
+        augmented_schema.putField(alpha1);
+        ++write_cursor;
+        QueryFieldDesc alpha2(write_cursor, "alpha2", "", int_field_type_, 0);
+        augmented_schema.putField(alpha2)
+        ++write_cursor;
+        QueryFieldDesc table_id(write_cursor, "table_id", "", FieldType::BOOL, 0);
+        augmented_schema.putField(table_id);
+    }
+    else {
+        QueryFieldDesc alpha1(write_cursor, "alpha1", "", int_field_type_);
+        augmented_schema.putField(alpha1);
+        ++write_cursor;
+        QueryFieldDesc alpha2(write_cursor, "alpha2", "", int_field_type_);
+        augmented_schema.putField(alpha2)
+        ++write_cursor;
+
+        alpha1.initializeFieldSizeWithCardinality(lhs_child->getOutputCardinality());
+        alpha2.initializeFieldSizeWithCardinality(rhs_child->getOutputCardinality());
+
+        QueryFieldDesc table_id(write_cursor, "table_id", "", FieldType::SECURE_BOOL);
+        augmented_schema.putField(table_id);
+    }
+    augmented_schema.initializeFieldOffsets();
+
+    return augmented_schema;
+}
+
+template<typename B>
+QuerySchema SortMergeJoin<B>::deriveProjectedSchema() const {
+    // pick bigger schema as starting point
+    Operator<B> *lhs_child = this->getChild(0);
+    Operator<B> *rhs_child = this->getChild(1);
+
+    QuerySchema schema = (lhs_smaller_)  ? rhs_child->getOutputSchema() : lhs_child->getOutputSchema();
+    int lhs_schema_fields = lhs_child->getOutputSchema().getFieldCount();
+    vector<int> keys;
+    int write_cursor = 0;
+    QuerySchema projected_schema;
+
+    for(auto key_pair : join_idxs_) {
+        // visitor always outputs lhs, rhs
+        int k = (lhs_smaller_) ? (key_pair.second  - lhs_schema_fields) : key_pair.first;
+        QueryFieldDesc f = schema.getField(k);
+        f.setOrdinal(write_cursor);
+        ++write_cursor;
+        projected_schema.putField(f);
+        keys.emplace_back(k);
+    }
+
+    for(int i = 0; i < schema.getFieldCount(); i++) {
+        if(std::find(keys.begin(), keys.end(), i) == keys.end()) {
+            QueryFieldDesc f = schema.getField(i);
+            f.setOrdinal(write_cursor);
+            ++write_cursor;
+            projected_schema.putField(f);
+        }
+    }
+
+    projected_schema.initializeFieldOffsets();
+    return projected_schema;
+}
+
+template<typename B>
 QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
     QuerySchema augmented_schema = deriveAugmentedSchema();
     auto unioned = unionTables(lhs_prime_, rhs_prime_, augmented_schema);
@@ -182,6 +254,8 @@ QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
     return sorter.run()->clone();
 }
 
+
+// Calculate both alphas based on tid
 template<typename B>
 void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
     Field<B> alpha = zero_;
