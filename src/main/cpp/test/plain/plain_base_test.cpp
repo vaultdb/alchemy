@@ -4,6 +4,7 @@
 #include "util/field_utilities.h"
 #include "util/emp_manager/outsourced_mpc_manager.h"
 #include "util/emp_manager/sh2pc_manager.h"
+#include "util/emp_manager/sh2pc_outsourced_manager.h"
 
 #if  __has_include("emp-sh2pc/emp-sh2pc.h")
 static EmpMode _emp_mode_ = EmpMode::SH2PC;
@@ -30,7 +31,10 @@ void PlainBaseTest::SetUp()  {
     if(_emp_mode_ == EmpMode::OUTSOURCED) {
         manager_ = new OutsourcedMpcManager();
     } else if(_emp_mode_ == EmpMode::SH2PC) {
-        manager_ = new SH2PCManager();
+        if(storage_model_ == StorageModel::COMPRESSED_STORE)
+           manager_ = new SH2PCOutsourcedManager();
+        else
+            manager_ = new SH2PCManager();
     } else {
         throw std::runtime_error("Unsupported EMP mode");
     }
