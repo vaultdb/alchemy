@@ -89,7 +89,7 @@ runRollup(int idx, string colName, int party, SecureTable  *data_cube, const str
         schema_str << result->getSchema() << std::endl;
         csv = schema_str.str();
 
-        for(size_t i = 0; i < result->getTupleCount(); ++i) {
+        for(size_t i = 0; i < result->tuple_cnt_; ++i) {
             csv += result->getPlainTuple(i).toString() + "\n";
         }
         DataUtilities::writeFile(out_file, csv);
@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
 
     PlainTable *local_partial_counts = DataUtilities::getQueryResults(db_name, partial_aggregate_query, false);
 
-    assert(local_partial_counts->getTupleCount() == cardinality_bound);
+    assert(local_partial_counts->tuple_cnt_ == cardinality_bound);
     PlainTable *empty = local_partial_counts->clone();
     empty->resize(0);
 
@@ -165,13 +165,13 @@ int main(int argc, char **argv) {
 
     chi = UnionHybridData::readSecretSharedInput(secret_share_file, QuerySchema::toPlain(alice->getSchema()));
 
-    assert(alice->getTupleCount() == bob->getTupleCount());
-    assert(alice->getTupleCount() == chi->getTupleCount());
+    assert(alice->tuple_cnt_ == bob->tuple_cnt_);
+    assert(alice->tuple_cnt_ == chi->tuple_cnt_);
     assert(alice->getSchema() == bob->getSchema());
     assert(alice->getSchema() == chi->getSchema());
 
     SecureTable *data_cube = alice->clone();
-    size_t tuple_cnt = data_cube->getTupleCount();
+    size_t tuple_cnt = data_cube->tuple_cnt_;
 
     // for each tuple
     for(size_t i = 0; i < tuple_cnt; ++i) {

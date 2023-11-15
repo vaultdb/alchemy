@@ -67,7 +67,7 @@ SecureTable *runRollup(int idx, const string & colName, int party, SecureTable *
         string schema_file = out_path + "/" + colName + ".schema";
         result->getSchema().toFile(schema_file);
 
-        for(size_t i = 0; i < result->getTupleCount(); ++i) {
+        for(size_t i = 0; i < result->tuple_cnt_; ++i) {
             csv += result->getPlainTuple(i).toString() + "\n";
         }
         DataUtilities::writeFile(out_file, csv);
@@ -276,7 +276,7 @@ int main(int argc, char **argv) {
     // don't free input_data later, EnrichHtnQuery will do it
     EnrichHtnQuery enrich(input_data, cardinality_bound);
 
-    assert(enrich.data_cube_->getTupleCount() <= cardinality_bound);
+    assert(enrich.data_cube_->tuple_cnt_ <= cardinality_bound);
 
     cumulative_runtime_ += time_from(start_time_);
     measurements += "," + std::to_string(Utilities::getEpoch());
@@ -289,7 +289,7 @@ int main(int argc, char **argv) {
         partial_count_query = PilotUtilities::replaceSelection(partial_count_query, partial_count_selection_clause);
         PlainTable *local_partial_counts = DataUtilities::getQueryResults(db_name, partial_count_query, false);
 
-        assert(local_partial_counts->getTupleCount() <= cardinality_bound);
+        assert(local_partial_counts->tuple_cnt_ <= cardinality_bound);
 
         PlainTable *empty = local_partial_counts->clone();
         empty->resize(0);

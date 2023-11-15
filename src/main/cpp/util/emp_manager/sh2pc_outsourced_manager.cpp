@@ -45,9 +45,9 @@ QueryTable<Bit> *SH2PCOutsourcedManager::secretShare(const QueryTable<bool> *src
 
     if(tuple_cnt > 0) {
         if (party_ == emp::ALICE) {
-            secret_share_send(emp::ALICE, src, dst_table, 0, tuple_cnt);
+            secret_share_send(emp::ALICE, src, dst_table, 0, false);
         } else { // bob
-            secret_share_recv(tuple_cnt, emp::ALICE, dst_table, 0, tuple_cnt);
+            secret_share_recv(tuple_cnt, emp::ALICE, dst_table, 0, false);
         }
     }
     netio_->flush();

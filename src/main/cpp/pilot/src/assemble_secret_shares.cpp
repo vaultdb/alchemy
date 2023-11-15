@@ -43,7 +43,7 @@ void revealRollup(const std::string & rollup_name) {
     PlainTable *result = QueryTable<bool>::deserialize(rollup_schema, revealed);
 
     std::string csv;
-    for(size_t i = 0; i < result->getTupleCount(); ++i) {
+    for(size_t i = 0; i < result->tuple_cnt_; ++i) {
         if(!result->getDummyTag(i)) {
             PlainTuple tuple = result->getPlainTuple(i);
             csv += tuple.toString() + "\n";
