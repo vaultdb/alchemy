@@ -6,7 +6,8 @@
 #include <data/csv_reader.h>
 #include "plain/plain_base_test.h"
 
-DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(storage, "column", "storage model for columns (column or compressed)");
 
 
 // set up this test by running:
@@ -125,6 +126,8 @@ TEST_F(CsvReaderTest, ordersTest) {
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
-
-    return RUN_ALL_TESTS();
+    ::testing::GTEST_FLAG(filter)=FLAGS_filter;
+    int i = RUN_ALL_TESTS();
+    google::ShutDownCommandLineFlags();
+    return i;
 }
