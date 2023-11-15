@@ -21,7 +21,7 @@ namespace vaultdb {
         CompressedTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<B>(tuple_cnt, schema, sort_def) {
             SystemConfiguration & s = SystemConfiguration::getInstance();
             assert(s.storageModel() == StorageModel::COMPRESSED_STORE);
-            assert(s.emp_manager_->sendingParty() != 0); // allow only one party to secret share at a time
+            assert(s.emp_manager_ == nullptr || s.emp_manager_->sendingParty() != 0); // allow only one party to secret share at a time
             setSchema(schema);
 
             // each CompressedColumn has a pointer to column_data_ in parent table
