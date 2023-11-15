@@ -29,7 +29,16 @@ namespace vaultdb {
 
         }
 
-	protected:
+        Operator<B> *clone() const  override {
+            // TODO: implement copy constructor
+            return new SortMergeJoin<B>(*this);
+        }
+
+        bool operator==(const Operator<B> &other) const override {
+            throw;
+        }
+
+    protected:
         QueryTable<B> *runSelf() override;
 
         OperatorType getType() const override { return OperatorType::SORT_MERGE_JOIN; }
