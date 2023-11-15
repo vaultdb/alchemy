@@ -52,9 +52,9 @@ namespace vaultdb {
             for(int i = 0; i < 128; ++i) {
                 dummies[i] = d;
             }
-            OMPCBackend<N> *protocol = (OMPCBackend<N> *) emp::backend;
+            //OMPCBackend<N> *protocol = (OMPCBackend<N> *) emp::backend;
             OMPCPackedWire w;
-            protocol->pack(dummies, &w, 128);
+            //protocol->pack(dummies, &w, 128);
 
             OMPCPackedWire *cursor = (OMPCPackedWire *) column_data_[-1].data();
             for(int i = 0; i < dummy_tag_wire_cnt; ++i) {

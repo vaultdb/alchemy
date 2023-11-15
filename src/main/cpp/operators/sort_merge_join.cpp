@@ -28,6 +28,8 @@ void SortMergeJoin<B>::setup() {
     JoinEqualityConditionVisitor<B> join_visitor(p->root_);
     join_idxs_  = join_visitor.getEqualities();
 
+    lhs_smaller_ = (this->getChild(0)->getOutputSchema().size() < this->getChild(1)->getOutputSchema().size());
+
     one_ = FieldFactory<B>::getOne(int_field_type_);
     zero_ = FieldFactory<B>::getZero(int_field_type_);
 
