@@ -47,7 +47,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_supplier) {
 
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
                                      "supplier_cte AS (" + supplier_sql_ + ") "
-                               "SELECT * "
+                               "SELECT c_custkey, c_nationkey, c_mktsegment,  s_suppkey, s_nationkey "
                                "FROM  customer_cte JOIN supplier_cte ON c_nationkey = s_nationkey "
                                "WHERE NOT c_dummy AND NOT s_dummy "
                                "ORDER BY c_custkey ";
