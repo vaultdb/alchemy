@@ -21,7 +21,7 @@ class SortMergeJoinTest :  public PlainBaseTest  {
 protected:
  
 // simulating TPC-H Q5
-    const std::string customer_sql_ = "SELECT c_custkey, c_nationkey, r_name = 'EUROPE' c_dummy \n"
+    const std::string customer_sql_ = "SELECT c_custkey, c_nationkey, c_mktsegment, r_name = 'EUROPE' c_dummy \n"
                                       "FROM customer  JOIN nation ON c_nationkey = n_nationkey"
                                       "     JOIN region ON r_regionkey = n_regionkey \n"
                                       " ORDER BY c_custkey "
@@ -59,8 +59,8 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders) {
     auto supplier_input = new SqlInput(db_name_, supplier_sql_, true, supplier_sort_);
 
     // join output schema: (customer, supplier)
-    // c_custkey, c_nationkey, s_suppkey, s_nationkey
-    Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(customer_input, 0, supplier_input, 2);
+    // c_custkey, c_nationkey, c_mktsegment, s_suppkey, s_nationkey
+    Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(customer_input, 0, supplier_input, 3);
 
     auto join = new SortMergeJoin<bool>(customer_input, supplier_input,  predicate);
     auto joined = join->run();
