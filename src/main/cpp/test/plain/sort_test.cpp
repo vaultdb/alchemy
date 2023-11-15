@@ -5,6 +5,7 @@
 
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(storage, "column", "storage model for columns (column or compressed)");
 
 class SortTest : public PlainBaseTest {};
 
@@ -222,7 +223,6 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
-
 	::testing::GTEST_FLAG(filter)=FLAGS_filter;
     int i = RUN_ALL_TESTS();
     google::ShutDownCommandLineFlags();

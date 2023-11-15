@@ -17,6 +17,8 @@ static EmpMode _emp_mode_ = EmpMode::ZK;
     static EmpMode _emp_mode_ = EmpMode::PLAIN;
 #endif
 
+DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(storage, "column", "storage model for columns (column or compressed)");
 
 
 class SerializationTest : public PlainBaseTest {
@@ -188,8 +190,10 @@ if(_emp_mode_ == EmpMode::SH2PC) {
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
-
-    return RUN_ALL_TESTS();
+    ::testing::GTEST_FLAG(filter)=FLAGS_filter;
+    int i = RUN_ALL_TESTS();
+    google::ShutDownCommandLineFlags();
+    return i;
 }
 
 

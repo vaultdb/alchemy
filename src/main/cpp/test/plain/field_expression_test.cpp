@@ -3,6 +3,7 @@
 #include "operators/support/normalize_fields.h"
 #include "query_table/query_table.h"
 
+DEFINE_string(storage, "column", "storage model for columns (column or compressed)");
 
 class FieldExpressionTest : public  PlainBaseTest { };
 

@@ -31,6 +31,10 @@ namespace  vaultdb {
 
         ~OutsourcedMpcManager() = default;
 
+        int sendingParty() const override {
+            return TP;
+        }
+
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override {
             throw;
         }
@@ -157,6 +161,10 @@ namespace  vaultdb {
         }
 
         size_t getTableCardinality(const int & local_cardinality) override;
+
+        int sendingParty() const override {
+            return TP;
+        }
 
         void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {
             if(system_conf_.wire_packing_enabled_) {

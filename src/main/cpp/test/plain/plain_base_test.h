@@ -11,6 +11,7 @@
 
 DECLARE_int32(cutoff);
 DECLARE_string(filter);
+DECLARE_string(storage);
 
 using namespace vaultdb;
 using namespace emp;
@@ -23,7 +24,7 @@ protected:
 
     std::string current_working_directory_;
     const string db_name_ = "tpch_unioned_150";
-    const StorageModel storage_model_ = StorageModel::COLUMN_STORE;
+    StorageModel storage_model_ = StorageModel::COLUMN_STORE;
     EmpManager *manager_ = nullptr;
 
 

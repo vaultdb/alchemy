@@ -15,6 +15,8 @@
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(storage, "column", "storage model for columns (column or compressed)");
+
 
 class SortMergeJoinTest :  public PlainBaseTest  {
 

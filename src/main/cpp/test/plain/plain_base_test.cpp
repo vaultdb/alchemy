@@ -18,7 +18,14 @@ static EmpMode _emp_mode_ = EmpMode::ZK;
 
 void PlainBaseTest::SetUp()  {
 
+    assert(FLAGS_storage == "column" || FLAGS_storage == "compressed");
+
     std::cout << "Received emp_mode: " << EmpManager::empModeString(_emp_mode_) << std::endl;
+    if(FLAGS_storage == "compressed") {
+        storage_model_ = StorageModel::COMPRESSED_STORE;
+    }
+
+    SystemConfiguration::getInstance().setStorageModel(storage_model_);
 
     if(_emp_mode_ == EmpMode::OUTSOURCED) {
         manager_ = new OutsourcedMpcManager();

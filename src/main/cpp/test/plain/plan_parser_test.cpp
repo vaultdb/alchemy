@@ -8,6 +8,7 @@
 
 // e.g., ./bin/plan_parser_test --filter="PlanParserTest.tpch_q1"
 DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(storage, "column", "storage model for columns (column or compressed)");
 
 
 class PlanParserTest : public PlainBaseTest {

@@ -5,6 +5,9 @@
 #include <util/data_utilities.h>
 #include <query_table/query_table.h>
 
+DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(storage, "column", "storage model for columns (column or compressed)");
+
 
 // generates secret shares for a table - one for alice and one for bob
 // then zips them together and verifies that it produces the same table
@@ -79,8 +82,10 @@ TEST_F(SecretShareGeneratorTest, lineitem_dummy_tag_sample) {
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
-
-    return RUN_ALL_TESTS();
+    ::testing::GTEST_FLAG(filter)=FLAGS_filter;
+    int i = RUN_ALL_TESTS();
+    google::ShutDownCommandLineFlags();
+    return i;
 }
 
 #endif //  _SECRET_SHARE_GENERATOR_TEST_

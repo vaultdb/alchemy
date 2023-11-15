@@ -28,6 +28,7 @@ void EmpBaseTest::SetUp()  {
     s.emp_mode_ =  _emp_mode_;
     emp_mode_ =  _emp_mode_;
     // defaults to column store
+    assert(FLAGS_storage == "column" || FLAGS_storage == "wire_packed" || FLAGS_storage == "compressed");
     if(FLAGS_storage == "wire_packed") {
         storage_model_ = StorageModel::PACKED_COLUMN_STORE;
     }
