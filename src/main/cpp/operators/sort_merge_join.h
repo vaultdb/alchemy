@@ -48,6 +48,7 @@ namespace vaultdb {
 		QueryTable<B> *lhs_prime_;
 		QueryTable<B> *rhs_prime_;
 		Field<B> table_id_field_;
+        bool lhs_smaller_ = true;
 
         pair<QueryTable<B> *, QueryTable<B> *> augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs);
         QueryTable<B> *obliviousDistribute(QueryTable<B> *input, size_t target_size);
