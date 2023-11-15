@@ -135,8 +135,6 @@ namespace  vaultdb {
         QueryTable<Bit> *revertProjection(QueryTable<Bit> *src, const map<int, int> &expr_map, const bool &is_lhs) const;
 
         QueryTable<B> *projectJoinKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs);
-        //QueryTable<B> *projectJoinKeyToFirstAttrOmpc(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs);
-
         void initializeAlphas(QueryTable<B> *dst); // update in place
 
         QueryTable<B> *unionAndSortTables();

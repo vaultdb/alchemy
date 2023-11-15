@@ -43,7 +43,7 @@ protected:
 };
 
 
-TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders) {
+TEST_F(SortMergeJoinTest, test_tpch_q3_customer_supplier) {
 
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
                                      "supplier_cte AS (" + supplier_sql_ + ") "

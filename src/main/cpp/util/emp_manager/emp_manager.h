@@ -41,6 +41,8 @@ namespace vaultdb {
                     return "zk";
                 case EmpMode::OUTSOURCED:
                     return  "outsourced";
+                default:
+                    return "";
             }
         }
 
