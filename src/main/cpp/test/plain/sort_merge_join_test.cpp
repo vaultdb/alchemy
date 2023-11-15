@@ -29,7 +29,7 @@ protected:
 
 
     const std::string supplier_sql_ = "SELECT s_suppkey, s_nationkey, r_name = 'EUROPE' s_dummy \n"
-                                      "FROM supplier  JOIN nation ON c_nationkey = n_nationkey"
+                                      "FROM supplier  JOIN nation ON s_nationkey = n_nationkey"
                                       "     JOIN region ON r_regionkey = n_regionkey \n"
                                       " ORDER BY s_suppkey "
                                       "LIMIT " + std::to_string(FLAGS_cutoff);
