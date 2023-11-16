@@ -111,7 +111,7 @@ namespace vaultdb {
             Bit *src_ptr = src;
             Bit *dst_ptr = dst + (byte_cnt - 1)*8;
             for(int i = 0; i < byte_cnt; ++i) {
-                memcpy(dst_ptr, src_ptr, 8 * SystemConfiguration::getInstance().emp_bit_size_bytes_);
+                memcpy(dst_ptr, src_ptr, 8 * sizeof(emp::Bit));
                 src_ptr += 8;
                 dst_ptr -= 8;
             }
