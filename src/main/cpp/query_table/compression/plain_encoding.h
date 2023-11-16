@@ -56,7 +56,7 @@ namespace vaultdb {
         ColumnEncoding<B> *clone(QueryTable<B> *dst, const int & dst_col) override {
             assert(dst->tuple_cnt_ == this->parent_table_->tuple_cnt_);
             PlainEncoding<B> *dst_encoding = new PlainEncoding<B>(dst, dst_col);
-            memcpy(dst_encoding->column_data_, this->column_data_, this->field_size_bytes_ * this->parent_table_->tuple_cnt_);
+            dst->column_data_[dst_col] = vector<int8_t>(this->parent_table_->column_data_[this->column_idx_]);
             return dst_encoding;
         }
 
