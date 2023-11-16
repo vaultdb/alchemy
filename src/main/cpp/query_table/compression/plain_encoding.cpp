@@ -52,7 +52,7 @@ void PlainEncoding<B>::secretShare(QueryTable<Bit> *dst, const int &dst_col) {
             int col_byte_cnt = dst_col_size_bits / 8;
             int byte_cnt = row_cnt * col_byte_cnt;
             Bit *dst_ptr = (Bit *) dst->column_data_.at(dst_col).data();
-//            cout << "Secret sharing " << row_cnt << " rows, with " << dst_col_size_bits << " bits each, secret sharing " <<  dst_col_size_bits * row_cnt << " bits for column " << this->column_idx_ <<   endl;
+
             if (sender) {
                 auto bools = Utilities::bytesToBool(this->column_data_, byte_cnt);
                 manager->feed(dst_ptr, sending_party, bools, dst_col_size_bits * row_cnt);
