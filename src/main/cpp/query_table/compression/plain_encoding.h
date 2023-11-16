@@ -20,7 +20,6 @@ namespace vaultdb {
             field_size_bytes_ = (std::is_same_v<B, bool>) ? (field_size_bits / 8) : (field_size_bits * sizeof(emp::Bit));
 
             auto dst_size = field_size_bytes_ * parent->tuple_cnt_;
-//            cout << "Malloc'ing " << dst_size << " bytes for column " << parent->getSchema().getField(col_idx)  << " or " << field_size_bytes_ << " bytes per field." <<  endl;
 
             parent->column_data_[col_idx] = vector<int8_t>(dst_size);
             this->column_data_ = parent->column_data_[col_idx].data();
@@ -31,7 +30,6 @@ namespace vaultdb {
             int8_t *src =  this->column_data_ + field_size_bytes_ * row;
             QueryFieldDesc desc = this->parent_table_->getSchema().getField(this->column_idx_);
             return Field<B>::deserialize(desc, src);
-
         }
 
         void setField(const int & row, const Field<B> & f) override {
@@ -56,7 +54,7 @@ namespace vaultdb {
         ColumnEncoding<B> *clone(QueryTable<B> *dst, const int & dst_col) override {
             assert(dst->tuple_cnt_ == this->parent_table_->tuple_cnt_);
             PlainEncoding<B> *dst_encoding = new PlainEncoding<B>(dst, dst_col);
-            dst->column_data_[dst_col] = vector<int8_t>(this->parent_table_->column_data_[this->column_idx_]);
+            dst->column_data_[dst_col] = this->parent_table_->column_data_[this->column_idx_];
             return dst_encoding;
         }
 
