@@ -105,13 +105,11 @@ void DataUtilities::removeDummies(PlainTable *table) {
     // only works for plaintext tables
     int out_tuple_cnt = table->getTrueTupleCount();
     if(out_tuple_cnt == table->tuple_cnt_) return;
-
     int write_cursor = 0;
 
     for(int i = 0; i < table->tuple_cnt_; ++i) {
         if(!table->getDummyTag(i)) {
             table->cloneRow(write_cursor, 0, table, i );
-            table->setDummyTag(write_cursor, false);
             ++write_cursor;
         }
         if(write_cursor == out_tuple_cnt) break;
