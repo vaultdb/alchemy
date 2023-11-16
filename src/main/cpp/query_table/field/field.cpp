@@ -302,15 +302,14 @@ std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
     manager->reveal(bools, party, (Bit *) src.bits.data(), bit_cnt);
 
     bool *byte_cursor = bools;
-    string dst;
-    dst.resize(byte_cnt);
+    string dst(byte_cnt, ' ');
 
     for(int i = 0; i < byte_cnt; ++i) {
         dst[i] =  Utilities::boolsToByte(byte_cursor);
         byte_cursor += 8;
     }
 
-    std::reverse(dst.begin(), dst.end());
+    Utilities::reverseString(dst.data(), dst.size()); // reverse it back to normal
 
     delete[] bools;
     return dst;
@@ -467,16 +466,15 @@ Field<B>::secretShareString(const string &s, const bool &to_send, const int &src
 
     if (to_send) {
         std::string input = s;
-        std::reverse(input.begin(), input.end());
+        Utilities::reverseString(input.data(), input.size());
         bool *bools = Utilities::bytesToBool((int8_t *) input.c_str(), str_length);
         manager->feed(payload.bits.data(), src_party, bools, bit_cnt);
         delete[] bools;
 
     } else {
-        manager->feed(payload.bits.data(), src_party, nullptr, bit_cnt);
+        bool bools[bit_cnt];
+        manager->feed(payload.bits.data(), src_party, bools, bit_cnt);
     }
-
-
 
     return payload;
 }

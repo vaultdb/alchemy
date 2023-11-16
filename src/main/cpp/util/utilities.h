@@ -102,6 +102,21 @@ namespace vaultdb {
             return true;
         }
 
+        static void reverseString(char *s, const int & len) {
+           char *l = s;
+           char *r = s + len - 1;
+
+            // swap in place
+            while(l < r) {
+                *l = *l ^ *r;
+                *r = *r ^ *l;
+                *l = *l ^ *r;
+
+                ++l;
+                --r;
+            }
+        }
+
     };
 
 }

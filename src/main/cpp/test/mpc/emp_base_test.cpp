@@ -69,6 +69,7 @@ void EmpBaseTest::SetUp()  {
         assert(storage_model_ != StorageModel::PACKED_COLUMN_STORE);
         if(storage_model_ == StorageModel::COMPRESSED_STORE) {
             manager_ = new SH2PCOutsourcedManager(FLAGS_alice_host, FLAGS_party, FLAGS_port);
+            emp_mode_ = vaultdb::EmpMode::SH2PC_OUTSOURCED;
             db_name_ = (FLAGS_party == ALICE) ? FLAGS_unioned_db : empty_db_;
         }
         else {
