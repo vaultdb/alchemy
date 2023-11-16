@@ -134,10 +134,7 @@ namespace vaultdb {
             column_encodings_.at(-1)->setField(dst_row, dummy_tag);
         }
 
-        void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) override {
-            throw std::invalid_argument("NYI!");
-
-        }
+        void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) override;
         void cloneTable(const int & dst_row, QueryTable<B> *src) override {
             throw std::invalid_argument("NYI!");
 
