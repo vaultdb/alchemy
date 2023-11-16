@@ -13,11 +13,12 @@ void BitPackedEncoding::revealInsecure(QueryTable<bool> *dst, const int & dst_co
     auto dst_table = (CompressedTable<bool> *) dst;
     assert(dst_table->column_encodings_.at(dst_col)->columnEncoding() == ColumnEncodingModel::PLAIN);
 
-    int byte_cnt = row_cnt * dst->field_sizes_bytes_[dst_col];
     Bit *src_ptr = (Bit *) this->column_data_;
-//            cout << "Revealing " << byte_cnt << " bytes or " << byte_cnt * 8 << " bits for column " << this->column_idx_ << endl;
-    if(field_type_ == FieldType::SECURE_INT)
-        this->revealBitPackedInts<int32_t>((int32_t *) dst->column_data_.at(dst_col).data(), src_ptr, row_cnt, party);
+
+    if(field_type_ == FieldType::SECURE_INT) {
+        auto dst_ptr = (int32_t *) dst->column_data_.at(dst_col).data();
+        this->revealBitPackedInts<int32_t>(dst_ptr, src_ptr, row_cnt, party);
+    }
     else if(field_type_ == FieldType::SECURE_LONG)
         this->revealBitPackedInts<int64_t>((int64_t *) dst->column_data_.at(dst_col).data(), src_ptr, row_cnt, party);
     else

@@ -69,6 +69,7 @@ namespace vaultdb {
             }
         }
         void resize(const size_t &tuple_cnt) override {
+            this->tuple_cnt_ = tuple_cnt;
             for(auto pos : column_encodings_) {
                 column_encodings_[pos.first]->resize(tuple_cnt);
             }
@@ -109,6 +110,7 @@ namespace vaultdb {
 
         PlainTable *revealInsecure(const int & party = emp::PUBLIC) const override {
             auto dst_schema = QuerySchema::toPlain(this->schema_);
+
             PlainTable *dst = new CompressedTable<bool>(this->tuple_cnt_, dst_schema, this->order_by_);
             for(auto pos : column_encodings_) {
                 pos.second->revealInsecure(dst, pos.first, party);
@@ -124,9 +126,9 @@ namespace vaultdb {
 
         // include dummy tag for this
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) override {
-            for(int i = 0; i < this->schema_.getFieldCount(); ++i) {
+            for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
                 Field<B> field = src->getField(src_row, i);
-                column_encodings_.at(dst_col)->setField(dst_row, field);
+                column_encodings_.at(dst_col+i)->setField(dst_row, field);
             }
             Field<B> dummy_tag = src->getField(src_row, -1);
             column_encodings_.at(-1)->setField(dst_row, dummy_tag);
