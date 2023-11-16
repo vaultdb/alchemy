@@ -21,7 +21,7 @@ DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
-DEFINE_string(storage, "column", "storage model for columns (column, wire_packed or compressed)");
+DEFINE_string(storage, "compressed", "storage model for columns (column, wire_packed or compressed)");
 
 
 class SecureFieldExpressionTest : public EmpBaseTest {
@@ -71,6 +71,8 @@ TEST_F(SecureFieldExpressionTest, test_string_compare) {
 TEST_F(SecureFieldExpressionTest, test_emp_int_math) {
 
     SecureField lhs, rhs;
+    QueryFieldDesc desc(0, "", "", FieldType::SECURE_INT, 0);
+
     if(emp_mode_ == EmpMode::SH2PC) {
         // alice inputs 7, bob inputs 12
         emp::Integer alice_shared = emp::Integer(32, FLAGS_party == emp::ALICE ? 7 : 0, emp::ALICE);
@@ -86,9 +88,10 @@ TEST_F(SecureFieldExpressionTest, test_emp_int_math) {
         lhs = SecureField(FieldType::SECURE_INT, lhs_shared);
         rhs = SecureField(FieldType::SECURE_INT, rhs_shared);
     }
-    else { // outsourced
-        Integer lhs_shared(32, FLAGS_party == emp::TP ? 7 : 0, emp::TP);
-        Integer rhs_shared(32, FLAGS_party == emp::TP ? 12 : 0, emp::TP);
+    else { // outsourced  or sh2pc_outsourced
+        int sending_party = manager_->sendingParty();
+        Integer lhs_shared(32, FLAGS_party == sending_party ? 7 : 0, sending_party);
+        Integer rhs_shared(32, FLAGS_party == sending_party ? 12 : 0, sending_party);
 
         lhs = SecureField(FieldType::SECURE_INT, lhs_shared);
         rhs = SecureField(FieldType::SECURE_INT, rhs_shared);
@@ -98,11 +101,9 @@ TEST_F(SecureFieldExpressionTest, test_emp_int_math) {
     emp::Integer multiplier(32, 2); // set multiplier to two
     SecureField multiplier_field(FieldType::SECURE_INT, multiplier);
 
-
-
     SecureField result = (lhs + rhs) * multiplier_field;
     if(FLAGS_validation) {
-        PlainField revealed = result.reveal(QueryFieldDesc(0, "", "", FieldType::SECURE_INT, 0), emp::PUBLIC);
+        PlainField revealed = result.reveal(desc, emp::PUBLIC);
         ASSERT_EQ(revealed.getValue<int32_t>(), 19 * 2);
     }
 
