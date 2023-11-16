@@ -31,11 +31,10 @@ QueryTable<B> *Filter<B>::runSelf() {
     int tuple_cnt = input->tuple_cnt_;
 
     for(int i = 0; i < tuple_cnt; ++i) {
-        Field<B> selected = predicate_->call(this->output_, i);
-        B dummy_tag =  ((!(selected.template getValue<B>())) | this->output_->getDummyTag(i)); // (!) because dummyTag is false if our selection criteria is satisfied
+        B selected = predicate_->call(this->output_, i).template getValue<B>();
+        B dummy_tag =  (!selected | this->output_->getDummyTag(i)); // (!) because dummyTag is false if our selection criteria is satisfied
         this->output_->setDummyTag(i, dummy_tag);
     }
-
 
     this->output_->order_by_ = input->order_by_;
     return this->output_;
