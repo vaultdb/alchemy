@@ -6,6 +6,7 @@
 #include "query_table/query_table.h"
 #include "operators/support/normalize_fields.h"
 #include "operators/sort.h"
+#include "query_table/column_table.h"
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -68,7 +69,7 @@ TEST_F(EmpTest, emp_test_varchar) {
     }
 
 
-    int send_party = (this->emp_mode_ == EmpMode::SH2PC) ? emp::ALICE : emp::TP;
+    int send_party = manager_->sendingParty();
     bool sender = (FLAGS_party == send_party);
 
     Integer secret_shared = Field<Bit>::secretShareString(sender ? initial_string : "", sender, send_party,len);
@@ -136,28 +137,36 @@ TEST_F(EmpTest, secret_share_table_one_column) {
     all_input.insert(all_input.end(), bob_input.begin(), bob_input.end());
     int32_t *input;
 
-    if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED) {
-        input = (FLAGS_party == TP) ? all_input.data() : nullptr;
-        in_tuple_cnt = (FLAGS_party == TP) ? all_input.size() : 0;
-    }
-    else {
-        input = (FLAGS_party == emp::ALICE) ? alice_input.data() : bob_input.data();
-        in_tuple_cnt = (FLAGS_party == emp::ALICE) ? alice_input.size() : bob_input.size();
-    }
-
     QuerySchema schema;
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
     schema.initializeFieldOffsets();
 
 
-
-    plain = PlainTable::getTable(in_tuple_cnt, schema);
-
-    for (uint32_t i = 0; i < in_tuple_cnt; ++i) {
-            Field<bool> val(FieldType::INT, input[i]);
-            plain->setField(i, 0, val);
-            plain->setDummyTag(i, false);
+    if(emp_mode_ != EmpMode::SH2PC) {
+        in_tuple_cnt = (FLAGS_party == manager_->sendingParty())  ? all_input.size() : 0;
+        plain = PlainTable::getTable(in_tuple_cnt, schema);
+        if(manager_->sendingParty() == FLAGS_party) {
+            input = all_input.data();
+            memcpy(plain->column_data_[0].data(), input, in_tuple_cnt * sizeof(int32_t));
+            memset(plain->column_data_[-1].data(), 0, in_tuple_cnt * sizeof(bool));
+        }
     }
+    else {
+        input = (FLAGS_party == emp::ALICE) ? alice_input.data() : bob_input.data();
+        in_tuple_cnt = (FLAGS_party == emp::ALICE) ? alice_input.size() : bob_input.size();
+        plain = PlainTable::getTable(in_tuple_cnt, schema);
+
+        memcpy(plain->column_data_[0].data(), input, in_tuple_cnt * sizeof(int32_t));
+        memset(plain->column_data_[-1].data(), 0, in_tuple_cnt * sizeof(bool));
+    }
+
+
+
+//    for (uint32_t i = 0; i < in_tuple_cnt; ++i) {
+//            Field<bool> val(FieldType::INT, input[i]);
+//            plain->setField(i, 0, val);
+//            plain->setDummyTag(i, false);
+//    }
 
     SecureTable *secret_shared = plain->secretShare();
 
@@ -165,11 +174,13 @@ TEST_F(EmpTest, secret_share_table_one_column) {
 
     // set up expected result by concatenating input tables
     PlainTable *expected = PlainTable::getTable(all_input.size(), schema);
+    memcpy(expected->column_data_[0].data(), all_input.data(), all_input.size() * sizeof(int32_t));
+    memset(expected->column_data_[-1].data(), 0, all_input.size() * sizeof(bool));
 
-    for (uint32_t i = 0; i < all_input.size(); ++i) {
-        expected->setField(i, 0, Field<bool>(FieldType::INT, all_input[i]));
-        expected->setDummyTag(i, false);
-    }
+//    for (uint32_t i = 0; i < all_input.size(); ++i) {
+//        expected->setField(i, 0, Field<bool>(FieldType::INT, all_input[i]));
+//        expected->setDummyTag(i, false);
+//    }
 
     ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
 
@@ -186,6 +197,7 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
     uint32_t tuple_cnt = 10;
     vector<int32_t> alice_input{1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
     vector<int32_t> bob_input{4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
 
 //    size_t tuple_cnt = 4;
 //    vector<int32_t> alice_input{1, 3, 4, 7};
@@ -193,29 +205,33 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
 
     vector<int32_t> all_input(alice_input);
     all_input.insert(all_input.end(), bob_input.begin(), bob_input.end());
-    int32_t *input;
 
-    if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED) {
-        input = all_input.data();
-        tuple_cnt = (FLAGS_party == TP) ? all_input.size() : 0;
-    }
-    else {
-        input = (FLAGS_party == emp::ALICE) ? alice_input.data() : bob_input.data();
-    }
-
+    int32_t *input = nullptr;
 
     QuerySchema schema;
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
     schema.initializeFieldOffsets();
+    PlainTable  *input_table;
 
-    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
-    PlainTable *input_table = PlainTable::getTable(tuple_cnt, schema, sort_def);
 
-    for(uint32_t i = 0; i < tuple_cnt; ++i) {
-        Field<bool> val(FieldType::INT, input[i]);
-        input_table->setField(i, 0, val);
-        input_table->setDummyTag(i, false);
+    if(emp_mode_ != EmpMode::SH2PC) {
+        tuple_cnt = (FLAGS_party == manager_->sendingParty()) ? all_input.size() : 0;
+        input_table = PlainTable::getTable(tuple_cnt, schema, sort_def);
+        if(FLAGS_party == manager_->sendingParty()) {
+            input = all_input.data();
+            memcpy(input_table->column_data_[0].data(), input, tuple_cnt * sizeof(int32_t));
+            memset(input_table->column_data_[-1].data(), 0, tuple_cnt * sizeof(bool));
+        }
+
+
     }
+    else {
+        input = (FLAGS_party == emp::ALICE) ? alice_input.data() : bob_input.data();
+        input_table = PlainTable::getTable(tuple_cnt, schema, sort_def);
+        memcpy(input_table->column_data_[0].data(), input, tuple_cnt * sizeof(int32_t));
+        memset(input_table->column_data_[-1].data(), 0, tuple_cnt * sizeof(bool));
+    }
+
 
     // tests bitonic merge in 2PC case
     SecureTable *secret_shared = input_table->secretShare();
@@ -223,16 +239,12 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
     PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
 
     // set up expected result
-    std::sort(all_input.begin(), all_input.end());
+     std::sort(all_input.begin(), all_input.end());
 
-
-    PlainTable *expected = PlainTable::getTable(all_input.size(), schema, sort_def);
-
-    for(uint32_t i = 0; i < expected->tuple_cnt_; ++i) {
-        Field<bool> val(FieldType::INT, all_input[i]);
-        expected->setField(i, 0, val);
-        expected->setDummyTag(i, false);
-    }
+    // use ColumnTable to avoid "double testing" experimental storage layouts
+    PlainTable *expected = new ColumnTable<bool>(all_input.size(), schema, sort_def);
+    memcpy(expected->column_data_[0].data(), all_input.data(), all_input.size() * sizeof(int32_t));
+    memset(expected->column_data_[-1].data(), 0, all_input.size() * sizeof(bool));
 
     //verify output
     ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
