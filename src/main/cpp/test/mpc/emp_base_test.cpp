@@ -40,11 +40,6 @@ void EmpBaseTest::SetUp()  {
 
 	Logger* log = get_log();
 
-    std::stringstream ss;
-
-    ss << "Received emp mode: " << EmpManager::empModeString(emp_mode_) << endl;
-
-    log->write(ss.str(), Level::INFO);
     log->write("Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party), Level::INFO);
 
 
@@ -92,6 +87,10 @@ void EmpBaseTest::SetUp()  {
     else {
         throw std::runtime_error("No EMP backend found.");
     }
+
+    std::stringstream ss;
+    ss << "Received emp mode: " << EmpManager::empModeString(emp_mode_) << endl;
+    log->write(ss.str(), Level::INFO);
 
 
     s.setEmptyDbName(empty_db_);
