@@ -296,6 +296,7 @@ template<typename B>
 std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
     long bit_cnt = src.size();
     long byte_cnt = bit_cnt / 8;
+    assert(bit_cnt % 8 == 0);
 
     bool *bools = new bool[bit_cnt];
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
@@ -473,6 +474,7 @@ Field<B>::secretShareString(const string &s, const bool &to_send, const int &src
 
     } else {
         bool bools[bit_cnt];
+        memset(bools, 0, bit_cnt);
         manager->feed(payload.bits.data(), src_party, bools, bit_cnt);
     }
 

@@ -71,8 +71,13 @@ TEST_F(EmpTest, emp_test_varchar) {
 
     int send_party = manager_->sendingParty();
     bool sender = (FLAGS_party == send_party);
+    if(emp_mode_ == EmpMode::SH2PC) {
+        send_party = emp::ALICE;
+        sender = (FLAGS_party == emp::ALICE);
+    }
 
-    Integer secret_shared = Field<Bit>::secretShareString(sender ? initial_string : "", sender, send_party,len);
+
+    Integer secret_shared = Field<Bit>::secretShareString(sender ? initial_string : "", sender, send_party, len);
 
     if(FLAGS_validation) {
         string decoded_str = Field<Bit>::revealString(secret_shared);
@@ -160,27 +165,13 @@ TEST_F(EmpTest, secret_share_table_one_column) {
         memset(plain->column_data_[-1].data(), 0, in_tuple_cnt * sizeof(bool));
     }
 
-
-
-//    for (uint32_t i = 0; i < in_tuple_cnt; ++i) {
-//            Field<bool> val(FieldType::INT, input[i]);
-//            plain->setField(i, 0, val);
-//            plain->setDummyTag(i, false);
-//    }
-
     SecureTable *secret_shared = plain->secretShare();
-
     PlainTable *revealed = secret_shared->revealInsecure(emp::PUBLIC);
 
     // set up expected result by concatenating input tables
     PlainTable *expected = PlainTable::getTable(all_input.size(), schema);
     memcpy(expected->column_data_[0].data(), all_input.data(), all_input.size() * sizeof(int32_t));
     memset(expected->column_data_[-1].data(), 0, all_input.size() * sizeof(bool));
-
-//    for (uint32_t i = 0; i < all_input.size(); ++i) {
-//        expected->setField(i, 0, Field<bool>(FieldType::INT, all_input[i]));
-//        expected->setDummyTag(i, false);
-//    }
 
     ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
 
@@ -235,7 +226,6 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
 
     // tests bitonic merge in 2PC case
     SecureTable *secret_shared = input_table->secretShare();
-
     PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
 
     // set up expected result
@@ -244,7 +234,7 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
     // use ColumnTable to avoid "double testing" experimental storage layouts
     PlainTable *expected = new ColumnTable<bool>(all_input.size(), schema, sort_def);
     memcpy(expected->column_data_[0].data(), all_input.data(), all_input.size() * sizeof(int32_t));
-    memset(expected->column_data_[-1].data(), 0, all_input.size() * sizeof(bool));
+    memset(expected->column_data_[-1].data(), 0, all_input.size());
 
     //verify output
     ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
