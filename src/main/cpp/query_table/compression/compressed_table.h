@@ -51,11 +51,8 @@ namespace vaultdb {
 
         }
 
-        explicit CompressedTable(const QueryTable<B> &src) : QueryTable<B>(src) {
+        explicit CompressedTable(const CompressedTable<B> &src) : QueryTable<B>(src) {
             assert(src.storageModel() == StorageModel::COMPRESSED_STORE);
-            SystemConfiguration & s = SystemConfiguration::getInstance();
-            assert(s.storageModel() == StorageModel::COMPRESSED_STORE);
-            assert(s.emp_manager_->sendingParty() != 0); // allow only one party to secret share at a time
 
             setSchema(src.getSchema());
             auto src_table = (CompressedTable<B> *) &src;
@@ -103,7 +100,6 @@ namespace vaultdb {
             EmpManager *manager = s.emp_manager_;
             auto row_cnt = manager->getTableCardinality(this->tuple_cnt_);
 
-//            cout << "Secret sharing table with schema: " << dst_schema << " and " << row_cnt << " rows." << endl;
             SecureTable *dst_table = new CompressedTable<Bit>(row_cnt, dst_schema, this->order_by_);
             for(auto pos : column_encodings_) {
                 pos.second->secretShare(dst_table, pos.first);
@@ -112,7 +108,8 @@ namespace vaultdb {
         }
 
         PlainTable *revealInsecure(const int & party = emp::PUBLIC) const override {
-            PlainTable *dst = new CompressedTable<bool>(this->tuple_cnt_, QuerySchema::toPlain(this->schema_), this->order_by_);
+            auto dst_schema = QuerySchema::toPlain(this->schema_);
+            PlainTable *dst = new CompressedTable<bool>(this->tuple_cnt_, dst_schema, this->order_by_);
             for(auto pos : column_encodings_) {
                 pos.second->revealInsecure(dst, pos.first, party);
             }
@@ -167,12 +164,14 @@ namespace vaultdb {
         }
 
         QueryTable<B> *clone() override { return new CompressedTable<B>(*this); }
-        void compareSwap(const B & swap, const int  & lhs_row, const int & rhs_row) override {
-            throw;
-        }
+        void compareSwap(const B & swap, const int  & lhs_row, const int & rhs_row) override;
 
         void cloneColumn(const int & dst_col, const int & dst_idx, const QueryTable<B> *src, const int & src_col, const int & src_offset = 0) override {
-            throw;
+            assert(dst_idx == 0); // offsets NYI
+            assert(src_offset == 0);
+            assert(src->storageModel() == StorageModel::COMPRESSED_STORE);
+
+            column_encodings_[dst_col] = ((CompressedTable<B> *) src)->column_encodings_.at(src_col)->clone(this, dst_col);
         }
 
         void setSchema(const QuerySchema &schema) override {
@@ -210,5 +209,7 @@ namespace vaultdb {
 
     };
 
+
 }
+
 #endif
