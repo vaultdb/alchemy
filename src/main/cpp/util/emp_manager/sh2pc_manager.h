@@ -19,7 +19,6 @@ namespace  vaultdb {
 
             emp::setup_semi_honest(netio_, party_, 1024 * 16);
             SystemConfiguration & s = SystemConfiguration::getInstance();
-            s.emp_bit_size_bytes_ = sizeof(emp::block);
             s.party_ = party;
             s.emp_mode_ = EmpMode::SH2PC;
 

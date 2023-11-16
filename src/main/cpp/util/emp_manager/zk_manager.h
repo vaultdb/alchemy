@@ -21,7 +21,6 @@ namespace vaultdb {
                                         : gen_host.c_str(),port+i), party==ALICE);
             setup_zk_bool<BoolIO<NetIO>>(ios_, threads_, party);
             SystemConfiguration & s = SystemConfiguration::getInstance();
-            s.emp_bit_size_bytes_ = sizeof(emp::block);
             s.party_ = party;
             s.emp_mode_ = EmpMode::ZK;
         }
