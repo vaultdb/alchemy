@@ -89,7 +89,22 @@ void EmpBaseTest::SetUp()  {
     }
 
     std::stringstream ss;
-    ss << "Received emp mode: " << EmpManager::empModeString(emp_mode_) << endl;
+    ss << "Received emp mode: " << EmpManager::empModeString(emp_mode_) << ", storage mode: ";
+    switch (storage_model_) {
+        case StorageModel::COLUMN_STORE:
+            ss << "column store";
+            break;
+        case StorageModel::PACKED_COLUMN_STORE:
+                ss << "packed wires";
+                break;
+        case StorageModel::COMPRESSED_STORE:
+                ss << "compressed";
+                break;
+        default:
+            ss << "unknown";
+    }
+    ss << endl;
+
     log->write(ss.str(), Level::INFO);
 
 
