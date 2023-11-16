@@ -287,8 +287,10 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
             for(int i = 0; i < collation.size(); ++i) {
                 tmp.emplace_back(collation[i]);
             }
-            Sort sort(((QueryTable<Bit> *) this)->clone(), tmp);
+            auto to_sort = ((QueryTable<Bit> *) this)->clone();
+            Sort sort(to_sort, tmp);
             sort.setOperatorId(-2);
+
             table = sort.getOutput()->clone();
         }
 
