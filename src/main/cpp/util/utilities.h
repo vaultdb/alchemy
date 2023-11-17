@@ -163,6 +163,8 @@ namespace vaultdb {
         static string getTestParameters() {
             stringstream  output;
             string code_version = Utilities::runCommand("git rev-parse HEAD");
+            if(code_version[code_version.size()-1] != '\n') code_version += "\n";
+
             SystemConfiguration & s = SystemConfiguration::getInstance();
             output << "EMP mode: " << EmpManager::empModeString(s.emp_mode_) << ", storage mode: " << getStorageModeStr(s.storageModel()) << endl;
 
