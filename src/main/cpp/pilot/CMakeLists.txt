@@ -30,3 +30,5 @@ package_add_binary(run_data_partner_aggregation src/run_data_partner_aggregation
 package_add_binary(run_data_partner_batch src/run_data_partner_batch.cpp src/common/union_hybrid_data.cpp src/common/shared_schema.cpp src/enrich_htn_query.cpp src/common/shared_schema.cpp  src/common/pilot_utilities.cpp)
 package_add_binary(assemble_secret_shares src/assemble_secret_shares.cpp src/common/pilot_utilities.cpp)
 
+package_add_binary(entry_comparison src/entry_comparison.cpp)
+
