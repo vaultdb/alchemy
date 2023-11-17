@@ -68,6 +68,7 @@ namespace vaultdb {
                 delete col.second;
             }
         }
+
         void resize(const size_t &tuple_cnt) override {
             this->tuple_cnt_ = tuple_cnt;
             for(auto pos : column_encodings_) {

@@ -254,8 +254,8 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src) {
             dst->setField(i, j, d);
         }
     }
-    dst->setSchema(normed_schema);
 
+    dst->setSchema(normed_schema);
     dst->order_by_ = this->sort_definition_;
     return dst;
 }
@@ -287,8 +287,8 @@ QueryTable<B> *Sort<B>::denormalizeTable(QueryTable<B> *src) {
     }
     Project<B> projection(dst, builder.getExprs());
     projection.setOperatorId(-2);
-    return projection.run()->clone();
-
+    auto projected = projection.run();
+    return projected->clone();
 }
 
 

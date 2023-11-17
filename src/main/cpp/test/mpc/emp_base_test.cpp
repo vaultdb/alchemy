@@ -6,6 +6,8 @@
 #include "util/emp_manager/sh2pc_outsourced_manager.h"
 #include "util/emp_manager/zk_manager.h"
 #include "util/emp_manager/outsourced_mpc_manager.h"
+#include <util/logger.h>
+
 #include "query_table/secure_tuple.h" // for use in child classes
 #include "query_table/plain_tuple.h"
 

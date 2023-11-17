@@ -21,7 +21,12 @@ namespace vaultdb {
             field_size_bits_ = parent->getSchema().getField(col_idx).size();
             int col_field_size_bytes = field_size_bits_ * sizeof(emp::Bit);
             auto dst_size = col_field_size_bytes * parent->tuple_cnt_;
-            parent->column_data_[col_idx] = vector<int8_t>(dst_size);
+            if(parent->column_data_.find(col_idx) == parent->column_data_.end()) {
+                parent_table_->column_data_.insert({col_idx, vector<int8_t>(dst_size)});
+            }
+            else if(parent->column_data_[col_idx].size() != dst_size){
+                parent->column_data_[col_idx].resize(dst_size);
+            }
             this->column_data_ = parent->column_data_[col_idx].data();
             field_min_ = parent->getSchema().getField(col_idx).getFieldMin();
         }
@@ -43,9 +48,9 @@ namespace vaultdb {
         }
 
         ColumnEncoding<Bit> *clone(QueryTable<Bit> *dst, const int & dst_col) override {
-            assert(dst->tuple_cnt_ == this->parent_table_->tuple_cnt_);
             BitPackedEncoding *dst_encoding = new BitPackedEncoding(dst, dst_col);
-            memcpy(dst_encoding->column_data_, this->column_data_, this->field_size_bits_ * this->parent_table_->tuple_cnt_ * sizeof(emp::Bit));
+            auto dst_ptr = dst_encoding->column_data_ + dst_col * this->field_size_bits_ * sizeof(emp::Bit);
+            memcpy(dst_ptr, this->column_data_, this->field_size_bits_ * this->parent_table_->tuple_cnt_ * sizeof(emp::Bit));
             return dst_encoding;
         }
 
