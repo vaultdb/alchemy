@@ -22,6 +22,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <gflags/gflags.h>
 
 
 namespace vaultdb {
@@ -116,7 +117,59 @@ namespace vaultdb {
                 --r;
             }
         }
+        // https://stackoverflow.com/questions/52164723/how-to-execute-a-command-and-get-return-code-stdout-and-stderr-of-command-in-c
+        static string runCommand(const string & cmd, const string & cwd = "") {
+            string dir = (cwd == "") ?  Utilities::getCurrentWorkingDirectory() : cwd;
 
+            string to_run = "cd " + dir + " && " + cmd;
+
+            std::array<char, 128> buffer;
+            std::string result;
+            std::shared_ptr<FILE> pipe(popen(to_run.c_str(), "r"), pclose);
+            if (!pipe) throw std::runtime_error("popen() failed!");
+            while (!feof(pipe.get())) {
+                if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
+                    result += buffer.data();
+            }
+            return result;
+
+        }
+
+        static string getGFlags() {
+            string settings = gflags::CommandlineFlagsIntoString();
+            std::replace(settings.begin(), settings.end(), '\n', '\t'); // replace all endline with tabs
+            auto pos = settings.find("--fromenv"); // truncate from this flag, everything else is boilerplate
+            if(pos != std::string::npos) {
+                settings = settings.substr(0, pos);
+            }
+            return settings;
+        }
+
+        static string getStorageModeStr(const StorageModel & storage_model) {
+            switch (storage_model) {
+                case StorageModel::COLUMN_STORE:
+                    return "column store";
+                case StorageModel::PACKED_COLUMN_STORE:
+                    return "packed wires";
+                case StorageModel::COMPRESSED_STORE:
+                    return "compressed";
+                case StorageModel::ROW_STORE:
+                    return "row store";
+                default:
+                    return "unknown";
+            }
+        }
+
+        static string getTestParameters() {
+            stringstream  output;
+            string code_version = Utilities::runCommand("git rev-parse HEAD");
+            SystemConfiguration & s = SystemConfiguration::getInstance();
+            output << "EMP mode: " << EmpManager::empModeString(s.emp_mode_) << ", storage mode: " << getStorageModeStr(s.storageModel()) << endl;
+
+            output << "Code version: " << code_version;
+            output << "GFlags: " <<  Utilities::getGFlags() << endl;
+            return output.str();
+        }
     };
 
 }

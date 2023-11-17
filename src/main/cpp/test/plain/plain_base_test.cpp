@@ -21,7 +21,6 @@ void PlainBaseTest::SetUp()  {
 
     assert(FLAGS_storage == "column" || FLAGS_storage == "compressed");
 
-    std::cout << "Received emp_mode: " << EmpManager::empModeString(_emp_mode_) << std::endl;
     if(FLAGS_storage == "compressed") {
         storage_model_ = StorageModel::COMPRESSED_STORE;
     }
@@ -45,6 +44,11 @@ void PlainBaseTest::SetUp()  {
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(db_name_);
     s.initialize(db_name_, md, storage_model_);
     s.emp_manager_ = manager_;
+
+    Logger* log = get_log();
+    string settings = Utilities::getTestParameters();
+    log->write(settings, Level::INFO);
+
 };
 
 void PlainBaseTest::TearDown() {

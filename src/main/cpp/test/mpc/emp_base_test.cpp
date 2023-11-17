@@ -88,30 +88,15 @@ void EmpBaseTest::SetUp()  {
         throw std::runtime_error("No EMP backend found.");
     }
 
-    std::stringstream ss;
-    ss << "Received emp mode: " << EmpManager::empModeString(emp_mode_) << ", storage mode: ";
-    switch (storage_model_) {
-        case StorageModel::COLUMN_STORE:
-            ss << "column store";
-            break;
-        case StorageModel::PACKED_COLUMN_STORE:
-                ss << "packed wires";
-                break;
-        case StorageModel::COMPRESSED_STORE:
-                ss << "compressed";
-                break;
-        default:
-            ss << "unknown";
-    }
-    ss << endl;
 
-    log->write(ss.str(), Level::INFO);
 
 
     s.setEmptyDbName(empty_db_);
     s.emp_manager_ = manager_;
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(FLAGS_unioned_db);
     s.initialize(db_name_, md, storage_model_);
+    string settings = Utilities::getTestParameters();
+    log->write(settings, Level::INFO);
 
 }
 

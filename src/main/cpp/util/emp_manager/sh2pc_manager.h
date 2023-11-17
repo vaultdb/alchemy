@@ -46,8 +46,8 @@ namespace  vaultdb {
         }
 
 
-        void  feed(Bit *labels, int party, const bool *b, int byte_count) override {
-             emp::ProtocolExecution::prot_exec->feed((block *) labels, party, b, byte_count);
+        void  feed(Bit *labels, int party, const bool *b, int bit_cnt) override {
+             emp::ProtocolExecution::prot_exec->feed((block *) labels, party, b, bit_cnt);
         }
 
         void flush() override { netio_->flush(); }
