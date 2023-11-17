@@ -16,6 +16,7 @@ static EmpMode _emp_mode_ = EmpMode::ZK;
     static EmpMode _emp_mode_ = EmpMode::PLAIN;
 #endif
 
+using namespace Logging;
 
 void PlainBaseTest::SetUp()  {
 
