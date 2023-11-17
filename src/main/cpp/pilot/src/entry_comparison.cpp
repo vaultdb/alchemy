@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
     assert(name.size() <= max_name_length_);
 
     int age = atoi(argv[4]);
-    cout << "Inputting " << name << ", " << age << '\n\n';
+    cout << "Inputting " << name << ", " << age << '\n';
 
     // names are padded to be the same length
     while(name.size() < max_name_length_) {
