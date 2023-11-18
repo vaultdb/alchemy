@@ -20,11 +20,17 @@ namespace vaultdb {
                 column_data_ = parent->column_data_.at(col_idx).data();
         }
 
+        ColumnEncoding(const ColumnEncoding &src) : parent_table_(src.parent_table_), column_idx_(src.column_idx_), column_data_(src.column_data_) {
+
+        }
+
         virtual ~ColumnEncoding() = default;
 
         virtual Field<B> getField(const int & row) = 0;
         virtual void setField(const int & row, const Field<B> & f) = 0;
+        virtual void deserializeField(const int & row, const int8_t *src) = 0; // deserialize from a byte array
         virtual ColumnEncoding<B> *clone(QueryTable<B> *dst, const int & dst_col) = 0;
+        virtual void cloneColumn(const int & dst_idx, QueryTable<B> *src, const int & src_col, const int & src_idx) = 0;
         virtual ColumnEncodingModel columnEncoding() = 0;
         virtual void resize(const int & tuple_cnt) = 0;
         // reverse the process of secretShare above
