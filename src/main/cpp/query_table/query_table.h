@@ -41,7 +41,7 @@ namespace  vaultdb {
                 }
             }
 
-            virtual ~QueryTable() {}
+            virtual ~QueryTable() = default;
             inline  bool isEncrypted() const {     return std::is_same_v<B, emp::Bit>; }
 
             virtual void resize(const size_t &tuple_cnt) = 0;
@@ -65,7 +65,7 @@ namespace  vaultdb {
 
             }
 
-        inline const  QuerySchema getSchema() const  { return schema_; }
+        inline const  QuerySchema & getSchema() const  { return schema_; }
 
 
         virtual Field<B> getField(const int  & row, const int & col)  const = 0;
@@ -301,6 +301,24 @@ namespace  vaultdb {
 
        static QueryTable<B> *getTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition());
 
+        // includes dummy tag
+        vector<int8_t> serializeRow(const int & row) const  {
+           vector<int8_t> dst(tuple_size_bytes_);
+           int8_t *write_ptr = dst.data();
+
+           for (int i = 0; i < this->schema_.getFieldCount(); ++i) {
+               Field<B> to_write = getField(row, i);
+               Field<B>::writeField(write_ptr, to_write, this->schema_.getField(i));
+               write_ptr += field_sizes_bytes_.at(i);
+           }
+           // dummy tag
+           B dummy_tag = getField(row, -1).template getValue<B>();
+           *((B *) write_ptr) = dummy_tag;
+           return dst;
+        }
+
+
+
     protected:
         QuerySchema schema_;
 
@@ -309,7 +327,6 @@ namespace  vaultdb {
 
 
     };
-
 
 
     static std::ostream &operator<<(std::ostream &os, const QueryTable<bool> &table)   {

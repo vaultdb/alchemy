@@ -264,7 +264,6 @@ namespace vaultdb {
             return dst;
         }
 
-
     };
 }
 

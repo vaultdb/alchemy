@@ -349,5 +349,8 @@ QueryTable<B> *QueryTable<B>::getTable(const size_t &tuple_cnt, const QuerySchem
     return new ColumnTable<B>(tuple_cnt, schema, sort_def);
 }
 
+
+
+
 template class vaultdb::QueryTable<bool>;
 template class vaultdb::QueryTable<emp::Bit>;
