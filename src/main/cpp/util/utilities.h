@@ -121,17 +121,27 @@ namespace vaultdb {
         static string runCommand(const string & cmd, const string & cwd = "") {
             string dir = (cwd == "") ?  Utilities::getCurrentWorkingDirectory() : cwd;
 
-            string to_run = "cd " + dir + " && " + cmd;
+            string to_run = "cd " + dir + " && " + cmd + " 2>&1 ";
 
             std::array<char, 128> buffer;
             std::string result;
-            std::shared_ptr<FILE> pipe(popen(to_run.c_str(), "r"), pclose);
+            auto pipe = popen(to_run.c_str(), "r");
             if (!pipe) throw std::runtime_error("popen() failed!");
-            while (!feof(pipe.get())) {
-                if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
+
+            while (!feof(pipe)) {
+                if (fgets(buffer.data(), buffer.size(), pipe) != nullptr)
                     result += buffer.data();
             }
-            return result;
+
+            auto rc = pclose(pipe);
+
+            if (rc == EXIT_SUCCESS) { // == 0
+                return result;
+            }
+
+            return "";
+
+
 
         }
 
