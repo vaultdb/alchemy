@@ -65,3 +65,25 @@ void BitPackedEncoding::revealBitPackedInts(T *dst, emp::Bit *src, const int &ro
 
     delete[] bools;
 }
+
+
+void BitPackedEncoding::cloneColumn(const int &dst_idx, QueryTable<Bit> *s, const int &src_col, const int &src_idx) {
+    assert(s->storageModel() == StorageModel::COMPRESSED_STORE);
+    auto src = (CompressedTable<Bit> *) s;
+    auto src_encoding = src->column_encodings_.at(src_col);
+
+    assert(src_encoding->columnEncoding() == ColumnEncodingModel::BIT_PACKED); // clone only from columns encoded with the same scheme
+    assert(this->field_size_bits_ == src->getSchema().getField(src_col).size()); // both are the same size in bits
+
+    auto field_size_bytes = field_size_bits_ * sizeof(emp::Bit);
+    int8_t *write_ptr = this->column_data_ + dst_idx * field_size_bytes;
+    int8_t *read_ptr = src_encoding->column_data_ + src_idx * field_size_bytes;
+
+    int src_fields = src->tuple_cnt_ - src_idx;
+    auto slots_remaining = this->parent_table_->tuple_cnt_ - dst_idx;
+    if(src_fields > slots_remaining) {
+        src_fields = slots_remaining; // truncate to our available slots
+    }
+
+    memcpy(write_ptr, read_ptr, field_size_bytes * src_fields);
+}

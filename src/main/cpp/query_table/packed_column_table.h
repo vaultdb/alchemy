@@ -98,6 +98,8 @@ namespace vaultdb {
         }
 
         void resize(const size_t &tuple_cnt) override {
+            if(tuple_cnt == this->tuple_cnt_) return;
+
             // NYI
             throw;
         }

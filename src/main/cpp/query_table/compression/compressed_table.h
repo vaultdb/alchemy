@@ -32,6 +32,7 @@ namespace vaultdb {
                 else
                     column_encodings_[i] = new PlainEncoding<B>(this, i);
             }
+
             column_encodings_[-1] = new PlainEncoding<B>(this, -1); // dummy tag
         }
 
@@ -51,18 +52,20 @@ namespace vaultdb {
 
         }
 
-        explicit CompressedTable(const CompressedTable<B> &src) : QueryTable<B>(src) {
+        CompressedTable(const CompressedTable<B> &src) : QueryTable<B>(src) {
             assert(src.storageModel() == StorageModel::COMPRESSED_STORE);
 
             setSchema(src.getSchema());
-            auto src_table = (CompressedTable<B> *) &src;
 
-            for(auto pos : src_table->column_encodings_) {
-                column_encodings_[pos.first] = src_table->column_encodings_.at(pos.first)->clone(this, pos.first);
+
+            for(auto pos : src.column_encodings_) {
+                ColumnEncoding<B> *src_encoding = src.column_encodings_.at(pos.first);
+                auto dst_encoding = src_encoding->clone(this, pos.first);
+                column_encodings_[pos.first] = dst_encoding;
             }
         }
 
-        ~CompressedTable() override {
+        virtual ~CompressedTable() override {
             // just deletes the ColumnEncodings - leaves this->column_data_ intact in case pinned.
             for(auto &col : column_encodings_) {
                 delete col.second;
@@ -70,6 +73,7 @@ namespace vaultdb {
         }
 
         void resize(const size_t &tuple_cnt) override {
+            if(tuple_cnt == this->tuple_cnt_) return;
             this->tuple_cnt_ = tuple_cnt;
             for(auto pos : column_encodings_) {
                 column_encodings_[pos.first]->resize(tuple_cnt);
@@ -121,22 +125,64 @@ namespace vaultdb {
         }
 
         void appendColumn(const QueryFieldDesc & desc) override {
-            throw std::invalid_argument("NYI!");
+            int ordinal = desc.getOrdinal();
+            assert(ordinal == this->schema_.getFieldCount());
+
+            this->schema_.putField(desc);
+            this->schema_.initializeFieldOffsets();
+
+            auto field_size_bytes =  (std::is_same_v<B, bool>) ? desc.size() / 8 : desc.size() * sizeof(emp::Bit);
+            this->tuple_size_bytes_ += field_size_bytes;
+            this->field_sizes_bytes_[ordinal] = field_size_bytes;
+
+            if(std::is_same_v<B, Bit> && desc.bitPacked()) {
+                column_encodings_[ordinal] = (ColumnEncoding<B> * ) new BitPackedEncoding((QueryTable<Bit> *) this, ordinal);
+            }
+            else {
+                column_encodings_[ordinal] = new PlainEncoding<B>(this, ordinal);
+            }
+
         }
 
 
         // include dummy tag for this
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) override {
-            for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
-                Field<B> field = src->getField(src_row, i);
-                column_encodings_.at(dst_col+i)->setField(dst_row, field);
+            // need to serialize field in case we are changing underlying schema as in SortMergeJoin
+            vector<int8_t> row_bytes = src->serializeRow(src_row);
+            while(row_bytes.size() < this->tuple_size_bytes_) {
+                row_bytes.emplace_back(0);
             }
+
+            int8_t *read_ptr = row_bytes.data();
+
+            for(int i = 0; i < this->schema_.getFieldCount(); ++i) {
+                auto dst_encoding = column_encodings_.at(dst_col + i);
+                dst_encoding->deserializeField(dst_row, read_ptr);
+                read_ptr += this->field_sizes_bytes_.at(i);
+            }
+
             Field<B> dummy_tag = src->getField(src_row, -1);
             column_encodings_.at(-1)->setField(dst_row, dummy_tag);
         }
 
         void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) override;
-        void cloneTable(const int & dst_row, QueryTable<B> *src) override {
+        void cloneTable(const int & dst_row, QueryTable<B> *s) override {
+            assert(s->getSchema() == this->schema_);
+            assert((s->tuple_cnt_ + dst_row) <= this->tuple_cnt_);
+            assert(s->storageModel() == StorageModel::COMPRESSED_STORE);
+
+            /*auto src = (CompressedTable<B> *) s;
+            int8_t *write_pos, *read_pos;
+
+            // copy out entire cols
+            for(auto pos : this->field_sizes_bytes_) {
+                int col_id = pos.first;
+                int field_size = pos.second;
+                write_pos = getFieldPtr(dst_row, col_id);
+                read_pos = src->column_data_.at(col_id).data();
+                memcpy(write_pos, read_pos, field_size * src->tuple_cnt_);
+            }
+            */
             throw std::invalid_argument("NYI!");
 
         }
@@ -166,12 +212,20 @@ namespace vaultdb {
         QueryTable<B> *clone() override { return new CompressedTable<B>(*this); }
         void compareSwap(const B & swap, const int  & lhs_row, const int & rhs_row) override;
 
-        void cloneColumn(const int & dst_col, const int & dst_idx, const QueryTable<B> *src, const int & src_col, const int & src_offset = 0) override {
-            assert(dst_idx == 0); // offsets NYI
-            assert(src_offset == 0);
-            assert(src->storageModel() == StorageModel::COMPRESSED_STORE);
+        void cloneColumn(const int & dst_col, const int & dst_idx, const QueryTable<B> *s, const int & src_col, const int & src_offset = 0) override {
+            assert(s->storageModel() == StorageModel::COMPRESSED_STORE);
+            auto src = (CompressedTable<B> *) s;
 
-            column_encodings_[dst_col] = ((CompressedTable<B> *) src)->column_encodings_.at(src_col)->clone(this, dst_col);
+            assert(src->getSchema().getField(src_col).getType() == this->getSchema().getField(dst_col).getType());
+
+            int src_tuples =   src->tuple_cnt_ - src_offset;
+            if(src_tuples > (this->tuple_cnt_ - dst_idx)) {
+                src_tuples = this->tuple_cnt_ - dst_idx; // truncate to our available slots
+            }
+
+            // clone column encoding
+            auto dst_encoding = column_encodings_.at(dst_col);
+            dst_encoding->cloneColumn(dst_idx, src, src_col, src_offset);
         }
 
         void setSchema(const QuerySchema &schema) override {

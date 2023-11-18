@@ -90,7 +90,9 @@ namespace vaultdb {
 
          void resize(const size_t &tuple_cnt) override {
             int prev_size = this->tuple_cnt_;
-            this->tuple_cnt_ = tuple_cnt;
+             if(tuple_cnt == this->tuple_cnt_) return;
+
+             this->tuple_cnt_ = tuple_cnt;
 
 
              for(auto col_entry : this->column_data_) {

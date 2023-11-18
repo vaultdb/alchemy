@@ -20,11 +20,13 @@ namespace vaultdb {
             field_size_bytes_ = (std::is_same_v<B, bool>) ? (field_size_bits / 8) : (field_size_bits * sizeof(emp::Bit));
 
             auto dst_size = field_size_bytes_ * parent->tuple_cnt_;
-
             parent->column_data_[col_idx] = vector<int8_t>(dst_size);
             this->column_data_ = parent->column_data_[col_idx].data();
         }
 
+        PlainEncoding(const PlainEncoding<B> &src) : ColumnEncoding<B>(src) {
+            field_size_bytes_ = src.field_size_bytes_;
+        }
 
         Field<B> getField(const int & row) override {
             int8_t *src =  this->column_data_ + field_size_bytes_ * row;
@@ -37,9 +39,16 @@ namespace vaultdb {
             Field<B>::writeField(dst, f, this->parent_table_->getSchema().getField(this->column_idx_));
         }
 
+        void deserializeField(const int & row, const int8_t *src) override {
+            int8_t *dst = this->column_data_ + field_size_bytes_ * row;
+            memcpy(dst, src, field_size_bytes_);
+        }
+
         ColumnEncodingModel columnEncoding() override { return ColumnEncodingModel::PLAIN; }
         void resize(const int & tuple_cnt) override {
-            this->parent_table_->column_data_[this->column_idx_].resize(tuple_cnt * field_size_bytes_);
+            vector<int8_t> & dst = this->parent_table_->column_data_[this->column_idx_]; // reference to column data
+            dst.resize(tuple_cnt * field_size_bytes_);
+            this->column_data_ = dst.data();
         }
         void compress(QueryTable<B> *src, const int & src_col) override {
             auto dst_size = field_size_bytes_ * this->parent_table_->tuple_cnt_;
@@ -54,9 +63,11 @@ namespace vaultdb {
         ColumnEncoding<B> *clone(QueryTable<B> *dst, const int & dst_col) override {
             assert(dst->tuple_cnt_ == this->parent_table_->tuple_cnt_);
             PlainEncoding<B> *dst_encoding = new PlainEncoding<B>(dst, dst_col);
-            dst->column_data_[dst_col] = this->parent_table_->column_data_[this->column_idx_];
+            memcpy(dst_encoding->column_data_, this->column_data_, this->parent_table_->tuple_cnt_ * field_size_bytes_);
             return dst_encoding;
         }
+
+        void cloneColumn(const int & dst_idx, QueryTable<B> *s, const int & src_col, const int & src_idx) override;
 
     private:
         int field_size_bytes_;
@@ -78,7 +89,6 @@ namespace vaultdb {
             }
         }
     };
-
 
 
 

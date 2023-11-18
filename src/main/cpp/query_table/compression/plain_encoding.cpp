@@ -184,6 +184,26 @@ void PlainEncoding<B>::revealInsecure(QueryTable<bool> *dst, const int & dst_col
 }
 
 
+template<typename B>
+void PlainEncoding<B>::cloneColumn(const int &dst_idx, QueryTable<B> *s, const int &src_col, const int &src_idx) {
+    assert(s->storageModel() == StorageModel::COMPRESSED_STORE);
+    auto src = (CompressedTable<B> *) s;
+    auto src_encoding = src->column_encodings_.at(src_col);
+
+    assert(src_encoding->columnEncoding() == ColumnEncodingModel::PLAIN); // clone only from columns encoded with the same scheme
+
+    int8_t *write_ptr = this->column_data_ + dst_idx * field_size_bytes_;
+    int8_t *read_ptr = src_encoding->column_data_ + src_idx * field_size_bytes_;
+
+    int src_tuples =   src->tuple_cnt_ - src_idx;
+    auto slots_remaining = this->parent_table_->tuple_cnt_ - dst_idx;
+    if(src_tuples > slots_remaining) {
+        src_tuples = slots_remaining; // truncate to our available slots
+    }
+
+    memcpy(write_ptr, read_ptr, field_size_bytes_ * src_tuples);
+}
+
 
 
 template class vaultdb::PlainEncoding<bool>;

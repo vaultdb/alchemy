@@ -31,6 +31,13 @@ namespace vaultdb {
             field_min_ = parent->getSchema().getField(col_idx).getFieldMin();
         }
 
+        // copy constructor
+        BitPackedEncoding(const BitPackedEncoding &src)  : ColumnEncoding<Bit>(src) {
+            field_type_ = src.field_type_;
+            field_size_bits_ = src.field_size_bits_;
+            field_min_ = src.field_min_;
+        }
+
         // just unpacking it in its entirety for now
         // TODO: support getting a subset of the bits
         Field<Bit> getField(const int & row) override {
@@ -47,17 +54,29 @@ namespace vaultdb {
             memcpy(dst, src.bits.data(), field_size_bits_ * sizeof(emp::Bit));
         }
 
+        void deserializeField(const int & row, const int8_t *src) override {
+            int8_t *dst = this->column_data_ + field_size_bits_ * row * sizeof(emp::Bit);
+            memcpy(dst, src, field_size_bits_ * sizeof(emp::Bit));
+        }
+
         ColumnEncoding<Bit> *clone(QueryTable<Bit> *dst, const int & dst_col) override {
-            BitPackedEncoding *dst_encoding = new BitPackedEncoding(dst, dst_col);
-            auto dst_ptr = dst_encoding->column_data_ + dst_col * this->field_size_bits_ * sizeof(emp::Bit);
+            auto dst_encoding = new BitPackedEncoding(*this);
+            dst_encoding->parent_table_ = dst;
+            dst_encoding->column_data_ = dst->column_data_.at(dst_col).data();
+            dst_encoding->column_idx_ = dst_col;
+            auto dst_ptr = dst_encoding->column_data_;
             memcpy(dst_ptr, this->column_data_, this->field_size_bits_ * this->parent_table_->tuple_cnt_ * sizeof(emp::Bit));
             return dst_encoding;
         }
 
+        void cloneColumn(const int & dst_idx, QueryTable<Bit> *src, const int & src_col, const int & src_idx) override;
+
         ColumnEncodingModel columnEncoding() override { return ColumnEncodingModel::BIT_PACKED; }
 
         void resize(const int & tuple_cnt) override {
-            this->parent_table_->column_data_[this->column_idx_].resize(tuple_cnt * field_size_bits_ * sizeof(emp::Bit));
+            vector<int8_t> & dst = this->parent_table_->column_data_[this->column_idx_]; // reference to column data
+            dst.resize(tuple_cnt * field_size_bits_ * sizeof(emp::Bit));
+            this->column_data_ = dst.data();
         }
 
         void revealInsecure(QueryTable<bool> *dst, const int & dst_col, const int & party) override;
