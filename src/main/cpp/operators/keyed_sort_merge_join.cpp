@@ -402,7 +402,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *s
 
     Project<B> projection(src->clone(), builder.getExprs());
     projection.setOperatorId(-2);
-    auto output = projection.run()->clone();
+
 
     if(is_lhs) {
         lhs_projected_schema_ = projection.getOutputSchema();
@@ -412,7 +412,9 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *s
         rhs_field_mapping_ = field_mapping;
         rhs_projected_schema_ = projection.getOutputSchema();
     }
-    return output;
+
+    auto output = projection.run();
+    return output->clone();
 }
 
 template<typename B>
