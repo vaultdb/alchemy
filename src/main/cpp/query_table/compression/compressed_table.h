@@ -150,14 +150,16 @@ namespace vaultdb {
         // include dummy tag for this
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) override {
             // need to serialize field in case we are changing underlying schema as in SortMergeJoin
+            // TODO: consider splitting this into ones that need to be serialized and ones that don't
+            // most can work one col at a time and this might be faster.
             vector<int8_t> row_bytes = src->serializeRow(src_row);
             while(row_bytes.size() < this->tuple_size_bytes_) {
                 row_bytes.emplace_back(0);
             }
 
             int8_t *read_ptr = row_bytes.data();
-
-            for(int i = 0; i < this->schema_.getFieldCount(); ++i) {
+            int col_cnt = src->getSchema().getFieldCount();
+            for(int i = 0; i < col_cnt; ++i) {
                 auto dst_encoding = column_encodings_.at(dst_col + i);
                 dst_encoding->deserializeField(dst_row, read_ptr);
                 read_ptr += this->field_sizes_bytes_.at(i);

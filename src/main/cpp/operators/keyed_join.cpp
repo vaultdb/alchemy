@@ -108,7 +108,7 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
     this->output_ =  QueryTable<B>::getTable(output_tuple_cnt, this->output_schema_, this->sort_definition_);
     B selected, to_update, lhs_dummy_tag, rhs_dummy_tag, dst_dummy_tag;
-    int rhs_col_offset = this->output_->getSchema().getFieldCount() - rhs_table->getSchema().getFieldCount();
+    int rhs_col_offset = lhs_table->getSchema().getFieldCount();
 
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
     for(uint32_t i = 0; i < rhs_table->tuple_cnt_; ++i) {
