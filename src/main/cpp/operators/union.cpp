@@ -36,8 +36,6 @@ QueryTable<B> * Union<B>::runSelf() {
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
-    cout << "LHS schema: " << lhs->getSchema() << endl;
-    cout << "RHS schema: " << rhs->getSchema() << endl;
 
     assert(lhs->getSchema() == rhs->getSchema()); // union compatible
     assert(lhs->storageModel() == rhs->storageModel());

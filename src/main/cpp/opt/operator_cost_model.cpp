@@ -155,8 +155,6 @@ size_t OperatorCostModel::keyedSortMergeJoinCost(KeyedSortMergeJoin<Bit> *join) 
     }
 
 	augment_cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());
-	//std::cout << "Predicted cost of augmentTables: " << augment_cost << "\n";
-
 	cost += augment_cost;
 
 	//next we have the cost of the sort from obliviousDistribute
@@ -175,8 +173,6 @@ size_t OperatorCostModel::keyedSortMergeJoinCost(KeyedSortMergeJoin<Bit> *join) 
 
 	distribute_cost += sortCost(augmented_schema, second_sort_def, (join->foreignKeyChild() == 0) ? rhs->getOutputCardinality() : lhs->getOutputCardinality());
 
-	//std::cout << "Predicted cost of sorting in obliviousDistribute: " << distribute_cost << "\n";
-
 	//obliviousDistribute
 	size_t n = join->getOutputCardinality();
 	float inner_loop = n;
@@ -185,8 +181,6 @@ size_t OperatorCostModel::keyedSortMergeJoinCost(KeyedSortMergeJoin<Bit> *join) 
 	float comparisons = outer_loop * inner_loop;
     size_t c_and_s_cost = compareSwapCost(augmented_schema, second_sort_def, n);
 	distribute_cost += c_and_s_cost * (size_t) comparisons;
-
-	//std::cout << "Predicted cost of obliviousDistribute (distribute step only): " << distribute_cost << "\n";
 
     cost += 2 * distribute_cost;
 	
@@ -200,10 +194,7 @@ size_t OperatorCostModel::keyedSortMergeJoinCost(KeyedSortMergeJoin<Bit> *join) 
 	auto if_cost = model.cost();	
 
 	size_t conditional_write_cost = n * (if_cost + augmented_schema.size() + 2);	
-
-	//std::cout << "Predicted cost of conditional write step: " << conditional_write_cost << "\n";
-
-	cost += 2 * conditional_write_cost;
+    cost += 2 * conditional_write_cost;
 	
     return cost;
 }
