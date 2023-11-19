@@ -34,6 +34,8 @@ namespace vaultdb {
             }
 
             column_encodings_[-1] = new PlainEncoding<B>(this, -1); // dummy tag
+            Field<B> dummy_tag(TypeUtilities::getBoolType<B>(), B(true));  // set all slots to dummies initially
+            column_encodings_[-1]->initializeColumn(dummy_tag);
         }
 
         CompressedTable(QueryTable<B> *src, const map<int, ColumnEncodingModel> & encodings) : QueryTable<B>(src->tuple_cnt_, src->getSchema(), src->order_by_) {

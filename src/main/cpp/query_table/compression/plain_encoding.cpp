@@ -81,7 +81,7 @@ void PlainEncoding<B>::secretShare(QueryTable<Bit> *dst, const int &dst_col) {
             break;
         }
         default:
-            throw std::invalid_argument("Can't secret share with type " + TypeUtilities::getTypeString(f_type));
+            throw std::invalid_argument("Can't secret share with type " + TypeUtilities::getTypeName(f_type));
     }
 
     if(f_type == FieldType::STRING && sender) {
@@ -192,8 +192,8 @@ void PlainEncoding<B>::cloneColumn(const int &dst_idx, QueryTable<B> *s, const i
 
     assert(src_encoding->columnEncoding() == ColumnEncodingModel::PLAIN); // clone only from columns encoded with the same scheme
 
-    int8_t *write_ptr = this->column_data_ + dst_idx * field_size_bytes_;
-    int8_t *read_ptr = src_encoding->column_data_ + src_idx * field_size_bytes_;
+    int8_t *write_ptr = this->column_data_ + dst_idx * this->field_size_bytes_;
+    int8_t *read_ptr = src_encoding->column_data_ + src_idx * this->field_size_bytes_;
 
     int src_tuples =   src->tuple_cnt_ - src_idx;
     auto slots_remaining = this->parent_table_->tuple_cnt_ - dst_idx;
@@ -201,7 +201,7 @@ void PlainEncoding<B>::cloneColumn(const int &dst_idx, QueryTable<B> *s, const i
         src_tuples = slots_remaining; // truncate to our available slots
     }
 
-    memcpy(write_ptr, read_ptr, field_size_bytes_ * src_tuples);
+    memcpy(write_ptr, read_ptr, this->field_size_bytes_ * src_tuples);
 }
 
 

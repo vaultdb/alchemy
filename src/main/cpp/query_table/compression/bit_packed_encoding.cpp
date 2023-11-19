@@ -6,21 +6,17 @@ using namespace vaultdb;
 void BitPackedEncoding::revealInsecure(QueryTable<bool> *dst, const int & dst_col, const int & party)  {
     int row_cnt = this->parent_table_->tuple_cnt_;
 
-    SystemConfiguration &s = SystemConfiguration::getInstance();
-    auto manager = s.emp_manager_;
-
     assert(dst->storageModel() == StorageModel::COMPRESSED_STORE);
     auto dst_table = (CompressedTable<bool> *) dst;
-    assert(dst_table->column_encodings_.at(dst_col)->columnEncoding() == ColumnEncodingModel::PLAIN);
+    auto dst_encoding = dst_table->column_encodings_.at(dst_col);
+    assert(dst_encoding->columnEncoding() == ColumnEncodingModel::PLAIN);
 
     Bit *src_ptr = (Bit *) this->column_data_;
-
     if(field_type_ == FieldType::SECURE_INT) {
-        auto dst_ptr = (int32_t *) dst->column_data_.at(dst_col).data();
-        this->revealBitPackedInts<int32_t>(dst_ptr, src_ptr, row_cnt, party);
+        this->revealBitPackedInts<int32_t>((int32_t *) dst_encoding->column_data_, src_ptr, row_cnt, party);
     }
     else if(field_type_ == FieldType::SECURE_LONG)
-        this->revealBitPackedInts<int64_t>((int64_t *) dst->column_data_.at(dst_col).data(), src_ptr, row_cnt, party);
+        this->revealBitPackedInts<int64_t>((int64_t *) dst_encoding->column_data_, src_ptr, row_cnt, party);
     else
         throw;
 }
@@ -75,9 +71,8 @@ void BitPackedEncoding::cloneColumn(const int &dst_idx, QueryTable<Bit> *s, cons
     assert(src_encoding->columnEncoding() == ColumnEncodingModel::BIT_PACKED); // clone only from columns encoded with the same scheme
     assert(this->field_size_bits_ == src->getSchema().getField(src_col).size()); // both are the same size in bits
 
-    auto field_size_bytes = field_size_bits_ * sizeof(emp::Bit);
-    int8_t *write_ptr = this->column_data_ + dst_idx * field_size_bytes;
-    int8_t *read_ptr = src_encoding->column_data_ + src_idx * field_size_bytes;
+    int8_t *write_ptr = this->column_data_ + dst_idx * field_size_bytes_;
+    int8_t *read_ptr = src_encoding->column_data_ + src_idx * field_size_bytes_;
 
     int src_fields = src->tuple_cnt_ - src_idx;
     auto slots_remaining = this->parent_table_->tuple_cnt_ - dst_idx;
@@ -85,5 +80,5 @@ void BitPackedEncoding::cloneColumn(const int &dst_idx, QueryTable<Bit> *s, cons
         src_fields = slots_remaining; // truncate to our available slots
     }
 
-    memcpy(write_ptr, read_ptr, field_size_bytes * src_fields);
+    memcpy(write_ptr, read_ptr, field_size_bytes_ * src_fields);
 }

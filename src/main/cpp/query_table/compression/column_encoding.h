@@ -13,16 +13,18 @@ namespace vaultdb {
         // actually always CompressedTable, need generic to avoid compile-time dependency loop
         QueryTable<B> *parent_table_;
         int column_idx_;
-        int8_t *column_data_;
+        int8_t *column_data_ = nullptr;
+        int field_size_bytes_ = -1;
+        int field_size_bits_ = -1;
 
         ColumnEncoding(QueryTable<B> *parent, const int & col_idx) : parent_table_(parent), column_idx_(col_idx) {
             if(parent_table_->column_data_.find(col_idx) != parent_table_->column_data_.end())
                 column_data_ = parent->column_data_.at(col_idx).data();
+            this->field_size_bits_ = parent->getSchema().getField(col_idx).size();
+            this->field_size_bytes_ = parent->field_sizes_bytes_[col_idx];
         }
 
-        ColumnEncoding(const ColumnEncoding &src) : parent_table_(src.parent_table_), column_idx_(src.column_idx_), column_data_(src.column_data_) {
-
-        }
+        ColumnEncoding(const ColumnEncoding &src) : parent_table_(src.parent_table_), column_idx_(src.column_idx_), column_data_(src.column_data_), field_size_bytes_(src.field_size_bytes_), field_size_bits_(src.field_size_bits_) {}
 
         virtual ~ColumnEncoding() = default;
 
@@ -42,6 +44,8 @@ namespace vaultdb {
         static ColumnEncoding<B> *compress(QueryTable<B> *src, const int & src_col, QueryTable<B> *dst, const int & dst_col, const ColumnEncodingModel & dst_encoding);
         // get party info from system configuration
         virtual void secretShare(QueryTable<Bit> *dst, const int & dst_col) = 0;
+        // initialize entire column to input field
+        virtual void initializeColumn(const Field<B> & field) = 0;
     protected:
         // batch reveal method
         static void revealToBytes(int8_t *dst, emp::Bit *src, const int & byte_cnt, const int & party = PUBLIC) {

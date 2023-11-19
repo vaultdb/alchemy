@@ -11,47 +11,52 @@ namespace vaultdb {
         // this is mostly a placeholder to support heterogeneous (one compression scheme / table) projections of a table
         PlainEncoding<B>(QueryTable<B> *parent, const int & col_idx) : ColumnEncoding<B>(parent, col_idx) {
             // "true" type size, use PackedEncoding for bit packing
-            auto f_type  = this->parent_table_->getSchema().getField(this->column_idx_).getType();
-            int field_size_bits = TypeUtilities::getTypeSize(this->parent_table_->getSchema().getField(this->column_idx_).getType()); // size in bits
+            QueryFieldDesc desc = this->parent_table_->getSchema().getField(this->column_idx_);
+            auto f_type  = desc.getType();
+            this->field_size_bits_ = TypeUtilities::getTypeSize(f_type); // size in bits, no bit packing overrides parent constructor
+
             if(f_type == FieldType::STRING || f_type == FieldType::SECURE_STRING) {
-                field_size_bits *= this->parent_table_->getSchema().getField(this->column_idx_).getStringLength();
+                this->field_size_bits_ *= desc.getStringLength();
             }
 
-            field_size_bytes_ = (std::is_same_v<B, bool>) ? (field_size_bits / 8) : (field_size_bits * sizeof(emp::Bit));
+            if(desc.bitPacked() && std::is_same_v<B, Bit>) this->field_size_bytes_ = this->field_size_bits_ * sizeof(emp::Bit);
 
-            auto dst_size = field_size_bytes_ * parent->tuple_cnt_;
-            parent->column_data_[col_idx] = vector<int8_t>(dst_size);
+            auto dst_size_bytes = this->field_size_bytes_ * parent->tuple_cnt_;
+            parent->column_data_[col_idx] = vector<int8_t>(dst_size_bytes);
             this->column_data_ = parent->column_data_[col_idx].data();
+            memset(this->column_data_, 0, dst_size_bytes);
         }
 
         PlainEncoding(const PlainEncoding<B> &src) : ColumnEncoding<B>(src) {
-            field_size_bytes_ = src.field_size_bytes_;
+            int dst_size = this->parent_table_->tuple_cnt_ * this->field_size_bytes_;
+            memcpy(this->column_data_, src.column_data_, dst_size);
         }
 
         Field<B> getField(const int & row) override {
-            int8_t *src =  this->column_data_ + field_size_bytes_ * row;
+            int8_t *src =  this->column_data_ + this->field_size_bytes_ * row;
             QueryFieldDesc desc = this->parent_table_->getSchema().getField(this->column_idx_);
             return Field<B>::deserialize(desc, src);
         }
 
         void setField(const int & row, const Field<B> & f) override {
-            int8_t *dst = this->column_data_ + field_size_bytes_ * row;
+            int8_t *dst = this->column_data_ + this->field_size_bytes_ * row;
             Field<B>::writeField(dst, f, this->parent_table_->getSchema().getField(this->column_idx_));
         }
 
         void deserializeField(const int & row, const int8_t *src) override {
-            int8_t *dst = this->column_data_ + field_size_bytes_ * row;
-            memcpy(dst, src, field_size_bytes_);
+            int8_t *dst = this->column_data_ + this->field_size_bytes_ * row;
+            memcpy(dst, src, this->field_size_bytes_);
         }
 
         ColumnEncodingModel columnEncoding() override { return ColumnEncodingModel::PLAIN; }
+
         void resize(const int & tuple_cnt) override {
             vector<int8_t> & dst = this->parent_table_->column_data_[this->column_idx_]; // reference to column data
-            dst.resize(tuple_cnt * field_size_bytes_);
+            dst.resize(tuple_cnt * this->field_size_bytes_);
             this->column_data_ = dst.data();
         }
         void compress(QueryTable<B> *src, const int & src_col) override {
-            auto dst_size = field_size_bytes_ * this->parent_table_->tuple_cnt_;
+            auto dst_size = this->field_size_bytes_ * this->parent_table_->tuple_cnt_;
             auto src_ptr = src->column_data_.at(src_col).data();
             memcpy(this->column_data_, src_ptr, dst_size);
         }
@@ -62,15 +67,71 @@ namespace vaultdb {
 
         ColumnEncoding<B> *clone(QueryTable<B> *dst, const int & dst_col) override {
             assert(dst->tuple_cnt_ == this->parent_table_->tuple_cnt_);
-            PlainEncoding<B> *dst_encoding = new PlainEncoding<B>(dst, dst_col);
-            memcpy(dst_encoding->column_data_, this->column_data_, this->parent_table_->tuple_cnt_ * field_size_bytes_);
+            auto dst_encoding = new PlainEncoding<B>(dst, dst_col);
+            memcpy(dst_encoding->column_data_, this->column_data_, this->parent_table_->tuple_cnt_ * this->field_size_bytes_);
             return dst_encoding;
         }
 
         void cloneColumn(const int & dst_idx, QueryTable<B> *s, const int & src_col, const int & src_idx) override;
 
+        void initializeColumn(const Field<B> & field) override {
+            auto desc = this->parent_table_->getSchema().getField(this->column_idx_);
+            auto field_type = desc.getType();
+            assert(field_type == field.getType());
+            int8_t *dst = this->column_data_;
+            int cnt = this->parent_table_->tuple_cnt_;
+
+            QueryFieldDesc tmp = QueryFieldDesc(this->parent_table_->getSchema().getField(this->column_idx_), TypeUtilities::toPlain(desc.getType()));
+            cout << "Initializing column " << this->column_idx_ << " for " << this->parent_table_->getSchema().getField(this->column_idx_) <<  " with " << cnt << " rows using value " << field.reveal(tmp).toString() << endl;
+
+            switch(field_type) {
+                case FieldType::BOOL: {
+                    bool b = field.template getValue<bool>();
+                    cout << "Initializing " << cnt << " rows with " << b << endl;
+                    memset(dst, b, cnt);
+                    break;
+                }
+                case FieldType::INT: {
+                    initializeHelper<int32_t>(field, dst);
+                    break;
+                }
+                case FieldType::LONG: {
+                    initializeHelper<int64_t>(field, dst);
+                    break;
+                }
+                case FieldType::FLOAT: {
+                    initializeHelper<float>(field, dst);
+                    break;
+                }
+                case FieldType::STRING: {
+                    string str = field.template getValue<string>();
+                    auto cursor = dst;
+                    for(int i = 0; i < this->parent_table_->tuple_cnt_; ++i) {
+                        memcpy(cursor, str.c_str(), this->field_size_bytes_);
+                        dst += this->field_size_bytes_;
+                    }
+                }
+                case FieldType::SECURE_BOOL: {
+                    initializeHelper<emp::Bit>(field, dst);
+                    break;
+                }
+                case FieldType::SECURE_INT:
+                case FieldType::SECURE_LONG:
+                case FieldType::SECURE_STRING: {
+                    initializeHelper<Integer>(field, dst);
+                    break;
+                }
+                case FieldType::SECURE_FLOAT: {
+                    initializeHelper<Float>(field, dst);
+                    break;
+                }
+                default:
+                    throw;
+            }
+
+        }
+
     private:
-        int field_size_bytes_;
 
         void secretShareForBitPacking(QueryTable<Bit> *dst_table, const int & dst_col);
         // serialize a column of type T into a bit array where each T will be projected down to field_bit_cnt bits.
@@ -86,6 +147,19 @@ namespace vaultdb {
                 memcpy(write_ptr, b, field_bit_cnt); // still plaintext
                 ++read_ptr;
                 write_ptr += field_bit_cnt;
+            }
+        }
+
+        template<typename T>
+        void initializeHelper(const Field<B> & field, int8_t *dst) {
+            T t = field.template getValue<T>();
+            auto cursor = dst;
+            auto cnt = this->parent_table_->tuple_cnt_;
+            QueryFieldDesc tmp = QueryFieldDesc(this->parent_table_->getSchema().getField(this->column_idx_), TypeUtilities::toPlain(field.getType()));
+            cout << "Initializing " << cnt << " rows of " <<  this->parent_table_->getSchema().getField(this->column_idx_) <<  " with value " << field.reveal(tmp).toString() << endl;
+            for(int i = 0; i < this->parent_table_->tuple_cnt_; ++i) {
+                memcpy(cursor, &t, this->field_size_bytes_);
+                cursor += this->field_size_bytes_;
             }
         }
     };

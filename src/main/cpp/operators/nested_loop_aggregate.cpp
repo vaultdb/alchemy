@@ -22,14 +22,13 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-    this->output_ = QueryTable<B>::getTable(this->output_cardinality_, Operator<B>::output_schema_);
+    this->output_ = QueryTable<B>::getTable(this->output_cardinality_, this->output_schema_);
     QueryTable<B> *output = this->output_;
 
-    // one per aggregator, one per output bin
+    // one per aggregator x one per output bin
     vector<vector<UnsortedAggregateImpl<B> *> > per_tuple_aggregators;
 
     for (int i = 0; i < this->output_cardinality_; ++i) {
-
         per_tuple_aggregators.emplace_back(vector<UnsortedAggregateImpl<B> *>());
         vector<UnsortedAggregateImpl<B> *> row_aggregators(aggregators_.size());
         for(int j = 0; j < aggregators_.size(); ++j) {
@@ -40,15 +39,20 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
         }
     }
 
+    auto tmp = QuerySchema::toPlain(input_schema);
+    auto tmp2 = QuerySchema::toPlain(output_schema);
+
     // create output tuples with managed memory for ease of use
     for(int i = 0; i < input->tuple_cnt_; ++i) {
 
         B input_dummy = input->getDummyTag(i);
         B matched = input_dummy;// already "matched" if dummy
+        cout << "Input row " << input->revealRow(i, tmp).toString(true) << " m: " << FieldUtilities::extract_bool(matched) << endl;
 
         for (int j = 0; j < this->output_cardinality_; ++j) {
+            cout << "      Comparing to " << output->revealRow(j, tmp2).toString(true);
             B group_by_match = groupByMatch(input, i, output, j);
-
+            cout << " gb match? " << FieldUtilities::extract_bool(group_by_match) << ", matched? " << FieldUtilities::extract_bool(matched) << endl;
             B output_dummy = output->getDummyTag(j);
 
             // if output is dummy and no match so far, then initialize group-by cols
@@ -116,7 +120,7 @@ void NestedLoopAggregate<B>::setup() {
     int output_ordinal = this->group_by_.size();
     this->output_cardinality_ = this->cardinality_bound_;
 
-    if(this->output_cardinality_ == 0) { // naive case - go full oblivious
+    if(this->output_cardinality_ < 1) { // naive case - go full oblivious
         this->output_cardinality_ = this->getChild(0)->getOutputCardinality();
     }
 
