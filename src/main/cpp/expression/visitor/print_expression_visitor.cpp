@@ -133,7 +133,7 @@ template<typename B>
 void PrintExpressionVisitor<B>::visit(CastNode<B> & cast_node) {
     cast_node.lhs_->accept(this);
     std::string input_str = last_value_;
-    std::string dst_type_str = TypeUtilities::getTypeString(cast_node.dst_type_);
+    std::string dst_type_str = TypeUtilities::getTypeName(cast_node.dst_type_);
     last_value_ = "CAST(" + input_str + ", " + dst_type_str + ")";
 
 }

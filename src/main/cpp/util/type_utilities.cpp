@@ -4,8 +4,8 @@
  
  using namespace vaultdb;
 
- std::string TypeUtilities::getTypeString(const FieldType & fieldType) {
-    switch(fieldType) {
+ std::string TypeUtilities::getTypeName(const FieldType & type) {
+    switch(type) {
         case FieldType::BOOL:
             return std::string("bool");
         case FieldType::DATE:
@@ -30,7 +30,7 @@
         case FieldType::SECURE_STRING:
             return std::string("shared-varchar");
         default:
-            std::string FieldTypeStr = std::to_string((int) fieldType);
+            std::string FieldTypeStr = std::to_string((int) type);
             return std::string("unsupported type! " + FieldTypeStr);
     }
 

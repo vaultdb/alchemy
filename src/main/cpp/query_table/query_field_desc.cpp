@@ -69,7 +69,7 @@ QueryFieldDesc::QueryFieldDesc(const int & ordinal, const string & field_spec) :
 
 
 std::ostream &vaultdb::operator<<(std::ostream &os,  const QueryFieldDesc &desc)  {
-    os << "#" << desc.getOrdinal() << " " << TypeUtilities::getTypeString(desc.getType());
+    os << "#" << desc.getOrdinal() << " " << TypeUtilities::getTypeName(desc.getType());
     if(desc.getType() == FieldType::STRING || desc.getType() == FieldType::SECURE_STRING) {
         os << "(" << desc.getStringLength() << ")";
     }
@@ -196,7 +196,7 @@ string QueryFieldDesc::prettyPrint() const {
 
     ss << field_name_ << ":";
 
-    ss  << TypeUtilities::getTypeString(type_);
+    ss  << TypeUtilities::getTypeName(type_);
     if(type_ == FieldType::STRING || type_ == FieldType::SECURE_STRING) {
         ss << "(" << string_length_ << ")";
     }

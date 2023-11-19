@@ -21,7 +21,7 @@ PlainField FieldFactory<bool>::getFieldFromString(const FieldType &type, const s
 	    boolField = (src == "t");
 	  }
 	  else {
-	    throw std::invalid_argument("Unsupported type for decoding bool from string: " + TypeUtilities::getTypeString(type) + "\n");
+	    throw std::invalid_argument("Unsupported type for decoding bool from string: " + TypeUtilities::getTypeName(type) + "\n");
 	  }
             return  PlainField(type, boolField);
         }
@@ -54,7 +54,7 @@ PlainField FieldFactory<bool>::getFieldFromString(const FieldType &type, const s
 
         }
         default:
-            throw std::invalid_argument("Unsupported type for string decoding: " + TypeUtilities::getTypeString(type) + "\n");
+            throw std::invalid_argument("Unsupported type for string decoding: " + TypeUtilities::getTypeName(type) + "\n");
 
 
     };
@@ -79,7 +79,7 @@ PlainField FieldFactory<bool>::getZero(const FieldType &aType) {
             return Field<bool>(aType, zero, 1);
         }
         default:
-            throw std::invalid_argument("Type unsupported in getZero(): " + TypeUtilities::getTypeString(aType));
+            throw std::invalid_argument("Type unsupported in getZero(): " + TypeUtilities::getTypeName(aType));
 
     };
 }
@@ -100,7 +100,7 @@ PlainField FieldFactory<bool>::getOne(const FieldType &aType) {
             return Field<bool>(aType, one, 1);
         }
         default:
-            throw std::invalid_argument("Type unsupported in getOne(): " + TypeUtilities::getTypeString(aType));
+            throw std::invalid_argument("Type unsupported in getOne(): " + TypeUtilities::getTypeName(aType));
 
     };
 }
@@ -118,7 +118,7 @@ PlainField FieldFactory<bool>::toFloat(const PlainField &src) {
 
         default:
             throw std::invalid_argument("Cannot convert value of type " +
-                                        TypeUtilities::getTypeString(src.getType()) + " to float.");
+                                        TypeUtilities::getTypeName(src.getType()) + " to float.");
     }
 
 }
@@ -128,7 +128,7 @@ PlainField FieldFactory<bool>::toLong(const PlainField & field) {
         int32_t payload = field.getValue<int32_t>();
         return PlainField(FieldType::LONG, (int64_t) payload);
     }
-    throw std::invalid_argument("toLong not supported for " + TypeUtilities::getTypeString(field.getType()));
+    throw std::invalid_argument("toLong not supported for " + TypeUtilities::getTypeName(field.getType()));
 
 }
 
@@ -150,7 +150,7 @@ PlainField FieldFactory<bool>::toInt(const PlainField &src) {
             return PlainField(FieldType::INT, value);
         }
         default:
-            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(src.getType()) + " not supported by FieldFactory<bool>::toInt()");
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeName(src.getType()) + " not supported by FieldFactory<bool>::toInt()");
     }
 
 }
@@ -167,7 +167,7 @@ PlainField FieldFactory<bool>::getMin(const FieldType & type) {
         case FieldType::FLOAT:
             return PlainField(type, (float_t) FLT_MIN);
         default:
-            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<bool>::getMin()");
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeName(type) + " not supported by FieldFactory<bool>::getMin()");
     }
 
 }
@@ -183,7 +183,7 @@ PlainField FieldFactory<bool>::getMax(const FieldType & type) {
         case FieldType::FLOAT:
             return PlainField(type, (float_t) FLT_MAX);
         default:
-            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<bool>::getMax()");
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeName(type) + " not supported by FieldFactory<bool>::getMax()");
     }
 
 
@@ -209,7 +209,7 @@ SecureField FieldFactory<emp::Bit>::getZero(const FieldType &aType) {
             return SecureField(aType, emp::Integer(8, 0), 1); // single character
         }
         default:
-            throw std::invalid_argument("Type unsupported in getZero(): " + TypeUtilities::getTypeString(aType));
+            throw std::invalid_argument("Type unsupported in getZero(): " + TypeUtilities::getTypeName(aType));
 
     };
 }
@@ -228,7 +228,7 @@ SecureField FieldFactory<emp::Bit>::getOne(const FieldType &aType) {
             return SecureField(aType, emp::Integer(8, 1), 1);
         }
         default:
-            throw std::invalid_argument("Type unsupported in getOne(): " + TypeUtilities::getTypeString(aType));
+            throw std::invalid_argument("Type unsupported in getOne(): " + TypeUtilities::getTypeName(aType));
 
     };
 }
@@ -247,7 +247,7 @@ SecureField FieldFactory<emp::Bit>::toFloat(const SecureField &src) {
             return SecureField(src); // copy constructor
         default:
             throw std::invalid_argument("Cannot convert value of type " +
-                                        TypeUtilities::getTypeString(src.getType()) + " to emp::Float.");
+                                        TypeUtilities::getTypeName(src.getType()) + " to emp::Float.");
 
 
     }
@@ -259,7 +259,7 @@ SecureField FieldFactory<emp::Bit>::toLong(const SecureField & field) {
         payload.resize(64);
         return SecureField(FieldType::SECURE_LONG, payload);
     }
-    throw std::invalid_argument("toLong not supported for " + TypeUtilities::getTypeString(field.getType()));
+    throw std::invalid_argument("toLong not supported for " + TypeUtilities::getTypeName(field.getType()));
 
 }
 
@@ -279,7 +279,7 @@ SecureField FieldFactory<emp::Bit>::toInt(const SecureField &src) {
             return SecureField(FieldType::SECURE_INT, value);
         }
         default:
-            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(src.getType()) + " not supported by FieldFactory<bool>::toInt()");
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeName(src.getType()) + " not supported by FieldFactory<bool>::toInt()");
     }
 
 }
@@ -297,7 +297,7 @@ SecureField FieldFactory<emp::Bit>::getMin(const FieldType & type) {
         case FieldType::SECURE_FLOAT:
             return SecureField(type, emp::Float(FLT_MIN));
         default:
-            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(type) +
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeName(type) +
                                         " not supported by FieldFactory<emp::Bit>::getMin()");
     }
 }
@@ -314,7 +314,7 @@ SecureField FieldFactory<emp::Bit>::getMax(const FieldType & type) {
         case FieldType::SECURE_FLOAT:
             return SecureField(type, emp::Float(FLT_MAX));
         default:
-            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(type) +
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeName(type) +
                                         " not supported by FieldFactory<emp::Bit>::getMax()");
     }
 }

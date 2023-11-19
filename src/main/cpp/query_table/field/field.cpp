@@ -917,7 +917,7 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
 
         }
         default:
-            throw std::invalid_argument("Field type " + TypeUtilities::getTypeString(type) + " not supported by deserialize()!");
+            throw std::invalid_argument("Field type " + TypeUtilities::getTypeName(type) + " not supported by deserialize()!");
 
     }
 

@@ -43,7 +43,7 @@ namespace vaultdb {
         ~FunctionExpression() = default;
 
         string toString() const override {
-            return "FunctionExpression(" + Expression<B>::alias_ + " " + TypeUtilities::getTypeString(Expression<B>::type_) + ")";
+            return "FunctionExpression(" + Expression<B>::alias_ + " " + TypeUtilities::getTypeName(Expression<B>::type_) + ")";
 
         }
 

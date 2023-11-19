@@ -13,7 +13,7 @@ namespace vaultdb {
     class TypeUtilities {
 
     public:
-        static std::string getTypeString(const FieldType & aTypeId);
+        static std::string getTypeName(const FieldType & type);
 
         static FieldType getTypeFromString(const std::string & str);
 

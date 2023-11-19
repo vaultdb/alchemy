@@ -56,7 +56,7 @@ namespace  vaultdb {
         }
 
         inline string toString() const override {
-            return root_->toString() + " " +  TypeUtilities::getTypeString(Expression<B>::type_);
+            return root_->toString() + " " +  TypeUtilities::getTypeName(Expression<B>::type_);
         }
 
 
