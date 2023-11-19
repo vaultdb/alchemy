@@ -81,13 +81,10 @@ namespace vaultdb {
             int8_t *dst = this->column_data_;
             int cnt = this->parent_table_->tuple_cnt_;
 
-            QueryFieldDesc tmp = QueryFieldDesc(this->parent_table_->getSchema().getField(this->column_idx_), TypeUtilities::toPlain(desc.getType()));
-            cout << "Initializing column " << this->column_idx_ << " for " << this->parent_table_->getSchema().getField(this->column_idx_) <<  " with " << cnt << " rows using value " << field.reveal(tmp).toString() << endl;
 
             switch(field_type) {
                 case FieldType::BOOL: {
                     bool b = field.template getValue<bool>();
-                    cout << "Initializing " << cnt << " rows with " << b << endl;
                     memset(dst, b, cnt);
                     break;
                 }
@@ -155,9 +152,8 @@ namespace vaultdb {
             T t = field.template getValue<T>();
             auto cursor = dst;
             auto cnt = this->parent_table_->tuple_cnt_;
-            QueryFieldDesc tmp = QueryFieldDesc(this->parent_table_->getSchema().getField(this->column_idx_), TypeUtilities::toPlain(field.getType()));
-            cout << "Initializing " << cnt << " rows of " <<  this->parent_table_->getSchema().getField(this->column_idx_) <<  " with value " << field.reveal(tmp).toString() << endl;
-            for(int i = 0; i < this->parent_table_->tuple_cnt_; ++i) {
+
+            for(int i = 0; i < cnt; ++i) {
                 memcpy(cursor, &t, this->field_size_bytes_);
                 cursor += this->field_size_bytes_;
             }

@@ -39,20 +39,13 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
         }
     }
 
-    auto tmp = QuerySchema::toPlain(input_schema);
-    auto tmp2 = QuerySchema::toPlain(output_schema);
-
     // create output tuples with managed memory for ease of use
     for(int i = 0; i < input->tuple_cnt_; ++i) {
 
         B input_dummy = input->getDummyTag(i);
         B matched = input_dummy;// already "matched" if dummy
-        cout << "Input row " << input->revealRow(i, tmp).toString(true) << " m: " << FieldUtilities::extract_bool(matched) << endl;
-
         for (int j = 0; j < this->output_cardinality_; ++j) {
-            cout << "      Comparing to " << output->revealRow(j, tmp2).toString(true);
             B group_by_match = groupByMatch(input, i, output, j);
-            cout << " gb match? " << FieldUtilities::extract_bool(group_by_match) << ", matched? " << FieldUtilities::extract_bool(matched) << endl;
             B output_dummy = output->getDummyTag(j);
 
             // if output is dummy and no match so far, then initialize group-by cols
