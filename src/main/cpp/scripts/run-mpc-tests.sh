@@ -11,8 +11,8 @@ bash $RUNNER secure_sort_test
 #bash $RUNNER secure_basic_join_test
 
 #manually running this to manage cutoff
-./bin/secure_basic_join_test --cutoff=5 &
-./bin/secure_basic_join_test --party=2 --cutoff=5 &
+./bin/secure_basic_join_test --cutoff=5 --flagfile=flagfiles/filter.flags --flagfile=flagfiles/db_names.flags --flagfile=flagfiles/storage.flags & 
+./bin/secure_basic_join_test --party=2 --cutoff=5  --flagfile=flagfiles/filter.flags --flagfile=flagfiles/db_names.flags --flagfile=flagfiles/storage.flags 
 
 bash $RUNNER secure_keyed_join_test
 bash $RUNNER secure_keyed_sort_merge_join_test
