@@ -148,10 +148,10 @@ namespace vaultdb {
         static string getGFlags() {
             string settings = gflags::CommandlineFlagsIntoString();
             std::replace(settings.begin(), settings.end(), '\n', '\t'); // replace all endline with tabs
-            auto pos = settings.find("--fromenv"); // truncate from this flag, everything else is boilerplate
-            if(pos != std::string::npos) {
-                settings = settings.substr(0, pos);
-            }
+//            auto pos = settings.find("--fromenv"); // truncate from this flag, everything else is boilerplate
+//            if(pos != std::string::npos) {
+//                settings = settings.substr(0, pos);
+//            }
             return settings;
         }
 
