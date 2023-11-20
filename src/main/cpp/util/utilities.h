@@ -145,13 +145,35 @@ namespace vaultdb {
 
         }
 
+        // erases first instance of to_search
+        static string eraseSubstring(string src, string to_search) {
+            auto pos = src.find(to_search);
+            if(pos != std::string::npos) {
+                src.erase(pos, to_search.size());
+            }
+            return src;
+        }
+
         static string getGFlags() {
             string settings = gflags::CommandlineFlagsIntoString();
             std::replace(settings.begin(), settings.end(), '\n', '\t'); // replace all endline with tabs
-//            auto pos = settings.find("--fromenv"); // truncate from this flag, everything else is boilerplate
-//            if(pos != std::string::npos) {
-//                settings = settings.substr(0, pos);
-//            }
+            // delete unused flags (defaults from GFlags)
+            //  --flagfile=flagfiles/storage.flags
+            //  --alice_db=tpch_alice_150       --alice_host=127.0.0.1  --bob_db=tpch_bob_150   --ctrl_port=65453 --cutoff=5       --filter=*      --party=1       --port=43446    --storage=compressed    --unioned_db=tpch_unioned_150   --validation=true       --log_level=2   --logfile=
+            settings = eraseSubstring(settings, "--fromenv=      ");
+            settings = eraseSubstring(settings, "--tryfromenv=   ");
+            settings = eraseSubstring(settings, "--undefok=      ");
+            settings = eraseSubstring(settings, "--tab_completion_columns=80     ");
+            settings = eraseSubstring(settings, "--tab_completion_word=  ");
+            settings = eraseSubstring(settings, "--help=false    ");
+            settings = eraseSubstring(settings, "--helpfull=false        ");
+            settings = eraseSubstring(settings, "--helpmatch=       ");
+            settings = eraseSubstring(settings, "--helpon=       ");
+            settings = eraseSubstring(settings, "--helppackage=false     ");
+            settings = eraseSubstring(settings, "--helpshort=false       ");
+            settings = eraseSubstring(settings, "--helpxml=false ");
+            settings = eraseSubstring(settings, "--version=false ");
+
             return settings;
         }
 
