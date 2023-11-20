@@ -22,7 +22,7 @@ namespace vaultdb {
             bool dirty_bit_ = false; // TODO: if dirty, flush this to column_data_ when we evict an entry from unpacked_wires_
         }  Unpacked;
 
-        map<int, Unpacked> unpacked_wires_;
+        mutable map<int, Unpacked> unpacked_wires_;
 
 
         PackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<Bit>(tuple_cnt, schema, sort_def) {
@@ -40,50 +40,78 @@ namespace vaultdb {
                 // solve for col_len_bytes
                 int wire_cnt =  (packed_wires == 1) ? (tuple_cnt_ / fields_per_wire_[i] + (tuple_cnt_ % fields_per_wire_[i] != 0))
                                                    : (tuple_cnt_ * packed_wires);
-                 column_data_[i] = std::vector<int8_t>(wire_cnt * sizeof(OMPCPackedWire));
+                column_data_[i] = std::vector<int8_t>(wire_cnt * sizeof(OMPCPackedWire));
 
             }
 
             int dummy_tag_wire_cnt = tuple_cnt / 128 + (tuple_cnt % 128 != 0);
             column_data_[-1] = std::vector<int8_t>(dummy_tag_wire_cnt * sizeof(OMPCPackedWire));
-
-            emp::Bit d(true);
-            emp::Bit dummies[128];
-            for(int i = 0; i < 128; ++i) {
-                dummies[i] = d;
-            }
-
-            /*
-            OMPCBackend<N> *protocol = (OMPCBackend<N> *) emp::backend;
-            OMPCPackedWire w;
-            //protocol->pack(dummies, &w, 128);
-
-            OMPCPackedWire *cursor = (OMPCPackedWire *) column_data_[-1].data();
-            for(int i = 0; i < dummy_tag_wire_cnt; ++i) {
-                memcpy(cursor, &w, sizeof(OMPCPackedWire));
-                ++cursor;
-            }*/
-
         }
 
         PackedColumnTable(const PackedColumnTable &src) : QueryTable<Bit>(src) {
             setSchema(src.schema_);
         }
 
+        void cacheField(int row, int col, int target_wire) const {
+            if(unpacked_wires_[col].page_idx_ != target_wire) {
+                if(unpacked_wires_[col].dirty_bit_) {
+                    // Flush to column_data_
+                    emp::OMPCPackedWire *pack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + unpacked_wires_[col].page_idx_;
+                    ((OMPCBackend<N> *) emp::backend)->pack(unpacked_wires_[col].unpacked_wire, pack_wire, 128);
+                    unpacked_wires_[col].dirty_bit_ = false;
+                }
+
+                emp::OMPCPackedWire *unpack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + target_wire;
+                ((OMPCBackend<N> *) emp::backend)->unpack(unpacked_wires_[col].unpacked_wire, unpack_wire, 128);
+
+                unpacked_wires_[col].page_idx_ = target_wire;
+            }
+        }
+
         Field<Bit> getField(const int  & row, const int & col)  const override {
-            throw;
-//            int8_t *read_ptr = getFieldPtr(row, col);
-            // TODO: cache latest packed wire
-//            return Field<Bit>::deserialize(this->schema_.fields_.at(col), read_ptr );
-            return Field<Bit>();
+            if(col == -1) {
+                return Field<Bit>(schema_.fields_.at(-1).getType(), getDummyTag(row));
+            }
+
+            assert(fields_per_wire_.at(col) > 0);
+
+            int target_wire = row / fields_per_wire_.at(col);
+            int target_offset = row % fields_per_wire_.at(col);
+            int field_bits_size = schema_.fields_.at(col).size();
+
+            cacheField(row, col, target_wire);
+
+            Bit *read_ptr = unpacked_wires_.at(col).unpacked_wire + target_offset * field_bits_size;
+            return Field<Bit>::deserialize(schema_.fields_.at(col), (int8_t *) read_ptr);
         }
 
 
         void setField(const int  & row, const int & col, const Field<Bit> & f)  override {
-//            int8_t *write_ptr = getFieldPtr(row, col);
-            // TODO: update column cache and write as needed
-//            f.serialize(write_ptr, this->schema_.fields_.at(col));
+            if(col == -1) {
+                Bit dummy_tag  = f.template getValue<Bit>();
+                setDummyTag(row, dummy_tag);
+                return;
+            }
 
+            assert(fields_per_wire_[col] > 0);
+
+            int field_bits_size = f.getSize();
+            int target_wire = row / fields_per_wire_[col];
+            int target_offset = row % fields_per_wire_[col];
+
+            // Cache the field
+            cacheField(row, col, target_wire);
+
+            Bit *write_ptr = unpacked_wires_[col].unpacked_wire + target_offset * field_bits_size;
+            f.writeField((int8_t *) write_ptr, f, schema_.getField(col));
+            unpacked_wires_[col].dirty_bit_ = true;
+
+            // Flush the last wire
+            if(row == tuple_cnt_ - 1) {
+                emp::OMPCPackedWire *pack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + unpacked_wires_[col].page_idx_;
+                ((OMPCBackend<N> *) emp::backend)->pack(unpacked_wires_[col].unpacked_wire, pack_wire, 128);
+                unpacked_wires_[col].dirty_bit_ = false;
+            }
         }
 
         SecureTable *secretShare() override  {
@@ -105,12 +133,21 @@ namespace vaultdb {
         }
 
         Bit getDummyTag(const int & row)  const override {
-            // NYI
-            return Bit();
+            int target_wire = row / 128;
+            int target_offset = row % 128;
+
+            cacheField(row, -1, target_wire);
+            return unpacked_wires_.at(-1).unpacked_wire[target_offset];
         }
 
         void setDummyTag(const int & row, const Bit & val) override {
-            // NYI
+            int target_wire = row / 128;
+            int target_offset = row % 128;
+
+            cacheField(row, -1, target_wire);
+
+            unpacked_wires_[-1].unpacked_wire[target_offset] = val;
+            unpacked_wires_[-1].dirty_bit_ = true;
         }
 
 

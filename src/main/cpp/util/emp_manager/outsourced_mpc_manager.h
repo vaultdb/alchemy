@@ -85,7 +85,6 @@ namespace  vaultdb {
             emp::backend = new OMPCBackend<N>(ios_, tpio_, party_);
             protocol_ = (OMPCBackend<N> *) emp::backend;
             SystemConfiguration & s = SystemConfiguration::getInstance();
-            s.emp_bit_size_bytes_  =  (system_conf_.wire_packing_enabled_) ? sizeof(OMPCPackedWire) : sizeof(emp::Bit);
             s.party_ = party;
             s.emp_mode_ = EmpMode::OUTSOURCED;
         }
@@ -167,22 +166,12 @@ namespace  vaultdb {
         }
 
         void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {
-            if(system_conf_.wire_packing_enabled_) {
-                protocol_->pack(src, (OMPCPackedWire *) dst, bit_cnt);
-                return;
-            }
-
-            // else
-            memcpy(dst, src, bit_cnt * sizeof(Bit));
+            protocol_->pack(src, (OMPCPackedWire *) dst, bit_cnt);
 
         }
 
         void unpack(Bit *src, Bit *dst, const int & bit_cnt) override {
-            if (system_conf_.wire_packing_enabled_) {
-                protocol_->unpack(dst, (OMPCPackedWire *) src, bit_cnt);
-                return;
-            }
-            memcpy(dst, src, bit_cnt * sizeof(Bit));
+            protocol_->unpack(dst, (OMPCPackedWire *) src, bit_cnt);
         }
 
     };
