@@ -160,19 +160,19 @@ namespace vaultdb {
             // delete unused flags (defaults from GFlags)
             //  --flagfile=flagfiles/storage.flags
             //  --alice_db=tpch_alice_150       --alice_host=127.0.0.1  --bob_db=tpch_bob_150   --ctrl_port=65453 --cutoff=5       --filter=*      --party=1       --port=43446    --storage=compressed    --unioned_db=tpch_unioned_150   --validation=true       --log_level=2   --logfile=
-            settings = eraseSubstring(settings, "--fromenv=      ");
-            settings = eraseSubstring(settings, "--tryfromenv=   ");
-            settings = eraseSubstring(settings, "--undefok=      ");
-            settings = eraseSubstring(settings, "--tab_completion_columns=80     ");
-            settings = eraseSubstring(settings, "--tab_completion_word=  ");
-            settings = eraseSubstring(settings, "--help=false    ");
-            settings = eraseSubstring(settings, "--helpfull=false        ");
-            settings = eraseSubstring(settings, "--helpmatch=       ");
-            settings = eraseSubstring(settings, "--helpon=       ");
-            settings = eraseSubstring(settings, "--helppackage=false     ");
-            settings = eraseSubstring(settings, "--helpshort=false       ");
-            settings = eraseSubstring(settings, "--helpxml=false ");
-            settings = eraseSubstring(settings, "--version=false ");
+            settings = eraseSubstring(settings, "--fromenv=\t");
+            settings = eraseSubstring(settings, "--tryfromenv=\t");
+            settings = eraseSubstring(settings, "--undefok=\t");
+            settings = eraseSubstring(settings, "--tab_completion_columns=80\t");
+            settings = eraseSubstring(settings, "--tab_completion_word=\t");
+            settings = eraseSubstring(settings, "--help=false\t");
+            settings = eraseSubstring(settings, "--helpfull=false\t");
+            settings = eraseSubstring(settings, "--helpmatch=\t");
+            settings = eraseSubstring(settings, "--helpon=\t");
+            settings = eraseSubstring(settings, "--helppackage=false\t");
+            settings = eraseSubstring(settings, "--helpshort=false\t");
+            settings = eraseSubstring(settings, "--helpxml=false\t");
+            settings = eraseSubstring(settings, "--version=false\t");
 
             return settings;
         }
