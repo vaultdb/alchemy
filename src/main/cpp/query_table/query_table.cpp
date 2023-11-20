@@ -304,7 +304,7 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
         auto dst_table = new ColumnTable<bool>(row_cnt, dst_schema, collation);
 
         for(int i = 0; i < row_cnt; ++i)  {
-            PlainTuple dst_tuple = table->revealRow(i, dst_schema, party);
+            PlainTuple dst_tuple = table->revealRow(i, party);
             dst_table->putTuple(i, dst_tuple);
         }
 
@@ -317,7 +317,7 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
 
 
 template<typename B>
-PlainTable *QueryTable<B>::revealInsecure(const int &party) const {
+PlainTable *QueryTable<B>::revealInsecure(const int &party)  {
 
     if(!isEncrypted()) {
         return (QueryTable<bool> *) this;
@@ -328,7 +328,7 @@ PlainTable *QueryTable<B>::revealInsecure(const int &party) const {
     auto dst_table = PlainTable::getTable(tuple_cnt_, dst_schema, order_by_);
 
     for(uint32_t i = 0; i < tuple_cnt_; ++i)  {
-        PlainTuple t = revealRow(i, dst_schema, party);
+        PlainTuple t = revealRow(i, party);
         dst_table->putTuple(i, t);
     }
     return dst_table;

@@ -29,7 +29,6 @@ void PlainEncoding<B>::secretShare(QueryTable<Bit> *dst, const int &dst_col) {
         case FieldType::BOOL: {
             bool *src_ptr = (bool *) this->column_data_;
             Bit *dst_ptr = (Bit *) dst->column_data_.at(dst_col).data();
-//            cout << "Secret sharing " << row_cnt << " bits for column " << this->column_idx_ << endl;
             if (sender)
                 manager->feed(dst_ptr, sending_party, src_ptr, row_cnt);
             else
@@ -108,7 +107,8 @@ void PlainEncoding<B>::secretShareForBitPacking(QueryTable<Bit> *dst, const int 
     FieldType f_type = dst_encoding->field_type_;
 
     if(sender) {
-        bool *bools = new bool[field_size_bits * row_cnt];
+        int bool_cnt = field_size_bits * row_cnt;
+        bool *bools = new bool[bool_cnt];
 
         if (f_type == FieldType::SECURE_INT) {
             serializeForBitPacking<int32_t>(bools, (int32_t *) this->column_data_, row_cnt, field_size_bits, dst_encoding->field_min_);
@@ -117,7 +117,7 @@ void PlainEncoding<B>::secretShareForBitPacking(QueryTable<Bit> *dst, const int 
             serializeForBitPacking<int64_t>(bools, (int64_t *) this->column_data_, row_cnt, field_size_bits, dst_encoding->field_min_);
         }
 
-        manager->feed((Bit *) dst_encoding->column_data_, sending_party, bools, field_size_bits * row_cnt);
+        manager->feed((Bit *) dst_encoding->column_data_, sending_party, bools, bool_cnt);
         delete [] bools;
     }
     else {
@@ -202,6 +202,21 @@ void PlainEncoding<B>::cloneColumn(const int &dst_idx, QueryTable<B> *s, const i
     }
 
     memcpy(write_ptr, read_ptr, this->field_size_bytes_ * src_tuples);
+}
+
+template<typename B>
+void PlainEncoding<B>::cloneField(const int &dst_row, const QueryTable<B> *s, const int &src_row, const int &src_col) {
+    assert(s->storageModel() == StorageModel::COMPRESSED_STORE);
+    auto src = (CompressedTable<B> *) s;
+    auto src_encoding = src->column_encodings_.at(src_col);
+
+    assert(src_encoding->columnEncoding() == ColumnEncodingModel::PLAIN); // clone only from columns encoded with the same scheme
+    assert(this->field_size_bits_ == src_encoding->field_size_bits_);
+
+    int8_t *write_ptr = this->column_data_ + dst_row * this->field_size_bytes_;
+    int8_t *read_ptr = src_encoding->column_data_ + src_row * this->field_size_bytes_;
+    memcpy(write_ptr, read_ptr, this->field_size_bytes_);
+
 }
 
 

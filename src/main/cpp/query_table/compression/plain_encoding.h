@@ -2,6 +2,7 @@
 #define _PLAIN_ENCODING_
 #include "column_encoding.h"
 #include "query_table/query_table.h"
+#include "util/field_utilities.h"
 
 namespace vaultdb {
     // Column encoding with no compression
@@ -73,7 +74,7 @@ namespace vaultdb {
         }
 
         void cloneColumn(const int & dst_idx, QueryTable<B> *s, const int & src_col, const int & src_idx) override;
-
+        void cloneField(const int & dst_row, const QueryTable<B> *src, const int & src_row, const int & src_col) override;
         void initializeColumn(const Field<B> & field) override {
             auto desc = this->parent_table_->getSchema().getField(this->column_idx_);
             auto field_type = desc.getType();
@@ -135,14 +136,12 @@ namespace vaultdb {
         template <typename T>
          void serializeForBitPacking(bool *dst, T *src, int row_cnt, int field_bit_cnt, T field_min) {
             bool b[field_bit_cnt];
-            auto read_ptr = src;
             auto write_ptr = dst;
 
             for (int i = 0; i < row_cnt; ++i) {
-                T to_share = *read_ptr - field_min;
-                emp::int_to_bool<int32_t>(b, to_share, field_bit_cnt);
+                T to_share = src[i] - field_min;
+                emp::int_to_bool<T>(b, to_share, field_bit_cnt);
                 memcpy(write_ptr, b, field_bit_cnt); // still plaintext
-                ++read_ptr;
                 write_ptr += field_bit_cnt;
             }
         }
@@ -159,6 +158,7 @@ namespace vaultdb {
             }
         }
     };
+
 
 
 

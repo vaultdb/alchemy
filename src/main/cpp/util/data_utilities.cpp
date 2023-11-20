@@ -337,7 +337,7 @@ string DataUtilities::printBitArray(const int8_t *bits, const size_t &byte_cnt) 
     return s.str();
 }
 
-string DataUtilities::printTable(const SecureTable *table, int tuple_limit, bool show_dummies) {
+string DataUtilities::printTable(SecureTable *table, int tuple_limit, bool show_dummies) {
     if(tuple_limit <= 0 || tuple_limit > table->tuple_cnt_) {
         auto tmp = table->revealInsecure();
         stringstream ss;
@@ -350,9 +350,8 @@ string DataUtilities::printTable(const SecureTable *table, int tuple_limit, bool
     int tuples_written = 0;
     size_t cursor = 0;
 
-    QuerySchema plain_schema = QuerySchema::toPlain(table->getSchema());
     while((cursor < table->tuple_cnt_) && (tuples_written < tuple_limit)) {
-        PlainTuple tuple = table->revealRow(cursor, plain_schema);
+        PlainTuple tuple = table->revealRow(cursor);
         if(show_dummies  // print unconditionally
            || !tuple.getDummyTag()) {
             ss << cursor << ": " << tuple.toString(show_dummies) << std::endl;

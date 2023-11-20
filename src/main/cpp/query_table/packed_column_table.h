@@ -121,6 +121,7 @@ namespace vaultdb {
 
         void setSchema(const QuerySchema &schema) override {
             schema_ = schema;
+            this->plain_schema_ = QuerySchema::toPlain(schema);
 
             tuple_size_bytes_ = 0;
             QueryFieldDesc desc;

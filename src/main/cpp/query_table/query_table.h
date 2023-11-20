@@ -109,17 +109,19 @@ namespace  vaultdb {
         PlainTable *reveal(const int & party = emp::PUBLIC);
 
         // holds onto dummy rows
-        virtual PlainTable *revealInsecure(const int & party = emp::PUBLIC) const;
+        virtual PlainTable *revealInsecure(const int & party = emp::PUBLIC);
 
-        inline PlainTuple revealRow(const int & row,  QuerySchema & dst_schema, const int & party = PUBLIC) const  {
+        inline PlainTuple revealRow(const int &row, const int &party = PUBLIC)   {
             if(std::is_same_v<B, bool>) {
                 return getPlainTuple(row);
             }
 
-            PlainTuple plain(&dst_schema);
+            PlainTuple plain(&plain_schema_);
             int field_cnt = schema_.getFieldCount();
+
             for(int i = 0; i < field_cnt; i++) {
-                PlainField p = getField(row, i).reveal(schema_.getField(i), party);
+                auto s = getField(row, i);
+                auto p = s.reveal(schema_.getField(i), party);
                 plain.setField(i, p);
             }
 
@@ -321,6 +323,7 @@ namespace  vaultdb {
 
     protected:
         QuerySchema schema_;
+        QuerySchema plain_schema_;
 
 
 

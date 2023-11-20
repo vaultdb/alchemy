@@ -125,6 +125,7 @@ std::string FieldUtilities::printTupleBits(const PlainTuple & p) {
     std::stringstream s;
     for(int i = 0; i < bit_size; ++i) {
         s << bits[i];
+        if(i % 8 == 0) s << " ";
     }
 
     delete [] bits;
@@ -132,10 +133,9 @@ std::string FieldUtilities::printTupleBits(const PlainTuple & p) {
 }
 
 std::string FieldUtilities::printTupleBits(const SecureTuple & s) {
-    int bit_size = s.getSchema()->size();
-    Integer i(bit_size, 0);
-    memcpy(i.bits.data(), s.getData(), bit_size);
-    return  SystemConfiguration::getInstance().emp_manager_->revealToString(i);
+    QuerySchema dst_schema = QuerySchema::toPlain(*s.getSchema());
+    PlainTuple tmp = s.reveal(&dst_schema, PUBLIC);
+    return printTupleBits(tmp);
 }
 
 // unioned db name

@@ -70,7 +70,7 @@ namespace vaultdb {
         }
 
         void cloneColumn(const int & dst_idx, QueryTable<Bit> *src, const int & src_col, const int & src_idx) override;
-
+        void cloneField(const int & dst_row, const QueryTable<Bit> *src, const int & src_row, const int & src_col) override;
         ColumnEncodingModel columnEncoding() override { return ColumnEncodingModel::BIT_PACKED; }
 
         void resize(const int & tuple_cnt) override {
@@ -101,11 +101,10 @@ namespace vaultdb {
         }
 
     private:
-        // for int32_t or int64_t
-        // based on emp::reveal
-        template<typename T>
-        void revealBitPackedInts(T *dst, emp::Bit *src, const int & row_cnt, const int & party = PUBLIC);
 
+        // based on emp::reveal
+        void revealBitPackedInts(int32_t *dst, emp::Bit *src, const int & row_cnt, const int & party = PUBLIC);
+        void revealBitPackedInts(int64_t *dst, emp::Bit *src, const int & row_cnt, const int & party = PUBLIC);
 
 
     };
