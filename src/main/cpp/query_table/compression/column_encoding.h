@@ -34,7 +34,7 @@ namespace vaultdb {
         virtual ColumnEncoding<B> *clone(QueryTable<B> *dst, const int & dst_col) = 0;
         virtual void cloneColumn(const int & dst_idx, QueryTable<B> *src, const int & src_col, const int & src_idx) = 0;
         virtual void cloneField(const int & dst_row, const QueryTable<B> *src, const int & src_row, const int & src_col) = 0;
-
+        virtual void compareSwap(const B &swap, const int &lhs_row, const int &rhs_row) = 0;
         virtual ColumnEncodingModel columnEncoding() = 0;
         virtual void resize(const int & tuple_cnt) = 0;
         // reverse the process of secretShare above

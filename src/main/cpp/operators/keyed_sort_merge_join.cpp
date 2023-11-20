@@ -110,11 +110,13 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
 
     this->output_ = QueryTable<B>::getTable(foreign_key_cardinality_, out_schema);
 
+    // TODO: replace this with cloneColumn calls - 1 per col
+    // JMR: figure out why we have write conditional here.  Shouldn't we always write?
     for(int i = 0; i < foreign_key_cardinality_; i++) {
-        B dummy_tag = lhs_reverted->getDummyTag(i) | rhs_reverted->getDummyTag(i);
-        this->output_->cloneRow(!dummy_tag, i, 0, lhs_reverted, i);
-        this->output_->cloneRow(!dummy_tag, i, lhs_field_cnt, rhs_reverted, i);
-        this->output_->setDummyTag(i, dummy_tag);
+        B dummy = lhs_reverted->getDummyTag(i) | rhs_reverted->getDummyTag(i);
+        this->output_->cloneRow(!dummy, i, 0, lhs_reverted, i);
+        this->output_->cloneRow(!dummy, i, lhs_field_cnt, rhs_reverted, i);
+        this->output_->setDummyTag(i, dummy);
     }
 
     delete lhs_reverted;
@@ -355,11 +357,11 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionAndMergeTables() {
 
 }
 
-template<typename B>
-QueryTable<B> *KeyedSortMergeJoin<B>::unionTables(QueryTable<B> *lhs, QueryTable<B> *rhs, const QuerySchema & dst_schema) {
+template<>
+QueryTable<bool> *KeyedSortMergeJoin<bool>::unionTables(QueryTable<bool> *lhs, QueryTable<bool> *rhs, const QuerySchema & dst_schema) {
 
     auto unioned_len = lhs->tuple_cnt_ + rhs->tuple_cnt_;
-    QueryTable<B> *unioned =  QueryTable<B>::getTable(unioned_len, dst_schema);
+    auto unioned =  QueryTable<bool>::getTable(unioned_len, dst_schema);
 
     // always FK --> PK
     int cursor = 0;
@@ -376,6 +378,32 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionTables(QueryTable<B> *lhs, QueryTable
 
     return unioned;
 }
+
+template<>
+QueryTable<Bit> *KeyedSortMergeJoin<Bit>::unionTables(QueryTable<Bit> *lhs, QueryTable<Bit> *rhs, const QuerySchema & dst_schema) {
+
+    auto unioned_len = lhs->tuple_cnt_ + rhs->tuple_cnt_;
+    QueryTable<Bit> *unioned =  QueryTable<Bit>::getTable(unioned_len, dst_schema);
+
+    // always FK --> PK
+    int cursor = 0;
+    for(int i = lhs->tuple_cnt_ - 1; i >= 0; --i) {
+        Integer row = lhs->unpackRow(i);
+        unioned->packRow(cursor, row);
+        ++cursor;
+    }
+
+
+    for(int i = 0; i < rhs->tuple_cnt_; ++i) {
+        Integer row = rhs->unpackRow(i);
+        unioned->packRow(cursor, row);
+        ++cursor;
+    }
+
+    return unioned;
+}
+
+
 
 template<typename B>
 QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs) {
@@ -642,7 +670,6 @@ QueryTable<Bit> *KeyedSortMergeJoin<Bit>::revertProjection(QueryTable<Bit> *src,
         dst_to_src[pos.second] = pos.first;
     }
 
-    // if we are in OMPC packed wires mode, then we need to unpackRow into a bit array using unpackRow, then manually project the bit array to the correct offsets.
     auto row_len = running_offset + 1;
     auto row_cnt = src->tuple_cnt_;
     auto dst =  QueryTable<Bit>::getTable(row_cnt, dst_schema);
@@ -665,6 +692,7 @@ QueryTable<Bit> *KeyedSortMergeJoin<Bit>::revertProjection(QueryTable<Bit> *src,
         // if this table has the smaller of the two input schemas, then the dummy tag is at the end.
         dst->packRow(i, dst_row);
     }
+
     return  dst;
 }
 

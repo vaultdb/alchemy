@@ -75,6 +75,7 @@ namespace vaultdb {
 
         void cloneColumn(const int & dst_idx, QueryTable<B> *s, const int & src_col, const int & src_idx) override;
         void cloneField(const int & dst_row, const QueryTable<B> *src, const int & src_row, const int & src_col) override;
+        void compareSwap(const B &swap, const int &lhs_row, const int &rhs_row) override;
         void initializeColumn(const Field<B> & field) override {
             auto desc = this->parent_table_->getSchema().getField(this->column_idx_);
             auto field_type = desc.getType();

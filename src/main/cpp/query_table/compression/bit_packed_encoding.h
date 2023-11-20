@@ -79,6 +79,16 @@ namespace vaultdb {
             this->column_data_ = dst.data();
         }
 
+        void compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) override {
+            Bit *lhs = (Bit *) (this->column_data_ + lhs_row * this->field_size_bytes_);
+            Bit *rhs = (Bit *) (this->column_data_ + rhs_row * this->field_size_bytes_);
+
+            for(int i = 0; i < this->field_size_bits_; ++i) {
+                emp::swap(swap, *lhs, *rhs);
+                ++lhs;
+                ++rhs;
+            }
+        }
         void revealInsecure(QueryTable<bool> *dst, const int & dst_col, const int & party) override;
 
         // not implemented because there is no plaintext compression phase to this technique

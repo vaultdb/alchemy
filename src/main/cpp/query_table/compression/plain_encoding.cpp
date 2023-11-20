@@ -219,7 +219,35 @@ void PlainEncoding<B>::cloneField(const int &dst_row, const QueryTable<B> *s, co
 
 }
 
+template<>
+void PlainEncoding<bool>::compareSwap(const bool &swap, const int &lhs_row, const int &rhs_row) {
+    int8_t *l = this->column_data_ + lhs_row * this->field_size_bytes_;
+    int8_t *r = this->column_data_ + rhs_row * this->field_size_bytes_;
 
+    // swap in place
+    for(int i = 0; i < this->field_size_bytes_; ++i) {
+        *l = *l ^ *r;
+        *r = *r ^ *l;
+        *l = *l ^ *r;
+
+        ++l;
+        ++r;
+    }
+
+}
+
+template<>
+void PlainEncoding<Bit>::compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) {
+    Bit *lhs = (Bit *) (this->column_data_ + lhs_row * this->field_size_bytes_);
+    Bit *rhs = (Bit *) (this->column_data_ + rhs_row * this->field_size_bytes_);
+
+    for(int i = 0; i < this->field_size_bits_; ++i) {
+        emp::swap(swap, *lhs, *rhs);
+        ++lhs;
+        ++rhs;
+    }
+
+}
 
 template class vaultdb::PlainEncoding<bool>;
 template class vaultdb::PlainEncoding<emp::Bit>;
