@@ -279,7 +279,7 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
         if(!isEncrypted()) { return (QueryTable<bool> *) this;  }
         auto table = (QueryTable<Bit> *) this;
         QuerySchema dst_schema = QuerySchema::toPlain(schema_);
-        SortDefinition collation = table->order_by_;
+        auto collation = table->order_by_;
 
         // if it is not sorted so that the dummies are at the end, sort it now.
         if(collation.empty() || collation[0].first != -1) {

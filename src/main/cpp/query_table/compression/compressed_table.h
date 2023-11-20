@@ -151,15 +151,14 @@ namespace vaultdb {
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row) override {
             bool copy_compatible = true;
             int col_cnt = src->getSchema().getFieldCount();
-            for(int i = 0; i < col_cnt; ++i) {
-                if(src->getSchema().getField(i).getType() != this->getSchema().getField(dst_col + i).getType()) {
-                    copy_compatible = false;
-                    break;
-                }
-            }
+//            for(int i = 0; i < col_cnt; ++i) {
+//                if(src->getSchema().getField(i).getType() != this->getSchema().getField(dst_col + i).getType()) {
+//                    copy_compatible = false;
+//                    break;
+//                }
+//            }
 
             if(copy_compatible) {
-                // fast path
                 for(int i = 0; i < col_cnt; ++i) {
                     auto dst_encoding = column_encodings_.at(dst_col + i);
                     dst_encoding->cloneField(dst_row, src, src_row, i);
@@ -169,8 +168,10 @@ namespace vaultdb {
                 return;
             }
 
+            throw; // NYI
+
             // need to serialize field in case we are changing underlying schema as in SortMergeJoin
-            vector<int8_t> row_bytes = src->serializeRow(src_row);
+            /*vector<int8_t> row_bytes = src->serializeRow(src_row);
             int8_t *read_ptr = row_bytes.data();
             for(int i = 0; i < col_cnt; ++i) {
                 auto dst_encoding = column_encodings_.at(dst_col + i);
@@ -180,6 +181,7 @@ namespace vaultdb {
 
             Field<B> dummy_tag = src->getField(src_row, -1);
             column_encodings_.at(-1)->setField(dst_row, dummy_tag);
+             */
         }
 
         void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) override;
@@ -227,7 +229,11 @@ namespace vaultdb {
         }
 
         QueryTable<B> *clone() override { return new CompressedTable<B>(*this); }
-        void compareSwap(const B & swap, const int  & lhs_row, const int & rhs_row) override;
+        void compareSwap(const B & swap, const int  & lhs_row, const int & rhs_row) override {
+            for(auto pos : column_encodings_) {
+                pos.second->compareSwap(swap, lhs_row, rhs_row);
+            }
+        }
 
         void cloneColumn(const int & dst_col, const int & dst_idx, const QueryTable<B> *s, const int & src_col, const int & src_offset = 0) override {
             assert(s->storageModel() == StorageModel::COMPRESSED_STORE);

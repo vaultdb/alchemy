@@ -247,14 +247,15 @@ namespace  vaultdb {
            assert(isEncrypted());
            auto dst = (SecureTable *) this;
             Bit *cursor = src.bits.data();
-
-            for(int i = 0; i < schema_.getFieldCount(); ++i) {
-                QueryFieldDesc desc = schema_.getField(i);
+            Bit *end = src.bits.data() + src.size() - 1; // -1 for dummy tag, do this separately
+            int dst_idx = 0;
+            while(cursor < end) {
+                QueryFieldDesc desc = schema_.getField(dst_idx);
                 switch(desc.getType()) {
                     case FieldType::SECURE_BOOL: {
                         Bit b = *cursor;
                         SecureField f(FieldType::SECURE_BOOL, b);
-                        dst->setField(row, i, f);
+                        dst->setField(row, dst_idx, f);
                         break;
                     }
                     case FieldType::SECURE_INT:
@@ -263,14 +264,14 @@ namespace  vaultdb {
                         Integer i_field(desc.size() + desc.bitPacked(), 0, PUBLIC);
                         memcpy(i_field.bits.data(), cursor, desc.size() * sizeof(Bit));
                         SecureField f(desc.getType(), i_field, desc.getStringLength());
-                        dst->setField(row, i, f);
+                        dst->setField(row, dst_idx, f);
                         break;
                     }
                     case FieldType::SECURE_FLOAT: {
                         Float f_field;
                         memcpy(f_field.value.data(), cursor, desc.size() * sizeof(Bit));
                         SecureField f(FieldType::SECURE_FLOAT, f_field);
-                        dst->setField(row, i, f);
+                        dst->setField(row, dst_idx, f);
                         break;
                     }
                     default:
@@ -278,11 +279,11 @@ namespace  vaultdb {
 
                 }
                 cursor += desc.size();
-
+                ++dst_idx;
             }
 
             // do dummy tag last
-            Bit dummy_tag = *cursor;
+            Bit dummy_tag = *end;
             dst->setDummyTag(row, dummy_tag);
         }
 
