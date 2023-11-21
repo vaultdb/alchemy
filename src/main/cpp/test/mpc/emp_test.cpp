@@ -226,7 +226,7 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
 
     // tests bitonic merge in 2PC case
     SecureTable *secret_shared = input_table->secretShare();
-    PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
+    PlainTable *revealed = secret_shared->revealInsecure(emp::PUBLIC);
 
     // set up expected result
      std::sort(all_input.begin(), all_input.end());

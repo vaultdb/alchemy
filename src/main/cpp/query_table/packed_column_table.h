@@ -15,9 +15,12 @@ namespace vaultdb {
         // if a field spans more than one wire per instance (e.g., a string with length > 16 chars) then we need to map the field to multiple wires
         map<int, int> wires_per_field_;
 
-        // cache of last wire we unpacked for each column
+        // number of wires packed for each column
+        std::vector<int> packed_wires_;
+
+        // cache packed_wires[each column] * 128 bits
         typedef struct unpacked_t {
-            emp::Bit unpacked_wire[128];
+            std::vector<emp::Bit> unpacked_wire;
             int page_idx_;
             bool dirty_bit_ = false; // TODO: if dirty, flush this to column_data_ when we evict an entry from unpacked_wires_
         }  Unpacked;
@@ -32,20 +35,22 @@ namespace vaultdb {
             if(tuple_cnt == 0)
                 return;
 
+            packed_wires_.resize(schema_.getFieldCount());
 
             for(int i = 0; i < schema_.getFieldCount(); ++i) {
                 auto desc = schema_.fields_.at(i);
-                int packed_wires = desc.packedWires();
+                packed_wires_[i] = desc.packedWires();
 
                 // solve for col_len_bytes
-                int wire_cnt =  (packed_wires == 1) ? (tuple_cnt_ / fields_per_wire_[i] + (tuple_cnt_ % fields_per_wire_[i] != 0))
-                                                   : (tuple_cnt_ * packed_wires);
+                int wire_cnt =  (packed_wires_[i] == 1) ? (tuple_cnt_ / fields_per_wire_[i] + (tuple_cnt_ % fields_per_wire_[i] != 0))
+                                                        : (tuple_cnt_ * packed_wires_[i]);
                 column_data_[i] = std::vector<int8_t>(wire_cnt * sizeof(OMPCPackedWire));
-
+                unpacked_wires_[i].unpacked_wire = std::vector<emp::Bit>(packed_wires_[i] * 128);
             }
 
             int dummy_tag_wire_cnt = tuple_cnt / 128 + (tuple_cnt % 128 != 0);
             column_data_[-1] = std::vector<int8_t>(dummy_tag_wire_cnt * sizeof(OMPCPackedWire));
+            unpacked_wires_[-1].unpacked_wire = std::vector<emp::Bit>(128);
         }
 
         PackedColumnTable(const PackedColumnTable &src) : QueryTable<Bit>(src) {
@@ -53,17 +58,17 @@ namespace vaultdb {
         }
 
         void cacheField(int row, int col, int target_wire) const {
-	  EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
-	  if(unpacked_wires_[col].page_idx_ != target_wire) {
+	        EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
+	        if(unpacked_wires_[col].page_idx_ != target_wire) {
                 if(unpacked_wires_[col].dirty_bit_) {
                     // Flush to column_data_
                     emp::OMPCPackedWire *pack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + unpacked_wires_[col].page_idx_;
-		    manager->pack(unpacked_wires_[col].unpacked_wire, pack_wire, 128);
+		            manager->pack(unpacked_wires_[col].unpacked_wire.data(), (Bit *) pack_wire, packed_wires_[col] * 128);
                     unpacked_wires_[col].dirty_bit_ = false;
                 }
 
                 emp::OMPCPackedWire *unpack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + target_wire;
-                manager->unpack(unpacked_wires_[col].unpacked_wire, unpack_wire, 128);
+                manager->unpack((Bit *) unpack_wire, unpacked_wires_[col].unpacked_wire.data(), packed_wires_[col] * 128);
 
                 unpacked_wires_[col].page_idx_ = target_wire;
             }
@@ -74,15 +79,13 @@ namespace vaultdb {
                 return Field<Bit>(schema_.fields_.at(-1).getType(), getDummyTag(row));
             }
 
-            assert(fields_per_wire_.at(col) > 0);
-
             int target_wire = row / fields_per_wire_.at(col);
             int target_offset = row % fields_per_wire_.at(col);
             int field_bits_size = schema_.fields_.at(col).size();
 
             cacheField(row, col, target_wire);
 
-            Bit *read_ptr = unpacked_wires_.at(col).unpacked_wire + target_offset * field_bits_size;
+            Bit *read_ptr = unpacked_wires_.at(col).unpacked_wire.data() + ((packed_wires_[col] == 1) ? (target_offset * field_bits_size) : 0);
             return Field<Bit>::deserialize(schema_.fields_.at(col), (int8_t *) read_ptr);
         }
 
@@ -94,8 +97,6 @@ namespace vaultdb {
                 return;
             }
 
-            assert(fields_per_wire_[col] > 0);
-
             int field_bits_size = f.getSize();
             int target_wire = row / fields_per_wire_[col];
             int target_offset = row % fields_per_wire_[col];
@@ -103,7 +104,7 @@ namespace vaultdb {
             // Cache the field
             cacheField(row, col, target_wire);
 
-            Bit *write_ptr = unpacked_wires_[col].unpacked_wire + target_offset * field_bits_size;
+            Bit *write_ptr = unpacked_wires_.at(col).unpacked_wire.data() + ((packed_wires_[col] == 1) ? (target_offset * field_bits_size) : 0);
             f.writeField((int8_t *) write_ptr, f, schema_.getField(col));
             unpacked_wires_[col].dirty_bit_ = true;
 
@@ -111,7 +112,7 @@ namespace vaultdb {
             if(row == tuple_cnt_ - 1) {
                 emp::OMPCPackedWire *pack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + unpacked_wires_[col].page_idx_;
                 
-		SystemConfiguration::getInstance().emp_manager_->pack(unpacked_wires_[col].unpacked_wire, pack_wire, 128);
+		        SystemConfiguration::getInstance().emp_manager_->pack(unpacked_wires_[col].unpacked_wire.data(), (Bit *) pack_wire, packed_wires_[col] * 128);
                 unpacked_wires_[col].dirty_bit_ = false;
             }
         }
