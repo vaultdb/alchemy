@@ -53,16 +53,17 @@ namespace vaultdb {
         }
 
         void cacheField(int row, int col, int target_wire) const {
-            if(unpacked_wires_[col].page_idx_ != target_wire) {
+	  EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
+	  if(unpacked_wires_[col].page_idx_ != target_wire) {
                 if(unpacked_wires_[col].dirty_bit_) {
                     // Flush to column_data_
                     emp::OMPCPackedWire *pack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + unpacked_wires_[col].page_idx_;
-                    ((OMPCBackend<N> *) emp::backend)->pack(unpacked_wires_[col].unpacked_wire, pack_wire, 128);
+		    manager->pack(unpacked_wires_[col].unpacked_wire, pack_wire, 128);
                     unpacked_wires_[col].dirty_bit_ = false;
                 }
 
                 emp::OMPCPackedWire *unpack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + target_wire;
-                ((OMPCBackend<N> *) emp::backend)->unpack(unpacked_wires_[col].unpacked_wire, unpack_wire, 128);
+                manager->unpack(unpacked_wires_[col].unpacked_wire, unpack_wire, 128);
 
                 unpacked_wires_[col].page_idx_ = target_wire;
             }
@@ -109,7 +110,8 @@ namespace vaultdb {
             // Flush the last wire
             if(row == tuple_cnt_ - 1) {
                 emp::OMPCPackedWire *pack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + unpacked_wires_[col].page_idx_;
-                ((OMPCBackend<N> *) emp::backend)->pack(unpacked_wires_[col].unpacked_wire, pack_wire, 128);
+                
+		SystemConfiguration::getInstance().emp_manager_->pack(unpacked_wires_[col].unpacked_wire, pack_wire, 128);
                 unpacked_wires_[col].dirty_bit_ = false;
             }
         }
