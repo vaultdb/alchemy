@@ -81,7 +81,7 @@ namespace vaultdb {
 
             int target_wire = row / fields_per_wire_.at(col);
             int target_offset = row % fields_per_wire_.at(col);
-            int field_bits_size = schema_.fields_.at(col).size();
+            int field_bits_size = schema_.getField(col).size();
 
             cacheField(row, col, target_wire);
 
@@ -97,7 +97,7 @@ namespace vaultdb {
                 return;
             }
 
-            int field_bits_size = f.getSize();
+            int field_bits_size = schema_.getField(col).size();
             int target_wire = row / fields_per_wire_[col];
             int target_offset = row % fields_per_wire_[col];
 
