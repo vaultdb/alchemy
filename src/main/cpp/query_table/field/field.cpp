@@ -141,8 +141,8 @@ Bit Field<Bit>::operator>=(const Field<Bit> &r) const {
             return (li >= ri);
         }
         case FieldType::SECURE_FLOAT:
-            memcpy(fl.value.data(), payload_.data(), FLOAT_LEN * sizeof(Bit));
-            memcpy(fr.value.data(), r.payload_.data(), FLOAT_LEN * sizeof(Bit));
+            memcpy(fl.value.data(), payload_.data(), 32 * sizeof(Bit));
+            memcpy(fr.value.data(), r.payload_.data(), 32 * sizeof(Bit));
             return  !(fl.less_than(fr));
         default:
             throw;

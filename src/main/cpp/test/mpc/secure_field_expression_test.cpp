@@ -49,15 +49,15 @@ TEST_F(SecureFieldExpressionTest, test_string_compare) {
     PlainField rhs(FieldType::STRING, rhs_str);
 
     SecureField  lhs_shared, rhs_shared;
-    if(FLAGS_party == emp::ALICE) {
-        lhs_shared = PlainField::secret_share_send(lhs, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, lhs_str.size()), emp::ALICE);
-        rhs_shared = PlainField::secret_share_send(rhs, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhs_str.size()), emp::ALICE);
+    if(FLAGS_party == manager_->sendingParty()) {
+        lhs_shared = PlainField::secret_share_send(lhs, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, lhs_str.size()), manager_->sendingParty());
+        rhs_shared = PlainField::secret_share_send(rhs, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhs_str.size()), manager_->sendingParty());
     }
     else {
         lhs_shared = PlainField::secret_share_recv(
-                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, lhs_str.size()), emp::ALICE);
+                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, lhs_str.size()), manager_->sendingParty());
         rhs_shared = PlainField::secret_share_recv(
-                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhs_str.size()), emp::ALICE);
+                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhs_str.size()), manager_->sendingParty());
     }
 
     emp::Bit gt_shared = (lhs_shared > rhs_shared);
