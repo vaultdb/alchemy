@@ -48,8 +48,8 @@ protected:
 
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' l_dummy \n"
                                       "FROM lineitem \n"
-                                      "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= " + std::to_string(FLAGS_cutoff) + ")  \n"
-                                                                                                                                                " ORDER BY l_orderkey, revenue, l_dummy ";
+                                      "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= " + std::to_string(FLAGS_cutoff) +  ")  \n"
+                                       " ORDER BY l_orderkey, revenue, l_dummy ";
 
     SortDefinition customer_sort_ = DataUtilities::getDefaultSortDefinition(1);
     SortDefinition orders_cust_sort_{ColumnSort (1, SortDirection::ASCENDING), ColumnSort (0, SortDirection::ASCENDING)};
@@ -109,7 +109,7 @@ TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_customer_orders) {
 
 
 TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
-    // get inputs from local oblivious ops
+    // get inputs from oblivious ops
     // first N customers, propagate this constraint up the join tree for the test
     std::string expected_sql = "WITH orders_cte AS (" + orders_lineitem_sql_ + "), "
                                      "lineitem_cte AS (" + lineitem_sql_ + ") "
@@ -118,13 +118,8 @@ TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
                               "WHERE NOT o_dummy AND NOT l_dummy "
                               "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue";
 
-    PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,  false);
-
-
     auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true, lineitem_sort_);
-
     auto orders_input = new SecureSqlInput(db_name_, orders_lineitem_sql_, true, orders_lineitem_sort_);
-
 
     // join output schema:
     //  o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue,
@@ -140,15 +135,15 @@ TEST_F(SecureKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
 	log->write("Runtime: " + std::to_string(join.getRuntimeMs()), Level::INFO);
 
     if(FLAGS_validation) {
-        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(6);
-        joined->order_by_ = sort_def;
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql,  false);
         PlainTable *observed = joined->reveal();
-
+        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(6);
+        Sort<bool> sorter(observed, sort_def);
+        observed = sorter.run();
         expected->order_by_ = sort_def;
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
-        delete observed;
 
     }
 
