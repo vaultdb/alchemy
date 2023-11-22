@@ -3,7 +3,6 @@
 #include <util/data_utilities.h>
 #include <expression/expression_factory.h>
 #include <expression/visitor/type_validation_visitor.h>
-#include <parser/plan_parser.h>
 #include <expression/visitor/to_packed_expression_visitor.h>
 
 using namespace vaultdb;
@@ -100,7 +99,7 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
             int32_t literal_int = literal.template get_value<int32_t>();
 
             Field<B> input_field = (std::is_same_v<B, bool>) ?
-                                   Field<B>(FieldType::INT, Value((int32_t) literal_int))
+                                   Field<B>(FieldType::INT, literal_int)
                                                              :  Field<B>(FieldType::SECURE_INT, emp::Integer(32, literal_int));
             return new LiteralNode<B>(input_field);
         }
@@ -108,14 +107,14 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
             int64_t literal_int = literal.template get_value<int64_t>();
 
             Field<B> input_field = (std::is_same_v<B, bool>) ?
-                                   Field<B>(FieldType::LONG, Value((int64_t) literal_int))
+                                   Field<B>(FieldType::LONG, literal_int)
                                                              :  Field<B>(FieldType::SECURE_LONG, emp::Integer(64, literal_int));
             return new LiteralNode<B>(input_field);
         }
         else if(type_str == "FLOAT" || type_str == "DECIMAL") {
             float_t literal_float = literal.template get_value<float_t>();
             Field<B> input_field = (std::is_same_v<B, bool>) ?
-                                   Field<B>(FieldType::FLOAT, Value(literal_float))
+                                   Field<B>(FieldType::FLOAT, literal_float)
                                                              :  Field<B>(FieldType::SECURE_FLOAT, emp::Float(literal_float));
 
             return new LiteralNode<B>(input_field);
@@ -127,12 +126,12 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
             int length =    type_tree.get_child("precision").get_value<int>();
             std::string literal_string =   literal.template get_value<std::string>();
             while(literal_string.size() < length) literal_string += " ";
-            Field<B> input_field =  Field<B>(FieldType::STRING, Value(literal_string), length);
+            Field<B> input_field =  Field<B>(FieldType::STRING, literal_string);
 
             if(std::is_same_v<B, emp::Bit>) {
                 SecureField encrypted_field = input_field.secret_share();
                 Integer encrypted_string = encrypted_field.template getValue<emp::Integer>();
-                return new LiteralNode<B>(Field<B>(FieldType::SECURE_STRING, encrypted_string, length));
+                return new LiteralNode<B>(Field<B>(FieldType::SECURE_STRING, encrypted_string));
 
             }
 
@@ -141,7 +140,7 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
         }
         else if(type_str == "BOOL" || type_str == "BOOLEAN") {
             bool literal_bool = literal.template get_value<bool>();
-            Field<B> input_field = (std::is_same_v<B, bool>) ?  Field<B>(FieldType::BOOL, Value(literal_bool)) :
+            Field<B> input_field = (std::is_same_v<B, bool>) ?  Field<B>(FieldType::BOOL, literal_bool) :
                                    Field<B>(FieldType::SECURE_BOOL, emp::Bit(literal_bool));
             return new LiteralNode<B>(input_field);
         }

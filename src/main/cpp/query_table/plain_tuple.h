@@ -35,18 +35,18 @@ namespace  vaultdb {
             return false;
         }
 
-        inline PlainField getField(const int &ordinal) {
+        inline Field<bool> getField(const int &ordinal) {
             QueryFieldDesc field_desc = schema_->getField(ordinal);
             return Field<bool>::deserialize(field_desc, fields_ + (schema_->getFieldOffset(ordinal) / 8));
 
         }
-        inline const PlainField getField(const int &ordinal) const {
+        inline const Field<bool> getField(const int &ordinal) const {
             QueryFieldDesc field_desc = schema_->getField(ordinal);
             return Field<bool>::deserialize(field_desc, fields_ + (schema_->getFieldOffset(ordinal) / 8));
 
         }
 
-        void setField(const int &idx, const PlainField &f);
+        void setField(const int &idx, const Field<bool> &f);
 
         inline void setDummyTag(const bool & b) {
             size_t dummy_tag_size = sizeof(bool);

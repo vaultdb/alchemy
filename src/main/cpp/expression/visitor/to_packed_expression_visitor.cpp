@@ -27,7 +27,7 @@ void ToPackedExpressionVisitor<B>::visit(LiteralNode<B> & node) {
             emp::Integer val = node.payload_.template getValue<emp::Integer>();
             val = val - Integer(val.size(), last_schema_.getFieldMin(), PUBLIC);
             val.resize(last_schema_.size() + 1); // for sign bit
-            Field<B> dst(node.payload_.getType(),val,  0);
+            Field<B> dst(node.payload_.getType(),val);
             root_ = new LiteralNode<B>(dst);
             return;
         }

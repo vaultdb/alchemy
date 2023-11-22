@@ -204,6 +204,8 @@ namespace vaultdb {
             output << "GFlags: " <<  Utilities::getGFlags() << endl;
             return output.str();
         }
+
+
     };
 
 }

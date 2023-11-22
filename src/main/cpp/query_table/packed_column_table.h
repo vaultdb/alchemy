@@ -96,7 +96,7 @@ namespace vaultdb {
 
             assert(fields_per_wire_[col] > 0);
 
-            int field_bits_size = f.getSize();
+            int field_bits_size = f.payload_.size();
             int target_wire = row / fields_per_wire_[col];
             int target_offset = row % fields_per_wire_[col];
 
@@ -104,7 +104,7 @@ namespace vaultdb {
             cacheField(row, col, target_wire);
 
             Bit *write_ptr = unpacked_wires_[col].unpacked_wire + target_offset * field_bits_size;
-            f.writeField((int8_t *) write_ptr, f, schema_.getField(col));
+            f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
             unpacked_wires_[col].dirty_bit_ = true;
 
             // Flush the last wire

@@ -125,7 +125,6 @@ void Sort<B>::bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_de
             table->compareSwap(to_swap, i, i+m);
             ++counter;
         }
-
         bitonicMerge(table, sort_def, lo, m,  dir, counter);
         bitonicMerge(table, sort_def, lo + m, n - m, dir, counter);
     }

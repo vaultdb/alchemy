@@ -45,8 +45,8 @@ TEST_F(SecureFieldExpressionTest, test_string_compare) {
     std::string lhs_str = "EGYPT                    ";
     std::string rhs_str = "ARGENTINA                ";
 
-    PlainField lhs(FieldType::STRING, lhs_str, lhs_str.size());
-    PlainField rhs(FieldType::STRING, rhs_str, rhs_str.size());
+    PlainField lhs(FieldType::STRING, lhs_str);
+    PlainField rhs(FieldType::STRING, rhs_str);
 
     SecureField  lhs_shared, rhs_shared;
     if(FLAGS_party == emp::ALICE) {
@@ -169,8 +169,8 @@ TEST_F(SecureFieldExpressionTest, test_char_comparison) {
 
 
 
-    PlainField lhs_field(FieldType::STRING, lhs_str, 1);
-    PlainField rhs_field(FieldType::STRING, rhs_str, 1);
+    PlainField lhs_field(FieldType::STRING, lhs_str);
+    PlainField rhs_field(FieldType::STRING, rhs_str);
 
     SecureField  lhs_shared_field, rhs_shared_field;
     if(sending_party) {

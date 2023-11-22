@@ -223,17 +223,17 @@ template<>
 void PlainEncoding<bool>::compareSwap(const bool &swap, const int &lhs_row, const int &rhs_row) {
     int8_t *l = this->column_data_ + lhs_row * this->field_size_bytes_;
     int8_t *r = this->column_data_ + rhs_row * this->field_size_bytes_;
+    if(swap) {
+        // swap in place
+        for (int i = 0; i < this->field_size_bytes_; ++i) {
+            *l = *l ^ *r;
+            *r = *r ^ *l;
+            *l = *l ^ *r;
 
-    // swap in place
-    for(int i = 0; i < this->field_size_bytes_; ++i) {
-        *l = *l ^ *r;
-        *r = *r ^ *l;
-        *l = *l ^ *r;
-
-        ++l;
-        ++r;
+            ++l;
+            ++r;
+        }
     }
-
 }
 
 template<>

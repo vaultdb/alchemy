@@ -1,103 +1,20 @@
 #include "field.h"
 #include "util/utilities.h"
-#include "field_factory.h"
-#include <util/field_utilities.h>
 #include <util/system_configuration.h>
 
 using namespace vaultdb;
 
 
-std::ostream &vaultdb::operator<<(std::ostream &os, const Field<bool> &aValue) {
-    return os << aValue.toString();
+std::ostream &vaultdb::operator<<(std::ostream &os, const Field<bool> &val) {
+    return os << val.toString();
 }
 
-std::ostream &vaultdb::operator<<(std::ostream &os, const Field<emp::Bit> &aValue) {
-    return os << aValue.toString();
-}
-
-template<typename B>
-Field<B>::Field() :  payload_(false), type_(FieldType::INVALID), string_length_(0) {
-    assert(FieldUtilities::validateTypeAlignment(*this));
-
-}
-
-template<typename B>
-Field<B>::Field(const FieldType &field_type, const Value &val, const int &str_len) : payload_(val), type_(field_type), string_length_(str_len) {
-    assert(FieldUtilities::validateTypeAlignment(*this));
-    if(type_ == FieldType::STRING || type_ == FieldType::SECURE_STRING)
-        assert(string_length_ > 0);
-}
-
-
-template<typename B>
-Field<B>::Field(const Field<B> &field) :  payload_(field.payload_), type_(field.type_), string_length_(field.string_length_) {
-    assert(FieldUtilities::validateTypeAlignment(*this));
-    if(type_ == FieldType::STRING || type_ == FieldType::SECURE_STRING)
-        assert(string_length_ > 0);
-}
-
-template<typename B>
-Field<B>::Field(const B &value) : string_length_(0) {
-    payload_ = value;
-    type_ = (std::is_same_v<bool, B>)  ? FieldType::BOOL : FieldType::SECURE_BOOL;
-
-}
-
-
-template<typename B>
-Field<B> &Field<B>::operator=(const Field<B> &other) {
-
-    if(type_ == FieldType::INVALID && other.type_ == FieldType::INVALID) return *this; // nothing to do here
-    assert(other.type_ != FieldType::INVALID);
-
-    if(other.type_ == FieldType::STRING)
-        assert(other.string_length_ > 0);
-
-    if(&other == this)
-        return *this;
-
-    payload_ = other.payload_;
-    string_length_ = other.string_length_;
-    type_ = other.type_;
-    return *this;
-
-}
-
-template<typename B>
-FieldType Field<B>::getType() const {
-    return type_;
-}
-
-template<typename B>
-size_t Field<B>::getSize() const {
-
-    // serialization size, does not take into account two's complement (sign bit)
-    if(type_ == FieldType::SECURE_INT || type_ == FieldType::SECURE_LONG) {
-        emp::Integer i = boost::get<emp::Integer>(payload_);
-        return i.size();
-    }
-
-    return FieldUtilities::getPhysicalSize(type_, string_length_);
-
+std::ostream &vaultdb::operator<<(std::ostream &os, const Field<Bit> &val) {
+    return os << val.toString();
 }
 
 
 
-
-
-
-
-template<typename B>
-B Field<B>::operator!=(const Field &cmp) const {
-    B eq = *this == cmp;
-    return !eq;
-}
-
-// only applicable to bool/Bit types
-template<typename B>
-B Field<B>::operator!() const {
-    return !(boost::get<B>(payload_));
-}
 
 
 template<typename B>
@@ -143,17 +60,16 @@ Field<B>::secret_share_recv(const QueryFieldDesc &field_desc, const int &src_par
     assert(TypeUtilities::isEncrypted(field_desc.getType()));
 
     FieldType plain_type = TypeUtilities::toPlain(field_desc.getType());
-    Value input = FieldFactory<bool>::getZero(plain_type).payload_;
 
-
-    PlainField p(plain_type, input, field_desc.getStringLength());
+    // 0 not used so it is ok to hardcode
+    PlainField p(plain_type, 0);
     return secretShareHelper(p, field_desc, src_party, false);
 
 
 }
 
 template<typename B>
-std::string Field<B>::toString() const {
+string Field<B>::toString() const {
 
     switch(type_) {
         case FieldType::BOOL:
@@ -165,7 +81,7 @@ std::string Field<B>::toString() const {
         case FieldType::FLOAT:
             return std::to_string(getValue<float_t>());
         case FieldType::STRING:
-            return getValue<std::string>();
+            return this->getString();
         case FieldType::SECURE_BOOL:
             return "SECRET BIT";
         case FieldType::SECURE_INT:
@@ -182,13 +98,8 @@ std::string Field<B>::toString() const {
 }
 
 
-template<typename B>
-B Field<B>::operator>=(const Field &r) const {
-
-    B lhs, rhs, gt, eq;
-    Value v;
-    emp::Float *fl = nullptr, *fr = nullptr;
-    emp::Integer *li = nullptr, *ri = nullptr;
+template<>
+bool Field<bool>::operator>=(const Field<bool> &r) const {
 
     switch(type_) {
         case FieldType::BOOL:
@@ -201,99 +112,94 @@ B Field<B>::operator>=(const Field &r) const {
             return (getValue<float_t>()>= r.getValue<float_t>());
             // TODO: consider adding manual equality check, like "epsilon" in operator==
         case FieldType::STRING:
-            return getValue<string>() >= r.getValue<string>();
-        case FieldType::SECURE_BOOL:
-            lhs = getValue<B>();
-            rhs = r.getValue<B>();
-            gt = lhs & (!rhs);
-            eq = (lhs == rhs);
-            return eq | gt;
-        case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-        case FieldType::SECURE_STRING:
-            li = new Integer(boost::get<emp::Integer>(payload_));
-            ri = new Integer(boost::get<emp::Integer>(r.payload_));
-            v = (*li >= *ri);
-            delete li;
-            delete ri;
-            return boost::get<B>(v);
-        case FieldType::SECURE_FLOAT:
-            fl = new Float(getValue<emp::Float>());
-            fr = new Float(r.getValue<emp::Float>());
-            v = !(fl->less_than(*fr));
-            delete fl;
-            delete fr;
-            return boost::get<B>(v);
+            return getString() >= r.getString();
         default:
             throw;
     }
 }
 
 
+template<>
+Bit Field<Bit>::operator>=(const Field<Bit> &r) const {
+
+    Bit lhs, rhs, gt, eq;
+    Float fl, fr;
+    Integer li, ri;
+
+    switch(type_) {
+        case FieldType::SECURE_BOOL: {
+            lhs = *((Bit *) payload_.data());
+            rhs = *((Bit *) r.payload_.data());
+            gt = lhs & (!rhs);
+            eq = (lhs == rhs);
+            return eq | gt;
+        }
+        case FieldType::SECURE_INT:
+        case FieldType::SECURE_LONG:
+        case FieldType::SECURE_STRING: {
+            li = this->getInt();
+            ri = r.getInt();
+            return (li >= ri);
+        }
+        case FieldType::SECURE_FLOAT:
+            memcpy(fl.value.data(), payload_.data(), FLOAT_LEN * sizeof(Bit));
+            memcpy(fr.value.data(), r.payload_.data(), FLOAT_LEN * sizeof(Bit));
+            return  !(fl.less_than(fr));
+        default:
+            throw;
+    }
+}
+
+
+template<>
+PlainField Field<bool>::reveal(const QueryFieldDesc &desc, const int &party) const {
+    // already plain
+    return *this;
+}
 
 
 template<typename B>
 PlainField Field<B>::reveal( const QueryFieldDesc &desc, const int &party) const {
 
-    FieldType resType = TypeUtilities::toPlain(type_);
-    size_t str_len = 0;
-    Value v;
 
-    emp::Bit *b;
-    emp::Integer *i;
-    emp::Float *f;
+    Bit b;
+    Integer i;
+    Float f;
+    int32_t i32;
+    int64_t i64;
+    float_t flt;
+    string s;
 
     switch(type_) {
-        case FieldType::BOOL:
-        case FieldType::INT:
-        case FieldType::LONG:
-        case FieldType::FLOAT:
-        case FieldType::STRING:
-            v = payload_;
-            str_len = string_length_;
-            break;
         case FieldType::SECURE_BOOL:
-            b = new Bit(getValue<emp::Bit>());
-            v =  b->reveal(party);
-            delete b;
-            break;
+            b =  *((Bit *) payload_.data());
+            return Field<bool>(FieldType::BOOL, b.reveal(party));
         case FieldType::SECURE_INT:
-            i = new Integer(getValue<emp::Integer>());
-            v =  i->reveal<int32_t>(party);
-            delete i;
-            if(desc.bitPacked()) {
-                v = (int32_t) (boost::get<int32_t>(v) + desc.getFieldMin());
-            }
-            break;
+            i = getInt();
+            i32 =  i.reveal<int32_t>(party);
+            if(desc.bitPacked())     i32 += desc.getFieldMin();
+            return Field<bool>(FieldType::INT, i32);
         case FieldType::SECURE_LONG:
-            i = new Integer(getValue<emp::Integer>());
-            v = i->reveal<int64_t>(party);
-            delete i;
-            if(desc.bitPacked()) {
-                v = boost::get<int64_t>(v) + desc.getFieldMin();
-            }
-            break;
+            i = getInt();
+            i64 = i.reveal<int64_t>(party);
+            if(desc.bitPacked())   i64 += desc.getFieldMin();
+            return Field<bool>(FieldType::LONG, i64);
         case FieldType::SECURE_STRING:
-            i = new Integer(getValue<emp::Integer>());
-            v = revealString(*i, party);
-            str_len = i->size() / 8;
-            delete i;
-            assert(str_len > 0);
-            break;
+            i = getInt();
+            s = revealString(i, party);
+            return PlainField(FieldType::STRING, s);
         case FieldType::SECURE_FLOAT:
-            f = new emp::Float(getValue<emp::Float>());
-            v = (float_t) f->reveal<double>(party);
-            delete f;
-            break;
+            f = getFloat();
+            flt = (float_t) f.reveal<double>(party);
+            return PlainField(FieldType::FLOAT, flt);
         default:
             throw;
     }
 
-    return PlainField(resType, v, str_len);
 }
 
 template<typename B>
-std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
+string Field<B>::revealString(const Integer &src, const int &party) {
     long bit_cnt = src.size();
     long byte_cnt = bit_cnt / 8;
     assert(bit_cnt % 8 == 0);
@@ -310,20 +216,19 @@ std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
         byte_cursor += 8;
     }
 
-    Utilities::reverseString(dst.data(), dst.size()); // reverse it back to normal
+    Utilities::reverseString(dst.data(), dst.size()); // invert the byte order
 
     delete[] bools;
     return dst;
 }
 
-template<typename B>
-B Field<B>::operator==(const Field<B> &r) const {
+template<>
+bool Field<bool>::operator==(const Field<bool> &r) const {
 
-    if(type_ != r.type_) return B(false);
-    if(getSize() != r.getSize()) return B(false);
+    if(type_ != r.type_) return false;
+    if(payload_.size() != r.payload_.size()) return false;
 
     float_t lhs, rhs, epsilon;
-    Value v;
 
     switch(type_) {
         case FieldType::BOOL:
@@ -339,134 +244,97 @@ B Field<B>::operator==(const Field<B> &r) const {
             rhs = r.getValue<float_t>();
             return std::fabs(rhs - lhs) <=  epsilon;
         case FieldType::STRING:
-            return getValue<string>() == r.getValue<string>();
-        case FieldType::SECURE_BOOL:
-            v = (getValue<emp::Bit>() == r.getValue<emp::Bit>());
-            return boost::get<B>(v);
-        case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-        case FieldType::SECURE_STRING:
-            v = (getValue<emp::Integer>() == r.getValue<emp::Integer>());
-            return boost::get<B>(v);
-        case FieldType::SECURE_FLOAT:
-            v = (getValue<emp::Float>()).equal(r.getValue<emp::Float>());
-            return boost::get<B>(v);
+            return getString() == r.getString();
         default:
             throw;
     }
 }
 
 
-/*template<typename B>
-void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
-    assert(dst != nullptr);
+template<>
+Bit Field<Bit>::operator==(const Field<Bit> &r) const {
 
-    string s;
-    emp::Integer si;
-    emp::Float sf;
-    emp::Bit sb;
-    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
+    if(type_ != r.type_) return Bit(false);
+    if(payload_.size() != r.payload_.size()) return Bit(false);
 
-    switch (type_) {
-        case FieldType::BOOL:
-            *((bool *) dst) = getValue<bool>();
-            break;
-        case FieldType::INT:
-            *((int32_t *) dst) = getValue<int32_t>();
-            break;
-        case FieldType::LONG:
-            *((int64_t *) dst) = getValue<int64_t>();
-            break;
-        case FieldType::FLOAT:
-            *((float_t *) dst) = getValue<float_t>();
-            break;
-        case FieldType::STRING:
-            s = getValue<string>();
-            std::reverse(s.begin(), s.end()); // reverse it so we can more easily convert to EMP format
-            memcpy(dst, (int8_t *) s.c_str(), s.size()); // null termination chopped
-            break;
 
-        case FieldType::SECURE_BOOL:
-            sb = boost::get<emp::Bit>(payload_);
-            manager->pack(&sb, (Bit *) dst, 1);
-            break;
-        case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-        case FieldType::SECURE_STRING:
-            si = boost::get<emp::Integer>(payload_);
-            if(schema.bitPacked() && schema.getFieldMin() != 0) {
-                si = si - schema.getSecureFieldMin();
+
+    switch(type_) {
+        case FieldType::SECURE_BOOL: {
+            Bit lhs = *((Bit *) payload_.data());
+            Bit rhs = *((Bit *) r.payload_.data());
+            return (lhs == rhs);
             }
-            manager->pack(si.bits.data(), (Bit *) dst, schema.size());
-            break;
-        case FieldType::SECURE_FLOAT:
-            sf = boost::get<emp::Float>(payload_);
-            manager->pack(sf.value.data(), (Bit *) dst, 32);
-            break;
+        case FieldType::SECURE_INT:
+        case FieldType::SECURE_LONG:
+        case FieldType::SECURE_STRING: {
+            Integer lhs = getInt();
+            Integer rhs = r.getInt();
+            return (lhs == rhs);
+        }
+        case FieldType::SECURE_FLOAT: {
+            return getFloat().equal(r.getFloat());
+        }
         default:
             throw;
     }
 }
-*/
 
 
 template<typename B>
+SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDesc &desc, const int &party, const bool &send) {
 
-SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDesc &src_field_desc, const int &party, const bool &send) {
-
-    Value v;
     FieldType type;
+
     switch (f.type_) {
-        case FieldType::BOOL:
-            v =  emp::Bit(f.getValue<bool>(), party);
-            type = FieldType::SECURE_BOOL;
-            break;
+        case FieldType::BOOL: {
+            bool src = (send) ? f.getValue<bool>() : false;
+            Bit b = Bit(src, party);
+            return SecureField(FieldType::SECURE_BOOL, b);
+        }
         case FieldType::INT: {
-            int32_t val = (send) ? boost::get<int32_t>(f.payload_) : 0;
-            int bit_packed_size = src_field_desc.size();
-            bool bit_packed = src_field_desc.bitPacked();
-            if (bit_packed && send) val = val - src_field_desc.getFieldMin();
+            int32_t val = (send) ? f.getValue<int32_t>() : 0;
+            if (desc.bitPacked() && send) val = val - desc.getFieldMin();
             // + bit_packed to add one bit if we are padding it for two's complement
-            v = emp::Integer(bit_packed_size + bit_packed, val, party);
-            type = FieldType::SECURE_INT;
+            Integer v(desc.size() + desc.bitPacked(), val, party);
+            return SecureField(FieldType::SECURE_INT, v);
             break;
         }
         case FieldType::LONG: {
-            int64_t val = (send) ? boost::get<int64_t>(f.payload_) : 0L;
-            if ( src_field_desc.bitPacked() && send) val = val - src_field_desc.getFieldMin();
-            v = emp::Integer( src_field_desc.size() +  src_field_desc.bitPacked(), val, party);
-            type = FieldType::SECURE_LONG;
-            break;
+            int64_t val = (send) ? f.getValue<int64_t>() : 0L;
+            if (desc.bitPacked() && send) val = val - desc.getFieldMin();
+            Integer v(desc.size() + desc.bitPacked(), val, party);
+            return SecureField(FieldType::SECURE_LONG, v);
         }
         case FieldType::STRING: {
-            v = secretShareString(boost::get<string>(f.payload_), send, party, f.string_length_);
-            type = FieldType::SECURE_STRING;
-            break;
+            string s = (send) ? f.getString() : "";
+            Integer v = secretShareString(s, send, party, f.payload_.size());
+            return SecureField(FieldType::SECURE_STRING, v);
         }
-        case FieldType::FLOAT:
-            v = emp::Float(f.getValue<float_t>(), party);
-            type = FieldType::SECURE_FLOAT;
-            break;
+        case FieldType::FLOAT: {
+            float val = (send) ? f.getValue<float_t>() : 0.0;
+            Float v(val, party);
+            return SecureField(FieldType::SECURE_FLOAT, v);
+        }
         default: // type alignment error
             throw ;
     }
-    return SecureField(type, v, f.string_length_);
 
 }
 
 template<typename B>
-emp::Integer
+Integer
 Field<B>::secretShareString(const string &s, const bool &to_send, const int &src_party, const int &str_length) {
     assert(str_length > 0); // true length, s passed in might be empty for non-sending parties
 
     size_t bit_cnt = str_length * 8;
 
-    emp::Integer payload = emp::Integer(bit_cnt, 0L, src_party);
+    Integer payload = Integer(bit_cnt, 0L, src_party);
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
 
 
     if (to_send) {
-        std::string input = s;
+        string input = s;
         Utilities::reverseString(input.data(), input.size());
         bool *bools = Utilities::bytesToBool((int8_t *) input.c_str(), str_length);
         manager->feed(payload.bits.data(), src_party, bools, bit_cnt);
@@ -481,62 +349,50 @@ Field<B>::secretShareString(const string &s, const bool &to_send, const int &src
     return payload;
 }
 
-template<typename B>
-Field<B> Field<B>::If(const B &choice, const Field &l, const Field &r) {
+template<>
+Field<bool> Field<bool>::If(const bool &choice, const Field<bool> &l, const Field<bool> &r) {
     assert(l.getType() == r.getType());
-    assert(l.string_length_ == r.string_length_);
+    assert(l.payload_.size() == r.payload_.size());
 
-    Value choice_bit(choice);
-    Value v;
+    return choice ? l : r;
+}
 
+
+template<>
+Field<Bit> Field<Bit>::If(const Bit &choice, const Field<Bit> &l, const Field<Bit> &r) {
+    assert(l.getType() == r.getType());
+    assert(l.payload_.size() == r.payload_.size());
 
     switch (l.type_) {
-        case FieldType::BOOL:
-        case FieldType::INT:
-        case FieldType::LONG:
-        case FieldType::STRING:
-        case FieldType::FLOAT:
-            v =  (boost::get<bool>(choice_bit)) ? l.payload_ : r.payload_;
-            break;
-        case FieldType::SECURE_BOOL:
-            v  = emp::If(boost::get<emp::Bit>(choice_bit), boost::get<emp::Bit>(l.payload_), boost::get<emp::Bit>(r.payload_));
-            break;
+        case FieldType::SECURE_BOOL: {
+            Bit v  = emp::If(choice, l.getValue<Bit>(), r.getValue<Bit>());
+            return SecureField(FieldType::SECURE_BOOL, v);
+        }
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING: {
-            emp::Integer lhs =  boost::get<emp::Integer>(l.payload_);
-            emp::Integer rhs =  boost::get<emp::Integer>(r.payload_);
-            v = emp::If(Bit(choice), lhs, rhs);
-            break;
+            auto lhs =  l.getInt();
+            auto rhs =  r.getInt();
+            Integer v = emp::If(choice, lhs, rhs);
+            return SecureField(l.getType(), v);
         }
-        case FieldType::SECURE_FLOAT:
-            v  = emp::If(boost::get<emp::Bit>(choice_bit), boost::get<emp::Float>(l.payload_), boost::get<emp::Float>
-                    (r.payload_));
-            break;
+        case FieldType::SECURE_FLOAT: {
+            Float lhs = l.getFloat();
+            Float rhs = r.getFloat();
+            Float v = emp::If(choice, lhs, rhs);
+            return SecureField(l.getType(), v);
+        }
         default:
             throw;
 
     }
-
-    return Field(l.getType(), v, l.string_length_);
 }
 
 
-
-
-template<typename B>
-void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
+template<>
+void Field<bool>::compareAndSwap(const bool & choice, Field<bool> & l, Field<bool> & r) {
     assert(l.getType() == r.getType());
-    assert(l.string_length_ == r.string_length_);
-
-    Value choice_bit = choice;
-    Value v;
-
-    Value tmp;
-    emp::Bit *bl, *br;
-    emp::Integer *il, *ir;
-    emp::Float *fl, *fr;
-
+    assert(l.payload_.size() == r.payload_.size());
 
     switch (l.type_) {
         case FieldType::BOOL:
@@ -544,42 +400,40 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
         case FieldType::LONG:
         case FieldType::STRING:
         case FieldType::FLOAT:
-            if (boost::get<bool>(choice_bit)) {
-                tmp = l.payload_;
-                l.payload_ = r.payload_;
-                r.payload_ = tmp;
-            }
-            break;
-        case FieldType::SECURE_BOOL:
-            bl = new Bit(boost::get<emp::Bit>(l.payload_));
-            br = new Bit(boost::get<emp::Bit>(r.payload_));
-            emp::swap(boost::get<emp::Bit>(choice_bit), *bl, *br);
-            l.payload_ = *bl;
-            r.payload_ = *br;
-            delete br;
-            delete bl;
-            break;
+           if(choice) {
+               swap(l.payload_, r.payload_);
+           }
+        default:
+            throw;
+    }
+}
 
+
+template<>
+void Field<Bit>::compareAndSwap(const Bit & choice, Field<Bit> & l, Field<Bit> & r) {
+    assert(l.getType() == r.getType());
+    assert(l.payload_.size() == r.payload_.size());
+    switch (l.type_) {
+        case FieldType::SECURE_BOOL: {
+            Bit lhs = l.getValue<Bit>();
+            Bit rhs = r.getValue<Bit>();
+            emp::swap(choice, lhs, rhs);
+            break;
+        }
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
-        case FieldType::SECURE_STRING:
-            il = new Integer(boost::get<emp::Integer>(l.payload_));
-            ir = new Integer(boost::get<emp::Integer>(r.payload_));
-            emp::swap(boost::get<emp::Bit>(choice_bit), *il, *ir);
-            l.payload_ = *il;
-            r.payload_ = *ir;
-            delete il;
-            delete ir;
+        case FieldType::SECURE_STRING: {
+            Integer lhs = l.getInt();
+            Integer rhs = r.getInt();
+            emp::swap(choice, lhs, rhs);
             break;
-        case FieldType::SECURE_FLOAT:
-            fl = new Float(boost::get<emp::Float>(l.payload_));
-            fr = new Float(boost::get<emp::Float>(r.payload_));
-            emp::swap(boost::get<emp::Bit>(choice_bit), *fl, *fr);
-            l.payload_ = *fl;
-            r.payload_ = *fr;
-            delete fl;
-            delete fr;
+        }
+        case FieldType::SECURE_FLOAT: {
+            auto lhs = l.getFloat();
+            auto rhs = r.getFloat();
+            emp::swap(choice, lhs, rhs);
             break;
+        }
         default:
             throw;
     }
@@ -587,280 +441,213 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
 
 
 template<typename B>
-Field<B> Field<B>::operator+(const Field &rhs) const {
+Field<B> Field<B>::operator+(const Field<B> &rhs) const {
     assert(type_ == rhs.getType());
-
-    Value v;
-
-    emp::Integer *li = nullptr, *ri = nullptr;
-    int max_bit_sz;
 
     switch(type_) {
         case FieldType::INT:
-            v = plusHelper<int32_t>(rhs);
-            break;
+            return Field<B>(type_, plusHelper<int32_t>(rhs));
         case FieldType::LONG:
-            v = plusHelper<int64_t>(rhs);
-            break;
+            return Field<B>(type_, plusHelper<int64_t>(rhs));
         case FieldType::FLOAT:
-            v = plusHelper<float_t>(rhs);
-            break;
+            return Field<B>(type_, plusHelper<float_t>(rhs));
         case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-            li = new Integer(boost::get<emp::Integer>(payload_));
-            ri = new Integer(boost::get<emp::Integer>(rhs.payload_));
-            if(li->size() == ri->size()) {
-                v = *li + *ri;
-                break;
+        case FieldType::SECURE_LONG: {
+            auto l = getInt();
+            auto r = rhs.getInt();
+            if (l.size() == r.size()) {
+                return Field<B>(type_, l + r);
             }
             // else pad to the longer size
-            max_bit_sz = (li->size() > ri->size()) ? li->size() : ri->size();
-            li->resize(max_bit_sz);
-            ri->resize(max_bit_sz);
-            v = *li + *ri;
-            delete li;
-            delete ri;
-            break;
-        case FieldType::SECURE_FLOAT:
-            v = plusHelper<emp::Float>(rhs);
-            break;
+            auto max_bit_sz = std::max<size_t>(l.size(), r.size());
+            l.resize(max_bit_sz);
+            r.resize(max_bit_sz);
+            return Field<B>(type_, l + r);
+        }
+        case FieldType::SECURE_FLOAT: {
+         return Field<B>(type_, plusHelper<Float>(rhs));
+        }
         default: // remaining types (BOOL, STRING, etc) go here
             throw;
     }
-    return Field(type_, v, string_length_);
 
 }
 
-template<typename B>
-Field<B> Field<B>::operator-(const Field &rhs) const {
-    assert(type_ == rhs.getType());
 
-    Value v;
-    emp::Integer *li = nullptr, *ri = nullptr;
-    int max_bit_sz;
+template<typename B>
+Field<B> Field<B>::operator-(const Field<B> &rhs) const {
+    assert(type_ == rhs.getType());
 
     switch(type_) {
         case FieldType::INT:
-            v = minusHelper<int32_t>(rhs);
-            break;
+            return Field<B>(type_, minusHelper<int32_t>(rhs));
         case FieldType::LONG:
-            v = minusHelper<int64_t>(rhs);
-            break;
+            return Field<B>(type_, minusHelper<int64_t>(rhs));
         case FieldType::FLOAT:
-            v = minusHelper<float_t>(rhs);
-            break;
+            return Field<B>(type_, minusHelper<float_t>(rhs));
         case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-            li = new Integer(boost::get<emp::Integer>(payload_));
-            ri = new Integer(boost::get<emp::Integer>(rhs.payload_));
-            if(li->size() == ri->size()) {
-                v = *li - *ri;
-                break;
+        case FieldType::SECURE_LONG: {
+            auto l = getInt();
+            auto r = rhs.getInt();
+            if (l.size() == r.size()) {
+                return Field<B>(type_, l - r);
             }
             // else pad to the longer size
-            max_bit_sz = (li->size() > ri->size()) ? li->size() : ri->size();
-            li->resize(max_bit_sz);
-            ri->resize(max_bit_sz);
-            v = *li - *ri;
-            delete li;
-            delete ri;
-            break;
-        case FieldType::SECURE_FLOAT:
-            v = minusHelper<emp::Float>(rhs);
-            break;
+            auto max_bit_sz = std::max<size_t>(l.size(), r.size());
+            l.resize(max_bit_sz);
+            r.resize(max_bit_sz);
+            return Field<B>(type_, l - r);
+        }
+        case FieldType::SECURE_FLOAT: {
+            return Field<B>(type_, minusHelper<Float>(rhs));
+        }
         default: // remaining types (BOOL, STRING, etc) go here
             throw;
     }
-    return Field(type_, v, string_length_);
+
 }
 
 
 template<typename B>
-Field<B> Field<B>::operator*(const Field &rhs) const {
+Field<B> Field<B>::operator*(const Field<B> &rhs) const {
     assert(type_ == rhs.getType());
-
-    Value v;
-    emp::Integer *li = nullptr, *ri = nullptr;
-    int max_bit_sz;
 
     switch(type_) {
         case FieldType::INT:
-            v = timesHelper<int32_t>(rhs);
-            break;
+            return Field<B>(type_, timesHelper<int32_t>(rhs));
         case FieldType::LONG:
-            v = timesHelper<int64_t>(rhs);
-            break;
+            return Field<B>(type_, timesHelper<int64_t>(rhs));
         case FieldType::FLOAT:
-            v = timesHelper<float_t>(rhs);
-            break;
+            return Field<B>(type_, timesHelper<float_t>(rhs));
         case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-            li = new Integer(boost::get<emp::Integer>(payload_));
-            ri = new Integer(boost::get<emp::Integer>(rhs.payload_));
-            if(li->size() == ri->size()) {
-                v = *li * *ri;
-                break;
+        case FieldType::SECURE_LONG: {
+            auto l = getInt();
+            auto r = rhs.getInt();
+            if (l.size() == r.size()) {
+                return Field<B>(type_, l * r);
             }
             // else pad to the longer size
-            max_bit_sz = (li->size() > ri->size()) ? li->size() : ri->size();
-            li->resize(max_bit_sz);
-            ri->resize(max_bit_sz);
-            v = *li * *ri;
-            delete li;
-            delete ri;
-            break;
-        case FieldType::SECURE_FLOAT:
-            v = timesHelper<emp::Float>(rhs);
-            break;
+            auto max_bit_sz = std::max<size_t>(l.size(), r.size());
+            l.resize(max_bit_sz);
+            r.resize(max_bit_sz);
+            return Field<B>(type_, l * r);
+        }
+        case FieldType::SECURE_FLOAT: {
+            return Field<B>(type_, timesHelper<Float>(rhs));
+        }
         default: // remaining types (BOOL, STRING, etc) go here
             throw;
     }
-    return Field(type_, v, string_length_);
+
 }
 
+
 template<typename B>
-Field<B> Field<B>::operator/(const Field &rhs) const {
+Field<B> Field<B>::operator/(const Field<B> &rhs) const {
     assert(type_ == rhs.getType());
-
-    Value v;
-    emp::Integer *li = nullptr, *ri = nullptr;
-    int max_bit_sz;
-
 
     switch(type_) {
         case FieldType::INT:
-             v = (rhs.getValue<int32_t>() == 0)
-                     ?  (int32_t) 0 :  divHelper<int32_t>(rhs);
-            break;
+            return Field<B>(type_,
+                            (rhs.getValue<int32_t>() == 0)
+                            ?  (int32_t) 0 :  divHelper<int32_t>(rhs));
         case FieldType::LONG:
-            v = (rhs.getValue<int64_t>() == 0L)
-                ?  (int64_t) 0L :  divHelper<int64_t>(rhs);
-            break;
+            return Field<B>(type_,
+                            (rhs.getValue<int64_t>() == 0)
+                            ?  (int64_t) 0L :  divHelper<int64_t>(rhs));
+
         case FieldType::FLOAT:
-            v = (rhs.getValue<float_t>() == 0.0)
-                ?  (float_t) 0.0 :  divHelper<float_t>(rhs);
-            break;
+            return Field<B>(type_,
+                            (rhs.getValue<float_t>() == 0)
+                            ?  (float_t) 0.0 :  divHelper<float_t>(rhs));
         case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-            li = new Integer(boost::get<emp::Integer>(payload_));
-            ri = new Integer(boost::get<emp::Integer>(rhs.payload_));
-            if(li->size() == ri->size()) {
-                v = *li / *ri;
-                break;
+        case FieldType::SECURE_LONG: {
+            auto l = getInt();
+            auto r = rhs.getInt();
+            if (l.size() == r.size()) {
+                return Field<B>(type_, l * r);
             }
             // else pad to the longer size
-            max_bit_sz = (li->size() > ri->size()) ? li->size() : ri->size();
-            li->resize(max_bit_sz);
-            ri->resize(max_bit_sz);
-            v = *li / *ri;
-            delete li;
-            delete ri;
-            break;
-        case FieldType::SECURE_FLOAT:
-            v = divHelper<emp::Float>(rhs);
-            break;
+            auto max_bit_sz = std::max<size_t>(l.size(), r.size());
+            l.resize(max_bit_sz);
+            r.resize(max_bit_sz);
+            return Field<B>(type_, l / r);
+        }
+        case FieldType::SECURE_FLOAT: {
+            return Field<B>(type_, divHelper<Float>(rhs));
+        }
         default: // remaining types (BOOL, STRING, etc) go here
             throw;
     }
-    return Field(type_, v, string_length_);
+
 }
 
-template<typename B>
-Field<B> Field<B>::operator%(const Field &rhs) const {
-    assert(type_ == rhs.getType());
 
-    Value v;
+template<typename B>
+Field<B> Field<B>::operator%(const Field<B> &rhs) const {
+    assert(type_ == rhs.getType());
 
     switch(type_) {
         case FieldType::INT:
-            v = modHelper<int32_t>(rhs);
-            break;
+            return Field<B>(type_, modHelper<int32_t>(rhs));
         case FieldType::LONG:
-            v = modHelper<int64_t>(rhs);
-            break;
+            return Field<B>(type_, modHelper<int64_t>(rhs));
         case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-            v = modHelper<emp::Integer>(rhs);
-            break;
-        default: // remaining types (BOOL, STRING, FLOAT) go here
+        case FieldType::SECURE_LONG: {
+            auto l = getInt();
+            auto r = rhs.getInt();
+            if (l.size() == r.size()) {
+                return Field<B>(type_, l % r);
+            }
+            // else pad to the longer size
+            auto max_bit_sz = std::max<size_t>(l.size(), r.size());
+            l.resize(max_bit_sz);
+            r.resize(max_bit_sz);
+            return Field<B>(type_, l % r);
+        }
+
+        default: // remaining types (BOOL, STRING, etc) go here
             throw;
     }
-    return Field(type_, v, string_length_);
+
 }
 
 
 template<typename B>
-Field<B> Field<B>::operator^(const Field &rhs) const {
+Field<B> Field<B>::operator^(const Field<B> &rhs) const {
     assert(type_ == rhs.getType());
-
-    Value v;
+    string l, r;
 
     switch(type_) {
         case FieldType::BOOL:
-            v = xorHelper<bool>(rhs);
-            break;
+            return Field<B>(type_, xorHelper<bool>(rhs));
         case FieldType::INT:
-            v = xorHelper<int32_t>(rhs);
-            break;
+            return Field<B>(type_, xorHelper<int32_t>(rhs));
         case FieldType::LONG:
-            v = xorHelper<int64_t>(rhs);
-            break;
+            return Field<B>(type_, xorHelper<int64_t>(rhs));
         case FieldType::FLOAT:
-            v = bitwiseXor<float>(rhs);
-            break;
-        case FieldType::STRING:
-            v = xorStrings(getValue<std::string>(), rhs.getValue<string>());
-             break;
+            return Field<B>(type_, bitwiseXor<float>(rhs));
+        case FieldType::STRING: {
+            l = getString();
+            r = rhs.getString();
+            assert(l.size() == r.size());
+            return Field<B>(type_, xorStrings(l, r));
+        }
         case FieldType::SECURE_BOOL:
-            v = xorHelper<emp::Bit>(rhs);
-            break;
+            return Field<B>(type_, xorHelper<Bit>(rhs));
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING:
-            v = xorHelper<emp::Integer>(rhs);
-            break;
+            return Field<B>(type_, xorHelper<Integer>(rhs));
         case FieldType::SECURE_FLOAT:
-            v = xorHelper<emp::Float>(rhs);
-            break;
+            return Field<B>(type_, xorHelper<Float>(rhs));
         default: // remaining types (BOOL, STRING, FLOAT) go here
             throw;
     }
-    return Field(type_, v, string_length_);
 }
 
-template<typename B>
-B Field<B>::operator&&(const Field &cmp) const {
-    assert(type_ == cmp.getType());
 
-    if(type_ == FieldType::BOOL || type_ == FieldType::SECURE_BOOL) {
-        B lhs = getValue<B>();
-        B rhs = cmp.getValue<B>();
-        B res = lhs & rhs;
 
-        return res;
-    }
-
-    // Not applicable for all other types
-    throw;
-
-}
-
-template<typename B>
-B Field<B>::operator||(const Field &cmp) const {
-    assert(type_ == cmp.getType());
-
-    if(type_ == FieldType::BOOL || type_ == FieldType::SECURE_BOOL) {
-        B lhs = getValue<B>();
-        B rhs = cmp.getValue<B>();
-        return lhs | rhs;
-    }
-
-    // Not applicable for all other types
-    throw;
-
-}
-
-// formerly deserializePacked
 template<typename B>
 Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
     FieldType type = desc.getType();
@@ -886,34 +673,34 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
         case FieldType::STRING: {
             char *val = (char *) src;
             int len = desc.getStringLength();
-            std::string str(val, len);
+            string str(val, len);
             std::reverse(str.begin(), str.end());
-            return Field<B>(type, str, len);
+            return Field<B>(type, str);
 
         }
         case FieldType::SECURE_BOOL: {
-            emp::Bit my_bit(0, PUBLIC);
-            memcpy(&my_bit, src, sizeof(emp::Bit));
+            Bit my_bit(0, PUBLIC);
+            memcpy(&my_bit, src, sizeof(Bit));
             return Field<B>(type, my_bit);
         }
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG: {
             // add one more bit for two's complement
-            emp::Integer payload(desc.size() + desc.bitPacked(), 0);
-            memcpy(payload.bits.data(), src, desc.size() * sizeof(emp::Bit));
+            Integer payload(desc.size() + desc.bitPacked(), 0);
+            memcpy(payload.bits.data(), src, desc.size() * sizeof(Bit));
             return Field<B>(type, payload);
         }
         case FieldType::SECURE_FLOAT: {
-            emp::Float v(0, emp::PUBLIC);
-            memcpy(v.value.data(), src, 32 * sizeof(emp::Bit));
+            Float v(0, emp::PUBLIC);
+            memcpy(v.value.data(), src, 32 * sizeof(Bit));
             return Field<B>(type, v);
         }
 
         case FieldType::SECURE_STRING: {
             size_t bit_cnt = desc.getStringLength() * 8;
-            emp::Integer v(bit_cnt, 0, emp::PUBLIC);
-            memcpy(v.bits.data(), src, bit_cnt * sizeof(emp::Bit));
-            return Field<B>(type, v,  desc.getStringLength());
+            Integer v(bit_cnt, 0, emp::PUBLIC);
+            memcpy(v.bits.data(), src, bit_cnt * sizeof(Bit));
+            return Field<B>(type, v);
 
         }
         default:
@@ -924,7 +711,7 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
 }
 
 template class vaultdb::Field<bool>;
-template class vaultdb::Field<emp::Bit>;
+template class vaultdb::Field<Bit>;
 
 
 

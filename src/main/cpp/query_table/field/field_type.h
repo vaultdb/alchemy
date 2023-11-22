@@ -21,7 +21,6 @@ namespace vaultdb {
     };
 
 
-    typedef boost::variant<bool, int32_t, int64_t, float_t, std::string, emp::Bit, emp::Integer, emp::Float> Value;
 
 }
 

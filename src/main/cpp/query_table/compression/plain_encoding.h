@@ -6,11 +6,11 @@
 
 namespace vaultdb {
     // Column encoding with no compression
+    // this is mostly a placeholder to support heterogeneous (one compression scheme / table) projections of a table
     template<typename B>
     class PlainEncoding : public ColumnEncoding<B> {
         public:
-        // this is mostly a placeholder to support heterogeneous (one compression scheme / table) projections of a table
-        PlainEncoding<B>(QueryTable<B> *parent, const int & col_idx) : ColumnEncoding<B>(parent, col_idx) {
+        PlainEncoding<B>(QueryTable<B> *parent, const int & dst_col) : ColumnEncoding<B>(parent, dst_col) {
             // "true" type size, use PackedEncoding for bit packing
             QueryFieldDesc desc = this->parent_table_->getSchema().getField(this->column_idx_);
             auto f_type  = desc.getType();
@@ -23,8 +23,8 @@ namespace vaultdb {
             if(desc.bitPacked() && std::is_same_v<B, Bit>) this->field_size_bytes_ = this->field_size_bits_ * sizeof(emp::Bit);
 
             auto dst_size_bytes = this->field_size_bytes_ * parent->tuple_cnt_;
-            parent->column_data_[col_idx] = vector<int8_t>(dst_size_bytes);
-            this->column_data_ = parent->column_data_[col_idx].data();
+            parent->column_data_[dst_col] = vector<int8_t>(dst_size_bytes);
+            this->column_data_ = parent->column_data_[dst_col].data();
             memset(this->column_data_, 0, dst_size_bytes);
         }
 
@@ -41,7 +41,7 @@ namespace vaultdb {
 
         void setField(const int & row, const Field<B> & f) override {
             int8_t *dst = this->column_data_ + this->field_size_bytes_ * row;
-            Field<B>::writeField(dst, f, this->parent_table_->getSchema().getField(this->column_idx_));
+            Field<B>::serialize(dst, f, this->parent_table_->getSchema().getField(this->column_idx_));
         }
 
         void deserializeField(const int & row, const int8_t *src) override {
@@ -65,7 +65,6 @@ namespace vaultdb {
         void secretShare(QueryTable<Bit> *dst, const int & dst_col) override;
 
         void revealInsecure(QueryTable<bool> *dst, const int & dst_col, const int & party = PUBLIC) override;
-
         ColumnEncoding<B> *clone(QueryTable<B> *dst, const int & dst_col) override {
             assert(dst->tuple_cnt_ == this->parent_table_->tuple_cnt_);
             auto dst_encoding = new PlainEncoding<B>(dst, dst_col);

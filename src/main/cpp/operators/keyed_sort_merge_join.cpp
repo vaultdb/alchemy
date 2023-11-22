@@ -366,13 +366,16 @@ QueryTable<bool> *KeyedSortMergeJoin<bool>::unionTables(QueryTable<bool> *lhs, Q
     // always FK --> PK
     int cursor = 0;
     for(int i = lhs->tuple_cnt_ - 1; i >= 0; --i) {
-        unioned->cloneRow(cursor, 0, lhs, i);
+        auto r = lhs->serializeRow(i);
+        unioned->deserializeRow(cursor, r);
         ++cursor;
+
     }
 
 
     for(int i = 0; i < rhs->tuple_cnt_; ++i) {
-        unioned->cloneRow(cursor, 0, rhs, i);
+        auto r = rhs->serializeRow(i);
+        unioned->deserializeRow(cursor, r);
         ++cursor;
     }
 
@@ -447,24 +450,23 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *s
 
 template<typename B>
 void KeyedSortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
-	Field<B> alpha_1 = zero_;
-	Field<B> alpha_2 = zero_;
+
     B one_b(true), zero_b(false);
 
 	B table_id = dst->getField(0, table_id_idx_).template getValue<B>();
     B fkey_check = ((!foreign_key_input_) ? zero_b : one_b);
 	B is_foreign_key = (table_id == fkey_check);
     B dummy = dst->getDummyTag(0);
-    B same_group = one_b;
+    B same_group;
 
-    alpha_1 = Field<B>::If(same_group, Field<B>::If(is_foreign_key & !dummy, alpha_1 + one_, alpha_1),
-                           Field<B>::If(is_foreign_key & !dummy, one_, zero_));
-    alpha_2 = Field<B>::If(same_group, Field<B>::If(!is_foreign_key, alpha_2 + one_, zero_),
-                           Field<B>::If(!is_foreign_key, one_, zero_));
+    // initialize
+    Field<B> alpha_1 = Field<B>::If(is_foreign_key & !dummy, one_, zero_);
+    Field<B> alpha_2 = Field<B>::If(!is_foreign_key & !dummy, one_, zero_);
 
     dst->setField(0, alpha_idx_, Field<B>::If(is_foreign_key, alpha_2, alpha_1));
 
     // rhs has table_id = true
+    // TODO: we can likely cut down on our circuits if we say table_id = true is always fkey (or pkey)
 
     for(int i = 1; i < dst->tuple_cnt_; i++) {
 		table_id = dst->getField(i, table_id_idx_).template getValue<B>();
@@ -472,10 +474,13 @@ void KeyedSortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
         dummy = dst->getDummyTag(i);
 
 		same_group = joinMatch(dst,  i-1, i);
-		alpha_1 = Field<B>::If(same_group, Field<B>::If(is_foreign_key & !dummy, alpha_1 + one_, alpha_1),
-                               Field<B>::If(is_foreign_key & !dummy, one_, zero_));
-		alpha_2 = Field<B>::If(same_group, Field<B>::If(!is_foreign_key, alpha_2 + one_, zero_),
-                               Field<B>::If(!is_foreign_key, one_, zero_));
+        Field<B> incr = Field<B>::If(is_foreign_key & !dummy, alpha_1 + one_, alpha_1);
+        Field<B> reset = Field<B>::If(is_foreign_key & !dummy, one_, zero_);
+		alpha_1 = Field<B>::If(same_group, incr, reset);
+
+        incr =  Field<B>::If(!is_foreign_key, alpha_2 + one_, zero_);
+        reset = Field<B>::If(!is_foreign_key, one_, zero_);
+		alpha_2 = Field<B>::If(same_group, incr, reset);
 
         Field<B> to_write = Field<B>::If(is_foreign_key, alpha_2, alpha_1);
         dst->setField(i, alpha_idx_, to_write);
@@ -573,10 +578,10 @@ QueryTable<B> *KeyedSortMergeJoin<B>::expand(QueryTable<B> *input) {
                                      Field<B>::If(null_val, zero_, s));
         intermediate_table->setField(i, is_new_idx_,
                                      Field<B>::If(null_val, one_b, zero_b));
+
         intermediate_table->setDummyTag(i, input->getDummyTag(i) | null_val);
         s = s + cnt;
     }
-
 
     QueryTable<B> *dst_table = distribute(intermediate_table, foreign_key_cardinality_);
 
@@ -610,8 +615,9 @@ QueryTable<B> *KeyedSortMergeJoin<B>::expand(QueryTable<B> *input) {
 template<>
 QueryTable<bool> *KeyedSortMergeJoin<bool>::revertProjection(QueryTable<bool> *src, const map<int, int> &expr_map,
                                                        const bool &is_lhs) const {
+    QueryTable<bool> *to_project;
 
-     // create a synthetic schema.  pad it to make it the "right" row length for projection
+    // create a synthetic schema.  pad it to make it the "right" row length for projection
     // for use with smaller width row
     if(lhs_smaller_ == is_lhs) {
         QuerySchema synthetic_schema = (is_lhs) ? lhs_projected_schema_ : rhs_projected_schema_;
@@ -631,8 +637,16 @@ QueryTable<bool> *KeyedSortMergeJoin<bool>::revertProjection(QueryTable<bool> *s
         }
 
         synthetic_schema.initializeFieldOffsets();
-        src->setSchema(synthetic_schema);
+        int tuple_cnt = src->tuple_cnt_;
+        to_project = QueryTable<bool>::getTable(tuple_cnt, synthetic_schema);
 
+        for(int i = 0; i < tuple_cnt; ++i) {
+            auto r = src->serializeRow(i);
+            to_project->deserializeRow(i, r);
+        }
+    }
+    else {
+        to_project = src->clone();
     }
 
     ExpressionMapBuilder<bool> builder(src->getSchema());
@@ -640,7 +654,7 @@ QueryTable<bool> *KeyedSortMergeJoin<bool>::revertProjection(QueryTable<bool> *s
         builder.addMapping(pos.first, pos.second);
     }
 
-    Project<bool> projection(src->clone(), builder.getExprs());
+    Project<bool> projection(to_project, builder.getExprs());
     projection.setOperatorId(-2);
     return projection.run()->clone();
 
@@ -657,6 +671,7 @@ QueryTable<Bit> *KeyedSortMergeJoin<Bit>::revertProjection(QueryTable<Bit> *src,
     QuerySchema dst_schema = this->getChild(child_id)->getOutputSchema();
     QuerySchema src_schema = (is_lhs) ? lhs_projected_schema_ : rhs_projected_schema_;
     size_t running_offset = 0;
+
 
     for(int i = 0; i < src_schema.getFieldCount(); ++i) {
         src_field_offsets_bits[i] =  running_offset;

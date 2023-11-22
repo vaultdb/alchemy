@@ -46,7 +46,7 @@ namespace vaultdb {
 
         inline void setField(const int  & row, const int & col, const Field<B> & f)  override {
             int8_t *dst = getFieldPtr(row, col);
-            Field<B>::writeField(dst, f, this->schema_.getField(col));
+            Field<B>::serialize(dst, f, this->schema_.getField(col));
         }
 
 

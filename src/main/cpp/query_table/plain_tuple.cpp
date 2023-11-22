@@ -33,22 +33,17 @@ void QueryTuple<bool>::setField(const int &idx, const PlainField &f) {
     size_t field_offset = schema_->getFieldOffset(idx) / 8;
     int8_t *write_pos = fields_ + field_offset;
     string str;
+    assert(schema_->getField(idx).getType() == f.getType());
 
-    switch(schema_->getField(idx).getType()) {
+    switch(f.getType()) {
         case FieldType::BOOL:
-            *(bool *)write_pos = f.template getValue<bool>();
-            break;
         case FieldType::INT:
-            *(int32_t *)write_pos = f.template getValue<int32_t>();
-            break;
         case FieldType::LONG:
-            *(int64_t *)write_pos = f.template getValue<int64_t>();
-            break;
         case FieldType::FLOAT:
-            *(float_t *)write_pos = f.template getValue<float_t>();
+            memcpy(write_pos, f.payload_.data(), f.payload_.size());
             break;
         case FieldType::STRING:
-            str = f.template getValue<string>();
+            str = f.getString();
             std::reverse(str.begin(), str.end()); // reverse the string
             memcpy(write_pos, str.c_str(), str.size());
             break;

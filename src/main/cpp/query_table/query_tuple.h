@@ -1,14 +1,15 @@
 #ifndef _QUERY_TUPLE_H
 #define _QUERY_TUPLE_H
 
-#include "query_schema.h"
 #include <map>
 #include <memory>
 #include <vector>
 #include <util/type_utilities.h>
 #include <emp-tool/circuits/bit.h>
+#include "query_table/field/field.h"
 
 using namespace emp;
+
 
 namespace vaultdb {
 
@@ -16,6 +17,7 @@ namespace vaultdb {
     // specialized for pointer arithmetic in PlainTuple and SecureTuple
 
     // methods have to be real, i.e., not virtual, to be visible to projects and enable instantiating objects instead of ptrs
+    class QuerySchema;
 
     template<typename B>
     class QueryTuple {

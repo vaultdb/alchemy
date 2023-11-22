@@ -22,7 +22,7 @@ template<typename B>
 void ExpressionCostModel<B>::visit(LiteralNode<B> &node) {
     Field<B> field = node.payload_;
     // ordinal 65536 is a placeholder
-    last_field_desc_ = QueryFieldDesc(65536, "anon", "anon_table", field.getType(), field.string_length_);
+    last_field_desc_ = QueryFieldDesc(65536, "anon", "anon_table", field.getType());
 
 }
 

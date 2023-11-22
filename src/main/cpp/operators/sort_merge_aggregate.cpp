@@ -56,7 +56,6 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
 
     int cursor = this->group_by_.size();
 
-
     // for first row only
     for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
         aggregator->initialize(input); // don't need group_by_match, only for first pass

@@ -62,7 +62,7 @@ namespace vaultdb {
                 case FieldType::SECURE_STRING: {
                     Integer i(field_size_bits + field_desc.bitPacked(), 0L);
                     memcpy(i.bits.data(), cursor, field_size_bits * sizeof(emp::Bit));
-                    return SecureField(f_type, i, field_desc.getStringLength());
+                    return SecureField(f_type, i);
                 }
                 case FieldType::SECURE_FLOAT: {
                     Float f;
@@ -90,12 +90,12 @@ namespace vaultdb {
                 case FieldType::SECURE_INT:
                 case FieldType::SECURE_LONG:
                 case FieldType::SECURE_STRING: {
-                    Integer i = f.template getValue<Integer>();
+                    Integer i = f.getInt();
                     memcpy(cursor, i.bits.data(), write_size_bytes);
                     break;
                 }
                 case FieldType::SECURE_FLOAT: {
-                    Float f_tmp = f.template getValue<Float>();
+                    Float f_tmp = f.getFloat();
                     memcpy(cursor, f_tmp.value.data(), write_size_bytes);
                     break;
                 }

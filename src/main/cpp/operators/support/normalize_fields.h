@@ -155,7 +155,7 @@ namespace vaultdb {
         }
 
        static PlainField normalizeString(const PlainField & field, const SortDirection & dir) {
-            std::string src = field.getValue<std::string>();
+            std::string src = field.getString();
             std::string dst = src;
 
             if (dir == SortDirection::DESCENDING) {
@@ -164,7 +164,7 @@ namespace vaultdb {
                     dst[i] = dst[i] ^ 0xFF;
                 }
             }
-            return PlainField(FieldType::STRING, dst, field.string_length_);
+            return PlainField(FieldType::STRING, dst);
         }
 
         // ***END PLAIN FIELD SUPPORT
@@ -214,7 +214,7 @@ namespace vaultdb {
 
         // same as above, but for secure fields
         static SecureField normalizeFloat(const SecureField & field, const SortDirection & dir) {
-            Float f = field.getValue<Float>();
+            Float f = field.getFloat();
 //            cout << "Normalizing float "  << FieldUtilities::printFloat(f) << endl;
             if(dir == SortDirection::DESCENDING) {
                 f = -f;
@@ -234,7 +234,7 @@ namespace vaultdb {
         }
 
         static SecureField denormalizeFloat(const SecureField & field, const SortDirection & dir) {
-            Integer bits = field.getValue<Integer>();
+            Integer bits = field.getInt();
 //            cout << "Denormalizing int: " << FieldUtilities::printInt(bits) << endl;
 
             const Bit sign_bit = (bits.bits[FLOAT_LEN - 1]); // first bit is zero
@@ -257,7 +257,7 @@ namespace vaultdb {
         }
 
         static SecureField normalizeString(const SecureField & field, const SortDirection & dir) {
-            Integer dst = field.getValue<Integer>();
+            Integer dst = field.getInt();
 
             if (dir == SortDirection::DESCENDING) {
                 // invert the bits
@@ -266,7 +266,7 @@ namespace vaultdb {
                 }
             }
 
-            return SecureField(FieldType::SECURE_STRING, dst, field.string_length_);
+            return SecureField(FieldType::SECURE_STRING, dst);
         }
 
         // ***END MPC FIELD SUPPORT

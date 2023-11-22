@@ -48,18 +48,6 @@ if(EXISTS "/usr/local/include/emp-sh2pc/emp-sh2pc.h")
 endif()
 
 set(sources
-		util/utilities.cpp
-		util/type_utilities.cpp
-		util/data_utilities.cpp
-		util/field_utilities.cpp
-		util/logger.cpp
-		util/system_configuration.cpp
-		util/emp_manager/emp_manager.h
-		util/emp_manager/sh2pc_manager.cpp
-		util/emp_manager/zk_manager.cpp
-		util/emp_manager/outsourced_mpc_manager.cpp
-		util/emp_manager/sh2pc_outsourced_manager.cpp
-
 		query_table/field/field_type.h
 		query_table/field/field.cpp
 		query_table/field/field_factory.cpp
@@ -76,6 +64,17 @@ set(sources
 		query_table/compression/plain_encoding.cpp
 		query_table/compression/bit_packed_encoding.cpp
 
+		util/utilities.cpp
+		util/type_utilities.cpp
+		util/data_utilities.cpp
+		util/field_utilities.cpp
+		util/logger.cpp
+		util/system_configuration.cpp
+		util/emp_manager/emp_manager.h
+		util/emp_manager/sh2pc_manager.cpp
+		util/emp_manager/zk_manager.cpp
+		util/emp_manager/outsourced_mpc_manager.cpp
+		util/emp_manager/sh2pc_outsourced_manager.cpp
 
 		data/psql_data_provider.cpp
 		data/csv_reader.cpp

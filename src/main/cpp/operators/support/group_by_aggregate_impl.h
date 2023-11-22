@@ -73,7 +73,7 @@ namespace vaultdb {
         }
 
         inline Field<Bit> getResult() override {
-            return SecureField(FieldType::SECURE_LONG, running_count_, 0);
+            return SecureField(FieldType::SECURE_LONG, running_count_);
         }
 
         inline FieldType getType() const override {
@@ -115,7 +115,7 @@ namespace vaultdb {
         }
 
         inline PlainField getResult() override {
-            return PlainField(FieldType::LONG, running_count_, 0);
+            return PlainField(FieldType::LONG, running_count_);
         }
 
         inline FieldType getType() const override {
@@ -225,7 +225,7 @@ namespace vaultdb {
                   *write_cursor = one;
                   ++write_cursor;
                 }
-                running_min_ = Field<B>(this->aggregate_type_, max, 0);
+                running_min_ = Field<B>(this->aggregate_type_, max);
             }
             else
                 running_min_ = FieldFactory<B>::getMax(input_schema.getType());
@@ -269,7 +269,7 @@ namespace vaultdb {
                 // generate max
                 assert(this->aggregate_type_ == FieldType::SECURE_LONG || this->aggregate_type_ == FieldType::SECURE_INT);
                 Integer min = emp::Integer(input_schema.size() + 1, input_schema.getFieldMin()); // +1 for 2's complement
-                running_max_ = Field<B>(this->aggregate_type_, min, 0);
+                running_max_ = Field<B>(this->aggregate_type_, min);
             }
             else
                 running_max_ = FieldFactory<B>::getMin(input_schema.getType());

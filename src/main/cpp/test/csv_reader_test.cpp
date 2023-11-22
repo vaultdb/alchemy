@@ -5,6 +5,7 @@
 #include <operators/sql_input.h>
 #include <data/csv_reader.h>
 #include "plain/plain_base_test.h"
+#include <regex>
 
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "column", "storage model for columns (column or compressed)");
@@ -55,12 +56,15 @@ TEST_F(CsvReaderTest, quotedStringTest) {
 
 
     // grab customer table for schema:
-    std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
+    std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 16";
     PsqlDataProvider dataProvider;
     PlainTable *expected = dataProvider.getQueryTable(db_name_, query);
+    // this is an early stage test, verify psql first
+    string psql_validation = expected->getPlainTuple(15).getField(1).toString();
+    ASSERT_EQ(psql_validation, "Customer#000000016       ");
+
 
     PlainTable *parse_test = expected->clone();
-
     CsvReader::parseTuple(test_str, expected->getSchema(), parse_test, 15);
 
     QueryTuple expected_tuple = expected->getPlainTuple(15);

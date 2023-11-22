@@ -5,62 +5,179 @@
 #include "field_type.h"
 #include "query_table/query_field_desc.h"
 #include <typeinfo>
-#include <boost/variant.hpp>
 
 
 // carries payload for each attribute
 //  generic for storing heterogeneous types in the same container
-// TODO: consider making this an interface with classes for Int/Float/etc.
 namespace vaultdb {
 
 
     template<typename B> class Field;
     typedef Field<bool> PlainField;
-    typedef Field<emp::Bit> SecureField;
+    typedef Field<Bit> SecureField;
 
 
     template <typename B>
     class Field {
         public:
-            Value payload_;
+            vector<int8_t> payload_;
             FieldType  type_;
-            size_t string_length_;
-
-
-
 
         public:
-            Field();
-            Field(const FieldType & field_type, const Value & val, const int & str_len = 0);
-            Field(const B & value);
+            Field() :   type_(FieldType::INVALID) { } // payload is empty
 
-            Field(const Field & field);
+        template<typename T>
+        Field(const FieldType & field_type, const T & val)  : type_(field_type) {
+            assert(validateTypeAlignment<T>());
+            switch(type_) {
+                case FieldType::STRING:
+                    setString(*((string *) &val));
+                    break;
+                case FieldType::SECURE_INT:
+                case FieldType::SECURE_LONG:
+                case FieldType::SECURE_STRING:
+                    setInt(*((Integer *) &val));
+                    break;
+                case FieldType::SECURE_FLOAT:
+                    setFloat(*((Float *) &val));
+                    break;
+                default: {
+                    setValue<T>(val);
+//                    if(type_ == FieldType::INT) {
+//                        std::cout << "Received val: " << *((int32_t *) &val) << endl;
+//                        int8_t *tmp = (int8_t *) &val;
+//                        std::cout << "Writing: " << (int) tmp[0] << ", " << (int) tmp[1] << ", " << (int) tmp[2] << ", "
+//                                  << (int) tmp[3] << std::endl;
+//                        std::cout << "Payload int: " << *((int32_t *) payload_.data()) << std::endl;
+//                    }
+                }
+            }
+        }
 
-            Field & operator=(const Field & other);
-            // all state is held here, not in impls (e.g., IntField, BoolField)
+        Field(const B & value) {
+                setValue(value);
+                type_ = (std::is_same_v<bool, B>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+            }
+
+            Field(const Field & field) : payload_(field.payload_), type_(field.type_) { }
+
+            Field & operator=(const Field & other) {
+                if(type_ == FieldType::INVALID && other.type_ == FieldType::INVALID) return *this; // nothing to do here
+                assert(other.type_ != FieldType::INVALID);
+
+                if(&other == this)
+                    return *this;
+
+                payload_ = other.payload_;
+                type_ = other.type_;
+                return *this;
+
+            }
+
             ~Field()  = default;
 
-            FieldType getType() const;
-
-            size_t getSize() const;
-
+            FieldType getType() const { return type_; }
 
             template<typename T>
             inline T getValue()  const {
-                return boost::get<T>(payload_);
+                assert(validateTypeAlignment<T>());
+                // all other types are non-primitive and require more setup
+                switch (type_) {
+                    case FieldType::BOOL:
+                    case FieldType::INT:
+                    case FieldType::LONG:
+                    case FieldType::FLOAT:
+                    case FieldType::SECURE_BOOL:
+                        return *((T *) payload_.data());;
+                    default:
+                        throw;
+
+                }
             }
+
+            // need getters and setters for non-primitive types
+        inline string getString()  const {
+            string s(payload_.size(), ' ');
+            memcpy(s.data(), payload_.data(), payload_.size());
+            return s;
+        }
+
+        inline Integer getInt() const {
+                int bit_cnt = payload_.size() / sizeof(Bit);
+                Integer i(bit_cnt, 0L);
+                memcpy(i.bits.data(), payload_.data(), payload_.size());
+                return i;
+        }
+
+        inline Float getFloat() const {
+            Float f;
+            memcpy(f.value.data(), payload_.data(), payload_.size());
+            return f;
+        }
+
 
         template<typename T>
         inline void setValue(const T & src) {
-           payload_ = src;
+            int dst_size = sizeof(src);
+            if(payload_.size() != dst_size)
+                payload_.resize(dst_size);
+           memcpy(payload_.data(), &src, dst_size);
+        }
+
+        inline void setString(const string & src) {
+            payload_.resize(src.size());
+            memcpy(payload_.data(), src.data(), src.size());
+        }
+
+        inline void setInt(const Integer & src) {
+            payload_.resize(src.size() * sizeof(Bit));
+            memcpy(payload_.data(), src.bits.data(), src.size() * sizeof(Bit));
+        }
+
+        inline void setFloat(const Float & src) {
+            payload_.resize(src.value.size());
+            memcpy(payload_.data(), src.value.data(), src.value.size());
         }
 
         // delegate to visitor
         B  operator == (const Field &cmp) const;
-        B  operator != (const Field &cmp) const;
-        B operator !() const;
-        B  operator && (const Field &cmp) const;
-        B  operator || (const Field &cmp) const;
+        B  operator != (const Field &cmp) const {
+            B eq = *this == cmp;
+            return !eq;
+        }
+
+        // only applicable to bool/Bit types
+        B operator !() const {
+            B val = getValue<B>();
+            return !val;
+        }
+
+        B  operator && (const Field &cmp) const {
+            assert(type_ == cmp.getType());
+
+            if(type_ == FieldType::BOOL || type_ == FieldType::SECURE_BOOL) {
+                B lhs = getValue<B>();
+                B rhs = cmp.getValue<B>();
+                B res = lhs & rhs;
+
+                return res;
+            }
+
+            // Not applicable for all other types
+            throw;
+        }
+        B  operator || (const Field &cmp) const {
+            assert(type_ == cmp.getType());
+
+            if(type_ == FieldType::BOOL || type_ == FieldType::SECURE_BOOL) {
+                B lhs = getValue<B>();
+                B rhs = cmp.getValue<B>();
+                return lhs | rhs;
+            }
+
+            // Not applicable for all other types
+            throw;
+        }
 
         B operator>=(const Field & rhs) const;
         B operator<(const Field & rhs) const;
@@ -81,7 +198,7 @@ namespace vaultdb {
         static void compareAndSwap(const B & choice, Field & lhs, Field & rhs);
 
 
-        PlainField reveal( const QueryFieldDesc &desc, const int &party = emp::PUBLIC) const;
+        PlainField reveal( const QueryFieldDesc &desc, const int &party = PUBLIC) const;
         SecureField secret_share() const; // secret share as public
 
         static SecureField
@@ -90,21 +207,26 @@ namespace vaultdb {
         static SecureField
         secret_share_recv(const QueryFieldDesc &field_desc, const int &src_party);
 
-        static SecureField secretShareHelper(const PlainField &field, const QueryFieldDesc &field_desc, const int &party,
-                                       const bool &send);
+        static SecureField secretShareHelper(const PlainField &field, const QueryFieldDesc &desc, const int &party,
+                                             const bool &send);
 
-        std::string toString() const;
+        string toString() const;
 
         void pack(const QueryFieldDesc & schema) {// update this to a packed version of field
             if(type_ != FieldType::SECURE_INT && type_ != FieldType::SECURE_LONG) return;
-            Integer si = boost::get<emp::Integer>(payload_);
+            int bit_size = payload_.size() / sizeof(Bit);
+
+            Integer si(bit_size, 0, PUBLIC);
+            memcpy(si.bits.data(), payload_.data(), payload_.size());
             if(si.size() == (schema.size() + schema.bitPacked())) return; // already packed
 
             if(schema.bitPacked() && schema.getFieldMin() != 0) {
                 si = si - Integer(si.size(), schema.getFieldMin(), PUBLIC);
             }
             si.resize(schema.size());
-            payload_ = si;
+            auto byte_size = schema.size() * sizeof(Bit);
+            payload_.resize(byte_size);
+            memcpy(payload_.data(), si.bits.data(), byte_size);
         }
 
 
@@ -113,7 +235,11 @@ namespace vaultdb {
 
         void unpack(const QueryFieldDesc & schema)  { // update to an unpacked version of this
             if(type_ != FieldType::SECURE_INT && type_ != FieldType::SECURE_LONG) return;
-            Integer si = boost::get<emp::Integer>(payload_);
+            int bit_size = payload_.size() / sizeof(Bit);
+
+            Integer si(bit_size, 0, PUBLIC);
+            memcpy(si.bits.data(), payload_.data(), payload_.size());
+
             int dst_size = type_ == FieldType::SECURE_INT ? 32 : 64;
             if(si.size() == dst_size) return; // already unpacked
 
@@ -121,33 +247,28 @@ namespace vaultdb {
             if(schema.bitPacked() && schema.getFieldMin() != 0) {
                 si = si + Integer(si.size(), schema.getFieldMin(), PUBLIC);
             }
-            payload_ = si;
+
+            int byte_size = dst_size * sizeof(Bit);
+            payload_.resize(byte_size);
+            memcpy(payload_.data(), si.bits.data(), byte_size);
         }
 
 
-        static std::string revealString(const emp::Integer & src, const int & party = PUBLIC);
-        static emp::Integer secretShareString(const string &s, const bool &to_send, const int &src_party, const int &str_length);
+        static string revealString(const Integer & src, const int & party = PUBLIC);
+        static Integer secretShareString(const string &s, const bool &to_send, const int &src_party, const int &str_length);
 
-        static void writeField(int8_t *dst, const Field<B> & f, const QueryFieldDesc & desc) {
+        // copy field to dst (byte array)
+        static void serialize(int8_t *dst, const Field<B> & f, const QueryFieldDesc & desc) {
+
             switch (f.getType()) {
-                case FieldType::BOOL: {
-                    *((bool *) dst) = f.template getValue<bool>();
+                case FieldType::BOOL:
+                case FieldType::INT:
+                case FieldType::LONG:
+                case FieldType::FLOAT:
+                    memcpy(dst, f.payload_.data(), f.payload_.size());
                     break;
-                }
-                case FieldType::INT: {
-                    *((int32_t *) dst) = f.template getValue<int32_t>();
-                    break;
-                }
-                case FieldType::LONG: {
-                    *((int64_t *) dst) = f.template getValue<int64_t>();
-                    break;
-                }
-                case FieldType::FLOAT: {
-                    *((float_t *) dst) = f.template getValue<float_t>();
-                    break;
-                }
                 case FieldType::STRING: {
-                    string s = f.template getValue<string>();
+                    string s = f.getString();
                     std::reverse(s.begin(), s.end());
                     memcpy(dst, (int8_t *) s.c_str(), s.size()); // null termination chopped
                     break;
@@ -160,60 +281,62 @@ namespace vaultdb {
                 case FieldType::SECURE_INT:
                 case FieldType::SECURE_LONG:
                 case FieldType::SECURE_STRING: {
-                    Integer i = f.template getValue<Integer>();
+                    Integer i = f.getInt();
                     memcpy(dst, i.bits.data(), desc.size() * sizeof(emp::Bit));
                     break;
                 }
                 case FieldType::SECURE_FLOAT: {
-                    Float fl = f.template getValue<Float>();
+                    Float fl = f.getFloat();
                     memcpy(dst, fl.value.data(), fl.value.size() * sizeof(emp::Bit));
                     break;
                 }
                 default:
                     throw;
             }
-        }
+     }
 
         private:
 
-        template<typename T>
-        static inline void swap(Value * lhs, Value * rhs) {
-            T l = boost::get<T>(*lhs);
-            T r = boost::get<T>(*rhs);
+        static inline void swap(vector<int8_t> & lhs, vector<int8_t> & rhs) {
+            assert(lhs.size() == rhs.size());
+            int8_t *l = lhs.data();
+            int8_t *r = rhs.data();
 
-            l = l ^ r;
-            r = r ^ l;
-            l = l ^ r;
+            for(int i = 0; i < lhs.size(); ++i) {
+                *l = *l ^ *r;
+                *r = *r ^ *l;
+                *l = *l ^ *r;
+                ++l;
+                ++r;
 
-            *lhs = Value(l);
-            *rhs = Value(r);
+            }
         }
 
         template<typename T>
         inline T xorHelper(const Field<B> & r) const {
-            T lhs = getValue<T>();
-            T rhs = r.getValue<T>();
+            T lhs = *((T *) payload_.data());
+            T rhs = *((T *) r.payload_.data());
             return lhs  ^ rhs;
         }
 
         template<typename T>
         inline T plusHelper(const Field<B> & r) const {
-            T lhs = getValue<T>();
-            T rhs = r.getValue<T>();
+            T lhs = *((T *) payload_.data());
+            T rhs = *((T *) r.payload_.data());
             return lhs + rhs;
         }
 
         template<typename T>
         inline T minusHelper(const Field<B> & r) const {
-            T lhs = getValue<T>();
-            T rhs = r.getValue<T>();
+            T lhs = *((T *) payload_.data());
+            T rhs = *((T *) r.payload_.data());
             return lhs - rhs;
         }
 
         template<typename T>
         inline T timesHelper(const Field<B> & r) const {
-            T lhs = getValue<T>();
-            T rhs = r.getValue<T>();
+            T lhs = *((T *) payload_.data());
+            T rhs = *((T *) r.payload_.data());
             return lhs * rhs;
         }
 
@@ -226,8 +349,8 @@ namespace vaultdb {
 
         template<typename T>
         inline T modHelper(const Field<B> & r) const {
-            T lhs = getValue<T>();
-            T rhs = r.getValue<T>();
+            T lhs = *((T *) payload_.data());
+            T rhs = *((T *) r.payload_.data());
             return lhs  % rhs;
         }
 
@@ -249,9 +372,9 @@ namespace vaultdb {
             return res;
         }
 
-        static inline std::string xorStrings(const std::string & lhs, const std::string & rhs) {
+        static inline string xorStrings(const string & lhs, const string & rhs) {
             assert(lhs.size() == rhs.size());
-            std::string res = lhs;
+            string res = lhs;
 
             for(int i = 0; i < lhs.size(); ++i) {
                 res[i] = lhs[i] ^ rhs[i];
@@ -260,13 +383,54 @@ namespace vaultdb {
             return res;
         }
 
+        template<typename T>
+        bool validateTypeAlignment() const {
+            bool aligned = true;
+
+            switch (type_) {
+                case FieldType::BOOL:
+                    aligned = std::is_same<T, bool>::value;
+                    break;
+                case FieldType::INT:
+                    aligned = std::is_same<T, int32_t>::value;
+                    break;
+                case FieldType::LONG:
+                    aligned = std::is_same<T, int64_t>::value;
+                    break;
+                case FieldType::STRING:
+                    aligned = std::is_same<T, string>::value;
+                    break;
+                case FieldType::FLOAT:
+                    aligned = std::is_same<T, float_t>::value;
+                    break;
+                case FieldType::SECURE_BOOL:
+                    aligned = std::is_same<T, Bit>::value;
+                    break;
+                case FieldType::SECURE_INT:
+                case FieldType::SECURE_LONG:
+                case FieldType::SECURE_STRING:
+                    aligned = std::is_same<T, Integer>::value;
+                    break;
+                case FieldType::SECURE_FLOAT:
+                    aligned = std::is_same<T, Float>::value;
+                    break;
+                default:
+                    throw;
+            }
+
+            return aligned;
+        }
+
+
+
+
+
 
     };
 
 
-
-    std::ostream &operator<<(std::ostream &os, const Field<bool> &aValue);
-    std::ostream &operator<<(std::ostream &os, const Field<emp::Bit> &aValue);
+    std::ostream &operator<<(std::ostream &os, const Field<bool> &val);
+    std::ostream &operator<<(std::ostream &os, const Field<Bit> &val);
 
 
 

@@ -22,6 +22,7 @@ TEST_F(SortTest, testSingleIntColumn) {
     expected->order_by_  = sort_def;
 
     auto input = new SqlInput(db_name_, sql, false);
+
     Sort<bool> sort(input, sort_def);
     PlainTable *sorted = sort.run();
     ASSERT_EQ(*expected, *sorted);
@@ -40,6 +41,7 @@ TEST_F(SortTest, tpchQ1Sort) {
     expected->order_by_ = sort_def;
 
     auto input = new SqlInput(db_name_, sql, false);
+
     Sort<bool> sort(input, sort_def);
     PlainTable *sorted = sort.run();
 

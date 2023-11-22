@@ -39,7 +39,7 @@ PlainField FieldFactory<bool>::getFieldFromString(const FieldType &type, const s
             while(fieldStr.length() < strLength) {
                 fieldStr += " ";
             }
-            return PlainField(type, fieldStr, strLength);
+            return PlainField(type, fieldStr);
 
         }
         case FieldType::FLOAT: {
@@ -76,7 +76,7 @@ PlainField FieldFactory<bool>::getZero(const FieldType &aType) {
             return Field<bool>(aType, (float_t) 0.0);
         case FieldType::STRING: {
             std::string zero = "0";
-            return Field<bool>(aType, zero, 1);
+            return Field<bool>(aType, zero);
         }
         default:
             throw std::invalid_argument("Type unsupported in getZero(): " + TypeUtilities::getTypeName(aType));
@@ -97,7 +97,7 @@ PlainField FieldFactory<bool>::getOne(const FieldType &aType) {
             return Field<bool>(aType, (float_t) 1.0);
         case FieldType::STRING: {
             std::string one = "1";
-            return Field<bool>(aType, one, 1);
+            return Field<bool>(aType, one);
         }
         default:
             throw std::invalid_argument("Type unsupported in getOne(): " + TypeUtilities::getTypeName(aType));
@@ -206,7 +206,7 @@ SecureField FieldFactory<emp::Bit>::getZero(const FieldType &aType) {
         case FieldType::SECURE_FLOAT:
             return SecureField(aType, emp::Float(0.0));
         case FieldType::SECURE_STRING: {
-            return SecureField(aType, emp::Integer(8, 0), 1); // single character
+            return SecureField(aType, emp::Integer(8, 0)); // single character
         }
         default:
             throw std::invalid_argument("Type unsupported in getZero(): " + TypeUtilities::getTypeName(aType));
@@ -225,7 +225,7 @@ SecureField FieldFactory<emp::Bit>::getOne(const FieldType &aType) {
         case FieldType::SECURE_FLOAT:
             return SecureField(aType, emp::Float(1.0));
         case FieldType::SECURE_STRING: {
-            return SecureField(aType, emp::Integer(8, 1), 1);
+            return SecureField(aType, emp::Integer(8, 1));
         }
         default:
             throw std::invalid_argument("Type unsupported in getOne(): " + TypeUtilities::getTypeName(aType));

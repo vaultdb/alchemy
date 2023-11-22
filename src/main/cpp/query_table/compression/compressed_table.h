@@ -56,9 +56,7 @@ namespace vaultdb {
 
         CompressedTable(const CompressedTable<B> &src) : QueryTable<B>(src) {
             assert(src.storageModel() == StorageModel::COMPRESSED_STORE);
-
             setSchema(src.getSchema());
-
 
             for(auto pos : src.column_encodings_) {
                 ColumnEncoding<B> *src_encoding = src.column_encodings_.at(pos.first);
@@ -168,20 +166,6 @@ namespace vaultdb {
                 return;
             }
 
-            throw; // NYI
-
-            // need to serialize field in case we are changing underlying schema as in SortMergeJoin
-            /*vector<int8_t> row_bytes = src->serializeRow(src_row);
-            int8_t *read_ptr = row_bytes.data();
-            for(int i = 0; i < col_cnt; ++i) {
-                auto dst_encoding = column_encodings_.at(dst_col + i);
-                dst_encoding->deserializeField(dst_row, read_ptr);
-                read_ptr += this->field_sizes_bytes_.at(i);
-            }
-
-            Field<B> dummy_tag = src->getField(src_row, -1);
-            column_encodings_.at(-1)->setField(dst_row, dummy_tag);
-             */
         }
 
         void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) override;
@@ -229,6 +213,7 @@ namespace vaultdb {
         }
 
         QueryTable<B> *clone() override { return new CompressedTable<B>(*this); }
+
         void compareSwap(const B & swap, const int  & lhs_row, const int & rhs_row) override {
             for(auto pos : column_encodings_) {
                 pos.second->compareSwap(swap, lhs_row, rhs_row);
@@ -284,7 +269,20 @@ namespace vaultdb {
 
         }
 
+        void deserializeRow(const int & row, vector<int8_t> & src) override {
+            int8_t *read_ptr = src.data();
+            int8_t *cutoff = src.data() + src.size() - sizeof(B); // save dummy tag for later
 
+            for(int i = 0; i < this->schema_.getFieldCount(); ++i) {
+                column_encodings_[i]->deserializeField(row, read_ptr);
+                read_ptr += column_encodings_[i]->field_size_bytes_;
+                if(read_ptr >= cutoff) {
+                   break;
+                }
+            }
+
+            column_encodings_[-1]->deserializeField(row, cutoff);
+        }
     };
 
 

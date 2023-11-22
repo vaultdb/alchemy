@@ -263,7 +263,7 @@ namespace  vaultdb {
                     case FieldType::SECURE_STRING: {
                         Integer i_field(desc.size() + desc.bitPacked(), 0, PUBLIC);
                         memcpy(i_field.bits.data(), cursor, desc.size() * sizeof(Bit));
-                        SecureField f(desc.getType(), i_field, desc.getStringLength());
+                        SecureField f(desc.getType(), i_field);
                         dst->setField(row, dst_idx, f);
                         break;
                     }
@@ -305,13 +305,13 @@ namespace  vaultdb {
        static QueryTable<B> *getTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition());
 
         // includes dummy tag
-        vector<int8_t> serializeRow(const int & row) const  {
+     vector<int8_t> serializeRow(const int & row) const  {
            vector<int8_t> dst(tuple_size_bytes_);
            int8_t *write_ptr = dst.data();
 
            for (int i = 0; i < this->schema_.getFieldCount(); ++i) {
                Field<B> to_write = getField(row, i);
-               Field<B>::writeField(write_ptr, to_write, this->schema_.getField(i));
+               Field<B>::serialize(write_ptr, to_write, this->schema_.getField(i));
                write_ptr += field_sizes_bytes_.at(i);
            }
            // dummy tag
@@ -320,7 +320,26 @@ namespace  vaultdb {
            return dst;
         }
 
+    virtual void deserializeRow(const int & row, vector<int8_t> & src) {
+        int src_size_bytes = src.size() - sizeof(B); // don't handle dummy tag until end
+        int cursor = 0; // bytes
+        int write_idx = 0; // column indexes
 
+        // does not include dummy tag - handle further down in this method
+        // re-pack row
+        while(cursor < src_size_bytes && write_idx < this->schema_.getFieldCount()) {
+            int bytes_remaining = src_size_bytes - cursor;
+            int dst_len = this->field_sizes_bytes_.at(write_idx);
+            int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
+            Field<B> f = Field<B>::deserialize(schema_.getField(write_idx), src.data() + cursor);
+            setField(row, write_idx, f);
+            cursor += to_read;
+            ++write_idx;
+        }
+
+        B *dummy_tag = (B*) (src.data() + src.size() - sizeof(B));
+        setDummyTag(row, *dummy_tag);
+     }
 
     protected:
         QuerySchema schema_;

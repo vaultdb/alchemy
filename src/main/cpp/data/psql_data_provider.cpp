@@ -213,7 +213,7 @@ PsqlDataProvider::getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_ta
                 }
 
 
-                return  PlainField(col_type, str, len);
+                return  PlainField(col_type, str);
             }
             default:
                 throw std::invalid_argument("Unsupported column type " + std::to_string(oid));

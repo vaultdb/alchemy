@@ -104,7 +104,9 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                           "lineitem_cte AS (" + lineitem_sql_ + "), "
                                            "customer_cte AS (" + customer_sql_ + ") "
                                                  "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, (cdummy OR odummy OR ldummy OR o_orderkey <> l_orderkey OR c_custkey <> o_custkey) dummy "
-                                                 "FROM lineitem_cte, orders_cte, customer_cte "
+                                                 "FROM lineitem_cte JOIN orders_cte ON o_orderkey = l_orderkey"
+                                                 "     JOIN customer_cte ON c_custkey = o_custkey "
+                                                 "WHERE NOT (cdummy OR odummy OR ldummy) "
                                                  "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
@@ -115,23 +117,17 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<bool> * customer_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(orders_input, 1,
-                                                                                              customer_input, 4);
+    Expression<bool> * customer_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(orders_input, 1, customer_input, 4);
     BasicJoin<bool> *customer_orders_join = new BasicJoin(orders_input, customer_input, customer_orders_predicate);
 
     // join output schema:
     //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<bool> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(lineitem_input, 0,
-                                                                                              customer_orders_join, 2);
-
-
-
+    Expression<bool> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(lineitem_input, 0, customer_orders_join, 2);
     BasicJoin full_join(lineitem_input, customer_orders_join, lineitem_orders_predicate);
 
 
     PlainTable *observed = full_join.run();
-
-
+    DataUtilities::removeDummies(observed);
 
     ASSERT_EQ(*expected, *observed);
     delete expected;
