@@ -59,7 +59,9 @@ namespace vaultdb {
 
         void cacheField(int row, int col, int target_wire) const {
 	        EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
-	        if(unpacked_wires_[col].page_idx_ != target_wire) {
+            int current_page_idx = (packed_wires_[col] == 1) ? target_wire : (row * packed_wires_[col]);
+
+	        if(unpacked_wires_[col].page_idx_ != current_page_idx) {
                 if(unpacked_wires_[col].dirty_bit_) {
                     // Flush to column_data_
                     emp::OMPCPackedWire *pack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + unpacked_wires_[col].page_idx_;
@@ -67,10 +69,10 @@ namespace vaultdb {
                     unpacked_wires_[col].dirty_bit_ = false;
                 }
 
-                emp::OMPCPackedWire *unpack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + target_wire;
+                emp::OMPCPackedWire *unpack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + current_page_idx;
                 manager->unpack((Bit *) unpack_wire, unpacked_wires_[col].unpacked_wire.data(), packed_wires_[col] * 128);
 
-                unpacked_wires_[col].page_idx_ = target_wire;
+                unpacked_wires_[col].page_idx_ = current_page_idx;
             }
         }
 
@@ -81,7 +83,7 @@ namespace vaultdb {
 
             int target_wire = row / fields_per_wire_.at(col);
             int target_offset = row % fields_per_wire_.at(col);
-            int field_bits_size = schema_.fields_.at(col).size();
+            int field_bits_size = schema_.getField(col).size();
 
             cacheField(row, col, target_wire);
 
@@ -98,7 +100,7 @@ namespace vaultdb {
             }
 
             assert(fields_per_wire_[col] > 0);
-            int field_bits_size = f.payload_.size();
+            int field_bits_size = f.payload_.size() / sizeof(emp::Bit); // payload is in bytes
             int target_wire = row / fields_per_wire_[col];
             int target_offset = row % fields_per_wire_[col];
 
