@@ -48,6 +48,7 @@ namespace vaultdb {
         Field<B>  running_sum_;
         Field<B>  tuple_count_;
         B not_initialized = B(true);
+        Field<B> one_;
 
     };
 

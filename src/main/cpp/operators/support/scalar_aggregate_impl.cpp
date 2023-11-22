@@ -72,29 +72,29 @@ template<typename B>
 ScalarAvgImpl<B>::ScalarAvgImpl(const AggregateId & id, const FieldType & type, const int32_t & input_ordinal, const int32_t & output_ordinal)
         : ScalarAggregateImpl<B>(id, type, input_ordinal, output_ordinal){
 
-    tuple_count_ = FieldFactory<B>::getZero(ScalarAggregateImpl<B>::field_type_);
+    tuple_count_ = FieldFactory<B>::getZero(this->field_type_);
     running_sum_ = tuple_count_;
+    one_ = FieldFactory<B>::getOne(this->field_type_);
 }
 
 template<typename B>
 void ScalarAvgImpl<B>::update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst){
     B input_dummy = src->getDummyTag(src_row);
+    auto desc = src->getSchema().getField(this->input_ordinal_);
     Field<B> input_field = src->getField(src_row, this->input_ordinal_);
-    input_field.unpack(src->getSchema().getField(this->input_ordinal_));
+    input_field.unpack(desc);
 
     B to_accumulate = (!input_dummy) & (!not_initialized);
     B to_initialize = (!input_dummy) & not_initialized;
 
     B to_write = to_accumulate | to_initialize;
-    Field<B> one = FieldFactory<B>::getOne(ScalarAggregateImpl<B>::field_type_);
 
     // if initialize or accumulate, add 1 to count and add input_field to running sum
-    tuple_count_ = Field<B>::If(to_write, tuple_count_ + one, tuple_count_);
+    tuple_count_ = Field<B>::If(to_write, tuple_count_ + one_, tuple_count_);
     running_sum_ = Field<B>::If(to_write, running_sum_ + input_field, running_sum_);
 
     Field<B> output_field = running_sum_ / tuple_count_;
-    not_initialized = (to_initialize & !not_initialized) | (to_accumulate & not_initialized);
-    dst->setField(0, ScalarAggregateImpl<B>::output_ordinal_, output_field);
+    dst->setField(0, this->output_ordinal_, output_field);
 }
 
 template class vaultdb::ScalarAggregateImpl<bool>;
