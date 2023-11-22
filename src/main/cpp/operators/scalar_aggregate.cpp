@@ -46,7 +46,7 @@ QueryTable<B> *ScalarAggregate<B>::runSelf() {
         this->output_schema_.initializeFieldOffsets();
     }
 
-    this->output_ =  QueryTable<B>::getTable(1, Operator<B>::output_schema_);
+    this->output_ =  QueryTable<B>::getTable(1, this->output_schema_);
     QueryTable<B> *output = this->output_;
 
     for(size_t i = 0; i < input->tuple_cnt_; ++i) {
