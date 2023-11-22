@@ -172,7 +172,7 @@ namespace vaultdb {
 
         static string printField(const SecureField & f) {
             if(f.getType() == FieldType::SECURE_FLOAT) {
-                return printFloat(f.getValue<Float>());
+                return printFloat(f.getFloat());
             }
             if(f.getType() == FieldType::SECURE_BOOL) {
                 stringstream ss;
@@ -180,7 +180,7 @@ namespace vaultdb {
                 ss << b << ": " << (b ? "true" : "false");
                 return ss.str();
             }
-            return printInt(f.getValue<Integer>());
+            return printInt(f.getInt());
 
         }
 
@@ -195,7 +195,7 @@ namespace vaultdb {
                 return ss.str();
             }
             if(f.getType() == FieldType::STRING) {
-                string s = f.getValue<string>();
+                string s = f.getString();
                 return printString(s);
             }
 

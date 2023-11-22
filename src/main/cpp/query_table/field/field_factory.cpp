@@ -239,7 +239,7 @@ SecureField FieldFactory<emp::Bit>::toFloat(const SecureField &src) {
     switch (src.getType()) {
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG: {
-            emp::Integer i = src.getValue<emp::Integer>();
+            emp::Integer i = src.getInt();
             emp::Float f = FieldUtilities::toFloat(i);
             return SecureField(FieldType::SECURE_FLOAT, f);
         }
@@ -255,7 +255,7 @@ SecureField FieldFactory<emp::Bit>::toFloat(const SecureField &src) {
 
 SecureField FieldFactory<emp::Bit>::toLong(const SecureField & field) {
     if(field.getType() == FieldType::SECURE_INT) {
-        emp::Integer payload = field.getValue<emp::Integer>();
+        emp::Integer payload = field.getInt();
         payload.resize(64);
         return SecureField(FieldType::SECURE_LONG, payload);
     }
@@ -271,10 +271,10 @@ SecureField FieldFactory<emp::Bit>::toInt(const SecureField &src) {
             return SecureField(FieldType::SECURE_INT, dst);
         }
         case FieldType::SECURE_INT: {
-            return SecureField(FieldType::SECURE_INT, src.getValue<emp::Integer>());
+            return SecureField(FieldType::SECURE_INT, src.getInt());
         }
         case FieldType::SECURE_LONG: {
-            emp::Integer value = src.getValue<emp::Integer>();
+            emp::Integer value = src.getInt();
             value.resize(32);
             return SecureField(FieldType::SECURE_INT, value);
         }

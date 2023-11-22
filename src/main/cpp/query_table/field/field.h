@@ -43,16 +43,48 @@ namespace vaultdb {
                     break;
                 default: {
                     setValue<T>(val);
-//                    if(type_ == FieldType::INT) {
-//                        std::cout << "Received val: " << *((int32_t *) &val) << endl;
-//                        int8_t *tmp = (int8_t *) &val;
-//                        std::cout << "Writing: " << (int) tmp[0] << ", " << (int) tmp[1] << ", " << (int) tmp[2] << ", "
-//                                  << (int) tmp[3] << std::endl;
-//                        std::cout << "Payload int: " << *((int32_t *) payload_.data()) << std::endl;
-//                    }
                 }
             }
         }
+
+        // init with default values for secret share recv
+        Field(const FieldType & field_type) : type_(field_type) {
+            switch(type_) {
+                case FieldType::BOOL:
+                    setValue<bool>(false);
+                    break;
+                case FieldType::INT:
+                    setValue<int32_t>(0);
+                    break;
+                case FieldType::LONG:
+                    setValue<int64_t>(0);
+                    break;
+                case FieldType::STRING:
+                    setString("");
+                    break;
+                case FieldType::FLOAT:
+                    setValue<float_t>(0.0);
+                    break;
+                case FieldType::SECURE_BOOL:
+                    setValue<Bit>(Bit(false, PUBLIC));
+                    break;
+                case FieldType::SECURE_INT:
+                    setInt(Integer(32, 0, PUBLIC));
+                    break;
+                case FieldType::SECURE_LONG:
+                    setInt(Integer(64, 0, PUBLIC));
+                    break;
+                case FieldType::SECURE_STRING:
+                    setInt(Integer(8, 0, PUBLIC));
+                    break;
+                case FieldType::SECURE_FLOAT:
+                    setFloat(Float(0, PUBLIC));
+                    break;
+                default:
+                    throw;
+            }
+       }
+
 
         Field(const B & value) {
                 setValue(value);
@@ -135,8 +167,8 @@ namespace vaultdb {
         }
 
         inline void setFloat(const Float & src) {
-            payload_.resize(src.value.size());
-            memcpy(payload_.data(), src.value.data(), src.value.size());
+            payload_.resize(src.value.size() * sizeof(emp::Bit));
+            memcpy(payload_.data(), src.value.data(), src.value.size() * sizeof(Bit));
         }
 
         // delegate to visitor
@@ -201,11 +233,9 @@ namespace vaultdb {
         PlainField reveal( const QueryFieldDesc &desc, const int &party = PUBLIC) const;
         SecureField secret_share() const; // secret share as public
 
-        static SecureField
-        secret_share_send(const PlainField &src, const QueryFieldDesc &field_desc, const int &src_party);
+        static SecureField secret_share_send(const PlainField &src, const QueryFieldDesc &field_desc, const int &src_party);
 
-        static SecureField
-        secret_share_recv(const QueryFieldDesc &field_desc, const int &src_party);
+        static SecureField secret_share_recv(const QueryFieldDesc &field_desc, const int &src_party);
 
         static SecureField secretShareHelper(const PlainField &field, const QueryFieldDesc &desc, const int &party,
                                              const bool &send);

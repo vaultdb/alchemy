@@ -61,8 +61,7 @@ Field<B>::secret_share_recv(const QueryFieldDesc &field_desc, const int &src_par
 
     FieldType plain_type = TypeUtilities::toPlain(field_desc.getType());
 
-    // 0 not used so it is ok to hardcode
-    PlainField p(plain_type, 0);
+    PlainField p(plain_type);
     return secretShareHelper(p, field_desc, src_party, false);
 
 
@@ -308,7 +307,7 @@ SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDes
         }
         case FieldType::STRING: {
             string s = (send) ? f.getString() : "";
-            Integer v = secretShareString(s, send, party, f.payload_.size());
+            Integer v = secretShareString(s, send, party, desc.size());
             return SecureField(FieldType::SECURE_STRING, v);
         }
         case FieldType::FLOAT: {
@@ -323,8 +322,7 @@ SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDes
 }
 
 template<typename B>
-Integer
-Field<B>::secretShareString(const string &s, const bool &to_send, const int &src_party, const int &str_length) {
+Integer Field<B>::secretShareString(const string &s, const bool &to_send, const int &src_party, const int &str_length) {
     assert(str_length > 0); // true length, s passed in might be empty for non-sending parties
 
     size_t bit_cnt = str_length * 8;

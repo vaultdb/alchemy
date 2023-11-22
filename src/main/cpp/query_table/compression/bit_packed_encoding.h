@@ -47,7 +47,7 @@ namespace vaultdb {
 
         void setField(const int & row, const Field<Bit> & f) override {
             int8_t *dst = this->column_data_ + row * this->field_size_bytes_;
-            emp::Integer src = f.template getValue<emp::Integer>();
+            Integer src = f.getInt();
             memcpy(dst, src.bits.data(), field_size_bytes_);
         }
 
@@ -100,7 +100,7 @@ namespace vaultdb {
         void initializeColumn(const SecureField & field) override {
             auto field_type = parent_table_->getSchema().getField(this->column_idx_).getType();
             assert(field_type == field.getType());
-            Integer init = field.template getValue<Integer>();
+            Integer init = field.getInt();
             int cnt = this->parent_table_->tuple_cnt_;
             Bit *dst = (Bit *) this->column_data_;
 

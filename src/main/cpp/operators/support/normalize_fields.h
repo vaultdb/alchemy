@@ -171,7 +171,7 @@ namespace vaultdb {
 
         // ***START MPC FIELD SUPPORT
         static SecureField normalizeInt(const SecureField & s, const SortDirection & dir, const bool & packed) {
-            Integer dst = s.getValue<Integer>();
+            Integer dst = s.getInt();
             if (dir == SortDirection::DESCENDING) {
                 if(packed) {
                     // unsigned --> invert bits
@@ -192,7 +192,7 @@ namespace vaultdb {
         }
 
         static SecureField denormalizeInt(const SecureField & s, const SortDirection & dir, const bool & packed) {
-            Integer dst = s.getValue<Integer>();
+            Integer dst = s.getInt();
             if(dir == SortDirection::DESCENDING) {
                 if(packed) {
                     // start at 1 to ignore the sign bit

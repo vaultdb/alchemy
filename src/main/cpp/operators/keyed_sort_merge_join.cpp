@@ -536,7 +536,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::distribute(QueryTable<B> *input, size_t ta
     }
 
     int j = Sort<B>::powerOfTwoLessThan(target_size);
-    int weight_width = (is_secure_) ? zero_.template getValue<Integer>().size() : 32;
+    int weight_width = (is_secure_) ? zero_.getInt().size() : 32;
 
     while(j >= 1) {
         for(int i = target_size - j - 1; i >= 0; i--) {
