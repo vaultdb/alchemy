@@ -572,7 +572,9 @@ Field<B> Field<B>::operator/(const Field<B> &rhs) const {
             return Field<B>(type_, l / r);
         }
         case FieldType::SECURE_FLOAT: {
-            return Field<B>(type_, divHelper<Float>(rhs));
+            auto l = getFloat();
+            auto r = rhs.getFloat();
+            return Field<B>(type_, l / r);
         }
         default: // remaining types (BOOL, STRING, etc) go here
             throw;
