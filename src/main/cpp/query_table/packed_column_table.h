@@ -231,6 +231,11 @@ namespace vaultdb {
 
         StorageModel storageModel() const override { return StorageModel::PACKED_COLUMN_STORE; }
 
+        void deserializeRow(const int & row, vector<int8_t> & src) override {
+            throw;
+            // NYI
+        }
+
     private:
         // index of the wire in the column, might move this up
         int wireOffset(int row, int col) const {

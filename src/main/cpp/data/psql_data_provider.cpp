@@ -186,14 +186,11 @@ PsqlDataProvider::getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_ta
 
            case FieldType::DATE:
             {
-	      
-	      std::string date_str = src.as<std::string>(); // YYYY-MM-DD
-	      boost::gregorian::date date(boost::gregorian::from_string(date_str));
-	      boost::gregorian::date epoch_start(1970, 1, 1);
+              string date_str = src.as<string>(); // YYYY-MM-DD
+              boost::gregorian::date date(boost::gregorian::from_string(date_str));
+              boost::gregorian::date epoch_start(1970, 1, 1);
               int64_t epoch = (date - epoch_start).days() * 24 * 3600;
-	    
-                return  PlainField(FieldType::LONG, epoch);
-
+              return  PlainField(FieldType::LONG, epoch);
             }
             case FieldType::BOOL:
             {

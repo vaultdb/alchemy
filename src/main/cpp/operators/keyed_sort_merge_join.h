@@ -42,6 +42,9 @@ namespace  vaultdb {
             this->getChild(1)->updateCollation();
 
             SortDefinition sort_def;
+            // algo pushes dummy tags to end
+            sort_def.push_back(ColumnSort(-1, SortDirection::ASCENDING));
+
             for(auto &pos : join_idxs_) {
                 sort_def.push_back(ColumnSort (pos.first, SortDirection::ASCENDING));
                 sort_def.push_back(ColumnSort (pos.second, SortDirection::ASCENDING));

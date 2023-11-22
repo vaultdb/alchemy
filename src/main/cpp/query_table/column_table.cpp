@@ -1,6 +1,7 @@
 #include "column_table.h"
 #include "plain_tuple.h"
 #include "secure_tuple.h"
+#include "util/field_utilities.h"
 
 using namespace vaultdb;
 
@@ -101,22 +102,12 @@ void ColumnTable<Bit>::compareSwap(const Bit &swap, const int &lhs_row, const in
     // iterating on column_data to cover dummy tag at -1
     // need to do this piecewise to avoid overhead we found in profiling from iterating over table
     for(int col_id = 0; col_id < col_cnt; ++col_id) {
-
         int field_len = schema_.fields_.at(col_id).size();
-
         Bit *l = (Bit *) getFieldPtr(lhs_row, col_id);
         Bit *r = (Bit *) getFieldPtr(rhs_row, col_id);
 
-        // swap column bits in place
-        // based on emp
         for(int i = 0; i < field_len; ++i) {
-            Bit o = emp::If(swap, *l, *r);
-            o ^= *r;
-            *l ^= o;
-            *r ^= o;
-
-            ++l;
-            ++r;
+            emp::swap(swap, l[i], r[i]);
         }
 
     }

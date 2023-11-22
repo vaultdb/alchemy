@@ -227,7 +227,7 @@ namespace vaultdb {
 
 
         static Field If(const B & choice,const Field & lhs, const Field & rhs);
-        static void compareAndSwap(const B & choice, Field & lhs, Field & rhs);
+        static void compareSwap(const B & choice, Field & lhs, Field & rhs);
 
 
         PlainField reveal( const QueryFieldDesc &desc, const int &party = PUBLIC) const;

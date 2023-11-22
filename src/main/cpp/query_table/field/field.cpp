@@ -388,7 +388,7 @@ Field<Bit> Field<Bit>::If(const Bit &choice, const Field<Bit> &l, const Field<Bi
 
 
 template<>
-void Field<bool>::compareAndSwap(const bool & choice, Field<bool> & l, Field<bool> & r) {
+void Field<bool>::compareSwap(const bool & choice, Field<bool> & l, Field<bool> & r) {
     assert(l.getType() == r.getType());
     assert(l.payload_.size() == r.payload_.size());
 
@@ -408,7 +408,7 @@ void Field<bool>::compareAndSwap(const bool & choice, Field<bool> & l, Field<boo
 
 
 template<>
-void Field<Bit>::compareAndSwap(const Bit & choice, Field<Bit> & l, Field<Bit> & r) {
+void Field<Bit>::compareSwap(const Bit & choice, Field<Bit> & l, Field<Bit> & r) {
     assert(l.getType() == r.getType());
     assert(l.payload_.size() == r.payload_.size());
     switch (l.type_) {

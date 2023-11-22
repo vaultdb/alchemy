@@ -82,7 +82,7 @@ void SecureSqlInput::runQuery() {
 
     // running the query on all parties to get the schema
     if(input_tuple_limit_ > 0) { // truncate inputs
-        // check if it ends in ";" - delete it if detected
+        // check if it ends in ";" - delete semicolon if detected
         boost::replace_all(input_query_, ";", "");
         sql = "SELECT * FROM (" + input_query_ + ") input LIMIT " + std::to_string(input_tuple_limit_);
     }

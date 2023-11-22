@@ -86,13 +86,13 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
     lhs->pinned_ = true;
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
-    this->start_time_ = clock_start();
 
+    this->start_time_ = clock_start();
     QuerySchema lhs_schema = lhs->getSchema();
     QuerySchema rhs_schema = rhs->getSchema();
     QuerySchema out_schema = this->output_schema_;
 
-   pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
+    pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
     QueryTable<B> *expanded_lhs, *expanded_rhs;
 
     expanded_lhs = expand(augmented.first);
@@ -102,6 +102,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
 	delete augmented.second;
 
     size_t lhs_field_cnt = lhs_schema.getFieldCount();
+    size_t rhs_field_cnt = rhs_schema.getFieldCount();
     QueryTable<B> *lhs_reverted = revertProjection(expanded_lhs, lhs_field_mapping_, true);
     QueryTable<B> *rhs_reverted = revertProjection(expanded_rhs, rhs_field_mapping_, false);
 
@@ -110,12 +111,15 @@ QueryTable<B> *KeyedSortMergeJoin<B>::runSelf() {
 
     this->output_ = QueryTable<B>::getTable(foreign_key_cardinality_, out_schema);
 
-    // TODO: replace this with cloneColumn calls - 1 per col
-    // JMR: figure out why we have write conditional here.  Shouldn't we always write?
+    for(int i = 0; i < lhs_field_cnt; ++i)
+        this->output_->cloneColumn(i, 0, lhs_reverted, i, 0);
+
+    for(int i = 0; i < rhs_field_cnt; ++i)
+        this->output_->cloneColumn(i + lhs_field_cnt, 0, rhs_reverted, i, 0);
+
+
     for(int i = 0; i < foreign_key_cardinality_; i++) {
         B dummy = lhs_reverted->getDummyTag(i) | rhs_reverted->getDummyTag(i);
-        this->output_->cloneRow(!dummy, i, 0, lhs_reverted, i);
-        this->output_->cloneRow(!dummy, i, lhs_field_cnt, rhs_reverted, i);
         this->output_->setDummyTag(i, dummy);
     }
 
@@ -275,7 +279,6 @@ pair<QueryTable<B> *, QueryTable<B> *>  KeyedSortMergeJoin<B>::augmentTables(Que
     output.first->cloneColumn(-1, 0, sorted_table, -1);
     output.second->cloneColumn(-1, 0, sorted_table, -1, read_offset);
 
-
     return output;
 }
 
@@ -335,6 +338,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionAndMergeTables() {
 
     delete lhs_prime_;
     delete rhs_prime_;
+    int counter = 0;
 
     // do bitonic merge instead of full sort
     SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
@@ -345,25 +349,23 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionAndMergeTables() {
     Sort<B> sorter(unioned, sort_def);
     sorter.setOperatorId(-2);
     auto normalized = sorter.normalizeTable(unioned); // normalize to move up table_id field
-
-    int counter = 0;
     sorter.bitonicMerge(normalized, sorter.getSortOrder(), 0, normalized->tuple_cnt_, true, counter);
-
     unioned =  sorter.denormalizeTable(normalized);
     unioned->order_by_ = sort_def;
 
     delete normalized;
-    return unioned->clone();
+    return unioned;
 
 }
 
-template<>
-QueryTable<bool> *KeyedSortMergeJoin<bool>::unionTables(QueryTable<bool> *lhs, QueryTable<bool> *rhs, const QuerySchema & dst_schema) {
+template<typename B>
+QueryTable<B> *KeyedSortMergeJoin<B>::unionTables(QueryTable<B> *lhs, QueryTable<B> *rhs, const QuerySchema & dst_schema) {
 
     auto unioned_len = lhs->tuple_cnt_ + rhs->tuple_cnt_;
-    auto unioned =  QueryTable<bool>::getTable(unioned_len, dst_schema);
+    auto unioned =  QueryTable<B>::getTable(unioned_len, dst_schema);
 
     // always FK --> PK
+    // TODO: add conditional so we only reshuffle columns for smaller relation
     int cursor = 0;
     for(int i = lhs->tuple_cnt_ - 1; i >= 0; --i) {
         auto r = lhs->serializeRow(i);
@@ -378,34 +380,8 @@ QueryTable<bool> *KeyedSortMergeJoin<bool>::unionTables(QueryTable<bool> *lhs, Q
         unioned->deserializeRow(cursor, r);
         ++cursor;
     }
-
     return unioned;
 }
-
-template<>
-QueryTable<Bit> *KeyedSortMergeJoin<Bit>::unionTables(QueryTable<Bit> *lhs, QueryTable<Bit> *rhs, const QuerySchema & dst_schema) {
-
-    auto unioned_len = lhs->tuple_cnt_ + rhs->tuple_cnt_;
-    QueryTable<Bit> *unioned =  QueryTable<Bit>::getTable(unioned_len, dst_schema);
-
-    // always FK --> PK
-    int cursor = 0;
-    for(int i = lhs->tuple_cnt_ - 1; i >= 0; --i) {
-        Integer row = lhs->unpackRow(i);
-        unioned->packRow(cursor, row);
-        ++cursor;
-    }
-
-
-    for(int i = 0; i < rhs->tuple_cnt_; ++i) {
-        Integer row = rhs->unpackRow(i);
-        unioned->packRow(cursor, row);
-        ++cursor;
-    }
-
-    return unioned;
-}
-
 
 
 template<typename B>
@@ -467,7 +443,6 @@ void KeyedSortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
     // rhs has table_id = true
     // TODO: we can likely cut down on our circuits if we say table_id = true is always fkey (or pkey)
-
     for(int i = 1; i < dst->tuple_cnt_; i++) {
 		table_id = dst->getField(i, table_id_idx_).template getValue<B>();
 		is_foreign_key = (table_id == fkey_check);
@@ -510,6 +485,7 @@ void KeyedSortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 		dst->setField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getField(i, alpha_idx_)));
 		dst->setField(i, alpha_idx_, Field<B>::If(dst->getDummyTag(i), zero_, dst->getField(i, alpha_idx_)));
     }
+
 }
 
 

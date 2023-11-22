@@ -228,6 +228,28 @@ namespace vaultdb {
             memcpy(write_ptr, read_ptr, this->field_sizes_bytes_.at(dst_col) * src_tuples);
         }
 
+
+
+        virtual void deserializeRow(const int & row, vector<int8_t> & src) override {
+            int src_size_bytes = src.size() - sizeof(B); // don't handle dummy tag until end
+            int cursor = 0; // bytes
+            int write_idx = 0; // column indexes
+
+            // does not include dummy tag - handle further down in this method
+            // re-pack row
+            while(cursor < src_size_bytes && write_idx < this->schema_.getFieldCount()) {
+                int bytes_remaining = src_size_bytes - cursor;
+                int dst_len = this->field_sizes_bytes_.at(write_idx);
+                int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
+                memcpy(getFieldPtr(row, write_idx), src.data() + cursor, to_read);
+                cursor += to_read;
+                ++write_idx;
+            }
+
+            B *dummy_tag = (B*) (src.data() + src.size() - sizeof(B));
+            setDummyTag(row, *dummy_tag);
+        }
+
         StorageModel storageModel() const override { return StorageModel::COLUMN_STORE; }
     private:
         // need static context to avoid needlessly invoking default constructors for Bits
