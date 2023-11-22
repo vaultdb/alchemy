@@ -162,10 +162,7 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     // join output schema:
     //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(
-            lineitem_input, 0,
-            customer_orders_join,
-            2);
+    Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>( lineitem_input, 0, customer_orders_join, 2);
 
 
 
