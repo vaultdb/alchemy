@@ -211,18 +211,18 @@ namespace vaultdb {
 
         void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) override;
 
-        void cloneColumn(const int & dst_col, const int & dst_idx, const QueryTable<B> *s, const int & src_col, const int & src_offset = 0) override {
+        void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<B> *s, const int & src_col, const int & src_row = 0) override {
 
             assert(s->storageModel() == StorageModel::COLUMN_STORE);
-            assert(s->getSchema().getField(src_col).getType() == this->getSchema().getField(dst_col).getType());
+            assert(s->getSchema().getField(src_col) == this->getSchema().getField(dst_col));
 
             auto src = (ColumnTable<B> *) s;
 
-            int8_t *write_ptr = getFieldPtr(dst_idx, dst_col);
-            int8_t *read_ptr = src->getFieldPtr(src_offset, src_col);
-            int src_tuples =   src->tuple_cnt_ - src_offset;
-            if(src_tuples > (this->tuple_cnt_ - dst_idx)) {
-                src_tuples = this->tuple_cnt_ - dst_idx; // truncate to our available slots
+            int8_t *write_ptr = getFieldPtr(dst_row, dst_col);
+            int8_t *read_ptr = src->getFieldPtr(src_row, src_col);
+            int src_tuples =   src->tuple_cnt_ - src_row;
+            if(src_tuples > (this->tuple_cnt_ - dst_row)) {
+                src_tuples = this->tuple_cnt_ - dst_row; // truncate to our available slots
             }
 
             memcpy(write_ptr, read_ptr, this->field_sizes_bytes_.at(dst_col) * src_tuples);

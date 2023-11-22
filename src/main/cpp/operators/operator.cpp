@@ -83,7 +83,6 @@ QueryTable<B> *Operator<B>::run() {
     if(lhs_child_)     lhs_child_->reset();
     if(rhs_child_)     rhs_child_->reset();
 
-
     return output_;
 }
 
