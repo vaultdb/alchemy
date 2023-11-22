@@ -8,7 +8,6 @@ bash $RUNNER secure_field_expression_test
 bash $RUNNER emp_table_test
 bash $RUNNER secure_filter_test
 bash $RUNNER secure_sort_test
-#bash $RUNNER secure_basic_join_test
 
 #manually running this to manage cutoff
 ./bin/secure_basic_join_test --cutoff=5 --flagfile=flagfiles/filter.flags --flagfile=flagfiles/db_names.flags --flagfile=flagfiles/storage.flags & 
