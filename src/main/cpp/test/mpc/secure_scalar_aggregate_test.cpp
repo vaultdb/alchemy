@@ -43,11 +43,6 @@ void SecureScalarAggregateTest::runTest(const string &expected_sql,
   ScalarAggregate aggregate(input, aggregators);
   auto aggregated = aggregate.run();
 
-//  size_t observed_gates = aggregate.getGateCount();
-//  size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
-//  cout << "Input schema: " << input->getOutputSchema() << endl;
-//  cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
-
   if(FLAGS_validation) {
       PlainTable *observed = aggregated->reveal();
       PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
