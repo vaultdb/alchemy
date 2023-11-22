@@ -59,7 +59,9 @@ namespace vaultdb {
 
         void cacheField(int row, int col, int target_wire) const {
 	        EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
-	        if(unpacked_wires_[col].page_idx_ != target_wire) {
+            int current_page_idx = (packed_wires_[col] == 1) ? target_wire : (row * packed_wires_[col]);
+
+	        if(unpacked_wires_[col].page_idx_ != current_page_idx) {
                 if(unpacked_wires_[col].dirty_bit_) {
                     // Flush to column_data_
                     emp::OMPCPackedWire *pack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + unpacked_wires_[col].page_idx_;
@@ -67,10 +69,10 @@ namespace vaultdb {
                     unpacked_wires_[col].dirty_bit_ = false;
                 }
 
-                emp::OMPCPackedWire *unpack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + target_wire;
+                emp::OMPCPackedWire *unpack_wire = ((emp::OMPCPackedWire *) column_data_.at(col).data()) + current_page_idx;
                 manager->unpack((Bit *) unpack_wire, unpacked_wires_[col].unpacked_wire.data(), packed_wires_[col] * 128);
 
-                unpacked_wires_[col].page_idx_ = target_wire;
+                unpacked_wires_[col].page_idx_ = current_page_idx;
             }
         }
 
