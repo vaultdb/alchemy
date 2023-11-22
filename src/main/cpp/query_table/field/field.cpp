@@ -463,7 +463,9 @@ Field<B> Field<B>::operator+(const Field<B> &rhs) const {
             return Field<B>(type_, l + r);
         }
         case FieldType::SECURE_FLOAT: {
-         return Field<B>(type_, plusHelper<Float>(rhs));
+            auto l = getFloat();
+            auto r = rhs.getFloat();
+            return Field<B>(type_,l + r);
         }
         default: // remaining types (BOOL, STRING, etc) go here
             throw;
@@ -497,7 +499,9 @@ Field<B> Field<B>::operator-(const Field<B> &rhs) const {
             return Field<B>(type_, l - r);
         }
         case FieldType::SECURE_FLOAT: {
-            return Field<B>(type_, minusHelper<Float>(rhs));
+            auto l = getFloat();
+            auto r = rhs.getFloat();
+            return Field<B>(type_,l - r);
         }
         default: // remaining types (BOOL, STRING, etc) go here
             throw;
@@ -531,7 +535,9 @@ Field<B> Field<B>::operator*(const Field<B> &rhs) const {
             return Field<B>(type_, l * r);
         }
         case FieldType::SECURE_FLOAT: {
-            return Field<B>(type_, timesHelper<Float>(rhs));
+            auto l = getFloat();
+            auto r = rhs.getFloat();
+            return Field<B>(type_,l * r);
         }
         default: // remaining types (BOOL, STRING, etc) go here
             throw;
@@ -563,7 +569,7 @@ Field<B> Field<B>::operator/(const Field<B> &rhs) const {
             auto l = getInt();
             auto r = rhs.getInt();
             if (l.size() == r.size()) {
-                return Field<B>(type_, l * r);
+                return Field<B>(type_, l / r);
             }
             // else pad to the longer size
             auto max_bit_sz = std::max<size_t>(l.size(), r.size());
