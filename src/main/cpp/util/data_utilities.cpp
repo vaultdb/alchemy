@@ -338,15 +338,16 @@ string DataUtilities::printBitArray(const int8_t *bits, const size_t &byte_cnt) 
 }
 
 string DataUtilities::printTable(SecureTable *table, int tuple_limit, bool show_dummies) {
+    stringstream ss;
+    ss << table->getSchema() << endl;
+
     if(tuple_limit <= 0 || tuple_limit > table->tuple_cnt_) {
         auto tmp = table->revealInsecure();
-        stringstream ss;
         ss << tmp->toString(tuple_limit, show_dummies);
         delete tmp;
         return ss.str();
     }
 
-    stringstream ss;
     int tuples_written = 0;
     size_t cursor = 0;
 
