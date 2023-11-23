@@ -270,18 +270,28 @@ namespace vaultdb {
         }
 
         void deserializeRow(const int & row, vector<int8_t> & src) override {
-            int8_t *read_ptr = src.data();
-            int8_t *cutoff = src.data() + src.size() - sizeof(B); // save dummy tag for later
+            int src_size_bytes = src.size() - sizeof(B); // don't handle dummy tag until end
+            int cursor = 0; // bytes
+            int write_idx = 0; // column indexes
 
-            for(int i = 0; i < this->schema_.getFieldCount(); ++i) {
-                column_encodings_[i]->deserializeField(row, read_ptr);
-                read_ptr += column_encodings_[i]->field_size_bytes_;
-                if(read_ptr >= cutoff) {
-                   break;
+            // does not include dummy tag - handle further down in this method
+            // re-pack row
+            while(cursor < src_size_bytes && write_idx < this->schema_.getFieldCount()) {
+                int bytes_remaining = src_size_bytes - cursor;
+                int dst_len = this->field_sizes_bytes_.at(write_idx);
+                if(dst_len > bytes_remaining) {
+                    vector<int8_t> tmp(dst_len, 0);
+                    memcpy(tmp.data(), src.data() + cursor, bytes_remaining);
+                    column_encodings_[write_idx]->deserializeField(row, tmp.data());
+                    break;
                 }
+                column_encodings_[write_idx]->deserializeField(row, src.data() + cursor);
+                cursor += dst_len;
+                ++write_idx;
             }
 
-            column_encodings_[-1]->deserializeField(row, cutoff);
+            B *dummy_tag = (B*) (src.data() + src.size() - sizeof(B));
+            setDummyTag(row, *dummy_tag);
         }
     };
 

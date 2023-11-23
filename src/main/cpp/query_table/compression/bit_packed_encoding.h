@@ -3,6 +3,7 @@
 
 #include "column_encoding.h"
 #include "query_table/query_table.h"
+#include "util/field_utilities.h"
 
 
 namespace vaultdb {
@@ -38,21 +39,17 @@ namespace vaultdb {
         }
 
         Field<Bit> getField(const int & row) override {
-            Bit *src =  (Bit *) (this->column_data_ + row * this->field_size_bytes_);
-            emp::Integer dst(this->field_size_bits_ + 1, 0, PUBLIC);
-
-            memcpy(dst.bits.data(), src, field_size_bytes_);
-            return Field<Bit>(field_type_, dst);
+            return Field<Bit>(field_type_, getInt(row));
         }
 
         void setField(const int & row, const Field<Bit> & f) override {
-            int8_t *dst = this->column_data_ + row * this->field_size_bytes_;
+            auto dst = getFieldPtr(row);
             Integer src = f.getInt();
             memcpy(dst, src.bits.data(), field_size_bytes_);
         }
 
         void deserializeField(const int & row, const int8_t *src) override {
-            int8_t *dst = this->column_data_ + field_size_bytes_ * row;
+            auto dst = getFieldPtr(row);
             memcpy(dst, src, field_size_bytes_);
         }
 
@@ -79,16 +76,32 @@ namespace vaultdb {
             this->column_data_ = dst.data();
         }
 
-        void compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) override {
-            Bit *lhs = (Bit *) (this->column_data_ + lhs_row * this->field_size_bytes_);
-            Bit *rhs = (Bit *) (this->column_data_ + rhs_row * this->field_size_bytes_);
 
-            for(int i = 0; i < this->field_size_bits_; ++i) {
-                emp::swap(swap, *lhs, *rhs);
-                ++lhs;
-                ++rhs;
-            }
+        void compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) override {
+//            Integer lhs_int = getInt(lhs_row);
+//            Integer rhs_int = getInt(rhs_row);
+//            if(this->column_idx_ == 3) {
+//                cout << "swapping: " << swap.reveal() << endl;
+//                cout << "B lhs: " << lhs_int.reveal<int64_t>() + this->field_min_ << ", " << FieldUtilities::printInt(lhs_int) <<  ", rhs: " << rhs_int.reveal<int64_t>() + this->field_min_ << ", " << FieldUtilities::printInt(rhs_int) <<  endl;
+//            }
+//
+//            emp::swap(swap, lhs_int, rhs_int);
+//            if(this->column_idx_ == 3) {
+//                cout << "A lhs: " << lhs_int.reveal<int64_t>() + this->field_min_ << ", " << FieldUtilities::printInt(lhs_int) <<  ", rhs: " << rhs_int.reveal<int64_t>() + this->field_min_ << ", " << FieldUtilities::printInt(rhs_int) <<  endl;
+//            }
+//
+//            Bit *lhs = (Bit *) (this->column_data_ + lhs_row * this->field_size_bytes_);
+//            Bit *rhs = (Bit *) (this->column_data_ + rhs_row * this->field_size_bytes_);
+//            memcpy(lhs, lhs_int.bits.data(), this->field_size_bytes_);
+//            memcpy(rhs, rhs_int.bits.data(), this->field_size_bytes_);
+
+            auto lhs = getFieldPtr(lhs_row);
+            auto rhs = getFieldPtr(rhs_row);
+            for(int i = 0; i < this->field_size_bits_; ++i)
+                emp::swap(swap, lhs[i], rhs[i]);
+
         }
+
         void revealInsecure(QueryTable<bool> *dst, const int & dst_col, const int & party) override;
 
         // not implemented because there is no plaintext compression phase to this technique
@@ -111,6 +124,17 @@ namespace vaultdb {
         }
 
     private:
+        inline Integer getInt(int row) const {
+            Bit *src =  (Bit *) (this->column_data_ + row * this->field_size_bytes_);
+            emp::Integer dst(this->field_size_bits_ + 1, 0, PUBLIC);
+
+            memcpy(dst.bits.data(), src, field_size_bytes_);
+            return dst;
+        }
+
+        inline Bit *getFieldPtr(const int & row) const  {
+            return (Bit *) (this->column_data_ + row * this->field_size_bytes_);
+        }
 
         // based on emp::reveal
         void revealBitPackedInts(int32_t *dst, emp::Bit *src, const int & row_cnt, const int & party = PUBLIC);

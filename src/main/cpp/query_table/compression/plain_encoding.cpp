@@ -242,9 +242,7 @@ void PlainEncoding<Bit>::compareSwap(const Bit &swap, const int &lhs_row, const 
     Bit *rhs = (Bit *) (this->column_data_ + rhs_row * this->field_size_bytes_);
 
     for(int i = 0; i < this->field_size_bits_; ++i) {
-        emp::swap(swap, *lhs, *rhs);
-        ++lhs;
-        ++rhs;
+        emp::swap(swap, lhs[i], rhs[i]);
     }
 
 }
