@@ -13,7 +13,7 @@ bash  test/support/load-generated-data.sh 100
 #  bash run-pilot-test.sh
 
 
-bash run-plain-tests.sh
+bash scripts/run-plain-tests.sh
 
 
 ./bin/emp_test --flagfile=flagfiles/alice.flags --validation=false

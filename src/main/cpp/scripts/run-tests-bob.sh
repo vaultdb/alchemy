@@ -16,7 +16,7 @@ bash pilot/test/generate-and-load-test-data.sh 1000
 # regenerate test data
 bash  test/support/load-generated-data.sh 100
 
-bash run-plain-tests.sh
+bash scripts/run-plain-tests.sh
 
 
 ALICE_HOST=$1
