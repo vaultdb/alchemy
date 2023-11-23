@@ -1,0 +1,3149 @@
+-- Build type: Release
+-- CXX release flags: -Wfatal-errors  -Wno-ignored-attributes -Wno-unused-result -funroll-loops -fPIC -march=native -maes -mrdseed -Wno-stringop-overread -O2
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp
+[  1%] Built target generate_enrich_data
+[  2%] Built target gtest
+[  2%] Built target gmock
+[ 28%] Built target vaultdb-emp
+[ 32%] Built target csv_reader_test
+[ 34%] Built target filter_test
+[ 34%] Built target field_expression_test
+[ 34%] Built target project_test
+[ 38%] Built target sort_test
+[ 39%] Built target basic_join_test
+[ 39%] Built target keyed_join_test
+[ 39%] Built target scalar_aggregate_test
+[ 44%] Built target keyed_sort_merge_join_test
+[ 44%] Built target sort_merge_aggregate_test
+[ 44%] Built target nested_loop_aggregate_test
+[ 45%] Built target sort_merge_join_test
+[ 48%] Built target plan_parser_test
+[ 48%] Built target secret_share_generator_test
+[ 48%] Built target merge_join_test
+[ 50%] Built target plan_deparser_test
+[ 53%] Built target tpch_test
+[ 53%] Built target emp_test
+[ 53%] Built target secure_field_expression_test
+[ 54%] Built target serialization_test
+[ 56%] Built target emp_table_test
+[ 57%] Built target secure_sort_test
+[ 59%] Built target secure_filter_test
+[ 60%] Built target secure_basic_join_test
+[ 63%] Built target secure_keyed_sort_merge_join_test
+[ 63%] Built target secure_merge_join_test
+[ 63%] Built target secure_keyed_join_test
+[ 64%] Built target secure_scalar_aggregate_test
+[ 68%] Built target secure_tpch_test
+[ 68%] Built target secure_nested_loop_aggregate_test
+[ 68%] Built target secure_sort_merge_aggregate_test
+[ 70%] Built target secure_plan_deparser_test
+[ 72%] Built target baseline_comparison_test
+[ 72%] Built target secure_bit_packing_test
+[ 73%] Built target secure_aggregate_comparison_test
+[ 74%] Built target enrich_test
+[ 77%] Built target operator_cost_model_test
+[ 77%] Built target true_cardinality_test
+[ 77%] Built target expression_cost_model_test
+[ 78%] Built target plan_cost_test
+[ 81%] Built target join_cost_comparison_test
+[ 81%] Built target fully_optimized_test
+[ 81%] Built target secure_plan_enumeration_test
+[ 82%] Built target emp_compression_setup_test
+[ 84%] Built target secret_share_from_query
+[ 85%] Built target secret_share_batch_from_query
+[ 87%] Built target zk_tpch_test
+[ 88%] Built target secret_share_csv
+[ 89%] Built target generate_enrich_data_three_parties
+[ 91%] Built target load_tuples_data_partner
+[ 93%] Built target run_data_partner_aggregation
+[ 95%] Built target run_data_partner
+[ 96%] Built target entry_comparison
+[ 98%] Built target run_data_partner_batch
+[100%] Built target assemble_secret_shares
+[ 96%] Built target vaultdb-emp
+[100%] Built target generate_enrich_data_three_parties
+[ 92%] Built target vaultdb-emp
+[100%] Built target secret_share_from_query
+[ 96%] Built target vaultdb-emp
+[100%] Built target secret_share_batch_from_query
+Finished generating 1000 patients per host!
+DROP TABLE
+CREATE TABLE
+COPY 1000
+COPY 1000
+COPY 1000
+UPDATE 1815
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+CREATE EXTENSION
+ALTER TABLE
+UPDATE 3000
+COPY 1000
+COPY 1000
+COPY 1000
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_chi" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+Writing multisite tables!
+preparing for aggregate-only test
+Chi secret sharing 496 tuples.
+Chi secret sharing 171 tuples.
+Setting up semi-join optimization
+Chi secret sharing 1323 tuples.
+Chi secret sharing 108 tuples.
+Chi secret sharing 97 tuples.
+Chi secret sharing 76 tuples.
+Chi secret sharing 100 tuples.
+Chi secret sharing 96 tuples.
+Chi secret sharing 112 tuples.
+Chi secret sharing 99 tuples.
+Chi secret sharing 97 tuples.
+Chi secret sharing 99 tuples.
+Chi secret sharing 116 tuples.
+Chi secret sharing 441 tuples.
+Chi secret sharing 40 tuples.
+Chi secret sharing 35 tuples.
+Chi secret sharing 28 tuples.
+Chi secret sharing 30 tuples.
+Chi secret sharing 35 tuples.
+Chi secret sharing 41 tuples.
+Chi secret sharing 35 tuples.
+Chi secret sharing 30 tuples.
+Chi secret sharing 37 tuples.
+Chi secret sharing 39 tuples.
+Chi secret sharing 441 tuples.
+Chi secret sharing 1323 tuples.
+Chi secret sharing 882 tuples.
+finished generating 100 patients per host!
+You are now connected to database "enrich_htn_test_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_test_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_unioned" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from CsvReaderTest
+[ RUN      ] CsvReaderTest.lineitemTest
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] CsvReaderTest.lineitemTest (159 ms)
+[ RUN      ] CsvReaderTest.quotedStringTest
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] CsvReaderTest.quotedStringTest (125 ms)
+[ RUN      ] CsvReaderTest.customerTest
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] CsvReaderTest.customerTest (142 ms)
+[ RUN      ] CsvReaderTest.ordersTest
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] CsvReaderTest.ordersTest (93 ms)
+[----------] 4 tests from CsvReaderTest (520 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (520 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from FieldExpressionTest
+[ RUN      ] FieldExpressionTest.test_int32
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] FieldExpressionTest.test_int32 (3 ms)
+[ RUN      ] FieldExpressionTest.test_int32_comparator
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] FieldExpressionTest.test_int32_comparator (4 ms)
+[ RUN      ] FieldExpressionTest.test_int32_expr
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] FieldExpressionTest.test_int32_expr (3 ms)
+[ RUN      ] FieldExpressionTest.cmp_swap
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] FieldExpressionTest.cmp_swap (184 ms)
+[----------] 4 tests from FieldExpressionTest (196 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (196 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from FilterTest
+[ RUN      ] FilterTest.test_table_scan
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] FilterTest.test_table_scan (74 ms)
+[ RUN      ] FilterTest.test_filter
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] FilterTest.test_filter (81 ms)
+[----------] 2 tests from FilterTest (155 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (155 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ProjectionTest
+[ RUN      ] ProjectionTest.q3Lineitem
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ProjectionTest.q3Lineitem (207 ms)
+[----------] 1 test from ProjectionTest (207 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (208 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from BasicJoinTest
+[ RUN      ] BasicJoinTest.test_tpch_q3_customer_orders
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=	--cutoff=5	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] BasicJoinTest.test_tpch_q3_customer_orders (75 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=	--cutoff=5	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders (127 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=	--cutoff=5	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer (205 ms)
+[----------] 3 tests from BasicJoinTest (408 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (408 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from KeyedJoinTest
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders (147 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders (1633 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer (1689 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed (98 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed (1441 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (1209 ms)
+[----------] 6 tests from KeyedJoinTest (6219 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (6219 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from SortTest
+[ RUN      ] SortTest.testSingleIntColumn
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.testSingleIntColumn (24 ms)
+[ RUN      ] SortTest.tpchQ1Sort
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.tpchQ1Sort (95 ms)
+[ RUN      ] SortTest.tpchQ3Sort
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.tpchQ3Sort (38 ms)
+[ RUN      ] SortTest.tpchQ5Sort
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.tpchQ5Sort (58 ms)
+[ RUN      ] SortTest.tpchQ8Sort
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.tpchQ8Sort (31 ms)
+[ RUN      ] SortTest.tpchQ9Sort
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.tpchQ9Sort (97 ms)
+[ RUN      ] SortTest.tpchQ18Sort
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.tpchQ18Sort (52 ms)
+[ RUN      ] SortTest.sort_and_encrypt_table_one_column
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.sort_and_encrypt_table_one_column (3 ms)
+[----------] 8 tests from SortTest (404 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (404 ms total)
+[  PASSED  ] 8 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from KeyedSortMergeJoinTest
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders (630 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders (3083 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (4696 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders_reversed
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders_reversed (354 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_reversed
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_reversed (3051 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (4583 ms)
+[----------] 6 tests from KeyedSortMergeJoinTest (16399 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (16399 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MergeJoinTest
+[ RUN      ] MergeJoinTest.merge_q18
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] MergeJoinTest.merge_q18 (47 ms)
+[----------] 1 test from MergeJoinTest (47 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (48 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 12 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 12 tests from ScalarAggregateTest
+[ RUN      ] ScalarAggregateTest.test_count
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_count (27 ms)
+[ RUN      ] ScalarAggregateTest.test_count_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_count_dummies (21 ms)
+[ RUN      ] ScalarAggregateTest.test_min
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_min (22 ms)
+[ RUN      ] ScalarAggregateTest.test_max
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_max (22 ms)
+[ RUN      ] ScalarAggregateTest.test_sum
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_sum (22 ms)
+[ RUN      ] ScalarAggregateTest.test_sum_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_sum_dummies (22 ms)
+[ RUN      ] ScalarAggregateTest.test_avg
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_avg (23 ms)
+[ RUN      ] ScalarAggregateTest.test_avg_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_avg_dummies (29 ms)
+[ RUN      ] ScalarAggregateTest.test_all_sum_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_all_sum_dummies (78 ms)
+[ RUN      ] ScalarAggregateTest.test_all_avg_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_all_avg_dummies (50 ms)
+[ RUN      ] ScalarAggregateTest.test_tpch_q1_avg_cnt
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_tpch_q1_avg_cnt (120 ms)
+[ RUN      ] ScalarAggregateTest.test_all_aggs_tpch_q1
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_all_aggs_tpch_q1 (89 ms)
+[----------] 12 tests from ScalarAggregateTest (531 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (531 ms total)
+[  PASSED  ] 12 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from SortMergeAggregateTest
+[ RUN      ] SortMergeAggregateTest.test_count
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_count (43 ms)
+[ RUN      ] SortMergeAggregateTest.test_count_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_count_dummies (39 ms)
+[ RUN      ] SortMergeAggregateTest.test_sum
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_sum (38 ms)
+[ RUN      ] SortMergeAggregateTest.test_sum_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_sum_dummies (42 ms)
+[ RUN      ] SortMergeAggregateTest.test_avg
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_avg (47 ms)
+[ RUN      ] SortMergeAggregateTest.test_avg_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_avg_dummies (39 ms)
+[ RUN      ] SortMergeAggregateTest.test_min
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_min (37 ms)
+[ RUN      ] SortMergeAggregateTest.test_min_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_min_dummies (37 ms)
+[ RUN      ] SortMergeAggregateTest.test_max
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_max (36 ms)
+[ RUN      ] SortMergeAggregateTest.test_max_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_max_dummies (37 ms)
+[ RUN      ] SortMergeAggregateTest.test_tpch_q1_sums
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_tpch_q1_sums (145 ms)
+[ RUN      ] SortMergeAggregateTest.test_tpch_q1_avg_cnt
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_tpch_q1_avg_cnt (156 ms)
+[ RUN      ] SortMergeAggregateTest.tpch_q1
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.tpch_q1 (169 ms)
+[----------] 13 tests from SortMergeAggregateTest (872 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (872 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from NestedLoopAggregateTest
+[ RUN      ] NestedLoopAggregateTest.test_count
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_count (51 ms)
+[ RUN      ] NestedLoopAggregateTest.test_count_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_count_dummies (50 ms)
+[ RUN      ] NestedLoopAggregateTest.test_sum
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_sum (54 ms)
+[ RUN      ] NestedLoopAggregateTest.test_sum_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_sum_dummies (53 ms)
+[ RUN      ] NestedLoopAggregateTest.test_avg
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_avg (50 ms)
+[ RUN      ] NestedLoopAggregateTest.test_avg_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_avg_dummies (76 ms)
+[ RUN      ] NestedLoopAggregateTest.test_min
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_min (65 ms)
+[ RUN      ] NestedLoopAggregateTest.test_min_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_min_dummies (69 ms)
+[ RUN      ] NestedLoopAggregateTest.test_max
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_max (66 ms)
+[ RUN      ] NestedLoopAggregateTest.test_max_dummies
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_max_dummies (65 ms)
+[ RUN      ] NestedLoopAggregateTest.test_tpch_q1_sums
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_tpch_q1_sums (149 ms)
+[ RUN      ] NestedLoopAggregateTest.test_tpch_q1_avg_cnt
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_tpch_q1_avg_cnt (148 ms)
+[ RUN      ] NestedLoopAggregateTest.tpch_q1
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.tpch_q1 (169 ms)
+[----------] 13 tests from NestedLoopAggregateTest (1073 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (1073 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecretShareGeneratorTest
+[ RUN      ] SecretShareGeneratorTest.lineitem_sample
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SecretShareGeneratorTest.lineitem_sample (63 ms)
+[ RUN      ] SecretShareGeneratorTest.lineitem_dummy_tag_sample
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SecretShareGeneratorTest.lineitem_dummy_tag_sample (59 ms)
+[----------] 2 tests from SecretShareGeneratorTest (123 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (123 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from SerializationTest
+[ RUN      ] SerializationTest.typesTest
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SerializationTest.typesTest (64 ms)
+[ RUN      ] SerializationTest.capricorn_test
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SerializationTest.capricorn_test (10 ms)
+[ RUN      ] SerializationTest.xored_serialization_test
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SerializationTest.xored_serialization_test (10 ms)
+[ RUN      ] SerializationTest.capricorn_deserialization
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SerializationTest.capricorn_deserialization (5 ms)
+[----------] 4 tests from SerializationTest (90 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (90 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from PlanParserTest
+[ RUN      ] PlanParserTest.tpch_q01
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanParserTest.tpch_q01 (106 ms)
+[ RUN      ] PlanParserTest.tpch_q03
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanParserTest.tpch_q03 (57 ms)
+[ RUN      ] PlanParserTest.tpch_q05
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanParserTest.tpch_q05 (100 ms)
+[ RUN      ] PlanParserTest.tpch_q08
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanParserTest.tpch_q08 (79 ms)
+[ RUN      ] PlanParserTest.tpch_q09
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanParserTest.tpch_q09 (121 ms)
+[ RUN      ] PlanParserTest.tpch_q18
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanParserTest.tpch_q18 (102 ms)
+[----------] 6 tests from PlanParserTest (568 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (568 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from PlanDeparserTest
+[ RUN      ] PlanDeparserTest.conjunction_expression
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.conjunction_expression (128 ms)
+[ RUN      ] PlanDeparserTest.math_expression
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.math_expression (119 ms)
+[ RUN      ] PlanDeparserTest.tpch_q01
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.tpch_q01 (167 ms)
+[ RUN      ] PlanDeparserTest.tpch_q03
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.tpch_q03 (121 ms)
+[ RUN      ] PlanDeparserTest.tpch_q05
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.tpch_q05 (192 ms)
+[ RUN      ] PlanDeparserTest.tpch_q08
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.tpch_q08 (162 ms)
+[ RUN      ] PlanDeparserTest.tpch_q09
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.tpch_q09 (215 ms)
+[ RUN      ] PlanDeparserTest.tpch_q18
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.tpch_q18 (194 ms)
+[----------] 8 tests from PlanDeparserTest (1301 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (1301 ms total)
+[  PASSED  ] 8 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from TpcHTest
+[ RUN      ] TpcHTest.tpch_q01
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] TpcHTest.tpch_q01 (289 ms)
+[ RUN      ] TpcHTest.tpch_q03
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] TpcHTest.tpch_q03 (5862 ms)
+[ RUN      ] TpcHTest.tpch_q05
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] TpcHTest.tpch_q05 (3268 ms)
+[ RUN      ] TpcHTest.tpch_q08
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] TpcHTest.tpch_q08 (3155 ms)
+[ RUN      ] TpcHTest.tpch_q09
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] TpcHTest.tpch_q09 (7010 ms)
+[ RUN      ] TpcHTest.tpch_q18
+EMP mode: plain, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] TpcHTest.tpch_q18 (469 ms)
+[----------] 6 tests from TpcHTest (20056 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (20056 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from EmpTest
+[ RUN      ] EmpTest.emp_test_int
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from EmpTest
+[ RUN      ] EmpTest.emp_test_int
+Connecting to 127.0.0.1 on ports 54345, 65455 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65456	--filter=*	--party=1	--port=54346	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.emp_test_int (680 ms)
+Connecting to 127.0.0.1 on ports 54345, 65455 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65456	--filter=*	--party=2	--port=54346	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.emp_test_int (178 ms)
+[ RUN      ] EmpTest.emp_test_varchar
+[ RUN      ] EmpTest.emp_test_varchar
+Connecting to 127.0.0.1 on ports 54346, 65456 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65457	--filter=*	--party=2	--port=54347	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.emp_test_varchar (162 ms)
+Connecting to 127.0.0.1 on ports 54346, 65456 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65457	--filter=*	--party=1	--port=54347	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.emp_test_varchar (162 ms)
+[ RUN      ] EmpTest.test_float_normalization
+[ RUN      ] EmpTest.test_float_normalization
+Connecting to 127.0.0.1 on ports 54347, 65457 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65458	--filter=*	--party=2	--port=54348	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.test_float_normalization (183 ms)
+Connecting to 127.0.0.1 on ports 54347, 65457 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65458	--filter=*	--party=1	--port=54348	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.test_float_normalization (183 ms)
+[ RUN      ] EmpTest.secret_share_table_one_column
+[ RUN      ] EmpTest.secret_share_table_one_column
+Connecting to 127.0.0.1 on ports 54348, 65458 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65459	--filter=*	--party=2	--port=54349	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.secret_share_table_one_column (167 ms)
+[ RUN      ] EmpTest.sort_and_share_table_one_column
+Connecting to 127.0.0.1 on ports 54348, 65458 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65459	--filter=*	--party=1	--port=54349	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.secret_share_table_one_column (167 ms)
+[ RUN      ] EmpTest.sort_and_share_table_one_column
+Connecting to 127.0.0.1 on ports 54349, 65459 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65460	--filter=*	--party=2	--port=54350	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.sort_and_share_table_one_column (156 ms)
+[----------] 5 tests from EmpTest (849 ms total)
+
+[----------] Global test environment tear-down
+Connecting to 127.0.0.1 on ports 54349, 65459 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65460	--filter=*	--party=1	--port=54350	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.sort_and_share_table_one_column (156 ms)
+[==========] 5 tests from 1 test suite ran. (849 ms total)
+[  PASSED  ] 5 tests.
+[----------] 5 tests from EmpTest (1351 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (1351 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from SecureFieldExpressionTest
+[ RUN      ] SecureFieldExpressionTest.test_value_assignment
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from SecureFieldExpressionTest
+[ RUN      ] SecureFieldExpressionTest.test_value_assignment
+Connecting to 127.0.0.1 on ports 54323, 65482 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65483	--filter=*	--party=1	--port=54324	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_value_assignment (690 ms)
+Connecting to 127.0.0.1 on ports 54323, 65482 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65483	--filter=*	--party=2	--port=54324	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_value_assignment (188 ms)
+[ RUN      ] SecureFieldExpressionTest.test_string_compare
+[ RUN      ] SecureFieldExpressionTest.test_string_compare
+Connecting to 127.0.0.1 on ports 54324, 65483 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65484	--filter=*	--party=2	--port=54325	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_string_compare (183 ms)
+Connecting to 127.0.0.1 on ports 54324, 65483 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65484	--filter=*	--party=1	--port=54325	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_string_compare (183 ms)
+[ RUN      ] SecureFieldExpressionTest.test_emp_int_math
+[ RUN      ] SecureFieldExpressionTest.test_emp_int_math
+Connecting to 127.0.0.1 on ports 54325, 65484 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65485	--filter=*	--party=2	--port=54326	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_emp_int_math (180 ms)
+[ RUN      ] SecureFieldExpressionTest.test_millionaires
+Connecting to 127.0.0.1 on ports 54325, 65484 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65485	--filter=*	--party=1	--port=54326	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_emp_int_math (180 ms)
+[ RUN      ] SecureFieldExpressionTest.test_millionaires
+Connecting to 127.0.0.1 on ports 54326, 65485 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65486	--filter=*	--party=2	--port=54327	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_millionaires (183 ms)
+Connecting to 127.0.0.1 on ports 54326, 65485 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65486	--filter=*	--party=1	--port=54327	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_millionaires (183 ms)
+[ RUN      ] SecureFieldExpressionTest.test_char_comparison
+[ RUN      ] SecureFieldExpressionTest.test_char_comparison
+Connecting to 127.0.0.1 on ports 54327, 65486 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65487	--filter=*	--party=2	--port=54328	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_char_comparison (164 ms)
+Connecting to 127.0.0.1 on ports 54327, 65486 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65487	--filter=*	--party=1	--port=54328	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_char_comparison (164 ms)
+[----------] 5 tests from SecureFieldExpressionTest (901 ms total)
+
+[----------] 5 tests from SecureFieldExpressionTest (1403 ms total)
+
+[----------] Global test environment tear-down
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (901 ms total)
+[  PASSED  ] 5 tests.
+[==========] 5 tests from 1 test suite ran. (1403 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from EmpTableTest
+[ RUN      ] EmpTableTest.secret_share_table_one_column
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from EmpTableTest
+[ RUN      ] EmpTableTest.secret_share_table_one_column
+Connecting to 127.0.0.1 on ports 54334, 65428 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65429	--cutoff=100	--filter=*	--party=2	--port=54335	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.secret_share_table_one_column (247 ms)
+[ RUN      ] EmpTableTest.secret_share_table_varchar
+Connecting to 127.0.0.1 on ports 54334, 65428 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65429	--cutoff=100	--filter=*	--party=1	--port=54335	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.secret_share_table_one_column (763 ms)
+[ RUN      ] EmpTableTest.secret_share_table_varchar
+Connecting to 127.0.0.1 on ports 54335, 65429 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65430	--cutoff=100	--filter=*	--party=2	--port=54336	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.secret_share_table_varchar (389 ms)
+[ RUN      ] EmpTableTest.secret_share_table
+Connecting to 127.0.0.1 on ports 54335, 65429 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65430	--cutoff=100	--filter=*	--party=1	--port=54336	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.secret_share_table_varchar (415 ms)
+[ RUN      ] EmpTableTest.secret_share_table
+Connecting to 127.0.0.1 on ports 54336, 65430 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65431	--cutoff=100	--filter=*	--party=2	--port=54337	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.secret_share_table (674 ms)
+[ RUN      ] EmpTableTest.secret_share_table_dummy_tag
+Connecting to 127.0.0.1 on ports 54336, 65430 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65431	--cutoff=100	--filter=*	--party=1	--port=54337	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.secret_share_table (699 ms)
+[ RUN      ] EmpTableTest.secret_share_table_dummy_tag
+Connecting to 127.0.0.1 on ports 54337, 65431 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65432	--cutoff=100	--filter=*	--party=2	--port=54338	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.secret_share_table_dummy_tag (762 ms)
+[ RUN      ] EmpTableTest.bit_packing_test
+Connecting to 127.0.0.1 on ports 54337, 65431 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65432	--cutoff=100	--filter=*	--party=1	--port=54338	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.secret_share_table_dummy_tag (758 ms)
+[ RUN      ] EmpTableTest.bit_packing_test
+Connecting to 127.0.0.1 on ports 54338, 65432 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65433	--cutoff=100	--filter=*	--party=2	--port=54339	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.bit_packing_test (298 ms)
+[----------] 5 tests from EmpTableTest (2373 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (2373 ms total)
+[  PASSED  ] 5 tests.
+Connecting to 127.0.0.1 on ports 54338, 65432 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65433	--cutoff=100	--filter=*	--party=1	--port=54339	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.bit_packing_test (237 ms)
+[----------] 5 tests from EmpTableTest (2875 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (2875 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecureFilterTest
+[ RUN      ] SecureFilterTest.test_table_scan
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecureFilterTest
+[ RUN      ] SecureFilterTest.test_table_scan
+Connecting to 127.0.0.1 on ports 54325, 65454 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65455	--cutoff=100	--filter=*	--party=2	--port=54326	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureFilterTest.test_table_scan (312 ms)
+[ RUN      ] SecureFilterTest.test_filter
+Connecting to 127.0.0.1 on ports 54325, 65454 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65455	--cutoff=100	--filter=*	--party=1	--port=54326	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureFilterTest.test_table_scan (823 ms)
+[ RUN      ] SecureFilterTest.test_filter
+Connecting to 127.0.0.1 on ports 54326, 65455 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65456	--cutoff=100	--filter=*	--party=2	--port=54327	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureFilterTest.test_filter (359 ms)
+[----------] 2 tests from SecureFilterTest (672 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (681 ms total)
+[  PASSED  ] 2 tests.
+Connecting to 127.0.0.1 on ports 54326, 65455 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65456	--cutoff=100	--filter=*	--party=1	--port=54327	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureFilterTest.test_filter (359 ms)
+[----------] 2 tests from SecureFilterTest (1183 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (1183 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureSortTest
+[ RUN      ] SecureSortTest.tpchQ01Sort
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureSortTest
+[ RUN      ] SecureSortTest.tpchQ01Sort
+Connecting to 127.0.0.1 on ports 54345, 65465 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65466	--cutoff=100	--filter=*	--party=1	--port=54346	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ01Sort (769 ms)
+[ RUN      ] SecureSortTest.tpchQ03Sort
+Connecting to 127.0.0.1 on ports 54345, 65465 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65466	--cutoff=100	--filter=*	--party=2	--port=54346	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ01Sort (273 ms)
+[ RUN      ] SecureSortTest.tpchQ03Sort
+Connecting to 127.0.0.1 on ports 54346, 65466 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65467	--cutoff=100	--filter=*	--party=1	--port=54347	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ03Sort (275 ms)
+[ RUN      ] SecureSortTest.tpchQ05Sort
+Connecting to 127.0.0.1 on ports 54346, 65466 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65467	--cutoff=100	--filter=*	--party=2	--port=54347	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ03Sort (277 ms)
+[ RUN      ] SecureSortTest.tpchQ05Sort
+Connecting to 127.0.0.1 on ports 54347, 65467 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65468	--cutoff=100	--filter=*	--party=1	--port=54348	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ05Sort (240 ms)
+[ RUN      ] SecureSortTest.tpchQ08Sort
+Connecting to 127.0.0.1 on ports 54347, 65467 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65468	--cutoff=100	--filter=*	--party=2	--port=54348	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ05Sort (238 ms)
+[ RUN      ] SecureSortTest.tpchQ08Sort
+Connecting to 127.0.0.1 on ports 54348, 65468 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65469	--cutoff=100	--filter=*	--party=1	--port=54349	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ08Sort (208 ms)
+[ RUN      ] SecureSortTest.tpchQ09Sort
+Connecting to 127.0.0.1 on ports 54348, 65468 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65469	--cutoff=100	--filter=*	--party=2	--port=54349	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ08Sort (205 ms)
+[ RUN      ] SecureSortTest.tpchQ09Sort
+Connecting to 127.0.0.1 on ports 54349, 65469 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65470	--cutoff=100	--filter=*	--party=1	--port=54350	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ09Sort (4716 ms)
+[ RUN      ] SecureSortTest.tpchQ18Sort
+Connecting to 127.0.0.1 on ports 54349, 65469 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65470	--cutoff=100	--filter=*	--party=2	--port=54350	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ09Sort (4744 ms)
+[ RUN      ] SecureSortTest.tpchQ18Sort
+Connecting to 127.0.0.1 on ports 54350, 65470 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65471	--cutoff=100	--filter=*	--party=1	--port=54351	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ18Sort (211 ms)
+[----------] 6 tests from SecureSortTest (6422 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (6422 ms total)
+[  PASSED  ] 6 tests.
+Connecting to 127.0.0.1 on ports 54350, 65470 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65471	--cutoff=100	--filter=*	--party=2	--port=54351	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ18Sort (185 ms)
+[----------] 6 tests from SecureSortTest (5925 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (5925 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 3 tests from 1 test suite.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureBasicJoinTest
+[----------] 3 tests from SecureBasicJoinTest
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_customer_orders
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_customer_orders
+Connecting to 127.0.0.1 on ports 43443, 65450 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65451	--cutoff=5	--filter=*	--party=2	--port=43444	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureBasicJoinTest.test_tpch_q3_customer_orders (381 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 127.0.0.1 on ports 43443, 65450 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65451	--cutoff=5	--filter=*	--party=1	--port=43444	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureBasicJoinTest.test_tpch_q3_customer_orders (381 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 127.0.0.1 on ports 43444, 65451 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65452	--cutoff=5	--filter=*	--party=2	--port=43445	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders (17743 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 127.0.0.1 on ports 43444, 65451 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65452	--cutoff=5	--filter=*	--party=1	--port=43445	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders (17746 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 127.0.0.1 on ports 43445, 65452 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65453	--cutoff=5	--filter=*	--party=2	--port=43446	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer (93263 ms)
+[----------] 3 tests from SecureBasicJoinTest (111388 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (111388 ms total)
+[  PASSED  ] 3 tests.
+Connecting to 127.0.0.1 on ports 43445, 65452 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65453	--cutoff=5	--filter=*	--party=1	--port=43446	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer (93270 ms)
+[----------] 3 tests from SecureBasicJoinTest (111398 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (111398 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureKeyedJoinTest
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_customer_orders
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureKeyedJoinTest
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_customer_orders
+Connecting to 127.0.0.1 on ports 43442, 65458 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65459	--cutoff=100	--filter=*	--party=2	--port=43443	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Predicted gate count: 1928520
+Observed gate count: 2024944
+Runtime: 380.316000
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_customer_orders (1396 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 127.0.0.1 on ports 43442, 65458 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65459	--cutoff=100	--filter=*	--party=1	--port=43443	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Predicted gate count: 1928520
+Observed gate count: 2024944
+Runtime: 369.823000
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_customer_orders (1928 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 127.0.0.1 on ports 43443, 65459 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65460	--cutoff=100	--filter=*	--party=2	--port=43444	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders (39520 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 127.0.0.1 on ports 43443, 65459 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65460	--cutoff=100	--filter=*	--party=1	--port=43444	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders (39534 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 127.0.0.1 on ports 43444, 65460 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65461	--cutoff=100	--filter=*	--party=2	--port=43445	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer (44631 ms)
+[----------] 3 tests from SecureKeyedJoinTest (85548 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (85548 ms total)
+[  PASSED  ] 3 tests.
+Connecting to 127.0.0.1 on ports 43444, 65460 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65461	--cutoff=100	--filter=*	--party=1	--port=43445	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer (44634 ms)
+[----------] 3 tests from SecureKeyedJoinTest (86097 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (86097 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureKeyedSortMergeJoinTest
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_customer_orders
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureKeyedSortMergeJoinTest
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_customer_orders
+Connecting to 127.0.0.1 on ports 43455, 65470 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65471	--cutoff=100	--filter=*	--party=2	--port=43456	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Predicted gate count: 7144019
+Observed gate count: 7315916
+Runtime: 1163.652000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_customer_orders (1880 ms)
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 127.0.0.1 on ports 43455, 65470 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65471	--cutoff=100	--filter=*	--party=1	--port=43456	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Predicted gate count: 7144019
+Observed gate count: 7315916
+Runtime: 1145.049000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_customer_orders (2410 ms)
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 127.0.0.1 on ports 43456, 65471 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65472	--cutoff=100	--filter=*	--party=2	--port=43457	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Predicted gate count: 49127665
+Observed gate count: 47534364
+Runtime: 7035.524000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders (7997 ms)
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 127.0.0.1 on ports 43456, 65471 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65472	--cutoff=100	--filter=*	--party=1	--port=43457	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Predicted gate count: 49127665
+Observed gate count: 47534364
+Runtime: 6931.618000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders (7973 ms)
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 127.0.0.1 on ports 43457, 65472 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65473	--cutoff=100	--filter=*	--party=2	--port=43458	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Predicted gate count: 68117628
+Observed gate count: 72819068
+Runtime: 9608.600000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (17307 ms)
+[----------] 3 tests from SecureKeyedSortMergeJoinTest (27185 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (27185 ms total)
+[  PASSED  ] 3 tests.
+Connecting to 127.0.0.1 on ports 43457, 65472 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65473	--cutoff=100	--filter=*	--party=1	--port=43458	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Predicted gate count: 68117628
+Observed gate count: 72819068
+Runtime: 9571.549000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (17305 ms)
+[----------] 3 tests from SecureKeyedSortMergeJoinTest (27690 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (27690 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SecureMergeJoinTest
+[ RUN      ] SecureMergeJoinTest.merge_q18
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SecureMergeJoinTest
+[ RUN      ] SecureMergeJoinTest.merge_q18
+Connecting to 127.0.0.1 on ports 43450, 65458 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65459	--cutoff=100	--filter=*	--party=2	--port=43451	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureMergeJoinTest.merge_q18 (400 ms)
+[----------] 1 test from SecureMergeJoinTest (400 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (400 ms total)
+[  PASSED  ] 1 test.
+Connecting to 127.0.0.1 on ports 43450, 65458 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65459	--cutoff=100	--filter=*	--party=1	--port=43451	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureMergeJoinTest.merge_q18 (964 ms)
+[----------] 1 test from SecureMergeJoinTest (964 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (964 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureScalarAggregateTest
+[ RUN      ] SecureScalarAggregateTest.test_count
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureScalarAggregateTest
+[ RUN      ] SecureScalarAggregateTest.test_count
+Connecting to 127.0.0.1 on ports 54312, 65466 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65467	--cutoff=100	--filter=*	--party=2	--port=54313	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_count (225 ms)
+[ RUN      ] SecureScalarAggregateTest.test_count_dummies
+Connecting to 127.0.0.1 on ports 54312, 65466 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65467	--cutoff=100	--filter=*	--party=1	--port=54313	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_count (738 ms)
+[ RUN      ] SecureScalarAggregateTest.test_count_dummies
+Connecting to 127.0.0.1 on ports 54313, 65467 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65468	--cutoff=100	--filter=*	--party=2	--port=54314	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_count_dummies (225 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min
+Connecting to 127.0.0.1 on ports 54313, 65467 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65468	--cutoff=100	--filter=*	--party=1	--port=54314	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_count_dummies (229 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min
+Connecting to 127.0.0.1 on ports 54314, 65468 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65469	--cutoff=100	--filter=*	--party=2	--port=54315	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_min (260 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min_dummies
+Connecting to 127.0.0.1 on ports 54314, 65468 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65469	--cutoff=100	--filter=*	--party=1	--port=54315	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_min (257 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min_dummies
+Connecting to 127.0.0.1 on ports 54315, 65469 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65470	--cutoff=100	--filter=*	--party=2	--port=54316	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_min_dummies (251 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max
+Connecting to 127.0.0.1 on ports 54315, 65469 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65470	--cutoff=100	--filter=*	--party=1	--port=54316	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_min_dummies (255 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max
+Connecting to 127.0.0.1 on ports 54316, 65470 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65471	--cutoff=100	--filter=*	--party=2	--port=54317	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_max (242 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max_dummies
+Connecting to 127.0.0.1 on ports 54316, 65470 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65471	--cutoff=100	--filter=*	--party=1	--port=54317	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_max (238 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max_dummies
+Connecting to 127.0.0.1 on ports 54317, 65471 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65472	--cutoff=100	--filter=*	--party=2	--port=54318	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_max_dummies (240 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum
+Connecting to 127.0.0.1 on ports 54317, 65471 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65472	--cutoff=100	--filter=*	--party=1	--port=54318	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_max_dummies (246 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum
+Connecting to 127.0.0.1 on ports 54318, 65472 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65473	--cutoff=100	--filter=*	--party=2	--port=54319	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_sum (271 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_dummies
+Connecting to 127.0.0.1 on ports 54318, 65472 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65473	--cutoff=100	--filter=*	--party=1	--port=54319	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_sum (265 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_dummies
+Connecting to 127.0.0.1 on ports 54319, 65473 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65474	--cutoff=100	--filter=*	--party=2	--port=54320	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_sum_dummies (265 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg
+Connecting to 127.0.0.1 on ports 54319, 65473 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65474	--cutoff=100	--filter=*	--party=1	--port=54320	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_sum_dummies (269 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg
+Connecting to 127.0.0.1 on ports 54320, 65474 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65475	--cutoff=100	--filter=*	--party=2	--port=54321	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_avg (309 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg_dummies
+Connecting to 127.0.0.1 on ports 54320, 65474 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65475	--cutoff=100	--filter=*	--party=1	--port=54321	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_avg (307 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg_dummies
+Connecting to 127.0.0.1 on ports 54321, 65475 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65476	--cutoff=100	--filter=*	--party=2	--port=54322	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_avg_dummies (284 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_baseprice_dummies
+Connecting to 127.0.0.1 on ports 54321, 65475 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65476	--cutoff=100	--filter=*	--party=1	--port=54322	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_avg_dummies (283 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_baseprice_dummies
+Connecting to 127.0.0.1 on ports 54322, 65476 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65477	--cutoff=100	--filter=*	--party=2	--port=54323	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_sum_baseprice_dummies (250 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_lineno_baseprice
+Connecting to 127.0.0.1 on ports 54322, 65476 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65477	--cutoff=100	--filter=*	--party=1	--port=54323	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_sum_baseprice_dummies (249 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_lineno_baseprice
+Connecting to 127.0.0.1 on ports 54323, 65477 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65478	--cutoff=100	--filter=*	--party=2	--port=54324	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_sum_lineno_baseprice (271 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_sums
+Connecting to 127.0.0.1 on ports 54323, 65477 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65478	--cutoff=100	--filter=*	--party=1	--port=54324	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_sum_lineno_baseprice (277 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_sums
+Connecting to 127.0.0.1 on ports 54324, 65478 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65479	--cutoff=100	--filter=*	--party=2	--port=54325	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_sums (482 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 127.0.0.1 on ports 54324, 65478 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65479	--cutoff=100	--filter=*	--party=1	--port=54325	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_sums (496 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 127.0.0.1 on ports 54325, 65479 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65480	--cutoff=100	--filter=*	--party=2	--port=54326	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt (815 ms)
+[ RUN      ] SecureScalarAggregateTest.tpch_q1
+Connecting to 127.0.0.1 on ports 54325, 65479 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65480	--cutoff=100	--filter=*	--party=1	--port=54326	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt (810 ms)
+[ RUN      ] SecureScalarAggregateTest.tpch_q1
+Connecting to 127.0.0.1 on ports 54326, 65480 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65481	--cutoff=100	--filter=*	--party=2	--port=54327	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.tpch_q1 (669 ms)
+[----------] 15 tests from SecureScalarAggregateTest (5067 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (5067 ms total)
+[  PASSED  ] 15 tests.
+Connecting to 127.0.0.1 on ports 54326, 65480 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65481	--cutoff=100	--filter=*	--party=1	--port=54327	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.tpch_q1 (684 ms)
+[----------] 15 tests from SecureScalarAggregateTest (5610 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (5610 ms total)
+[  PASSED  ] 15 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from SecureSortMergeAggregateTest
+[ RUN      ] SecureSortMergeAggregateTest.test_count
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from SecureSortMergeAggregateTest
+[ RUN      ] SecureSortMergeAggregateTest.test_count
+Connecting to 127.0.0.1 on ports 43440, 65454 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65455	--cutoff=100	--filter=*	--party=2	--port=43441	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_count (245 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_count_dummies
+Connecting to 127.0.0.1 on ports 43440, 65454 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65455	--cutoff=100	--filter=*	--party=1	--port=43441	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_count (746 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_count_dummies
+Connecting to 127.0.0.1 on ports 43441, 65455 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65456	--cutoff=100	--filter=*	--party=2	--port=43442	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_count_dummies (251 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_sum
+Connecting to 127.0.0.1 on ports 43441, 65455 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65456	--cutoff=100	--filter=*	--party=1	--port=43442	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_count_dummies (251 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_sum
+Connecting to 127.0.0.1 on ports 43442, 65456 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65457	--cutoff=100	--filter=*	--party=2	--port=43443	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_sum (241 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_sum_dummies
+Connecting to 127.0.0.1 on ports 43442, 65456 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65457	--cutoff=100	--filter=*	--party=1	--port=43443	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_sum (241 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_sum_dummies
+Connecting to 127.0.0.1 on ports 43443, 65457 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65458	--cutoff=100	--filter=*	--party=2	--port=43444	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_sum_dummies (303 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_avg
+Connecting to 127.0.0.1 on ports 43443, 65457 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65458	--cutoff=100	--filter=*	--party=1	--port=43444	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_sum_dummies (303 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_avg
+Connecting to 127.0.0.1 on ports 43444, 65458 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65459	--cutoff=100	--filter=*	--party=2	--port=43445	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_avg (336 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_avg_dummies
+Connecting to 127.0.0.1 on ports 43444, 65458 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65459	--cutoff=100	--filter=*	--party=1	--port=43445	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_avg (336 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_avg_dummies
+Connecting to 127.0.0.1 on ports 43445, 65459 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65460	--cutoff=100	--filter=*	--party=2	--port=43446	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_avg_dummies (312 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_min
+Connecting to 127.0.0.1 on ports 43445, 65459 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65460	--cutoff=100	--filter=*	--party=1	--port=43446	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_avg_dummies (312 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_min
+Connecting to 127.0.0.1 on ports 43446, 65460 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65461	--cutoff=100	--filter=*	--party=2	--port=43447	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_min (302 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_min_dummies
+Connecting to 127.0.0.1 on ports 43446, 65460 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65461	--cutoff=100	--filter=*	--party=1	--port=43447	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_min (302 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_min_dummies
+Connecting to 127.0.0.1 on ports 43447, 65461 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65462	--cutoff=100	--filter=*	--party=2	--port=43448	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_min_dummies (284 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_max
+Connecting to 127.0.0.1 on ports 43447, 65461 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65462	--cutoff=100	--filter=*	--party=1	--port=43448	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_min_dummies (284 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_max
+Connecting to 127.0.0.1 on ports 43448, 65462 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65463	--cutoff=100	--filter=*	--party=2	--port=43449	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_max (274 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_max_dummies
+Connecting to 127.0.0.1 on ports 43448, 65462 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65463	--cutoff=100	--filter=*	--party=1	--port=43449	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_max (274 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_max_dummies
+Connecting to 127.0.0.1 on ports 43449, 65463 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65464	--cutoff=100	--filter=*	--party=2	--port=43450	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_max_dummies (234 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_tpch_q1_sums
+Connecting to 127.0.0.1 on ports 43449, 65463 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65464	--cutoff=100	--filter=*	--party=1	--port=43450	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_max_dummies (234 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_tpch_q1_sums
+Connecting to 127.0.0.1 on ports 43450, 65464 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65465	--cutoff=100	--filter=*	--party=2	--port=43451	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_tpch_q1_sums (619 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 127.0.0.1 on ports 43450, 65464 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65465	--cutoff=100	--filter=*	--party=1	--port=43451	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_tpch_q1_sums (619 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 127.0.0.1 on ports 43451, 65465 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65466	--cutoff=100	--filter=*	--party=2	--port=43452	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_tpch_q1_avg_cnt (814 ms)
+[ RUN      ] SecureSortMergeAggregateTest.tpch_q1
+Connecting to 127.0.0.1 on ports 43451, 65465 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65466	--cutoff=100	--filter=*	--party=1	--port=43452	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_tpch_q1_avg_cnt (814 ms)
+[ RUN      ] SecureSortMergeAggregateTest.tpch_q1
+Connecting to 127.0.0.1 on ports 43452, 65466 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65467	--cutoff=100	--filter=*	--party=1	--port=43453	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.tpch_q1 (932 ms)
+[----------] 13 tests from SecureSortMergeAggregateTest (5655 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (5655 ms total)
+[  PASSED  ] 13 tests.
+Connecting to 127.0.0.1 on ports 43452, 65466 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65467	--cutoff=100	--filter=*	--party=2	--port=43453	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.tpch_q1 (932 ms)
+[----------] 13 tests from SecureSortMergeAggregateTest (5154 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (5154 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureNestedLoopAggregateTest
+[ RUN      ] SecureNestedLoopAggregateTest.test_count
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureNestedLoopAggregateTest
+[ RUN      ] SecureNestedLoopAggregateTest.test_count
+Connecting to 127.0.0.1 on ports 43440, 65462 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65463	--cutoff=100	--filter=*	--party=2	--port=43441	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_count (433 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_count_no_bit_packing
+Connecting to 127.0.0.1 on ports 43440, 65462 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65463	--cutoff=100	--filter=*	--party=1	--port=43441	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_count (949 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_count_no_bit_packing
+Connecting to 127.0.0.1 on ports 43441, 65463 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65464	--cutoff=100	--filter=*	--party=2	--port=43442	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_count_no_bit_packing (446 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_count_dummies
+Connecting to 127.0.0.1 on ports 43441, 65463 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65464	--cutoff=100	--filter=*	--party=1	--port=43442	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_count_no_bit_packing (447 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_count_dummies
+Connecting to 127.0.0.1 on ports 43442, 65464 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65465	--cutoff=100	--filter=*	--party=2	--port=43443	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_count_dummies (354 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_sum
+Connecting to 127.0.0.1 on ports 43442, 65464 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65465	--cutoff=100	--filter=*	--party=1	--port=43443	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_count_dummies (355 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_sum
+Connecting to 127.0.0.1 on ports 43443, 65465 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65466	--cutoff=100	--filter=*	--party=2	--port=43444	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_sum (581 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_sum_dummies
+Connecting to 127.0.0.1 on ports 43443, 65465 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65466	--cutoff=100	--filter=*	--party=1	--port=43444	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_sum (582 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_sum_dummies
+Connecting to 127.0.0.1 on ports 43444, 65466 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65467	--cutoff=100	--filter=*	--party=2	--port=43445	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_sum_dummies (566 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_avg
+Connecting to 127.0.0.1 on ports 43444, 65466 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65467	--cutoff=100	--filter=*	--party=1	--port=43445	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_sum_dummies (566 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_avg
+Connecting to 127.0.0.1 on ports 43445, 65467 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65468	--cutoff=100	--filter=*	--party=2	--port=43446	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_avg (2232 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_avg_dummies
+Connecting to 127.0.0.1 on ports 43445, 65467 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: b279cf18426caf7663448657df16d392d5b75aae
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65468	--cutoff=100	--filter=*	--party=1	--port=43446	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_avg (2231 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_avg_dummies
+Connecting to 127.0.0.1 on ports 43446, 65468 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65469	--cutoff=100	--filter=*	--party=2	--port=43447	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_avg_dummies (2242 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min
+Connecting to 127.0.0.1 on ports 43446, 65468 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65469	--cutoff=100	--filter=*	--party=1	--port=43447	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_avg_dummies (2242 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min
+Connecting to 127.0.0.1 on ports 43447, 65469 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65470	--cutoff=100	--filter=*	--party=2	--port=43448	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_min (391 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min_no_bit_packing
+Connecting to 127.0.0.1 on ports 43447, 65469 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65470	--cutoff=100	--filter=*	--party=1	--port=43448	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_min (394 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min_no_bit_packing
+Connecting to 127.0.0.1 on ports 43448, 65470 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65471	--cutoff=100	--filter=*	--party=2	--port=43449	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_min_no_bit_packing (772 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min_dummies
+Connecting to 127.0.0.1 on ports 43448, 65470 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65471	--cutoff=100	--filter=*	--party=1	--port=43449	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_min_no_bit_packing (772 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min_dummies
+Connecting to 127.0.0.1 on ports 43449, 65471 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65472	--cutoff=100	--filter=*	--party=2	--port=43450	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_min_dummies (393 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_max
+Connecting to 127.0.0.1 on ports 43449, 65471 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65472	--cutoff=100	--filter=*	--party=1	--port=43450	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_min_dummies (391 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_max
+Connecting to 127.0.0.1 on ports 43450, 65472 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65473	--cutoff=100	--filter=*	--party=2	--port=43451	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_max (393 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_max_dummies
+Connecting to 127.0.0.1 on ports 43450, 65472 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65473	--cutoff=100	--filter=*	--party=1	--port=43451	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_max (394 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_max_dummies
+Connecting to 127.0.0.1 on ports 43451, 65473 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65474	--cutoff=100	--filter=*	--party=2	--port=43452	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_max_dummies (402 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_tpch_q1_sums
+Connecting to 127.0.0.1 on ports 43451, 65473 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65474	--cutoff=100	--filter=*	--party=1	--port=43452	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_max_dummies (403 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_tpch_q1_sums
+Connecting to 127.0.0.1 on ports 43452, 65474 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65475	--cutoff=100	--filter=*	--party=2	--port=43453	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_tpch_q1_sums (824 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 127.0.0.1 on ports 43452, 65474 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65475	--cutoff=100	--filter=*	--party=1	--port=43453	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_tpch_q1_sums (868 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 127.0.0.1 on ports 43453, 65475 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65476	--cutoff=100	--filter=*	--party=2	--port=43454	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_tpch_q1_avg_cnt (2028 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.tpch_q1
+Connecting to 127.0.0.1 on ports 43453, 65475 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65476	--cutoff=100	--filter=*	--party=1	--port=43454	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_tpch_q1_avg_cnt (2026 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.tpch_q1
+Connecting to 127.0.0.1 on ports 43454, 65476 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65477	--cutoff=100	--filter=*	--party=2	--port=43455	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.tpch_q1 (2433 ms)
+[----------] 15 tests from SecureNestedLoopAggregateTest (14500 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (14500 ms total)
+[  PASSED  ] 15 tests.
+Connecting to 127.0.0.1 on ports 43454, 65476 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65477	--cutoff=100	--filter=*	--party=1	--port=43455	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.tpch_q1 (2451 ms)
+[----------] 15 tests from SecureNestedLoopAggregateTest (15078 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (15078 ms total)
+[  PASSED  ] 15 tests.
+[==========] Running 7 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 7 tests from EnrichTest
+[ RUN      ] EnrichTest.loadAndPrepData
+[==========] Running 7 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 7 tests from EnrichTest
+[ RUN      ] EnrichTest.loadAndPrepData
+Connecting to 127.0.0.1 on ports 7654, 65486 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65487	--filter=*	--party=2	--port=7655	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] EnrichTest.loadAndPrepData (493 ms)
+[ RUN      ] EnrichTest.loadAndJoinData
+Connecting to 127.0.0.1 on ports 7654, 65486 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65487	--filter=*	--party=1	--port=7655	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] EnrichTest.loadAndPrepData (1441 ms)
+[ RUN      ] EnrichTest.loadAndJoinData
+Connecting to 127.0.0.1 on ports 7655, 65487 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65488	--filter=*	--party=2	--port=7656	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] EnrichTest.loadAndJoinData (971 ms)
+[ RUN      ] EnrichTest.loadUnionAndDeduplicateData
+Connecting to 127.0.0.1 on ports 7655, 65487 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65488	--filter=*	--party=1	--port=7656	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] EnrichTest.loadAndJoinData (975 ms)
+[ RUN      ] EnrichTest.loadUnionAndDeduplicateData
+Connecting to 127.0.0.1 on ports 7656, 65488 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65489	--filter=*	--party=2	--port=7657	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] EnrichTest.loadUnionAndDeduplicateData (2130 ms)
+[ RUN      ] EnrichTest.testExclusionCriteria
+Connecting to 127.0.0.1 on ports 7656, 65488 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65489	--filter=*	--party=1	--port=7657	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] EnrichTest.loadUnionAndDeduplicateData (1787 ms)
+[ RUN      ] EnrichTest.testExclusionCriteria
+Connecting to 127.0.0.1 on ports 7657, 65489 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65490	--filter=*	--party=2	--port=7658	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] EnrichTest.testExclusionCriteria (1683 ms)
+[ RUN      ] EnrichTest.testPatientCohort
+Connecting to 127.0.0.1 on ports 7657, 65489 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65490	--filter=*	--party=1	--port=7658	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] EnrichTest.testExclusionCriteria (1654 ms)
+[ RUN      ] EnrichTest.testPatientCohort
+Connecting to 127.0.0.1 on ports 7658, 65490 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65491	--filter=*	--party=2	--port=7659	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] EnrichTest.testPatientCohort (1603 ms)
+[ RUN      ] EnrichTest.testPatientAgggregation
+Connecting to 127.0.0.1 on ports 7658, 65490 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65491	--filter=*	--party=1	--port=7659	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] EnrichTest.testPatientCohort (1595 ms)
+[ RUN      ] EnrichTest.testPatientAgggregation
+Connecting to 127.0.0.1 on ports 7659, 65491 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65492	--filter=*	--party=2	--port=7660	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] EnrichTest.testPatientAgggregation (1872 ms)
+[ RUN      ] EnrichTest.testRollups
+Connecting to 127.0.0.1 on ports 7659, 65491 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65492	--filter=*	--party=1	--port=7660	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] EnrichTest.testPatientAgggregation (1872 ms)
+[ RUN      ] EnrichTest.testRollups
+Connecting to 127.0.0.1 on ports 7660, 65492 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65493	--filter=*	--party=2	--port=7661	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] EnrichTest.testRollups (3064 ms)
+[----------] 7 tests from EnrichTest (11819 ms total)
+
+[----------] Global test environment tear-down
+[==========] 7 tests from 1 test suite ran. (11819 ms total)
+[  PASSED  ] 7 tests.
+Connecting to 127.0.0.1 on ports 7660, 65492 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65493	--filter=*	--party=1	--port=7661	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] EnrichTest.testRollups (3034 ms)
+[----------] 7 tests from EnrichTest (12361 ms total)
+
+[----------] Global test environment tear-down
+[==========] 7 tests from 1 test suite ran. (12361 ms total)
+[  PASSED  ] 7 tests.
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from SecurePlanDeparserTest
+[ RUN      ] SecurePlanDeparserTest.conjunction_expression
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from SecurePlanDeparserTest
+[ RUN      ] SecurePlanDeparserTest.conjunction_expression
+Connecting to 127.0.0.1 on ports 54325, 65454 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65455	--cutoff=100	--filter=*	--party=2	--port=54326	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.conjunction_expression (312 ms)
+[ RUN      ] SecurePlanDeparserTest.math_expression
+Connecting to 127.0.0.1 on ports 54325, 65454 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65455	--cutoff=100	--filter=*	--party=1	--port=54326	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.conjunction_expression (814 ms)
+[ RUN      ] SecurePlanDeparserTest.math_expression
+Connecting to 127.0.0.1 on ports 54326, 65455 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65456	--cutoff=100	--filter=*	--party=2	--port=54327	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.math_expression (304 ms)
+Connecting to 127.0.0.1 on ports 54326, 65455 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65456	--cutoff=100	--filter=*	--party=1	--port=54327	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.math_expression (303 ms)
+[ RUN      ] SecurePlanDeparserTest.tpch_q01
+[ RUN      ] SecurePlanDeparserTest.tpch_q01
+Connecting to 127.0.0.1 on ports 54327, 65456 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65457	--cutoff=100	--filter=*	--party=1	--port=54328	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.tpch_q01 (358 ms)
+[ RUN      ] SecurePlanDeparserTest.tpch_q03
+Connecting to 127.0.0.1 on ports 54327, 65456 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65457	--cutoff=100	--filter=*	--party=2	--port=54328	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.tpch_q01 (358 ms)
+[ RUN      ] SecurePlanDeparserTest.tpch_q03
+Connecting to 127.0.0.1 on ports 54328, 65457 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65458	--cutoff=100	--filter=*	--party=1	--port=54329	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.tpch_q03 (276 ms)
+[ RUN      ] SecurePlanDeparserTest.tpch_q05
+Connecting to 127.0.0.1 on ports 54328, 65457 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65458	--cutoff=100	--filter=*	--party=2	--port=54329	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.tpch_q03 (277 ms)
+[ RUN      ] SecurePlanDeparserTest.tpch_q05
+Connecting to 127.0.0.1 on ports 54329, 65458 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65459	--cutoff=100	--filter=*	--party=2	--port=54330	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.tpch_q05 (362 ms)
+[ RUN      ] SecurePlanDeparserTest.tpch_q08
+Connecting to 127.0.0.1 on ports 54329, 65458 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65459	--cutoff=100	--filter=*	--party=1	--port=54330	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.tpch_q05 (363 ms)
+[ RUN      ] SecurePlanDeparserTest.tpch_q08
+Connecting to 127.0.0.1 on ports 54330, 65459 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65460	--cutoff=100	--filter=*	--party=2	--port=54331	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.tpch_q08 (297 ms)
+[ RUN      ] SecurePlanDeparserTest.tpch_q09
+Connecting to 127.0.0.1 on ports 54330, 65459 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65460	--cutoff=100	--filter=*	--party=1	--port=54331	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.tpch_q08 (297 ms)
+[ RUN      ] SecurePlanDeparserTest.tpch_q09
+Connecting to 127.0.0.1 on ports 54331, 65460 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65461	--cutoff=100	--filter=*	--party=2	--port=54332	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.tpch_q09 (428 ms)
+[ RUN      ] SecurePlanDeparserTest.tpch_q18
+Connecting to 127.0.0.1 on ports 54331, 65460 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65461	--cutoff=100	--filter=*	--party=1	--port=54332	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.tpch_q09 (429 ms)
+[ RUN      ] SecurePlanDeparserTest.tpch_q18
+Connecting to 127.0.0.1 on ports 54332, 65461 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65462	--cutoff=100	--filter=*	--party=2	--port=54333	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.tpch_q18 (416 ms)
+[----------] 8 tests from SecurePlanDeparserTest (2758 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (2758 ms total)
+[  PASSED  ] 8 tests.
+Connecting to 127.0.0.1 on ports 54332, 65461 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65462	--cutoff=100	--filter=*	--party=1	--port=54333	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecurePlanDeparserTest.tpch_q18 (416 ms)
+[----------] 8 tests from SecurePlanDeparserTest (3260 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (3260 ms total)
+[  PASSED  ] 8 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureTpcHTest
+[ RUN      ] SecureTpcHTest.tpch_q01
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureTpcHTest
+[ RUN      ] SecureTpcHTest.tpch_q01
+Connecting to 127.0.0.1 on ports 7654, 65478 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65479	--filter=*	--party=2	--port=7655	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureTpcHTest.tpch_q01 (1675 ms)
+[ RUN      ] SecureTpcHTest.tpch_q03
+Connecting to 127.0.0.1 on ports 7654, 65478 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65479	--filter=*	--party=1	--port=7655	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureTpcHTest.tpch_q01 (2178 ms)
+[ RUN      ] SecureTpcHTest.tpch_q03
+Connecting to 127.0.0.1 on ports 7655, 65479 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65480	--filter=*	--party=2	--port=7656	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureTpcHTest.tpch_q03 (10414 ms)
+[ RUN      ] SecureTpcHTest.tpch_q05
+Connecting to 127.0.0.1 on ports 7655, 65479 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65480	--filter=*	--party=1	--port=7656	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureTpcHTest.tpch_q03 (10414 ms)
+[ RUN      ] SecureTpcHTest.tpch_q05
+Connecting to 127.0.0.1 on ports 7656, 65480 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65481	--filter=*	--party=2	--port=7657	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureTpcHTest.tpch_q05 (1754 ms)
+[ RUN      ] SecureTpcHTest.tpch_q08
+Connecting to 127.0.0.1 on ports 7656, 65480 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65481	--filter=*	--party=1	--port=7657	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureTpcHTest.tpch_q05 (1754 ms)
+[ RUN      ] SecureTpcHTest.tpch_q08
+Connecting to 127.0.0.1 on ports 7657, 65481 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65482	--filter=*	--party=2	--port=7658	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureTpcHTest.tpch_q08 (6311 ms)
+[ RUN      ] SecureTpcHTest.tpch_q09
+Connecting to 127.0.0.1 on ports 7657, 65481 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65482	--filter=*	--party=1	--port=7658	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureTpcHTest.tpch_q08 (6311 ms)
+[ RUN      ] SecureTpcHTest.tpch_q09
+Connecting to 127.0.0.1 on ports 7658, 65482 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65483	--filter=*	--party=2	--port=7659	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureTpcHTest.tpch_q09 (3519 ms)
+[ RUN      ] SecureTpcHTest.tpch_q18
+Connecting to 127.0.0.1 on ports 7658, 65482 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65483	--filter=*	--party=1	--port=7659	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureTpcHTest.tpch_q09 (3519 ms)
+[ RUN      ] SecureTpcHTest.tpch_q18
+Connecting to 127.0.0.1 on ports 7659, 65483 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65484	--filter=*	--party=2	--port=7660	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureTpcHTest.tpch_q18 (1561 ms)
+[----------] 6 tests from SecureTpcHTest (25238 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (25238 ms total)
+[  PASSED  ] 6 tests.
+Connecting to 127.0.0.1 on ports 7659, 65483 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65484	--filter=*	--party=1	--port=7660	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+[       OK ] SecureTpcHTest.tpch_q18 (1561 ms)
+[----------] 6 tests from SecureTpcHTest (25741 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (25741 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from FullyOptimizedTest
+[ RUN      ] FullyOptimizedTest.tpch_q1
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from FullyOptimizedTest
+[ RUN      ] FullyOptimizedTest.tpch_q1
+Connecting to 127.0.0.1 on ports 7654, 65482 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65483	--cutoff=100	--filter=*	--party=1	--port=7655	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Runtime: 0.266711 sec, CPU Time: 0.034553 sec, CPU clock ticks: 34553, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 168159. observed gates: 132300 gates, relative error (%)=27.1043
+Bandwidth: 1.58732e+07 Bps
+Connecting to 127.0.0.1 on ports 7654, 65482 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65483	--cutoff=100	--filter=*	--party=2	--port=7655	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Runtime: 0.632535 sec, CPU Time: 0.031631 sec, CPU clock ticks: 31631, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 168159. observed gates: 132300 gates, relative error (%)=27.1043
+Bandwidth: 6105.59 Bps
+[       OK ] FullyOptimizedTest.tpch_q1 (958 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q3
+[       OK ] FullyOptimizedTest.tpch_q1 (1460 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q3
+Connecting to 127.0.0.1 on ports 7655, 65483 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65484	--cutoff=100	--filter=*	--party=1	--port=7656	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Cost : 76266518, combination : 0
+Cost : 174293819232, combination : 1
+Runtime: 86.1928 sec, CPU Time: 86.0667 sec, CPU clock ticks: 8.60667e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 6.15047e+08. observed gates: 618180960 gates, relative error (%)=0.506963
+Bandwidth: 2.29506e+08 Bps
+Connecting to 127.0.0.1 on ports 7655, 65483 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65484	--cutoff=100	--filter=*	--party=2	--port=7656	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Cost : 76266518, combination : 0
+Cost : 174293819232, combination : 1
+Runtime: 86.4055 sec, CPU Time: 80.3156 sec, CPU clock ticks: 8.03156e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 6.15047e+08. observed gates: 618180960 gates, relative error (%)=0.506963
+Bandwidth: 29089.8 Bps
+[       OK ] FullyOptimizedTest.tpch_q3 (86593 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q5
+[       OK ] FullyOptimizedTest.tpch_q3 (86593 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q5
+Connecting to 127.0.0.1 on ports 7656, 65484 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65485	--cutoff=100	--filter=*	--party=1	--port=7657	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Cost : 188702270, combination : 0
+Cost : 45580533, combination : 1
+Runtime: 253.072 sec, CPU Time: 252.912 sec, CPU clock ticks: 2.52912e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 2.17602e+09. observed gates: 2183559820 gates, relative error (%)=0.345423
+Bandwidth: 2.76103e+08 Bps
+Connecting to 127.0.0.1 on ports 7656, 65484 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65485	--cutoff=100	--filter=*	--party=2	--port=7657	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Cost : 188702270, combination : 0
+Cost : 45580533, combination : 1
+Runtime: 253.296 sec, CPU Time: 247.465 sec, CPU clock ticks: 2.47465e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 2.17602e+09. observed gates: 2183559820 gates, relative error (%)=0.345423
+Bandwidth: 13225.2 Bps
+[       OK ] FullyOptimizedTest.tpch_q5 (253477 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q8
+[       OK ] FullyOptimizedTest.tpch_q5 (253477 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q8
+Connecting to 127.0.0.1 on ports 7657, 65485 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65486	--cutoff=100	--filter=*	--party=1	--port=7658	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Cost : 70393077, combination : 0
+Cost : 28399358, combination : 1
+Runtime: 80.9285 sec, CPU Time: 80.7899 sec, CPU clock ticks: 8.07899e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 5.91645e+08. observed gates: 598492716 gates, relative error (%)=1.14418
+Bandwidth: 2.3665e+08 Bps
+Connecting to 127.0.0.1 on ports 7657, 65485 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65486	--cutoff=100	--filter=*	--party=2	--port=7658	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Cost : 70393077, combination : 0
+Cost : 28399358, combination : 1
+Runtime: 81.1202 sec, CPU Time: 76.5111 sec, CPU clock ticks: 7.65111e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 5.91645e+08. observed gates: 598492716 gates, relative error (%)=1.14418
+Bandwidth: 34374.5 Bps
+[       OK ] FullyOptimizedTest.tpch_q8 (81285 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q9
+[       OK ] FullyOptimizedTest.tpch_q8 (81285 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q9
+Connecting to 127.0.0.1 on ports 7658, 65486 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65487	--cutoff=100	--filter=*	--party=1	--port=7659	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Cost : 137757686, combination : 0
+Cost : 1663870022, combination : 1
+Runtime: 134.649 sec, CPU Time: 134.282 sec, CPU clock ticks: 1.34282e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.0315e+09. observed gates: 969600852 gates, relative error (%)=6.38422
+Bandwidth: 2.3043e+08 Bps
+Connecting to 127.0.0.1 on ports 7658, 65486 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65487	--cutoff=100	--filter=*	--party=2	--port=7659	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Cost : 137757686, combination : 0
+Cost : 1663870022, combination : 1
+Runtime: 134.929 sec, CPU Time: 122.929 sec, CPU clock ticks: 1.22929e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.0315e+09. observed gates: 969600852 gates, relative error (%)=6.38422
+Bandwidth: 45450.9 Bps
+[       OK ] FullyOptimizedTest.tpch_q9 (153976 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q18
+[       OK ] FullyOptimizedTest.tpch_q9 (153976 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q18
+Connecting to 127.0.0.1 on ports 7659, 65487 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65488	--cutoff=100	--filter=*	--party=1	--port=7660	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Runtime: 8.60421 sec, CPU Time: 8.49071 sec, CPU clock ticks: 8.49071e+06, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 5.25705e+07. observed gates: 68880128 gates, relative error (%)=23.6783
+Bandwidth: 2.56173e+08 Bps
+Connecting to 127.0.0.1 on ports 7659, 65487 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 014a1634d67f63aaa3be87e71acdb59faa10c990
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65488	--cutoff=100	--filter=*	--party=2	--port=7660	--storage=column	--unioned_db=tpch_unioned_150	--validation=true	--log_level=2	--logfile=	
+
+Runtime: 8.80469 sec, CPU Time: 7.93576 sec, CPU clock ticks: 7.93576e+06, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 5.25705e+07. observed gates: 68880128 gates, relative error (%)=23.6783
+Bandwidth: 633006 Bps
+[       OK ] FullyOptimizedTest.tpch_q18 (9181 ms)
+[----------] 6 tests from FullyOptimizedTest (585473 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (585473 ms total)
+[  PASSED  ] 6 tests.
+[       OK ] FullyOptimizedTest.tpch_q18 (9181 ms)
+[----------] 6 tests from FullyOptimizedTest (585975 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (585975 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from ZkTpcHTest
+[ RUN      ] ZkTpcHTest.tpch_q01
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from ZkTpcHTest
+[ RUN      ] ZkTpcHTest.tpch_q01
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+[       OK ] ZkTpcHTest.tpch_q01 (2361 ms)
+[ RUN      ] ZkTpcHTest.tpch_q03
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+[       OK ] ZkTpcHTest.tpch_q01 (1936 ms)
+[ RUN      ] ZkTpcHTest.tpch_q03
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+[       OK ] ZkTpcHTest.tpch_q03 (43932 ms)
+[ RUN      ] ZkTpcHTest.tpch_q05
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+[       OK ] ZkTpcHTest.tpch_q03 (43919 ms)
+[ RUN      ] ZkTpcHTest.tpch_q05
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+[       OK ] ZkTpcHTest.tpch_q05 (7124 ms)
+[ RUN      ] ZkTpcHTest.tpch_q08
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+[       OK ] ZkTpcHTest.tpch_q05 (7323 ms)
+[ RUN      ] ZkTpcHTest.tpch_q08
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+[       OK ] ZkTpcHTest.tpch_q08 (71697 ms)
+[ RUN      ] ZkTpcHTest.tpch_q09
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+[       OK ] ZkTpcHTest.tpch_q08 (71494 ms)
+[ RUN      ] ZkTpcHTest.tpch_q09
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+[       OK ] ZkTpcHTest.tpch_q09 (44565 ms)
+[ RUN      ] ZkTpcHTest.tpch_q18
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+[       OK ] ZkTpcHTest.tpch_q09 (44555 ms)
+[ RUN      ] ZkTpcHTest.tpch_q18
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+[       OK ] ZkTpcHTest.tpch_q18 (10592 ms)
+[----------] 6 tests from ZkTpcHTest (180274 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (180274 ms total)
+[  PASSED  ] 6 tests.
+connected
+connected
+connected
+connected
+ZkTest::SetUp() complete
+[       OK ] ZkTpcHTest.tpch_q18 (10642 ms)
+[----------] 6 tests from ZkTpcHTest (179872 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (179872 ms total)
+[  PASSED  ] 6 tests.
+connected
+Starting epoch 1700709224982
+Reading in 655 tuples from local db.
+connected
+Starting epoch 1700709225096
+Reading in 664 tuples from local db.
+Alice read in 664 tuples.
+Bob read in 655 tuples.
+Reading in 496 secret-shared records from pilot/test/output/chi-patient-multisite.bob
+Total tuples read: 1815
+Reading in 496 secret-shared records from pilot/test/output/chi-patient-multisite.alice
+Total tuples read: 1815
+***Read input on 2 in 298.195 ms, epoch 1700709227358
+***Read input on 1 in 204.712 ms, epoch 1700709228236
+Runtime for aggregate #1 (patid): 1953.87 secs.
+Runtime for filter: 3.194 secs.
+Runtime for aggregate #1 (patid): 2847.52 secs.
+Runtime for filter: 2.93 secs.
+Runtime for projection: 45.147 secs.
+Completed deduplication and exclusion at epoch 1700709230240
+Runtime for projection: 51.564 secs.
+Completed deduplication and exclusion at epoch 1700709230263
+Finished sort for data cube.
+Runtime for aggregate #2 (data cube): 4399.18 secs.
+***Completed cube aggregation at 6404.76 ms, cumulative runtime=6609.47 ms, epoch 1700709234640
+Finished sort for data cube.
+Runtime for aggregate #2 (data cube): 4515.49 secs.
+***Completed cube aggregation at 7421.67 ms, cumulative runtime=7719.86 ms, epoch 1700709234780
+Completed unioning for semijoin at epoch 1700709243711
+Completed unioning for semijoin at epoch 1700709244050
+***Done age_strata rollup at 3908.03 ms, cumulative time: 1.16279e+07 epoch 1700709247619
+***Done age_strata rollup at 3709.48 ms, cumulative time: 1.03189e+07 epoch 1700709247760
+***Done sex rollup at 3745.48 ms, cumulative time: 1.53734e+07 epoch 1700709251365
+***Done sex rollup at 3751.54 ms, cumulative time: 1.40705e+07 epoch 1700709251511
+***Done ethnicity rollup at 3935.4 ms, cumulative time: 1.93088e+07 epoch 1700709255300
+***Done ethnicity rollup at 3933.55 ms, cumulative time: 1.8004e+07 epoch 1700709255445
+***Done race rollup at 3779.07 ms, cumulative time: 2.30878e+07 epoch 1700709259079
+Ending epoch 1700709259079
+Test completed on bob in 34097.8 secs.
+year,start_epoch,dedupe_and_setup,semijoin_optimization,rollup_end_epoch
+all,1700709224982,1700709234780,1700709243711,1700709259079
+Revealing (2018, 1, 16, 63, 3, 14)
+(2018, 2, 11, 60, 2, 11)
+(2018, 3, 20, 69, 4, 18)
+(2018, 4, 19, 61, 4, 18)
+(2018, 5, 25, 72, 9, 12)
+(2018, 6, 23, 75, 7, 20)
+(2018, 7, 14, 58, 5, 18)
+(2019, 1, 11, 53, 6, 18)
+(2019, 2, 12, 48, 4, 15)
+(2019, 3, 16, 60, 1, 14)
+(2019, 4, 15, 62, 4, 23)
+(2019, 5, 22, 57, 7, 16)
+(2019, 6, 21, 61, 8, 19)
+(2019, 7, 18, 73, 7, 19)
+(2020, 1, 18, 63, 6, 20)
+(2020, 2, 15, 53, 4, 17)
+(2020, 3, 21, 59, 5, 19)
+(2020, 4, 16, 62, 5, 15)
+(2020, 5, 16, 66, 4, 12)
+(2020, 6, 13, 61, 1, 14)
+(2020, 7, 19, 71, 3, 21)
+
+Revealing (2018, F, 46, 156, 10, 35)
+(2018, M, 47, 152, 10, 33)
+(2018, U, 35, 150, 14, 43)
+(2019, F, 33, 121, 15, 37)
+(2019, M, 42, 151, 10, 46)
+(2019, U, 40, 142, 12, 41)
+(2020, F, 33, 146, 7, 43)
+(2020, M, 41, 145, 9, 34)
+(2020, U, 44, 144, 12, 41)
+
+Revealing (2018, N, 42, 158, 11, 41)
+(2018, U, 48, 155, 9, 35)
+(2018, Y, 38, 145, 14, 35)
+(2019, N, 34, 132, 11, 39)
+(2019, U, 41, 142, 12, 45)
+(2019, Y, 40, 140, 14, 40)
+(2020, N, 39, 145, 8, 43)
+(2020, U, 36, 142, 7, 31)
+(2020, Y, 43, 148, 13, 44)
+
+Revealing (2018, 1, 21, 72, 7, 16)
+(2018, 2, 13, 65, 6, 15)
+(2018, 3, 21, 63, 5, 15)
+(2018, 4, 17, 63, 2, 14)
+(2018, 5, 22, 68, 4, 18)
+(2018, 6, 15, 65, 3, 13)
+(2018, 7, 19, 62, 7, 20)
+(2019, 1, 15, 57, 3, 13)
+(2019, 2, 18, 71, 8, 24)
+(2019, 3, 13, 50, 3, 13)
+(2019, 4, 16, 52, 4, 14)
+(2019, 5, 14, 47, 4, 14)
+(2019, 6, 23, 68, 9, 25)
+(2019, 7, 16, 69, 6, 21)
+(2020, 1, 17, 66, 3, 20)
+(2020, 2, 13, 58, 4, 20)
+(2020, 3, 23, 65, 5, 16)
+(2020, 4, 20, 58, 6, 13)
+(2020, 5, 15, 57, 2, 9)
+(2020, 6, 15, 66, 3, 20)
+(2020, 7, 15, 65, 5, 20)
+
+***Done race rollup at 3873.99 ms, cumulative time: 2.1878e+07 epoch 1700709259319
+Ending epoch 1700709259319
+Test completed on alice in 34222.6 secs.
+year,start_epoch,dedupe_and_setup,semijoin_optimization,rollup_end_epoch
+all,1700709225096,1700709234640,1700709244050,1700709259319
