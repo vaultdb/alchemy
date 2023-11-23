@@ -339,7 +339,7 @@ string DataUtilities::printBitArray(const int8_t *bits, const size_t &byte_cnt) 
 
 string DataUtilities::printTable(SecureTable *table, int tuple_limit, bool show_dummies) {
     stringstream ss;
-
+    // print all
     if(tuple_limit <= 0 || tuple_limit > table->tuple_cnt_) {
         auto tmp = table->revealInsecure();
         ss << tmp->toString(tuple_limit, show_dummies);
