@@ -39,9 +39,9 @@ void PlainEncoding<B>::secretShare(QueryTable<Bit> *dst, const int &dst_col) {
             // temporarily reverse all strings and then follow process of INT/LONG
             int str_len = dst->getSchema().getField(dst_col).getStringLength();
             dst_col_size_bits *= str_len;
-            if(sender) {
-                ColumnEncoding<B>::reverseStrings((char *) this->column_data_, str_len, row_cnt);
-            }
+//            if(sender) {
+//                ColumnEncoding<B>::reverseStrings((char *) this->column_data_, str_len, row_cnt);
+//            }
             // fall through to INT/LONG
         }
         case FieldType::INT:

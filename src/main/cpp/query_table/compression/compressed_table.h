@@ -82,6 +82,7 @@ namespace vaultdb {
 
 
         StorageModel storageModel() const override { return  StorageModel::COMPRESSED_STORE; }
+
         Field<B> getField(const int  & row, const int & col)  const override {
             return column_encodings_.at(col)->getField(row);
         }
@@ -114,6 +115,11 @@ namespace vaultdb {
         }
 
         PlainTable *revealInsecure(const int & party = emp::PUBLIC) override {
+
+             if(!this->isEncrypted()) {
+                    return (QueryTable<bool> *) this;
+                }
+
             auto dst_schema = QuerySchema::toPlain(this->schema_);
 
             PlainTable *dst = new CompressedTable<bool>(this->tuple_cnt_, dst_schema, this->order_by_);

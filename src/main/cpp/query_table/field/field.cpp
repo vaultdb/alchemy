@@ -209,13 +209,12 @@ string Field<B>::revealString(const Integer &src, const int &party) {
 
     bool *byte_cursor = bools;
     string dst(byte_cnt, ' ');
-
+    int write_cursor = byte_cnt - 1;
     for(int i = 0; i < byte_cnt; ++i) {
-        dst[i] =  Utilities::boolsToByte(byte_cursor);
+        dst[write_cursor] =  Utilities::boolsToByte(byte_cursor);
         byte_cursor += 8;
+        --write_cursor;
     }
-
-    Utilities::reverseString(dst.data(), dst.size()); // invert the byte order
 
     delete[] bools;
     return dst;
@@ -307,7 +306,7 @@ SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDes
         }
         case FieldType::STRING: {
             string s = (send) ? f.getString() : "";
-            Integer v = secretShareString(s, send, party, desc.size());
+            Integer v = secretShareString(s, send, party, desc.getStringLength());
             return SecureField(FieldType::SECURE_STRING, v);
         }
         case FieldType::FLOAT: {
@@ -707,7 +706,6 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
             Integer v(bit_cnt, 0, emp::PUBLIC);
             memcpy(v.bits.data(), src, bit_cnt * sizeof(Bit));
             return Field<B>(type, v);
-
         }
         default:
             throw std::invalid_argument("Field type " + TypeUtilities::getTypeName(type) + " not supported by deserialize()!");
