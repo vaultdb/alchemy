@@ -82,7 +82,6 @@ QueryTable<B> *Operator<B>::run() {
 
     if(lhs_child_)     lhs_child_->reset();
     if(rhs_child_)     rhs_child_->reset();
-
     return output_;
 }
 
@@ -169,43 +168,7 @@ std::string Operator<B>::toString() const {
 //
 //}
 
-/*
-template<typename B>
-QueryTable<B> Operator<B>::sortByDummyTag(QueryTable<B> &table) {
-    SortDefinition table_sort_def;
-    table_sort_def.push_back(pair<int32_t, SortDirection>(-1, SortDirection::ASCENDING));
-    SortDefinition originOrder = table.getSortOrder();
-    for(size_t i = 0; i < table.getSchema()->getFieldCount(); i++) {
-        table_sort_def.push_back(pair<int32_t, SortDirection>(i, SortDirection::ASCENDING));
-    }
-    Sort table_sort(table, table_sort_def);
-    table_sort.setOperatorId(-1);
-    table = table_sort.run();
-    table.setSortOrder(originOrder);
 
-    return table;
-}
-
-template<typename B>
-QueryTable<B> Operator<B>::shrinkwrapToTrueCardinality(QueryTable<B> &table, bool isSorted) {
-    // Get true cardinality
-    uint32_t trueCardinality;
-    if(table.party_ == ALICE) {
-        trueCardinality = table.plain_table_->getTrueTupleCount();
-        table.netio_->send_data(&trueCardinality,4);
-    }
-    else {
-        table.netio_->recv_data(&trueCardinality,4);
-    }
-
-    // Shrinkwrap output to true cardinality
-    if(!isSorted) {
-        table = sortByDummyTag(table);
-    }
-    table.resize(trueCardinality);
-
-    return table;
-*/
 
 std::ostream &vaultdb::operator<<(std::ostream &os, const PlainOperator &op) {
     os << op.printTree();

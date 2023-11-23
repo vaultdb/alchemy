@@ -92,10 +92,6 @@ namespace  vaultdb {
         virtual void updateCollation() = 0;
 
 
-//        QueryTable<B> sortByDummyTag(QueryTable<B> & table);
-//        QueryTable<B> shrinkwrapToTrueCardinality(QueryTable<B> & table, bool isSorted);
-//
-
         // recurses first, then invokes runSelf method
         QueryTable<B>  *run();
         std::string printTree() const;
