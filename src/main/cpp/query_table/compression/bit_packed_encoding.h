@@ -78,22 +78,6 @@ namespace vaultdb {
 
 
         void compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) override {
-//            Integer lhs_int = getInt(lhs_row);
-//            Integer rhs_int = getInt(rhs_row);
-//            if(this->column_idx_ == 3) {
-//                cout << "swapping: " << swap.reveal() << endl;
-//                cout << "B lhs: " << lhs_int.reveal<int64_t>() + this->field_min_ << ", " << FieldUtilities::printInt(lhs_int) <<  ", rhs: " << rhs_int.reveal<int64_t>() + this->field_min_ << ", " << FieldUtilities::printInt(rhs_int) <<  endl;
-//            }
-//
-//            emp::swap(swap, lhs_int, rhs_int);
-//            if(this->column_idx_ == 3) {
-//                cout << "A lhs: " << lhs_int.reveal<int64_t>() + this->field_min_ << ", " << FieldUtilities::printInt(lhs_int) <<  ", rhs: " << rhs_int.reveal<int64_t>() + this->field_min_ << ", " << FieldUtilities::printInt(rhs_int) <<  endl;
-//            }
-//
-//            Bit *lhs = (Bit *) (this->column_data_ + lhs_row * this->field_size_bytes_);
-//            Bit *rhs = (Bit *) (this->column_data_ + rhs_row * this->field_size_bytes_);
-//            memcpy(lhs, lhs_int.bits.data(), this->field_size_bytes_);
-//            memcpy(rhs, rhs_int.bits.data(), this->field_size_bytes_);
 
             auto lhs = getFieldPtr(lhs_row);
             auto rhs = getFieldPtr(rhs_row);
