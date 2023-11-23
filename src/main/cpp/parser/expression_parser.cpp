@@ -129,10 +129,18 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
             Field<B> input_field =  Field<B>(FieldType::STRING, literal_string);
 
             if(std::is_same_v<B, emp::Bit>) {
-                SecureField encrypted_field = input_field.secret_share();
-                Integer encrypted_string = encrypted_field.template getValue<emp::Integer>();
-                return new LiteralNode<B>(Field<B>(FieldType::SECURE_STRING, encrypted_string));
+                int sending_party = 1;
+                Integer input_int;
+                // sender
+                if (SystemConfiguration::getInstance().party_ == sending_party) {
+                     input_int = Field<B>::secretShareString(literal_string, true, sending_party, length);
+                }
+                else {
+                    string placeholder(length, 0);
+                    input_int = Field<B>::secretShareString(placeholder, false, sending_party, length);
+                }
 
+                return new LiteralNode<B>(Field<B>(FieldType::SECURE_STRING, input_int));
             }
 
             return new LiteralNode<B>(input_field);
