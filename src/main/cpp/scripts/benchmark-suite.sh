@@ -1,7 +1,7 @@
 #!/bin/bash
 
 now=`date +"%Y%m%d%H%M"`
-file='log/all-tests-'$now'.log'
+file='log/all-tests-localhost-'$now'.log'
 
 
 echo 'Writing to '$file
