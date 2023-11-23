@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="runDataPartnerAlice" type="CMakeRunConfiguration" factoryName="Application" singleton="false" PROGRAM_PARAMS=" -h 127.0.0.1 -P 54321 --party=1 -d enrich_htn_alice -p pilot/secret_shares/tables/chi_partial_counts.alice -r pilot/test/output/chi-patient-multisite.alice -y all -s" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="vaultdb-emp" TARGET_NAME="run_data_partner" CONFIG_NAME="debug-local" RUN_TARGET_PROJECT_NAME="vaultdb-emp" RUN_TARGET_NAME="run_data_partner">
-    <method v="2">
-      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-    </method>
-  </configuration>
-</component>

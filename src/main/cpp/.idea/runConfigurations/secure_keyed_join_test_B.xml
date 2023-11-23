@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="secure_keyed_join_test B" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" activateToolWindowBeforeRun="false" singleton="false" PROGRAM_PARAMS="--party=2" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="vaultdb-emp" TARGET_NAME="secure_keyed_join_test" CONFIG_NAME="debug-ompc@codd5" RUN_TARGET_PROJECT_NAME="vaultdb-emp" RUN_TARGET_NAME="secure_keyed_join_test" TEST_MODE="SUITE_TEST">
-    <method v="2">
-      <option name="BeforeTestRunTask" enabled="true" />
-    </method>
-  </configuration>
-</component>

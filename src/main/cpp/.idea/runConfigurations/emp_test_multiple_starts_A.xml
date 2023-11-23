@@ -1,8 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="emp_test_multiple_starts A" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" singleton="false" PROGRAM_PARAMS="--party=1" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="vaultdb-emp" TARGET_NAME="emp_test_multiple_starts" CONFIG_NAME="debug-sh2pc" RUN_TARGET_PROJECT_NAME="vaultdb-emp" RUN_TARGET_NAME="emp_test_multiple_starts" TEST_MODE="SUITE_TEST">
-    <method v="2">
-      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      <option name="BeforeTestRunTask" enabled="true" />
-    </method>
-  </configuration>
-</component>
