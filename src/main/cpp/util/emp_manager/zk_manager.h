@@ -96,6 +96,22 @@ namespace vaultdb {
             memcpy(dst, src, bit_cnt * sizeof(Bit));
         }
 
+        void sendPublic(const int & to_send) override {
+            NetIO *netio = ios_[0]->io;
+            netio->send_data(&to_send, 4);
+            netio->flush();
+
+        }
+
+        int recvPublic() override {
+            NetIO *netio = ios_[0]->io;
+            int to_recv;
+            netio->recv_data(&to_recv, 4);
+            netio->flush();
+            return to_recv;
+        }
+
+
     private:
         static void secret_share_send(const int &party, const QueryTable<bool> *src_table, QueryTable<Bit> *dst_table);
         static void secret_share_recv(const size_t &tuple_count, const int &dst_party,
@@ -157,6 +173,9 @@ namespace  vaultdb {
 
         void unpack(Bit *src, Bit *dst, const int & bit_cnt) override { throw; }
 
+        void sendPublic(const int & to_send) override { throw; }
+
+        int recvPublic() override { throw; }
     };
 }
 #endif // end if-emp-tool

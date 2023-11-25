@@ -75,12 +75,24 @@ namespace  vaultdb {
 
         size_t getTableCardinality(const int & local_cardinality) override;
 
-        void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {
+        inline void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {
             memcpy(dst, src, bit_cnt * sizeof(Bit));
         }
 
-        void unpack(Bit *src, Bit *dst, const int & bit_cnt)  override {
+        inline void unpack(Bit *src, Bit *dst, const int & bit_cnt)  override {
             memcpy(dst, src, bit_cnt * sizeof(Bit));
+        }
+
+        void sendPublic(const int & to_send) override {
+            netio_->send_data(&to_send, 4);
+            netio_->flush();
+        }
+
+        int recvPublic() override {
+            int to_recv;
+            netio_->recv_data(&to_recv, 4);
+            netio_->flush();
+            return to_recv;
         }
 
     private:
@@ -138,7 +150,13 @@ namespace  vaultdb {
 
         void unpack(Bit *src, Bit *dst, const int & bit_cnt) override { throw; }
 
+        void sendPublic(const int & to_send) override {
+           throw;
+        }
 
+        int recvPublic() override {
+            throw;
+        }
     };
 }
 #endif // end if-emp-tool

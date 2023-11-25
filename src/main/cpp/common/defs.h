@@ -82,7 +82,7 @@ namespace vaultdb {
         COMPRESSED_STORE
     };
 
-    enum class ColumnEncodingModel {
+    enum class CompressionScheme {
         PLAIN,
         RLE,
         DICTIONARY,

@@ -5,11 +5,8 @@ using namespace vaultdb;
 
 void BitPackedEncoding::revealInsecure(QueryTable<bool> *dst, const int & dst_col, const int & party)  {
     int row_cnt = this->parent_table_->tuple_cnt_;
-
-    assert(dst->storageModel() == StorageModel::COMPRESSED_STORE);
-    auto dst_table = (CompressedTable<bool> *) dst;
-    auto dst_encoding = dst_table->column_encodings_.at(dst_col);
-    assert(dst_encoding->columnEncoding() == ColumnEncodingModel::PLAIN);
+    auto dst_encoding = ColumnEncoding<bool>::getColumnEncoding(dst, dst_col);
+    assert(dst_encoding->columnEncoding() == CompressionScheme::PLAIN);
 
     Bit *src_ptr = (Bit *) this->column_data_;
     if(field_type_ == FieldType::SECURE_INT) {
@@ -26,8 +23,8 @@ void BitPackedEncoding::revealInsecure(QueryTable<bool> *dst, const int & dst_co
 
 void BitPackedEncoding::secretShare(QueryTable<Bit> *dst, const int &dst_col) {
     // already secret shared, just copy it
-    assert(dst->storageModel() == StorageModel::COMPRESSED_STORE);
-    assert(((CompressedTable<Bit> *) dst)->column_encodings_.at(dst_col)->columnEncoding() == ColumnEncodingModel::BIT_PACKED);
+    auto column_encoding = ColumnEncoding<Bit>::getColumnEncoding(dst, dst_col);
+    assert(column_encoding->columnEncoding() == CompressionScheme::BIT_PACKED);
 
     int row_cnt = this->parent_table_->tuple_cnt_;
     int byte_cnt = row_cnt * field_size_bits_ * sizeof(emp::Bit);
@@ -91,38 +88,3 @@ void BitPackedEncoding::revealBitPackedInts(int64_t *dst, emp::Bit *src, const i
 }
 
 
-void BitPackedEncoding::cloneColumn(const int &dst_idx, QueryTable<Bit> *s, const int &src_col, const int &src_idx) {
-    assert(s->storageModel() == StorageModel::COMPRESSED_STORE);
-    auto src = (CompressedTable<Bit> *) s;
-    auto src_encoding = src->column_encodings_.at(src_col);
-
-    assert(src_encoding->columnEncoding() == ColumnEncodingModel::BIT_PACKED); // clone only from columns encoded with the same scheme
-    assert(this->field_size_bits_ == src->getSchema().getField(src_col).size()); // both are the same size in bits
-
-    int8_t *write_ptr = this->column_data_ + dst_idx * field_size_bytes_;
-    int8_t *read_ptr = src_encoding->column_data_ + src_idx * field_size_bytes_;
-
-    int src_fields = src->tuple_cnt_ - src_idx;
-    auto slots_remaining = this->parent_table_->tuple_cnt_ - dst_idx;
-    if(src_fields > slots_remaining) {
-        src_fields = slots_remaining; // truncate to our available slots
-    }
-
-    memcpy(write_ptr, read_ptr, field_size_bytes_ * src_fields);
-}
-
-void BitPackedEncoding::cloneField(const int &dst_row, const QueryTable<Bit> *s, const int &src_row, const int &src_col) {
-    assert(s->storageModel() == StorageModel::COMPRESSED_STORE);
-    auto src = (CompressedTable<Bit> *) s;
-    assert(src->column_encodings_.at(src_col)->columnEncoding() == ColumnEncodingModel::BIT_PACKED); // clone only from columns encoded with the same scheme
-    auto src_encoding = (BitPackedEncoding *) src->column_encodings_.at(src_col);
-
-    assert(this->field_size_bits_ == src_encoding->field_size_bits_);
-    assert(this->field_min_ == src_encoding->field_min_);
-
-    int8_t *write_ptr = this->column_data_ + dst_row * this->field_size_bytes_;
-    int8_t *read_ptr = src_encoding->column_data_ + src_row * this->field_size_bytes_;
-    memcpy(write_ptr, read_ptr, this->field_size_bytes_);
-
-
-}
