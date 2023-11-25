@@ -111,6 +111,8 @@ namespace  vaultdb {
 
     private:
         int alpha_idx_=-1, table_id_idx_ = -1, weight_idx_ = -1, is_new_idx_ = -1; // alpha_2_idx_ = -1,
+        int alpha1_idx_ = -1;
+        int alpha2_idx_ = -1;
         vector<pair<uint32_t, uint32_t> > join_idxs_; // lhs, rhs
         bool foreign_key_input_ = false; // default: lhs = fkey (input 0, F), if rhs = fk, foreign_key_input_ = true
         int foreign_key_cardinality_ = 0; // public bound on output size
