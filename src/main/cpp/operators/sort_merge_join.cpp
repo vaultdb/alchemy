@@ -8,6 +8,7 @@
 #include "query_table/field/field_factory.h"
 #include "util/system_configuration.h"
 #include "util/logger.h"
+#include <iostream>
 
 using namespace vaultdb;
 using namespace Logging;
@@ -91,13 +92,23 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     QuerySchema lhs_schema = lhs->getSchema();
     QuerySchema rhs_schema = rhs->getSchema();
     QuerySchema out_schema = this->output_schema_;
+    
+    Logger* log = get_log();
+
+    log->write("LHS: " + DataUtilities::printTable(lhs, 10, true), Level::INFO);
+    log->write("RHS: " + DataUtilities::printTable(rhs, 10, true), Level::INFO);
 
     pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
     QueryTable<B> *expanded_lhs, *expanded_rhs;
 
+    log->write("LHS augmented: " + DataUtilities::printTable(augmented.first, 10, true), Level::INFO);
+    log->write("RHS augmented: " + DataUtilities::printTable(augmented.second, 10, true), Level::INFO);
+
     expanded_lhs = expand(augmented.first);
     expanded_rhs = expand(augmented.second);
 
+    log->write("LHS expanded: " + DataUtilities::printTable(expanded_lhs, 10, true), Level::INFO);
+    log->write("RHS expanded: " + DataUtilities::printTable(expanded_rhs, 10, true), Level::INFO);
     delete augmented.first;
     delete augmented.second;
 
@@ -122,6 +133,8 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 
     lhs->pinned_ = false;
     this->output_->order_by_ = this->sort_definition_;
+
+    log->write("Output: " + DataUtilities::printTable(this->output_, 10, true), Level::INFO);
     return this->output_;
 }
 
@@ -167,49 +180,52 @@ QuerySchema SortMergeJoin<B>::deriveAugmentedSchema() const {
     Operator<B> *lhs_child = this->getChild(0);
     Operator<B> *rhs_child = this->getChild(1);
 
-
-    if(!is_secure_) {
-        QueryFieldDesc alpha(write_cursor, "alpha", "", int_field_type_, 0);
-        augmented_schema.putField(alpha);
-        ++write_cursor;
-        QueryFieldDesc table_id(write_cursor, "table_id", "", FieldType::BOOL, 0);
-        augmented_schema.putField(table_id);
+    QueryFieldDesc alpha1(write_cursor++, "alpha1", "", int_field_type_, 0);
+    QueryFieldDesc alpha2(write_cursor++, "alpha2", "", int_field_type_, 0);
+    QueryFieldDesc table_id(write_cursor, "table_id", "", bool_field_type_, 0);
+    
+    // Initialize field size with maximum cardinality for secure contexts
+    if (is_secure_) {
+        int max_alpha = lhs_child->getOutputCardinality() + rhs_child->getOutputCardinality();
+        alpha1.initializeFieldSizeWithCardinality(max_alpha);
+        alpha2.initializeFieldSizeWithCardinality(max_alpha);
     }
-    else {
-        QueryFieldDesc alpha(write_cursor, "alpha", "", int_field_type_);
-        int max_alpha =  lhs_child->getOutputCardinality() + rhs_child->getOutputCardinality();
-        alpha.initializeFieldSizeWithCardinality(max_alpha);
-        ++write_cursor;
 
-        augmented_schema.putField(alpha);
-        QueryFieldDesc table_id(write_cursor, "table_id", "", FieldType::SECURE_BOOL);
-        augmented_schema.putField(table_id);
-    }
+    // Add fields to the schema
+    augmented_schema.putField(alpha1);
+    augmented_schema.putField(alpha2);
+    augmented_schema.putField(table_id);
+
     augmented_schema.initializeFieldOffsets();
-
     return augmented_schema;
 }
 
+
 template<typename B>
 QuerySchema SortMergeJoin<B>::getAugmentedSchema() {
-
     QuerySchema augmented_schema = (lhs_smaller_) ? rhs_prime_->getSchema() : lhs_prime_->getSchema();
 
     if(!is_secure_) {
-        QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_, 0);
-        augmented_schema.putField(alpha);
+        QueryFieldDesc alpha1(augmented_schema.getFieldCount(), "alpha1", "", int_field_type_, 0);
+        augmented_schema.putField(alpha1);
+        QueryFieldDesc alpha2(augmented_schema.getFieldCount(), "alpha2", "", int_field_type_, 0);
+        augmented_schema.putField(alpha2);
+
         QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::BOOL, 0);
         augmented_schema.putField(table_id);
         table_id_field_ = Field<B>(FieldType::BOOL, true);
-    }
-    else {
-        QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_);
-        int max_alpha =  this->getChild(0)->getOutputCardinality() + this->getChild(1)->getOutputCardinality();
-        alpha.initializeFieldSizeWithCardinality(max_alpha);
+    } else {
+        int max_alpha = this->getChild(0)->getOutputCardinality() + this->getChild(1)->getOutputCardinality();
+        
+        QueryFieldDesc alpha1(augmented_schema.getFieldCount(), "alpha1", "", int_field_type_);
+        alpha1.initializeFieldSizeWithCardinality(max_alpha);
+        QueryFieldDesc alpha2(augmented_schema.getFieldCount() + 1, "alpha2", "", int_field_type_);
+        alpha2.initializeFieldSizeWithCardinality(max_alpha);
 
-        augmented_schema.putField(alpha);
+        augmented_schema.putField(alpha1);
+        augmented_schema.putField(alpha2);
+
         QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::SECURE_BOOL);
-
         augmented_schema.putField(table_id);
         table_id_field_ = Field<B>(FieldType::SECURE_BOOL, Bit(true));
     }
@@ -217,13 +233,13 @@ QuerySchema SortMergeJoin<B>::getAugmentedSchema() {
     augmented_schema.initializeFieldOffsets();
 
     return augmented_schema;
-
 }
-
 
 template<typename B>
 pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
     assert(lhs->storageModel() == rhs->storageModel());
+
+    Logger* log = get_log();
 
     vector<int> lhs_keys, rhs_keys;
 
@@ -240,9 +256,10 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     QuerySchema augmented_schema = getAugmentedSchema();
 
     table_id_idx_ = augmented_schema.getFieldCount() - 1;
-    alpha_idx_ = augmented_schema.getFieldCount() - 2;
+    alpha2_idx_ = augmented_schema.getFieldCount() - 2;
+    alpha1_idx_ = augmented_schema.getFieldCount() - 3;
 
-    auto sorted = sortCompatible() ? unionAndMergeTables() : unionAndSortTables();
+    auto sorted = unionAndSortTables();
     initializeAlphas(sorted);
 
     // sort by table ID followed by join key
@@ -255,6 +272,9 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     Sort<B> sort_by_table_id(sorted, sort_def);
     sort_by_table_id.setOperatorId(-2);
     QueryTable<B> *sorted_table = sort_by_table_id.run();
+
+    log->write("Sorted Table TC: " + DataUtilities::printTable(sorted_table, -1, true), Level::INFO);
+
 
     pair<QueryTable<B> *, QueryTable<B> *> output;
     //split union table into S1 and S2
@@ -280,102 +300,113 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
+
     QuerySchema augmented_schema = deriveAugmentedSchema();
     int unioned_len = lhs_prime_->tuple_cnt_ + rhs_prime_->tuple_cnt_;
+    
     auto unioned = unionTables(lhs_prime_, rhs_prime_, augmented_schema);
-    int cursor = lhs_prime_->tuple_cnt_;
 
-    while(cursor < unioned_len) {
+    // Assign table_id to the right hand side of the union
+    for (int cursor = lhs_prime_->tuple_cnt_; cursor < unioned_len; ++cursor) {
         unioned->setField(cursor, table_id_idx_, table_id_field_);
-        ++cursor;
     }
 
+    // Clean up
     delete lhs_prime_;
     delete rhs_prime_;
 
-    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
+    // Define the sort definition based on join keys
+    SortDefinition sort_def;
+    for (const auto& key_pair : join_idxs_) {
+        sort_def.emplace_back(key_pair.first, SortDirection::ASCENDING); // Sorting by LHS join keys
+    }
+    
+    // Add table_id as a secondary sort key
+    sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
 
-    bool lhs_is_foreign_key = (foreign_key_input_ == 0);
-    // sort s.t. fkey entries are first, pkey entries are second
-    sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
-
+    // Execute the sort
     Sort<B> sorter(unioned, sort_def);
     sorter.setOperatorId(-2);
 
     return sorter.run()->clone();
 }
 
-template<typename B>
-QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
-    QuerySchema augmented_schema = deriveAugmentedSchema();
-    int unioned_len = lhs_prime_->tuple_cnt_ + rhs_prime_->tuple_cnt_;
-    bool lhs_is_foreign_key = (foreign_key_input_ == 0);
-    // always FK --> PK
-    QueryTable<B> *unioned;
-    if(lhs_is_foreign_key) {
-        unioned = unionTables(lhs_prime_, rhs_prime_, augmented_schema);
-        int cursor = lhs_prime_->tuple_cnt_;
-        while(cursor < unioned_len) {
-            unioned->setField(cursor, table_id_idx_, table_id_field_); // TODO: add batch write method for this
-            ++cursor;
-        }
-    }
-    else {
-        unioned = unionTables(rhs_prime_, lhs_prime_, augmented_schema);
-        int cursor = 0;
+// template<typename B>
+// QueryTable<B> *SortMergeJoin<B>::unionAndMergeTables() {
+//     QuerySchema augmented_schema = deriveAugmentedSchema();
+//     int unioned_len = lhs_prime_->tuple_cnt_ + rhs_prime_->tuple_cnt_;
+//     bool lhs_is_foreign_key = (foreign_key_input_ == 0);
+//     // always FK --> PK
+//     QueryTable<B> *unioned;
+//     if(lhs_is_foreign_key) {
+//         unioned = unionTables(lhs_prime_, rhs_prime_, augmented_schema);
+//         int cursor = lhs_prime_->tuple_cnt_;
+//         while(cursor < unioned_len) {
+//             unioned->setField(cursor, table_id_idx_, table_id_field_); // TODO: add batch write method for this
+//             ++cursor;
+//         }
+//     }
+//     else {
+//         unioned = unionTables(rhs_prime_, lhs_prime_, augmented_schema);
+//         int cursor = 0;
 
-        while (cursor < rhs_prime_->tuple_cnt_) {
-            unioned->setField(cursor, table_id_idx_, table_id_field_);
-            ++cursor;
-        }
+//         while (cursor < rhs_prime_->tuple_cnt_) {
+//             unioned->setField(cursor, table_id_idx_, table_id_field_);
+//             ++cursor;
+//         }
 
-    }
+//     }
 
-    delete lhs_prime_;
-    delete rhs_prime_;
+//     delete lhs_prime_;
+//     delete rhs_prime_;
 
-    // do bitonic merge instead of full sort
-    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
-    // sort s.t. fkey entries are first, pkey entries are second
+//     // do bitonic merge instead of full sort
+//     SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
+//     // sort s.t. fkey entries are first, pkey entries are second
 
-    sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
+//     sort_def.emplace_back(table_id_idx_, lhs_is_foreign_key ? SortDirection::ASCENDING : SortDirection::DESCENDING);
 
-    Sort<B> sorter(unioned, sort_def);
-    sorter.setOperatorId(-2);
-    auto normalized = sorter.normalizeTable(unioned); // normalize to move up table_id field
+//     Sort<B> sorter(unioned, sort_def);
+//     sorter.setOperatorId(-2);
+//     auto normalized = sorter.normalizeTable(unioned); // normalize to move up table_id field
 
-    int counter = 0;
-    sorter.bitonicMerge(normalized, sorter.getSortOrder(), 0, normalized->tuple_cnt_, true, counter);
+//     int counter = 0;
+//     sorter.bitonicMerge(normalized, sorter.getSortOrder(), 0, normalized->tuple_cnt_, true, counter);
 
-    unioned =  sorter.denormalizeTable(normalized);
-    unioned->order_by_ = sort_def;
+//     unioned =  sorter.denormalizeTable(normalized);
+//     unioned->order_by_ = sort_def;
 
-    delete normalized;
-    return unioned->clone();
+//     delete normalized;
+//     return unioned->clone();
 
-}
+// }
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::unionTables(QueryTable<B> *lhs, QueryTable<B> *rhs, const QuerySchema & dst_schema) {
-
     auto unioned_len = lhs->tuple_cnt_ + rhs->tuple_cnt_;
-    QueryTable<B> *unioned =  QueryTable<B>::getTable(unioned_len, dst_schema);
+    QueryTable<B> *unioned = QueryTable<B>::getTable(unioned_len, dst_schema);
 
-    // always FK --> PK
     int cursor = 0;
-    for(int i = lhs->tuple_cnt_ - 1; i >= 0; --i) {
+
+    // Copy rows from LHS table
+    for (int i = 0; i < lhs->tuple_cnt_; ++i) {
         unioned->cloneRow(cursor, 0, lhs, i);
+        // Set the table_id field for LHS rows
+        unioned->setField(cursor, table_id_idx_, Field<B>(FieldType::BOOL, false)); // Assuming false for LHS
         ++cursor;
     }
 
-
-    for(int i = 0; i < rhs->tuple_cnt_; ++i) {
+    // Copy rows from RHS table
+    for (int i = 0; i < rhs->tuple_cnt_; ++i) {
         unioned->cloneRow(cursor, 0, rhs, i);
+        // Set the table_id field for RHS rows
+        unioned->setField(cursor, table_id_idx_, Field<B>(FieldType::BOOL, true)); // Assuming true for RHS
         ++cursor;
     }
 
     return unioned;
 }
+
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs) {
@@ -398,8 +429,6 @@ QueryTable<B> *SortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *src, v
         }
     }
 
-
-
     Project<B> projection(src->clone(), builder.getExprs());
     projection.setOperatorId(-2);
     auto output = projection.run()->clone();
@@ -421,61 +450,58 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
     Field<B> alpha_2 = zero_;
     B one_b(true), zero_b(false);
 
+    // Initialize alpha counters for the first row
     B table_id = dst->getField(0, table_id_idx_).template getValue<B>();
-    B fkey_check = ((!foreign_key_input_) ? zero_b : one_b);
-    B is_foreign_key = (table_id == fkey_check);
     B dummy = dst->getDummyTag(0);
-    B same_group = one_b;
 
-    alpha_1 = Field<B>::If(same_group, Field<B>::If(is_foreign_key & !dummy, alpha_1 + one_, alpha_1),
-                           Field<B>::If(is_foreign_key & !dummy, one_, zero_));
-    alpha_2 = Field<B>::If(same_group, Field<B>::If(!is_foreign_key, alpha_2 + one_, zero_),
-                           Field<B>::If(!is_foreign_key, one_, zero_));
+    std::cout << "Row 0 - Table ID: " << table_id << ", Dummy: " << dummy << std::endl;
 
-    dst->setField(0, alpha_idx_, Field<B>::If(is_foreign_key, alpha_2, alpha_1));
+    // Increment alpha based on table ID and dummy status
+    alpha_1 = Field<B>::If(!table_id & !dummy, one_, zero_);
+    alpha_2 = Field<B>::If(table_id & !dummy, one_, zero_);
 
-    // rhs has table_id = true
+    std::cout << "Row 0 - Alpha1: " << alpha_1 << ", Alpha2: " << alpha_2 << std::endl;
 
-    for(int i = 1; i < dst->tuple_cnt_; i++) {
+    dst->setField(0, alpha1_idx_, alpha_1);
+    dst->setField(0, alpha2_idx_, alpha_2);
+
+    // Iteratively accumulate alpha values for each row
+    for (int i = 1; i < dst->tuple_cnt_; ++i) {
         table_id = dst->getField(i, table_id_idx_).template getValue<B>();
-        is_foreign_key = (table_id == fkey_check);
         dummy = dst->getDummyTag(i);
+        B same_group = joinMatch(dst, i - 1, i);
 
-        same_group = joinMatch(dst,  i-1, i);
-        alpha_1 = Field<B>::If(same_group, Field<B>::If(is_foreign_key & !dummy, alpha_1 + one_, alpha_1),
-                               Field<B>::If(is_foreign_key & !dummy, one_, zero_));
-        alpha_2 = Field<B>::If(same_group, Field<B>::If(!is_foreign_key, alpha_2 + one_, zero_),
-                               Field<B>::If(!is_foreign_key, one_, zero_));
+        std::cout << "Row " << i << " - Table ID: " << table_id << ", Dummy: " << dummy << ", Same Group: " << same_group << std::endl;
 
-        Field<B> to_write = Field<B>::If(is_foreign_key, alpha_2, alpha_1);
-        dst->setField(i, alpha_idx_, to_write);
+        // Update alpha values based on group continuity and table ID
+        alpha_1 = Field<B>::If(same_group, Field<B>::If(!table_id & !dummy, alpha_1 + one_, alpha_1), zero_);
+        alpha_2 = Field<B>::If(same_group, Field<B>::If(table_id & !dummy, alpha_2 + one_, alpha_2), zero_);
+
+        std::cout << "Row " << i << " - Updated Alpha1: " << alpha_1 << ", Alpha2: " << alpha_2 << std::endl;
+
+        dst->setField(i, alpha1_idx_, alpha_1);
+        dst->setField(i, alpha2_idx_, alpha_2);
     }
 
-    int last_idx = dst->tuple_cnt_ - 1;
+    // Backpropagate final alpha values
+    for (int i = dst->tuple_cnt_ - 2; i >= 0; --i) {
+        B next_same_group = joinMatch(dst, i, i + 1);
 
-    table_id = dst->getField(last_idx, table_id_idx_).template getValue<B>();
-    is_foreign_key = (table_id == fkey_check);
-    same_group = one_b;
-    dummy = dst->getDummyTag(last_idx);
+        // Get next row's alpha values
+        Field<B> next_alpha_1 = dst->getField(i + 1, alpha1_idx_);
+        Field<B> next_alpha_2 = dst->getField(i + 1, alpha2_idx_);
 
-    // inputs are sorted fkey --> pkey
-    //if we are on the last entry and it is fkey, then we know there are no matches so we set alpha_2 to 0
-    alpha_1 = Field<B>::If(is_foreign_key, zero_, Field<B>::If(!is_foreign_key & !dummy, one_, zero_));
-    dst->setField(last_idx, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getField(last_idx, alpha_idx_)));
-    dst->setField(last_idx, alpha_idx_, Field<B>::If(dst->getDummyTag(last_idx), zero_, dst->getField(last_idx, alpha_idx_)));
+        // Update current row's alpha if group changes
+        alpha_1 = Field<B>::If(!next_same_group, next_alpha_1, alpha_1);
+        alpha_2 = Field<B>::If(!next_same_group, next_alpha_2, alpha_2);
 
-    // copy up max alpha
-    for(int i = last_idx-1; i >= 0; i--) {
-        table_id = dst->getField(i, table_id_idx_).template getValue<B>();
-        is_foreign_key = (table_id == fkey_check);
-        B same_group = joinMatch(dst,  i+1, i);
-        B dummy = dst->getDummyTag(i);
+        std::cout << "Row " << i << " - Backpropagated Alpha1: " << alpha_1 << ", Alpha2: " << alpha_2 << std::endl;
 
-        alpha_1 = Field<B>::If(is_foreign_key & same_group, alpha_1, Field<B>::If(!is_foreign_key & !dummy, one_, zero_));
-        dst->setField(i, alpha_idx_, Field<B>::If(is_foreign_key, alpha_1, dst->getField(i, alpha_idx_)));
-        dst->setField(i, alpha_idx_, Field<B>::If(dst->getDummyTag(i), zero_, dst->getField(i, alpha_idx_)));
+        dst->setField(i, alpha1_idx_, alpha_1);
+        dst->setField(i, alpha2_idx_, alpha_2);
     }
 }
+
 
 
 
