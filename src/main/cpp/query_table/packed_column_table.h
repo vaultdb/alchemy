@@ -22,7 +22,7 @@ namespace vaultdb {
         typedef struct unpacked_t {
             std::vector<emp::Bit> unpacked_wire;
             int page_idx_;
-            bool dirty_bit_ = false; // TODO: if dirty, flush this to column_data_ when we evict an entry from unpacked_wires_
+            bool dirty_bit_ = false;
         }  Unpacked;
 
         mutable map<int, Unpacked> unpacked_wires_;
@@ -46,7 +46,19 @@ namespace vaultdb {
         }
 
         PackedColumnTable(const PackedColumnTable &src) : QueryTable<Bit>(src) {
+            assert(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE);
             setSchema(src.schema_);
+
+            if(src.tuple_cnt_ == 0)
+                return;
+
+            for(int i = 0; i < schema_.getFieldCount(); ++i) {
+                unpacked_wires_[i].unpacked_wire = std::vector<emp::Bit>(wires_per_field_[i] * 128);
+                memcpy(unpacked_wires_[i].unpacked_wire.data(), src.unpacked_wires_[i].unpacked_wire.data(), wires_per_field_[i] * 128);
+            }
+
+            unpacked_wires_[-1].unpacked_wire = std::vector<emp::Bit>(128);
+            memcpy(unpacked_wires_[-1].unpacked_wire.data(), src.unpacked_wires_[-1].unpacked_wire.data(), 128);
         }
 
         int getWireIdx(const int & row, const int & col) const {
@@ -168,13 +180,14 @@ namespace vaultdb {
                 }
                 else {
                     wires_per_field_[i] = packed_wires;
-                    fields_per_wire_[i] = 0;
+                    fields_per_wire_[i] = 1;
                     wires_cnt_[i] = tuple_cnt_ * packed_wires;
                 }
             }
 
             wires_per_field_[-1] = 1;
             fields_per_wire_[-1] = 128;
+            wires_cnt_[-1] = tuple_cnt_ / 128 + (tuple_cnt_ % 128 != 0);
 
         }
 
