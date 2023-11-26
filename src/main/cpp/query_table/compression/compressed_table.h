@@ -38,7 +38,7 @@ namespace vaultdb {
             column_encodings_[-1]->initializeColumn(dummy_tag);
         }
 
-        CompressedTable(QueryTable<B> *src, const map<int, ColumnEncodingModel> & encodings) : QueryTable<B>(src->tuple_cnt_, src->getSchema(), src->order_by_) {
+        CompressedTable(QueryTable<B> *src, const map<int, CompressionScheme> & encodings) : QueryTable<B>(src->tuple_cnt_, src->getSchema(), src->order_by_) {
             assert(src->getSchema().getFieldCount() == encodings.size());
             SystemConfiguration & s = SystemConfiguration::getInstance();
             assert(s.storageModel() == StorageModel::COMPRESSED_STORE);
