@@ -62,7 +62,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_supplier) {
 
     // join output schema: (customer, supplier)
     // c_custkey, c_nationkey, c_mktsegment, s_suppkey, s_nationkey
-    Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(customer_input, 0, supplier_input, 3);
+    Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(customer_input, 1, supplier_input, 1);
 
     auto join = new SortMergeJoin<bool>(customer_input, supplier_input,  predicate);
     auto joined = join->run();

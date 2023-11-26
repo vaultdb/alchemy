@@ -13,42 +13,11 @@
 using namespace vaultdb;
 using namespace Logging;
 
-// lhs assumed to be fkey
 template<typename B>
-SortMergeJoin<B>::SortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key,  Expression<B> *predicate,
-                                          const SortDefinition &sort) : Join<B>(foreign_key, primary_key, predicate, sort) {
-    this->output_cardinality_ = foreign_key->getOutputCardinality();
-    setup();
+SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate,
+                               const SortDefinition &sort) : Join<B>(lhs, rhs, predicate, sort) {
+   setup();
 }
-
-
-template<typename B>
-SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *foreign_key, QueryTable<B> *primary_key, Expression<B> *predicate,
-                                          const SortDefinition &sort)  : Join<B>(foreign_key, primary_key, predicate, sort) {
-    this->output_cardinality_ = foreign_key->tuple_cnt_;
-    setup();
-}
-
-
-template<typename B>
-SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,
-                                          const SortDefinition &sort) : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey != 0) {
-
-    assert(fkey == 0 || fkey == 1);
-    this->output_cardinality_ = (fkey == 0) ? lhs->getOutputCardinality() : rhs->getOutputCardinality();
-    setup();
-}
-
-
-template<typename B>
-SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
-                                          const SortDefinition &sort)  : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey != 0) {
-
-    assert(fkey == 0 || fkey == 1);
-    this->output_cardinality_ = (fkey == 0) ? lhs->tuple_cnt_ : rhs->tuple_cnt_;
-    setup();
-}
-
 
 template<typename B>
 void SortMergeJoin<B>::setup() {
@@ -244,13 +213,20 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     vector<int> lhs_keys, rhs_keys;
 
     for(auto key_pair : join_idxs_) {
-        // visitor always outputs lhs, rhs
         lhs_keys.emplace_back(key_pair.first);
-        rhs_keys.emplace_back(key_pair.second - lhs->getSchema().getFieldCount());
+        rhs_keys.emplace_back(key_pair.second);
+        //rhs_keys.emplace_back(key_pair.second - lhs->getSchema().getFieldCount());
     }
+    
+    log->write("Pre Projection LHS: " + DataUtilities::printTable(lhs, 10, true), Level::INFO);
+    log->write("Pre Projection RHS: " + DataUtilities::printTable(rhs, 10, true), Level::INFO);
 
     lhs_prime_ = projectJoinKeyToFirstAttr(lhs, lhs_keys, true);
     rhs_prime_ = projectJoinKeyToFirstAttr(rhs, rhs_keys, false);
+
+    log->write("Post Projection LHS: " + DataUtilities::printTable(lhs_prime_, 10, true), Level::INFO);
+    log->write("Post Projection RHS: " + DataUtilities::printTable(rhs_prime_, 10, true), Level::INFO);
+
 
     // set up extended schema
     QuerySchema augmented_schema = getAugmentedSchema();
@@ -260,7 +236,12 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     alpha1_idx_ = augmented_schema.getFieldCount() - 3;
 
     auto sorted = unionAndSortTables();
+
+    log->write("Pre Alphas: " + DataUtilities::printTable(sorted, 15, true), Level::INFO);
+
     initializeAlphas(sorted);
+
+    log->write("Post Alphas: " + DataUtilities::printTable(sorted, -1, true), Level::INFO);
 
     // sort by table ID followed by join key
     SortDefinition sort_def;
@@ -311,15 +292,15 @@ QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
         unioned->setField(cursor, table_id_idx_, table_id_field_);
     }
 
-    // Clean up
     delete lhs_prime_;
     delete rhs_prime_;
 
     // Define the sort definition based on join keys
     SortDefinition sort_def;
-    for (const auto& key_pair : join_idxs_) {
-        sort_def.emplace_back(key_pair.first, SortDirection::ASCENDING); // Sorting by LHS join keys
-    }
+    // for (const auto& key_pair : join_idxs_) {
+    //     sort_def.emplace_back(key_pair.first, SortDirection::ASCENDING); // Sorting by LHS join keys
+    // }
+    sort_def.emplace_back(0, SortDirection::ASCENDING); // Sorting by join key
     
     // Add table_id as a secondary sort key
     sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
@@ -446,62 +427,47 @@ QueryTable<B> *SortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *src, v
 
 template<typename B>
 void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
-    Field<B> alpha_1 = zero_;
-    Field<B> alpha_2 = zero_;
     B one_b(true), zero_b(false);
+    Field<B> alpha_1 = zero_, alpha_2 = zero_;
+    int last_key = -1;
+    B last_table_id = zero_b;
 
-    // Initialize alpha counters for the first row
-    B table_id = dst->getField(0, table_id_idx_).template getValue<B>();
-    B dummy = dst->getDummyTag(0);
+    for (int i = 0; i < dst->tuple_cnt_; ++i) {
+        int current_key = dst->getField(i, 0).template getValue<int>();
+        B current_table_id = dst->getField(i, table_id_idx_).template getValue<B>();
+        B dummy = dst->getDummyTag(i);
 
-    std::cout << "Row 0 - Table ID: " << table_id << ", Dummy: " << dummy << std::endl;
+        B key_changed = (i == 0) ? one_b : !(current_key == last_key);
+        B table_id_changed = (i == 0) ? one_b : !(current_table_id == last_table_id);
+        B group_changed = key_changed | table_id_changed;
 
-    // Increment alpha based on table ID and dummy status
-    alpha_1 = Field<B>::If(!table_id & !dummy, one_, zero_);
-    alpha_2 = Field<B>::If(table_id & !dummy, one_, zero_);
-
-    std::cout << "Row 0 - Alpha1: " << alpha_1 << ", Alpha2: " << alpha_2 << std::endl;
-
-    dst->setField(0, alpha1_idx_, alpha_1);
-    dst->setField(0, alpha2_idx_, alpha_2);
-
-    // Iteratively accumulate alpha values for each row
-    for (int i = 1; i < dst->tuple_cnt_; ++i) {
-        table_id = dst->getField(i, table_id_idx_).template getValue<B>();
-        dummy = dst->getDummyTag(i);
-        B same_group = joinMatch(dst, i - 1, i);
-
-        std::cout << "Row " << i << " - Table ID: " << table_id << ", Dummy: " << dummy << ", Same Group: " << same_group << std::endl;
-
-        // Update alpha values based on group continuity and table ID
-        alpha_1 = Field<B>::If(same_group, Field<B>::If(!table_id & !dummy, alpha_1 + one_, alpha_1), zero_);
-        alpha_2 = Field<B>::If(same_group, Field<B>::If(table_id & !dummy, alpha_2 + one_, alpha_2), zero_);
-
-        std::cout << "Row " << i << " - Updated Alpha1: " << alpha_1 << ", Alpha2: " << alpha_2 << std::endl;
+        alpha_1 = Field<B>::If(group_changed, Field<B>::If(!current_table_id & !dummy, one_, Field<B>::If(!dummy & key_changed, zero_, alpha_1)), Field<B>::If(!current_table_id, alpha_1 + one_, alpha_1));
+        alpha_2 = Field<B>::If(group_changed, Field<B>::If(current_table_id & !dummy, one_, zero_), Field<B>::If(current_table_id, alpha_2 + one_, alpha_2));
 
         dst->setField(i, alpha1_idx_, alpha_1);
         dst->setField(i, alpha2_idx_, alpha_2);
+
+        last_key = current_key;
+        last_table_id = current_table_id;
     }
 
-    // Backpropagate final alpha values
-    for (int i = dst->tuple_cnt_ - 2; i >= 0; --i) {
-        B next_same_group = joinMatch(dst, i, i + 1);
+    // Backward propagation
+    Field<B> back_prop_alpha_1 = zero_, back_prop_alpha_2 = zero_;
+    for (int i = dst->tuple_cnt_ - 1; i >= 0; --i) {
+        int current_key = dst->getField(i, 0).template getValue<int>();
+        B current_table_id = dst->getField(i, table_id_idx_).template getValue<B>();
 
-        // Get next row's alpha values
-        Field<B> next_alpha_1 = dst->getField(i + 1, alpha1_idx_);
-        Field<B> next_alpha_2 = dst->getField(i + 1, alpha2_idx_);
+        B key_changed = (i == dst->tuple_cnt_ - 1) ? one_b : !(current_key == dst->getField(i + 1, 0).template getValue<int>());
+        back_prop_alpha_1 = Field<B>::If(key_changed, dst->getField(i, alpha1_idx_), back_prop_alpha_1);
+        back_prop_alpha_2 = Field<B>::If(key_changed, dst->getField(i, alpha2_idx_), back_prop_alpha_2);
 
-        // Update current row's alpha if group changes
-        alpha_1 = Field<B>::If(!next_same_group, next_alpha_1, alpha_1);
-        alpha_2 = Field<B>::If(!next_same_group, next_alpha_2, alpha_2);
-
-        std::cout << "Row " << i << " - Backpropagated Alpha1: " << alpha_1 << ", Alpha2: " << alpha_2 << std::endl;
+        alpha_1 = Field<B>::If(!current_table_id, back_prop_alpha_1, dst->getField(i, alpha1_idx_));
+        alpha_2 = Field<B>::If(current_table_id, back_prop_alpha_2, dst->getField(i, alpha2_idx_));
 
         dst->setField(i, alpha1_idx_, alpha_1);
         dst->setField(i, alpha2_idx_, alpha_2);
     }
 }
-
 
 
 
