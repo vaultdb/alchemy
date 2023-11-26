@@ -282,7 +282,6 @@ Bit Field<Bit>::operator==(const Field<Bit> &r) const {
 template<typename B>
 SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDesc &desc, const int &party, const bool &send) {
 
-    FieldType type;
 
     switch (f.type_) {
         case FieldType::BOOL: {

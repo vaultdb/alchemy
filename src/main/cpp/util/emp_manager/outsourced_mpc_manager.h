@@ -56,6 +56,10 @@ namespace  vaultdb {
 
         void unpack(Bit *src, Bit *dst, const int & bit_cnt) override { throw; }
 
+        void sendPublic(const int & to_send) override { throw; }
+
+        int recvPublic() override { throw; }
+
 
     };
 
@@ -173,6 +177,19 @@ namespace  vaultdb {
         void unpack(Bit *src, Bit *dst, const int & bit_cnt) override {
             protocol_->unpack(dst, (OMPCPackedWire *) src, bit_cnt);
         }
+
+        void sendPublic(const int & to_send) override {
+            tpio_ctrl_->send_data(&to_send, 4);
+            tpio_ctrl_->flush();
+        }
+
+        int recvPublic() override {
+            int to_recv;
+            tpio_ctrl_->recv_data(&to_recv, 4);
+            tpio_ctrl_->flush();
+            return to_recv;
+        }
+
 
     };
 }

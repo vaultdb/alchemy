@@ -8,6 +8,8 @@ void PlainEncoding<B>::secretShare(QueryTable<Bit> *dst, const int &dst_col) {
     // no bit packing, just taking a plaintext column and converting it into a secret shared one
     // assume source compression scheme is same as dst compression scheme
     assert(dst->storageModel() == StorageModel::COMPRESSED_STORE);
+    assert(!this->parent_table_->isEncrypted());
+
 
     SystemConfiguration &s = SystemConfiguration::getInstance();
     auto  manager = s.emp_manager_;
@@ -36,7 +38,6 @@ void PlainEncoding<B>::secretShare(QueryTable<Bit> *dst, const int &dst_col) {
             break;
         }
         case FieldType::STRING: {
-            // temporarily reverse all strings and then follow process of INT/LONG
             int str_len = dst->getSchema().getField(dst_col).getStringLength();
             dst_col_size_bits *= str_len;
 //            if(sender) {
@@ -111,10 +112,10 @@ void PlainEncoding<B>::secretShareForBitPacking(QueryTable<Bit> *dst, const int 
         bool *bools = new bool[bool_cnt];
 
         if (f_type == FieldType::SECURE_INT) {
-            serializeForBitPacking<int32_t>(bools, (int32_t *) this->column_data_, row_cnt, field_size_bits, dst_encoding->field_min_);
+            ColumnEncoding<B>::serializeForBitPacking(bools, (int32_t *) this->column_data_, row_cnt, field_size_bits, (int32_t) dst_encoding->field_min_);
         }
         else if(f_type == FieldType::SECURE_LONG){
-            serializeForBitPacking<int64_t>(bools, (int64_t *) this->column_data_, row_cnt, field_size_bits, dst_encoding->field_min_);
+            ColumnEncoding<B>::serializeForBitPacking(bools, (int64_t *) this->column_data_, row_cnt, field_size_bits, dst_encoding->field_min_);
         }
 
         manager->feed((Bit *) dst_encoding->column_data_, sending_party, bools, bool_cnt);
@@ -133,9 +134,10 @@ void PlainEncoding<B>::revealInsecure(QueryTable<bool> *dst, const int & dst_col
     SystemConfiguration &s = SystemConfiguration::getInstance();
     auto manager = s.emp_manager_;
 
+    assert(this->parent_table_->isEncrypted()); // can't reveal if not encrypted!
     assert(dst->storageModel() == StorageModel::COMPRESSED_STORE);
     auto dst_table = (CompressedTable<bool> *) dst;
-    assert(dst_table->column_encodings_.at(dst_col)->columnEncoding() == ColumnEncodingModel::PLAIN);
+    assert(dst_table->column_encodings_.at(dst_col)->columnEncoding() == CompressionScheme::PLAIN);
 
     switch(f_type) {
         case FieldType::SECURE_BOOL: {
@@ -184,68 +186,7 @@ void PlainEncoding<B>::revealInsecure(QueryTable<bool> *dst, const int & dst_col
 }
 
 
-template<typename B>
-void PlainEncoding<B>::cloneColumn(const int &dst_idx, QueryTable<B> *s, const int &src_col, const int &src_idx) {
-    assert(s->storageModel() == StorageModel::COMPRESSED_STORE);
-    auto src = (CompressedTable<B> *) s;
-    auto src_encoding = src->column_encodings_.at(src_col);
 
-    assert(src_encoding->columnEncoding() == ColumnEncodingModel::PLAIN); // clone only from columns encoded with the same scheme
-
-    int8_t *write_ptr = this->column_data_ + dst_idx * this->field_size_bytes_;
-    int8_t *read_ptr = src_encoding->column_data_ + src_idx * this->field_size_bytes_;
-
-    int src_tuples =   src->tuple_cnt_ - src_idx;
-    auto slots_remaining = this->parent_table_->tuple_cnt_ - dst_idx;
-    if(src_tuples > slots_remaining) {
-        src_tuples = slots_remaining; // truncate to our available slots
-    }
-
-    memcpy(write_ptr, read_ptr, this->field_size_bytes_ * src_tuples);
-}
-
-template<typename B>
-void PlainEncoding<B>::cloneField(const int &dst_row, const QueryTable<B> *s, const int &src_row, const int &src_col) {
-    assert(s->storageModel() == StorageModel::COMPRESSED_STORE);
-    auto src = (CompressedTable<B> *) s;
-    auto src_encoding = src->column_encodings_.at(src_col);
-
-    assert(src_encoding->columnEncoding() == ColumnEncodingModel::PLAIN); // clone only from columns encoded with the same scheme
-    assert(this->field_size_bits_ == src_encoding->field_size_bits_);
-
-    int8_t *write_ptr = this->column_data_ + dst_row * this->field_size_bytes_;
-    int8_t *read_ptr = src_encoding->column_data_ + src_row * this->field_size_bytes_;
-    memcpy(write_ptr, read_ptr, this->field_size_bytes_);
-
-}
-
-template<>
-void PlainEncoding<bool>::compareSwap(const bool &swap, const int &lhs_row, const int &rhs_row) {
-    int8_t *l = this->column_data_ + lhs_row * this->field_size_bytes_;
-    int8_t *r = this->column_data_ + rhs_row * this->field_size_bytes_;
-    if(swap) {
-        // swap in place
-        for (int i = 0; i < this->field_size_bytes_; ++i) {
-            *l = *l ^ *r;
-            *r = *r ^ *l;
-            *l = *l ^ *r;
-
-            ++l;
-            ++r;
-        }
-    }
-}
-
-template<>
-void PlainEncoding<Bit>::compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) {
-    Bit *lhs = (Bit *) (this->column_data_ + lhs_row * this->field_size_bytes_);
-    Bit *rhs = (Bit *) (this->column_data_ + rhs_row * this->field_size_bytes_);
-
-    for(int i = 0; i < this->field_size_bits_; ++i) {
-        emp::swap(swap, lhs[i], rhs[i]);
-    }
-
-}
 
 template class vaultdb::PlainEncoding<bool>;
 template class vaultdb::PlainEncoding<emp::Bit>;

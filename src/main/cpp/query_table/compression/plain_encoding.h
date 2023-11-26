@@ -2,7 +2,6 @@
 #define _PLAIN_ENCODING_
 #include "column_encoding.h"
 #include "query_table/query_table.h"
-#include "util/field_utilities.h"
 
 namespace vaultdb {
     // Column encoding with no compression
@@ -10,6 +9,12 @@ namespace vaultdb {
     template<typename B>
     class PlainEncoding : public ColumnEncoding<B> {
         public:
+        // no compression, so basically a copy constructor
+        PlainEncoding<B>(QueryTable<B> *dst, const int & dst_col, QueryTable<B> *src, const int & src_col)  : ColumnEncoding<B>(dst, dst_col) {
+            int dst_size = this->parent_table_->tuple_cnt_ * this->field_size_bytes_;
+            memcpy(this->column_data_, src->column_data_[src_col].data(), dst_size);
+        }
+
         PlainEncoding<B>(QueryTable<B> *parent, const int & dst_col) : ColumnEncoding<B>(parent, dst_col) {
             // "true" type size, use PackedEncoding for bit packing
             QueryFieldDesc desc = this->parent_table_->getSchema().getField(this->column_idx_);
@@ -33,38 +38,27 @@ namespace vaultdb {
             memcpy(this->column_data_, src.column_data_, dst_size);
         }
 
-        Field<B> getField(const int & row) override {
-            int8_t *src =  this->column_data_ + this->field_size_bytes_ * row;
-            QueryFieldDesc desc = this->parent_table_->getSchema().getField(this->column_idx_);
-            return Field<B>::deserialize(desc, src);
-        }
-
-        void setField(const int & row, const Field<B> & f) override {
-            int8_t *dst = this->column_data_ + this->field_size_bytes_ * row;
-            Field<B>::serialize(dst, f, this->parent_table_->getSchema().getField(this->column_idx_));
+        Field<B> getDecompressedField(const int & row) override {
+            return this->getField(row);
         }
 
         void deserializeField(const int & row, const int8_t *src) override {
-            int8_t *dst = this->column_data_ + this->field_size_bytes_ * row;
+            int8_t *dst = this->getFieldPtr(row);
             memcpy(dst, src, this->field_size_bytes_);
         }
 
-        ColumnEncodingModel columnEncoding() override { return ColumnEncodingModel::PLAIN; }
+        CompressionScheme columnEncoding() override { return CompressionScheme::PLAIN; }
 
         void resize(const int & tuple_cnt) override {
             vector<int8_t> & dst = this->parent_table_->column_data_[this->column_idx_]; // reference to column data
             dst.resize(tuple_cnt * this->field_size_bytes_);
             this->column_data_ = dst.data();
         }
-        void compress(QueryTable<B> *src, const int & src_col) override {
-            auto dst_size = this->field_size_bytes_ * this->parent_table_->tuple_cnt_;
-            auto src_ptr = src->column_data_.at(src_col).data();
-            memcpy(this->column_data_, src_ptr, dst_size);
-        }
 
         void secretShare(QueryTable<Bit> *dst, const int & dst_col) override;
 
         void revealInsecure(QueryTable<bool> *dst, const int & dst_col, const int & party = PUBLIC) override;
+
         ColumnEncoding<B> *clone(QueryTable<B> *dst, const int & dst_col) override {
             assert(dst->tuple_cnt_ == this->parent_table_->tuple_cnt_);
             auto dst_encoding = new PlainEncoding<B>(dst, dst_col);
@@ -72,16 +66,14 @@ namespace vaultdb {
             return dst_encoding;
         }
 
-        void cloneColumn(const int & dst_idx, QueryTable<B> *s, const int & src_col, const int & src_idx) override;
-        void cloneField(const int & dst_row, const QueryTable<B> *src, const int & src_row, const int & src_col) override;
-        void compareSwap(const B &swap, const int &lhs_row, const int &rhs_row) override;
+
+
         void initializeColumn(const Field<B> & field) override {
             auto desc = this->parent_table_->getSchema().getField(this->column_idx_);
             auto field_type = desc.getType();
             assert(field_type == field.getType());
             int8_t *dst = this->column_data_;
             int cnt = this->parent_table_->tuple_cnt_;
-
 
             switch(field_type) {
                 case FieldType::BOOL: {
@@ -129,22 +121,15 @@ namespace vaultdb {
 
         }
 
+        PlainEncoding<B> *decompress(QueryTable<B> *dst, const int &dst_col) override {
+            return (PlainEncoding<B> *) this->clone(dst, dst_col);
+        }
+
     private:
 
         void secretShareForBitPacking(QueryTable<Bit> *dst_table, const int & dst_col);
         // serialize a column of type T into a bit array where each T will be projected down to field_bit_cnt bits.
-        template <typename T>
-         void serializeForBitPacking(bool *dst, T *src, int row_cnt, int field_bit_cnt, T field_min) {
-            bool b[field_bit_cnt];
-            auto write_ptr = dst;
 
-            for (int i = 0; i < row_cnt; ++i) {
-                T to_share = src[i] - field_min;
-                emp::int_to_bool<T>(b, to_share, field_bit_cnt);
-                memcpy(write_ptr, b, field_bit_cnt); // still plaintext
-                write_ptr += field_bit_cnt;
-            }
-        }
 
         template<typename T>
         void initializeHelper(const Field<B> & field, int8_t *dst) {

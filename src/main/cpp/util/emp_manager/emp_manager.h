@@ -25,6 +25,11 @@ namespace vaultdb {
         virtual void pack(Bit *src, Bit *dst, const int & bit_cnt) = 0;
         virtual void unpack(Bit *src, Bit *dst, const int & bit_cnt) = 0;
 
+        // sendingParty sends an int to all parties
+        virtual void sendPublic(const int & to_send) = 0;
+        // all others call recvPublic at the same time to get the int
+        virtual int recvPublic() = 0;
+
         virtual void reveal(bool *dst, const int & party, Bit *src, const int & bit_cnt) = 0;
         virtual string revealToString(const emp::Integer & i, const int & party = PUBLIC)  const = 0;
         virtual size_t getTableCardinality(const int & local_cardinality) = 0;

@@ -1,0 +1,80 @@
+#ifndef _DICTIONARY_ENCODING_
+#define _DICTIONARY_ENCODING_
+
+#include "column_encoding.h"
+#include "plain_encoding.h"
+#include "compressed_table.h"
+
+namespace vaultdb {
+    template<typename B>
+    class DictionaryEncoding : public ColumnEncoding<B> {
+    public:
+
+        map<vector<int8_t>, Field<B> > dictionary_;
+        map<Field<B>, vector<int8_t> > reverse_dictionary_;
+        int32_t dictionary_entry_cnt_ = 0; // count of entries in dictionary
+        int32_t dictionary_bits_ = 0; // # of bits needed to represent dictionary entry
+        QueryFieldDesc desc_;
+
+        DictionaryEncoding<B>(QueryTable<B> *dst, const int &dst_col, const QueryTable<B> *src, const int &src_col);
+
+        // copy constructor, remapping it onto a new table
+        DictionaryEncoding(QueryTable<B> *dst, const int & dst_col, DictionaryEncoding<B> & src);
+
+        // this is just for setup, for use in secretShare method
+        // initialize compression there
+        DictionaryEncoding(QueryTable<B> *dst, const int &dst_col)  : ColumnEncoding<B>(dst, dst_col) {
+            ((CompressedTable<B> *) dst)->column_encodings_[dst_col] = this;
+        }
+
+        Field<B> getField(const int &row) override;
+
+        Field<B> getDecompressedField(const int &row) override;
+
+        void setField(const int &row, const Field<B> &f) override;
+
+
+        // clone a pre-existing compressed column
+        ColumnEncoding<B> *clone(QueryTable<B> *dst, const int &dst_col) override {
+            return new DictionaryEncoding<B>(dst, dst_col, *this);
+        }
+
+
+        CompressionScheme columnEncoding() override {
+            return CompressionScheme::DICTIONARY;
+        }
+
+        void resize(const int &tuple_cnt) override {
+            throw;
+        }
+
+        void revealInsecure(QueryTable<bool> *dst, const int &dst_col, const int &party) override;
+
+        void secretShare(QueryTable<Bit> *dst, const int &dst_col) override;
+
+        void initializeColumn(const Field<B> &field) override {
+            // not supported here because if all fields have the same value then we probably need to initialize and build a dictionary first!
+            throw;
+        }
+
+        PlainEncoding<B> *decompress(QueryTable<B> *dst, const int &dst_col) override {
+            // unlikely to do this when B == Bit - just including it for completeness
+            // can do this obliviously but it's an n^2 operation
+            assert(dst->tuple_cnt_ == this->parent_table_->tuple_cnt_);
+
+            PlainEncoding<B> *dst_encoding = new PlainEncoding<B>(dst, dst_col);
+            for(int i = 0; i < dst->tuple_cnt_; ++i) {
+                Field<B> f = getDecompressedField(i);
+                dst_encoding->setField(i, f);
+            }
+            return dst_encoding;
+        }
+
+
+    };
+
+
+}
+
+
+#endif
