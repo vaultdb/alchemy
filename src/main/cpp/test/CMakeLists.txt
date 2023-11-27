@@ -53,6 +53,8 @@ set(Labels "LABELS;UnitTest;LABELS;PlainTest")
 #non-private tests
 package_add_test(field_expression_test plain/field_expression_test.cpp plain/plain_base_test.cpp)
 package_add_test(csv_reader_test csv_reader_test.cpp plain/plain_base_test.cpp)
+package_add_test(compressed_table_test plain/compressed_table_test.cpp plain/plain_base_test.cpp)
+
 package_add_test(filter_test plain/filter_test.cpp plain/plain_base_test.cpp)
 package_add_test(project_test plain/project_test.cpp plain/plain_base_test.cpp)
 package_add_test(sort_test plain/sort_test.cpp plain/plain_base_test.cpp)
@@ -113,6 +115,7 @@ package_add_test(fully_optimized_test mpc/fully_optimized_test.cpp  mpc/emp_base
 package_add_test(secure_plan_enumeration_test mpc/secure_plan_enumeration_test.cpp  mpc/emp_base_test.cpp)
 package_add_test(join_cost_comparison_test mpc/join_cost_comparison_test.cpp mpc/emp_base_test.cpp)
 package_add_test(emp_compression_setup_test mpc/emp_compression_setup_test.cpp  mpc/emp_base_test.cpp)
+
 unset(Labels)
 set(Labels "LABELS;UnitTest;LABELS;EmpTest;LABELS;ZkTest")
 
