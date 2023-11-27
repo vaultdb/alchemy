@@ -11,8 +11,10 @@ namespace vaultdb {
         public:
         // no compression, so basically a copy constructor
         PlainEncoding<B>(QueryTable<B> *dst, const int & dst_col, QueryTable<B> *src, const int & src_col)  : ColumnEncoding<B>(dst, dst_col) {
-            int dst_size = this->parent_table_->tuple_cnt_ * this->field_size_bytes_;
-            memcpy(this->column_data_, src->column_data_[src_col].data(), dst_size);
+            int dst_size_bytes = this->parent_table_->tuple_cnt_ * this->field_size_bytes_;
+            dst->column_data_[dst_col] = vector<int8_t>(dst_size_bytes);
+            this->column_data_ = dst->column_data_[dst_col].data();
+            memcpy(this->column_data_, src->column_data_[src_col].data(), dst_size_bytes);
         }
 
         PlainEncoding<B>(QueryTable<B> *parent, const int & dst_col) : ColumnEncoding<B>(parent, dst_col) {
@@ -62,7 +64,7 @@ namespace vaultdb {
         ColumnEncoding<B> *clone(QueryTable<B> *dst, const int & dst_col) override {
             assert(dst->tuple_cnt_ == this->parent_table_->tuple_cnt_);
             auto dst_encoding = new PlainEncoding<B>(dst, dst_col);
-            memcpy(dst_encoding->column_data_, this->column_data_, this->parent_table_->tuple_cnt_ * this->field_size_bytes_);
+            memcpy(dst_encoding->column_data_, this->column_data_, dst->tuple_cnt_ * this->field_size_bytes_);
             return dst_encoding;
         }
 
@@ -122,7 +124,11 @@ namespace vaultdb {
         }
 
         PlainEncoding<B> *decompress(QueryTable<B> *dst, const int &dst_col) override {
-            return (PlainEncoding<B> *) this->clone(dst, dst_col);
+            // plain encoding already alloc'd here
+            auto dst_encoding = (PlainEncoding<B> *) ColumnEncoding<B>::getColumnEncoding(dst, dst_col);
+            assert(dst_encoding->columnEncoding() == CompressionScheme::PLAIN);
+            memcpy(dst_encoding->column_data_, this->column_data_, dst->tuple_cnt_ * dst_encoding->field_size_bytes_);
+            return dst_encoding;
         }
 
     private:
