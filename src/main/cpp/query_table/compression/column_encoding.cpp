@@ -11,9 +11,10 @@ ColumnEncoding<B> *
 ColumnEncoding<B>::compress(QueryTable<B> *src, const int &src_col, QueryTable<B> *dst, const int &dst_col, const CompressionScheme &dst_encoding) {
     // only compress from plain data, don't support converting from one compression model to another
     assert(((CompressedTable<B> *) src)->column_encodings_.at(src_col)->columnEncoding() == CompressionScheme::PLAIN);
-
+    assert(!src->isEncrypted()); // compression algos only run in plaintext -- too many data-dependent branches to do this under MPC efficiently
     switch(dst_encoding) {
         case CompressionScheme::PLAIN:
+        case CompressionScheme::BIT_PACKED:
             return new PlainEncoding<B>(dst, dst_col, src, src_col);
         case CompressionScheme::DICTIONARY:
             return new DictionaryEncoding<B>(dst, dst_col, src, src_col);

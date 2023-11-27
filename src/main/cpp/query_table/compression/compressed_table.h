@@ -5,6 +5,7 @@
 #include "column_encoding.h"
 #include "plain_encoding.h"
 #include "bit_packed_encoding.h"
+#include "dictionary_encoding.h"
 #include "query_table/secure_tuple.h"
 #include "query_table/plain_tuple.h"
 
@@ -47,10 +48,14 @@ namespace vaultdb {
             setSchema(src->getSchema());
 
             for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
-              column_encodings_[i] = ColumnEncoding<B>::compress(src, i, this, i, encodings.at(i));
+              auto encoding =  encodings.find(i) == encodings.end() ? CompressionScheme::PLAIN : encodings.at(i);
+              column_encodings_[i] = ColumnEncoding<B>::compress(src, i, this, i, encoding);
             }
 
-            column_encodings_[-1] = ColumnEncoding<B>::compress(src, -1, this, -1, encodings.at(-1));
+            // dummy tag
+            auto dummy_encoding = (encodings.find(-1) == encodings.end()) ? CompressionScheme::PLAIN : encodings.at(-1);
+
+            column_encodings_[-1] = ColumnEncoding<B>::compress(src, -1, this, -1, dummy_encoding);
 
         }
 
@@ -80,6 +85,13 @@ namespace vaultdb {
             }
         }
 
+        QueryTable<B> *decompress()  {
+            auto dst = new CompressedTable<B>(this->tuple_cnt_, this->schema_, this->order_by_);
+            for(auto col : column_encodings_) {
+                col.second->decompress(dst, col.first);
+            }
+            return dst;
+        }
 
         StorageModel storageModel() const override { return  StorageModel::COMPRESSED_STORE; }
 
@@ -175,23 +187,13 @@ namespace vaultdb {
         }
 
         void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) override;
+
         void cloneTable(const int & dst_row, QueryTable<B> *s) override {
             assert(s->getSchema() == this->schema_);
             assert((s->tuple_cnt_ + dst_row) <= this->tuple_cnt_);
             assert(s->storageModel() == StorageModel::COMPRESSED_STORE);
 
-            /*auto src = (CompressedTable<B> *) s;
-            int8_t *write_pos, *read_pos;
 
-            // copy out entire cols
-            for(auto pos : this->field_sizes_bytes_) {
-                int col_id = pos.first;
-                int field_size = pos.second;
-                write_pos = getFieldPtr(dst_row, col_id);
-                read_pos = src->column_data_.at(col_id).data();
-                memcpy(write_pos, read_pos, field_size * src->tuple_cnt_);
-            }
-            */
             throw std::invalid_argument("NYI!");
 
         }
