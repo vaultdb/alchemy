@@ -362,29 +362,53 @@ QueryTable<B> *SortMergeJoin<B>::unionAndSortTables() {
 
 // }
 
+// template<typename B>
+// QueryTable<B> *SortMergeJoin<B>::unionTables(QueryTable<B> *lhs, QueryTable<B> *rhs, const QuerySchema & dst_schema) {
+//     auto unioned_len = lhs->tuple_cnt_ + rhs->tuple_cnt_;
+//     QueryTable<B> *unioned = QueryTable<B>::getTable(unioned_len, dst_schema);
+
+//     int cursor = 0;
+
+//     // Copy rows from LHS table
+//     for (int i = 0; i < lhs->tuple_cnt_; ++i) {
+//         unioned->cloneRow(cursor, 0, lhs, i);
+//         // Set the table_id field for LHS rows
+//         unioned->setField(cursor, table_id_idx_, Field<B>(FieldType::BOOL, false)); // Assuming false for LHS
+//         ++cursor;
+//     }
+
+//     // Copy rows from RHS table
+//     for (int i = 0; i < rhs->tuple_cnt_; ++i) {
+//         unioned->cloneRow(cursor, 0, rhs, i);
+//         // Set the table_id field for RHS rows
+//         unioned->setField(cursor, table_id_idx_, Field<B>(FieldType::BOOL, true)); // Assuming true for RHS
+//         ++cursor;
+//     }
+
+//     return unioned; 
+// }
+
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::unionTables(QueryTable<B> *lhs, QueryTable<B> *rhs, const QuerySchema & dst_schema) {
+
     auto unioned_len = lhs->tuple_cnt_ + rhs->tuple_cnt_;
-    QueryTable<B> *unioned = QueryTable<B>::getTable(unioned_len, dst_schema);
+    auto unioned =  QueryTable<B>::getTable(unioned_len, dst_schema);
 
+    // always FK --> PK
+    // TODO: add conditional so we only reshuffle columns for smaller relation
     int cursor = 0;
-
-    // Copy rows from LHS table
-    for (int i = 0; i < lhs->tuple_cnt_; ++i) {
-        unioned->cloneRow(cursor, 0, lhs, i);
-        // Set the table_id field for LHS rows
-        unioned->setField(cursor, table_id_idx_, Field<B>(FieldType::BOOL, false)); // Assuming false for LHS
+    for(int i = lhs->tuple_cnt_ - 1; i >= 0; --i) {
+        auto r = lhs->serializeRow(i);
+        unioned->deserializeRow(cursor, r);
         ++cursor;
+
     }
 
-    // Copy rows from RHS table
-    for (int i = 0; i < rhs->tuple_cnt_; ++i) {
-        unioned->cloneRow(cursor, 0, rhs, i);
-        // Set the table_id field for RHS rows
-        unioned->setField(cursor, table_id_idx_, Field<B>(FieldType::BOOL, true)); // Assuming true for RHS
+    for(int i = 0; i < rhs->tuple_cnt_; ++i) {
+        auto r = rhs->serializeRow(i);
+        unioned->deserializeRow(cursor, r);
         ++cursor;
     }
-
     return unioned;
 }
 
@@ -441,7 +465,7 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
         B table_id_changed = (i == 0) ? one_b : !(current_table_id == last_table_id);
         B group_changed = key_changed | table_id_changed;
 
-        alpha_1 = Field<B>::If(group_changed, Field<B>::If(!current_table_id & !dummy, one_, Field<B>::If(!dummy & key_changed, zero_, alpha_1)), Field<B>::If(!current_table_id, alpha_1 + one_, alpha_1));
+        alpha_1 = Field<B>::If(group_changed, Field<B>::If(!current_table_id, one_, Field<B>::If(key_changed | dummy, zero_, alpha_1)), Field<B>::If(!current_table_id, alpha_1 + one_, alpha_1));
         alpha_2 = Field<B>::If(group_changed, Field<B>::If(current_table_id & !dummy, one_, zero_), Field<B>::If(current_table_id, alpha_2 + one_, alpha_2));
 
         dst->setField(i, alpha1_idx_, alpha_1);
@@ -524,12 +548,13 @@ QueryTable<B> *SortMergeJoin<B>::expand(QueryTable<B> *input) {
     QueryFieldDesc is_new(is_new_idx_, "is_new", "", bool_field_type_);
     intermediate_table->appendColumn(is_new);
 
-
     Field<B> s = one_;
     Field<B> one_b(bool_field_type_, B(true)), zero_b(bool_field_type_, B(false));
 
+
     for(int i = 0; i < input->tuple_cnt_; i++) {
-        Field<B> cnt = input->getField(i, alpha_idx_); // cnt = alpha
+        Field<B> cnt = input->getField(i, alpha1_idx_); // cnt = alpha
+
         B null_val = (cnt == zero_); // is count empty?  If no, set weight to running count, else set weight to zero
         intermediate_table->setField(i, weight_idx_,
                                      Field<B>::If(null_val, zero_, s));
@@ -537,6 +562,7 @@ QueryTable<B> *SortMergeJoin<B>::expand(QueryTable<B> *input) {
                                      Field<B>::If(null_val, one_b, zero_b));
         intermediate_table->setDummyTag(i, input->getDummyTag(i) | null_val);
         s = s + cnt;
+
     }
 
 
