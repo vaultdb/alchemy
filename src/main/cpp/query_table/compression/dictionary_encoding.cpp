@@ -11,6 +11,10 @@ DictionaryEncoding<Bit>::DictionaryEncoding(QueryTable<Bit> *dst, const int &dst
 template<>
 DictionaryEncoding<bool>::DictionaryEncoding(QueryTable<bool> *dst, const int &dst_col, const QueryTable<bool> *src, const int &src_col) : ColumnEncoding<bool>(dst, dst_col) {
 
+    int dst_size_bytes = this->parent_table_->tuple_cnt_ * this->field_size_bytes_;
+    dst->column_data_[dst_col] = vector<int8_t>(dst_size_bytes);
+    this->column_data_ = dst->column_data_[dst_col].data();
+    memset(this->column_data_, 0, dst_size_bytes);
     assert(src->tuple_cnt_ == dst->tuple_cnt_);
     if(src->tuple_cnt_ == 0) return; // not sending party
 
@@ -25,9 +29,8 @@ DictionaryEncoding<bool>::DictionaryEncoding(QueryTable<bool> *dst, const int &d
     }
 
     dictionary_entry_cnt_ = setup_dictionary.size();
-    dictionary_bits_ = ceil(log2(dictionary_entry_cnt_));
-    field_size_bytes_ = (dictionary_bits_ / 8) + (dictionary_bits_ % 8); // round up
-    field_size_bits_ = dictionary_bits_;
+    field_size_bits_ = ceil(log2(dictionary_entry_cnt_));
+    field_size_bytes_ = (field_size_bits_ / 8) + ((field_size_bits_ % 8) != 0); // round up
     desc_ = this->parent_table_->getSchema().getField(dst_col);
 
     int entry_cnt = src->tuple_cnt_;
@@ -57,7 +60,6 @@ DictionaryEncoding<B>::DictionaryEncoding(QueryTable<B> *dst, const int &dst_col
     dictionary_ = src.dictionary_;
     reverse_dictionary_ = src.reverse_dictionary_;
     dictionary_entry_cnt_ = src.dictionary_entry_cnt_;
-    dictionary_bits_ = src.dictionary_bits_;
     desc_ = src.desc_;
     ((CompressedTable<B> *) dst)->column_encodings_[dst_col] = this;
 }
@@ -107,7 +109,7 @@ Field<bool> DictionaryEncoding<bool>::getDecompressedField(const int &row) {
 template<>
 Field<Bit> DictionaryEncoding<Bit>::getDecompressedField(const int &row) {
     auto key_ptr = getFieldPtr(row);
-    vector<Bit> key(dictionary_bits_);
+    vector<Bit> key(field_size_bits_);
     memcpy(key.data(), key_ptr, field_size_bytes_);
 
     auto setup = dictionary_.begin();
@@ -117,7 +119,7 @@ Field<Bit> DictionaryEncoding<Bit>::getDecompressedField(const int &row) {
         auto &dict_key = pair.first;
         auto &dict_value = pair.second;
         Bit match = Bit(true, PUBLIC);
-        for(int i = 0; i < dictionary_bits_; ++i) {
+        for(int i = 0; i < field_size_bits_; ++i) {
             match = match & (key[i] == dict_key[i]);
         }
         dst = Field<Bit>::If(match, dict_value, dst);
@@ -157,14 +159,13 @@ void DictionaryEncoding<bool>::secretShare(QueryTable<Bit> *d, const int &dst_co
     if (sender) {
         manager->sendPublic(dictionary_entry_cnt_);
         dst_encoding->dictionary_entry_cnt_ = dictionary_entry_cnt_;
-        dst_encoding->dictionary_bits_ = ceil(log2(dictionary_entry_cnt_));
-        dst_encoding->field_size_bytes_ = dst_encoding->dictionary_bits_ * sizeof(Bit); // round up
-        dst_encoding->field_size_bits_ = dst_encoding->dictionary_bits_;
+        dst_encoding->field_size_bits_ = ceil(log2(dictionary_entry_cnt_));
+        dst_encoding->field_size_bytes_ = dst_encoding->field_size_bits_ * sizeof(Bit); // round up
 
         int i = 0;
         // key does not really  matter as long as we process all entries in the same order
         for (auto pos: dictionary_) {
-            Integer key_int(dst_encoding->dictionary_bits_, i, PUBLIC);
+            Integer key_int(dst_encoding->field_size_bits_, i, PUBLIC);
             vector<int8_t> key(dst_encoding->field_size_bytes_);
             memcpy(key.data(), key_int.bits.data(), dst_encoding->field_size_bytes_);
 
@@ -183,11 +184,11 @@ void DictionaryEncoding<bool>::secretShare(QueryTable<Bit> *d, const int &dst_co
 
     } else { // receiving party
         dst_encoding->dictionary_entry_cnt_ = manager->recvPublic();
-        dst_encoding->dictionary_bits_ = ceil(log2(dst_encoding->dictionary_entry_cnt_));
+        dst_encoding->field_size_bits_ = ceil(log2(dst_encoding->dictionary_entry_cnt_));
         PlainField f(this->parent_table_->getSchema().getField(this->column_idx_).getType());
         // can initialize the keys as monotonically increasing ints
         for (int i = 0; i < dictionary_entry_cnt_; ++i) {
-            Integer key_int(dst_encoding->dictionary_bits_, i, PUBLIC);
+            Integer key_int(dst_encoding->field_size_bits_, i, PUBLIC);
             vector<int8_t> key(dst_encoding->field_size_bytes_);
             memcpy(key.data(), key_int.bits.data(), dst_encoding->field_size_bytes_);
             Field<Bit> value = Field<Bit>::secretShareHelper(f, dst_encoding->desc_, sending_party, false);
@@ -205,9 +206,8 @@ template<>
 void DictionaryEncoding<Bit>::revealInsecure(QueryTable<bool> *dst, const int &dst_col, const int &party) {
     auto dst_encoding = new DictionaryEncoding<bool>(dst, dst_col);
     dst_encoding->dictionary_entry_cnt_ = this->dictionary_entry_cnt_;
-    dst_encoding->dictionary_bits_ = this->dictionary_bits_;
     dst_encoding->field_size_bytes_ = ceil(log2(dictionary_entry_cnt_));
-    dst_encoding->field_size_bits_ = this->dictionary_bits_;
+    dst_encoding->field_size_bits_ = this->field_size_bits_;
 
     auto manager = SystemConfiguration::getInstance().emp_manager_;
 

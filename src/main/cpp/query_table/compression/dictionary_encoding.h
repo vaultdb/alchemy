@@ -13,7 +13,6 @@ namespace vaultdb {
         map<vector<int8_t>, Field<B> > dictionary_;
         map<Field<B>, vector<int8_t> > reverse_dictionary_;
         int32_t dictionary_entry_cnt_ = 0; // count of entries in dictionary
-        int32_t dictionary_bits_ = 0; // # of bits needed to represent dictionary entry
         QueryFieldDesc desc_;
 
         DictionaryEncoding<B>(QueryTable<B> *dst, const int &dst_col, const QueryTable<B> *src, const int &src_col);
@@ -62,10 +61,10 @@ namespace vaultdb {
             // can do this obliviously but it's an n^2 operation
             assert(dst->tuple_cnt_ == this->parent_table_->tuple_cnt_);
 
-            PlainEncoding<B> *dst_encoding = new PlainEncoding<B>(dst, dst_col);
+            auto dst_encoding = (PlainEncoding<B> *) ColumnEncoding<B>::getColumnEncoding(dst, dst_col);
+            assert(dst_encoding->columnEncoding() == CompressionScheme::PLAIN);
             for(int i = 0; i < dst->tuple_cnt_; ++i) {
-                Field<B> f = getDecompressedField(i);
-                dst_encoding->setField(i, f);
+                dst_encoding->setField(i, this->getDecompressedField(i));
             }
             return dst_encoding;
         }
