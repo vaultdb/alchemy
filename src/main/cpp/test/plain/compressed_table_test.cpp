@@ -21,6 +21,7 @@ class CompressedTableTest :  public PlainBaseTest  {
 
 };
 
+// TODO: add tests for add'l compression schemes
 TEST_F(CompressedTableTest, customer_nationname) {
 
     std::string customer_sql = "SELECT c_custkey, n_name "

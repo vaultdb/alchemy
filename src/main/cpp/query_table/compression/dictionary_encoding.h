@@ -9,7 +9,8 @@ namespace vaultdb {
     template<typename B>
     class DictionaryEncoding : public ColumnEncoding<B> {
     public:
-
+        // when operating under MPC, we need a way to know the order in which we added elements to the dictionary
+        map<int, vector<int8_t> > dictionary_idxs_;
         map<vector<int8_t>, Field<B> > dictionary_;
         map<Field<B>, vector<int8_t> > reverse_dictionary_;
         int32_t dictionary_entry_cnt_ = 0; // count of entries in dictionary
@@ -43,9 +44,6 @@ namespace vaultdb {
             return CompressionScheme::DICTIONARY;
         }
 
-        void resize(const int &tuple_cnt) override {
-            throw;
-        }
 
         void revealInsecure(QueryTable<bool> *dst, const int &dst_col, const int &party) override;
 

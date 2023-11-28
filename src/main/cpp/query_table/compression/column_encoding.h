@@ -71,7 +71,9 @@ namespace vaultdb {
 
         virtual void compareSwap(const B &swap, const int &lhs_row, const int &rhs_row);
         virtual CompressionScheme columnEncoding() = 0;
-        virtual void resize(const int & tuple_cnt) = 0;
+        virtual void resize(const int & tuple_cnt) {
+            this->parent_table_->column_data_[this->column_idx_].resize(tuple_cnt * this->field_size_bytes_);
+        }
         // reverse the process of secretShare above
         // unpacks everything including dummies, needs obliviousExpand phase first to securely reveal with other cols
         virtual void revealInsecure(QueryTable<bool> *dst, const int & dst_col, const int & party) = 0;

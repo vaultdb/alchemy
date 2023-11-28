@@ -91,7 +91,11 @@ namespace vaultdb {
                 type_ = (std::is_same_v<bool, B>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
             }
 
-            Field(const Field & field) : payload_(field.payload_), type_(field.type_) { }
+            Field(const Field & field) :  type_(field.type_) {
+                assert(field.type_ != FieldType::INVALID);
+                payload_ = vector<int8_t>(field.payload_.size());
+                memcpy(payload_.data(), field.payload_.data(), field.payload_.size());
+            }
 
             Field & operator=(const Field & other) {
                 if(type_ == FieldType::INVALID && other.type_ == FieldType::INVALID) return *this; // nothing to do here
@@ -99,8 +103,8 @@ namespace vaultdb {
 
                 if(&other == this)
                     return *this;
-
-                payload_ = other.payload_;
+                payload_ = vector<int8_t>(other.payload_.size());
+                memcpy(payload_.data(), other.payload_.data(), other.payload_.size());
                 type_ = other.type_;
                 return *this;
 
