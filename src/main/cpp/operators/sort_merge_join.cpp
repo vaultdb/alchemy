@@ -73,8 +73,8 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     log->write("LHS augmented: " + DataUtilities::printTable(augmented.first, 10, true), Level::INFO);
     log->write("RHS augmented: " + DataUtilities::printTable(augmented.second, 10, true), Level::INFO);
 
-    expanded_lhs = expand(augmented.first);
-    expanded_rhs = expand(augmented.second);
+    expanded_lhs = expand(augmented.first, true);
+    expanded_rhs = expand(augmented.second, false);
 
     log->write("LHS expanded: " + DataUtilities::printTable(expanded_lhs, 10, true), Level::INFO);
     log->write("RHS expanded: " + DataUtilities::printTable(expanded_rhs, 10, true), Level::INFO);
@@ -493,9 +493,6 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
     }
 }
 
-
-
-
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::distribute(QueryTable<B> *input, size_t target_size) {
     QuerySchema schema = input->getSchema();
@@ -536,11 +533,12 @@ QueryTable<B> *SortMergeJoin<B>::distribute(QueryTable<B> *input, size_t target_
 
 
 template<typename B>
-QueryTable<B> *SortMergeJoin<B>::expand(QueryTable<B> *input) {
+QueryTable<B> *SortMergeJoin<B>::expand(QueryTable<B> *input, bool is_lhs) {
     QueryTable<B> *intermediate_table = input->clone();
     weight_idx_ = input->getSchema().getFieldCount();
     is_new_idx_ = weight_idx_ + 1;
 
+    // Append new columns for weight and is_new
     QueryFieldDesc weight(weight_idx_, "weight", "", int_field_type_);
     if(is_secure_) weight.initializeFieldSizeWithCardinality(max_intermediate_cardinality_);
     intermediate_table->appendColumn(weight);
@@ -551,22 +549,26 @@ QueryTable<B> *SortMergeJoin<B>::expand(QueryTable<B> *input) {
     Field<B> s = one_;
     Field<B> one_b(bool_field_type_, B(true)), zero_b(bool_field_type_, B(false));
 
+    int alpha_idx = is_lhs ? alpha1_idx_ : alpha2_idx_;
 
+    // Iterate and set fields based on alpha values
     for(int i = 0; i < input->tuple_cnt_; i++) {
-        Field<B> cnt = input->getField(i, alpha1_idx_); // cnt = alpha
-
-        B null_val = (cnt == zero_); // is count empty?  If no, set weight to running count, else set weight to zero
-        intermediate_table->setField(i, weight_idx_,
-                                     Field<B>::If(null_val, zero_, s));
-        intermediate_table->setField(i, is_new_idx_,
-                                     Field<B>::If(null_val, one_b, zero_b));
+        Field<B> cnt = input->getField(i, alpha_idx);
+        B null_val = (cnt == zero_);
+        intermediate_table->setField(i, weight_idx_, Field<B>::If(null_val, zero_, s));
+        intermediate_table->setField(i, is_new_idx_, Field<B>::If(null_val, one_b, zero_b));
         intermediate_table->setDummyTag(i, input->getDummyTag(i) | null_val);
         s = s + cnt;
-
     }
 
+    Logger* log = get_log();
+
+    log->write("Pre Distribute: " + DataUtilities::printTable(intermediate_table, 10, true), Level::INFO);
 
     QueryTable<B> *dst_table = distribute(intermediate_table, foreign_key_cardinality_);
+
+    log->write("Post Distribute: " + DataUtilities::printTable(intermediate_table, 10, true), Level::INFO);
+
 
     auto schema = dst_table->getSchema();
     // creates a row with self-managed memory
@@ -593,6 +595,142 @@ QueryTable<B> *SortMergeJoin<B>::expand(QueryTable<B> *input) {
     }
     return dst_table;
 }
+
+
+// template<typename B>
+// QueryTable<B> *SortMergeJoin<B>::distribute(QueryTable<B> *input, size_t target_size) {
+//     std::cout << "Entering distribute function\n";
+//     QuerySchema schema = input->getSchema();
+
+//     Logger* log = get_log();
+
+//     log->write("Distribution Input: " + DataUtilities::printTable(input, -1, true), Level::INFO);
+
+//     // Create a sort definition
+//     SortDefinition sort_def{
+//         ColumnSort(is_new_idx_, SortDirection::ASCENDING),
+//         ColumnSort(weight_idx_, SortDirection::ASCENDING)
+//     };
+
+//     std::cout << "Before sorting\n";
+//     Sort<B> sorted(input, sort_def);
+//     sorted.setOperatorId(-2);
+//     auto dst_table = sorted.run();
+
+//     int base_card = dst_table->tuple_cnt_;
+//     std::cout << "Base cardinality: " << base_card << "\n";
+
+//     // Calculate total slots required
+//     Field<B> total_slots = zero_;
+//     std::cout << "Calculating total slots required\n";
+//     std::cout << "alpha1_idx_: " << alpha1_idx_ << ", alpha2_idx_: " << alpha2_idx_ << "\n";
+//     for (int i = 0; i < base_card; i++) {
+//         std::cout << "Iteration " << i << " - Accessing alpha values\n";
+//         std::cout << "Accessing alpha1_value at index " << alpha1_idx_ << "\n";
+//         Field<B> alpha1_value = input->getField(i, alpha1_idx_);
+//         std::cout << "Accessing alpha2_value at index " << alpha2_idx_ << "\n";
+//         Field<B> alpha2_value = input->getField(i, alpha2_idx_);
+//         std::cout << "alpha1_value: " << alpha1_value.template getValue<int>() 
+//                 << ", alpha2_value: " << alpha2_value.template getValue<int>() << "\n";
+//         total_slots = total_slots + (alpha1_value * alpha2_value);
+//         std::cout << "Total slots so far: " << total_slots.template getValue<int>() << "\n";
+//     }
+
+
+//     int total_required_slots = total_slots.template getValue<int>();
+//     std::cout << "Total required slots: " << total_required_slots << "\n";
+//     dst_table->resize(total_required_slots);
+
+//     Field<B> table_id_field = dst_table->getField(0, table_id_idx_);
+//     Field<B> one_b(bool_field_type_, B(true));
+
+//     std::cout << "Assigning fields for new rows\n";
+//     for (int i = base_card; i < total_required_slots; i++) {
+//         dst_table->setField(i, is_new_idx_, one_b);
+//         dst_table->setField(i, table_id_idx_, table_id_field);
+//     }
+
+//     int j = Sort<B>::powerOfTwoLessThan(total_required_slots);
+//     int weight_width = (is_secure_) ? zero_.getInt().size() : 32;
+
+//     std::cout << "Performing sort\n";
+//     while (j >= 1) {
+//         for (int i = total_required_slots - j - 1; i >= 0; i--) {
+//             Field<B> weight = dst_table->getField(i, weight_idx_);
+//             Field<B> pos = FieldFactory<B>::getInt(i + j + 1, weight_width);
+//             B result = (weight >= pos);
+//             dst_table->compareSwap(result, i, i + j);
+//         }
+//         j /= 2;
+//     }
+
+//     std::cout << "Exiting distribute function\n";
+//     return dst_table->clone();
+// }
+
+// template<typename B>
+// QueryTable<B> *SortMergeJoin<B>::expand(QueryTable<B> *input, bool is_lhs) {
+//     QueryTable<B> *intermediate_table = input->clone();
+//     weight_idx_ = input->getSchema().getFieldCount();
+//     is_new_idx_ = weight_idx_ + 1;
+
+//     // Append new columns for weight and is_new
+//     QueryFieldDesc weight(weight_idx_, "weight", "", int_field_type_);
+//     if(is_secure_) weight.initializeFieldSizeWithCardinality(max_intermediate_cardinality_);
+//     intermediate_table->appendColumn(weight);
+
+//     QueryFieldDesc is_new(is_new_idx_, "is_new", "", bool_field_type_);
+//     intermediate_table->appendColumn(is_new);
+
+//     Field<B> s = one_;
+//     Field<B> one_b(bool_field_type_, B(true)), zero_b(bool_field_type_, B(false));
+
+//     for (int i = 0; i < input->tuple_cnt_; i++) {
+//         Field<B> alpha1_value = input->getField(i, alpha1_idx_);
+//         Field<B> alpha2_value = input->getField(i, alpha2_idx_);
+//         Field<B> product_alpha = alpha1_value * alpha2_value;
+
+//         intermediate_table->setField(i, weight_idx_, Field<B>::If(product_alpha == zero_, zero_, s));
+//         intermediate_table->setField(i, is_new_idx_, Field<B>::If(product_alpha == zero_, one_b, zero_b));
+//         intermediate_table->setDummyTag(i, input->getDummyTag(i) | (product_alpha == zero_));
+
+//         s = s + product_alpha;
+//     }
+
+//     Logger* log = get_log();
+
+//     log->write("Pre Distribute: " + DataUtilities::printTable(intermediate_table, 10, true), Level::INFO);
+
+//     QueryTable<B> *dst_table = distribute(intermediate_table, foreign_key_cardinality_);
+
+//     log->write("Post Distribute: " + DataUtilities::printTable(intermediate_table, 10, true), Level::INFO);
+
+
+//     auto schema = dst_table->getSchema();
+//     // creates a row with self-managed memory
+//     QueryTuple<B> tmp_row = dst_table->getRow(0);
+
+//     tmp_row.setField(is_new_idx_, one_b);
+//     int weight_width = schema.getField(weight_idx_).size() + schema.getField(weight_idx_).bitPacked();
+//     Field<B> bound = s - one_;
+
+//     for(int i = 0; i < foreign_key_cardinality_; i++) {
+
+//         B new_row = dst_table->getField(i, is_new_idx_).template getValue<B>();
+//         // if it is a new row, copy down previous value
+//         QueryTuple<B> table_row = dst_table->getRow(i);
+//         tmp_row = QueryTuple<B>::If(new_row, tmp_row, table_row);
+
+//         dst_table->setRow(i, tmp_row);
+//         dst_table->setField(i, is_new_idx_, zero_b);
+
+//         Field<B> write_index = FieldFactory<B>::getInt(i, weight_width);
+//         B end_matches = (write_index >= bound);
+//         B dummy_tag = tmp_row.getDummyTag()| end_matches;
+//         dst_table->setDummyTag(i, dummy_tag);
+//     }
+//     return dst_table;
+// }
 
 
 template<>
