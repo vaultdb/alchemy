@@ -34,7 +34,7 @@ sudo apt-get install -y dos2unix
 sudo /etc/init.d/postgresql start
 
 # Create a new user (if not created yet)
-sudo -i -u postgres createuser -l -s root
+sudo -i -u postgres createuser -l -s ubuntu
 
 # Create the vaultdb role and database
 sudo psql postgres -c "CREATE ROLE vaultdb WITH LOGIN SUPERUSER;" || echo "Role may already exist."
