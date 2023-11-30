@@ -76,8 +76,8 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     expanded_lhs = expand(augmented.first, true);
     expanded_rhs = expand(augmented.second, false);
 
-    log->write("LHS expanded: " + DataUtilities::printTable(expanded_lhs, 10, true), Level::INFO);
-    log->write("RHS expanded: " + DataUtilities::printTable(expanded_rhs, 10, true), Level::INFO);
+    log->write("LHS expanded: " + DataUtilities::printTable(expanded_lhs, -1, false), Level::INFO);
+    log->write("RHS expanded: " + DataUtilities::printTable(expanded_rhs, -1, false), Level::INFO);
     delete augmented.first;
     delete augmented.second;
 
@@ -103,7 +103,7 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     lhs->pinned_ = false;
     this->output_->order_by_ = this->sort_definition_;
 
-    log->write("Output: " + DataUtilities::printTable(this->output_, 10, true), Level::INFO);
+    log->write("Output: " + DataUtilities::printTable(this->output_, -1, false), Level::INFO);
     return this->output_;
 }
 
@@ -475,21 +475,41 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
         last_table_id = current_table_id;
     }
 
+    // // Backward propagation
+    // Field<B> back_prop_alpha_1 = zero_, back_prop_alpha_2 = zero_;
+    // for (int i = dst->tuple_cnt_ - 1; i >= 0; --i) {
+    //     Field<B> current_key = dst->getField(i, 0);
+    //     B current_table_id = dst->getField(i, table_id_idx_).template getValue<B>();
+
+    //     //B key_changed = (i == dst->tuple_cnt_ - 1) ? one_b : !(current_key == dst->getField(i + 1, 0).template getValue<int>());
+    //     B key_changed = !(current_key == dst->getField(i - 1, 0));
+    //     back_prop_alpha_1 = Field<B>::If(key_changed, dst->getField(i, alpha1_idx_), back_prop_alpha_1);
+    //     back_prop_alpha_2 = Field<B>::If(key_changed, dst->getField(i, alpha2_idx_), back_prop_alpha_2);
+
+    //     std::cout << dst->getPlainTuple(i) << " " << dst->getPlainTuple(i - 1) << endl;
+    //     std::cout << key_changed << endl;
+    //     std::cout << back_prop_alpha_1 << " " << back_prop_alpha_2;
+
+    //     // alpha_1 = Field<B>::If(!current_table_id, back_prop_alpha_1, dst->getField(i, alpha1_idx_));
+    //     // alpha_2 = Field<B>::If(current_table_id, back_prop_alpha_2, dst->getField(i, alpha2_idx_));
+
+    //     dst->setField(i, alpha1_idx_, back_prop_alpha_1);
+    //     dst->setField(i, alpha2_idx_, back_prop_alpha_2);
+    // }
+
     // Backward propagation
     Field<B> back_prop_alpha_1 = zero_, back_prop_alpha_2 = zero_;
     for (int i = dst->tuple_cnt_ - 1; i >= 0; --i) {
         int current_key = dst->getField(i, 0).template getValue<int>();
-        B current_table_id = dst->getField(i, table_id_idx_).template getValue<B>();
 
         B key_changed = (i == dst->tuple_cnt_ - 1) ? one_b : !(current_key == dst->getField(i + 1, 0).template getValue<int>());
+
+
         back_prop_alpha_1 = Field<B>::If(key_changed, dst->getField(i, alpha1_idx_), back_prop_alpha_1);
         back_prop_alpha_2 = Field<B>::If(key_changed, dst->getField(i, alpha2_idx_), back_prop_alpha_2);
 
-        alpha_1 = Field<B>::If(!current_table_id, back_prop_alpha_1, dst->getField(i, alpha1_idx_));
-        alpha_2 = Field<B>::If(current_table_id, back_prop_alpha_2, dst->getField(i, alpha2_idx_));
-
-        dst->setField(i, alpha1_idx_, alpha_1);
-        dst->setField(i, alpha2_idx_, alpha_2);
+        dst->setField(i, alpha1_idx_, back_prop_alpha_1);
+        dst->setField(i, alpha2_idx_, back_prop_alpha_2);
     }
 }
 
@@ -549,25 +569,35 @@ QueryTable<B> *SortMergeJoin<B>::expand(QueryTable<B> *input, bool is_lhs) {
     Field<B> s = one_;
     Field<B> one_b(bool_field_type_, B(true)), zero_b(bool_field_type_, B(false));
 
-    int alpha_idx = is_lhs ? alpha1_idx_ : alpha2_idx_;
+    //int alpha_idx = is_lhs ? alpha1_idx_ : alpha2_idx_;
 
     // Iterate and set fields based on alpha values
     for(int i = 0; i < input->tuple_cnt_; i++) {
-        Field<B> cnt = input->getField(i, alpha_idx);
-        B null_val = (cnt == zero_);
+        
+        // Allocate alpha1 * alpha2 rows for new table
+        Field<B> cnt1 = input->getField(i, alpha1_idx_);
+        Field<B> cnt2 = input->getField(i, alpha2_idx_);
+        Field<B> total_cnt = cnt1 * cnt2;
+
+        B null_val = (total_cnt == zero_);
+
+        std::cout << input->getPlainTuple(i) << " ";
+        std::cout << total_cnt << " ";
+        std::cout << null_val << endl;
+
         intermediate_table->setField(i, weight_idx_, Field<B>::If(null_val, zero_, s));
         intermediate_table->setField(i, is_new_idx_, Field<B>::If(null_val, one_b, zero_b));
         intermediate_table->setDummyTag(i, input->getDummyTag(i) | null_val);
-        s = s + cnt;
+        s = s + total_cnt;
     }
 
     Logger* log = get_log();
 
-    log->write("Pre Distribute: " + DataUtilities::printTable(intermediate_table, 10, true), Level::INFO);
+    log->write("Pre Distribute: " + DataUtilities::printTable(intermediate_table, -1, true), Level::INFO);
 
     QueryTable<B> *dst_table = distribute(intermediate_table, foreign_key_cardinality_);
 
-    log->write("Post Distribute: " + DataUtilities::printTable(intermediate_table, 10, true), Level::INFO);
+    log->write("Post Distribute: " + DataUtilities::printTable(intermediate_table, -1, true), Level::INFO);
 
 
     auto schema = dst_table->getSchema();
@@ -606,7 +636,6 @@ QueryTable<B> *SortMergeJoin<B>::expand(QueryTable<B> *input, bool is_lhs) {
 
 //     log->write("Distribution Input: " + DataUtilities::printTable(input, -1, true), Level::INFO);
 
-//     // Create a sort definition
 //     SortDefinition sort_def{
 //         ColumnSort(is_new_idx_, SortDirection::ASCENDING),
 //         ColumnSort(weight_idx_, SortDirection::ASCENDING)
