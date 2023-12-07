@@ -257,18 +257,18 @@ std::string GeneratePhameDataThreeParties::generateRandomDxDate() {
     int month = (rand()%12)+1;
     int day = (rand()%30)+1;
 
-    return std::to_string(year) + "-" + std::to_string(month) + "-" + std::to_string(day);
+    return std::to_string(year) + "/" + std::to_string(month) + "/" + std::to_string(day);
 }
 
 // DM, HTN, BC, LC, CLC, CVC
 std::string GeneratePhameDataThreeParties::generateRandomDxCode(const string &dx_label) {
-    if(dx_label == "DM")
+    if(dx_label == "DM ")
         return generateRandomValue(domains::diabetes_dx_codes_);
     if(dx_label == "HTN")
         return generateRandomValue(domains::htn_dx_codes_);
-    if(dx_label == "BC")
+    if(dx_label == "BC ")
         return generateRandomValue(domains::breast_cancer_dx_codes_);
-    if(dx_label == "LC")
+    if(dx_label == "LC ")
         return generateRandomValue(domains::lung_cancer_dx_codes_);
     if(dx_label == "CLC")
         return generateRandomValue(domains::colorectal_cancer_dx_codes_);

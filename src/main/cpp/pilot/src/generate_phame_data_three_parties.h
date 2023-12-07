@@ -33,20 +33,22 @@ namespace domains {
   const vector<string> cervical_cancer_dx_codes_ = {"C53", "C53.0", "C53.1", "C53.8", "C53.9", "R87.614", "D06", "D06.0", "D06.1", "D06.7", "D06.9"};
 }
 
+
 // Table B1 in the protocol
-// CREATE TABLE phame_demo (
-//    patid int,
-//    age float, // [18, 100]
-//    gender char(2),
 // storing race code - ('01', '02', '03', '04', '05', '06', '07', 'NI', 'UN', 'OT') - NOTE: protocol requests long names, but these are going to be low performance
 // same with primary_payer and payer_secondary - just remove the extra formatting in the code
 // TODO: udate SQL input code for race encoding.
+
+// CREATE TABLE phame_demo (
+//    patid int,
+//    age float, -- [18, 100]
+//    gender char(2),
 //    race char(2),
 //    ethnicity char(2),
 //    zip char(5),
 //  payer_primary char(2),
 // payer_secondary char(2),
-//    site_id int -- alice = 1, bob = 2, chi = 3
+//    site_id int); -- alice = 1, bob = 2, chi = 3
 
 struct PatientTuple {
     int patid = -1;
@@ -82,7 +84,7 @@ struct PatientTuple {
 // CREATE TABLE phame_diag_ins (
 //   patid int,
 //  dx_date date, -- date of diagnosis, in range of PHAME_STUDY_START_YEAR to PHAME_STUDY_END_YEAR, stored in a string in C++
-//  dx_code char(7), -- ICD-10 code
+//  dx_code char(8), -- ICD-10 code
 // dx_label char(3), -- DM, HTN, BC, LC, CLC, CVC
 //  payer_primary char(2), -- get these from joining with the patient tuples later
 // payer_secondary char(2));
