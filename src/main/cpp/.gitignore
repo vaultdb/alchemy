@@ -3,3 +3,4 @@ test/*.cmake
 *~
 \#*\#
 .idea/*
+.vscode/
