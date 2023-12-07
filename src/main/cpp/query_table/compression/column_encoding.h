@@ -70,7 +70,7 @@ namespace vaultdb {
         }
 
         virtual void compareSwap(const B &swap, const int &lhs_row, const int &rhs_row);
-        virtual CompressionScheme columnEncoding() = 0;
+        virtual CompressionScheme columnEncoding() const = 0;
         virtual void resize(const int & tuple_cnt) {
             this->parent_table_->column_data_[this->column_idx_].resize(tuple_cnt * this->field_size_bytes_);
         }
@@ -130,7 +130,7 @@ namespace vaultdb {
 
         inline Integer getInt(int row) const  {
             auto src =  getFieldPtr(row);
-            emp::Integer dst(this->field_size_bits_ + 1, 0, PUBLIC);
+            emp::Integer dst(this->field_size_bits_ +  (this->columnEncoding() == CompressionScheme::BIT_PACKED), 0, PUBLIC);
             memcpy(dst.bits.data(), src, field_size_bytes_);
             return dst;
         }

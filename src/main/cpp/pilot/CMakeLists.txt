@@ -24,6 +24,8 @@ package_add_binary(secret_share_from_query src/secret_share_from_query.cpp  src/
 package_add_binary(secret_share_batch_from_query src/secret_share_batch_from_query.cpp  src/common/pilot_utilities.cpp)
 
 package_add_binary(generate_enrich_data_three_parties src/generate_enrich_data_three_parties.cpp)
+package_add_binary(generate_phame_data_three_parties src/generate_phame_data_three_parties.cpp)
+
 package_add_binary(load_tuples_data_partner src/load_tuples_data_partner.cpp src/common/union_hybrid_data.cpp src/common/shared_schema.cpp src/common/pilot_utilities.cpp)
 package_add_binary(run_data_partner src/run_data_partner.cpp src/common/union_hybrid_data.cpp src/common/shared_schema.cpp src/enrich_htn_query.cpp src/common/pilot_utilities.cpp src/common/shared_schema.cpp)
 package_add_binary(run_data_partner_aggregation src/run_data_partner_aggregation.cpp src/common/shared_schema.cpp src/common/pilot_utilities.cpp src/common/union_hybrid_data.cpp)

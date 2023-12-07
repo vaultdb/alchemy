@@ -76,7 +76,7 @@ namespace vaultdb {
         }
 
 
-        CompressionScheme columnEncoding() override { return CompressionScheme::BIT_PACKED; }
+        CompressionScheme columnEncoding() const override { return CompressionScheme::BIT_PACKED; }
 
         void resize(const int & tuple_cnt) override {
             vector<int8_t> & dst = this->parent_table_->column_data_[this->column_idx_]; // reference to column data

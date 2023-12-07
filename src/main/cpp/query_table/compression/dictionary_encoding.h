@@ -40,7 +40,7 @@ namespace vaultdb {
         }
 
 
-        CompressionScheme columnEncoding() override {
+        CompressionScheme columnEncoding() const override {
             return CompressionScheme::DICTIONARY;
         }
 

@@ -49,7 +49,7 @@ namespace vaultdb {
             memcpy(dst, src, this->field_size_bytes_);
         }
 
-        CompressionScheme columnEncoding() override { return CompressionScheme::PLAIN; }
+        CompressionScheme columnEncoding() const override { return CompressionScheme::PLAIN; }
 
         void resize(const int & tuple_cnt) override {
             vector<int8_t> & dst = this->parent_table_->column_data_[this->column_idx_]; // reference to column data
