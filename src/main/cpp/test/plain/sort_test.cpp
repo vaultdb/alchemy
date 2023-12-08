@@ -66,6 +66,7 @@ TEST_F(SortTest, tpchQ3Sort) {
     auto sort = new Sort<bool>(input, sort_def);
     auto observed = sort->run();
     ASSERT_TRUE(DataUtilities::verifyCollation(observed));
+    delete sort;
 }
 
 
@@ -143,6 +144,8 @@ TEST_F(SortTest, tpchQ9Sort) {
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
     expected->order_by_ = observed->order_by_;
     ASSERT_EQ(*expected, *observed);
+
+    delete expected;
 
 }
 
