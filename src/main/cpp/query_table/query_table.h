@@ -151,9 +151,9 @@ namespace  vaultdb {
             column_data_[dst_col] = src->column_data_.at(src_col);
         }
 
-        // copy all src_col entries from src_offset until end (or until we run out of slots)
-        // to self at dst_col starting at dst_idx.
-        virtual void cloneColumn(const int & dst_col, const int & dst_idx, const QueryTable<B> *src, const int & src_col, const int & src_offset = 0) = 0;
+        // copy all src_col entries from src_row until end (or until we run out of slots)
+        // to self at dst_col starting at dst_row.
+        virtual void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<B> *src, const int & src_col, const int & src_row = 0) = 0;
 
         virtual void cloneTable(const int & dst_row, QueryTable<B> *src) = 0;
 
