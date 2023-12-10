@@ -1,6 +1,6 @@
 #include "column_encoding.h"
 #include "plain_encoding.h"
-#include "dictionary_encoding.h"
+//#include "dictionary_encoding.h"
 #include "query_table/compression/compressed_table.h"
 
 using namespace vaultdb;
@@ -16,8 +16,8 @@ ColumnEncoding<B>::compress(QueryTable<B> *src, const int &src_col, QueryTable<B
         case CompressionScheme::PLAIN:
         case CompressionScheme::BIT_PACKED:
             return new PlainEncoding<B>(dst, dst_col, src, src_col);
-        case CompressionScheme::DICTIONARY:
-            return new DictionaryEncoding<B>(dst, dst_col, src, src_col);
+    //    case CompressionScheme::DICTIONARY:
+     //       return new DictionaryEncoding<B>(dst, dst_col, src, src_col);
         default:
             throw;
     }
