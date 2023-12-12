@@ -1,0 +1,6 @@
+#run test from src/main/cpp like this: './bin/{test_name} --flagfile=flagfiles/bob.flags
+--party=10086
+--flagfile=flagfiles/cutoff.flags
+--flagfile=flagfiles/filter.flags
+--flagfile=flagfiles/db_names.flags
+--flagfile=flagfiles/storage.flags
