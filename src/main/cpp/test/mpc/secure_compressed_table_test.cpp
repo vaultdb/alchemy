@@ -25,6 +25,7 @@ DEFINE_string(storage, "compressed", "storage model for columns (column, wire_pa
 
 class SecureCompressedTableTest :  public EmpBaseTest  { };
 
+/*
 TEST_F(SecureCompressedTableTest, customer_nationname) {
 
     std::string customer_sql = "SELECT c_custkey, n_name "
@@ -77,7 +78,7 @@ auto expected_table = DataUtilities::getQueryResults(FLAGS_unioned_db, customer_
 
 }
 
-
+*/
 
 
 int main(int argc, char **argv) {

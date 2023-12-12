@@ -55,7 +55,6 @@ void EmpBaseTest::SetUp()  {
 //                           };
         string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
         // to enable wire packing set storage model to StorageModel::PACKED_COLUMN_STORE
-        //s.setStorageModel(StorageModel::PACKED_COLUMN_STORE);
         manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
         db_name_ = (FLAGS_party == emp::TP) ? FLAGS_unioned_db : empty_db_;
         
