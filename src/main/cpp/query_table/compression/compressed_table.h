@@ -5,7 +5,7 @@
 #include "column_encoding.h"
 #include "plain_encoding.h"
 #include "bit_packed_encoding.h"
-//#include "dictionary_encoding.h"
+#include "dictionary_encoding.h"
 #include "query_table/secure_tuple.h"
 #include "query_table/plain_tuple.h"
 

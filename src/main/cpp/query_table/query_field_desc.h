@@ -22,7 +22,7 @@ namespace  vaultdb {
         FieldType type_;
         int ordinal_;
         int field_size_ = 0; // size in bits
-        int64_t field_min_ = 0L; // if bits are packed and min != 0
+        int64_t field_min_ = 0; // if bits are packed and min != 0
         int bit_packed_size_ = 0;
         int packed_wires_ = 1;
 
