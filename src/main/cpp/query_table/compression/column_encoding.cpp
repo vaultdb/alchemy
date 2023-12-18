@@ -1,6 +1,7 @@
 #include "column_encoding.h"
 #include "plain_encoding.h"
-#include "dictionary_encoding.h"
+#include "plain_dictionary_encoding.h"
+#include "secure_dictionary_encoding.h"
 #include "query_table/compression/compressed_table.h"
 
 using namespace vaultdb;

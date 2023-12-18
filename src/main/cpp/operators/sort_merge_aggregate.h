@@ -6,7 +6,6 @@
 
 namespace vaultdb {
     template<typename B>
-
     class SortMergeAggregate : public GroupByAggregate<B> {
 
         vector<GroupByAggregateImpl<B> *> aggregators_;

@@ -63,7 +63,7 @@ set(sources
 		query_table/compression/column_encoding.cpp
 		query_table/compression/plain_encoding.cpp
 		query_table/compression/bit_packed_encoding.cpp
-		query_table/compression/dictionary_encoding.cpp
+		query_table/compression/plain_dictionary_encoding.cpp
 
 		util/utilities.cpp
 		util/type_utilities.cpp
