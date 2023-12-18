@@ -105,8 +105,8 @@ namespace vaultdb {
             }
         }
 
-        PlainEncoding<Bit> *decompress(QueryTable<Bit> *dst, const int &dst_col) override {
-            auto dst_encoding = new PlainEncoding<Bit>(dst, dst_col);
+        Uncompressed<Bit> *decompress(QueryTable<Bit> *dst, const int &dst_col) override {
+            auto dst_encoding = new Uncompressed<Bit>(dst, dst_col);
             auto dst_ptr = dst_encoding->column_data_; // in bytes
             int cnt = this->parent_table_->tuple_cnt_;
             auto src =  this->column_data_;

@@ -21,6 +21,35 @@ class CompressedTableTest :  public PlainBaseTest  {
 
 };
 
+// base case: no compression
+// derived from EmpTableTest
+TEST_F(CompressedTableTest, uncompressed) {
+    std::string sql =  "SELECT l_orderkey, l_linenumber, l_comment, l_returnflag, l_discount, "
+                       "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate "  // handle timestamps by converting them to longs using SQL
+                       "FROM lineitem "
+                       "WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " "
+                                                                               "ORDER BY l_orderkey, l_linenumber ";
+
+    auto base_table = DataUtilities::getQueryResults(db_name_, sql, false);
+
+    map<int, CompressionScheme> schemes = {
+            {0, CompressionScheme::PLAIN},
+            {1, CompressionScheme::PLAIN},
+            {2, CompressionScheme::PLAIN},
+            {3, CompressionScheme::PLAIN},
+            {4, CompressionScheme::PLAIN},
+            {-1, CompressionScheme::PLAIN}};
+
+    auto compressed_table = new CompressedTable(base_table, schemes);
+
+    auto decompressed = compressed_table->decompress();
+    ASSERT_EQ(*base_table, *decompressed);
+    delete compressed_table;
+    delete base_table;
+    delete decompressed;
+
+}
+
 // TODO: add tests for add'l compression schemes
 TEST_F(CompressedTableTest, customer_nationname) {
 

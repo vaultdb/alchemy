@@ -41,7 +41,6 @@ TEST_F(EmpTableTest, secret_share_table_one_column) {
 
 
 // test secret a query table with a single string in EMP
-// bitonic merge the inputs
 TEST_F(EmpTableTest, secret_share_table_varchar) {
 
     string sql = "SELECT l_orderkey, l_linenumber, l_comment FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY l_orderkey, l_linenumber";

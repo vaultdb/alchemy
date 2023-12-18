@@ -1,5 +1,5 @@
 #include "column_encoding.h"
-#include "plain_encoding.h"
+#include "uncompressed.h"
 #include "plain_dictionary_encoding.h"
 #include "secure_dictionary_encoding.h"
 #include "query_table/compression/compressed_table.h"
@@ -16,7 +16,7 @@ ColumnEncoding<B>::compress(QueryTable<B> *src, const int &src_col, QueryTable<B
     switch(dst_encoding) {
         case CompressionScheme::PLAIN:
         case CompressionScheme::BIT_PACKED:
-            return new PlainEncoding<B>(dst, dst_col, src, src_col);
+            return new Uncompressed<B>(dst, dst_col, src, src_col);
         case CompressionScheme::DICTIONARY:
             return new DictionaryEncoding<B>(dst, dst_col, src, src_col);
         default:

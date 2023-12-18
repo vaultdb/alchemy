@@ -31,10 +31,10 @@ namespace vaultdb {
                 if(schema.getField(i).bitPacked() && std::is_same_v<B, Bit>)
                     column_encodings_[i] = (ColumnEncoding<B> * ) new BitPackedEncoding((QueryTable<Bit> *) this, i);
                 else
-                    column_encodings_[i] = new PlainEncoding<B>(this, i);
+                    column_encodings_[i] = new Uncompressed<B>(this, i);
             }
 
-            column_encodings_[-1] = new PlainEncoding<B>(this, -1); // dummy tag
+            column_encodings_[-1] = new Uncompressed<B>(this, -1); // dummy tag
             Field<B> dummy_tag(TypeUtilities::getBoolType<B>(), B(true));  // set all slots to dummies initially
             column_encodings_[-1]->initializeColumn(dummy_tag);
         }
@@ -156,7 +156,7 @@ namespace vaultdb {
                 column_encodings_[ordinal] = (ColumnEncoding<B> * ) new BitPackedEncoding((QueryTable<Bit> *) this, ordinal);
             }
             else {
-                column_encodings_[ordinal] = new PlainEncoding<B>(this, ordinal);
+                column_encodings_[ordinal] = new Uncompressed<B>(this, ordinal);
             }
 
         }

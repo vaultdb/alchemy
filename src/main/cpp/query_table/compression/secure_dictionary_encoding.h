@@ -119,10 +119,10 @@ namespace vaultdb {
 
         }
 
-        PlainEncoding<Bit> *decompress(QueryTable<Bit> *dst, const int &dst_col) override {
+        Uncompressed<Bit> *decompress(QueryTable<Bit> *dst, const int &dst_col) override {
             assert(dst->tuple_cnt_ == this->parent_table_->tuple_cnt_);
 
-            auto dst_encoding = (PlainEncoding<Bit> *) ColumnEncoding<Bit>::getColumnEncoding(dst, dst_col);
+            auto dst_encoding = (Uncompressed<Bit> *) ColumnEncoding<Bit>::getColumnEncoding(dst, dst_col);
 
             for(int i = 0; i < dst->tuple_cnt_; ++i) {
                 dst_encoding->setField(i, this->getDecompressedField(i));

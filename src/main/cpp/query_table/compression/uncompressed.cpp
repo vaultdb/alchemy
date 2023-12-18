@@ -4,7 +4,7 @@
 using namespace vaultdb;
 
 template<typename B>
-void PlainEncoding<B>::secretShare(QueryTable<Bit> *dst, const int &dst_col) {
+void Uncompressed<B>::secretShare(QueryTable<Bit> *dst, const int &dst_col) {
     // no bit packing, just taking a plaintext column and converting it into a secret shared one
     // assume source compression scheme is same as dst compression scheme
     assert(dst->storageModel() == StorageModel::COMPRESSED_STORE);
@@ -92,7 +92,7 @@ void PlainEncoding<B>::secretShare(QueryTable<Bit> *dst, const int &dst_col) {
 }
 
 template<typename B>
-void PlainEncoding<B>::secretShareForBitPacking(QueryTable<Bit> *dst, const int &dst_col) {
+void Uncompressed<B>::secretShareForBitPacking(QueryTable<Bit> *dst, const int &dst_col) {
     assert(dst->storageModel() == StorageModel::COMPRESSED_STORE);
 
     SystemConfiguration &s = SystemConfiguration::getInstance();
@@ -128,7 +128,7 @@ void PlainEncoding<B>::secretShareForBitPacking(QueryTable<Bit> *dst, const int 
 }
 
 template<typename B>
-void PlainEncoding<B>::revealInsecure(QueryTable<bool> *dst, const int & dst_col, const int & party) {
+void Uncompressed<B>::revealInsecure(QueryTable<bool> *dst, const int & dst_col, const int & party) {
     int row_cnt = this->parent_table_->tuple_cnt_;
     FieldType f_type = this->parent_table_->getSchema().getField(this->column_idx_).getType();
     SystemConfiguration &s = SystemConfiguration::getInstance();
@@ -188,5 +188,5 @@ void PlainEncoding<B>::revealInsecure(QueryTable<bool> *dst, const int & dst_col
 
 
 
-template class vaultdb::PlainEncoding<bool>;
-template class vaultdb::PlainEncoding<emp::Bit>;
+template class vaultdb::Uncompressed<bool>;
+template class vaultdb::Uncompressed<emp::Bit>;

@@ -7,7 +7,7 @@
 
 namespace vaultdb {
 
-    template<typename B> class PlainEncoding;
+    template<typename B> class Uncompressed;
     template<typename B> class CompressedTable;
 
     template<typename B>
@@ -80,7 +80,7 @@ namespace vaultdb {
         // initialize column with contents of an uncompressed one
         // only compress where B == bool, not emp::Bit
         static ColumnEncoding<B> *compress(QueryTable<B> *src, const int & src_col, QueryTable<B> *dst, const int & dst_col, const CompressionScheme & dst_encoding);
-        virtual PlainEncoding<B> *decompress(QueryTable<B> *dst, const int & dst_col) = 0;
+        virtual Uncompressed<B> *decompress(QueryTable<B> *dst, const int & dst_col) = 0;
 
         // get party info from system configuration
         virtual void secretShare(QueryTable<Bit> *dst, const int & dst_col) = 0;

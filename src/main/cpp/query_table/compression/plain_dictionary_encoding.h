@@ -122,10 +122,10 @@ namespace vaultdb {
 
         void secretShare(QueryTable<Bit> *d, const int &dst_col) override;
 
-        PlainEncoding<bool> *decompress(QueryTable<bool> *dst, const int &dst_col) override {
+        Uncompressed<bool> *decompress(QueryTable<bool> *dst, const int &dst_col) override {
             assert(dst->tuple_cnt_ == this->parent_table_->tuple_cnt_);
 
-            auto dst_encoding = (PlainEncoding<bool> *) ColumnEncoding<bool>::getColumnEncoding(dst, dst_col);
+            auto dst_encoding = (Uncompressed<bool> *) ColumnEncoding<bool>::getColumnEncoding(dst, dst_col);
 
             for(int i = 0; i < dst->tuple_cnt_; ++i) {
                 dst_encoding->setField(i, this->getDecompressedField(i));
