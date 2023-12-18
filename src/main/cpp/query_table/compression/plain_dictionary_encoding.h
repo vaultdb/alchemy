@@ -95,7 +95,7 @@ namespace vaultdb {
 
         Field<bool> getDecompressedField(const int &row) override {
             auto pos = getFieldPtr(row);
-            int32_t dst;
+            int32_t dst = 0L;
             memcpy(&dst, pos, field_size_bytes_);
             return dictionary_[dst];
         }
