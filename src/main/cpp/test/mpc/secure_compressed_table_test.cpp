@@ -8,7 +8,8 @@
 #include <test/support/tpch_queries.h>
 #include "util/field_utilities.h"
 #include "query_table/compression/compressed_table.h"
-
+#include "query_table/compression/plain_dictionary_encoding.h"
+#include "query_table/compression/secure_dictionary_encoding.h"
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54325, "port for EMP execution");
@@ -25,7 +26,6 @@ DEFINE_string(storage, "compressed", "storage model for columns (column, wire_pa
 
 class SecureCompressedTableTest :  public EmpBaseTest  { };
 
-/*
 TEST_F(SecureCompressedTableTest, customer_nationname) {
 
     std::string customer_sql = "SELECT c_custkey, n_name "
@@ -78,7 +78,7 @@ auto expected_table = DataUtilities::getQueryResults(FLAGS_unioned_db, customer_
 
 }
 
-*/
+
 
 
 int main(int argc, char **argv) {
