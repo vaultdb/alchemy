@@ -3,7 +3,7 @@
 
 #include "query_table/query_table.h"
 #include "column_encoding.h"
-#include "plain_encoding.h"
+#include "uncompressed.h"
 #include "bit_packed_encoding.h"
 #include "dictionary_encoding.h"
 #include "query_table/secure_tuple.h"
