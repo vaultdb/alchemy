@@ -4,7 +4,7 @@
 #include "column_encoding.h"
 #include "query_table/query_table.h"
 #include "util/field_utilities.h"
-#include "plain_encoding.h"
+#include "uncompressed.h"
 
 namespace vaultdb {
 
