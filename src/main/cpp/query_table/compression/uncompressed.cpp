@@ -1,4 +1,4 @@
-#include "plain_encoding.h"
+#include "uncompressed.h"
 #include "compressed_table.h"
 
 using namespace vaultdb;

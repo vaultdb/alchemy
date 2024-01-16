@@ -2,7 +2,7 @@
 #define _DICTIONARY_ENCODING_
 
 #include "column_encoding.h"
-#include "plain_encoding.h"
+#include "uncompressed.h"
 #include "compressed_table.h"
 
 // placeholder for compiling the code
