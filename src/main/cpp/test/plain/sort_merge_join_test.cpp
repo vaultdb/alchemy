@@ -12,7 +12,7 @@
 #include "util/field_utilities.h"
 
 
-DEFINE_int32(cutoff, 25, "limit clause for queries");
+DEFINE_int32(cutoff, 250, "limit clause for queries");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "column", "storage model for columns (column or compressed)");
@@ -52,7 +52,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_supplier) {
                                "SELECT c_custkey, c_nationkey, c_mktsegment,  s_suppkey, s_nationkey "
                                "FROM  customer_cte JOIN supplier_cte ON c_nationkey = s_nationkey "
                                "WHERE NOT c_dummy AND NOT s_dummy "
-                               "ORDER BY c_custkey ";
+                               "ORDER BY c_custkey, c_nationkey, c_mktsegment,  s_suppkey, s_nationkey  ";
 
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
@@ -66,7 +66,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_supplier) {
 
     auto join = new SortMergeJoin<bool>(customer_input, supplier_input,  predicate);
     auto joined = join->run();
-    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(4);
     Sort<bool> sorter(joined, sort_def);
     PlainTable *observed = sorter.run();
     expected->order_by_ = observed->order_by_;

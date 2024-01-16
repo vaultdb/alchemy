@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="SecureNestedLoopAggregate A+B" type="CompoundRunConfigurationType">
-    <toRun name="secure_nested_loop_aggregate_test A" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="secure_nested_loop_aggregate_test B" type="CMakeGoogleTestRunConfigurationType" />
-    <method v="2" />
-  </configuration>
-</component>

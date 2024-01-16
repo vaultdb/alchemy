@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="EMP Table Test" type="CompoundRunConfigurationType">
-    <toRun name="emp_table_test A" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="emp_table_test B" type="CMakeGoogleTestRunConfigurationType" />
-    <method v="2" />
-  </configuration>
-</component>

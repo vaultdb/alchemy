@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Secure TPC-H Test" type="CompoundRunConfigurationType">
-    <toRun name="secure_tpch_test A" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="secure_tpch_test B" type="CMakeGoogleTestRunConfigurationType" />
-    <method v="2" />
-  </configuration>
-</component>

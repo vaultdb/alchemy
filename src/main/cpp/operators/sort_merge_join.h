@@ -131,6 +131,7 @@ namespace  vaultdb {
         pair<QueryTable<B> *, QueryTable<B> *> augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs);
         QueryTable<B> *distribute(QueryTable<B> *input, size_t target_size);
         QueryTable<B> *expand(QueryTable<B> *input, bool is_lhs);
+        QueryTable<B> *alignTable(QueryTable<B> *input);
         QuerySchema getAugmentedSchema();
 
         QueryTable<bool> *revertProjection(QueryTable<bool> *src, const map<int, int> &expr_map, const bool &is_lhs) const;

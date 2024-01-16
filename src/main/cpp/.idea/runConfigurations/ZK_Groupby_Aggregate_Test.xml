@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="ZK Groupby Aggregate Test" type="CompoundRunConfigurationType">
-    <toRun name="zk_group_by_aggregate_test A" targetId="CMakeBuildProfile:Debug" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="zk_group_by_aggregate_test B" targetId="CMakeBuildProfile:Debug" type="CMakeGoogleTestRunConfigurationType" />
-    <method v="2" />
-  </configuration>
-</component>

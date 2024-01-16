@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="load-tuples-data-partner" type="CompoundRunConfigurationType">
-    <toRun name="load-tuples-data-partner Alice" targetId="CMakeBuildProfile:Debug" type="CMakeRunConfiguration" />
-    <toRun name="load-tuples-data-partner Bob" targetId="CMakeBuildProfile:Debug" type="CMakeRunConfiguration" />
-    <method v="2" />
-  </configuration>
-</component>

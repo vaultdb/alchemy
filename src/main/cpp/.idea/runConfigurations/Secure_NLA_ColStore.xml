@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Secure NLA ColStore" type="CompoundRunConfigurationType">
-    <toRun name="secure_nested_loop_aggregate_test ColStore A" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="secure_nested_loop_aggregate_test ColStore B" type="CMakeGoogleTestRunConfigurationType" />
-    <method v="2" />
-  </configuration>
-</component>

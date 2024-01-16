@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Secure Enrich Test" type="CompoundRunConfigurationType">
-    <toRun name="enrich_test B" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="enrich_test A" type="CMakeGoogleTestRunConfigurationType" />
-    <method v="2" />
-  </configuration>
-</component>

@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="FullyOptimizedTest" type="CompoundRunConfigurationType">
-    <toRun name="fully_optimized_test A" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="fully_optimized_test B" type="CMakeGoogleTestRunConfigurationType" />
-    <method v="2" />
-  </configuration>
-</component>

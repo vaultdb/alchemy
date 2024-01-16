@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="SecureSortMergeAggregate A+B" type="CompoundRunConfigurationType">
-    <toRun name="secure_sort_merge_aggregate_test  B" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="secure_sort_merge_aggregate_test A" type="CMakeGoogleTestRunConfigurationType" />
-    <method v="2" />
-  </configuration>
-</component>

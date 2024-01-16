@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="SecureProjectTest" type="CompoundRunConfigurationType">
-    <toRun name="SecureProjectionTest A" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="SecureProjectionTest B" type="CMakeGoogleTestRunConfigurationType" />
-    <method v="2" />
-  </configuration>
-</component>

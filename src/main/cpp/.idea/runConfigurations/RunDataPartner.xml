@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="RunDataPartner" type="CompoundRunConfigurationType">
-    <toRun name="runDataPartnerAlice" type="CMakeRunConfiguration" />
-    <toRun name="runDataPartnerBob" type="CMakeRunConfiguration" />
-    <method v="2" />
-  </configuration>
-</component>

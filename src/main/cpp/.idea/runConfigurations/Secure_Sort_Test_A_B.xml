@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Secure Sort Test A+B" type="CompoundRunConfigurationType">
-    <toRun name="secure_sort_test A" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="secure_sort_test B" type="CMakeGoogleTestRunConfigurationType" />
-    <method v="2" />
-  </configuration>
-</component>
