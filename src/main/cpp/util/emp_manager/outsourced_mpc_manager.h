@@ -170,12 +170,12 @@ namespace  vaultdb {
         }
 
         void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {
-            protocol_->pack(src, (OMPCPackedWire *) dst, bit_cnt);
+            protocol_->pack(src, *((OMPCPackedWire *) dst), bit_cnt);
 
         }
 
         void unpack(Bit *src, Bit *dst, const int & bit_cnt) override {
-            protocol_->unpack(dst, (OMPCPackedWire *) src, bit_cnt);
+            protocol_->unpack(dst, *((OMPCPackedWire *) src), bit_cnt);
         }
 
         void sendPublic(const int & to_send) override {

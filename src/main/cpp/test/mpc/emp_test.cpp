@@ -5,7 +5,6 @@
 #include "emp-tool/emp-tool.h"
 #include "query_table/query_table.h"
 #include "operators/support/normalize_fields.h"
-#include "operators/sort.h"
 #include "query_table/column_table.h"
 
 
@@ -85,17 +84,22 @@ TEST_F(EmpTest, emp_test_varchar) {
     }
 
     if(storage_model_ == StorageModel::PACKED_COLUMN_STORE) {
-      OMPCPackedWire packed[bit_cnt]; // TODO: get packed wire cnt for this
-      emp::Integer unpacked(bit_cnt, 0L, emp::PUBLIC);
+        int packed_blocks = bit_cnt / 128 + (bit_cnt % 128 != 0);
+        OMPCPackedWire packed(packed_blocks);
+        emp::Integer unpacked(bit_cnt, 0L, emp::PUBLIC);
 
-    manager_->pack((Bit *) secret_shared.bits.data(), (Bit *) packed, bit_cnt);
-    manager_->unpack((Bit *) packed, (Bit *) unpacked.bits.data(), bit_cnt);
+        SystemConfiguration &conf = SystemConfiguration::getInstance();
 
-    // the standard reveal method converts this to decimal.  Need to reveal it bitwise
-    if(FLAGS_validation) {
-        string revealed = Field<Bit>::revealString(unpacked);
-        ASSERT_EQ(initial_string, revealed);
-    }
+        if(conf.emp_mode_ == EmpMode::OUTSOURCED) {
+            manager_->pack(secret_shared.bits.data(), (Bit *) &packed, bit_cnt);
+            manager_->unpack((Bit *) &packed, unpacked.bits.data(), bit_cnt);
+        }
+
+        // the standard reveal method converts this to decimal.  Need to reveal it bitwise
+        if(FLAGS_validation) {
+            string revealed = Field<Bit>::revealString(unpacked);
+            ASSERT_EQ(initial_string, revealed);
+        }
    }
 }
 
