@@ -148,7 +148,12 @@ namespace  vaultdb {
             assert(src->tuple_cnt_ == this->tuple_cnt_);
             assert(src->getSchema().getField(src_col).size() == getSchema().getField(dst_col).size());
 
-            column_data_[dst_col] = src->column_data_.at(src_col);
+            if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+                cloneColumn(dst_col, 0, src, src_col, 0);
+            }
+            else {
+                column_data_[dst_col] = src->column_data_.at(src_col);
+            }
         }
 
         // copy all src_col entries from src_row until end (or until we run out of slots)

@@ -42,13 +42,13 @@ namespace vaultdb {
                 int wires_cnt = isMultiwire(i) ? tuple_cnt : (tuple_cnt / fields_per_wire_.at(i) + (tuple_cnt % fields_per_wire_.at(i) != 0));
                 emp::OMPCPackedWire pack_wire(blocks_per_field_.at(i));
                 packed_column_data_[i] = std::vector<emp::OMPCPackedWire>(wires_cnt, pack_wire);
-                unpacked_wires_[i].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_.at(i) * 128);
+                unpacked_wires_[i].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_.at(i) * 128, emp::Bit(0));
             }
 
             int dummy_tag_wire_cnt = tuple_cnt / 128 + (tuple_cnt % 128 != 0);
             emp::OMPCPackedWire pack_dummy_wire(dummy_tag_wire_cnt);
             packed_column_data_[-1] = std::vector<emp::OMPCPackedWire>(dummy_tag_wire_cnt, pack_dummy_wire);
-            unpacked_wires_[-1].unpacked_blocks_ = std::vector<emp::Bit>(128);
+            unpacked_wires_[-1].unpacked_blocks_ = std::vector<emp::Bit>(128, emp::Bit(0));
         }
 
         PackedColumnTable(const PackedColumnTable &src) : QueryTable<Bit>(src), manager_(SystemConfiguration::getInstance().emp_manager_) {
@@ -59,12 +59,24 @@ namespace vaultdb {
                 return;
 
             for(int i = 0; i < schema_.getFieldCount(); ++i) {
-                unpacked_wires_[i].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_[i] * 128);
-                memcpy(unpacked_wires_[i].unpacked_blocks_.data(), src.unpacked_wires_[i].unpacked_blocks_.data(), blocks_per_field_[i] * 128);
+                int wires_cnt = isMultiwire(i) ? tuple_cnt_ : (tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0));
+                emp::OMPCPackedWire pack_wire(blocks_per_field_.at(i));
+                packed_column_data_[i] = std::vector<emp::OMPCPackedWire>(wires_cnt, pack_wire);
+                unpacked_wires_[i].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_[i] * 128, emp::Bit(0));
             }
 
-            unpacked_wires_[-1].unpacked_blocks_ = std::vector<emp::Bit>(128);
-            memcpy(unpacked_wires_[-1].unpacked_blocks_.data(), src.unpacked_wires_[-1].unpacked_blocks_.data(), 128);
+            int dummy_tag_wire_cnt = tuple_cnt_ / 128 + (tuple_cnt_ % 128 != 0);
+            emp::OMPCPackedWire pack_dummy_wire(dummy_tag_wire_cnt);
+            packed_column_data_[-1] = std::vector<emp::OMPCPackedWire>(dummy_tag_wire_cnt, pack_dummy_wire);
+            unpacked_wires_[-1].unpacked_blocks_ = std::vector<emp::Bit>(128, emp::Bit(0));
+
+            for(int i = 0; i < tuple_cnt_; ++i) {
+                for(int j = 0; j < getSchema().getFieldCount(); ++j) {
+                    setField(i, j, src.getField(i, j));
+                }
+
+                setDummyTag(i, src.getDummyTag(i));
+            }
         }
 
         inline int getPackedWireIdx(const int & row, const int & col) const {
@@ -94,12 +106,14 @@ namespace vaultdb {
 	        if(unpacked_wires_[col].page_idx_ != current_page_idx) {
                 if(unpacked_wires_[col].dirty_bit_) {
                     // Flush to column_data_
-                    emp::OMPCPackedWire& pack_wire = packed_column_data_.at(col).at(unpacked_wires_[col].page_idx_);
+                    emp::OMPCPackedWire pack_wire(blocks_per_field_.at(col));
                     manager_->pack(unpacked_wires_.at(col).unpacked_blocks_.data(),(Bit *) &pack_wire, blocks_per_field_.at(col) * 128);
+                    packed_column_data_[col][unpacked_wires_[col].page_idx_] = pack_wire;
                     unpacked_wires_[col].dirty_bit_ = false;
                 }
 
                 emp::OMPCPackedWire& packed_wire = packed_column_data_.at(col).at(current_page_idx);
+                unpacked_wires_[col].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_.at(col) * 128, emp::Bit(0));
                 emp::Bit *unpack = unpacked_wires_.at(col).unpacked_blocks_.data();
                 manager_->unpack((Bit *) &packed_wire, unpack, blocks_per_field_.at(col) * 128);
                 unpacked_wires_[col].page_idx_ = current_page_idx;
@@ -205,13 +219,18 @@ namespace vaultdb {
         void compareSwap(const Bit & swap, const int  & lhs_row, const int & rhs_row) override {
 
             for(int col = 0; col < schema_.getFieldCount(); ++col) {
-                Field<Bit> lhs_field = getField(lhs_row, col);
-                Field<Bit> rhs_field = getField(rhs_row, col);
-                Field<Bit>::compareSwap(swap, lhs_field, rhs_field);
+                Integer lhs_int = getField(lhs_row, col).getInt();
+                Integer rhs_int = getField(rhs_row, col).getInt();
+
+                emp::swap(swap, lhs_int, rhs_int);
+
+                // write back lhs and rhs
+                Field<Bit> lhs_field = Field<Bit>::deserialize(schema_.getField(col), (int8_t *) (lhs_int.bits.data()));
+                Field<Bit> rhs_field = Field<Bit>::deserialize(schema_.getField(col), (int8_t *) (rhs_int.bits.data()));
 
                 // set field
-                setField(lhs_row, col, rhs_field);
-                setField(rhs_row, col, lhs_field);
+                setField(lhs_row, col, lhs_field);
+                setField(rhs_row, col, rhs_field);
             }
 
             // swap dummy tag
@@ -230,9 +249,12 @@ namespace vaultdb {
         }
 
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<Bit> * src, const int & src_row) override {
-            exit(-1);
-            throw;
-            // NYI, make sure to include dummy tag in cloning
+            for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+                Field<Bit> f = src->getField(src_row, i);
+                setField(dst_row, dst_col + i, f);
+            }
+
+            setDummyTag(dst_row, src->getDummyTag(src_row));
         }
 
         void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<Bit> *src, const int & src_row) override {
@@ -275,8 +297,8 @@ namespace vaultdb {
         void flush() {
             for(auto unpacked_wire : unpacked_wires_) {
                 if(unpacked_wire.second.dirty_bit_) {
-                    emp::OMPCPackedWire *dst = ((emp::OMPCPackedWire *) column_data_.at(unpacked_wire.first).data()) + unpacked_wire.second.page_idx_;
-                    manager_->pack(unpacked_wire.second.unpacked_blocks_.data(), (Bit *) dst, blocks_per_field_.at(unpacked_wire.first) * 128);
+                    emp::OMPCPackedWire& dst = packed_column_data_.at(unpacked_wire.first).at(unpacked_wire.second.page_idx_);
+                    manager_->pack(unpacked_wire.second.unpacked_blocks_.data(), (Bit *) &dst, blocks_per_field_.at(unpacked_wire.first) * 128);
                     unpacked_wire.second.dirty_bit_ = false;
                 }
             }
