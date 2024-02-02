@@ -46,7 +46,7 @@ namespace vaultdb {
             }
 
             int dummy_tag_wire_cnt = tuple_cnt / 128 + (tuple_cnt % 128 != 0);
-            emp::OMPCPackedWire pack_dummy_wire(dummy_tag_wire_cnt);
+            emp::OMPCPackedWire pack_dummy_wire(1);
             packed_column_data_[-1] = std::vector<emp::OMPCPackedWire>(dummy_tag_wire_cnt, pack_dummy_wire);
             unpacked_wires_[-1].unpacked_blocks_ = std::vector<emp::Bit>(128, emp::Bit(0));
         }
@@ -66,7 +66,7 @@ namespace vaultdb {
             }
 
             int dummy_tag_wire_cnt = tuple_cnt_ / 128 + (tuple_cnt_ % 128 != 0);
-            emp::OMPCPackedWire pack_dummy_wire(dummy_tag_wire_cnt);
+            emp::OMPCPackedWire pack_dummy_wire(1);
             packed_column_data_[-1] = std::vector<emp::OMPCPackedWire>(dummy_tag_wire_cnt, pack_dummy_wire);
             unpacked_wires_[-1].unpacked_blocks_ = std::vector<emp::Bit>(128, emp::Bit(0));
 

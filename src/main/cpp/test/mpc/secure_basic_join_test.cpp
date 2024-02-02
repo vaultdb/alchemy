@@ -174,8 +174,9 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 // sort too slow with n^2 secret shared rows
         PlainTable *observed = join_res->revealInsecure();
         DataUtilities::removeDummies(observed);
-        Sort<bool> sorter(observed, sort_def);
-        observed = sorter.run();
+//        Sort<bool> sorter(observed, sort_def);
+//        observed = sorter.run();
+        observed->order_by_ = sort_def;
         expected->order_by_ = sort_def;
 
         ASSERT_EQ(*expected, *observed);
