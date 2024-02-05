@@ -267,6 +267,9 @@ namespace vaultdb {
 
             blocks_per_field_[-1] = 1;
             fields_per_wire_[-1] = 128;
+
+            tuple_size_bytes_ += 48;
+            field_sizes_bytes_[-1] = 48;
         }
 
         QueryTuple<Bit> getRow(const int & idx) override {
@@ -322,9 +325,20 @@ namespace vaultdb {
         }
 
         void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<Bit> *src, const int & src_row) override {
-            exit(-1);
-            throw;
-            // NYI, make sure to include dummy tag in cloning
+            for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+                Integer dst_field_int = getField(dst_row, dst_col + i).getInt();
+                Integer src_field_int = src->getField(src_row, i).getInt();
+
+                Integer write_int = emp::If(write, src_field_int, dst_field_int);
+
+                Field<Bit> write_field = Field<Bit>::deserialize(schema_.getField(dst_col + i), (int8_t *) write_int.bits.data());
+                setField(dst_row, dst_col + i, write_field);
+            }
+
+            // copy dummy tag
+            Bit dst_bit = getDummyTag(dst_row);
+            Bit src_bit = src->getDummyTag(src_row);
+            setDummyTag(dst_row, emp::If(write, src_bit, dst_bit));
         }
 
         void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<Bit> *src, const int & src_col, const int & src_row = 0) override {
