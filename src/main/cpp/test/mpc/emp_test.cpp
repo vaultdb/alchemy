@@ -53,6 +53,59 @@ class EmpTest : public EmpBaseTest {};
 
 }
 
+TEST_F(EmpTest, emp_test_pack_large_int) {
+     if(FLAGS_storage == "wire_packed") {
+         Integer i(1280, 1);
+         uint64_t comm_cost = manager_->getCommCost();
+
+         OMPCPackedWire packed(10);
+         manager_->pack(i.bits.data(), (Bit *) &packed, 1280);
+
+         manager_->flush();
+
+         int last_cost = manager_->getCommCost();
+         uint64_t comm_cost_after_multi_packing = last_cost - comm_cost;
+
+         manager_->unpack((Bit *) &packed, i.bits.data(), 1280);
+
+         manager_->flush();
+
+         comm_cost = manager_->getCommCost();
+         uint64_t comm_cost_after_multi_unpacking = comm_cost - last_cost;
+
+         int cursor = 0;
+         vector<emp::OMPCPackedWire> packed_vec = vector<emp::OMPCPackedWire>(10, emp::OMPCPackedWire(1));
+         for (int k = 0; k < 10; ++k) {
+             OMPCPackedWire packed(1);
+             manager_->pack(i.bits.data() + cursor, (Bit *) &packed, 128);
+             packed_vec[k] = packed;
+             cursor += 128;
+         }
+         manager_->flush();
+
+         last_cost = manager_->getCommCost();
+         uint64_t comm_cost_after_single_packing = last_cost - comm_cost;
+
+         cursor = 0;
+         for (int k = 0; k < 10; ++k) {
+             OMPCPackedWire packed = packed_vec[k];
+             manager_->unpack((Bit *) &packed, i.bits.data() + cursor, 128);
+             cursor += 128;
+         }
+
+         manager_->flush();
+
+         comm_cost = manager_->getCommCost();
+         uint64_t comm_cost_after_single_unpacking = comm_cost - last_cost;
+
+         cout << "comm_cost_after_multi_packing: " << comm_cost_after_multi_packing << endl;
+         cout << "comm_cost_after_multi_unpacking: " << comm_cost_after_multi_unpacking << endl;
+         cout << "comm_cost_after_single_packing: " << comm_cost_after_single_packing << endl;
+         cout << "comm_cost_after_single_unpacking: " << comm_cost_after_single_unpacking << endl;
+     }
+
+ }
+
 
 
 // basic test to verify emp configuration for strings
