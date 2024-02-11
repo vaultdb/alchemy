@@ -1,6 +1,7 @@
 #ifndef _PACKED_COLUMN_TABLE_H_
 #define _PACKED_COLUMN_TABLE_H_
 #include "query_table.h"
+#include "query_table/secure_tuple.h"
 
 // only supports Bit for now
 namespace vaultdb {
@@ -14,6 +15,9 @@ namespace vaultdb {
         map<int, int> fields_per_wire_;
         // if a field spans more than one block per instance (e.g., a string with length > 16 chars) then we need to map the field to multiple blocks
         map<int, int> blocks_per_field_;
+
+        int tuple_packed_size_bytes_ = 0;
+        std::map<int, int> field_packed_sizes_bytes_;
 
         EmpManager *manager_;
 
@@ -189,15 +193,100 @@ namespace vaultdb {
         }
 
         void appendColumn(const QueryFieldDesc & desc) override {
-            // NYI
-            throw;
+            int ordinal = desc.getOrdinal();
+            assert(ordinal == this->schema_.getFieldCount());
+
+            this->schema_.putField(desc);
+            this->schema_.initializeFieldOffsets();
+
+            int field_size_bytes = desc.size() * sizeof(emp::Bit);
+            tuple_size_bytes_ += field_size_bytes;
+            field_sizes_bytes_[ordinal] = field_size_bytes;
+
+            int packed_blocks;
+            int field_packed_size_bytes;
+            if(desc.size() / 128 > 0) {
+                packed_blocks = desc.size() / 128 + (desc.size() % 128 != 0);
+                field_packed_size_bytes = (1 + 2 * packed_blocks) * block_byte_size_;
+
+                fields_per_wire_[ordinal] = 1;
+                blocks_per_field_[ordinal] = packed_blocks;
+            }
+            else {
+                packed_blocks = 1;
+                field_packed_size_bytes = 3 * block_byte_size_;
+
+                fields_per_wire_[ordinal] = 128 / desc.size();
+                blocks_per_field_[ordinal] = 1;
+            }
+
+            tuple_packed_size_bytes_ += field_packed_size_bytes;
+            field_packed_sizes_bytes_[ordinal] = field_packed_size_bytes;
+
+            if(naive_packing_) {
+                emp::OMPCPackedWire pack_wire(desc.size() / 128 + (desc.size() % 128 != 0));
+                packed_column_data_[ordinal] = std::vector<emp::OMPCPackedWire>(tuple_cnt_, pack_wire);
+            }
+            else {
+                int wires_cnt = isMultiwire(ordinal) ? tuple_cnt_ : (tuple_cnt_ / fields_per_wire_.at(ordinal) +
+                                                              (tuple_cnt_ % fields_per_wire_.at(ordinal) != 0));
+                emp::OMPCPackedWire pack_wire(blocks_per_field_.at(ordinal));
+                packed_column_data_[ordinal] = std::vector<emp::OMPCPackedWire>(wires_cnt, pack_wire);
+                unpacked_wires_[ordinal].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_.at(ordinal) * 128,
+                                                                            emp::Bit(0));
+            }
         }
 
         void resize(const size_t &tuple_cnt) override {
             if(tuple_cnt == this->tuple_cnt_) return;
 
-            // NYI
-            throw;
+            int old_tuple_cnt = this->tuple_cnt_;
+
+            this->tuple_cnt_ = tuple_cnt;
+
+            for(int i = 0; i < schema_.getFieldCount(); ++i) {
+                if(naive_packing_) {
+                    emp::OMPCPackedWire pack_wire(schema_.getField(i).size() / 128 + (schema_.getField(i).size() % 128 != 0));
+                    packed_column_data_[i].resize(tuple_cnt);
+
+                    for(int j = old_tuple_cnt; j < tuple_cnt; ++j) {
+                        packed_column_data_[i][j] = pack_wire;
+                    }
+                }
+                else {
+                    int old_wires_cnt = isMultiwire(i) ? old_tuple_cnt : (old_tuple_cnt / fields_per_wire_.at(i) +
+                                                                         (old_tuple_cnt % fields_per_wire_.at(i) != 0));
+                    int wires_cnt = isMultiwire(i) ? tuple_cnt : (tuple_cnt / fields_per_wire_.at(i) +
+                                                                  (tuple_cnt % fields_per_wire_.at(i) != 0));
+                    emp::OMPCPackedWire pack_wire(blocks_per_field_.at(i));
+                    packed_column_data_[i].resize(wires_cnt);
+
+                    for(int j = old_wires_cnt; j < wires_cnt; ++j) {
+                        packed_column_data_[i][j] = pack_wire;
+                    }
+                }
+            }
+
+            if(tuple_cnt > old_tuple_cnt) {
+                if(naive_packing_) {
+                    emp::OMPCPackedWire pack_wire(1);
+                    packed_column_data_[-1].resize(tuple_cnt, pack_wire);
+
+                    for(int i = old_tuple_cnt; i < tuple_cnt; ++i) {
+                        packed_column_data_[-1][i] = pack_wire;
+                    }
+                }
+                else {
+                    int old_dummy_tag_wire_cnt = old_tuple_cnt / 128 + (old_tuple_cnt % 128 != 0);
+                    int dummy_tag_wire_cnt = tuple_cnt / 128 + (tuple_cnt % 128 != 0);
+                    emp::OMPCPackedWire pack_wire(1);
+                    packed_column_data_[-1].resize(dummy_tag_wire_cnt, pack_wire);
+
+                    for(int i = old_dummy_tag_wire_cnt; i < dummy_tag_wire_cnt; ++i) {
+                        packed_column_data_[-1][i] = pack_wire;
+                    }
+                }
+            }
         }
 
         Bit getDummyTag(const int & row)  const override {
@@ -242,44 +331,61 @@ namespace vaultdb {
 
             for(int i = 0; i < schema_.getFieldCount(); ++i) {
                 int packed_blocks;
-                int field_size_bytes;
+                int field_packed_size_bytes;
 
                 QueryFieldDesc desc = schema_.fields_.at(i);
 
                 if(desc.size() / 128 > 0) {
                     packed_blocks = desc.size() / 128 + (desc.size() % 128 != 0);
-                    field_size_bytes = (1 + 2 * packed_blocks) * block_byte_size_;
+                    field_packed_size_bytes = (1 + 2 * packed_blocks) * block_byte_size_;
 
                     fields_per_wire_[i] = 1;
                     blocks_per_field_[i] = packed_blocks;
                 }
                 else {
                     packed_blocks = 1;
-                    field_size_bytes = 3 * block_byte_size_;
+                    field_packed_size_bytes = 3 * block_byte_size_;
 
                     fields_per_wire_[i] = 128 / desc.size();
                     blocks_per_field_[i] = 1;
                 }
 
+                int field_size_bytes = desc.size() * sizeof(emp::Bit);
                 tuple_size_bytes_ += field_size_bytes;
                 field_sizes_bytes_[i] = field_size_bytes;
+
+                tuple_packed_size_bytes_ += field_packed_size_bytes;
+                field_packed_sizes_bytes_[i] = field_packed_size_bytes;
             }
 
             blocks_per_field_[-1] = 1;
             fields_per_wire_[-1] = 128;
 
-            tuple_size_bytes_ += 48;
-            field_sizes_bytes_[-1] = 48;
+            tuple_size_bytes_ += sizeof(emp::Bit);
+            field_sizes_bytes_[-1] = sizeof(emp::Bit);
+
+            tuple_packed_size_bytes_ += 48;
+            field_packed_sizes_bytes_[-1] = 48;
         }
 
         QueryTuple<Bit> getRow(const int & idx) override {
-            throw;
-            // NYI
-            return QueryTuple<Bit>();
+            SecureTuple tuple(&schema_);
+
+            for(int i = 0; i < schema_.getFieldCount(); ++i) {
+                tuple.setField(i, getField(idx, i));
+            }
+
+            tuple.setDummyTag(getDummyTag(idx));
+
+            return tuple;
         }
+
         void setRow(const int & idx, const QueryTuple<Bit> &tuple) override {
-            throw;
-            // NYI
+            for(int i = 0; i < schema_.getFieldCount(); ++i) {
+                setField(idx, i, tuple.getField(i));
+            }
+
+            setDummyTag(idx, tuple.getDummyTag());
         }
 
 
@@ -368,8 +474,26 @@ namespace vaultdb {
         StorageModel storageModel() const override { return StorageModel::PACKED_COLUMN_STORE; }
 
         void deserializeRow(const int & row, vector<int8_t> & src) override {
-            exit(-1);
-            // NYI
+            int src_size_bytes = src.size() - sizeof(emp::Bit); // don't handle dummy tag until end
+            int cursor = 0; // bytes
+            int write_idx = 0; // column indexes
+
+            // does not include dummy tag - handle further down in this method
+            // re-pack row
+            while(cursor < src_size_bytes && write_idx < this->schema_.getFieldCount()) {
+                int bytes_remaining = src_size_bytes - cursor;
+                int dst_len = this->field_sizes_bytes_.at(write_idx);
+                int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
+                int8_t dst_arr[dst_len];
+                memcpy(&dst_arr, src.data() + cursor, to_read);
+                Field<Bit> dst_field = Field<Bit>::deserialize(this->schema_.getField(write_idx), dst_arr);
+                setField(row, write_idx, dst_field);
+                cursor += to_read;
+                ++write_idx;
+            }
+
+            emp::Bit *dummy_tag = (emp::Bit*) (src.data() + src.size() - sizeof(emp::Bit));
+            setDummyTag(row, *dummy_tag);
         }
 
         void flush() {
