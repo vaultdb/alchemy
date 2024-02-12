@@ -132,6 +132,13 @@ namespace vaultdb {
             return 0;
         }
 
+        void packColumn(const int & col) const {
+            emp::OMPCPackedWire pack_wire(blocks_per_field_.at(col));
+            manager_->pack(unpacked_wires_.at(col).unpacked_blocks_.data(),(Bit *) &pack_wire, blocks_per_field_.at(col) * 128);
+            packed_column_data_[col][unpacked_wires_[col].page_idx_] = pack_wire;
+            unpacked_wires_[col].dirty_bit_ = false;
+        }
+
         void cacheField(const int & row, const int & col) const {
 
 
@@ -140,10 +147,7 @@ namespace vaultdb {
 	        if(unpacked_wires_[col].page_idx_ != current_page_idx) {
                 if(unpacked_wires_[col].dirty_bit_) {
                     // Flush to column_data_
-                    emp::OMPCPackedWire pack_wire(blocks_per_field_.at(col));
-                    manager_->pack(unpacked_wires_.at(col).unpacked_blocks_.data(),(Bit *) &pack_wire, blocks_per_field_.at(col) * 128);
-                    packed_column_data_[col][unpacked_wires_[col].page_idx_] = pack_wire;
-                    unpacked_wires_[col].dirty_bit_ = false;
+                    packColumn(col);
                 }
 
                 emp::OMPCPackedWire& packed_wire = packed_column_data_.at(col).at(current_page_idx);
@@ -484,10 +488,13 @@ namespace vaultdb {
                 int bytes_remaining = src_size_bytes - cursor;
                 int dst_len = this->field_sizes_bytes_.at(write_idx);
                 int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
-                int8_t dst_arr[dst_len];
-                memcpy(&dst_arr, src.data() + cursor, to_read);
-                Field<Bit> dst_field = Field<Bit>::deserialize(this->schema_.getField(write_idx), dst_arr);
+
+                vector<int8_t> dst_arr(to_read);
+                memcpy(dst_arr.data(), src.data() + cursor, to_read);
+                Field<Bit> dst_field = Field<Bit>::deserialize(this->schema_.getField(write_idx), dst_arr.data());
                 setField(row, write_idx, dst_field);
+                packColumn(write_idx);
+
                 cursor += to_read;
                 ++write_idx;
             }
