@@ -9,6 +9,9 @@ namespace vaultdb {
 
     public:
 
+        int table_id_ = -1;
+        bool bp_enabled_ = SystemConfiguration::getInstance().bp_enabled_;
+        BufferPoolManager *bgm_ = bp_enabled_ ? SystemConfiguration::getInstance().bpm_ : nullptr;
 
         // choosing to branch instead of storing this in a float for now, need to analyze trade-off on this one
         // maps ordinal to wire count.  floor(128/field_size_bits)
@@ -41,19 +44,23 @@ namespace vaultdb {
             if(tuple_cnt == 0)
                 return;
 
-            for(int i = 0; i < schema_.getFieldCount(); ++i) {
-                int wires_cnt = isMultiwire(i) ? tuple_cnt : (tuple_cnt_ / fields_per_wire_.at(i) +
-                                                              (tuple_cnt_ % fields_per_wire_.at(i) != 0));
-                emp::OMPCPackedWire pack_wire(blocks_per_field_.at(i));
-                packed_column_data_[i] = std::vector<emp::OMPCPackedWire>(wires_cnt, pack_wire);
-                unpacked_wires_[i].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_.at(i) * 128,
-                                                                            emp::Bit(0));
-            }
+            table_id_ = SystemConfiguration::getInstance().num_tables_++;
 
-            int dummy_tag_wire_cnt = tuple_cnt_ / 128 + (tuple_cnt_ % 128 != 0);
-            emp::OMPCPackedWire pack_dummy_wire(1);
-            packed_column_data_[-1] = std::vector<emp::OMPCPackedWire>(dummy_tag_wire_cnt, pack_dummy_wire);
-            unpacked_wires_[-1].unpacked_blocks_ = std::vector<emp::Bit>(128, emp::Bit(0));
+            if(!bp_enabled_) {
+                for (int i = 0; i < schema_.getFieldCount(); ++i) {
+                    int wires_cnt = isMultiwire(i) ? tuple_cnt : (tuple_cnt_ / fields_per_wire_.at(i) +
+                                                                  (tuple_cnt_ % fields_per_wire_.at(i) != 0));
+                    emp::OMPCPackedWire pack_wire(blocks_per_field_.at(i));
+                    packed_column_data_[i] = std::vector<emp::OMPCPackedWire>(wires_cnt, pack_wire);
+                    unpacked_wires_[i].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_.at(i) * 128,
+                                                                                emp::Bit(0));
+                }
+
+                int dummy_tag_wire_cnt = tuple_cnt_ / 128 + (tuple_cnt_ % 128 != 0);
+                emp::OMPCPackedWire pack_dummy_wire(1);
+                packed_column_data_[-1] = std::vector<emp::OMPCPackedWire>(dummy_tag_wire_cnt, pack_dummy_wire);
+                unpacked_wires_[-1].unpacked_blocks_ = std::vector<emp::Bit>(128, emp::Bit(0));
+            }
         }
 
         PackedColumnTable(const PackedColumnTable &src) : QueryTable<Bit>(src), manager_(SystemConfiguration::getInstance().emp_manager_) {
@@ -63,19 +70,23 @@ namespace vaultdb {
             if(src.tuple_cnt_ == 0)
                 return;
 
-            for(int i = 0; i < schema_.getFieldCount(); ++i) {
-                int wires_cnt = isMultiwire(i) ? tuple_cnt_ : (tuple_cnt_ / fields_per_wire_.at(i) +
-                                                               (tuple_cnt_ % fields_per_wire_.at(i) != 0));
-                emp::OMPCPackedWire pack_wire(blocks_per_field_.at(i));
-                packed_column_data_[i] = std::vector<emp::OMPCPackedWire>(wires_cnt, pack_wire);
-                unpacked_wires_[i].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_[i] * 128,
-                                                                            emp::Bit(0));
-            }
+            table_id_ = src.table_id_;
 
-            int dummy_tag_wire_cnt = tuple_cnt_ / 128 + (tuple_cnt_ % 128 != 0);
-            emp::OMPCPackedWire pack_dummy_wire(1);
-            packed_column_data_[-1] = std::vector<emp::OMPCPackedWire>(dummy_tag_wire_cnt, pack_dummy_wire);
-            unpacked_wires_[-1].unpacked_blocks_ = std::vector<emp::Bit>(128, emp::Bit(0));
+            if(!bp_enabled_) {
+                for (int i = 0; i < schema_.getFieldCount(); ++i) {
+                    int wires_cnt = isMultiwire(i) ? tuple_cnt_ : (tuple_cnt_ / fields_per_wire_.at(i) +
+                                                                   (tuple_cnt_ % fields_per_wire_.at(i) != 0));
+                    emp::OMPCPackedWire pack_wire(blocks_per_field_.at(i));
+                    packed_column_data_[i] = std::vector<emp::OMPCPackedWire>(wires_cnt, pack_wire);
+                    unpacked_wires_[i].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_[i] * 128,
+                                                                                emp::Bit(0));
+                }
+
+                int dummy_tag_wire_cnt = tuple_cnt_ / 128 + (tuple_cnt_ % 128 != 0);
+                emp::OMPCPackedWire pack_dummy_wire(1);
+                packed_column_data_[-1] = std::vector<emp::OMPCPackedWire>(dummy_tag_wire_cnt, pack_dummy_wire);
+                unpacked_wires_[-1].unpacked_blocks_ = std::vector<emp::Bit>(128, emp::Bit(0));
+            }
 
             for(int i = 0; i < tuple_cnt_; ++i) {
                 for(int j = 0; j < getSchema().getFieldCount(); ++j) {
@@ -132,19 +143,52 @@ namespace vaultdb {
         }
 
         Field<Bit> getField(const int  & row, const int & col)  const override {
-            cacheField(row, col);
+            if(bp_enabled_) {
+                BufferPoolManager::PageId pid = bgm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
+                BufferPoolManager::UnpackedPage up = bgm_->getUnpackedPage(pid);
 
-            Bit *read_ptr = unpacked_wires_.at(col).unpacked_blocks_.data() + getUnpackedBlockOffset(row, col);
-            return Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
+                Bit *read_ptr = up.page_payload_.data() + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
+                return Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
+            }
+            else {
+                cacheField(row, col);
+
+                Bit *read_ptr = unpacked_wires_.at(col).unpacked_blocks_.data() + getUnpackedBlockOffset(row, col);
+                return Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
+            }
         }
 
 
         inline void setField(const int  & row, const int & col, const Field<Bit> & f)  override {
-            cacheField(row, col);
+            if(bp_enabled_) {
+                BufferPoolManager::PageId pid = bgm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
+                BufferPoolManager::UnpackedPage up;
 
-            Bit *write_ptr = unpacked_wires_.at(col).unpacked_blocks_.data() + getUnpackedBlockOffset(row, col);
-            f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
-            unpacked_wires_[col].dirty_bit_ = true;
+                // Check if page exists for pid
+                if(bgm_->hasUnpackedPage(pid)) {
+                    up = bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)];
+                }
+                else {
+                    // Flush an unpacked page into packed buffer pool by LRU if unpacked buffer pool is full
+                    bgm_->flushUnpackedPageByLRU();
+
+                    up.pid_ = pid;
+                    up.page_payload_ = std::vector<emp::Bit>(bgm_->unpacked_page_size_, emp::Bit(0));
+                }
+
+                Bit *write_ptr = up.page_payload_.data() + (((row % fields_per_wire_.at(col)) * schema_.getField(col).size()));
+                f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
+                up.timestamp_ = high_resolution_clock::now();
+
+                bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)] = up;
+            }
+            else {
+                cacheField(row, col);
+
+                Bit *write_ptr = unpacked_wires_.at(col).unpacked_blocks_.data() + getUnpackedBlockOffset(row, col);
+                f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
+                unpacked_wires_[col].dirty_bit_ = true;
+            }
         }
 
         SecureTable *secretShare() override  {
@@ -183,12 +227,17 @@ namespace vaultdb {
             tuple_packed_size_bytes_ += field_packed_size_bytes;
             field_packed_sizes_bytes_[ordinal] = field_packed_size_bytes;
 
-            int wires_cnt = isMultiwire(ordinal) ? tuple_cnt_ : (tuple_cnt_ / fields_per_wire_.at(ordinal) +
-                                                          (tuple_cnt_ % fields_per_wire_.at(ordinal) != 0));
-            emp::OMPCPackedWire pack_wire(blocks_per_field_.at(ordinal));
-            packed_column_data_[ordinal] = std::vector<emp::OMPCPackedWire>(wires_cnt, pack_wire);
-            unpacked_wires_[ordinal].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_.at(ordinal) * 128,
-                                                                        emp::Bit(0));
+            if(!bp_enabled_) {
+                int wires_cnt = isMultiwire(ordinal) ? tuple_cnt_ : (tuple_cnt_ / fields_per_wire_.at(ordinal) +
+                                                                     (tuple_cnt_ % fields_per_wire_.at(ordinal) != 0));
+                emp::OMPCPackedWire pack_wire(blocks_per_field_.at(ordinal));
+                packed_column_data_[ordinal] = std::vector<emp::OMPCPackedWire>(wires_cnt, pack_wire);
+                unpacked_wires_[ordinal].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_.at(ordinal) * 128,
+                                                                                  emp::Bit(0));
+            }
+            else {
+                throw; // NYI
+            }
         }
 
         void resize(const size_t &tuple_cnt) override {
@@ -198,45 +247,85 @@ namespace vaultdb {
 
             this->tuple_cnt_ = tuple_cnt;
 
-            for(int i = 0; i < schema_.getFieldCount(); ++i) {
-                int old_wires_cnt = isMultiwire(i) ? old_tuple_cnt : (old_tuple_cnt / fields_per_wire_.at(i) +
-                                                                     (old_tuple_cnt % fields_per_wire_.at(i) != 0));
-                int wires_cnt = isMultiwire(i) ? tuple_cnt : (tuple_cnt / fields_per_wire_.at(i) +
-                                                              (tuple_cnt % fields_per_wire_.at(i) != 0));
-                emp::OMPCPackedWire pack_wire(blocks_per_field_.at(i));
-                packed_column_data_[i].resize(wires_cnt);
+            if(!bp_enabled_) {
+                for (int i = 0; i < schema_.getFieldCount(); ++i) {
+                    int old_wires_cnt = isMultiwire(i) ? old_tuple_cnt : (old_tuple_cnt / fields_per_wire_.at(i) +
+                                                                          (old_tuple_cnt % fields_per_wire_.at(i) !=
+                                                                           0));
+                    int wires_cnt = isMultiwire(i) ? tuple_cnt : (tuple_cnt / fields_per_wire_.at(i) +
+                                                                  (tuple_cnt % fields_per_wire_.at(i) != 0));
+                    emp::OMPCPackedWire pack_wire(blocks_per_field_.at(i));
+                    packed_column_data_[i].resize(wires_cnt);
 
-                for(int j = old_wires_cnt; j < wires_cnt; ++j) {
-                    packed_column_data_[i][j] = pack_wire;
+                    for (int j = old_wires_cnt; j < wires_cnt; ++j) {
+                        packed_column_data_[i][j] = pack_wire;
+                    }
+                }
+
+                if (tuple_cnt > old_tuple_cnt) {
+                    int old_dummy_tag_wire_cnt = old_tuple_cnt / 128 + (old_tuple_cnt % 128 != 0);
+                    int dummy_tag_wire_cnt = tuple_cnt / 128 + (tuple_cnt % 128 != 0);
+                    emp::OMPCPackedWire pack_wire(1);
+                    packed_column_data_[-1].resize(dummy_tag_wire_cnt, pack_wire);
+
+                    for (int i = old_dummy_tag_wire_cnt; i < dummy_tag_wire_cnt; ++i) {
+                        packed_column_data_[-1][i] = pack_wire;
+                    }
                 }
             }
-
-            if(tuple_cnt > old_tuple_cnt) {
-                int old_dummy_tag_wire_cnt = old_tuple_cnt / 128 + (old_tuple_cnt % 128 != 0);
-                int dummy_tag_wire_cnt = tuple_cnt / 128 + (tuple_cnt % 128 != 0);
-                emp::OMPCPackedWire pack_wire(1);
-                packed_column_data_[-1].resize(dummy_tag_wire_cnt, pack_wire);
-
-                for(int i = old_dummy_tag_wire_cnt; i < dummy_tag_wire_cnt; ++i) {
-                    packed_column_data_[-1][i] = pack_wire;
-                }
+            else {
+                throw; // NYI
             }
         }
 
         Bit getDummyTag(const int & row)  const override {
-            cacheField(row, -1);
-            return unpacked_wires_.at(-1).unpacked_blocks_[row % 128];
+            if(bp_enabled_) {
+                BufferPoolManager::PageId pid = bgm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
+                BufferPoolManager::UnpackedPage up = bgm_->getUnpackedPage(pid);
+
+                return up.page_payload_[row % fields_per_wire_.at(-1)];
+            }
+            else {
+                cacheField(row, -1);
+                return unpacked_wires_.at(-1).unpacked_blocks_[row % 128];
+            }
         }
 
         void setDummyTag(const int & row, const Bit & val) override {
-            cacheField(row, -1);
-            unpacked_wires_[-1].unpacked_blocks_[row % 128] = val;
-            unpacked_wires_[-1].dirty_bit_ = true;
+            if(bp_enabled_) {
+                BufferPoolManager::PageId pid = bgm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
+                BufferPoolManager::UnpackedPage up;
+
+                // Check if page exists for pid
+                if(bgm_->hasUnpackedPage(pid)) {
+                    up = bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)];
+                }
+                else {
+                    // Flush an unpacked page into packed buffer pool by LRU if unpacked buffer pool is full
+                    bgm_->flushUnpackedPageByLRU();
+
+                    up.pid_ = pid;
+                    up.page_payload_ = std::vector<emp::Bit>(bgm_->unpacked_page_size_, emp::Bit(0));
+                }
+
+                up.page_payload_[row % fields_per_wire_.at(-1)] = val;
+                up.timestamp_ = high_resolution_clock::now();
+
+                bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)] = up;
+
+            }
+            else {
+                cacheField(row, -1);
+                unpacked_wires_[-1].unpacked_blocks_[row % 128] = val;
+                unpacked_wires_[-1].dirty_bit_ = true;
+            }
         }
 
 
         QueryTable<Bit> *clone()  override {
-            this->flush();
+            if(!bp_enabled_) {
+                this->flush();
+            }
             return new PackedColumnTable(*this);
         }
 
@@ -247,23 +336,17 @@ namespace vaultdb {
             tuple_size_bytes_ = 0;
 
             for(int i = 0; i < schema_.getFieldCount(); ++i) {
-                int packed_blocks;
-                int field_packed_size_bytes;
-
                 QueryFieldDesc desc = schema_.fields_.at(i);
 
-                if(desc.size() / 128 > 0) {
-                    packed_blocks = desc.size() / 128 + (desc.size() % 128 != 0);
-                    field_packed_size_bytes = (1 + 2 * packed_blocks) * block_byte_size_;
+                int size_threshold = bp_enabled_ ? bgm_->unpacked_page_size_ : 128;
+                int packed_blocks = desc.size() / size_threshold + (desc.size() % size_threshold != 0);
 
+                if(desc.size() / size_threshold > 0) {
                     fields_per_wire_[i] = 1;
                     blocks_per_field_[i] = packed_blocks;
                 }
                 else {
-                    packed_blocks = 1;
-                    field_packed_size_bytes = 3 * block_byte_size_;
-
-                    fields_per_wire_[i] = 128 / desc.size();
+                    fields_per_wire_[i] = size_threshold / desc.size();
                     blocks_per_field_[i] = 1;
                 }
 
@@ -271,18 +354,20 @@ namespace vaultdb {
                 tuple_size_bytes_ += field_size_bytes;
                 field_sizes_bytes_[i] = field_size_bytes;
 
+                int field_packed_size_bytes = (1 + 2 * packed_blocks) * block_byte_size_;
                 tuple_packed_size_bytes_ += field_packed_size_bytes;
                 field_packed_sizes_bytes_[i] = field_packed_size_bytes;
             }
 
             blocks_per_field_[-1] = 1;
-            fields_per_wire_[-1] = 128;
+            fields_per_wire_[-1] = bp_enabled_ ? bgm_->unpacked_page_size_ : 128;
 
             tuple_size_bytes_ += sizeof(emp::Bit);
             field_sizes_bytes_[-1] = sizeof(emp::Bit);
 
-            tuple_packed_size_bytes_ += 48;
-            field_packed_sizes_bytes_[-1] = 48;
+            int dummy_packed_size_bytes = (1 + 2 * blocks_per_field_[-1]) * block_byte_size_;
+            tuple_packed_size_bytes_ += dummy_packed_size_bytes;
+            field_packed_sizes_bytes_[-1] = dummy_packed_size_bytes;
         }
 
         QueryTuple<Bit> getRow(const int & idx) override {

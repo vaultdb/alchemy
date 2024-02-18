@@ -5,6 +5,7 @@
 #include "common/defs.h"
 #include <iostream>
 #include <util/emp_manager/emp_manager.h>
+#include "util/buffer_pool/buffer_pool_manager.h"
 
 using namespace std;
 
@@ -20,6 +21,11 @@ namespace vaultdb{
         EmpMode emp_mode_ = EmpMode::PLAIN;
         int party_;
 
+        bool bp_enabled_ = true;
+        BufferPoolManager *bpm_ = nullptr;
+
+        int num_tables_;
+
 
         static SystemConfiguration& getInstance() {
             static SystemConfiguration  instance;
@@ -31,6 +37,10 @@ namespace vaultdb{
             unioned_db_name_ = db_name;
             bit_packing_ = bp;
             storage_model_ = model;
+
+            if(bp_enabled_) {
+                bpm_ = new BufferPoolManager(256, 100, 5, 1000, emp_manager_);
+            }
         }
 
         string getUnionedDbName() const { return unioned_db_name_; }
