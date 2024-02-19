@@ -86,14 +86,14 @@ namespace vaultdb {
                 emp::OMPCPackedWire pack_dummy_wire(1);
                 packed_column_data_[-1] = std::vector<emp::OMPCPackedWire>(dummy_tag_wire_cnt, pack_dummy_wire);
                 unpacked_wires_[-1].unpacked_blocks_ = std::vector<emp::Bit>(128, emp::Bit(0));
-            }
 
-            for(int i = 0; i < tuple_cnt_; ++i) {
-                for(int j = 0; j < getSchema().getFieldCount(); ++j) {
-                    setField(i, j, src.getField(i, j));
+                for (int i = 0; i < tuple_cnt_; ++i) {
+                    for (int j = 0; j < getSchema().getFieldCount(); ++j) {
+                        setField(i, j, src.getField(i, j));
+                    }
+
+                    setDummyTag(i, src.getDummyTag(i));
                 }
-
-                setDummyTag(i, src.getDummyTag(i));
             }
         }
 
@@ -148,6 +148,10 @@ namespace vaultdb {
                 BufferPoolManager::UnpackedPage up = bgm_->getUnpackedPage(pid);
 
                 Bit *read_ptr = up.page_payload_.data() + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
+
+                up.timestamp_ = high_resolution_clock::now();
+                bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)] = up;
+
                 return Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
             }
             else {
@@ -162,19 +166,7 @@ namespace vaultdb {
         inline void setField(const int  & row, const int & col, const Field<Bit> & f)  override {
             if(bp_enabled_) {
                 BufferPoolManager::PageId pid = bgm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
-                BufferPoolManager::UnpackedPage up;
-
-                // Check if page exists for pid
-                if(bgm_->hasUnpackedPage(pid)) {
-                    up = bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)];
-                }
-                else {
-                    // Flush an unpacked page into packed buffer pool by LRU if unpacked buffer pool is full
-                    bgm_->flushUnpackedPageByLRU();
-
-                    up.pid_ = pid;
-                    up.page_payload_ = std::vector<emp::Bit>(bgm_->unpacked_page_size_, emp::Bit(0));
-                }
+                BufferPoolManager::UnpackedPage up = bgm_->getUnpackedPage(pid);
 
                 Bit *write_ptr = up.page_payload_.data() + (((row % fields_per_wire_.at(col)) * schema_.getField(col).size()));
                 f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
@@ -283,6 +275,9 @@ namespace vaultdb {
                 BufferPoolManager::PageId pid = bgm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
                 BufferPoolManager::UnpackedPage up = bgm_->getUnpackedPage(pid);
 
+                up.timestamp_ = high_resolution_clock::now();
+                bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)] = up;
+
                 return up.page_payload_[row % fields_per_wire_.at(-1)];
             }
             else {
@@ -294,19 +289,7 @@ namespace vaultdb {
         void setDummyTag(const int & row, const Bit & val) override {
             if(bp_enabled_) {
                 BufferPoolManager::PageId pid = bgm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
-                BufferPoolManager::UnpackedPage up;
-
-                // Check if page exists for pid
-                if(bgm_->hasUnpackedPage(pid)) {
-                    up = bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)];
-                }
-                else {
-                    // Flush an unpacked page into packed buffer pool by LRU if unpacked buffer pool is full
-                    bgm_->flushUnpackedPageByLRU();
-
-                    up.pid_ = pid;
-                    up.page_payload_ = std::vector<emp::Bit>(bgm_->unpacked_page_size_, emp::Bit(0));
-                }
+                BufferPoolManager::UnpackedPage up = bgm_->getUnpackedPage(pid);
 
                 up.page_payload_[row % fields_per_wire_.at(-1)] = val;
                 up.timestamp_ = high_resolution_clock::now();

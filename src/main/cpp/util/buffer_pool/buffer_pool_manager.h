@@ -61,6 +61,10 @@ namespace vaultdb {
             return packed_page_buffer_pool_.find(getPageIdKey(page_id)) != packed_page_buffer_pool_.end();
         }
 
+        bool hasPage(PageId &page_id) {
+            return hasUnpackedPage(page_id) || hasPackedPage(page_id);
+        }
+
         bool isUnpackedBufferPoolFull() {
             return unpacked_page_buffer_pool_.size() >= num_unpacked_pages_;
         }
@@ -83,7 +87,7 @@ namespace vaultdb {
 
                 // TODO: flush to disk if necessary
                 if(isPackedBufferPoolFull()) {
-                    // NYI
+                    throw std::runtime_error("Packed buffer pool is full.");
                 }
 
                 PackedPage packed_page;
@@ -103,6 +107,17 @@ namespace vaultdb {
         }
 
         UnpackedPage getUnpackedPage(PageId &page_id) {
+            if(!hasPage(page_id)) {
+                flushUnpackedPageByLRU();
+
+                UnpackedPage up;
+                up.pid_ = page_id;
+                up.page_payload_ = std::vector<emp::Bit>(unpacked_page_size_, emp::Bit(0));
+                up.timestamp_ = high_resolution_clock::now();
+
+                return up;
+            }
+
             if(hasUnpackedPage(page_id)) {
                 return unpacked_page_buffer_pool_[getPageIdKey(page_id)];
             }
@@ -117,6 +132,7 @@ namespace vaultdb {
                 }
                 else {
                     // TODO: get packed page from disk
+                    throw std::runtime_error("disk read not implemented yet");
                 }
 
                 UnpackedPage unpacked_page;
@@ -124,8 +140,6 @@ namespace vaultdb {
                 unpacked_page.page_payload_ = std::vector<emp::Bit>(unpacked_page_size_, emp::Bit(0));
                 emp_manager_->unpack((Bit *) &packed_page.page_payload_, unpacked_page.page_payload_.data(), unpacked_page_size_);
                 unpacked_page.timestamp_ = high_resolution_clock::now();
-
-                unpacked_page_buffer_pool_[getPageIdKey(page_id)] = unpacked_page;
 
                 return unpacked_page;
             }
