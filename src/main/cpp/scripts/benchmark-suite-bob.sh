@@ -24,7 +24,7 @@ now=`date +"%Y%m%d%H%M"`
 FILE='log/all-tests-bob-column-store-'$now'.log'
 
 cmake -DCMAKE_BUILD_TYPE=Release .
-make all
+make all -j6
 
 echo 'Writing to '$FILE
 
