@@ -52,8 +52,8 @@ SecureTable *SecureSqlInput::runSelf() {
     // secret share it
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = system_conf_.andGateCount();
-
-    return plain_input_->secretShare();
+    this->output_ =  plain_input_->secretShare();
+    return this->output_;
 
 }
 

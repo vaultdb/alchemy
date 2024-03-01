@@ -339,7 +339,10 @@ PlainTable *QueryTable<B>::revealInsecure(const int &party)  {
 
 template<typename B>
 QueryTable<B> *QueryTable<B>::getTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def) {
+
     StorageModel s = SystemConfiguration::getInstance().storageModel();
+    // SystemConfiguration::initialize mirrors this logic for determining whether to allocate the buffer pool
+    // if we change this, we need to change that too
     if(s == StorageModel::PACKED_COLUMN_STORE && std::is_same_v<B, emp::Bit>) {
             return (QueryTable<B> *)  new PackedColumnTable(tuple_cnt, schema, sort_def);
     }

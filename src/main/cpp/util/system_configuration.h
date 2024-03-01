@@ -38,6 +38,14 @@ namespace vaultdb{
             bit_packing_ = bp;
             storage_model_ = model;
 
+            // can only benefit from buffer pool in outsourced setting
+            // mirroring the logic in QueryTable<B>::getTable()
+            // this prevents the system from reaching an invalid state
+            // if changing QueryTable, also change this
+            if(storage_model_ != StorageModel::PACKED_COLUMN_STORE) {
+                bp_enabled_ = false;
+            }
+
             if(bp_enabled_) {
                 bpm_ = new BufferPoolManager(256, 100, 5, 1000, emp_manager_);
             }
