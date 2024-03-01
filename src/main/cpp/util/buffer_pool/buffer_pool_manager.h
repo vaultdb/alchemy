@@ -2,12 +2,105 @@
 #define _BUFFER_POOL_MANAGER_H_
 
 #include "emp-tool/emp-tool.h"
-#include "emp-rescu/emp-rescu.h"
 #include "common/defs.h"
 #include "util/emp_manager/emp_manager.h"
 
 using namespace std;
 
+#if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/zk.h")
+namespace vaultdb {
+    class BufferPoolManager {
+    public:
+        typedef struct page_id_ {
+            int table_id_;
+            int col_id_;
+            int start_row_id_;
+            int end_row_id_;
+        } PageId;
+
+        // data from same column can be same page - easy to get offset.
+        typedef struct unpackd_page_ {
+            PageId pid_;
+            vector<emp::Bit> page_payload_;
+            time_point<high_resolution_clock> timestamp_; // for LRU
+        } UnpackedPage;
+
+        typedef struct packd_page_ {
+            PageId pid_;
+            emp::OMPCPackedWire page_payload_;
+            time_point<high_resolution_clock> timestamp_; // for LRU
+        } PackedPage;
+
+        BufferPoolManager() {};
+
+        BufferPoolManager(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager) : unpacked_page_size_(unpacked_page_size), num_unpacked_pages_(num_unpacked_pages), packed_page_size_(packed_page_size), num_packed_pages_(num_packed_pages), emp_manager_(manager) {
+            
+        }
+
+        ~BufferPoolManager() {};
+
+        PageId getPageId(int table_id, int col, int row, int rows_per_page) {
+            return {0, 0, 0, 0};
+        }
+
+        string getPageIdKey(const PageId &page_id) {
+            return "";
+        }
+
+        void insertPageIdMap(const PageId &page_id) {
+            
+        }
+
+        bool hasUnpackedPage(PageId &page_id) {
+            return false;
+        }
+
+        bool hasPackedPage(PageId &page_id) {
+            return false;
+        }
+
+        bool hasPage(PageId &page_id) {
+            return false;
+        }
+
+        bool isUnpackedBufferPoolFull() {
+            return false;
+        }
+
+        bool isPackedBufferPoolFull() {
+            return false;
+        }
+
+        void flushUnpackedPageByLRU() {
+
+        }
+
+        UnpackedPage getUnpackedPage(PageId &page_id) {
+            UnpackedPage up;
+            return up;
+        }
+
+
+
+        EmpManager *emp_manager_ = nullptr;
+
+        int unpacked_page_size_; // in emp::Bits
+        int num_unpacked_pages_;
+        int packed_page_size_; // in emp::OMPCPackedWire
+        int num_packed_pages_;
+
+        int block_n_;
+
+        std::map<string, PageId> page_id_map_;
+        std::map<string, UnpackedPage> unpacked_page_buffer_pool_;
+        std::map<string, PackedPage> packed_page_buffer_pool_;
+
+    };
+}
+#else
+
+#include "emp-rescu/emp-rescu.h"
+#define __OMPC_BACKEND__ 1
 namespace vaultdb {
     class BufferPoolManager {
     public:
@@ -162,5 +255,7 @@ namespace vaultdb {
 
     };
 }
+
+#endif
 
 #endif
