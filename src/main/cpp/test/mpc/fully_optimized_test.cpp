@@ -46,20 +46,17 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_unioned_db);
     string local_db = db_name_;
 
-//    cout << " Observed DB : "<< local_db << " - Bit Packed: " << SystemConfiguration::getInstance().bitPackingEnabled() <<  endl;
-
     // Gate count measurement
-    auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
+    auto start_gates = manager_->andGateCount();
 
     // Comm Cost measurement
-    auto start_comm_cost = SystemConfiguration::getInstance().emp_manager_->getCommCost();
+    auto start_comm_cost = manager_->getCommCost();
 
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
     expected->order_by_ = expected_sort;
 
     //ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
-    //std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-" + test_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-"  + test_name + ".json";
 
     // Initialize memory measurement
@@ -72,7 +69,6 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
     PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-//    std::cout << "Query tree: " << root->printTree() << endl;
 
     SecureTable *result = root->run();
 
@@ -85,7 +81,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
 
     cout << "Runtime: " << duration << " sec, CPU Time: " << secureClockTicksPerSecond << " sec, CPU clock ticks: " << secureClockTicks << ", CPU clock ticks per second: " << CLOCKS_PER_SEC << "\n";
 
-    auto end_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
+    auto end_gates = manager_->andGateCount();
     float e2e_gates = (float) (end_gates - start_gates);
     float cost_estimate = (float) root->planCost();
     float relative_error = (fabs(e2e_gates - cost_estimate) / e2e_gates) * 100.0f;
@@ -97,7 +93,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
 //    cout << "Initial Memory: " << initial_memory << " bytes, Peak Memory After Execution: " << peak_memory << " bytes" << ", Memory Usage: " << memory_usage << " bytes" << endl;
 
     // Comm Cost measurement
-    auto end_comm_cost = SystemConfiguration::getInstance().emp_manager_->getCommCost();
+    auto end_comm_cost = manager_->getCommCost();
     double bandwidth = (end_comm_cost - start_comm_cost) / duration;  // Assuming 'duration' is the time taken for this communication in seconds
     cout << "Bandwidth: " << bandwidth << " Bps" << endl;
 
