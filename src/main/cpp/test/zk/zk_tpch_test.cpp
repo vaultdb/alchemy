@@ -124,13 +124,15 @@ TEST_F(ZkTpcHTest, tpch_q18) {
 
 
 
-
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
 
     ::testing::GTEST_FLAG(filter)=FLAGS_filter;
+    int i = RUN_ALL_TESTS();
+    google::ShutDownCommandLineFlags();
+    return i;
 
-    return RUN_ALL_TESTS();
 }
+
 
