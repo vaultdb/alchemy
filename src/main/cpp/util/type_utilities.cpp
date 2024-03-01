@@ -47,31 +47,30 @@ FieldType TypeUtilities::getTypeFromString(const string & field_str) {
     if(field_str_lower == "date")
         return FieldType::DATE;
 
-    if(field_str_lower == "int32")
+    if(field_str_lower == "int32" || field_str_lower == "int")
         return FieldType::INT;
 
-    if(field_str_lower == "int64")
+    if(field_str_lower == "int64" || field_str_lower == "long")
         return FieldType::LONG;
 
     if(field_str_lower == "float")
         return FieldType::FLOAT;
-    // TODO: rename this to char!
-    if(field_str_lower == "varchar")
+    if(field_str_lower == "varchar" || field_str_lower == "char")
         return FieldType::STRING;
 
     if(field_str_lower == "shared-bool")
         return FieldType::SECURE_BOOL;
 
 
-    if(field_str_lower == "shared-int32")
+    if(field_str_lower == "shared-int32" || field_str_lower == "shared-int")
         return FieldType::SECURE_INT;
 
-    if(field_str_lower == "shared-int64")
+    if(field_str_lower == "shared-int64"  || field_str_lower == "shared-long")
         return FieldType::SECURE_LONG;
 
     if(field_str_lower == "shared-float")
         return FieldType::SECURE_FLOAT;
-    if(field_str_lower == "shared-varchar")
+    if(field_str_lower == "shared-varchar" || field_str_lower == "shared-char")
         return FieldType::SECURE_STRING;
 
     throw std::invalid_argument("Unsupported type " + field_str);
