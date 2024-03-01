@@ -11,13 +11,13 @@ std::string GeneratePhameDataThreeParties::getCurrentWorkingDirectory() {
     char * ret = getcwd(cwd, sizeof(cwd));
     ++ret; // to address warnings
 
-    std::string  currentWorkingDirectory = std::string(cwd);
-    std::string suffix = currentWorkingDirectory.substr(currentWorkingDirectory.length() - 4, 4);
+    std::string  current_working_directory = std::string(cwd);
+    std::string suffix = current_working_directory.substr(current_working_directory.length() - 4, 4);
     if(suffix == std::string("/bin")) {
-        currentWorkingDirectory = currentWorkingDirectory.substr(0, currentWorkingDirectory.length() - 4);
+        current_working_directory = current_working_directory.substr(0, current_working_directory.length() - 4);
     }
 
-    return currentWorkingDirectory;
+    return current_working_directory;
 }
 
 // generate [min, max)
