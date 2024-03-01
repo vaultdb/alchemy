@@ -95,9 +95,7 @@ namespace  vaultdb {
             return to_recv;
         }
 
-        uint64_t getCommCost() override {
-            throw;
-        }
+
 
     private:
         static void secret_share_recv(const size_t &tuple_count, const int &dst_party,
@@ -162,9 +160,6 @@ namespace  vaultdb {
             throw;
         }
 
-        uint64_t getCommCost() override {
-            throw;
-        }
     };
 }
 #endif // end if-emp-tool

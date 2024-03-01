@@ -60,9 +60,6 @@ namespace  vaultdb {
 
         int recvPublic() override { throw; }
 
-        uint64_t getCommCost() override {
-            throw;
-        }
 
 
     };
@@ -194,17 +191,7 @@ namespace  vaultdb {
             return to_recv;
         }
 
-        uint64_t getCommCost() override {
-            uint64_t commCost = 0L;
 
-            if(tpio_ != nullptr) commCost += tpio_->counter;
-
-            for(NetIO *io : ios_) {
-                if(io != nullptr) commCost += io->counter;
-            }
-
-            return commCost;
-        }
 
 
     };

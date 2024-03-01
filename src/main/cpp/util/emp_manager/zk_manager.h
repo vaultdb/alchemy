@@ -111,9 +111,6 @@ namespace vaultdb {
             return to_recv;
         }
 
-        uint64_t getCommCost() override {
-            throw;
-        }
 
 
     private:
@@ -181,9 +178,6 @@ namespace  vaultdb {
 
         int recvPublic() override { throw; }
 
-        uint64_t getCommCost() override {
-            throw;
-        }
     };
 }
 #endif // end if-emp-tool
