@@ -1,0 +1,2254 @@
+-- Build type: Release
+-- CXX release flags: -Wfatal-errors  -Wno-ignored-attributes -Wno-unused-result -funroll-loops -fPIC -march=native -maes -mrdseed -Wno-stringop-overread -O2
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp
+[  1%] Built target generate_enrich_data
+[  2%] Built target gtest
+[  3%] Built target gmock
+[ 29%] Built target vaultdb-emp
+[ 30%] Built target sort_test
+[ 31%] Built target compressed_table_test
+[ 33%] Built target basic_join_test
+[ 33%] Built target sort_merge_aggregate_test
+[ 34%] Built target filter_test
+[ 35%] Built target field_expression_test
+[ 36%] Built target project_test
+[ 37%] Built target csv_reader_test
+[ 38%] Built target keyed_sort_merge_join_test
+[ 40%] Built target sort_merge_join_test
+[ 41%] Built target nested_loop_aggregate_test
+[ 43%] Built target secret_share_generator_test
+[ 43%] Built target plan_deparser_test
+[ 44%] Built target merge_join_test
+[ 45%] Built target scalar_aggregate_test
+[ 46%] Built target plan_parser_test
+[ 47%] Built target keyed_join_test
+[ 48%] Built target emp_test
+[ 50%] Built target serialization_test
+[ 51%] Built target tpch_test
+[ 52%] Built target secure_field_expression_test
+[ 53%] Built target emp_table_test
+[ 54%] Built target secure_filter_test
+[ 56%] Built target secure_basic_join_test
+[ 58%] Built target secure_sort_test
+[ 60%] Built target secure_merge_join_test
+[ 61%] Built target secure_keyed_sort_merge_join_test
+[ 62%] Built target secure_scalar_aggregate_test
+[ 63%] Built target secure_keyed_join_test
+[ 64%] Built target secure_nested_loop_aggregate_test
+[ 65%] Built target secure_sort_merge_aggregate_test
+[ 66%] Built target secure_plan_deparser_test
+[ 67%] Built target secure_tpch_test
+[ 68%] Built target secure_bit_packing_test
+[ 69%] Built target baseline_comparison_test
+[ 70%] Built target enrich_test
+[ 72%] Built target expression_cost_model_test
+[ 73%] Built target true_cardinality_test
+[ 74%] Built target plan_cost_test
+[ 76%] Built target operator_cost_model_test
+[ 78%] Built target secure_aggregate_comparison_test
+[ 79%] Built target zk_tpch_test
+[ 81%] Built target secret_share_csv
+[ 83%] Built target emp_compression_setup_test
+[ 84%] Built target fully_optimized_test
+[ 85%] Built target secure_plan_enumeration_test
+[ 86%] Built target join_cost_comparison_test
+[ 87%] Built target generate_enrich_data_three_parties
+[ 87%] Built target generate_phame_data_three_parties
+[ 89%] Built target secret_share_from_query
+[ 89%] Built target secret_share_batch_from_query
+[ 91%] Built target load_tuples_data_partner
+[ 92%] Built target assemble_secret_shares
+[ 94%] Built target run_data_partner_aggregation
+[ 97%] Built target run_data_partner
+[100%] Built target run_data_partner_batch
+[ 96%] Built target vaultdb-emp
+[100%] Built target generate_enrich_data_three_parties
+[ 96%] Built target vaultdb-emp
+[100%] Built target secret_share_from_query
+[ 96%] Built target vaultdb-emp
+[100%] Built target secret_share_batch_from_query
+Finished generating 1000 patients per host!
+DROP TABLE
+CREATE TABLE
+COPY 1000
+COPY 1000
+COPY 1000
+UPDATE 1880
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+CREATE EXTENSION
+ALTER TABLE
+UPDATE 3000
+COPY 1000
+COPY 1000
+COPY 1000
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_chi" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+Writing multisite tables!
+preparing for aggregate-only test
+Chi secret sharing 520 tuples.
+Chi secret sharing 174 tuples.
+Setting up semi-join optimization
+Chi secret sharing 1323 tuples.
+Chi secret sharing 106 tuples.
+Chi secret sharing 98 tuples.
+Chi secret sharing 79 tuples.
+Chi secret sharing 103 tuples.
+Chi secret sharing 92 tuples.
+Chi secret sharing 109 tuples.
+Chi secret sharing 96 tuples.
+Chi secret sharing 108 tuples.
+Chi secret sharing 96 tuples.
+Chi secret sharing 113 tuples.
+Chi secret sharing 441 tuples.
+Chi secret sharing 34 tuples.
+Chi secret sharing 24 tuples.
+Chi secret sharing 26 tuples.
+Chi secret sharing 37 tuples.
+Chi secret sharing 24 tuples.
+Chi secret sharing 29 tuples.
+Chi secret sharing 33 tuples.
+Chi secret sharing 30 tuples.
+Chi secret sharing 28 tuples.
+Chi secret sharing 38 tuples.
+Chi secret sharing 441 tuples.
+Chi secret sharing 1323 tuples.
+Chi secret sharing 882 tuples.
+finished generating 100 patients per host!
+You are now connected to database "enrich_htn_test_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_test_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_unioned" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from CsvReaderTest
+[ RUN      ] CsvReaderTest.lineitemTest
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] CsvReaderTest.lineitemTest (146 ms)
+[ RUN      ] CsvReaderTest.quotedStringTest
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] CsvReaderTest.quotedStringTest (116 ms)
+[ RUN      ] CsvReaderTest.customerTest
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] CsvReaderTest.customerTest (117 ms)
+[ RUN      ] CsvReaderTest.ordersTest
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] CsvReaderTest.ordersTest (89 ms)
+[----------] 4 tests from CsvReaderTest (470 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (470 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from FieldExpressionTest
+[ RUN      ] FieldExpressionTest.test_int32
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] FieldExpressionTest.test_int32 (3 ms)
+[ RUN      ] FieldExpressionTest.test_int32_comparator
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] FieldExpressionTest.test_int32_comparator (3 ms)
+[ RUN      ] FieldExpressionTest.test_int32_expr
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] FieldExpressionTest.test_int32_expr (3 ms)
+[ RUN      ] FieldExpressionTest.cmp_swap
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] FieldExpressionTest.cmp_swap (173 ms)
+[----------] 4 tests from FieldExpressionTest (184 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (184 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from FilterTest
+[ RUN      ] FilterTest.test_table_scan
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] FilterTest.test_table_scan (75 ms)
+[ RUN      ] FilterTest.test_filter
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] FilterTest.test_filter (69 ms)
+[----------] 2 tests from FilterTest (145 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (145 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ProjectionTest
+[ RUN      ] ProjectionTest.q3Lineitem
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ProjectionTest.q3Lineitem (186 ms)
+[----------] 1 test from ProjectionTest (186 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (186 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from BasicJoinTest
+[ RUN      ] BasicJoinTest.test_tpch_q3_customer_orders
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=	--cutoff=5	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] BasicJoinTest.test_tpch_q3_customer_orders (86 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=	--cutoff=5	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders (133 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=	--cutoff=5	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer (145 ms)
+[----------] 3 tests from BasicJoinTest (366 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (366 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from KeyedJoinTest
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders (150 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders (1893 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer (1644 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed (100 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed (1447 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (1232 ms)
+[----------] 6 tests from KeyedJoinTest (6469 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (6469 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from SortTest
+[ RUN      ] SortTest.testSingleIntColumn
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.testSingleIntColumn (22 ms)
+[ RUN      ] SortTest.tpchQ1Sort
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.tpchQ1Sort (87 ms)
+[ RUN      ] SortTest.tpchQ3Sort
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.tpchQ3Sort (34 ms)
+[ RUN      ] SortTest.tpchQ5Sort
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.tpchQ5Sort (54 ms)
+[ RUN      ] SortTest.tpchQ8Sort
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.tpchQ8Sort (28 ms)
+[ RUN      ] SortTest.tpchQ9Sort
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.tpchQ9Sort (83 ms)
+[ RUN      ] SortTest.tpchQ18Sort
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.tpchQ18Sort (47 ms)
+[ RUN      ] SortTest.sort_and_encrypt_table_one_column
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortTest.sort_and_encrypt_table_one_column (3 ms)
+[----------] 8 tests from SortTest (363 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (363 ms total)
+[  PASSED  ] 8 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from KeyedSortMergeJoinTest
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders (514 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders (3169 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (4783 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders_reversed
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_customer_orders_reversed (363 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_reversed
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_reversed (3145 ms)
+[ RUN      ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--unioned_db=tpch_unioned_150	--log_level=2	--logfile=	
+
+[       OK ] KeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (4695 ms)
+[----------] 6 tests from KeyedSortMergeJoinTest (16671 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (16671 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from MergeJoinTest
+[ RUN      ] MergeJoinTest.merge_q18
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] MergeJoinTest.merge_q18 (45 ms)
+[----------] 1 test from MergeJoinTest (45 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (45 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 12 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 12 tests from ScalarAggregateTest
+[ RUN      ] ScalarAggregateTest.test_count
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_count (28 ms)
+[ RUN      ] ScalarAggregateTest.test_count_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_count_dummies (23 ms)
+[ RUN      ] ScalarAggregateTest.test_min
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_min (23 ms)
+[ RUN      ] ScalarAggregateTest.test_max
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_max (22 ms)
+[ RUN      ] ScalarAggregateTest.test_sum
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_sum (23 ms)
+[ RUN      ] ScalarAggregateTest.test_sum_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_sum_dummies (22 ms)
+[ RUN      ] ScalarAggregateTest.test_avg
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_avg (22 ms)
+[ RUN      ] ScalarAggregateTest.test_avg_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_avg_dummies (28 ms)
+[ RUN      ] ScalarAggregateTest.test_all_sum_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_all_sum_dummies (53 ms)
+[ RUN      ] ScalarAggregateTest.test_all_avg_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_all_avg_dummies (43 ms)
+[ RUN      ] ScalarAggregateTest.test_tpch_q1_avg_cnt
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_tpch_q1_avg_cnt (98 ms)
+[ RUN      ] ScalarAggregateTest.test_all_aggs_tpch_q1
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] ScalarAggregateTest.test_all_aggs_tpch_q1 (78 ms)
+[----------] 12 tests from ScalarAggregateTest (470 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (470 ms total)
+[  PASSED  ] 12 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from SortMergeAggregateTest
+[ RUN      ] SortMergeAggregateTest.test_count
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_count (42 ms)
+[ RUN      ] SortMergeAggregateTest.test_count_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_count_dummies (46 ms)
+[ RUN      ] SortMergeAggregateTest.test_sum
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_sum (40 ms)
+[ RUN      ] SortMergeAggregateTest.test_sum_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_sum_dummies (43 ms)
+[ RUN      ] SortMergeAggregateTest.test_avg
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_avg (35 ms)
+[ RUN      ] SortMergeAggregateTest.test_avg_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_avg_dummies (41 ms)
+[ RUN      ] SortMergeAggregateTest.test_min
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_min (38 ms)
+[ RUN      ] SortMergeAggregateTest.test_min_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_min_dummies (40 ms)
+[ RUN      ] SortMergeAggregateTest.test_max
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_max (39 ms)
+[ RUN      ] SortMergeAggregateTest.test_max_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_max_dummies (38 ms)
+[ RUN      ] SortMergeAggregateTest.test_tpch_q1_sums
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_tpch_q1_sums (157 ms)
+[ RUN      ] SortMergeAggregateTest.test_tpch_q1_avg_cnt
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.test_tpch_q1_avg_cnt (155 ms)
+[ RUN      ] SortMergeAggregateTest.tpch_q1
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SortMergeAggregateTest.tpch_q1 (160 ms)
+[----------] 13 tests from SortMergeAggregateTest (880 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (880 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from NestedLoopAggregateTest
+[ RUN      ] NestedLoopAggregateTest.test_count
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_count (57 ms)
+[ RUN      ] NestedLoopAggregateTest.test_count_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_count_dummies (54 ms)
+[ RUN      ] NestedLoopAggregateTest.test_sum
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_sum (75 ms)
+[ RUN      ] NestedLoopAggregateTest.test_sum_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_sum_dummies (74 ms)
+[ RUN      ] NestedLoopAggregateTest.test_avg
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_avg (68 ms)
+[ RUN      ] NestedLoopAggregateTest.test_avg_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_avg_dummies (68 ms)
+[ RUN      ] NestedLoopAggregateTest.test_min
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_min (63 ms)
+[ RUN      ] NestedLoopAggregateTest.test_min_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_min_dummies (64 ms)
+[ RUN      ] NestedLoopAggregateTest.test_max
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_max (62 ms)
+[ RUN      ] NestedLoopAggregateTest.test_max_dummies
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_max_dummies (63 ms)
+[ RUN      ] NestedLoopAggregateTest.test_tpch_q1_sums
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_tpch_q1_sums (156 ms)
+[ RUN      ] NestedLoopAggregateTest.test_tpch_q1_avg_cnt
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.test_tpch_q1_avg_cnt (140 ms)
+[ RUN      ] NestedLoopAggregateTest.tpch_q1
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--cutoff=100	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] NestedLoopAggregateTest.tpch_q1 (164 ms)
+[----------] 13 tests from NestedLoopAggregateTest (1115 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (1115 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecretShareGeneratorTest
+[ RUN      ] SecretShareGeneratorTest.lineitem_sample
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SecretShareGeneratorTest.lineitem_sample (93 ms)
+[ RUN      ] SecretShareGeneratorTest.lineitem_dummy_tag_sample
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SecretShareGeneratorTest.lineitem_dummy_tag_sample (94 ms)
+[----------] 2 tests from SecretShareGeneratorTest (187 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (187 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from SerializationTest
+[ RUN      ] SerializationTest.typesTest
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SerializationTest.typesTest (65 ms)
+[ RUN      ] SerializationTest.capricorn_test
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SerializationTest.capricorn_test (7 ms)
+[ RUN      ] SerializationTest.xored_serialization_test
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SerializationTest.xored_serialization_test (7 ms)
+[ RUN      ] SerializationTest.capricorn_deserialization
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] SerializationTest.capricorn_deserialization (117 ms)
+[----------] 4 tests from SerializationTest (198 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (198 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from PlanParserTest
+[ RUN      ] PlanParserTest.tpch_q01
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanParserTest.tpch_q01 (86 ms)
+[ RUN      ] PlanParserTest.tpch_q03
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanParserTest.tpch_q03 (74 ms)
+[ RUN      ] PlanParserTest.tpch_q05
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanParserTest.tpch_q05 (115 ms)
+[ RUN      ] PlanParserTest.tpch_q08
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanParserTest.tpch_q08 (86 ms)
+[ RUN      ] PlanParserTest.tpch_q09
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanParserTest.tpch_q09 (132 ms)
+[ RUN      ] PlanParserTest.tpch_q18
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanParserTest.tpch_q18 (124 ms)
+[----------] 6 tests from PlanParserTest (618 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (618 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from PlanDeparserTest
+[ RUN      ] PlanDeparserTest.conjunction_expression
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.conjunction_expression (162 ms)
+[ RUN      ] PlanDeparserTest.math_expression
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.math_expression (148 ms)
+[ RUN      ] PlanDeparserTest.tpch_q01
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.tpch_q01 (176 ms)
+[ RUN      ] PlanDeparserTest.tpch_q03
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.tpch_q03 (133 ms)
+[ RUN      ] PlanDeparserTest.tpch_q05
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.tpch_q05 (189 ms)
+[ RUN      ] PlanDeparserTest.tpch_q08
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.tpch_q08 (139 ms)
+[ RUN      ] PlanDeparserTest.tpch_q09
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.tpch_q09 (247 ms)
+[ RUN      ] PlanDeparserTest.tpch_q18
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] PlanDeparserTest.tpch_q18 (201 ms)
+[----------] 8 tests from PlanDeparserTest (1398 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (1399 ms total)
+[  PASSED  ] 8 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from TpcHTest
+[ RUN      ] TpcHTest.tpch_q01
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] TpcHTest.tpch_q01 (283 ms)
+[ RUN      ] TpcHTest.tpch_q03
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] TpcHTest.tpch_q03 (5229 ms)
+[ RUN      ] TpcHTest.tpch_q05
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] TpcHTest.tpch_q05 (2543 ms)
+[ RUN      ] TpcHTest.tpch_q08
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] TpcHTest.tpch_q08 (2541 ms)
+[ RUN      ] TpcHTest.tpch_q09
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] TpcHTest.tpch_q09 (6809 ms)
+[ RUN      ] TpcHTest.tpch_q18
+EMP mode: plain, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+[       OK ] TpcHTest.tpch_q18 (486 ms)
+[----------] 6 tests from TpcHTest (17894 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (17894 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from EmpTest
+[ RUN      ] EmpTest.emp_test_int
+Connecting to 129.105.61.184 on ports 54345, 65455 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65456	--filter=*	--party=2	--port=54346	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.emp_test_int (1023 ms)
+[ RUN      ] EmpTest.emp_test_pack_large_int
+Connecting to 129.105.61.184 on ports 54346, 65456 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65457	--filter=*	--party=2	--port=54347	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.emp_test_pack_large_int (183 ms)
+[ RUN      ] EmpTest.emp_test_varchar
+Connecting to 129.105.61.184 on ports 54347, 65457 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65458	--filter=*	--party=2	--port=54348	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.emp_test_varchar (184 ms)
+[ RUN      ] EmpTest.test_float_normalization
+Connecting to 129.105.61.184 on ports 54348, 65458 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65459	--filter=*	--party=2	--port=54349	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.test_float_normalization (257 ms)
+[ RUN      ] EmpTest.secret_share_table_one_column
+Connecting to 129.105.61.184 on ports 54349, 65459 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65460	--filter=*	--party=2	--port=54350	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.secret_share_table_one_column (199 ms)
+[ RUN      ] EmpTest.sort_and_share_table_one_column
+Connecting to 129.105.61.184 on ports 54350, 65460 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65461	--filter=*	--party=2	--port=54351	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] EmpTest.sort_and_share_table_one_column (190 ms)
+[----------] 6 tests from EmpTest (2038 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (2038 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from SecureFieldExpressionTest
+[ RUN      ] SecureFieldExpressionTest.test_value_assignment
+Connecting to 129.105.61.184 on ports 54323, 65482 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65483	--filter=*	--party=2	--port=54324	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_value_assignment (177 ms)
+[ RUN      ] SecureFieldExpressionTest.test_string_compare
+Connecting to 129.105.61.184 on ports 54324, 65483 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65484	--filter=*	--party=2	--port=54325	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_string_compare (189 ms)
+[ RUN      ] SecureFieldExpressionTest.test_emp_int_math
+Connecting to 129.105.61.184 on ports 54325, 65484 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65485	--filter=*	--party=2	--port=54326	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_emp_int_math (188 ms)
+[ RUN      ] SecureFieldExpressionTest.test_millionaires
+Connecting to 129.105.61.184 on ports 54326, 65485 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65486	--filter=*	--party=2	--port=54327	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_millionaires (196 ms)
+[ RUN      ] SecureFieldExpressionTest.test_char_comparison
+Connecting to 129.105.61.184 on ports 54327, 65486 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65487	--filter=*	--party=2	--port=54328	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureFieldExpressionTest.test_char_comparison (191 ms)
+[----------] 5 tests from SecureFieldExpressionTest (943 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (944 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from EmpTableTest
+[ RUN      ] EmpTableTest.secret_share_table_one_column
+Connecting to 129.105.61.184 on ports 54334, 65428 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65429	--cutoff=100	--filter=*	--party=2	--port=54335	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.secret_share_table_one_column (210 ms)
+[ RUN      ] EmpTableTest.secret_share_table_varchar
+Connecting to 129.105.61.184 on ports 54335, 65429 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65430	--cutoff=100	--filter=*	--party=2	--port=54336	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.secret_share_table_varchar (317 ms)
+[ RUN      ] EmpTableTest.secret_share_table
+Connecting to 129.105.61.184 on ports 54336, 65430 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65431	--cutoff=100	--filter=*	--party=2	--port=54337	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.secret_share_table (420 ms)
+[ RUN      ] EmpTableTest.secret_share_table_dummy_tag
+Connecting to 129.105.61.184 on ports 54337, 65431 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65432	--cutoff=100	--filter=*	--party=2	--port=54338	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.secret_share_table_dummy_tag (385 ms)
+[ RUN      ] EmpTableTest.bit_packing_test
+Connecting to 129.105.61.184 on ports 54338, 65432 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65433	--cutoff=100	--filter=*	--party=2	--port=54339	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] EmpTableTest.bit_packing_test (239 ms)
+[----------] 5 tests from EmpTableTest (1573 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (1573 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecureFilterTest
+[ RUN      ] SecureFilterTest.test_table_scan
+Connecting to 129.105.61.184 on ports 54325, 65454 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65455	--cutoff=100	--filter=*	--party=2	--port=54326	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureFilterTest.test_table_scan (284 ms)
+[ RUN      ] SecureFilterTest.test_filter
+Connecting to 129.105.61.184 on ports 54326, 65455 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65456	--cutoff=100	--filter=*	--party=2	--port=54327	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureFilterTest.test_filter (345 ms)
+[----------] 2 tests from SecureFilterTest (630 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (630 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureSortTest
+[ RUN      ] SecureSortTest.tpchQ01Sort
+Connecting to 129.105.61.184 on ports 54345, 65465 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65466	--cutoff=100	--filter=*	--party=2	--port=54346	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ01Sort (290 ms)
+[ RUN      ] SecureSortTest.tpchQ03Sort
+Connecting to 129.105.61.184 on ports 54346, 65466 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65467	--cutoff=100	--filter=*	--party=2	--port=54347	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ03Sort (359 ms)
+[ RUN      ] SecureSortTest.tpchQ05Sort
+Connecting to 129.105.61.184 on ports 54347, 65467 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65468	--cutoff=100	--filter=*	--party=2	--port=54348	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ05Sort (267 ms)
+[ RUN      ] SecureSortTest.tpchQ08Sort
+Connecting to 129.105.61.184 on ports 54348, 65468 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65469	--cutoff=100	--filter=*	--party=2	--port=54349	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ08Sort (221 ms)
+[ RUN      ] SecureSortTest.tpchQ09Sort
+Connecting to 129.105.61.184 on ports 54349, 65469 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65470	--cutoff=100	--filter=*	--party=2	--port=54350	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ09Sort (7891 ms)
+[ RUN      ] SecureSortTest.tpchQ18Sort
+Connecting to 129.105.61.184 on ports 54350, 65470 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65471	--cutoff=100	--filter=*	--party=2	--port=54351	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortTest.tpchQ18Sort (231 ms)
+[----------] 6 tests from SecureSortTest (9262 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (9262 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureBasicJoinTest
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_customer_orders
+Connecting to 129.105.61.184 on ports 43443, 65450 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65451	--cutoff=5	--filter=*	--party=2	--port=43444	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureBasicJoinTest.test_tpch_q3_customer_orders (323 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 129.105.61.184 on ports 43444, 65451 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65452	--cutoff=5	--filter=*	--party=2	--port=43445	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders (451 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 129.105.61.184 on ports 43445, 65452 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65453	--cutoff=5	--filter=*	--party=2	--port=43446	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer (819 ms)
+[----------] 3 tests from SecureBasicJoinTest (1594 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (1594 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureKeyedJoinTest
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_customer_orders
+Connecting to 129.105.61.184 on ports 43442, 65458 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65459	--cutoff=100	--filter=*	--party=2	--port=43443	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Predicted gate count: 1928520
+Observed gate count: 2024944
+Runtime: 651.389000
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_customer_orders (1104 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 129.105.61.184 on ports 43443, 65459 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65460	--cutoff=100	--filter=*	--party=2	--port=43444	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders (70392 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 129.105.61.184 on ports 43444, 65460 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65461	--cutoff=100	--filter=*	--party=2	--port=43445	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer (79622 ms)
+[----------] 3 tests from SecureKeyedJoinTest (151120 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (151120 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureKeyedSortMergeJoinTest
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_customer_orders
+Connecting to 129.105.61.184 on ports 43455, 65470 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65471	--cutoff=100	--filter=*	--party=2	--port=43456	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Predicted gate count: 7144019
+Observed gate count: 7315916
+Runtime: 2093.118000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_customer_orders (2462 ms)
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 129.105.61.184 on ports 43456, 65471 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65472	--cutoff=100	--filter=*	--party=2	--port=43457	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Predicted gate count: 49127665
+Observed gate count: 47534364
+Runtime: 12518.168000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders (13654 ms)
+[ RUN      ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 129.105.61.184 on ports 43457, 65472 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65473	--cutoff=100	--filter=*	--party=2	--port=43458	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Predicted gate count: 68117628
+Observed gate count: 72819068
+Runtime: 17411.447000
+[       OK ] SecureKeyedSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (20735 ms)
+[----------] 3 tests from SecureKeyedSortMergeJoinTest (36852 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (36852 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from SecureMergeJoinTest
+[ RUN      ] SecureMergeJoinTest.merge_q18
+Connecting to 129.105.61.184 on ports 43450, 65458 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65459	--cutoff=100	--filter=*	--party=2	--port=43451	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureMergeJoinTest.merge_q18 (576 ms)
+[----------] 1 test from SecureMergeJoinTest (576 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (576 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureScalarAggregateTest
+[ RUN      ] SecureScalarAggregateTest.test_count
+Connecting to 129.105.61.184 on ports 54312, 65466 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65467	--cutoff=100	--filter=*	--party=2	--port=54313	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_count (285 ms)
+[ RUN      ] SecureScalarAggregateTest.test_count_dummies
+Connecting to 129.105.61.184 on ports 54313, 65467 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65468	--cutoff=100	--filter=*	--party=2	--port=54314	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_count_dummies (241 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min
+Connecting to 129.105.61.184 on ports 54314, 65468 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65469	--cutoff=100	--filter=*	--party=2	--port=54315	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_min (223 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min_dummies
+Connecting to 129.105.61.184 on ports 54315, 65469 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65470	--cutoff=100	--filter=*	--party=2	--port=54316	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_min_dummies (230 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max
+Connecting to 129.105.61.184 on ports 54316, 65470 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65471	--cutoff=100	--filter=*	--party=2	--port=54317	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_max (226 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max_dummies
+Connecting to 129.105.61.184 on ports 54317, 65471 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65472	--cutoff=100	--filter=*	--party=2	--port=54318	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_max_dummies (236 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum
+Connecting to 129.105.61.184 on ports 54318, 65472 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65473	--cutoff=100	--filter=*	--party=2	--port=54319	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_sum (231 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_dummies
+Connecting to 129.105.61.184 on ports 54319, 65473 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65474	--cutoff=100	--filter=*	--party=2	--port=54320	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_sum_dummies (240 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg
+Connecting to 129.105.61.184 on ports 54320, 65474 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65475	--cutoff=100	--filter=*	--party=2	--port=54321	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_avg (272 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg_dummies
+Connecting to 129.105.61.184 on ports 54321, 65475 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65476	--cutoff=100	--filter=*	--party=2	--port=54322	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_avg_dummies (276 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_baseprice_dummies
+Connecting to 129.105.61.184 on ports 54322, 65476 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65477	--cutoff=100	--filter=*	--party=2	--port=54323	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_sum_baseprice_dummies (267 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_lineno_baseprice
+Connecting to 129.105.61.184 on ports 54323, 65477 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65478	--cutoff=100	--filter=*	--party=2	--port=54324	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_sum_lineno_baseprice (276 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_sums
+Connecting to 129.105.61.184 on ports 54324, 65478 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65479	--cutoff=100	--filter=*	--party=2	--port=54325	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_sums (463 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 129.105.61.184 on ports 54325, 65479 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65480	--cutoff=100	--filter=*	--party=2	--port=54326	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt (1291 ms)
+[ RUN      ] SecureScalarAggregateTest.tpch_q1
+Connecting to 129.105.61.184 on ports 54326, 65480 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65481	--cutoff=100	--filter=*	--party=2	--port=54327	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureScalarAggregateTest.tpch_q1 (988 ms)
+[----------] 15 tests from SecureScalarAggregateTest (5753 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (5753 ms total)
+[  PASSED  ] 15 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from SecureSortMergeAggregateTest
+[ RUN      ] SecureSortMergeAggregateTest.test_count
+Connecting to 129.105.61.184 on ports 43440, 65454 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65455	--cutoff=100	--filter=*	--party=2	--port=43441	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_count (218 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_count_dummies
+Connecting to 129.105.61.184 on ports 43441, 65455 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65456	--cutoff=100	--filter=*	--party=2	--port=43442	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_count_dummies (229 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_sum
+Connecting to 129.105.61.184 on ports 43442, 65456 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65457	--cutoff=100	--filter=*	--party=2	--port=43443	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_sum (235 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_sum_dummies
+Connecting to 129.105.61.184 on ports 43443, 65457 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65458	--cutoff=100	--filter=*	--party=2	--port=43444	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_sum_dummies (241 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_avg
+Connecting to 129.105.61.184 on ports 43444, 65458 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65459	--cutoff=100	--filter=*	--party=2	--port=43445	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_avg (280 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_avg_dummies
+Connecting to 129.105.61.184 on ports 43445, 65459 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65460	--cutoff=100	--filter=*	--party=2	--port=43446	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_avg_dummies (281 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_min
+Connecting to 129.105.61.184 on ports 43446, 65460 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65461	--cutoff=100	--filter=*	--party=2	--port=43447	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_min (225 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_min_dummies
+Connecting to 129.105.61.184 on ports 43447, 65461 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65462	--cutoff=100	--filter=*	--party=2	--port=43448	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_min_dummies (234 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_max
+Connecting to 129.105.61.184 on ports 43448, 65462 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65463	--cutoff=100	--filter=*	--party=2	--port=43449	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_max (231 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_max_dummies
+Connecting to 129.105.61.184 on ports 43449, 65463 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65464	--cutoff=100	--filter=*	--party=2	--port=43450	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_max_dummies (227 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_tpch_q1_sums
+Connecting to 129.105.61.184 on ports 43450, 65464 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65465	--cutoff=100	--filter=*	--party=2	--port=43451	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_tpch_q1_sums (482 ms)
+[ RUN      ] SecureSortMergeAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 129.105.61.184 on ports 43451, 65465 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65466	--cutoff=100	--filter=*	--party=2	--port=43452	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.test_tpch_q1_avg_cnt (874 ms)
+[ RUN      ] SecureSortMergeAggregateTest.tpch_q1
+Connecting to 129.105.61.184 on ports 43452, 65466 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65467	--cutoff=100	--filter=*	--party=2	--port=43453	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureSortMergeAggregateTest.tpch_q1 (1004 ms)
+[----------] 13 tests from SecureSortMergeAggregateTest (4769 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (4769 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureNestedLoopAggregateTest
+[ RUN      ] SecureNestedLoopAggregateTest.test_count
+Connecting to 129.105.61.184 on ports 43440, 65462 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65463	--cutoff=100	--filter=*	--party=2	--port=43441	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_count (379 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_count_no_bit_packing
+Connecting to 129.105.61.184 on ports 43441, 65463 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65464	--cutoff=100	--filter=*	--party=2	--port=43442	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_count_no_bit_packing (533 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_count_dummies
+Connecting to 129.105.61.184 on ports 43442, 65464 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65465	--cutoff=100	--filter=*	--party=2	--port=43443	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_count_dummies (392 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_sum
+Connecting to 129.105.61.184 on ports 43443, 65465 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65466	--cutoff=100	--filter=*	--party=2	--port=43444	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_sum (710 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_sum_dummies
+Connecting to 129.105.61.184 on ports 43444, 65466 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65467	--cutoff=100	--filter=*	--party=2	--port=43445	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_sum_dummies (697 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_avg
+Connecting to 129.105.61.184 on ports 43445, 65467 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65468	--cutoff=100	--filter=*	--party=2	--port=43446	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_avg (4408 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_avg_dummies
+Connecting to 129.105.61.184 on ports 43446, 65468 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65469	--cutoff=100	--filter=*	--party=2	--port=43447	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_avg_dummies (4415 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min
+Connecting to 129.105.61.184 on ports 43447, 65469 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65470	--cutoff=100	--filter=*	--party=2	--port=43448	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_min (444 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min_no_bit_packing
+Connecting to 129.105.61.184 on ports 43448, 65470 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65471	--cutoff=100	--filter=*	--party=2	--port=43449	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_min_no_bit_packing (737 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min_dummies
+Connecting to 129.105.61.184 on ports 43449, 65471 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65472	--cutoff=100	--filter=*	--party=2	--port=43450	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_min_dummies (390 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_max
+Connecting to 129.105.61.184 on ports 43450, 65472 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65473	--cutoff=100	--filter=*	--party=2	--port=43451	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_max (375 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_max_dummies
+Connecting to 129.105.61.184 on ports 43451, 65473 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65474	--cutoff=100	--filter=*	--party=2	--port=43452	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_max_dummies (383 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_tpch_q1_sums
+Connecting to 129.105.61.184 on ports 43452, 65474 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65475	--cutoff=100	--filter=*	--party=2	--port=43453	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_tpch_q1_sums (1108 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 129.105.61.184 on ports 43453, 65475 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65476	--cutoff=100	--filter=*	--party=2	--port=43454	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.test_tpch_q1_avg_cnt (3491 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.tpch_q1
+Connecting to 129.105.61.184 on ports 43454, 65476 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65477	--cutoff=100	--filter=*	--party=2	--port=43455	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[       OK ] SecureNestedLoopAggregateTest.tpch_q1 (4249 ms)
+[----------] 15 tests from SecureNestedLoopAggregateTest (22718 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (22718 ms total)
+[  PASSED  ] 15 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureTpcHTest
+[ RUN      ] SecureTpcHTest.tpch_q01
+Connecting to 129.105.61.184 on ports 7654, 65478 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65479	--filter=*	--party=2	--port=7655	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Operator #0 SecureSqlInput ran for 91.742000 ms, gate count: 228920 output cardinality: 300, row width=177
+
+Estimated cost for#0: SecureSqlInput<Bit> ("SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice, l_extendedprice * (1 - l_discount) AS discount, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, l_discount, NOT l_shipdate <= DATE '1998-08-03' AS dummy_tag FROM lineitem ORDER BY  l_returnflag, l_linestatus, l_orderkey, l_linenumber", tuple_count=300) : (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float discount, #5 shared-float charge, #6 shared-float lineitem.l_discount) order by: {<0, ASC> , <1, ASC> }, cost est: 245566, output card: 300 : 245566, Observed gates: 228920, Error rate(%) : 7.271536
+
+Operator #1 SortMergeAggregate ran for 1788.683000 ms, gate count: 6584964 output cardinality: 300, row width=250
+
+Estimated cost for#1: SortMergeAggregate<Bit> (group-by: (0, 1) aggs: (SUM($2) sum_qty, SUM($3) sum_base_price, SUM($4) sum_disc_price, SUM($5) sum_charge, AVG($2) avg_qty, AVG($3) avg_price, AVG($6) avg_disc, COUNT(*) count_order)) : (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64(9) count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 6679800, output card: 300 : 6679800, Observed gates: 6584964, Error rate(%) : 1.440190
+
+[       OK ] SecureTpcHTest.tpch_q01 (2410 ms)
+[ RUN      ] SecureTpcHTest.tpch_q03
+Connecting to 129.105.61.184 on ports 7655, 65479 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65480	--filter=*	--party=2	--port=7656	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Operator #0 SecureSqlInput ran for 116.572000 ms, gate count: 320580 output cardinality: 1000, row width=51
+
+Estimated cost for#0: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_orderkey, o_orderdate, o_shippriority", tuple_count=1000) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32(1) orders.o_shippriority) order by: {<0, ASC> }, cost est: 333794, output card: 1000 : 333794, Observed gates: 320580, Error rate(%) : 4.121904
+
+Operator #1 SecureSqlInput ran for 6.956000 ms, gate count: 9272 output cardinality: 150, row width=9
+
+Estimated cost for#1: SecureSqlInput<Bit> ("SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD ' AS dummy_tag FROM customer ORDER BY c_custkey", tuple_count=150) : (#0 shared-int32(8) customer.c_custkey) order by: {<0, ASC> }, cost est: 10840, output card: 150 : 10840, Observed gates: 9272, Error rate(%) : 16.911129
+
+Operator #2 KeyedJoin ran for 861.325000 ms, gate count: 3150000 output cardinality: 1000, row width=59
+
+Estimated cost for#2: KeyedJoin<Bit> (P$1(8) == P$4(8)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32(1) orders.o_shippriority, #4 shared-int32(8) customer.c_custkey) order by: {<0, ASC> , <4, ASC> }, cost est: 3000000, output card: 1000 : 3000000, Observed gates: 3150000, Error rate(%) : 4.761905
+
+Operator #3 Project ran for 0.458000 ms, gate count: 0 output cardinality: 1000, row width=43
+
+Operator #4 SecureSqlInput ran for 101.050000 ms, gate count: 295920 output cardinality: 1000, row width=46
+
+Estimated cost for#4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey", tuple_count=1000) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 308884, output card: 1000 : 308884, Observed gates: 295920, Error rate(%) : 4.380914
+
+Operator #5 KeyedJoin ran for 16313.580000 ms, gate count: 60000000 output cardinality: 1000, row width=88
+
+Estimated cost for#5: KeyedJoin<Bit> (P$0(13) == P$3(13)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32(1) orders.o_shippriority, #3 shared-int32(13) lineitem.l_orderkey, #4 shared-float revenue) order by: {<3, ASC> , <0, ASC> }, cost est: 59000000, output card: 1000 : 59000000, Observed gates: 60000000, Error rate(%) : 1.666667
+
+Operator #6 Project ran for 0.460000 ms, gate count: 0 output cardinality: 1000, row width=75
+
+Operator #7 SortMergeAggregate ran for 307.208000 ms, gate count: 1145884 output cardinality: 1000, row width=75
+
+Estimated cost for#7: SortMergeAggregate<Bit> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32(1) orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> }, cost est: 1176000, output card: 1000 : 1176000, Observed gates: 1145884, Error rate(%) : 2.628189
+
+Operator #8 Sort ran for 1047.456000 ms, gate count: 3849792 output cardinality: 10, row width=75
+
+Estimated cost for#8: Sort<Bit> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32(1) orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }, cost est: 5204, output card: 10 : 5204, Observed gates: 3849792, Error rate(%) : 99.864822
+
+Operator #9 Project ran for 0.017000 ms, gate count: 0 output cardinality: 10, row width=75
+
+[       OK ] SecureTpcHTest.tpch_q03 (19950 ms)
+[ RUN      ] SecureTpcHTest.tpch_q05
+Connecting to 129.105.61.184 on ports 7656, 65480 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65481	--filter=*	--party=2	--port=7657	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Operator #0 SecureSqlInput ran for 1.946000 ms, gate count: 1380 output cardinality: 27, row width=14
+
+Estimated cost for#0: SecureSqlInput<Bit> ("SELECT t2.c_custkey, t2.c_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t2.c_custkey ASC", tuple_count=27) : (#0 shared-int32(8) customer.c_custkey, #1 shared-int32(5) customer.c_nationkey) order by: {<0, ASC> }, cost est: 1600, output card: 27 : 1600, Observed gates: 1380, Error rate(%) : 15.942030
+
+Operator #1 SecureSqlInput ran for 34.504000 ms, gate count: 59904 output cardinality: 400, row width=22
+
+Estimated cost for#1: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders ORDER BY o_orderkey, o_custkey, o_orderdate", tuple_count=400) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey) order by: {<0, ASC> }, cost est: 65664, output card: 400 : 65664, Observed gates: 59904, Error rate(%) : 9.615385
+
+Operator #2 KeyedJoin ran for 75.651000 ms, gate count: 280800 output cardinality: 400, row width=35
+
+Estimated cost for#2: KeyedJoin<Bit> (P$0(8) == P$3(8)) : (#0 shared-int32(8) customer.c_custkey, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(13) orders.o_orderkey, #3 shared-int32(8) orders.o_custkey) order by: {<2, ASC> , <0, ASC> }, cost est: 270000, output card: 400 : 270000, Observed gates: 280800, Error rate(%) : 3.846154
+
+Operator #3 Project ran for 0.050000 ms, gate count: 0 output cardinality: 400, row width=19
+
+Operator #4 SecureSqlInput ran for 41.182000 ms, gate count: 106496 output cardinality: 400, row width=50
+
+Estimated cost for#4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem ORDER BY l_orderkey, l_suppkey, revenue", tuple_count=400) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float revenue) order by: {<0, ASC> }, cost est: 114048, output card: 400 : 114048, Observed gates: 106496, Error rate(%) : 7.091346
+
+Operator #5 KeyedJoin ran for 1565.244000 ms, gate count: 5760000 output cardinality: 400, row width=68
+
+Estimated cost for#5: KeyedJoin<Bit> (P$1(13) == P$2(13)) : (#0 shared-int32(5) customer.c_nationkey, #1 shared-int32(13) orders.o_orderkey, #2 shared-int32(13) lineitem.l_orderkey, #3 shared-int32(4) lineitem.l_suppkey, #4 shared-float revenue) order by: {<2, ASC> , <1, ASC> }, cost est: 5600000, output card: 400 : 5600000, Observed gates: 5760000, Error rate(%) : 2.777778
+
+Operator #6 Project ran for 0.086000 ms, gate count: 0 output cardinality: 400, row width=42
+
+Operator #7 SecureSqlInput ran for 0.053000 ms, gate count: 0 output cardinality: 1, row width=210
+
+Operator #8 KeyedJoin ran for 31.036000 ms, gate count: 90000 output cardinality: 400, row width=251
+
+Estimated cost for#8: KeyedJoin<Bit> ((P$0(5) == P$4(5)) AND (P$1(4) == P$3(4))) : (#0 shared-int32(5) customer.c_nationkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float revenue, #3 shared-int32(4) supplier.s_suppkey, #4 shared-int32(5) supplier.s_nationkey, #5 shared-varchar(25) nation.n_name) order by: {}, cost est: 94400, output card: 400 : 94400, Observed gates: 90000, Error rate(%) : 4.888889
+
+Operator #9 Project ran for 1.348000 ms, gate count: 0 output cardinality: 400, row width=233
+
+Operator #10 NestedLoopAggregate ran for 792.025000 ms, gate count: 2918000 output cardinality: 5, row width=233
+
+Estimated cost for#10: NestedLoopAggregate<Bit> (group-by: (0) aggs: (SUM($1) revenue)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {}, cost est: 3036000, output card: 5 : 3036000, Observed gates: 2918000, Error rate(%) : 4.043866
+
+Operator #11 Sort ran for 0.630000 ms, gate count: 3024 output cardinality: 5, row width=233
+
+Estimated cost for#11: Sort<Bit> ({<1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<1, DESC> }, cost est: 2583, output card: 5 : 2583, Observed gates: 3024, Error rate(%) : 14.583333
+
+[       OK ] SecureTpcHTest.tpch_q05 (2892 ms)
+[ RUN      ] SecureTpcHTest.tpch_q08
+Connecting to 129.105.61.184 on ports 7657, 65481 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65482	--filter=*	--party=2	--port=7658	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Operator #0 SecureSqlInput ran for 1.768000 ms, gate count: 1208 output cardinality: 29, row width=9
+
+Estimated cost for#0: SecureSqlInput<Bit> ("SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA' ORDER BY c_custkey", tuple_count=29) : (#0 shared-int32(8) customer.c_custkey) order by: {<0, ASC> }, cost est: 1400, output card: 29 : 1400, Observed gates: 1208, Error rate(%) : 15.894040
+
+Operator #1 SecureSqlInput ran for 135.550000 ms, gate count: 372800 output cardinality: 800, row width=54
+
+Estimated cost for#1: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_year, o_orderkey", tuple_count=800) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int32 orders.o_year) order by: {<2, ASC> , <0, ASC> }, cost est: 404985, output card: 800 : 404985, Observed gates: 372800, Error rate(%) : 8.633316
+
+Operator #2 KeyedJoin ran for 129.059000 ms, gate count: 487200 output cardinality: 800, row width=62
+
+Estimated cost for#2: KeyedJoin<Bit> (P$0(8) == P$2(8)) : (#0 shared-int32(8) customer.c_custkey, #1 shared-int32(13) orders.o_orderkey, #2 shared-int32(8) orders.o_custkey, #3 shared-int32 orders.o_year) order by: {<3, ASC> , <1, ASC> , <0, ASC> }, cost est: 464000, output card: 800 : 464000, Observed gates: 487200, Error rate(%) : 4.761905
+
+Operator #3 Project ran for 0.167000 ms, gate count: 0 output cardinality: 800, row width=46
+
+Operator #4 SecureSqlInput ran for 80.015000 ms, gate count: 238592 output cardinality: 800, row width=50
+
+Estimated cost for#4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume, CASE WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE ELSE TRUE END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_orderkey", tuple_count=800) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float volume) order by: {<0, ASC> }, cost est: 254562, output card: 800 : 254562, Observed gates: 238592, Error rate(%) : 6.693435
+
+Operator #5 KeyedJoin ran for 10962.217000 ms, gate count: 40320000 output cardinality: 800, row width=95
+
+Estimated cost for#5: KeyedJoin<Bit> (P$0(13) == P$2(13)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32 orders.o_year, #2 shared-int32(13) lineitem.l_orderkey, #3 shared-int32(4) lineitem.l_suppkey, #4 shared-float volume) order by: {<2, ASC> , <1, ASC> , <0, ASC> }, cost est: 39680000, output card: 800 : 39680000, Observed gates: 40320000, Error rate(%) : 1.587302
+
+Operator #6 Project ran for 0.322000 ms, gate count: 0 output cardinality: 800, row width=69
+
+Operator #7 SecureSqlInput ran for 0.671000 ms, gate count: 164 output cardinality: 10, row width=6
+
+Estimated cost for#7: SecureSqlInput<Bit> ("SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey ORDER BY s_suppkey", tuple_count=10) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-bool nation_check) order by: {<0, ASC> }, cost est: 208, output card: 10 : 208, Observed gates: 164, Error rate(%) : 26.829269
+
+Operator #8 KeyedJoin ran for 38.951000 ms, gate count: 112000 output cardinality: 800, row width=74
+
+Estimated cost for#8: KeyedJoin<Bit> (P$3(4) == P$1(4)) : (#0 shared-int32 orders.o_year, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float volume, #3 shared-int32(4) supplier.s_suppkey, #4 shared-bool nation_check) order by: {}, cost est: 104000, output card: 800 : 104000, Observed gates: 112000, Error rate(%) : 7.142858
+
+Operator #9 Project ran for 6.816000 ms, gate count: 25600 output cardinality: 800, row width=97
+
+Estimated cost for#9: Project<Bit> ((<0, P$0(32) shared-int32>, <1, P$2(32) shared-float>, <2, CASE($4, $2, SECRET FLOAT) shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float volume, #2 shared-float selected_volume) order by: {}, cost est: 0, output card: 800 : 0, Observed gates: 25600, Error rate(%) : 100.000000
+
+Operator #10 NestedLoopAggregate ran for 946.631000 ms, gate count: 3481600 output cardinality: 2, row width=97
+
+Estimated cost for#10: NestedLoopAggregate<Bit> (group-by: (0) aggs: (SUM($1) null, SUM($2) null)) : (#0 shared-int32 orders.o_year, #1 shared-float null, #2 shared-float null) order by: {}, cost est: 3782400, output card: 2 : 3782400, Observed gates: 3481600, Error rate(%) : 8.639706
+
+Operator #11 Project ran for 1.632000 ms, gate count: 7620 output cardinality: 2, row width=65
+
+Estimated cost for#11: Project<Bit> ((<0, P$0(32) shared-int32>, <1, $2 / $1 shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {}, cost est: 7618, output card: 2 : 7618, Observed gates: 7620, Error rate(%) : 0.026247
+
+Operator #12 Sort ran for 0.107000 ms, gate count: 96 output cardinality: 2, row width=65
+
+Estimated cost for#12: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 100, output card: 2 : 100, Observed gates: 96, Error rate(%) : 4.166667
+
+[       OK ] SecureTpcHTest.tpch_q08 (12607 ms)
+[ RUN      ] SecureTpcHTest.tpch_q09
+Connecting to 129.105.61.184 on ports 7658, 65482 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65483	--filter=*	--party=2	--port=7659	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Operator #0 SecureSqlInput ran for 4.715000 ms, gate count: 6152 output cardinality: 10, row width=205
+
+Estimated cost for#0: SecureSqlInput<Bit> ("SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY n_name, s_suppkey", tuple_count=10) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name) order by: {<1, ASC> , <0, ASC> }, cost est: 6640, output card: 10 : 6640, Observed gates: 6152, Error rate(%) : 7.932380
+
+Operator #1 SecureSqlInput ran for 7.371000 ms, gate count: 9048 output cardinality: 56, row width=45
+
+Estimated cost for#1: SecureSqlInput<Bit> ("SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%' ORDER BY ps_suppkey, ps_partkey", tuple_count=56) : (#0 shared-int32(8) partsupp.ps_partkey, #1 shared-int32(4) partsupp.ps_suppkey, #2 shared-float partsupp.ps_supplycost) order by: {<0, ASC> , <1, ASC> }, cost est: 10206, output card: 56 : 10206, Observed gates: 9048, Error rate(%) : 12.798409
+
+Operator #2 KeyedJoin ran for 34.628000 ms, gate count: 119280 output cardinality: 56, row width=249
+
+Estimated cost for#2: KeyedJoin<Bit> (P$0(4) == P$3(4)) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(8) partsupp.ps_partkey, #3 shared-int32(4) partsupp.ps_suppkey, #4 shared-float partsupp.ps_supplycost) order by: {<2, ASC> , <3, ASC> , <1, ASC> , <0, ASC> }, cost est: 118720, output card: 56 : 118720, Observed gates: 119280, Error rate(%) : 0.469484
+
+Operator #3 Project ran for 0.357000 ms, gate count: 0 output cardinality: 56, row width=245
+
+Operator #4 SecureSqlInput ran for 78.599000 ms, gate count: 174640 output cardinality: 300, row width=122
+
+Estimated cost for#4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice, l_discount FROM lineitem ORDER BY l_orderkey, l_partkey, l_suppkey", tuple_count=300) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(8) lineitem.l_partkey, #2 shared-int32(4) lineitem.l_suppkey, #3 shared-float l_quantity, #4 shared-float lineitem.l_extendedprice, #5 shared-float lineitem.l_discount) order by: {<0, ASC> , <1, ASC> , <2, ASC> }, cost est: 192504, output card: 300 : 192504, Observed gates: 174640, Error rate(%) : 10.229043
+
+Operator #5 KeyedJoin ran for 1199.411000 ms, gate count: 4418400 output cardinality: 300, row width=366
+
+Estimated cost for#5: KeyedJoin<Bit> ((P$2(4) == P$6(4)) AND (P$1(8) == P$5(8))) : (#0 shared-varchar(25) nation.nation, #1 shared-int32(8) partsupp.ps_partkey, #2 shared-int32(4) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost, #4 shared-int32(13) lineitem.l_orderkey, #5 shared-int32(8) lineitem.l_partkey, #6 shared-int32(4) lineitem.l_suppkey, #7 shared-float l_quantity, #8 shared-float lineitem.l_extendedprice, #9 shared-float lineitem.l_discount) order by: {<4, ASC> , <5, ASC> , <6, ASC> , <1, ASC> , <2, ASC> , <0, ASC> }, cost est: 4569600, output card: 300 : 4569600, Observed gates: 4418400, Error rate(%) : 3.422053
+
+Operator #6 Project ran for 743.364000 ms, gate count: 2734200 output cardinality: 300, row width=246
+
+Estimated cost for#6: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$4(13) shared-int32>, <2, ($8 * (SECRET FLOAT - $9)) - ($3 * $7) shared-float>)) : (#0 shared-varchar(25) nation.nation, #1 shared-int32(13) lineitem.l_orderkey, #2 shared-float amount) order by: {<1, ASC> }, cost est: 5468400, output card: 300 : 5468400, Observed gates: 2734200, Error rate(%) : 100.000000
+
+Operator #7 SecureSqlInput ran for 30.639000 ms, gate count: 70800 output cardinality: 300, row width=46
+
+Estimated cost for#7: SecureSqlInput<Bit> ("SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders ORDER BY o_orderkey", tuple_count=300) : (#0 shared-int32 o_year, #1 shared-int32(13) orders.o_orderkey) order by: {<1, ASC> }, cost est: 76508, output card: 300 : 76508, Observed gates: 70800, Error rate(%) : 8.062146
+
+Operator #8 KeyedJoin ran for 1541.111000 ms, gate count: 5670000 output cardinality: 300, row width=291
+
+Estimated cost for#8: KeyedJoin<Bit> (P$1(13) == P$4(13)) : (#0 shared-varchar(25) nation.nation, #1 shared-int32(13) lineitem.l_orderkey, #2 shared-float amount, #3 shared-int32 o_year, #4 shared-int32(13) orders.o_orderkey) order by: {<1, ASC> , <4, ASC> }, cost est: 5580000, output card: 300 : 5580000, Observed gates: 5670000, Error rate(%) : 1.587302
+
+Operator #9 Project ran for 0.431000 ms, gate count: 0 output cardinality: 300, row width=265
+
+Operator #10 SortMergeAggregate ran for 120.070000 ms, gate count: 454512 output cardinality: 300, row width=265
+
+Estimated cost for#10: SortMergeAggregate<Bit> (group-by: (0, 1) aggs: (SUM($2) sum_profit)) : (#0 shared-varchar(25) nation.nation, #1 shared-int32 amount, #2 shared-float sum_profit) order by: {<0, ASC> , <1, DESC> }, cost est: 465000, output card: 300 : 465000, Observed gates: 454512, Error rate(%) : 2.307530
+
+Operator #11 Sort ran for 733.295000 ms, gate count: 2688876 output cardinality: 300, row width=265
+
+Estimated cost for#11: Sort<Bit> ({<0, ASC> , <1, DESC> }) : (#0 shared-varchar(25) nation.nation, #1 shared-int32 amount, #2 shared-float sum_profit) order by: {<0, ASC> , <1, DESC> }, cost est: 2864922, output card: 300 : 2864922, Observed gates: 2688876, Error rate(%) : 6.547197
+
+[       OK ] SecureTpcHTest.tpch_q09 (5602 ms)
+[ RUN      ] SecureTpcHTest.tpch_q18
+Connecting to 129.105.61.184 on ports 7659, 65483 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65484	--filter=*	--party=2	--port=7660	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Operator #0 SecureSqlInput ran for 0.931000 ms, gate count: 0 output cardinality: 200, row width=46
+
+Operator #1 SecureSqlInput ran for 1.142000 ms, gate count: 0 output cardinality: 200, row width=46
+
+Operator #2 MergeJoin ran for 10.027000 ms, gate count: 400 output cardinality: 200, row width=91
+
+Estimated cost for#2: MergeJoin<Bit> (no-op) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty, #2 shared-int32(13) order_keys.o_orderkey, #3 shared-float sum_qty) order by: {<0, ASC> }, cost est: 600, output card: 200 : 600, Observed gates: 400, Error rate(%) : 50.000000
+
+Operator #3 Project ran for 55.671000 ms, gate count: 197200 output cardinality: 200, row width=46
+
+Estimated cost for#3: Project<Bit> ((<0, P$0(13) shared-int32>, <1, $1 + $3 shared-float>)) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 197200, output card: 200 : 197200, Observed gates: 197200, Error rate(%) : 0.000000
+
+Operator #4 Filter ran for 11.499000 ms, gate count: 42800 output cardinality: 200, row width=46
+
+Estimated cost for#4: Filter<Bit> (P$1(32) > SECRET FLOAT) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 42600, output card: 200 : 42600, Observed gates: 42800, Error rate(%) : 0.467290
+
+Operator #5 MergeInput ran for 1709331785107.435059 ms, gate count: 273400 output cardinality: 200, row width=82
+
+Estimated cost for#5: MergeInput<Bit> ("WITH all_keys AS (SELECT o_orderkey AS all_orderkey FROM order_keys), rows AS (SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate FROM orders ORDER BY o_orderkey) SELECT all_orderkey AS o_orderkey, COALESCE(o_custkey, 0) o_custkey, COALESCE(o_totalprice, 0.0) o_totalprice, COALESCE(o_orderdate, '1970-01-01'::DATE) o_orderdate, COALESCE(o_custkey<0, TRUE) dummy_tag FROM all_keys LEFT JOIN rows ON o_orderkey = all_orderkey ORDER BY all_orderkey", tuple_count=200) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-int32(8) o_custkey, #2 shared-float o_totalprice, #3 shared-int64(28) o_orderdate) order by: {<0, ASC> }, cost est: 33000, output card: 200 : 33000, Observed gates: 273400, Error rate(%) : 87.929771
+
+Operator #6 MergeJoin ran for 0.602000 ms, gate count: 400 output cardinality: 200, row width=127
+
+Estimated cost for#6: MergeJoin<Bit> (no-op) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty, #2 shared-int32(13) order_keys.o_orderkey, #3 shared-int32(8) o_custkey, #4 shared-float o_totalprice, #5 shared-int64(28) o_orderdate) order by: {<0, ASC> }, cost est: 600, output card: 200 : 600, Observed gates: 400, Error rate(%) : 50.000000
+
+Operator #7 Project ran for 0.222000 ms, gate count: 0 output cardinality: 200, row width=114
+
+Operator #8 SecureSqlInput ran for 5.329000 ms, gate count: 0 output cardinality: 150, row width=209
+
+Operator #9 KeyedJoin ran for 1815.677000 ms, gate count: 6630000 output cardinality: 200, row width=322
+
+Estimated cost for#9: KeyedJoin<Bit> (P$1(8) == P$5(8)) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-int32(8) o_custkey, #2 shared-float o_totalprice, #3 shared-int64(28) o_orderdate, #4 shared-float sum_qty, #5 shared-int32(8) customer.c_custkey, #6 shared-varchar(25) customer.c_name) order by: {<0, ASC> }, cost est: 6600000, output card: 200 : 6600000, Observed gates: 6630000, Error rate(%) : 0.452489
+
+Operator #10 Project ran for 1.275000 ms, gate count: 0 output cardinality: 200, row width=314
+
+Operator #11 Sort ran for 327.663000 ms, gate count: 1201440 output cardinality: 100, row width=314
+
+Estimated cost for#11: Sort<Bit> ({<-1, ASC> , <4, DESC> , <3, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(13) order_keys.o_orderkey, #3 shared-int64(28) o_orderdate, #4 shared-float o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <4, DESC> , <3, ASC> }, cost est: 487532, output card: 100 : 487532, Observed gates: 1201440, Error rate(%) : 59.421028
+
+[       OK ] SecureTpcHTest.tpch_q18 (2685 ms)
+[----------] 6 tests from SecureTpcHTest (46149 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (46149 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from FullyOptimizedTest
+[ RUN      ] FullyOptimizedTest.tpch_q1
+Connecting to 129.105.61.184 on ports 7654, 65482 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65483	--cutoff=100	--filter=*	--party=2	--port=7655	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Operator #0 SecureSqlInput ran for 1.259000 ms, gate count: 0 output cardinality: 6, row width=401
+
+Operator #1 SecureSqlInput ran for 0.812000 ms, gate count: 0 output cardinality: 6, row width=401
+
+Operator #2 MergeJoin ran for 9.550000 ms, gate count: 12 output cardinality: 6, row width=801
+
+Estimated cost for#2: MergeJoin<Bit> (no-op) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt, #13 shared-varchar(1) l_returnflag, #14 shared-varchar(1) l_linestatus, #15 shared-float sum_qty, #16 shared-float sum_base_price, #17 shared-float sum_disc_price, #18 shared-float sum_charge, #19 shared-float avg_qty_sum, #20 shared-float avg_qty_cnt, #21 shared-float avg_price_sum, #22 shared-float avg_price_cnt, #23 shared-float avg_discount_sum, #24 shared-float avg_discount_cnt, #25 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 18, output card: 6 : 18, Observed gates: 12, Error rate(%) : 50.000000
+
+Operator #3 Project ran for 38.349000 ms, gate count: 128100 output cardinality: 6, row width=305
+
+Estimated cost for#3: Project<Bit> ((<0, P$0(8) shared-varchar>, <1, P$1(8) shared-varchar>, <2, $2 + $15 shared-float>, <3, $3 + $16 shared-float>, <4, $4 + $17 shared-float>, <5, $5 + $18 shared-float>, <6, ($6 + $19) / ($7 + $20) shared-float>, <7, ($8 + $21) / ($9 + $22) shared-float>, <8, ($10 + $23) / ($11 + $24) shared-float>, <9, $12 + $25 shared-int64>)) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64 count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 163596, output card: 6 : 163596, Observed gates: 128100, Error rate(%) : 27.709602
+
+Operator #4 Sort ran for 1.762000 ms, gate count: 4188 output cardinality: 6, row width=305
+
+Estimated cost for#4: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64 count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 4545, output card: 6 : 4545, Observed gates: 4188, Error rate(%) : 8.524355
+
+Runtime: 0.594071 sec, CPU Time: 0.051267 sec, CPU clock ticks: 51267, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 168159. observed gates: 132300 gates, relative error (%)=27.1043
+Bandwidth: 4238.55 Bps
+[       OK ] FullyOptimizedTest.tpch_q1 (837 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q3
+Connecting to 129.105.61.184 on ports 7655, 65483 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65484	--cutoff=100	--filter=*	--party=2	--port=7656	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Cost : 76266518, combination : 0
+Cost : 174293819232, combination : 1
+Operator #0 SecureSqlInput ran for 176.859000 ms, gate count: 459840 output cardinality: 1500, row width=51
+
+Estimated cost for#0: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_custkey", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32(1) orders.o_shippriority) order by: {<1, ASC> }, cost est: 490606, output card: 1500 : 490606, Observed gates: 459840, Error rate(%) : 6.690588
+
+Operator #1 SecureSqlInput ran for 6.992000 ms, gate count: 9272 output cardinality: 150, row width=9
+
+Estimated cost for#1: SecureSqlInput<Bit> ("SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer ORDER BY c_custkey", tuple_count=150) : (#0 shared-int32(8) customer.c_custkey) order by: {<0, ASC> }, cost est: 10840, output card: 150 : 10840, Observed gates: 9272, Error rate(%) : 16.911129
+
+Operator #2 KeyedJoin ran for 1438.609000 ms, gate count: 4725000 output cardinality: 1500, row width=59
+
+Estimated cost for#2: KeyedJoin<Bit> (P$1(8) == P$4(8)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32(1) orders.o_shippriority, #4 shared-int32(8) customer.c_custkey) order by: {<1, ASC> , <4, ASC> }, cost est: 4500000, output card: 1500 : 4500000, Observed gates: 4725000, Error rate(%) : 4.761905
+
+Operator #3 Project ran for 0.348000 ms, gate count: 0 output cardinality: 1500, row width=43
+
+Operator #4 SecureSqlInput ran for 702.376000 ms, gate count: 2201760 output cardinality: 6005, row width=46
+
+Estimated cost for#4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey", tuple_count=6005) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 2336594, output card: 6005 : 2336594, Observed gates: 2201760, Error rate(%) : 6.123919
+
+Operator #5 KeyedJoin ran for 147212.096000 ms, gate count: 540450000 output cardinality: 6005, row width=88
+
+Estimated cost for#5: KeyedJoin<Bit> (P$0(13) == P$3(13)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32(1) orders.o_shippriority, #3 shared-int32(13) lineitem.l_orderkey, #4 shared-float revenue) order by: {<3, ASC> }, cost est: 531442500, output card: 6005 : 531442500, Observed gates: 540450000, Error rate(%) : 1.666664
+
+Operator #6 Project ran for 7.437000 ms, gate count: 0 output cardinality: 6005, row width=75
+
+Operator #7 SortMergeAggregate ran for 1866.052000 ms, gate count: 6886620 output cardinality: 6005, row width=75
+
+Estimated cost for#7: SortMergeAggregate<Bit> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32(1) orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> }, cost est: 7061880, output card: 6005 : 7061880, Observed gates: 6886620, Error rate(%) : 2.544935
+
+Operator #8 Sort ran for 9704.540000 ms, gate count: 34551448 output cardinality: 10, row width=75
+
+Estimated cost for#8: Sort<Bit> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32(1) orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }, cost est: 37028312, output card: 6005 : 37028312, Observed gates: 34551448, Error rate(%) : 7.168626
+
+Operator #9 Project ran for 0.020000 ms, gate count: 0 output cardinality: 10, row width=75
+
+Runtime: 169.685 sec, CPU Time: 120.375 sec, CPU clock ticks: 1.20375e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 6.15047e+08. observed gates: 618180960 gates, relative error (%)=0.506963
+Bandwidth: 14812.9 Bps
+[       OK ] FullyOptimizedTest.tpch_q3 (169921 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q5
+Connecting to 129.105.61.184 on ports 7656, 65484 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65485	--cutoff=100	--filter=*	--party=2	--port=7657	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Cost : 188702270, combination : 0
+Cost : 45580533, combination : 1
+Operator #0 SecureSqlInput ran for 9.432000 ms, gate count: 13380 output cardinality: 27, row width=214
+
+Estimated cost for#0: SecureSqlInput<Bit> ("SELECT t1.n_name, t2.c_custkey, t2.c_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t2.c_custkey", tuple_count=27) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(5) customer.c_nationkey) order by: {<1, ASC> }, cost est: 14400, output card: 27 : 14400, Observed gates: 13380, Error rate(%) : 7.623319
+
+Operator #1 SecureSqlInput ran for 115.452000 ms, gate count: 237584 output cardinality: 1500, row width=22
+
+Estimated cost for#1: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders ORDER BY o_custkey", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey) order by: {<1, ASC> }, cost est: 261129, output card: 1500 : 261129, Observed gates: 237584, Error rate(%) : 9.910179
+
+Operator #2 KeyedJoin ran for 2539.261000 ms, gate count: 9153000 output cardinality: 1500, row width=235
+
+Estimated cost for#2: KeyedJoin<Bit> (P$1(8) == P$4(8)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(5) customer.c_nationkey, #3 shared-int32(13) orders.o_orderkey, #4 shared-int32(8) orders.o_custkey) order by: {<4, ASC> , <1, ASC> }, cost est: 9112500, output card: 1500 : 9112500, Observed gates: 9153000, Error rate(%) : 0.442478
+
+Operator #3 Project ran for 8.017000 ms, gate count: 0 output cardinality: 1500, row width=219
+
+Operator #4 SecureSqlInput ran for 1307.969000 ms, gate count: 4426232 output cardinality: 6005, row width=50
+
+Estimated cost for#4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem ORDER BY l_orderkey, l_suppkey, revenue ASC", tuple_count=6005) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float revenue) order by: {<0, ASC> , <1, ASC> , <2, ASC> }, cost est: 4070196, output card: 6005 : 4070196, Observed gates: 4426232, Error rate(%) : 8.043772
+
+Operator #5 KeyedJoin ran for 580614.821000 ms, gate count: 2125770000 output cardinality: 6005, row width=268
+
+Estimated cost for#5: KeyedJoin<Bit> (P$2(13) == P$3(13)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(13) orders.o_orderkey, #3 shared-int32(13) lineitem.l_orderkey, #4 shared-int32(4) lineitem.l_suppkey, #5 shared-float revenue) order by: {<3, ASC> , <4, ASC> , <5, ASC> }, cost est: 2116762500, output card: 6005 : 2116762500, Observed gates: 2125770000, Error rate(%) : 0.423728
+
+Operator #6 Project ran for 31.558000 ms, gate count: 0 output cardinality: 6005, row width=242
+
+Operator #7 SecureSqlInput ran for 0.091000 ms, gate count: 0 output cardinality: 1, row width=10
+
+Operator #8 KeyedJoin ran for 85.366000 ms, gate count: 150124 output cardinality: 6005, row width=251
+
+Estimated cost for#8: KeyedJoin<Bit> ((P$1(5) == P$5(5)) AND (P$2(4) == P$4(4))) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(4) lineitem.l_suppkey, #3 shared-float revenue, #4 shared-int32(4) supplier.s_suppkey, #5 shared-int32(5) supplier.s_nationkey) order by: {}, cost est: 216180, output card: 6005 : 216180, Observed gates: 150124, Error rate(%) : 44.000961
+
+Operator #9 Project ran for 13.513000 ms, gate count: 0 output cardinality: 6005, row width=233
+
+Operator #10 NestedLoopAggregate ran for 11896.834000 ms, gate count: 43806476 output cardinality: 5, row width=233
+
+Estimated cost for#10: NestedLoopAggregate<Bit> (group-by: (0) aggs: (SUM($1) revenue)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {}, cost est: 45577950, output card: 5 : 45577950, Observed gates: 43806476, Error rate(%) : 4.043868
+
+Operator #11 Sort ran for 0.595000 ms, gate count: 3024 output cardinality: 5, row width=233
+
+Estimated cost for#11: Sort<Bit> ({<1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<1, DESC> }, cost est: 2583, output card: 5 : 2583, Observed gates: 3024, Error rate(%) : 14.583333
+
+Runtime: 596.948 sec, CPU Time: 407.002 sec, CPU clock ticks: 4.07002e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 2.17602e+09. observed gates: 2183559820 gates, relative error (%)=0.345423
+Bandwidth: 4209.86 Bps
+[       OK ] FullyOptimizedTest.tpch_q5 (597116 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q8
+Connecting to 129.105.61.184 on ports 7657, 65485 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65486	--cutoff=100	--filter=*	--party=2	--port=7658	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Cost : 70393077, combination : 0
+Cost : 28399358, combination : 1
+Operator #0 SecureSqlInput ran for 1.871000 ms, gate count: 1208 output cardinality: 29, row width=9
+
+Estimated cost for#0: SecureSqlInput<Bit> ("SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA' ORDER BY c_custkey", tuple_count=29) : (#0 shared-int32(8) customer.c_custkey) order by: {<0, ASC> }, cost est: 1400, output card: 29 : 1400, Observed gates: 1208, Error rate(%) : 15.894040
+
+Operator #1 SecureSqlInput ran for 201.689000 ms, gate count: 582464 output cardinality: 1500, row width=54
+
+Estimated cost for#1: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_custkey, o_orderkey", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int32 orders.o_year) order by: {<1, ASC> , <0, ASC> }, cost est: 640953, output card: 1500 : 640953, Observed gates: 582464, Error rate(%) : 10.041651
+
+Operator #2 KeyedJoin ran for 299.115000 ms, gate count: 913500 output cardinality: 1500, row width=62
+
+Estimated cost for#2: KeyedJoin<Bit> (P$0(8) == P$2(8)) : (#0 shared-int32(8) customer.c_custkey, #1 shared-int32(13) orders.o_orderkey, #2 shared-int32(8) orders.o_custkey, #3 shared-int32 orders.o_year) order by: {<2, ASC> , <1, ASC> , <0, ASC> }, cost est: 870000, output card: 1500 : 870000, Observed gates: 913500, Error rate(%) : 4.761905
+
+Operator #3 Project ran for 0.387000 ms, gate count: 0 output cardinality: 1500, row width=46
+
+Operator #4 SecureSqlInput ran for 763.657000 ms, gate count: 2348544 output cardinality: 6005, row width=50
+
+Estimated cost for#4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume, CASE WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE ELSE TRUE END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_orderkey", tuple_count=6005) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float volume) order by: {<0, ASC> }, cost est: 2487342, output card: 6005 : 2487342, Observed gates: 2348544, Error rate(%) : 5.909960
+
+Operator #5 KeyedJoin ran for 154301.889000 ms, gate count: 567472500 output cardinality: 6005, row width=95
+
+Estimated cost for#5: KeyedJoin<Bit> (P$1(13) == P$2(13)) : (#0 shared-int32 orders.o_year, #1 shared-int32(13) orders.o_orderkey, #2 shared-int32(13) lineitem.l_orderkey, #3 shared-int32(4) lineitem.l_suppkey, #4 shared-float volume) order by: {<2, ASC> }, cost est: 558465000, output card: 6005 : 558465000, Observed gates: 567472500, Error rate(%) : 1.587299
+
+Operator #6 Project ran for 3.374000 ms, gate count: 0 output cardinality: 6005, row width=69
+
+Operator #7 SecureSqlInput ran for 0.737000 ms, gate count: 164 output cardinality: 10, row width=6
+
+Estimated cost for#7: SecureSqlInput<Bit> ("SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey ORDER BY s_suppkey", tuple_count=10) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-bool nation_check) order by: {<0, ASC> }, cost est: 208, output card: 10 : 208, Observed gates: 164, Error rate(%) : 26.829269
+
+Operator #8 KeyedJoin ran for 241.827000 ms, gate count: 840700 output cardinality: 6005, row width=74
+
+Estimated cost for#8: KeyedJoin<Bit> (P$1(4) == P$3(4)) : (#0 shared-int32 orders.o_year, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float volume, #3 shared-int32(4) supplier.s_suppkey, #4 shared-bool nation_check) order by: {}, cost est: 780650, output card: 6005 : 780650, Observed gates: 840700, Error rate(%) : 7.142858
+
+Operator #9 Project ran for 52.108000 ms, gate count: 192160 output cardinality: 6005, row width=97
+
+Estimated cost for#9: Project<Bit> ((<0, P$0(32) shared-int32>, <1, CASE($4, $2, SECRET FLOAT) shared-float>, <2, P$2(32) shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float nation_volume, #2 shared-float volume) order by: {}, cost est: 0, output card: 6005 : 0, Observed gates: 192160, Error rate(%) : 100.000000
+
+Operator #10 NestedLoopAggregate ran for 7106.235000 ms, gate count: 26133760 output cardinality: 2, row width=97
+
+Estimated cost for#10: NestedLoopAggregate<Bit> (group-by: (0) aggs: (SUM($1) null, SUM($2) null)) : (#0 shared-int32 orders.o_year, #1 shared-float null, #2 shared-float null) order by: {}, cost est: 28391640, output card: 2 : 28391640, Observed gates: 26133760, Error rate(%) : 8.639706
+
+Operator #11 Project ran for 1.983000 ms, gate count: 7620 output cardinality: 2, row width=65
+
+Estimated cost for#11: Project<Bit> ((<0, P$0(32) shared-int32>, <1, $1 / $2 shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {}, cost est: 7618, output card: 2 : 7618, Observed gates: 7620, Error rate(%) : 0.026247
+
+Operator #12 Sort ran for 0.164000 ms, gate count: 96 output cardinality: 2, row width=65
+
+Estimated cost for#12: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 100, output card: 2 : 100, Observed gates: 96, Error rate(%) : 4.166667
+
+Runtime: 163.263 sec, CPU Time: 114.643 sec, CPU clock ticks: 1.14643e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 5.91645e+08. observed gates: 598492716 gates, relative error (%)=1.14418
+Bandwidth: 17079.6 Bps
+[       OK ] FullyOptimizedTest.tpch_q8 (163462 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q9
+Connecting to 129.105.61.184 on ports 7658, 65486 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65487	--cutoff=100	--filter=*	--party=2	--port=7659	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Cost : 137757686, combination : 0
+Cost : 1663870022, combination : 1
+Operator #0 SecureSqlInput ran for 4.937000 ms, gate count: 6152 output cardinality: 10, row width=205
+
+Estimated cost for#0: SecureSqlInput<Bit> ("SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY n_name, s_suppkey", tuple_count=10) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name) order by: {<1, ASC> , <0, ASC> }, cost est: 6640, output card: 10 : 6640, Observed gates: 6152, Error rate(%) : 7.932380
+
+Operator #1 SecureSqlInput ran for 8.203000 ms, gate count: 9048 output cardinality: 56, row width=45
+
+Estimated cost for#1: SecureSqlInput<Bit> ("SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%' ORDER BY ps_suppkey, ps_partkey", tuple_count=56) : (#0 shared-int32(8) partsupp.ps_partkey, #1 shared-int32(4) partsupp.ps_suppkey, #2 shared-float partsupp.ps_supplycost) order by: {<1, ASC> , <0, ASC> }, cost est: 10206, output card: 56 : 10206, Observed gates: 9048, Error rate(%) : 12.798409
+
+Operator #2 KeyedJoin ran for 33.971000 ms, gate count: 119280 output cardinality: 56, row width=249
+
+Estimated cost for#2: KeyedJoin<Bit> (P$0(4) == P$3(4)) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(8) partsupp.ps_partkey, #3 shared-int32(4) partsupp.ps_suppkey, #4 shared-float partsupp.ps_supplycost) order by: {<3, ASC> , <2, ASC> , <1, ASC> , <0, ASC> }, cost est: 118720, output card: 56 : 118720, Observed gates: 119280, Error rate(%) : 0.469484
+
+Operator #3 Project ran for 0.155000 ms, gate count: 0 output cardinality: 56, row width=245
+
+Operator #4 SecureSqlInput ran for 1577.470000 ms, gate count: 4953960 output cardinality: 6005, row width=122
+
+Estimated cost for#4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice, l_discount FROM lineitem ORDER BY l_suppkey, l_partkey", tuple_count=6005) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(8) lineitem.l_partkey, #2 shared-int32(4) lineitem.l_suppkey, #3 shared-float l_quantity, #4 shared-float lineitem.l_extendedprice, #5 shared-float lineitem.l_discount) order by: {<2, ASC> , <1, ASC> }, cost est: 5276180, output card: 6005 : 5276180, Observed gates: 4953960, Error rate(%) : 6.504292
+
+Operator #5 KeyedJoin ran for 24077.381000 ms, gate count: 88441640 output cardinality: 6005, row width=366
+
+Estimated cost for#5: KeyedJoin<Bit> ((P$2(4) == P$6(4)) AND (P$1(8) == P$5(8))) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(8) partsupp.ps_partkey, #2 shared-int32(4) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost, #4 shared-int32(13) lineitem.l_orderkey, #5 shared-int32(8) lineitem.l_partkey, #6 shared-int32(4) lineitem.l_suppkey, #7 shared-float l_quantity, #8 shared-float lineitem.l_extendedprice, #9 shared-float lineitem.l_discount) order by: {<6, ASC> , <5, ASC> , <2, ASC> , <1, ASC> , <0, ASC> }, cost est: 91468160, output card: 6005 : 91468160, Observed gates: 88441640, Error rate(%) : 3.422053
+
+Operator #6 Project ran for 53.845000 ms, gate count: 0 output cardinality: 6005, row width=342
+
+Operator #7 SecureSqlInput ran for 159.737000 ms, gate count: 459840 output cardinality: 1500, row width=46
+
+Estimated cost for#7: SecureSqlInput<Bit> ("SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders ORDER BY o_orderkey", tuple_count=1500) : (#0 shared-int32 o_year, #1 shared-int32(13) orders.o_orderkey) order by: {<1, ASC> }, cost est: 490606, output card: 1500 : 490606, Observed gates: 459840, Error rate(%) : 6.690588
+
+Operator #8 KeyedJoin ran for 154319.133000 ms, gate count: 567472500 output cardinality: 6005, row width=387
+
+Estimated cost for#8: KeyedJoin<Bit> (P$2(13) == P$7(13)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float partsupp.ps_supplycost, #2 shared-int32(13) lineitem.l_orderkey, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float l_quantity, #6 shared-int32 o_year, #7 shared-int32(13) orders.o_orderkey) order by: {}, cost est: 558465000, output card: 6005 : 558465000, Observed gates: 567472500, Error rate(%) : 1.587299
+
+Operator #9 Project ran for 14934.256000 ms, gate count: 54729568 output cardinality: 6005, row width=265
+
+Estimated cost for#9: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$6(32) shared-int32>, <2, ($3 * (SECRET FLOAT - $4)) - ($1 * $5) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float amount) order by: {}, cost est: 109459140, output card: 6005 : 109459140, Observed gates: 54729568, Error rate(%) : 100.000000
+
+Operator #10 SortMergeAggregate ran for 2484.477000 ms, gate count: 9126112 output cardinality: 6005, row width=265
+
+Estimated cost for#10: SortMergeAggregate<Bit> (group-by: (0, 1) aggs: (SUM($2) sum_profit)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, DESC> }, cost est: 9307750, output card: 6005 : 9307750, Observed gates: 9126112, Error rate(%) : 1.990311
+
+Operator #11 Sort ran for 33376.076000 ms, gate count: 122327532 output cardinality: 6005, row width=265
+
+Estimated cost for#11: Sort<Bit> ({<0, ASC> , <1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, DESC> }, cost est: 128449936, output card: 6005 : 128449936, Observed gates: 122327532, Error rate(%) : 5.004924
+
+Runtime: 264.819 sec, CPU Time: 196.576 sec, CPU clock ticks: 1.96576e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.0315e+09. observed gates: 969600852 gates, relative error (%)=6.38422
+Bandwidth: 22104.6 Bps
+[       OK ] FullyOptimizedTest.tpch_q9 (265034 ms)
+[ RUN      ] FullyOptimizedTest.tpch_q18
+Connecting to 129.105.61.184 on ports 7659, 65487 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 526b4e391428cfb311d564d94c276f5959f2f6f4
+GFlags: --flagfile=flagfiles/storage.flags	--alice_db=tpch_alice_150	--alice_host=129.105.61.184	--bob_db=tpch_bob_150	--ctrl_port=65488	--cutoff=100	--filter=*	--party=2	--port=7660	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+Operator #0 SecureSqlInput ran for 6.092000 ms, gate count: 0 output cardinality: 1500, row width=46
+
+Operator #1 SecureSqlInput ran for 16.593000 ms, gate count: 0 output cardinality: 1500, row width=46
+
+Operator #2 MergeJoin ran for 17.764000 ms, gate count: 3000 output cardinality: 1500, row width=91
+
+Estimated cost for#2: MergeJoin<Bit> (no-op) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty, #2 shared-int32(13) order_keys.o_orderkey, #3 shared-float sum_qty) order by: {<0, ASC> }, cost est: 4500, output card: 1500 : 4500, Observed gates: 3000, Error rate(%) : 50.000000
+
+Operator #3 Project ran for 400.933000 ms, gate count: 1479000 output cardinality: 1500, row width=46
+
+Estimated cost for#3: Project<Bit> ((<0, P$0(13) shared-int32>, <1, $1 + $3 shared-float>)) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 1479000, output card: 1500 : 1479000, Observed gates: 1479000, Error rate(%) : 0.000000
+
+Operator #4 Filter ran for 87.236000 ms, gate count: 321000 output cardinality: 1500, row width=46
+
+Estimated cost for#4: Filter<Bit> (P$1(32) > SECRET FLOAT) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 319500, output card: 1500 : 319500, Observed gates: 321000, Error rate(%) : 0.467290
+
+Operator #5 SecureSqlInput ran for 238.982000 ms, gate count: 735744 output cardinality: 1500, row width=82
+
+Estimated cost for#5: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate, false dummy_tag FROM orders ORDER BY o_orderkey", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate) order by: {<0, ASC> }, cost est: 775474, output card: 1500 : 775474, Observed gates: 735744, Error rate(%) : 5.399976
+
+Operator #6 MergeJoin ran for 2.270000 ms, gate count: 3000 output cardinality: 1500, row width=127
+
+Estimated cost for#6: MergeJoin<Bit> (no-op) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty, #2 shared-int32(13) orders.o_orderkey, #3 shared-int32(8) orders.o_custkey, #4 shared-float orders.o_totalprice, #5 shared-int64(28) orders.o_orderdate) order by: {<0, ASC> }, cost est: 4500, output card: 1500 : 4500, Observed gates: 3000, Error rate(%) : 50.000000
+
+Operator #7 Project ran for 0.816000 ms, gate count: 0 output cardinality: 1500, row width=114
+
+Operator #8 SecureSqlInput ran for 2.555000 ms, gate count: 0 output cardinality: 150, row width=209
+
+Operator #9 KeyedJoin ran for 13535.356000 ms, gate count: 49725000 output cardinality: 1500, row width=322
+
+Estimated cost for#9: KeyedJoin<Bit> (P$1(8) == P$5(8)) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-float sum_qty, #5 shared-int32(8) customer.c_custkey, #6 shared-varchar(25) customer.c_name) order by: {<0, ASC> }, cost est: 49500000, output card: 1500 : 49500000, Observed gates: 49725000, Error rate(%) : 0.452489
+
+Operator #10 Project ran for 5.451000 ms, gate count: 0 output cardinality: 1500, row width=314
+
+Operator #11 Sort ran for 4554.696000 ms, gate count: 16613384 output cardinality: 100, row width=314
+
+Estimated cost for#11: Sort<Bit> ({<-1, ASC> , <4, DESC> , <3, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(13) order_keys.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <4, DESC> , <3, ASC> }, cost est: 487532, output card: 100 : 487532, Observed gates: 16613384, Error rate(%) : 97.065422
+
+Runtime: 19.2099 sec, CPU Time: 13.3361 sec, CPU clock ticks: 1.33361e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 5.25705e+07. observed gates: 68880128 gates, relative error (%)=23.6783
+Bandwidth: 130695 Bps
+[       OK ] FullyOptimizedTest.tpch_q18 (19443 ms)
+[----------] 6 tests from FullyOptimizedTest (1215816 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (1215816 ms total)
+[  PASSED  ] 6 tests.
