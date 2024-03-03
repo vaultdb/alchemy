@@ -53,7 +53,8 @@ We start with patient-level demographic data (aka the denominator).  Demographic
 
 We'll join this with `phame_diagnosis` later to get the rollup under MPC.
 
-**Schema**: `phame_demographic(patid:int32, age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1))`\
+**Table name**: `phame_demographic`\
+**Schema**: `(patid:int32, age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1))`\
 **Filename**: `phame_demographic.csv`\
 **Study table**: B1\
 **Partners**: row-level
@@ -73,6 +74,7 @@ We may want to include a preprocessing step that pads the secret shares so that 
 ## Diagnosis
 
 This is the numerator for the study.
+
 **Table name**: `phame_diagnosis`\
 **Schema**: `(patid:int32, dx_diabetes:bool, dx_hypertension:bool, dx_cervical_cancer:bool, dx_breast_cancer:bool, dx_lung_cancer:bool, dx_colorectal_cancer:bool)`\
 **Filename**: `phame_diagnosis.csv`\
