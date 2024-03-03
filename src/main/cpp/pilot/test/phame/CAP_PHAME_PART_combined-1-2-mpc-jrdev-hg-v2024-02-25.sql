@@ -1186,7 +1186,7 @@ ORDER BY age_cat, sex, race_coded, ethnicity, demo.zip_code, payer_primary_coded
 
 -- DETAILED ONLY
 -- schema:
--- (patid:int32, age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1))
+-- phame_demo(patid:int32, age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1))
 select * from #phame_demo_catalyst;
 
 -- DETAILED ONLY
@@ -1206,5 +1206,5 @@ SELECT * FROM #phame_cohort_counts;
 -- ALL SITES SEND THIS
 -- *** save phame_rollup_catalyst to phame_rollup.csv
 -- schema:
---age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64
+--phame_rollup(age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64)
 select * from #phame_rollup_catalyst;
