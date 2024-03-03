@@ -42,7 +42,7 @@ All of our other statistics pertain only to participants who are in the randomly
 
 We start with patient-level demographic data (aka the denominator).  Demographic variables in inputdata are coded as follows:
 * `age_cat` $\in [0, 6]$
-* `gender` $\in \{M, F, N, 0\}$
+* `gender` $\in {M, F, N, 0}$
 * `race` $\in [0, 9]$
 * `ethnicity` $\in [0, 6]$
 * `zip_code` (5-digit string)
