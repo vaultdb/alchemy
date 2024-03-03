@@ -85,7 +85,7 @@ This is the numerator for the study.
 
 ### Diagnosis Rollup
 
-We will sum the counts of each diagnosis over all sites. This is stratified by all of the demographic variables coded as in the [denominator](#denominator) table.
+We will sum the counts of each diagnosis over all sites. This is stratified by all of the demographic variables coded as in the [denominator](#demographics) table.
 
 **Schema**: `phame_diagnosis_rollup(age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64)`\
 **Filename**: `phame_diagnosis_rollup.csv`\
@@ -93,12 +93,12 @@ Study table: N/A, this will take the place of the B5-B16 tables\
 **Partners**: all
 
 
-## Output Tables
+## Output Tables and Next Steps
 
 For each age category and gender, we will compute stratified counts by zip code, race, and ethnicity.  They seem to be doing this in the study independant of diagnosis codes.
 
-We will also stratify by dx codes.  If we start with:
-`phame_rollup(age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64)`\
+We will also stratify by dx codes.  If we start with:\
+`phame_rollup(age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64)`
 
 and we union these together for all sites, we will compute:
 ```sql
@@ -107,7 +107,6 @@ FROM phame_rollup
 GROUP BY age_cat, gender, race, ethnicity, zip;
 ```
 
-## Next Steps
-
+Implementation:
 * Start with data generator for testing the system.  Generate these 4 tables automatically for several parties.
 * Implement these tests using JSON plan format.
