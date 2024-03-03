@@ -33,7 +33,8 @@ These inputs will arrive sorted in this order and we will take the simple sum ov
 
 All of our other statistics pertain only to participants who are in the randomly selected cohort. 
 
-**Schema**: `phame_cohort_counts(desc:varchar(42), count:int64, site_id:int32)`\
+**Table name**: `phame_cohort_counts`\
+**Schema**: `(desc:varchar(42), count:int64, site_id:int32)`\
 **Filename**: `phame_cohort_counts.csv`\
 **Study table**: A1\
 **Partners**: all
@@ -68,7 +69,8 @@ This table is a bit tricky because it seems to partition by race and ethnicity i
 
 We may want to include a preprocessing step that pads the secret shares so that all of the zip codes are covered.  Thus we could just concatenate the partial counts one line at a time and add them up.  Otherwise we sort and sum the partial counts.
 
-**Schema**: `phame_demographic_rollup(zip:char(5), total:int64, black:int64, white:int64, hispanic:int64, asian:int64, blacke_male:int64, white_male:int64, hispanic_male:int64, asian_male:int64, black_female:int64, white_female:int64, hispanic_female:int64, asian_female:int64)`\
+**Table name**: `phame_demographic_rollup`\
+**Schema**: `(zip:char(5), total:int64, black:int64, white:int64, hispanic:int64, asian:int64, blacke_male:int64, white_male:int64, hispanic_male:int64, asian_male:int64, black_female:int64, white_female:int64, hispanic_female:int64, asian_female:int64)`\
 **Filename**: `phame_demographic_rollup.csv`\
 **Study table**: B4\
 **Partners**: all
@@ -77,8 +79,8 @@ We may want to include a preprocessing step that pads the secret shares so that 
 ## Diagnosis
 
 This is the numerator for the study.
-
-**Schema**: `phame_diagnosis(patid:int32, dx_diabetes:bool, dx_hypertension:bool, dx_cervical_cancer:bool, dx_breast_cancer:bool, dx_lung_cancer:bool, dx_colorectal_cancer:bool)`\
+**Table name**: `phame_diagnosis`\
+**Schema**: `(patid:int32, dx_diabetes:bool, dx_hypertension:bool, dx_cervical_cancer:bool, dx_breast_cancer:bool, dx_lung_cancer:bool, dx_colorectal_cancer:bool)`\
 **Filename**: `phame_diagnosis.csv`\
 **Study table**: B2\
 **Partners**: row-level
@@ -87,7 +89,8 @@ This is the numerator for the study.
 
 We will sum the counts of each diagnosis over all sites. This is stratified by all of the demographic variables coded as in the [denominator](#demographics) table.
 
-**Schema**: `phame_diagnosis_rollup(age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64)`\
+**Table name**: `phame_diagnosis_rollup`\
+**Schema**: `(age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64)`\
 **Filename**: `phame_diagnosis_rollup.csv`\
 Study table: N/A, this will take the place of the B5-B16 tables\
 **Partners**: all
