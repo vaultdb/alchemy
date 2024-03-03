@@ -58,7 +58,6 @@ We'll join this with `phame_diagnosis` later to get the rollup under MPC.
 **Study table**: B1\
 **Partners**: row-level
 
-### Denominator Rollup
 This table aggregates over individuals who meet the study criteria of having one admit date within the study period.  These individuals are all over the age of 18 and within the Chicago-area zip codes in the study (`study_population` in the protocol).
 
 Participants also needed a `cap_id` to qualify for the denominator.  We are not completing that part because we are not doing PPRL in this first round.
@@ -69,6 +68,7 @@ This table is a bit tricky because it seems to partition by race and ethnicity i
 
 We may want to include a preprocessing step that pads the secret shares so that all of the zip codes are covered.  Thus we could just concatenate the partial counts one line at a time and add them up.  Otherwise we sort and sum the partial counts.
 
+**This is not part of the study inputs.  Instead it is in the generic rollup below.*
 
 ## Diagnosis
 
