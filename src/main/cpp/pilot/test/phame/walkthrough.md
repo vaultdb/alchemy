@@ -107,6 +107,8 @@ FROM phame_rollup
 GROUP BY age_cat, gender, race, ethnicity, zip;
 ```
 
+Our other major output is the population-level statistics over the denominator.  This is a simple sum over all sites using the `phame_cohort_counts` table (described in [Population-Level Statistics](#population-level-statistics)).
+
 Implementation:
 * Start with data generator for testing the system.  Generate these 4 tables automatically for several parties.
 * Implement these tests using JSON plan format.
