@@ -38,9 +38,9 @@ All of our other statistics pertain only to participants who are in the randomly
 **Study table**: A1\
 **Partners**: all
 
-## Denominator
+## Demographics
 
-We start with patient-level demographic data.  Demographic variables:
+We start with patient-level demographic data (aka the denominator).  Demographic variables in inputdata are coded as follows:
 * `age_cat` $\in [0, 6]$
 * `gender` $\in \{M, F, N, 0\}$
 * `race` $\in [0, 9]$
@@ -52,8 +52,8 @@ We start with patient-level demographic data.  Demographic variables:
 
 We'll join this with `phame_diagnosis` later to get the rollup under MPC.
 
-**Schema**: `phame_demo(patid:int32, age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1))`\
-**Filename**: `phame_demo.csv`\
+**Schema**: `phame_demographic(patid:int32, age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1))`\
+**Filename**: `phame_demographic.csv`\
 **Study table**: B1\
 **Partners**: row-level
 
@@ -68,8 +68,8 @@ This table is a bit tricky because it seems to partition by race and ethnicity i
 
 We may want to include a preprocessing step that pads the secret shares so that all of the zip codes are covered.  Thus we could just concatenate the partial counts one line at a time and add them up.  Otherwise we sort and sum the partial counts.
 
-**Schema**: `phame_denominator(zip:char(5), total:int64, black:int64, white:int64, hispanic:int64, asian:int64, blacke_male:int64, white_male:int64, hispanic_male:int64, asian_male:int64, black_female:int64, white_female:int64, hispanic_female:int64, asian_female:int64)`\
-**Filename**: `phame_denominator.csv`\
+**Schema**: `phame_demographic_rollup(zip:char(5), total:int64, black:int64, white:int64, hispanic:int64, asian:int64, blacke_male:int64, white_male:int64, hispanic_male:int64, asian_male:int64, black_female:int64, white_female:int64, hispanic_female:int64, asian_female:int64)`\
+**Filename**: `phame_demographic_rollup.csv`\
 **Study table**: B4\
 **Partners**: all
 
@@ -87,8 +87,8 @@ This is the numerator for the study.
 
 We will sum the counts of each diagnosis over all sites. This is stratified by all of the demographic variables coded as in the [denominator](#denominator) table.
 
-**Schema**: `phame_rollup(age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64)`\
-**Filename**: `phame_rollup.csv`\
+**Schema**: `phame_diagnosis_rollup(age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64)`\
+**Filename**: `phame_diagnosis_rollup.csv`\
 Study table: N/A, this will take the place of the B5-B16 tables\
 **Partners**: all
 
