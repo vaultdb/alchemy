@@ -69,12 +69,6 @@ This table is a bit tricky because it seems to partition by race and ethnicity i
 
 We may want to include a preprocessing step that pads the secret shares so that all of the zip codes are covered.  Thus we could just concatenate the partial counts one line at a time and add them up.  Otherwise we sort and sum the partial counts.
 
-**Table name**: `phame_demographic_rollup`\
-**Schema**: `(zip:char(5), total:int64, black:int64, white:int64, hispanic:int64, asian:int64, blacke_male:int64, white_male:int64, hispanic_male:int64, asian_male:int64, black_female:int64, white_female:int64, hispanic_female:int64, asian_female:int64)`\
-**Filename**: `phame_demographic_rollup.csv`\
-**Study table**: B4\
-**Partners**: all
-
 
 ## Diagnosis
 
