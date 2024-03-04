@@ -1,7 +1,7 @@
 #!/bin/bash
 
 make -j4
-bash pilot/test/generate-and-load-test-data.sh 1000
+bash pilot/test/generate-and-load-enrich-test-data.sh 1000
 
 ## All years
 # main test

@@ -1,5 +1,5 @@
 
-bash pilot/test/generate-and-load-test-data.sh 1000
+bash pilot/test/generate-and-load-enrich-test-data.sh 1000
 
 # using fewer cores because sometimes Docker will OOM otherwise
 # welcome to change this for your machine
