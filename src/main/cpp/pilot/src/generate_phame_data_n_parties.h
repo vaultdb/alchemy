@@ -81,7 +81,6 @@ struct PatientTuple {
 // diabetes, hypertension, breast cancer, lung cancer, colorectal cancer, cervical cancer
 struct DxTuple {
     int patid = -1;
-    int site_id = -1;
     bool dx_diabetes;
     bool dx_hypertension;
     bool dx_breast_cancer;
@@ -117,7 +116,6 @@ public:
     static DxTuple generateDxTuple(const PatientTuple & patient) {
         DxTuple dxTuple;
         dxTuple.patid = patient.patid;
-        dxTuple.site_id = patient.site_id;
         dxTuple.dx_diabetes = generateDxValue();
         dxTuple.dx_hypertension = generateDxValue();
         dxTuple.dx_breast_cancer = generateDxValue();

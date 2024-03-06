@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
     dst_path = GeneratePhameDataNParties::getCurrentWorkingDirectory() + "/" + dst_path;
 
     for(int i = 0; i < party_cnt; ++i) {
-        string party_path = dst_path + "/party_" + std::to_string(i);
+        string party_path = dst_path + "/" + std::to_string(i);
         GeneratePhameDataNParties::runCommand("mkdir -p " + party_path);
 
         GeneratePhameDataNParties::writeSchemaFile(party_path + "/phame_demographic.schema", PatientTuple::getSchema());
@@ -76,6 +76,7 @@ int main(int argc, char **argv) {
         std::ofstream pat_file, dx_file;
         string pat_filename = party_path + "/phame_demographic.csv";
         string dx_filename = party_path + "/phame_diagnosis.csv";
+        cout << "Writing to " << pat_filename << " and " << dx_filename << "\n";
         pat_file.open(pat_filename, ios::out);
         dx_file.open(dx_filename, ios::out);
 
