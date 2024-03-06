@@ -1,21 +1,21 @@
 #!/bin/bash -x
 
-if [ "$#" -ne 1 ]; then
-    echo "usage: ./pilot/test/load-generated-data.sh <tuple count per host>"
+if [ "$#" -ne 2]; then
+    echo "usage: pilot/test/generate-and-load-phame-data.sh <host count> <tuple count per host>"
     exit
 fi
 
-TUPLE_COUNT=$1
-DB_NAME=enrich_htn_unioned_3pc
+HOST_COUNT=$1
+TUPLE_COUNT=$2
+DB_NAME='phame_unioned_'$HOST_COUNT'_parties'
 
 mkdir -p pilot/test/input
 mkdir -p pilot/test/output
 mkdir -p  pilot/test/batch
 mkdir -p  pilot/secret_shares/tables
 
-make -j4 generate_enrich_data_three_parties secret_share_from_query secret_share_batch_from_query
-
-./bin/generate_enrich_data_three_parties pilot/test/input/ $TUPLE_COUNT 
+make -j4 generate_phame_data_n_parties
+./bin/generate_phame_data_n_parties pilot/test/input/ $HOST_COUNT $TUPLE_COUNT
 
 
 dropdb  --if-exists $DB_NAME

@@ -1,7 +1,7 @@
 #!/bin/bash -x
 
 if [ "$#" -ne 1 ]; then
-    echo "usage: ./pilot/test/load-generated-data.sh <tuple count per host>"
+    echo "usage: pilot/test/generate-and-load-enrich-data.sh <tuple count per host>"
     exit
 fi
 
@@ -22,8 +22,7 @@ dropdb  --if-exists $DB_NAME
 createdb $DB_NAME
 
 
-psql $DB_NAME <  pilot/test/load-generated-data.sql
-
+psql $DB_NAME <  pilot/test/load-generated-enrich-data.sql
 pg_dump $DB_NAME > pilot/test/output/$DB_NAME.sql
 
 #whole tables
