@@ -115,13 +115,13 @@ namespace vaultdb {
         typedef struct unpackd_page_ {
             PageId pid_;
             vector<emp::Bit> page_payload_;
-            time_point<high_resolution_clock> timestamp_; // for LRU
+            int access_counters_; // for LRU
         } UnpackedPage;
 
         typedef struct packd_page_ {
             PageId pid_;
             emp::OMPCPackedWire page_payload_;
-            time_point<high_resolution_clock> timestamp_; // for LRU
+            int access_counters_; // for LRU
         } PackedPage;
 
         BufferPoolManager() {};
@@ -168,20 +168,20 @@ namespace vaultdb {
 
         void flushUnpackedPageByLRU() {
             if(isUnpackedBufferPoolFull()) {
-                time_point<high_resolution_clock> oldest_time = high_resolution_clock::now();
+                int least_counters = INT_MAX;
                 string oldest_key;
                 for (auto &[key, page]: unpacked_page_buffer_pool_) {
-                    if (page.timestamp_ < oldest_time) {
-                        oldest_time = page.timestamp_;
+                    if (page.access_counters_ < least_counters) {
+                        least_counters = page.access_counters_;
                         oldest_key = key;
                     }
                 }
                 UnpackedPage oldest_unpacked_page = unpacked_page_buffer_pool_[oldest_key];
 
                 // TODO: flush to disk if necessary
-                if(isPackedBufferPoolFull()) {
-                    throw std::runtime_error("Packed buffer pool is full.");
-                }
+//                if(isPackedBufferPoolFull()) {
+//                    throw std::runtime_error("Packed buffer pool is full.");
+//                }
 
                 PackedPage packed_page;
                 packed_page.pid_ = oldest_unpacked_page.pid_;
@@ -189,7 +189,7 @@ namespace vaultdb {
                 emp::OMPCPackedWire pack_wire(block_n_);
                 emp_manager_->pack(oldest_unpacked_page.page_payload_.data(), (Bit *) &pack_wire, unpacked_page_size_);
                 packed_page.page_payload_ = pack_wire;
-                packed_page.timestamp_ = high_resolution_clock::now();
+                packed_page.access_counters_ = 0;
 
                 packed_page_buffer_pool_[oldest_key] = packed_page;
 
@@ -206,7 +206,7 @@ namespace vaultdb {
                 UnpackedPage up;
                 up.pid_ = page_id;
                 up.page_payload_ = std::vector<emp::Bit>(unpacked_page_size_, emp::Bit(0));
-                up.timestamp_ = high_resolution_clock::now();
+                up.access_counters_ = 0;
 
                 return up;
             }
@@ -232,7 +232,7 @@ namespace vaultdb {
                 unpacked_page.pid_ = page_id;
                 unpacked_page.page_payload_ = std::vector<emp::Bit>(unpacked_page_size_, emp::Bit(0));
                 emp_manager_->unpack((Bit *) &packed_page.page_payload_, unpacked_page.page_payload_.data(), unpacked_page_size_);
-                unpacked_page.timestamp_ = high_resolution_clock::now();
+                unpacked_page.access_counters_ = 0;
 
                 return unpacked_page;
             }
