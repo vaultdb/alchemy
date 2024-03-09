@@ -101,7 +101,7 @@ Step zero will be to add site_ids to all  `phame_demographic` and `phame_diagnos
 
 *See the comments in the markdown for more on this.*
 
-## JSON Study Parameters
+## JSON Study Parameters 
 
 A study will need to be defined in a JSON file.  This will include the following parameters:
 * Table names and schemas
@@ -199,6 +199,8 @@ This will generate the output file:\
 `/home/vaultdb/vaultdb-core/src/main/cpp/pilot/output/phame_cohort_counts.alice`
 
 The latter will be sent to the investigator once we are done the study. This will work similarly for the `phame_diagnosis_rollup` table and for Bob's shares.
+
+
 
 [//]: # (## Output Tables and Next Steps)
 
