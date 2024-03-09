@@ -149,7 +149,8 @@ namespace vaultdb {
 
                 Bit *read_ptr = up.page_payload_.data() + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
 
-                up.timestamp_ = high_resolution_clock::now();
+                up.access_counters_++;
+
                 bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)] = up;
 
                 return Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
@@ -170,7 +171,7 @@ namespace vaultdb {
 
                 Bit *write_ptr = up.page_payload_.data() + (((row % fields_per_wire_.at(col)) * schema_.getField(col).size()));
                 f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
-                up.timestamp_ = high_resolution_clock::now();
+                up.access_counters_++;
 
                 bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)] = up;
             }
@@ -275,7 +276,7 @@ namespace vaultdb {
                 BufferPoolManager::PageId pid = bgm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
                 BufferPoolManager::UnpackedPage up = bgm_->getUnpackedPage(pid);
 
-                up.timestamp_ = high_resolution_clock::now();
+                up.access_counters_++;
                 bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)] = up;
 
                 return up.page_payload_[row % fields_per_wire_.at(-1)];
@@ -292,7 +293,7 @@ namespace vaultdb {
                 BufferPoolManager::UnpackedPage up = bgm_->getUnpackedPage(pid);
 
                 up.page_payload_[row % fields_per_wire_.at(-1)] = val;
-                up.timestamp_ = high_resolution_clock::now();
+                up.access_counters_++;
 
                 bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)] = up;
 
