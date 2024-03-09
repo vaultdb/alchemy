@@ -1,0 +1,40 @@
+{
+  "outputTable": "A1",
+  "dstFile": "pilot/output/phame_cohort_counts",
+  "rels": [
+    {
+      "id": "0",
+      "relOp": "TableScan",
+      "table": "phame_cohort_counts",
+      "outputFields": "(desc:varchar(42) (#0), count:int64 (#1), site_id:int32 (#2))",
+      "notes": "this operator relies on an earlier phase where we load up these unioned tables into a shared system catalog.  This will just grab an existing QueryTable and create a leaf operator for it.  Schema already embedded in a previous step, outputFields is just a comment."
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalAggregate",
+      "outputFields": "desc:varchar(42) (#0), summed_cnt:int64 (#1)",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "group": [0],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "INTEGER",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            1
+          ],
+          "name": "summed_cnt"
+        }
+      ]
+    }
+  ]
+}
