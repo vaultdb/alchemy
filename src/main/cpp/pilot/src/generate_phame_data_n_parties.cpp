@@ -25,24 +25,6 @@ std::string GeneratePhameDataNParties::getCurrentWorkingDirectory() {
 
 
 
-PatientTuple GeneratePhameDataNParties::generatePatientTuple(const int & a_patid, const int & site_id) {
-    PatientTuple result;
-    result.patid = a_patid;
-    result.site_id = site_id;
-    result.age_cat = generateRandomValue<char>(domains::age_cat_);
-    result.gender =  generateRandomValue<char>(domains::gender_);
-    result.ethnicity = generateRandomValue<char>(domains::ethnicity_);
-    result.race = generateRandomValue<char>(domains::race_);
-    result.zip = generateRandomValue<string>(domains::zip_codes_);
-    result.payer_primary = generateRandomValue<char>(domains::payer_codes_);
-    result.payer_secondary = generateRandomValue<char>(domains::payer_codes_);
-    // make the two payer codes different
-    while(result.payer_primary == result.payer_secondary) {
-        result.payer_secondary = generateRandomValue<char>(domains::payer_codes_);
-    }
-    return result;
-
-}
 
 
 
@@ -76,7 +58,7 @@ int main(int argc, char **argv) {
         std::ofstream pat_file, dx_file;
         string pat_filename = party_path + "/phame_demographic.csv";
         string dx_filename = party_path + "/phame_diagnosis.csv";
-        cout << "Writing to " << pat_filename << " and " << dx_filename << "\n";
+        cout << "Writing to " << pat_filename << "\n   and " << dx_filename << "\n";
         pat_file.open(pat_filename, ios::out);
         dx_file.open(dx_filename, ios::out);
 

@@ -36,17 +36,6 @@ namespace domains {
 
 // Table B1 in the protocol
 
-// CREATE TABLE phame_demographic (
-//    patid int,
-//    age char(1), -- [18, 100], roughly grouped into decades in protocol
-//    gender char(1),
-//    race char(1),
-//    ethnicity char(1),
-//    zip char(5),
-//  payer_primary char(1),
-// payer_secondary char(1),
-//    site_id int); -- alice = 1, bob = 2, chi = 3
-
 struct PatientTuple {
     // (patid, site_id) is composite primary key
     int patid = -1;
@@ -60,15 +49,9 @@ struct PatientTuple {
    int site_id;
 
     string toString() const {
-        return std::to_string(patid) + ","
-               + std::to_string(age_cat) + ","
-               + gender + ","
-               + ethnicity + ","
-               + race + ","
-               + zip + ","
-               + payer_primary + ","
-               + payer_secondary + ","
-      + std::to_string(site_id);
+        std::stringstream s;
+        s << patid << "," << age_cat << "," << gender << "," << ethnicity << "," << race << "," << zip << "," << payer_primary << "," << payer_secondary << "," << site_id;
+        return s.str();
     }
 
     static string getSchema()  {
@@ -87,16 +70,17 @@ struct DxTuple {
     bool dx_lung_cancer;
     bool dx_colorectal_cancer;
     bool dx_cervical_cancer;
-
+    int site_id = -1;
 
     string toString() const {
         std::stringstream s;
-        s << patid << "," << dx_diabetes << "," << dx_hypertension << "," << dx_breast_cancer << "," << dx_lung_cancer << "," << dx_colorectal_cancer << "," << dx_cervical_cancer;
+        s << patid << "," << dx_diabetes << "," << dx_hypertension << "," << dx_breast_cancer << "," << dx_lung_cancer << "," << dx_colorectal_cancer << "," << dx_cervical_cancer
+<< ","        << site_id;
         return s.str();
     }
 
     static string getSchema()  {
-        return "(patid:int32, dx_diabetes:bool, dx_hypertension:bool, dx_cervical_cancer:bool, dx_breast_cancer:bool, dx_lung_cancer:bool, dx_colorectal_cancer:bool)";
+        return "(patid:int32, dx_diabetes:bool, dx_hypertension:bool, dx_cervical_cancer:bool, dx_breast_cancer:bool, dx_lung_cancer:bool, dx_colorectal_cancer:bool, site_id:int32)";
     }
 
 };
@@ -111,11 +95,29 @@ public:
     static float generateRandomFloat(float min, float max) {
         return min +  drand48() * (max - min); /* [0, 1.0] */
     }
-    static PatientTuple generatePatientTuple(const int & a_patid, const int & site_id);
+    static PatientTuple generatePatientTuple(const int & a_patid, const int & site_id) {
+        PatientTuple result;
+        result.patid = a_patid;
+        result.site_id = site_id;
+        result.age_cat = generateRandomValue<char>(domains::age_cat_);
+        result.gender =  generateRandomValue<char>(domains::gender_);
+        result.ethnicity = generateRandomValue<char>(domains::ethnicity_);
+        result.race = generateRandomValue<char>(domains::race_);
+        result.zip = generateRandomValue<string>(domains::zip_codes_);
+        result.payer_primary = generateRandomValue<char>(domains::payer_codes_);
+        result.payer_secondary = generateRandomValue<char>(domains::payer_codes_);
+        // make the two payer codes different
+        while(result.payer_primary == result.payer_secondary) {
+            result.payer_secondary = generateRandomValue<char>(domains::payer_codes_);
+        }
+        return result;
+
+    }
 
     static DxTuple generateDxTuple(const PatientTuple & patient) {
         DxTuple dxTuple;
         dxTuple.patid = patient.patid;
+        dxTuple.site_id = patient.site_id;
         dxTuple.dx_diabetes = generateDxValue();
         dxTuple.dx_hypertension = generateDxValue();
         dxTuple.dx_breast_cancer = generateDxValue();
