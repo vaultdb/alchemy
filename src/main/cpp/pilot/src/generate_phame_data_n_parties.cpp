@@ -49,7 +49,7 @@ PatientTuple GeneratePhameDataNParties::generatePatientTuple(const int & a_patid
 int main(int argc, char **argv) {
     // usage: generate_phame_data_n_parties <target dir> <party count> <tuple count>
     // target path is relative to $VAULTDB_ROOT/src/main/cpp
-    // e.g.,  ./bin/generate_phame_data_three_parties pilot/test/input/phame 4 100
+    // e.g.,  ./bin/generate_phame_data_n_parties pilot/test/input/phame 4 100
 
     // each party has <tuple count> tuples
     if(argc < 4) {

@@ -1,5 +1,7 @@
 #include "type_utilities.h"
 
+using namespace vaultdb;
+
 template<>
 FieldType TypeUtilities::getBoolType<bool>() {
     return FieldType::BOOL;
