@@ -23,12 +23,14 @@ namespace vaultdb {
             PageId pid_;
             vector<emp::Bit> page_payload_;
             int access_counters_; // for LRU
+            bool pined = false;
         } UnpackedPage;
 
         typedef struct packd_page_ {
             PageId pid_;
             emp::OMPCPackedWire page_payload_;
-            time_point<high_resolution_clock> timestamp_; // for LRU
+            int access_counters_; // for LRU
+            bool pined = false;
         } PackedPage;
 
         BufferPoolManager() {};
@@ -116,12 +118,14 @@ namespace vaultdb {
             PageId pid_;
             vector<emp::Bit> page_payload_;
             int access_counters_; // for LRU
+            bool pined = false;
         } UnpackedPage;
 
         typedef struct packd_page_ {
             PageId pid_;
             emp::OMPCPackedWire page_payload_;
             int access_counters_; // for LRU
+            bool pined = false;
         } PackedPage;
 
         BufferPoolManager() {};
@@ -171,6 +175,9 @@ namespace vaultdb {
                 int least_counters = INT_MAX;
                 string oldest_key;
                 for (auto &[key, page]: unpacked_page_buffer_pool_) {
+                    if(page.pined) {
+                        continue;
+                    }
                     if (page.access_counters_ < least_counters) {
                         least_counters = page.access_counters_;
                         oldest_key = key;
@@ -207,6 +214,7 @@ namespace vaultdb {
                 up.pid_ = page_id;
                 up.page_payload_ = std::vector<emp::Bit>(unpacked_page_size_, emp::Bit(0));
                 up.access_counters_ = 0;
+                unpacked_page_buffer_pool_[getPageIdKey(up.pid_)] = up;
 
                 return up;
             }
@@ -233,6 +241,7 @@ namespace vaultdb {
                 unpacked_page.page_payload_ = std::vector<emp::Bit>(unpacked_page_size_, emp::Bit(0));
                 emp_manager_->unpack((Bit *) &packed_page.page_payload_, unpacked_page.page_payload_.data(), unpacked_page_size_);
                 unpacked_page.access_counters_ = 0;
+                unpacked_page_buffer_pool_[getPageIdKey(unpacked_page.pid_)] = unpacked_page;
 
                 return unpacked_page;
             }
