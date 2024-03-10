@@ -57,7 +57,7 @@ SecureField Field<B>::secret_share_send(const PlainField &src, const QueryFieldD
 template<typename B>
 SecureField
 Field<B>::secret_share_recv(const QueryFieldDesc &field_desc, const int &src_party) {
-    assert(TypeUtilities::isEncrypted(field_desc.getType()));
+    assert(TypeUtilities::isSecretShared(field_desc.getType()));
 
     FieldType plain_type = TypeUtilities::toPlain(field_desc.getType());
 

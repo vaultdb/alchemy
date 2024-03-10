@@ -23,6 +23,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <gflags/gflags.h>
+#include "system_configuration.h"
 
 
 namespace vaultdb {
@@ -193,7 +194,7 @@ namespace vaultdb {
         }
 
         static string getTestParameters() {
-            stringstream  output;
+            std::stringstream  output;
             string code_version = Utilities::runCommand("git rev-parse HEAD");
             if(code_version[code_version.size()-1] != '\n') code_version += "\n";
 

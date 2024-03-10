@@ -45,7 +45,7 @@ void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & sr
         case AggregateId::AVG:
             throw; // should use specialized UnsortedAvgImpl for this
         case AggregateId::COUNT:
-            one = (TypeUtilities::isEncrypted(this->field_type_)) ? Field<B>(this->field_type_, Integer(this->bit_packed_size_, 1)) : Field<B>(this->field_type_, (int64_t) 1);
+            one = (TypeUtilities::isSecretShared(this->field_type_)) ? Field<B>(this->field_type_, Integer(this->bit_packed_size_, 1)) : Field<B>(this->field_type_, (int64_t) 1);
             accumulated = Field<B>::If(to_initialize, one, output_field);
             accumulated = Field<B>::If(to_accumulate, accumulated + one, accumulated);
             break;

@@ -5,10 +5,11 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <sstream>
 #include <variant>
 #include <vector>
 #include <ostream>
-#include <util/type_utilities.h>
+#include "util/type_utilities.h"
 
 
 namespace  vaultdb {
@@ -51,7 +52,7 @@ namespace  vaultdb {
         // example:
         // (id:INT64,name:STRING,age:INT64,weight:FLOAT64,is_active:BOOL,last_updated:TIMESTAMP)
         inline string prettyPrint() const {
-            stringstream s;
+            std::stringstream s;
 
             s << "(";
             if(getFieldCount() > 0) {
@@ -68,7 +69,8 @@ namespace  vaultdb {
         inline size_t size() const { return tuple_size_bits_; }
 
         inline bool   isSecure() const {
-            return (fields_.at(0).getType() == TypeUtilities::toSecure(fields_.at(0).getType())); }
+            return TypeUtilities::isSecretShared(fields_.at(0).getType());
+        }
 
         QueryFieldDesc getField(const int &i) const {     return fields_.at(i);  }
 

@@ -78,8 +78,10 @@ namespace vaultdb{
         inline void flush() const {
             if(emp_manager_ != nullptr) emp_manager_->flush();
         }
+
         ~SystemConfiguration() {
             if(emp_manager_ != nullptr) delete emp_manager_;
+            if(bpm_ != nullptr) delete bpm_;
         }
 
 

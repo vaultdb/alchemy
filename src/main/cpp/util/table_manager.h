@@ -11,6 +11,12 @@
 namespace vaultdb {
     class TableManager {
     public:
+        // for instance
+        static TableManager& getInstance() {
+            static TableManager  instance;
+            return instance;
+        }
+
         map<string, SecureTable *> secure_tables_;
         map<string, PlainTable *>  plain_tables_;
 
@@ -28,6 +34,15 @@ namespace vaultdb {
             if(std::is_same_v<B, bool>) return plain_tables_[table_name];
             else return secure_tables_[table_name];
         }
+
+        template<typename B> void putTable(const string & table_name, QueryTable<B> *table) {
+            if(std::is_same_v<B, bool>) plain_tables_[table_name] = (PlainTable *) table;
+            else secure_tables_[table_name] = (SecureTable *) table;
+        }
+
+    private:
+        TableManager() {}
+
 
     };
 }

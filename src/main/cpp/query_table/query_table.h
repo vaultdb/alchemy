@@ -9,6 +9,7 @@
 #include "util/utilities.h"
 #include "plain_tuple.h"
 #include "util/data_utilities.h"
+#include "util/system_configuration.h"
 
 namespace  vaultdb {
 
