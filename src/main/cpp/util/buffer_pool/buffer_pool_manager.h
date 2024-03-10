@@ -22,7 +22,7 @@ namespace vaultdb {
         typedef struct unpackd_page_ {
             PageId pid_;
             vector<emp::Bit> page_payload_;
-            time_point<high_resolution_clock> timestamp_; // for LRU
+            int access_counters_; // for LRU
         } UnpackedPage;
 
         typedef struct packd_page_ {
