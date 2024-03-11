@@ -11,12 +11,14 @@ using namespace vaultdb;
 namespace catalyst {
     class Catalyst {
     public:
-        Catalyst(const std::string json_config_filename) : json_config_filename_(json_config_filename) {
+        Catalyst(const std::string json_config_filename)  {
 
+            StudyParser study_parser(json_config_filename);
+            study_ = study_parser.study_;
         }
 
     private:
-        string json_config_filename_;
+        CatalystStudy<Bit> study_;
     };
 }
 #endif

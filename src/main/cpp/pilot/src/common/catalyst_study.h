@@ -21,7 +21,8 @@ namespace catalyst {
 
 
         string study_name_;
-        map<int, Operator<B> *> queries_;
+        // query name, root operator in tree
+        map<string, Operator<B> *> queries_;
         vector<InputTable> input_tables_;
         string db_name_; // psql DB name
         // all paths  relative to $VAULTDB_HOME/src/main/cpp

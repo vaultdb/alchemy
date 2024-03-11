@@ -112,11 +112,12 @@ Example JSON:
 ```json
 {
   "name": "phame",
-  "root": "/home/vaultdb/vaultdb-core/src/main/cpp/pilot/test/input/phame",
+  "secret_shares_root": "pilot/secret_shares/output",
   "db": "phame",
-  "tables": {
-    "phame_cohort_counts": {
-      "schema": "(desc:varchar(42), count:int64, site_id:int32)",
+  "tables": [
+    {
+      "name": "phame_cohort_counts",
+      "schema": "(description:varchar(42), count:int64, site_id:int32)",
       "input_parties": [
         "0",
         "1",
@@ -124,21 +125,24 @@ Example JSON:
         "3"
       ]
     },
-    "phame_demographic": {
+    {
+      "name": "phame_demographic",
       "schema": "(patid:int32, age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1))",
       "input_parties": [
         "0",
         "1"
       ]
     },
-    "phame_diagnosis": {
+    {
+      "name": "phame_diagnosis",
       "schema": "(patid:int32, dx_diabetes:bool, dx_hypertension:bool, dx_cervical_cancer:bool, dx_breast_cancer:bool, dx_lung_cancer:bool, dx_colorectal_cancer:bool)",
       "input_parties": [
         "0",
         "1"
       ]
     },
-    "phame_diagnosis_rollup": {
+    {
+      "name": "phame_diagnosis_rollup",
       "schema": "(age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64)",
       "input_parties": [
         "0",
@@ -147,15 +151,16 @@ Example JSON:
         "3"
       ]
     }
-  },
- "queries": {
-   "query_path": "/home/vaultdb/vaultdb-core/src/main/cpp/pilot/plans",
-   "dst_path": "/home/vaultdb/vaultdb-core/src/main/cpp/pilot/output",
-   "queries": [
-     "phame_cohort_counts",
-     "phame_diagnosis_rollup"
-   ]
- }
+  ],
+  "queries": {
+    "note": "all paths are relative to $VAULTDB_ROOT/src/main/cpp",
+    "query_path": "pilot/study/phame/plans",
+    "dst_path": "pilot/results/phame",
+    "names": [
+      "phame_cohort_counts",
+      "phame_diagnosis_rollup"
+    ]
+  }
 }
 ```
 

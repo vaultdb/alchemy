@@ -5,7 +5,7 @@
   "tables": [
      {
        "name": "phame_cohort_counts",
-       "schema": "(desc:varchar(42), count:int64, site_id:int32)",
+       "schema": "(description:varchar(42), count:int64, site_id:int32)",
        "input_parties": [
         "0",
         "1",
@@ -41,8 +41,9 @@
     }
   ],
  "queries": {
-   "query_path": "/home/vaultdb/vaultdb-core/src/main/cpp/pilot/study/phame/plans",
-   "dst_path": "/home/vaultdb/vaultdb-core/src/main/cpp/pilot/results/phame",
+   "note": "all paths are relative to $VAULTDB_ROOT/src/main/cpp",
+   "query_path": "pilot/study/phame/plans",
+   "dst_path": "pilot/results/phame",
    "names": [
      "phame_cohort_counts",
      "phame_diagnosis_rollup"

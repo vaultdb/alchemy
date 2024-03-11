@@ -1,5 +1,6 @@
 #include "study_parser.h"
 #include <boost/property_tree/json_parser.hpp>
+#include "parser/plan_parser.h"
 
 using namespace catalyst;
 using namespace vaultdb;
@@ -45,13 +46,19 @@ StudyParser::StudyParser(const std::string plan_filename) {
 
 
     // parse the queries
-    for (auto &query : pt.get_child("queries")) {
-        study_.query_path_ = query.second.get<std::string>("query_path");
-        study_.dst_path_ = query.second.get<std::string>("dst_path");
-        for(auto &query_file : query.second.get_child("names")) {
-            cout << "Parsed query " << query_file.second.get_value<string>() << endl;
-            // TODO: concat with path and ".json" suffix to get file
-            // pass file into plan parser
+    study_.query_path_ = pt.get_child("queries").get<std::string>("query_path");
+    study_.dst_path_ = pt.get_child("queries").get<std::string>("dst_path");
+    for(auto &query_file : pt.get_child("queries").get_child("names")) {
+        string query_name = query_file.second.get_value<string>();
+        string fq_json_filename =  study_.query_path_ + "/" + query_name + ".json";
+        if(fq_json_filename[0] != '/') {
+            fq_json_filename = Utilities::getCurrentWorkingDirectory() + "/" + fq_json_filename;
         }
-    }
+
+        cout << "Parsing query " << fq_json_filename << endl;
+        study_.queries_[query_name] = PlanParser<Bit>::parse(study_.db_name_, fq_json_filename);
+        cout << "Received: " << study_.queries_[query_name]->toString() << endl;
+
+        }
+
 }

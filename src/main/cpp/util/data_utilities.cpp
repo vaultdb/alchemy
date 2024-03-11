@@ -197,6 +197,12 @@ size_t DataUtilities::getTupleCount(const string &db_name, const string &sql, bo
 }
 
 vector<string> DataUtilities::readTextFile(const string &filename) {
+    if(filename[0] != '/') { // relative path
+        string cwd = Utilities::getCurrentWorkingDirectory();
+        string full_path = cwd + "/" + filename;
+        return readTextFile(full_path);
+    }
+
     std::vector<std::string> lines;
     std::ifstream input(filename);
     std::string line;
@@ -218,6 +224,12 @@ vector<string> DataUtilities::readTextFile(const string &filename) {
 }
 
 string DataUtilities::readTextFileToString(const string & filename) {
+    if(filename[0] != '/') { // relative path
+        string cwd = Utilities::getCurrentWorkingDirectory();
+        string full_path = cwd + "/" + filename;
+        return readTextFileToString(full_path);
+    }
+
     ifstream input_file(filename);
 
     if(!input_file.is_open())
