@@ -69,6 +69,56 @@ FROM (            ------------<------------      Specify Site Name
     SELECT 'Male - Age betwn >70' as Attribute, COUNT(DISTINCT patid) n, site_id  FROM phame_demographic WHERE gender = 'M' AND AGE_CAT = '6'  GROUP BY site_id
     ) a;
 
--- Next up:
--- configure sites 1 and 3 to be row-only
--- 2 and 4 are aggregate-only
+\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 0) TO 'pilot/test/input/0/phame_cohort_counts.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 1) TO 'pilot/test/input/1/phame_cohort_counts.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 2) TO 'pilot/test/input/2/phame_cohort_counts.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 3) TO 'pilot/test/input/3/phame_cohort_counts.csv' WITH DELIMITER ',';
+
+
+-- site-at-a-time rollup
+CREATE OR REPLACE FUNCTION rollup_query (sid INT)
+    RETURNS TABLE (
+                      age_cat char(1),
+                     gender char(1),
+        race char(1),
+        ethnicity char(1),
+        zip char(5),
+        payer_primary char(1),
+        payer_secondary char(1),
+        patient_cnt bigint,
+        diabetes_cnt bigint,
+        hypertension_cnt bigint,
+        cervical_cancer_cnt bigint,
+        breast_cancer_cnt bigint,
+        lung_cancer_cnt bigint,
+        colorectal_cancer_cnt bigint)
+AS $$
+BEGIN
+    RETURN QUERY
+        SELECT demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary, COUNT(demo.patid) patient_cnt, COUNT(dx_diabetes) diabetes_cnt, COUNT(dx_hypertension) hypertension_cnt, COUNT(dx_cervical_cancer) cervical_cancer_cnt, COUNT(dx_breast_cancer) breast_cancer_cnt, COUNT(dx_lung_cancer) lung_cancer_cnt, COUNT(dx_colorectal_cancer) colorectal_cancer_cnt
+        FROM phame_demographic demo LEFT JOIN phame_diagnosis pd on demo.patid = pd.patid
+        WHERE demo.site_id = sid AND pd.site_id = sid
+        GROUP BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary
+        ORDER BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary;
+END; $$
+
+    LANGUAGE 'plpgsql';
+
+-- write each one out to a file
+\copy (SELECT * FROM rollup_query(0)) TO 'pilot/test/input/0/phame_demographic_rollup.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM rollup_query(1)) TO 'pilot/test/input/1/phame_demographic_rollup.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM rollup_query(2)) TO 'pilot/test/input/2/phame_demographic_rollup.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM rollup_query(3)) TO 'pilot/test/input/3/phame_demographic_rollup.csv' WITH DELIMITER ',';
+
+
+-- sites 1 and 3 are row contributors in our test
+-- output their phame_demo and phame_diagnosis tables without site_id to reflect the setup in their SQL calls
+
+
+\copy (SELECT patid, age_cat, gender, ethnicity, race, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 1) TO 'pilot/test/input/1/phame_demographic.csv' WITH DELIMITER ',';
+
+\copy (SELECT patid, patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 1) TO 'pilot/test/input/1/phame_diagnosis.csv' WITH DELIMITER ',';
+
+\copy (SELECT patid, age_cat, gender, ethnicity, race, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 3) TO 'pilot/test/input/3/phame_demographic.csv' WITH DELIMITER ',';
+
+\copy (SELECT patid, patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 3) TO 'pilot/test/input/3/phame_diagnosis.csv' WITH DELIMITER ',';
