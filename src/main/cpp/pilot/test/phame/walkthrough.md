@@ -112,6 +112,10 @@ Example JSON:
 ```json
 {
   "name": "phame",
+  "protocol": "sh2pc",
+  "alice_host":  "127.0.0.1",
+  "port": "65432",
+  "note": "all paths are relative to $VAULTDB_ROOT/src/main/cpp",
   "secret_shares_root": "pilot/secret_shares/output",
   "db": "phame",
   "tables": [
@@ -129,16 +133,16 @@ Example JSON:
       "name": "phame_demographic",
       "schema": "(patid:int32, age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1))",
       "input_parties": [
-        "0",
-        "1"
+        "1",
+        "3"
       ]
     },
     {
       "name": "phame_diagnosis",
       "schema": "(patid:int32, dx_diabetes:bool, dx_hypertension:bool, dx_cervical_cancer:bool, dx_breast_cancer:bool, dx_lung_cancer:bool, dx_colorectal_cancer:bool)",
       "input_parties": [
-        "0",
-        "1"
+        "1",
+        "3"
       ]
     },
     {
@@ -153,7 +157,6 @@ Example JSON:
     }
   ],
   "queries": {
-    "note": "all paths are relative to $VAULTDB_ROOT/src/main/cpp",
     "query_path": "pilot/study/phame/plans",
     "dst_path": "pilot/results/phame",
     "names": [

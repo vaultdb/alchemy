@@ -88,6 +88,7 @@ namespace vaultdb {
         Operator<B> *parseProjection(const int &operator_id, const boost::property_tree::ptree &project_tree);
 
         Operator<B> *parseSeqScan(const int &operator_id, const boost::property_tree::ptree &seq_scan_tree);
+        Operator<B> *parseTableScan(const int &operator_id, const boost::property_tree::ptree &scan_tree);
 
         Operator<B> *parseShrinkwrap(const int &operator_id, const boost::property_tree::ptree &pt);
         Operator<B> *parseLocalScan(const int & operator_id, const boost::property_tree::ptree &local_scan_tree);

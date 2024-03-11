@@ -12,6 +12,8 @@ size_t OperatorCostModel::operatorCost(const SecureOperator *op) {
            return filterCost((Filter<Bit> *) op);
            case OperatorType::SECURE_SQL_INPUT:
                return secureSqlInputCost((SecureSqlInput *) op);
+           case OperatorType::TABLE_SCAN:
+                   return 0;
           case OperatorType::MERGE_INPUT:
               return mergeInputCost((MergeInput *) op);
             case OperatorType::SORT:

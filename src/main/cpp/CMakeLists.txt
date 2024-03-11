@@ -69,6 +69,7 @@ set(sources
 		util/type_utilities.cpp
 		util/data_utilities.cpp
 		util/field_utilities.cpp
+		util/table_manager.cpp
 		util/logger.cpp
 		util/system_configuration.cpp
 		util/emp_manager/emp_manager.h
@@ -83,6 +84,7 @@ set(sources
 		operators/operator.cpp
 		operators/sql_input.cpp
 		operators/secure_sql_input.cpp
+		operators/table_scan.cpp
 		operators/zk_sql_input.cpp
 		operators/filter.cpp
 		operators/project.cpp

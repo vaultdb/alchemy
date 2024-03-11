@@ -95,11 +95,17 @@ namespace vaultdb {
              if(tuple_cnt == this->tuple_cnt_) return;
 
              this->tuple_cnt_ = tuple_cnt;
-
-
-             for(auto col_entry : this->column_data_) {
-                 this->column_data_[col_entry.first].resize(tuple_cnt * this->field_sizes_bytes_[col_entry.first]);
-             }
+            if(prev_size == 0) {
+                for(int i = 0; i < this->schema_.getFieldCount(); ++i) {
+                    this->column_data_[i] = std::vector<int8_t>(tuple_cnt * this->field_sizes_bytes_[i]);
+                }
+                this->column_data_[-1] = std::vector<int8_t>(tuple_cnt * this->field_sizes_bytes_[-1]);
+            }
+            else { // re-alloc
+                for (auto col_entry: this->column_data_) {
+                    this->column_data_[col_entry.first].resize(tuple_cnt * this->field_sizes_bytes_[col_entry.first]);
+                }
+            }
 
              if(tuple_cnt > prev_size) {
                  // initialize dummy tags to true

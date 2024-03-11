@@ -3,6 +3,7 @@
 
 #include <string>
 #include "common/study_parser.h"
+#include "util/table_manager.h"
 
 using namespace std;
 using namespace vaultdb;
@@ -11,14 +12,19 @@ using namespace vaultdb;
 namespace catalyst {
     class Catalyst {
     public:
-        Catalyst(const std::string json_config_filename)  {
-
-            StudyParser study_parser(json_config_filename);
-            study_ = study_parser.study_;
+        Catalyst(int party, const std::string json_config_filename);
+        ~Catalyst() {
+            if(emp_manager_ != nullptr)
+                delete emp_manager_;
         }
 
     private:
         CatalystStudy<Bit> study_;
+        EmpManager *emp_manager_;
+        TableManager & table_manager_ = TableManager::getInstance();
+
+        void importSecretShares(const string & table_name, const int & src_party);
+
     };
 }
 #endif

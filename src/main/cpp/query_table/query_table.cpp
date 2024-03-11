@@ -24,15 +24,21 @@ vector<int8_t> QueryTable<B>::serialize() const {
 
     int8_t *write_ptr = dst.data();
     int write_size;
+    cout << "Schema: " << schema_ << " size: " << schema_.size() << endl;
+    cout << "Serialize writing:\n";
     for(int i = 0; i < schema_.getFieldCount(); ++i) {
         write_size = field_sizes_bytes_.at(i) * tuple_cnt_;
+        cout << "  " << i << ": " << write_size << " bytes to " << write_ptr - dst.data() << "\n";
         memcpy(write_ptr, column_data_.at(i).data(), write_size);
         write_ptr += write_size;
     }
 
     // dummy tag
+    cout << " -1: " << field_sizes_bytes_.at(-1) * tuple_cnt_ << " bytes to " << write_ptr - dst.data() << "\n";
     write_size =  field_sizes_bytes_.at(-1) * tuple_cnt_;
     memcpy(write_ptr, column_data_.at(-1).data(), write_size);
+    cout << "Wrote " << dst_size << " secret-sharable bytes e2e --> bits: " << dst_size * 8 << endl;
+
     return dst;
 }
 

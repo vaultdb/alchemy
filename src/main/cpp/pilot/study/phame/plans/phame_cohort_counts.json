@@ -3,7 +3,7 @@
   "rels": [
     {
       "id": "0",
-      "relOp": "JdbcTableScan",
+      "relOp": "VaultDBTableScan",
       "table": [
         "phame_cohort_counts"
       ],

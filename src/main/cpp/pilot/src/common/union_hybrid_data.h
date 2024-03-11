@@ -18,8 +18,7 @@ namespace vaultdb {
         static SecureTable *
         readLocalInput(const string &local_input_file, const QuerySchema &src_schema);
 
-        static SecureTable *
-        readSecretSharedInput(const string &secret_shares_input, const QuerySchema &plain_schema);
+        static SecureTable * readSecretSharedInput(const string &secret_shares_input, const QuerySchema &plain_schema);
 
         SecureTable *getInputTable();
 
