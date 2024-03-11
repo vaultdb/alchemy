@@ -1,6 +1,7 @@
 #include "catalyst.h"
 
 
+using namespace catalyst;
 
 int main(int argc, char **argv) {
     // usage: ./bin/catalyst <json config file>
@@ -10,6 +11,12 @@ int main(int argc, char **argv) {
     }
 
     Catalyst catalyst(argv[1]);
+
+    // parse study
+    // stand up TableManager
+    // load tables according to study params
+    // run queries
+    // write out results to secret share files
 
 
 }

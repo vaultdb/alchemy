@@ -2,7 +2,7 @@
 #define _CATALYST_
 
 #include <string>
-#include "src/common/study_parser.h"
+#include "common/study_parser.h"
 
 using namespace std;
 using namespace vaultdb;

@@ -23,7 +23,11 @@ namespace catalyst {
         string study_name_;
         map<int, Operator<B> *> queries_;
         vector<InputTable> input_tables_;
-
+        string db_name_; // psql DB name
+        // all paths  relative to $VAULTDB_HOME/src/main/cpp
+        string secret_shares_root_; // root directory for secret shares,
+        string query_path_; // where JSON files for queries are stored
+        string dst_path_; // where to write secret shares of query output
     };
 }
 #endif
