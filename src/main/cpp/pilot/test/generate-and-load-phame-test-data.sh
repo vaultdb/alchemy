@@ -11,6 +11,11 @@ DB_NAME='phame_unioned'
 
 mkdir -p pilot/test/input
 mkdir -p pilot/test/output
+mkdir -p pilot/secret-shares/input/0
+mkdir pilot/secret-shares/input/1
+mkdir pilot/secret-shares/input/2
+mkdir pilot/secret-shares/input/3
+
 
 make generate_phame_data_n_parties
 ./bin/generate_phame_data_n_parties pilot/test/input $HOST_COUNT $TUPLE_COUNT
@@ -25,9 +30,4 @@ createdb $DB_NAME
 # the format we're getting from SQL statements
 psql $DB_NAME <  pilot/test/phame/load-generated-data.sql
 
-#Remove the generated files for the aggregate-only partners (0, 2)
-rm pilot/test/input/0/phame_demographic.csv
-rm pilot/test/input/0/phame_diagnosis.csv
-rm pilot/test/input/2/phame_demographic.csv
-rm pilot/test/input/2/phame_diagnosis.csv
 

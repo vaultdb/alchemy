@@ -69,10 +69,10 @@ FROM (            ------------<------------      Specify Site Name
     SELECT 'Male - Age betwn >70' as Attribute, COUNT(DISTINCT patid) n, site_id  FROM phame_demographic WHERE gender = 'M' AND AGE_CAT = '6'  GROUP BY site_id
     ) a;
 
-\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 0) TO 'pilot/test/input/0/phame_cohort_counts.csv' WITH DELIMITER ',';
-\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 1) TO 'pilot/test/input/1/phame_cohort_counts.csv' WITH DELIMITER ',';
-\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 2) TO 'pilot/test/input/2/phame_cohort_counts.csv' WITH DELIMITER ',';
-\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 3) TO 'pilot/test/input/3/phame_cohort_counts.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 0) TO 'pilot/secret-shares/input/0/phame_cohort_counts.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 1) TO 'pilot/secret-shares/input/1/phame_cohort_counts.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 2) TO 'pilot/secret-shares/input/2/phame_cohort_counts.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 3) TO 'pilot/secret-shares/input/3/phame_cohort_counts.csv' WITH DELIMITER ',';
 
 
 -- site-at-a-time rollup
@@ -105,10 +105,10 @@ END; $$
     LANGUAGE 'plpgsql';
 
 -- write each one out to a file
-\copy (SELECT * FROM rollup_query(0)) TO 'pilot/test/input/0/phame_demographic_rollup.csv' WITH DELIMITER ',';
-\copy (SELECT * FROM rollup_query(1)) TO 'pilot/test/input/1/phame_demographic_rollup.csv' WITH DELIMITER ',';
-\copy (SELECT * FROM rollup_query(2)) TO 'pilot/test/input/2/phame_demographic_rollup.csv' WITH DELIMITER ',';
-\copy (SELECT * FROM rollup_query(3)) TO 'pilot/test/input/3/phame_demographic_rollup.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM rollup_query(0)) TO 'pilot/secret-shares/input/0/phame_demographic_rollup.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM rollup_query(1)) TO 'pilot/secret-shares/input/1/phame_demographic_rollup.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM rollup_query(2)) TO 'pilot/secret-shares/input/2/phame_demographic_rollup.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM rollup_query(3)) TO 'pilot/secret-shares/input/3/phame_demographic_rollup.csv' WITH DELIMITER ',';
 
 
 -- sites 1 and 3 are row contributors in our test
@@ -117,8 +117,8 @@ END; $$
 
 \copy (SELECT patid, age_cat, gender, ethnicity, race, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 1) TO 'pilot/test/input/1/phame_demographic.csv' WITH DELIMITER ',';
 
-\copy (SELECT patid, patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 1) TO 'pilot/test/input/1/phame_diagnosis.csv' WITH DELIMITER ',';
+\copy (SELECT patid, patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 1) TO 'pilot/secret-shares/input/1/phame_diagnosis.csv' WITH DELIMITER ',';
 
 \copy (SELECT patid, age_cat, gender, ethnicity, race, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 3) TO 'pilot/test/input/3/phame_demographic.csv' WITH DELIMITER ',';
 
-\copy (SELECT patid, patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 3) TO 'pilot/test/input/3/phame_diagnosis.csv' WITH DELIMITER ',';
+\copy (SELECT patid, patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 3) TO 'pilot/secret-shares/input/3/phame_diagnosis.csv' WITH DELIMITER ',';
