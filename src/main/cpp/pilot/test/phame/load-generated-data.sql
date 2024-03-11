@@ -105,20 +105,20 @@ END; $$
     LANGUAGE 'plpgsql';
 
 -- write each one out to a file
-\copy (SELECT * FROM rollup_query(0)) TO 'pilot/secret-shares/input/0/phame_demographic_rollup.csv' WITH DELIMITER ',';
-\copy (SELECT * FROM rollup_query(1)) TO 'pilot/secret-shares/input/1/phame_demographic_rollup.csv' WITH DELIMITER ',';
-\copy (SELECT * FROM rollup_query(2)) TO 'pilot/secret-shares/input/2/phame_demographic_rollup.csv' WITH DELIMITER ',';
-\copy (SELECT * FROM rollup_query(3)) TO 'pilot/secret-shares/input/3/phame_demographic_rollup.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM rollup_query(0)) TO 'pilot/secret-shares/input/0/phame_diagnosis_rollup.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM rollup_query(1)) TO 'pilot/secret-shares/input/1/phame_diagnosis_rollup.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM rollup_query(2)) TO 'pilot/secret-shares/input/2/phame_diagnosis_rollup.csv' WITH DELIMITER ',';
+\copy (SELECT * FROM rollup_query(3)) TO 'pilot/secret-shares/input/3/phame_diagnosis_rollup.csv' WITH DELIMITER ',';
 
 
 -- sites 1 and 3 are row contributors in our test
 -- output their phame_demo and phame_diagnosis tables without site_id to reflect the setup in their SQL calls
 
 
-\copy (SELECT patid, age_cat, gender, ethnicity, race, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 1) TO 'pilot/test/input/1/phame_demographic.csv' WITH DELIMITER ',';
+\copy (SELECT patid, age_cat, gender, ethnicity, race, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 1) TO 'pilot/secret-shares/input/1/phame_demographic.csv' WITH DELIMITER ',';
 
 \copy (SELECT patid, patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 1) TO 'pilot/secret-shares/input/1/phame_diagnosis.csv' WITH DELIMITER ',';
 
-\copy (SELECT patid, age_cat, gender, ethnicity, race, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 3) TO 'pilot/test/input/3/phame_demographic.csv' WITH DELIMITER ',';
+\copy (SELECT patid, age_cat, gender, ethnicity, race, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 3) TO 'pilot/secret-shares/input/3/phame_demographic.csv' WITH DELIMITER ',';
 
 \copy (SELECT patid, patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 3) TO 'pilot/secret-shares/input/3/phame_diagnosis.csv' WITH DELIMITER ',';
