@@ -40,6 +40,11 @@ PlainTable *DataUtilities::getQueryResults(const std::string &db_name, const std
     return dataProvider.getQueryTable(db_name, sql, has_dummy_tag);
 }
 
+void DataUtilities::runQueryNoOutput(const std::string &db_name, const std::string &sql) {
+    PsqlDataProvider data_provider;
+    data_provider.runQuery(db_name, sql);
+}
+
 std::string DataUtilities::queryDatetime(const string &colName) {
     return "CAST(EXTRACT(epoch FROM " + colName + ") AS BIGINT) " + colName; // last colName for aliasing
 }

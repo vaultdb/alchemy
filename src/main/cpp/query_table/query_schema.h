@@ -103,6 +103,16 @@ namespace  vaultdb {
             tuple_size_bits_ = 0;
         }
 
+        // put the schema in a format that can be used to create a table in a database
+        string createTableStatement(const string & name) const {
+            string res = "CREATE TABLE " + name + " (";
+            for(int i = 0; i < getFieldCount(); ++i) {
+                res += fields_.at(i).createTableStatement();
+                if(i < getFieldCount() - 1) res += ", ";
+            }
+            res += ")";
+            return res;
+        }
 
         ~QuerySchema() {
             reset();

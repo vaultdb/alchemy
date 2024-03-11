@@ -50,6 +50,24 @@ PlainTable *PsqlDataProvider::getQueryTable(std::string db_name, std::string sql
     return dst_table;
 }
 
+void PsqlDataProvider::runQuery(std::string db_name, std::string sql) {
+    db_name_ = db_name;
+    pqxx::result res;
+    pqxx::connection conn("user=vaultdb dbname=" + db_name);
+
+    try {
+        pqxx::work txn(conn);
+        res = txn.exec(sql);
+        txn.commit();
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+
+        throw e;
+    }
+
+    conn.close();
+}
+
 QuerySchema PsqlDataProvider::getSchema(pqxx::result input, bool has_dummy_tag) {
     pqxx::row first_row = *(input.begin());
     size_t col_cnt = first_row.size();

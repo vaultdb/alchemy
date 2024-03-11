@@ -88,6 +88,39 @@ namespace  vaultdb {
         inline int getBitPackedSize() const { return bit_packed_size_; }
         int packedWires() const { return packed_wires_; }
 
+        string createTableStatement() const {
+            string res = field_name_ + " ";
+            switch(type_) {
+                case FieldType::INT:
+                case FieldType::SECURE_INT:
+                    res += "INT";
+                    break;
+                case FieldType::LONG:
+                case FieldType::DATE:
+                case FieldType::SECURE_LONG:
+                    res += "BIGINT";
+                    break;
+                case FieldType::FLOAT:
+                case FieldType::SECURE_FLOAT:
+                    res += "FLOAT";
+                    break;
+                case FieldType::BOOL:
+                case FieldType::SECURE_BOOL:
+                    res += "BOOL";
+                    break;
+                case FieldType::STRING:
+                case FieldType::SECURE_STRING:
+                    res += "CHAR(" + std::to_string(string_length_) + ")";
+                    break;
+
+                default:
+                    throw std::runtime_error("Invalid field type");
+            }
+
+            return res;
+
+        }
+
     private:
         void initializeFieldSize();
 

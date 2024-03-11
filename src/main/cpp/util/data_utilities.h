@@ -37,6 +37,7 @@ namespace vaultdb {
         static PlainTable *getExpectedResults(const string &db_name, const string &sql, const bool &hasDummyTag,
                                               const int &sortColCount);
 
+        static void runQueryNoOutput(const std::string &db_name, const std::string &sql);
 
         static std::string queryDatetime(const std::string &colName); // transform a column into an int64 for our expected output
 
