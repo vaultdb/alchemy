@@ -22,6 +22,7 @@
 #include <parser/expression_parser.h>
 #include <operators/shrinkwrap.h>
 #include <operators/table_scan.h>
+#include <operators/union.h>
 
 #include <util/logger.h>
 #include <regex>
@@ -177,6 +178,7 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
     if(op_name == "LogicalFilter")  op = parseFilter(operator_id, tree);
     if(op_name == "JdbcTableScan")  op = parseSeqScan(operator_id, tree);
     if(op_name == "VaultDBTableScan")  op = parseTableScan(operator_id, tree);
+    if(op_name == "LogicalUnion") op = parseUnion(operator_id, tree);
     if(op_name == "ShrinkWrap")  op = parseShrinkwrap(operator_id, tree);
     if(op_name == "LogicalValues") {
         if (json_only_) {
@@ -795,11 +797,14 @@ Operator<B> *PlanParser<B>::parseSeqScan(const int & operator_id, const boost::p
 
 template<typename B>
 Operator<B> *PlanParser<B>::parseTableScan(const int & operator_id, const boost::property_tree::ptree &seq_scan_tree) {
+    string table_name;
 
-    ptree::const_iterator table_name_start = seq_scan_tree.get_child("table.").begin();
-    string table_name = table_name_start->second.get_value<std::string>();
-    // TODO: consider adding tuple limit to this operator
-    return new TableScan<B>(table_name);
+    if(seq_scan_tree.count("table") > 0)
+        table_name = seq_scan_tree.get_child("table").template get_value<string>();
+
+    assert(table_name != "");
+
+    return new TableScan<B>(table_name, input_limit_);
 }
 
 template<typename B>
@@ -900,6 +905,22 @@ Operator<B> *PlanParser<B>::parseShrinkwrap(const int & operator_id, const boost
 
 
 
+template<typename B>
+Operator<B> *PlanParser<B>::parseUnion(const int &operator_id, const ptree &union_tree) {
+
+    ptree input_list = union_tree.get_child("inputs.");
+    ptree::const_iterator it = input_list.begin();
+    int lhs_id = it->second.get_value<int>();
+    Operator<B> *lhs  = operators_.at(lhs_id);
+    ++it;
+    int rhs_id = it->second.get_value<int>();
+    Operator<B> *rhs  = operators_.at(rhs_id);
+
+    assert(lhs->getOutputSchema() == rhs->getOutputSchema());
+    return new Union<B>(lhs, rhs);
+
+}
+
 
 // *** Utilities ***
 
@@ -923,19 +944,6 @@ Operator<B> *PlanParser<B>::getChildOperator(const int &my_operator_id, const bo
 }
 
 
-
-
-
-
-
-template<typename B>
-const std::string PlanParser<B>::truncateInput(const std::string sql) const {
-    std::string query = sql;
-    if(input_limit_ > 0) {
-        query = "SELECT * FROM (" + sql + ") input LIMIT " + std::to_string(input_limit_);
-    }
-    return query;
-}
 
 // examples (from TPC-H Q1, Q3):
 // 0, collation: (0 ASC, 1 ASC)
