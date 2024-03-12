@@ -73,7 +73,12 @@ namespace vaultdb {
             }
 
             SecureTable *dst = getTable<Bit>(table_name);
+
             assert(dst->getSchema() == src->getSchema());
+            if(dst->empty()) {
+                putTable(table_name, src);
+            }
+
             auto dst_tuple_cnt = dst->tuple_cnt_;
             int new_table_len = dst_tuple_cnt + src->tuple_cnt_;
             dst->resize(new_table_len);
@@ -93,12 +98,11 @@ namespace vaultdb {
                 return;
             }
 
-            PlainTable *dst = nullptr;
-            if(plain_tables_.find(table_name) != plain_tables_.end())  dst = plain_tables_[table_name];
-            else if(schemas_.find(table_name) != schemas_.end()) dst =  QueryTable<bool>::getTable(0, schemas_[table_name]);
-
+            PlainTable *dst = getTable<bool>(table_name);
             assert(dst->getSchema() == src->getSchema());
-
+            if(dst->empty()) {
+                putTable(table_name, src);
+            }
             auto dst_tuple_cnt = dst->tuple_cnt_;
             int new_table_len = dst_tuple_cnt + src->tuple_cnt_;
             dst->resize(new_table_len);
