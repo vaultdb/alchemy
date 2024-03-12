@@ -71,7 +71,7 @@ QueryTable<B> *Operator<B>::run() {
         if (gate_cnt_ > 0  && this->getOperatorId() >= -1) {
             size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
             float relative_error = std::fabs(((float) estimated_gates) - ((float) gate_cnt_)) / (float) gate_cnt_ * 100.0;
-            log->write("Estimated cost for" + this->toString() + " : " + std::to_string(estimated_gates) +
+            log->write("Estimated cost for " + this->toString() + " : " + std::to_string(estimated_gates) +
                     ", Observed gates: " + std::to_string(gate_cnt_) +
                     ", Error rate(%) : " + std::to_string(relative_error) + "\n", Level::INFO);
         }
