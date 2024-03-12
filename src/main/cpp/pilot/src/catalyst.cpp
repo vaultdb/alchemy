@@ -37,6 +37,11 @@ void Catalyst::runQueries() {
     // write out results to secret share files
     assert(data_loaded_);
     string dst_dir = study_.dst_path_;
+    if(dst_dir[0] != '/') {
+        dst_dir = Utilities::getCurrentWorkingDirectory() + "/" + dst_dir;
+    }
+    Utilities::mkdir(dst_dir);
+
     SystemConfiguration & s = SystemConfiguration::getInstance();
 
     for(auto &query : study_.queries_) {
