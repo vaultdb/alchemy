@@ -23,7 +23,6 @@ StudyParser::StudyParser(const std::string plan_filename) {
 
     // parse the study name
     study_.study_name_ = pt.get<std::string>("name");
-    study_.db_name_ = pt.get<std::string>("db");
     study_.secret_shares_root_ = pt.get<std::string>("secret_shares_root");
 
     if(study_.secret_shares_root_[0] != '/') {
@@ -52,7 +51,7 @@ StudyParser::StudyParser(const std::string plan_filename) {
         // set up the schema in psql backend for use in parsing queries
 //        string create_table_statement = input_table.schema_.createTableStatement(input_table.name_);
 //        DataUtilities::runQueryNoOutput(study_.db_name_, create_table_statement);
-        table_manager.addEmptyTable<Bit>(input_table.name_, input_table.schema_);
+        table_manager.addEmptyTable(input_table.name_, input_table.schema_);
     }
 
 
@@ -68,9 +67,8 @@ StudyParser::StudyParser(const std::string plan_filename) {
         // need to delay query parsing until EMP manager set up in case of local secret sharing
         // since port and host info are stored in JSON, we need to parse JSON to set up EMPManager
         query_files_[query_name] = fq_json_filename;
-//        cout << "Parsing query " << fq_json_filename << endl;
-//        study_.queries_[query_name] = PlanParser<Bit>::parse(study_.db_name_, fq_json_filename);
-
-        }
+        cout << "Parsing query " << fq_json_filename << endl;
+        study_.queries_[query_name] = PlanParser<Bit>::parse("", fq_json_filename);
+    }
 
 }

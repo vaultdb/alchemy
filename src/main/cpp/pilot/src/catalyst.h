@@ -13,14 +13,10 @@ namespace catalyst {
     class Catalyst {
     public:
         Catalyst(int party, const std::string json_config_filename);
-        ~Catalyst() {
-            if(emp_manager_ != nullptr)
-                delete emp_manager_;
-        }
+        ~Catalyst() { } // emp_manager is deleted by SystemConfiguration
 
     private:
         CatalystStudy<Bit> study_;
-        EmpManager *emp_manager_;
         TableManager & table_manager_ = TableManager::getInstance();
 
         void importSecretShares(const string & table_name, const int & src_party);

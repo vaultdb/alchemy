@@ -94,6 +94,17 @@ namespace  vaultdb {
         static QuerySchema fromFile(const string & filename);
         void toFile(const string & filename) const;
 
+        inline void dropField(const string & field_name) {
+            for(auto it = fields_.begin(); it != fields_.end(); ++it) {
+                if(it->second.getName() == field_name) {
+                    fields_.erase(it);
+                    break;
+                }
+            }
+
+            initializeFieldOffsets();
+        }
+
         inline bool fieldInitialized(const int & ordinal) { return fields_.find(ordinal) != fields_.end();}
         void initializeFieldOffsets();
 

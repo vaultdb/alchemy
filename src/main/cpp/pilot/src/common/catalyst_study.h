@@ -24,7 +24,7 @@ namespace catalyst {
         // query name, root operator in tree
         map<string, Operator<B> *> queries_;
         vector<InputTable> input_tables_;
-        string db_name_; // psql DB name
+//        string db_name_; // psql DB name
         // all paths  relative to $VAULTDB_HOME/src/main/cpp
         string secret_shares_root_; // root directory for secret shares,
         string query_path_; // where JSON files for queries are stored
