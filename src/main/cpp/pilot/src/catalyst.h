@@ -15,7 +15,11 @@ namespace catalyst {
         Catalyst(int party, const std::string json_config_filename);
         ~Catalyst() { } // emp_manager is deleted by SystemConfiguration
 
+        void loadStudyData();
+        void runQueries();
+
     private:
+        bool data_loaded_ = false;
         CatalystStudy<Bit> study_;
         TableManager & table_manager_ = TableManager::getInstance();
 

@@ -19,16 +19,37 @@ Catalyst::Catalyst(int party, const std::string json_config_filename)  {
     BitPackingMetadata md; // empty set
     s.initialize("", md, StorageModel::COLUMN_STORE);
 
+}
+
+void Catalyst::loadStudyData() {
     // load secret shares into TableManager
     for(auto &input_table : study_.input_tables_) {
         for(auto &contributor : input_table.data_contributors_) {
-                importSecretShares(input_table.name_, contributor);
+            importSecretShares(input_table.name_, contributor);
         }
     }
-
-    cout << "Finished loading secret shares!" << endl;
+    data_loaded_ = true;
 
 }
+
+void Catalyst::runQueries() {
+    // run queries
+    // write out results to secret share files
+    assert(data_loaded_);
+    string dst_dir = study_.dst_path_;
+    SystemConfiguration & s = SystemConfiguration::getInstance();
+
+    for(auto &query : study_.queries_) {
+        string query_name = query.first;
+        Operator<Bit> *root = query.second;
+        cout << "Running query with execution plan: \n" << root->toString() << endl;
+        QueryTable<Bit> *output = root->run();
+        string fq_filename = dst_dir + "/" + query_name + (s.party_ == 1 ? ".alice" : ".bob");
+        std::vector<int8_t> results = output->reveal(emp::XOR)->serialize();
+        DataUtilities::writeFile(fq_filename, results);
+    }
+
+    }
 
 
 void Catalyst::importSecretShares(const string & table_name, const int & src_party) {
@@ -71,7 +92,8 @@ void Catalyst::importSecretShares(const string & table_name, const int & src_par
 }
 
 int main(int argc, char **argv) {
-    // usage: ./bin/catalyst <json config file>
+    // usage: ./bin/catalyst <party> <json config file>
+    // e.g., ./bin/catalyst 1 pilot/study/phame/study.json
     if(argc < 3) {
         std::cout << "usage: ./bin/catalyst <party> <json config file>" << std::endl;
         exit(-1);
@@ -82,12 +104,7 @@ int main(int argc, char **argv) {
     assert(party == 1 || party == 2);
 
     Catalyst catalyst(party, argv[2]);
-
-    // parse study
-    // stand up TableManager
-    // load tables according to study params
-    // run queries
-    // write out results to secret share files
-
+    catalyst.loadStudyData();
+    catalyst.runQueries();
 
 }
