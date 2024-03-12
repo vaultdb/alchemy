@@ -76,23 +76,16 @@ namespace vaultdb {
 
         // operator parsers
         void parseOperator(const int &operator_id, const std::string &op_name, const boost::property_tree::ptree &pt);
-
         Operator<B> *parseSort(const int &operator_id, const boost::property_tree::ptree &pt);
-
         Operator<B> *parseAggregate(const int &operator_id, const boost::property_tree::ptree &pt);
-
         Operator<B> *parseJoin(const int &operator_id, const boost::property_tree::ptree &pt);
-
         Operator<B> *parseFilter(const int &operator_id, const boost::property_tree::ptree &pt);
-
         Operator<B> *parseProjection(const int &operator_id, const boost::property_tree::ptree &project_tree);
-
         Operator<B> *parseSeqScan(const int &operator_id, const boost::property_tree::ptree &seq_scan_tree);
         Operator<B> *parseTableScan(const int &operator_id, const boost::property_tree::ptree &scan_tree);
-
         Operator<B> *parseShrinkwrap(const int &operator_id, const boost::property_tree::ptree &pt);
         Operator<B> *parseLocalScan(const int & operator_id, const boost::property_tree::ptree &local_scan_tree);
-
+        Operator<B> *parseUnion(const int & operator_id, const boost::property_tree::ptree &union_tree);
         void calculateAutoAggregate();
 
         bool agg_auto_flag_ = false;
@@ -124,8 +117,6 @@ namespace vaultdb {
         // utils
         Operator<B> *getChildOperator(const int &my_operator_id, const boost::property_tree::ptree &pt) const;
 
-        const std::string truncateInput(const std::string sql) const;
-
         void optimizeTreeHelper(Operator<B> *child);
 
         void recurseNode(Operator<B> *op);
@@ -153,7 +144,6 @@ namespace vaultdb {
 
 
     };
-
 
 
 
