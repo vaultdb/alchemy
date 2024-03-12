@@ -10,17 +10,31 @@ namespace vaultdb {
     template<typename B>
     class TableScan : public Operator<B> {
     public:
-        explicit TableScan(const string & table_name) : Operator<B>(SortDefinition()) {
-            table_name_ = table_name;
-            if(TableManager::getInstance().getTable<B>(table_name) != nullptr) {
-                auto table = TableManager::getInstance().getTable<B>(table_name);
-                auto collation = table->order_by_;
-                this->setSortOrder(collation);
+        // if no limit set, return whole table
+        TableScan(const string & table_name, const int & limit = -1) : Operator<B>(SortDefinition()), table_name_(table_name), limit_(limit) {
+
+            if(TableManager::getInstance().getTable<B>(table_name) == nullptr) {
+                throw std::runtime_error("Table " + table_name + " not found in TableManager!");
             }
+            auto table = TableManager::getInstance().getTable<B>(table_name);
+            auto collation = table->order_by_;
+            this->setSortOrder(collation);
+            this->output_schema_ = table->getSchema();
+            this->output_cardinality_ = (limit > -1) ? limit_ :  table->tuple_cnt_;
+
         }
 
         QueryTable<B> *runSelf() override {
-            return TableManager::getInstance().getTable<B>(table_name_);
+            this->output_ = TableManager::getInstance().getTable<B>(table_name_)->clone();
+            if(limit_ >= 0) {
+                this->output_->resize(limit_);
+            }
+            else {
+                // update output card based on current table size
+                this->output_cardinality_ = this->output_->tuple_cnt_;
+            }
+            return this->output_;
+
         }
 
         ~TableScan() = default;
@@ -54,6 +68,7 @@ namespace vaultdb {
 
     private:
         std::string table_name_;
+        int limit_ = -1;
 
     };
 }
