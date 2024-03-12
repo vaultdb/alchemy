@@ -15,47 +15,26 @@ namespace  vaultdb {
 
     public:
         LeftKeyedJoin(Operator<B> *foreign_Key, Operator<B> *primary_key, Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
-        // fkey = 0 --> lhs, fkey = 1 --> rhs
-        LeftKeyedJoin(Operator<B> *lhs, Operator<B> *rhs,  const int & fkey, Expression<B> *predicate,const SortDefinition & sort = SortDefinition());
-
         LeftKeyedJoin(QueryTable<B> *foreign_key, QueryTable<B> *primary_key, Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
-        LeftKeyedJoin(QueryTable<B> *foreign_key, QueryTable<B> *primary_key, const int & fkey, Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
         LeftKeyedJoin(const LeftKeyedJoin<B> & src) : Join<B>(src) {
-            foreign_key_input_ = src.foreignKeyChild();
         }
 
         void updateCollation() override {
             this->getChild(0)->updateCollation();
             this->getChild(1)->updateCollation();
 
-            if(foreign_key_input_ == 0) {
-                this->sort_definition_ = this->getChild(0)->getSortOrder();
-                // lhs--> rhs
-                // only append if lhs has collation
-                if(!this->sort_definition_.empty()) {
-                    int lhs_col_cnt = this->getChild(0)->getOutputSchema().getFieldCount();
-                    for(auto col : this->getChild(1)->getSortOrder()) {
-                        auto col_sort = ColumnSort(col.first + lhs_col_cnt, col.second);
-                        this->sort_definition_.push_back(col_sort);
-                    }
-                }
-            }
-            else {
-                // rhs --> lhs
-                this->sort_definition_.clear();
+
+            this->sort_definition_ = this->getChild(0)->getSortOrder();
+            // lhs--> rhs
+            // only append if lhs has collation
+            if(!this->sort_definition_.empty()) {
                 int lhs_col_cnt = this->getChild(0)->getOutputSchema().getFieldCount();
-                auto rhs_sort = this->getChild(1)->getSortOrder();
-                for(auto col : rhs_sort) {
+                for(auto col : this->getChild(1)->getSortOrder()) {
                     auto col_sort = ColumnSort(col.first + lhs_col_cnt, col.second);
                     this->sort_definition_.push_back(col_sort);
                 }
-                if(!this->sort_definition_.empty()) {
-                    for(auto col_sort : this->getChild(0)->getSortOrder()) {
-                        this->sort_definition_.push_back(col_sort);
-                    }
-                }
-
             }
+
 
         }
 
@@ -65,7 +44,7 @@ namespace  vaultdb {
         }
 
         ~LeftKeyedJoin() = default;
-        int foreignKeyChild() const { return foreign_key_input_; }
+
         bool operator==(const Operator<B> &other) const override {
             if (other.getType() != OperatorType::LEFT_KEYED_NESTED_LOOP_JOIN) {
                 return false;
@@ -74,7 +53,7 @@ namespace  vaultdb {
             auto rhs = dynamic_cast<const LeftKeyedJoin<B> &>(other);
 
 
-            if(*this->predicate_ != *rhs.predicate_ || this->foreign_key_input_ != rhs.foreign_key_input_) return false;
+            if(*this->predicate_ != *rhs.predicate_) return false;
             return this->operatorEquality(other);
         }
 
@@ -86,9 +65,6 @@ namespace  vaultdb {
         }
 
 
-    private:
-        QueryTable<B> *foreignKeyPrimaryKeyJoin();
-        QueryTable<B> *primaryKeyForeignKeyJoin();
     };
 
 }
