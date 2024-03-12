@@ -11,7 +11,7 @@ namespace vaultdb {
 
         int table_id_ = -1;
         bool bp_enabled_ = SystemConfiguration::getInstance().bp_enabled_;
-        BufferPoolManager *bgm_ = bp_enabled_ ? SystemConfiguration::getInstance().bpm_ : nullptr;
+        BufferPoolManager *bpm_ = bp_enabled_ ? SystemConfiguration::getInstance().bpm_ : nullptr;
 
         // choosing to branch instead of storing this in a float for now, need to analyze trade-off on this one
         // maps ordinal to wire count.  floor(128/field_size_bits)
@@ -144,14 +144,14 @@ namespace vaultdb {
 
         Field<Bit> getField(const int  & row, const int & col)  const override {
             if(bp_enabled_) {
-                BufferPoolManager::PageId pid = bgm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
-                BufferPoolManager::UnpackedPage up = bgm_->getUnpackedPage(pid);
+                BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
+                BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
 
                 Bit *read_ptr = up.page_payload_.data() + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
 
                 up.access_counters_++;
 
-                bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)] = up;
+                bpm_->unpacked_page_buffer_pool_[bpm_->getPageIdKey(pid)] = up;
 
                 return Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
             }
@@ -166,14 +166,14 @@ namespace vaultdb {
 
         inline void setField(const int  & row, const int & col, const Field<Bit> & f)  override {
             if(bp_enabled_) {
-                BufferPoolManager::PageId pid = bgm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
-                BufferPoolManager::UnpackedPage up = bgm_->getUnpackedPage(pid);
+                BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
+                BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
 
                 Bit *write_ptr = up.page_payload_.data() + (((row % fields_per_wire_.at(col)) * schema_.getField(col).size()));
                 f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
                 up.access_counters_++;
 
-                bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)] = up;
+                bpm_->unpacked_page_buffer_pool_[bpm_->getPageIdKey(pid)] = up;
             }
             else {
                 cacheField(row, col);
@@ -273,11 +273,11 @@ namespace vaultdb {
 
         Bit getDummyTag(const int & row)  const override {
             if(bp_enabled_) {
-                BufferPoolManager::PageId pid = bgm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
-                BufferPoolManager::UnpackedPage up = bgm_->getUnpackedPage(pid);
+                BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
+                BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
 
                 up.access_counters_++;
-                bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)] = up;
+                bpm_->unpacked_page_buffer_pool_[bpm_->getPageIdKey(pid)] = up;
 
                 return up.page_payload_[row % fields_per_wire_.at(-1)];
             }
@@ -289,13 +289,13 @@ namespace vaultdb {
 
         void setDummyTag(const int & row, const Bit & val) override {
             if(bp_enabled_) {
-                BufferPoolManager::PageId pid = bgm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
-                BufferPoolManager::UnpackedPage up = bgm_->getUnpackedPage(pid);
+                BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
+                BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
 
                 up.page_payload_[row % fields_per_wire_.at(-1)] = val;
                 up.access_counters_++;
 
-                bgm_->unpacked_page_buffer_pool_[bgm_->getPageIdKey(pid)] = up;
+                bpm_->unpacked_page_buffer_pool_[bpm_->getPageIdKey(pid)] = up;
 
             }
             else {
@@ -322,7 +322,7 @@ namespace vaultdb {
             for(int i = 0; i < schema_.getFieldCount(); ++i) {
                 QueryFieldDesc desc = schema_.fields_.at(i);
 
-                int size_threshold = bp_enabled_ ? bgm_->unpacked_page_size_ : 128;
+                int size_threshold = bp_enabled_ ? bpm_->unpacked_page_size_ : 128;
                 int packed_blocks = desc.size() / size_threshold + (desc.size() % size_threshold != 0);
 
                 if(desc.size() / size_threshold > 0) {
@@ -344,7 +344,7 @@ namespace vaultdb {
             }
 
             blocks_per_field_[-1] = 1;
-            fields_per_wire_[-1] = bp_enabled_ ? bgm_->unpacked_page_size_ : 128;
+            fields_per_wire_[-1] = bp_enabled_ ? bpm_->unpacked_page_size_ : 128;
 
             tuple_size_bytes_ += sizeof(emp::Bit);
             field_sizes_bytes_[-1] = sizeof(emp::Bit);
