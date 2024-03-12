@@ -188,14 +188,44 @@ For each output table we will need a JSON file for the SQL statement.  This will
 
 Recall that our example spec for this is:
 ```json
-"queries": {
-   "query_path": "/home/vaultdb/vaultdb-core/src/main/cpp/pilot/plans",
-   "dst_path": "/home/vaultdb/vaultdb-core/src/main/cpp/pilot/output",
-   "queries": [
+{
+  "name": "phame",
+  "protocol": "sh2pc",
+  "alice_host":  "127.0.0.1",
+  "port": "65432",
+  "note": "all paths are relative to $VAULTDB_ROOT/src/main/cpp",
+  "secret_shares_root": "pilot/secret_shares/output",
+  "tables": [
+     {
+       "name": "phame_cohort_counts",
+       "schema": "(description:varchar(42), count:int64, site_id:int32)",
+       "input_parties": [0, 1, 2, 3]
+    },
+    {
+     "name": "phame_demographic",
+      "schema": "(patid:int32, age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), site_id:int32)",
+      "input_parties": [1, 3]
+    },
+    {
+      "name": "phame_diagnosis",
+      "schema": "(patid:int32, dx_diabetes:bool, dx_hypertension:bool, dx_cervical_cancer:bool, dx_breast_cancer:bool, dx_lung_cancer:bool, dx_colorectal_cancer:bool, site_id:int32)",
+      "input_parties": [1, 3]
+    },
+    {
+      "name": "phame_diagnosis_rollup",
+      "schema": "(age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64)",
+      "input_parties": [0, 2]
+    }
+  ],
+ "queries": {
+   "query_path": "pilot/study/phame/plans",
+   "dst_path": "pilot/results/phame",
+   "names": [
      "phame_cohort_counts",
      "phame_diagnosis_rollup"
    ]
  }
+}
 ```
 
 The `query_path` is the directory where the JSON files are stored.  The `dst_path` is the directory where the output  secret shares will be stored.  

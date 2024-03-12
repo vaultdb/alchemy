@@ -93,7 +93,9 @@ void Catalyst::importSecretShares(const string & table_name, const int & src_par
 
 int main(int argc, char **argv) {
     // usage: ./bin/catalyst <party> <json config file>
-    // e.g., ./bin/catalyst 1 pilot/study/phame/study.json
+    // e.g.,
+    // Alice: ./bin/catalyst 1 pilot/study/phame/study.json
+    // Bob: ./bin/catalyst 2 pilot/study/phame/study.json
     if(argc < 3) {
         std::cout << "usage: ./bin/catalyst <party> <json config file>" << std::endl;
         exit(-1);
