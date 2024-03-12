@@ -73,8 +73,6 @@ namespace vaultdb {
             }
 
             SecureTable *dst = getTable<Bit>(table_name);
-            cout << "Inserting " << table_name << " rows.\n";
-            cout << "Src schema: " << src->getSchema() << ",\n dst: " << dst->getSchema() << endl;
             assert(dst->getSchema() == src->getSchema());
             auto dst_tuple_cnt = dst->tuple_cnt_;
             int new_table_len = dst_tuple_cnt + src->tuple_cnt_;

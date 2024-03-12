@@ -43,15 +43,12 @@ void Catalyst::importSecretShares(const string & table_name, const int & src_par
     bool drop_site_id = false;
     // JMR: this is a hack to support the format from CAPriCORN queries, not for long-term use
     if(table_name == "phame_diagnosis" || table_name == "phame_demographic") {
-        cout << "Started with schema: " << schema << endl;
         schema.dropField("site_id");
         drop_site_id = true;
-        cout << "reading in " << schema << endl;
     }
     SecureTable *secret_shares = UnionHybridData::readSecretSharedInput(secret_shares_file, schema);
 
     if(drop_site_id) {
-        cout << "After secret share read, have schema: " << schema << endl;
         ExpressionMapBuilder<Bit> builder(schema);
         int field_cnt = schema.getFieldCount();
         for (int i = 0; i < field_cnt; ++i) {
@@ -65,7 +62,6 @@ void Catalyst::importSecretShares(const string & table_name, const int & src_par
 
         Project<Bit> projection(secret_shares, builder.getExprs());
         secret_shares = projection.run();
-        cout << "After project have schema: " << projection.getOutputSchema() << " table schema " << secret_shares->getSchema() << endl;
         // need to call insertTable within this scope for the project output to be available for TableManager copy
         table_manager_.insertTable(table_name, secret_shares);
         return;
