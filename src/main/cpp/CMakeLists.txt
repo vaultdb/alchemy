@@ -92,6 +92,7 @@ set(sources
 		operators/join.cpp
 		operators/basic_join.cpp
 		operators/keyed_join.cpp
+		operators/block_nested_loop_join.cpp
 		operators/merge_input.cpp
 		operators/merge_join.cpp
 		operators/support/scalar_aggregate_impl.cpp
