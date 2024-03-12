@@ -19,6 +19,10 @@ namespace vaultdb {
 
         map<string, SecureTable *> secure_tables_;
         map<string, PlainTable *>  plain_tables_;
+        // TableManager may accept two tables with the same name as long as they have equivalent schemas.
+        // e.g., secure_tables_["foo"] has the schema of QuerySchema::toSecure(plain_tables_["foo"].schema_);
+        // everything stored in schemas_ is plaintext for simplicity
+        map<string, QuerySchema> schemas_;
 
         ~TableManager() {
             for(auto & table : secure_tables_) {
@@ -29,20 +33,19 @@ namespace vaultdb {
             }
         }
 
-        template<typename B>
         void addEmptyTable(const string & table_name, const QuerySchema & schema) {
-            if(std::is_same_v<B, bool>) {
-                auto s = QuerySchema::toPlain(schema);
-                plain_tables_[table_name] = QueryTable<bool>::getTable(0, s);
-            }
-            else {
-                auto s = QuerySchema::toSecure(schema);
-                secure_tables_[table_name] = QueryTable<Bit>::getTable(0, s);
-            }
+            schemas_[table_name] = QuerySchema::toPlain(schema);
         }
 
         template<typename B>
         QueryTable<B> *getTable(const string & table_name);
+
+        template<>
+        QueryTable<Bit> *getTable(const string & table_name);
+
+        template<>
+        QueryTable<bool> *getTable(const string & table_name);
+
 
         // simply overwrite any pre-existing table
         // use this with caution
@@ -51,29 +54,31 @@ namespace vaultdb {
         template<typename B>
         void putTable(const string & table_name, QueryTable<B> *table);
 
+        template<>
+        void putTable<Bit>(const string & table_name, QueryTable<Bit> *table);
+
+        template<>
+        void putTable<bool>(const string & table_name, QueryTable<bool> *table);
 
         QuerySchema getSchema(const string & table_name) {
-            if(plain_tables_.find(table_name) != plain_tables_.end()) {
-                return plain_tables_[table_name]->getSchema();
-            }
-            else {
-                return secure_tables_[table_name]->getSchema();
-            }
-
-            throw std::runtime_error("Table not found!");
+            return schemas_[table_name];
         }
 
         void insertTable(const string & table_name, SecureTable *src) {
-            if(secure_tables_.find(table_name) == secure_tables_.end()) {
-                secure_tables_[table_name] = src;
+
+            if(secure_tables_.find(table_name) == secure_tables_.end()
+            && schemas_.find(table_name) == schemas_.end()) {
+                putTable<Bit>(table_name, src);
                 return;
             }
 
-            auto dst = secure_tables_[table_name];
+            SecureTable *dst = getTable<Bit>(table_name);
+            cout << "Inserting " << table_name << " rows.\n";
+            cout << "Src schema: " << src->getSchema() << ",\n dst: " << dst->getSchema() << endl;
+            assert(dst->getSchema() == src->getSchema());
             auto dst_tuple_cnt = dst->tuple_cnt_;
             int new_table_len = dst_tuple_cnt + src->tuple_cnt_;
             dst->resize(new_table_len);
-            assert(dst->getSchema() == src->getSchema());
 
             // append to the existing cols
             for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
@@ -84,16 +89,21 @@ namespace vaultdb {
         }
 
         void insertTable(const string & table_name, PlainTable *src) {
-            if(plain_tables_.find(table_name) == plain_tables_.end()) {
-                plain_tables_[table_name] = src;
+            if(plain_tables_.find(table_name) == plain_tables_.end()
+               && schemas_.find(table_name) == schemas_.end()) {
+                putTable<bool>(table_name, src);
                 return;
             }
 
-            auto dst = plain_tables_[table_name];
+            PlainTable *dst = nullptr;
+            if(plain_tables_.find(table_name) != plain_tables_.end())  dst = plain_tables_[table_name];
+            else if(schemas_.find(table_name) != schemas_.end()) dst =  QueryTable<bool>::getTable(0, schemas_[table_name]);
+
+            assert(dst->getSchema() == src->getSchema());
+
             auto dst_tuple_cnt = dst->tuple_cnt_;
             int new_table_len = dst_tuple_cnt + src->tuple_cnt_;
             dst->resize(new_table_len);
-            assert(dst->getSchema() == src->getSchema());
 
             // append to the existing cols
             for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
@@ -103,6 +113,7 @@ namespace vaultdb {
         }
 
     private:
+        // this makes it a singleton
         TableManager() {}
 
 
