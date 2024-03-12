@@ -275,7 +275,7 @@ template<typename B>
 ptree PlanDeparser<B>::deparseLeftKeyedNestedLoopJoin(const Operator<B> *input) {
     assert(input->getType() == OperatorType::LEFT_KEYED_NESTED_LOOP_JOIN);
     auto lkj = (LeftKeyedJoin<B> *) input;
-    return deparseJoin(lkj, "nested-loop-join", lkj->foreignKeyChild(), "left");
+    return deparseJoin(lkj, "nested-loop-join", -1, "left");
 
 }
 

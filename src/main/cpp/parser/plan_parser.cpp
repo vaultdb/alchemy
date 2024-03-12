@@ -23,7 +23,7 @@
 #include <operators/shrinkwrap.h>
 #include <operators/table_scan.h>
 #include <operators/union.h>
-#include <operator/left_keyed_join.h>
+#include <operators/left_keyed_join.h>
 
 #include <util/logger.h>
 #include <regex>
