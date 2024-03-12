@@ -23,6 +23,7 @@
 #include <operators/shrinkwrap.h>
 #include <operators/table_scan.h>
 #include <operators/union.h>
+#include <operator/left_keyed_join.h>
 
 #include <util/logger.h>
 #include <regex>
@@ -556,7 +557,8 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
 template<typename B>
 Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_tree) {
     Logger *log = get_log();
-    string join_type;
+    string join_algo;
+    string join_type = "inner";
 
 
     boost::property_tree::ptree join_condition_tree = join_tree.get_child("condition");
@@ -573,17 +575,26 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
     Expression<B> *join_condition = ExpressionParser<B>::parseExpression(join_condition_tree, lhs->getOutputSchema(), rhs->getOutputSchema());
 
     if(join_tree.count("operator-algorithm") > 0)
-        join_type = join_tree.get_child("operator-algorithm").template get_value<string>();
+        join_algo = join_tree.get_child("operator-algorithm").template get_value<string>();
 
     // check it is a valid join algo spec (if specified)
-    assert(join_type == "keyed-sort-merge-join" || join_type == "nested-loop-join" || join_type == "merge-join" || join_type == "auto" || join_type.empty());
+    assert(join_algo == "keyed-sort-merge-join" || join_algo == "nested-loop-join" || join_algo == "merge-join" || join_algo == "auto" || join_algo.empty());
+
+    if(join_tree.count("joinType") > 0)
+        join_type = join_tree.get_child("joinType").template get_value<string>();
+
 
     // if fkey designation exists, use this to create keyed join
     if(join_tree.count("foreignKey") > 0 || join_tree.count("foreign-key") > 0) {
         int foreign_key = (join_tree.count("foreignKey") > 0) ? join_tree.get_child("foreignKey").template get_value<int>()
                 : join_tree.get_child("foreign-key").template get_value<int>();
 
-        if (join_type == "auto" && storage_model == StorageModel::ROW_STORE) { // only have a choice in row stores for now
+        // only one algo supported for simulated left-join
+        if(join_type == "left") {
+            return new LeftKeyedJoin<B>(lhs, rhs, join_condition);
+        }
+
+        if (join_algo == "auto") {
 
             auto smj = new KeyedSortMergeJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
             auto nlj = new KeyedJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
@@ -714,7 +725,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
         } // end join-algorithm="auto"
 
-        if (join_type == "keyed-sort-merge-join" && storage_model == StorageModel::ROW_STORE) {
+        if (join_algo == "keyed-sort-merge-join") {
             return new KeyedSortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
         }
         else { // if algorithm unspecified but FK, use KeyedJoin
@@ -723,12 +734,13 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
     } // end pk-fk join
 
-    if (join_type == "merge-join") {
+    if (join_algo == "merge-join") {
         if(join_tree.count("dummy-handling") > 0 && join_tree.get_child("dummy-handling").template get_value<string>() == "OR")
             return new MergeJoin<B>(lhs, rhs, join_condition, SortDefinition(), true);
         else
             return new MergeJoin<B>(lhs, rhs, join_condition, SortDefinition(), false);
     }
+
 
 
     return new BasicJoin<B>(lhs, rhs, join_condition);
@@ -798,13 +810,15 @@ Operator<B> *PlanParser<B>::parseSeqScan(const int & operator_id, const boost::p
 template<typename B>
 Operator<B> *PlanParser<B>::parseTableScan(const int & operator_id, const boost::property_tree::ptree &seq_scan_tree) {
     string table_name;
-
+    int local_tuple_limit = input_limit_;
     if(seq_scan_tree.count("table") > 0)
         table_name = seq_scan_tree.get_child("table").template get_value<string>();
-
     assert(table_name != "");
 
-    return new TableScan<B>(table_name, input_limit_);
+    if(seq_scan_tree.count("input-limit") > 0)
+        local_tuple_limit = seq_scan_tree.get_child("input-limit").template get_value<int>();
+
+    return new TableScan<B>(table_name, local_tuple_limit);
 }
 
 template<typename B>

@@ -62,6 +62,8 @@ namespace vaultdb {
         ptree deparseZkSqlInput(const Operator<B> *input);
         ptree deparseScalarAggregate(const Operator<B> *agg);
         ptree deparseMergeInput(const Operator<B> *input);
+        ptree deparseTableScan(const Operator<B> *input);
+        ptree deparseLeftKeyedNestedLoopJoin(const Operator<B> *input);
 
         void validateTree();
         void validateTreeHelper(Operator<B> *node, map<int, int> & known_ids);
@@ -81,10 +83,12 @@ namespace vaultdb {
 
         ptree deparseSchema(const QuerySchema & schema);
 
-        ptree deparseJoin(const Join<B> *join, const string &algo_name, const int &foreign_key_reln) {
+        ptree deparseJoin(const Join<B> *join, const string &algo_name, const int &foreign_key_reln,
+                          const std::string &join_type = "inner") {
             ptree join_node;
             writeHeader(join_node, join, "LogicalJoin");
             join_node.put("operator-algorithm", algo_name);
+            join_node.put("joinType", join_type);
             if(foreign_key_reln == 0 || foreign_key_reln == 1) {
                 join_node.put("foreign-key", foreign_key_reln);
             }

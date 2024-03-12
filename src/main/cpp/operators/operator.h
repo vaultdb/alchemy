@@ -191,6 +191,8 @@ namespace  vaultdb {
                     return "ZkSqlInput";
                 case OperatorType::SECURE_SQL_INPUT:
                     return "SecureSqlInput";
+                case OperatorType::TABLE_SCAN:
+                    return "TableScan";
                 case OperatorType::TABLE_INPUT:
                         return "TableInput";
                 case OperatorType::CSV_INPUT:
@@ -205,6 +207,8 @@ namespace  vaultdb {
                     return "BasicJoin";
                 case OperatorType::KEYED_NESTED_LOOP_JOIN:
                     return "KeyedJoin";
+                case OperatorType::LEFT_KEYED_NESTED_LOOP_JOIN:
+                    return "LeftKeyedJoin";
                 case OperatorType::KEYED_SORT_MERGE_JOIN:
                     return "SortMergeJoin";
                 case OperatorType::MERGE_JOIN:

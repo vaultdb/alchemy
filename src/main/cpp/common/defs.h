@@ -109,6 +109,7 @@ namespace vaultdb {
         FILTER,
         PROJECT,
         NESTED_LOOP_JOIN,
+        LEFT_KEYED_NESTED_LOOP_JOIN,
         KEYED_NESTED_LOOP_JOIN,
         BLOCK_NESTED_LOOP_JOIN,
 		SORT_MERGE_JOIN,

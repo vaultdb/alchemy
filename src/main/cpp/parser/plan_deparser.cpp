@@ -12,6 +12,8 @@
 #include <operators/filter.h>
 #include <operators/project.h>
 #include <operators/shrinkwrap.h>
+#include <operators/left_keyed_join.h>
+#include <operators/table_scan.h>
 #include <util/logger.h>
 #include <operators/support/aggregate_id.h>
 #include <boost/algorithm/string.hpp>
@@ -73,6 +75,8 @@ ptree PlanDeparser<B>::deparseNode(const Operator<B> *node) {
             return deparseNestedLoopJoin(node);
         case OperatorType::KEYED_NESTED_LOOP_JOIN:
             return deparseKeyedNestedLoopJoin(node);
+        case OperatorType::LEFT_KEYED_NESTED_LOOP_JOIN:
+            return deparseLeftKeyedNestedLoopJoin(node);
         case OperatorType::KEYED_SORT_MERGE_JOIN:
             return deparseKeyedSortMergeJoin(node);
         case OperatorType::MERGE_JOIN:
@@ -169,6 +173,26 @@ ptree PlanDeparser<B>::deparseSqlInput(const Operator<B> *input) {
     return input_node;
 
 }
+
+template<typename B>
+ptree PlanDeparser<B>::deparseTableScan(const Operator<B> *input) {
+    assert(input->getType() == OperatorType::TABLE_SCAN);
+    auto in = (TableScan<B> *) input;
+    ptree input_node;
+
+    writeHeader(input_node, input, "VaultDBTableScan");
+
+    input_node.put("table", in->getTableName());
+    input_node.put("outputFields", generateFieldList(in->getOutputSchema()));
+    input_node.put<int>("input-limit", in->getLimit());
+    if(!in->getSortOrder().empty()) {
+        auto collation = deparseCollation(in->getSortOrder());
+        input_node.add_child("collation", collation);
+    }
+    return input_node;
+
+}
+
 template<typename B>
 ptree PlanDeparser<B>::deparseMergeInput(const Operator<B> *input) {
     assert(input->getType() == OperatorType::MERGE_INPUT);
@@ -200,14 +224,14 @@ template<typename B>
 ptree PlanDeparser<B>::deparseKeyedSortMergeJoin(const Operator<B> *input) {
     assert(input->getType() == OperatorType::KEYED_SORT_MERGE_JOIN);
     auto smj = (KeyedSortMergeJoin<B> *) input;
-    return deparseJoin(smj, "sort-merge-join", smj->foreignKeyChild());
+    return deparseJoin(smj, "sort-merge-join", smj->foreignKeyChild(), "inner");
 }
 
 template<typename B>
 ptree PlanDeparser<B>::deparseMergeJoin(const Operator<B> *input) {
     assert(input->getType() == OperatorType::MERGE_JOIN);
     auto mj = (MergeJoin<B> *) input;
-    return deparseJoin(mj, "merge-join", -1);
+    return deparseJoin(mj, "merge-join", -1, "inner");
 }
 
 template<typename B>
@@ -244,9 +268,16 @@ template<typename B>
 ptree PlanDeparser<B>::deparseKeyedNestedLoopJoin(const Operator<B> *input) {
     assert(input->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN);
     auto kj = (KeyedJoin<B> *) input;
-    return deparseJoin(kj, "nested-loop-join", kj->foreignKeyChild());
+    return deparseJoin(kj, "nested-loop-join", kj->foreignKeyChild(), "inner");
 }
 
+template<typename B>
+ptree PlanDeparser<B>::deparseLeftKeyedNestedLoopJoin(const Operator<B> *input) {
+    assert(input->getType() == OperatorType::LEFT_KEYED_NESTED_LOOP_JOIN);
+    auto lkj = (LeftKeyedJoin<B> *) input;
+    return deparseJoin(lkj, "nested-loop-join", lkj->foreignKeyChild(), "left");
+
+}
 
 
 template<typename B>
@@ -341,7 +372,7 @@ template<typename B>
 ptree PlanDeparser<B>::deparseNestedLoopJoin(const Operator<B> *join) {
     assert(join->getType() == OperatorType::NESTED_LOOP_JOIN);
     auto nlj = (BasicJoin<B> *) join;
-    return deparseJoin(nlj, "nested-loop-join", -1);
+    return deparseJoin(nlj, "nested-loop-join", -1, "inner");
 }
 
 template<typename B>

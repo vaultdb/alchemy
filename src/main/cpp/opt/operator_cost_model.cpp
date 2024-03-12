@@ -19,6 +19,7 @@ size_t OperatorCostModel::operatorCost(const SecureOperator *op) {
             case OperatorType::SORT:
                 return sortCost((Sort<Bit> *) op);
             case OperatorType::KEYED_NESTED_LOOP_JOIN:
+            case OperatorType::LEFT_KEYED_NESTED_LOOP_JOIN:
                 return keyedJoinCost((KeyedJoin<Bit> *) op);
             case OperatorType::NESTED_LOOP_JOIN:
                 return basicJoinCost((BasicJoin<Bit> *) op);

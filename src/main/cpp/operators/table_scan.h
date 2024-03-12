@@ -56,6 +56,14 @@ namespace vaultdb {
             return this->operatorEquality(other);
         }
 
+        string getTableName() const {
+            return table_name_;
+        }
+
+        int getLimit() const {
+            return limit_;
+        }
+
     protected:
 
         string getParameters() const override {
@@ -65,6 +73,7 @@ namespace vaultdb {
         OperatorType getType() const override {
             return OperatorType::TABLE_SCAN;
         }
+
 
     private:
         std::string table_name_;
