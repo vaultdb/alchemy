@@ -19,7 +19,6 @@ int main(int argc, char **argv) {
                 ("help", "print help message")
                 ("database,D", po::value<string>(), "local database name")
                 ("query-file,q", po::value<string>(), "file with query to run")
-                ("sql-statement,s", po::value<string>(), "sql statement to evaluate")
                 ("year,y", po::value<string>(), "study year of experiment, in 2018, 2019, 2020, or all (or range, e.g., 2018-2019, inclusive)")
                 ("semijoin-optimization,s", "enable this to read in multisite tuples only")
                 ("dest-root,d",  po::value<string>(), "destination root");
@@ -45,9 +44,6 @@ int main(int argc, char **argv) {
 
         if(vm.count("query-file")) {
             query = DataUtilities::readTextFileToString(vm["query-file"].as<string>());
-        }
-        else if(vm.count("sql-statement")) {
-            query = vm["sql-statement"].as<string>();
         }
         else {
             throw std::invalid_argument("Need sql file or sql statement to run.");

@@ -22,8 +22,8 @@ dropdb  --if-exists $DB_NAME
 createdb $DB_NAME
 
 
-psql $DB_NAME <  pilot/test/load-generated-enrich-data.sql
-pg_dump $DB_NAME > pilot/test/output/$DB_NAME.sql
+psql $DB_NAME <  pilot/test/load-generated-data.sql
+#pg_dump $DB_NAME > pilot/test/output/$DB_NAME.sql
 
 #whole tables
 psql $DB_NAME -t --csv -c   "SELECT  study_year,pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=1 ORDER BY study_year, pat_id" >  pilot/test/input/alice-patient.csv

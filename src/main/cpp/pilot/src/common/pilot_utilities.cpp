@@ -101,7 +101,6 @@ void PilotUtilities::secretShareFromCsv(const string &src_csv, const QuerySchema
 
 void PilotUtilities::secretShareFromQuery(const string &db_name, const string &query, const string &dst_root) {
     PlainTable *table = DataUtilities::getQueryResults(db_name, query, false);
-    cout << "Chi secret sharing " << table->tuple_cnt_ << " tuples." << endl;
 
     SecretShares shares = table->generateSecretShares();
 
