@@ -1,9 +1,12 @@
 #!/bin/bash -x
 
+#example usage:
+# bash pilot/test/generate-and-load-phame-data.sh 4 100
 if [ "$#" -ne 2 ]; then
     echo "usage: pilot/test/generate-and-load-phame-data.sh <host count> <tuple count per host>"
     exit
 fi
+
 
 HOST_COUNT=$1
 TUPLE_COUNT=$2
@@ -27,6 +30,9 @@ make generate_phame_data_n_parties
 dropdb  --if-exists $DB_NAME
 createdb $DB_NAME
 
+mkdir -p pilot/study/phame/expected
+echo '(desc:varchar(42), count:int64)' > pilot/study/phame/expected/phame_cohort_counts.schema
+echo '(age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64)' > pilot/study/phame/expected/phame_diagnosis_rollup.schema
 
 #parties 1, 3 are row-level partners
 # they have site_ids stripped in the sql script below in order to simulate

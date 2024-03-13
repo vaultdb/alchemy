@@ -74,6 +74,9 @@ FROM (            ------------<------------      Specify Site Name
 \copy (SELECT * FROM phame_cohort_counts WHERE site_id = 2) TO 'pilot/secret_shares/input/2/phame_cohort_counts.csv' WITH DELIMITER ',';
 \copy (SELECT * FROM phame_cohort_counts WHERE site_id = 3) TO 'pilot/secret_shares/input/3/phame_cohort_counts.csv' WITH DELIMITER ',';
 
+-- generate expected results
+\copy (SELECT attribute, SUM(n) FROM phame_cohort_counts GROUP BY attribute ORDER BY attribute) TO 'pilot/study/phame/expected/phame_cohort_counts.csv' WITH DELIMITER ',';
+
 
 -- site-at-a-time rollup
 CREATE OR REPLACE FUNCTION rollup_query (sid INT)
@@ -111,14 +114,13 @@ END; $$
 \copy (SELECT * FROM rollup_query(3)) TO 'pilot/secret_shares/input/3/phame_diagnosis_rollup.csv' WITH DELIMITER ',';
 
 
+
 -- sites 1 and 3 are row contributors in our test
 -- output their phame_demo and phame_diagnosis tables without site_id to reflect the setup in their SQL calls
-
-
 \copy (SELECT patid, age_cat, gender, ethnicity, race, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 1) TO 'pilot/secret_shares/input/1/phame_demographic.csv' WITH DELIMITER ',';
-
 \copy (SELECT patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 1) TO 'pilot/secret_shares/input/1/phame_diagnosis.csv' WITH DELIMITER ',';
-
 \copy (SELECT patid, age_cat, gender, ethnicity, race, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 3) TO 'pilot/secret_shares/input/3/phame_demographic.csv' WITH DELIMITER ',';
-
 \copy (SELECT patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 3) TO 'pilot/secret_shares/input/3/phame_diagnosis.csv' WITH DELIMITER ',';
+
+-- generate expected results
+\copy (SELECT demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary, COUNT(demo.patid) patient_cnt, COUNT(dx_diabetes) diabetes_cnt, COUNT(dx_hypertension) hypertension_cnt, COUNT(dx_cervical_cancer) cervical_cancer_cnt, COUNT(dx_breast_cancer) breast_cancer_cnt, COUNT(dx_lung_cancer) lung_cancer_cnt, COUNT(dx_colorectal_cancer) colorectal_cancer_cnt FROM phame_demographic demo LEFT JOIN phame_diagnosis pd on demo.patid = pd.patid GROUP BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary ORDER BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary) TO 'pilot/study/phame/expected/phame_diagnosis_rollup.csv' WITH DELIMITER ','
