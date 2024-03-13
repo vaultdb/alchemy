@@ -5,6 +5,7 @@
 #include <string>
 #include <tuple>
 #include <map>
+#include "parser/plan_parser.h"
 #include <boost/property_tree/ptree.hpp>
 
 
@@ -15,6 +16,11 @@ namespace catalyst {
         // path is relative to $VAULTDB_ROOT/src/main/cpp
         StudyParser(const std::string plan_filename);
 
+        void parseQueries() {
+            for(auto q : query_files_) {
+                study_.queries_[q.first] = PlanParser<Bit>::parse("", q.second);
+            }
+        }
 
         // main study - includes input tables, queries, and secret shares root
         CatalystStudy<Bit> study_;
@@ -22,11 +28,7 @@ namespace catalyst {
         int port_;
         string alice_host_;
         string protocol_ = "sh2pc";
-        // temp cache:
-        // these are params that we need until we set up MPC
-        // then we read secret shares
-        // then we can read the per-query JSON files and parse them
-         std::map<std::string, std::string> query_files_;
+        std::map<std::string, std::string> query_files_;
     };
 }
 #endif

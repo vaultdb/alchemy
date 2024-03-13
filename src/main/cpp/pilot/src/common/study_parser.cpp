@@ -1,7 +1,6 @@
 #include "study_parser.h"
 #include <boost/property_tree/json_parser.hpp>
 #include "util/table_manager.h"
-#include "parser/plan_parser.h"
 
 using namespace catalyst;
 using namespace vaultdb;
@@ -67,8 +66,6 @@ StudyParser::StudyParser(const std::string plan_filename) {
         // need to delay query parsing until EMP manager set up in case of local secret sharing
         // since port and host info are stored in JSON, we need to parse JSON to set up EMPManager
         query_files_[query_name] = fq_json_filename;
-        cout << "Parsing query " << fq_json_filename << endl;
-        study_.queries_[query_name] = PlanParser<Bit>::parse("", fq_json_filename);
     }
 
 }
