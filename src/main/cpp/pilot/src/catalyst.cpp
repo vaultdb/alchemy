@@ -9,34 +9,36 @@
 using namespace catalyst;
 
 Catalyst::Catalyst(int party, const std::string json_config_filename)  {
-    StudyParser study_parser(json_config_filename);
-    study_ = study_parser.study_;
-    assert(study_parser.protocol_ == "sh2pc");
-    auto emp_manager = new SH2PCManager(study_parser.alice_host_, party, study_parser.port_);
+    parser_ = new StudyParser(json_config_filename);
+    assert(parser_->protocol_ == "sh2pc");
+    auto emp_manager = new SH2PCManager(parser_->alice_host_, party, parser_->port_);
     SystemConfiguration & s = SystemConfiguration::getInstance();
     s.emp_mode_ = EmpMode::SH2PC;
     s.emp_manager_ = emp_manager;
     BitPackingMetadata md; // empty set
     s.initialize("", md, StorageModel::COLUMN_STORE);
-
 }
 
 void Catalyst::loadStudyData() {
     // load secret shares into TableManager
-    for(auto &input_table : study_.input_tables_) {
+    for(auto &input_table : parser_->study_.input_tables_) {
         for(auto &contributor : input_table.data_contributors_) {
             importSecretShares(input_table.name_, contributor);
         }
     }
     data_loaded_ = true;
-
 }
 
 void Catalyst::runQueries() {
-    // run queries
+    // parse and run queries
     // write out results to secret share files
     assert(data_loaded_);
-    string dst_dir = study_.dst_path_;
+
+    // data loaded, ok to parse queries
+    parser_->parseQueries();
+    CatalystStudy<Bit> study = parser_->study_;
+
+    string dst_dir = study.dst_path_;
     if(dst_dir[0] != '/') {
         dst_dir = Utilities::getCurrentWorkingDirectory() + "/" + dst_dir;
     }
@@ -44,10 +46,10 @@ void Catalyst::runQueries() {
 
     SystemConfiguration & s = SystemConfiguration::getInstance();
 
-    for(auto &query : study_.queries_) {
+    for(auto &query : study.queries_) {
         string query_name = query.first;
         Operator<Bit> *root = query.second;
-        cout << "Running query with execution plan: \n" << root->toString() << endl;
+        cout << "Running query with execution plan: \n" << root->printTree() << endl;
         QueryTable<Bit> *output = root->run();
         string fq_filename = dst_dir + "/" + query_name + (s.party_ == 1 ? ".alice" : ".bob");
         std::vector<int8_t> results = output->reveal(emp::XOR)->serialize();
@@ -60,7 +62,7 @@ void Catalyst::runQueries() {
 void Catalyst::importSecretShares(const string & table_name, const int & src_party) {
     // read secret shares from file
     // import into table_manager
-    string fq_table_file = study_.secret_shares_root_ + "/" + std::to_string(src_party) + "/" + table_name;
+    string fq_table_file = parser_->study_.secret_shares_root_ + "/" + std::to_string(src_party) + "/" + table_name;
     SystemConfiguration & s = SystemConfiguration::getInstance();
     string suffix = (s.party_ == 1) ? "alice" : "bob";
     string secret_shares_file = fq_table_file + "." + suffix;

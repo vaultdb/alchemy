@@ -13,14 +13,18 @@ namespace catalyst {
     class Catalyst {
     public:
         Catalyst(int party, const std::string json_config_filename);
-        ~Catalyst() { } // emp_manager is deleted by SystemConfiguration
+        ~Catalyst() {
+            if(parser_ != nullptr) {
+                delete parser_;
+            }
+        } // emp_manager is deleted by SystemConfiguration
 
         void loadStudyData();
         void runQueries();
 
     private:
         bool data_loaded_ = false;
-        CatalystStudy<Bit> study_;
+        StudyParser *parser_ = nullptr;
         TableManager & table_manager_ = TableManager::getInstance();
 
         void importSecretShares(const string & table_name, const int & src_party);
