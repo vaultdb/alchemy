@@ -145,10 +145,6 @@ namespace vaultdb {
                     if(input_row_cnt > 0) f.initializeFieldSizeWithCardinality(input_row_cnt);
                 }
                 else { // sum, avg
-                    // allow it to sum up over bools
-                    if(agg.type == AggregateId::SUM)
-                        agg_type = (agg_type == FieldType::BOOL) ? FieldType::LONG :
-                                   (agg_type == FieldType::SECURE_BOOL) ?  FieldType::SECURE_LONG : agg_type;
                     f = QueryFieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
                 }
                 output_schema.putField(f);
