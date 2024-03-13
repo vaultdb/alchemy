@@ -66,14 +66,14 @@ QueryTable<B> *Operator<B>::run() {
 				" ran for " + std::to_string(runtime_ms_) + " ms, " + 
 				"gate count: " + std::to_string(gate_cnt_) + 
 				" output cardinality: " + std::to_string(output_->tuple_cnt_) +
-				", row width=" + std::to_string(output_schema_.size()) + "\n", Level::INFO);
+				", row width=" + std::to_string(output_schema_.size()), Level::INFO);
 
         if (gate_cnt_ > 0  && this->getOperatorId() >= -1) {
             size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
             float relative_error = std::fabs(((float) estimated_gates) - ((float) gate_cnt_)) / (float) gate_cnt_ * 100.0;
             log->write("Estimated cost for " + this->toString() + " : " + std::to_string(estimated_gates) +
                     ", Observed gates: " + std::to_string(gate_cnt_) +
-                    ", Error rate(%) : " + std::to_string(relative_error) + "\n", Level::INFO);
+                    ", Error rate(%) : " + std::to_string(relative_error), Level::DEBUG);
         }
     }
 
