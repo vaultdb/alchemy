@@ -5,6 +5,10 @@
 #include "common/union_hybrid_data.h"
 #include "operators/project.h"
 #include "expression/expression_node.h"
+#include "data/csv_reader.h"
+
+#define TESTBED 1
+#define EXPECTED_RESULTS_PATH "pilot/study/phame/expected"
 
 using namespace catalyst;
 
@@ -48,9 +52,14 @@ void Catalyst::runQueries() {
 
     for(auto &query : study.queries_) {
         string query_name = query.first;
+        // TODO: give this a better name later
+        string dst_table_name = query_name + "_res";
+
         Operator<Bit> *root = query.second;
         cout << "Running query with execution plan: \n" << root->printTree() << endl;
         QueryTable<Bit> *output = root->run();
+        TableManager::getInstance().insertTable(dst_table_name, output);
+
         string fq_filename = dst_dir + "/" + query_name + (s.party_ == 1 ? ".alice" : ".bob");
         std::vector<int8_t> results = output->reveal(emp::XOR)->serialize();
         DataUtilities::writeFile(fq_filename, results);
@@ -115,5 +124,21 @@ int main(int argc, char **argv) {
     Catalyst catalyst(party, argv[2]);
     catalyst.loadStudyData();
     catalyst.runQueries();
+
+    if(TESTBED) {
+        CatalystStudy<Bit> study = catalyst.getStudy();
+        for(auto &query : study.queries_) {
+            string query_name = query.first;
+            string dst_table_name = query_name + "_res";
+            SecureTable *output = TableManager::getInstance().getTable<Bit>(dst_table_name);
+            PlainTable *revealed = output->reveal();
+
+            string expected_results_file = string(EXPECTED_RESULTS_PATH) + "/" + query_name + ".csv";
+            // the test generator (pilot/test/generate-and-load-phame-test-data.sh) will write out the results to a file
+            // we generate expected results in pilot/test/phame/load-generated-data.sql
+            PlainTable *expected = CsvReader::readCsv(expected_results_file, revealed->getSchema());
+            assert(*revealed == *expected);
+        }
+    }
 
 }

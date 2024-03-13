@@ -21,6 +21,7 @@ namespace catalyst {
 
         void loadStudyData();
         void runQueries();
+        CatalystStudy<Bit> getStudy() const { return parser_->study_; }
 
     private:
         bool data_loaded_ = false;
