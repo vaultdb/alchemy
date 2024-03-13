@@ -137,6 +137,7 @@ int main(int argc, char **argv) {
             // the test generator (pilot/test/generate-and-load-phame-test-data.sh) will write out the results to a file
             // we generate expected results in pilot/test/phame/load-generated-data.sql
             PlainTable *expected = CsvReader::readCsv(expected_results_file, revealed->getSchema());
+            expected->order_by_ = revealed->order_by_;
             assert(*revealed == *expected);
         }
     }
