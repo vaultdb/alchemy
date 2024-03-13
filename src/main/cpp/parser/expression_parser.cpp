@@ -77,8 +77,21 @@ ExpressionNode<B> * ExpressionParser<B>::parseSubExpression(const ptree &tree, c
         ExpressionNode<B> *t = parseHelper(it->second, lhs, rhs);
         children.push_back(t);
     }
-
-    ExpressionNode<B> *res = ExpressionFactory<B>::getExpressionNode(op_name, children);
+    // op name is all upppercase
+    std::transform(op_name.begin(), op_name.end(), op_name.begin(), ::toupper);
+    // CAST has one additional arg in Calcite: type
+    ExpressionNode<B> *res = nullptr;
+    if(op_name == "CAST") {
+        ptree type = tree.get_child("type");
+        std::string type_str = type.get_child("type").template get_value<std::string>();
+        FieldType dst_type = TypeUtilities::getTypeFromString(type_str);
+        // Calcite only knows plaintext types, need to convert to secure
+        if(std::is_same_v<B, emp::Bit>) dst_type = TypeUtilities::toSecure(dst_type);
+        // sanity checking
+        if(std::is_same_v<B, bool>) dst_type = TypeUtilities::toPlain(dst_type);
+        res = new CastNode<B>(children[0], dst_type);
+    }
+    else res = ExpressionFactory<B>::getExpressionNode(op_name, children);
 
     for(ExpressionNode<B> *child : children) {
         delete child;

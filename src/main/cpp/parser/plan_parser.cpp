@@ -582,17 +582,19 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
     if(join_tree.count("joinType") > 0)
         join_type = join_tree.get_child("joinType").template get_value<string>();
+    cout << "Parsed join type: " << join_type << endl;
 
+    // only one algo supported for simulated left-join
+    if(join_type == "left") {
+        return new LeftKeyedJoin<B>(lhs, rhs, join_condition);
+    }
 
     // if fkey designation exists, use this to create keyed join
     if(join_tree.count("foreignKey") > 0 || join_tree.count("foreign-key") > 0) {
         int foreign_key = (join_tree.count("foreignKey") > 0) ? join_tree.get_child("foreignKey").template get_value<int>()
                 : join_tree.get_child("foreign-key").template get_value<int>();
 
-        // only one algo supported for simulated left-join
-        if(join_type == "left") {
-            return new LeftKeyedJoin<B>(lhs, rhs, join_condition);
-        }
+
 
         if (join_algo == "auto") {
 

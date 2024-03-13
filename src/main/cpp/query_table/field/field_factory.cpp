@@ -128,6 +128,11 @@ PlainField FieldFactory<bool>::toLong(const PlainField & field) {
         int32_t payload = field.getValue<int32_t>();
         return PlainField(FieldType::LONG, (int64_t) payload);
     }
+    if(field.getType() == FieldType::BOOL) {
+        int64_t payload = field.getValue<bool>();
+        return PlainField(FieldType::LONG, payload);
+    }
+
     throw std::invalid_argument("toLong not supported for " + TypeUtilities::getTypeName(field.getType()));
 
 }
@@ -257,6 +262,11 @@ SecureField FieldFactory<emp::Bit>::toLong(const SecureField & field) {
     if(field.getType() == FieldType::SECURE_INT) {
         emp::Integer payload = field.getInt();
         payload.resize(64);
+        return SecureField(FieldType::SECURE_LONG, payload);
+    }
+    if(field.getType() == FieldType::SECURE_BOOL) {
+        emp::Integer payload(64, 0);
+        payload[0] = field.getValue<emp::Bit>();
         return SecureField(FieldType::SECURE_LONG, payload);
     }
     throw std::invalid_argument("toLong not supported for " + TypeUtilities::getTypeName(field.getType()));
