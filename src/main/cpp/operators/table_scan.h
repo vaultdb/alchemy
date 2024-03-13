@@ -17,14 +17,16 @@ namespace vaultdb {
                 throw std::runtime_error("Table " + table_name + " not found in TableManager!");
             }
             auto table = TableManager::getInstance().getTable<B>(table_name);
-            auto collation = table->order_by_;
-            this->setSortOrder(collation);
+            this->setSortOrder(table->order_by_);
             this->output_schema_ = table->getSchema();
             this->output_cardinality_ = (limit > -1) ? limit_ :  table->tuple_cnt_;
 
         }
 
         QueryTable<B> *runSelf() override {
+            this->start_time_ = clock_start();
+            this->start_gate_cnt_ = this->system_conf_.andGateCount();
+
             this->output_ = TableManager::getInstance().getTable<B>(table_name_)->clone();
             if(limit_ >= 0) {
                 this->output_->resize(limit_);
@@ -55,6 +57,7 @@ namespace vaultdb {
             if(this->table_name_ != other_node.table_name_) return false;
             return this->operatorEquality(other);
         }
+
 
         string getTableName() const {
             return table_name_;
