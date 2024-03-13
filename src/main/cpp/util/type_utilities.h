@@ -56,7 +56,7 @@ namespace vaultdb {
             if(field_str_lower == "int32" || field_str_lower == "int")
                 return FieldType::INT;
 
-            if(field_str_lower == "int64" || field_str_lower == "long")
+            if(field_str_lower == "int64" || field_str_lower == "long" || field_str_lower == "bigint")
                 return FieldType::LONG;
 
             if(field_str_lower == "float")
