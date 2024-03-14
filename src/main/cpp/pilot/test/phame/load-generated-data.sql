@@ -98,9 +98,10 @@ CREATE OR REPLACE FUNCTION rollup_query (sid INT)
 AS $$
 BEGIN
     RETURN QUERY
-        SELECT demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary, COUNT(demo.patid) patient_cnt, SUM(dx_diabetes::INT) diabetes_cnt, SUM(dx_hypertension::INT) hypertension_cnt, SUM(dx_cervical_cancer::INT) cervical_cancer_cnt, SUM(dx_breast_cancer::INT) breast_cancer_cnt, SUM(dx_lung_cancer::INT) lung_cancer_cnt, SUM(dx_colorectal_cancer::INT) colorectal_cancer_cnt
-        FROM phame_demographic demo LEFT JOIN phame_diagnosis pd on demo.patid = pd.patid
-        WHERE demo.site_id = sid AND pd.site_id = sid
+        SELECT demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary, COUNT(demo.patid) patient_cnt, SUM(COALESCE(dx_diabetes, false)::INT) diabetes_cnt, SUM(COALESCE(dx_hypertension, false)::INT) hypertension_cnt, SUM(COALESCE(dx_cervical_cancer, false)::INT) cervical_cancer_cnt, SUM(COALESCE(dx_breast_cancer, false)::INT) breast_cancer_cnt, SUM(COALESCE(dx_lung_cancer, false)::INT) lung_cancer_cnt, SUM(COALESCE(dx_colorectal_cancer, false)::INT) colorectal_cancer_cnt
+
+        FROM phame_demographic demo LEFT JOIN phame_diagnosis pd on demo.patid = pd.patid AND demo.site_id = pd.site_id
+        WHERE demo.site_id = sid
         GROUP BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary
         ORDER BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary;
 END; $$
@@ -115,7 +116,7 @@ END; $$
 
 
 
--- sites 1 and 3 are row contributors in our test
+-- sites 1 and 3 are row-level contributors in our test
 -- output their phame_demo and phame_diagnosis tables without site_id to reflect the setup in their SQL calls
 \copy (SELECT patid, age_cat, gender, race, ethnicity, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 1) TO 'pilot/secret_shares/input/1/phame_demographic.csv' WITH DELIMITER ',';
 \copy (SELECT patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 1) TO 'pilot/secret_shares/input/1/phame_diagnosis.csv' WITH DELIMITER ',';
@@ -123,4 +124,4 @@ END; $$
 \copy (SELECT patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 3) TO 'pilot/secret_shares/input/3/phame_diagnosis.csv' WITH DELIMITER ',';
 
 -- generate expected results
-\copy (SELECT demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary, COUNT(demo.patid) patient_cnt, SUM(dx_diabetes::INT) diabetes_cnt, SUM(dx_hypertension::INT) hypertension_cnt, SUM(dx_cervical_cancer::INT) cervical_cancer_cnt, SUM(dx_breast_cancer::INT) breast_cancer_cnt, SUM(dx_lung_cancer::INT) lung_cancer_cnt, SUM(dx_colorectal_cancer::INT) colorectal_cancer_cnt FROM phame_demographic demo LEFT JOIN phame_diagnosis pd ON demo.patid = pd.patid AND demo.site_id = pd.site_id GROUP BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary ORDER BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary) TO 'pilot/study/phame/expected/phame_diagnosis_rollup.csv' WITH DELIMITER ','
+\copy (SELECT demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary,  COUNT(demo.patid) patient_cnt, SUM(COALESCE(dx_diabetes, false)::INT) diabetes_cnt, SUM(COALESCE(dx_hypertension, false)::INT) hypertension_cnt, SUM(COALESCE(dx_cervical_cancer, false)::INT) cervical_cancer_cnt, SUM(COALESCE(dx_breast_cancer, false)::INT) breast_cancer_cnt, SUM(COALESCE(dx_lung_cancer, false)::INT) lung_cancer_cnt, SUM(COALESCE(dx_colorectal_cancer, false)::INT) colorectal_cancer_cnt FROM phame_demographic demo LEFT JOIN phame_diagnosis pd on demo.patid = pd.patid AND demo.site_id = pd.site_id GROUP BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary ORDER BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary) TO 'pilot/study/phame/expected/phame_diagnosis_rollup.csv' WITH DELIMITER ','

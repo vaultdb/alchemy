@@ -582,7 +582,6 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
     if(join_tree.count("joinType") > 0)
         join_type = join_tree.get_child("joinType").template get_value<string>();
-    cout << "Parsed join type: " << join_type << endl;
 
     // only one algo supported for simulated left-join
     if(join_type == "left") {
