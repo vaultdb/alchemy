@@ -8,7 +8,7 @@
 
 using namespace vaultdb;
 
-PlainField FieldFactory<bool>::getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src) {
+PlainField FieldFactory<bool>::getFieldFromString(const FieldType &type, const size_t &str_len, const std::string &src) {
     switch (type) {
         case FieldType::BOOL: {
 	  
@@ -35,11 +35,13 @@ PlainField FieldFactory<bool>::getFieldFromString(const FieldType &type, const s
             return PlainField(type, intField);
         }
         case FieldType::STRING: {
-            std::string fieldStr = src;
-            while(fieldStr.length() < strLength) {
-                fieldStr += " ";
+            std::string field_str = src;
+            while(field_str.length() < str_len) {
+                field_str += " ";
             }
-            return PlainField(type, fieldStr);
+            // in case the string is longer than the field length, truncate it
+            field_str = field_str.substr(0, str_len);
+            return PlainField(type, field_str);
 
         }
         case FieldType::FLOAT: {

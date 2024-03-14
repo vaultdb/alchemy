@@ -19,7 +19,7 @@ namespace vaultdb {
     template<>
     class FieldFactory<bool> {
     public:
-        static PlainField getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src);
+        static PlainField getFieldFromString(const FieldType &type, const size_t &str_len, const std::string &src);
         static PlainField getZero(const FieldType & type);
         static PlainField getOne(const FieldType & type);
 
