@@ -112,6 +112,9 @@ int main(int argc, char **argv) {
     // e.g.,
     // Alice: ./bin/catalyst 1 pilot/study/phame/study.json
     // Bob: ./bin/catalyst 2 pilot/study/phame/study.json
+
+    // for testing depends on generating synthetic data.  Example call for this:
+    // bash pilot/test/generate-and-load-phame-test-data.sh 4 100
     if(argc < 3) {
         std::cout << "usage: ./bin/catalyst <party> <json config file>" << std::endl;
         exit(-1);
