@@ -37,28 +37,17 @@ namespace vaultdb {
             schemas_[table_name] = QuerySchema::toPlain(schema);
         }
 
-        template<typename B>
-        QueryTable<B> *getTable(const string & table_name);
-
-        template<>
-        QueryTable<Bit> *getTable(const string & table_name);
-
-        template<>
-        QueryTable<bool> *getTable(const string & table_name);
+        PlainTable *getPlainTable(const string & table_name);
+        SecureTable *getSecureTable(const string & table_name);
 
 
         // simply overwrite any pre-existing table
         // use this with caution
         // recommend insertTable below when possible
         // it appends to any pre-existing secret shares
-        template<typename B>
-        void putTable(const string & table_name, QueryTable<B> *table);
 
-        template<>
-        void putTable<Bit>(const string & table_name, QueryTable<Bit> *table);
-
-        template<>
-        void putTable<bool>(const string & table_name, QueryTable<bool> *table);
+        void putSecureTable(const string & table_name, QueryTable<Bit> *table);
+        void putPlainTable(const string & table_name, QueryTable<bool> *table);
 
         QuerySchema getSchema(const string & table_name) {
             return schemas_[table_name];
@@ -68,15 +57,15 @@ namespace vaultdb {
 
             if(secure_tables_.find(table_name) == secure_tables_.end()
             && schemas_.find(table_name) == schemas_.end()) {
-                putTable<Bit>(table_name, src);
+                putSecureTable(table_name, src);
                 return;
             }
 
-            SecureTable *dst = getTable<Bit>(table_name);
+            SecureTable *dst = getSecureTable(table_name);
 
             assert(dst->getSchema() == src->getSchema());
             if(dst->empty()) {
-                putTable(table_name, src);
+                putSecureTable(table_name, src);
             }
 
             auto dst_tuple_cnt = dst->tuple_cnt_;
@@ -94,14 +83,14 @@ namespace vaultdb {
         void insertTable(const string & table_name, PlainTable *src) {
             if(plain_tables_.find(table_name) == plain_tables_.end()
                && schemas_.find(table_name) == schemas_.end()) {
-                putTable<bool>(table_name, src);
+                putPlainTable(table_name, src);
                 return;
             }
 
-            PlainTable *dst = getTable<bool>(table_name);
+            PlainTable *dst = getPlainTable(table_name);
             assert(dst->getSchema() == src->getSchema());
             if(dst->empty()) {
-                putTable(table_name, src);
+                putPlainTable(table_name, src);
             }
             auto dst_tuple_cnt = dst->tuple_cnt_;
             int new_table_len = dst_tuple_cnt + src->tuple_cnt_;

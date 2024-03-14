@@ -13,13 +13,13 @@ namespace vaultdb {
         // if no limit set, return whole table
         TableScan(const string & table_name, const int & limit = -1) : Operator<B>(SortDefinition()), table_name_(table_name), limit_(limit) {
 
-            if(TableManager::getInstance().getTable<B>(table_name) == nullptr) {
-                throw std::runtime_error("Table " + table_name + " not found in TableManager!");
-            }
-            auto table = TableManager::getInstance().getTable<B>(table_name);
-            this->setSortOrder(table->order_by_);
-            this->output_schema_ = table->getSchema();
-            this->output_cardinality_ = (limit > -1) ? limit_ :  table->tuple_cnt_;
+            updateTable();
+
+            this->setSortOrder(this->output_->order_by_);
+            this->output_schema_ = this->output_->getSchema();
+            this->output_cardinality_ = this->output_->tuple_cnt_;
+
+
 
         }
 
@@ -27,14 +27,11 @@ namespace vaultdb {
             this->start_time_ = clock_start();
             this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-            this->output_ = TableManager::getInstance().getTable<B>(table_name_)->clone();
-            if(limit_ >= 0) {
-                this->output_->resize(limit_);
-            }
-            else {
-                // update output card based on current table size
-                this->output_cardinality_ = this->output_->tuple_cnt_;
-            }
+            updateTable();
+
+            // update output card based on current table size
+            this->output_cardinality_ = this->output_->tuple_cnt_;
+
             return this->output_;
 
         }
@@ -81,6 +78,25 @@ namespace vaultdb {
     private:
         std::string table_name_;
         int limit_ = -1;
+
+        void updateTable() {
+            QueryTable<B> *table;
+            if(std::is_same_v<B, bool>) {
+                // casting to address compile-time syntax errors
+                table = (QueryTable<B> *) TableManager::getInstance().getPlainTable(table_name_);
+            }
+            else {
+                table = (QueryTable<B> *) TableManager::getInstance().getSecureTable(table_name_);
+
+            }
+            if(table == nullptr) {
+                throw std::runtime_error("Table " + table_name_ + " not found in TableManager!");
+            }
+
+            this->output_ = table->clone();
+            if(limit_ > -1) this->output_->resize(limit_);
+
+        }
 
     };
 }

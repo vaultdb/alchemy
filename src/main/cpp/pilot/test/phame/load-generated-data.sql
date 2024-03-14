@@ -3,9 +3,9 @@ DROP TABLE IF EXISTS phame_demographic;
 CREATE TABLE phame_demographic (patid int,
                          age_cat char(1),
                          gender char(1),
-                         ethnicity char(1),
                          race char(1),
-                            zip char(5),
+                        ethnicity char(1),
+                        zip char(5),
                             payer_primary char(2),
                             payer_secondary char(2),
                             site_id int);
@@ -123,4 +123,4 @@ END; $$
 \copy (SELECT patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 3) TO 'pilot/secret_shares/input/3/phame_diagnosis.csv' WITH DELIMITER ',';
 
 -- generate expected results
-\copy (SELECT demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary, COUNT(demo.patid) patient_cnt, COUNT(dx_diabetes) diabetes_cnt, COUNT(dx_hypertension) hypertension_cnt, COUNT(dx_cervical_cancer) cervical_cancer_cnt, COUNT(dx_breast_cancer) breast_cancer_cnt, COUNT(dx_lung_cancer) lung_cancer_cnt, COUNT(dx_colorectal_cancer) colorectal_cancer_cnt FROM phame_demographic demo LEFT JOIN phame_diagnosis pd on demo.patid = pd.patid GROUP BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary ORDER BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary) TO 'pilot/study/phame/expected/phame_diagnosis_rollup.csv' WITH DELIMITER ','
+\copy (SELECT demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary, COUNT(demo.patid) patient_cnt, COUNT(dx_diabetes) diabetes_cnt, COUNT(dx_hypertension) hypertension_cnt, COUNT(dx_cervical_cancer) cervical_cancer_cnt, COUNT(dx_breast_cancer) breast_cancer_cnt, COUNT(dx_lung_cancer) lung_cancer_cnt, COUNT(dx_colorectal_cancer) colorectal_cancer_cnt FROM phame_demographic demo LEFT JOIN phame_diagnosis pd ON demo.patid = pd.patid AND demo.site_id = pd.site_id GROUP BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary ORDER BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary) TO 'pilot/study/phame/expected/phame_diagnosis_rollup.csv' WITH DELIMITER ','

@@ -8,7 +8,7 @@
 // produces an output of size |foreign key| relation
 // simulated because VaultDB does not implement null handling
 // if a row has no match (or all matches are dummies) then we retain the row in the output and zero out its unmatched fields.
-// for use in PHAME
+// for use in PHAME, not recommended for general use
 namespace  vaultdb {
     template<typename B>
     class LeftKeyedJoin : public Join<B> {

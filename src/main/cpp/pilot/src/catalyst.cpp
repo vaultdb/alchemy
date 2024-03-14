@@ -130,15 +130,22 @@ int main(int argc, char **argv) {
         for(auto &query : study.queries_) {
             string query_name = query.first;
             string dst_table_name = query_name + "_res";
-            SecureTable *output = TableManager::getInstance().getTable<Bit>(dst_table_name);
+            SecureTable *output = TableManager::getInstance().getSecureTable(dst_table_name);
             PlainTable *revealed = output->reveal();
 
             string expected_results_file = string(EXPECTED_RESULTS_PATH) + "/" + query_name + ".csv";
             // the test generator (pilot/test/generate-and-load-phame-test-data.sh) will write out the results to a file
             // we generate expected results in pilot/test/phame/load-generated-data.sql
+            cout << "Verifying results of " << query_name << " against " << expected_results_file << endl;
             PlainTable *expected = CsvReader::readCsv(expected_results_file, revealed->getSchema());
             expected->order_by_ = revealed->order_by_;
+
+            cout << "Observed: " << DataUtilities::printTable(revealed, 5) << endl;
+            cout << "Expected: " << DataUtilities::printTable(expected, 5) << endl;
+
+
             assert(*revealed == *expected);
+            cout << "Results match!" << endl;
         }
     }
 

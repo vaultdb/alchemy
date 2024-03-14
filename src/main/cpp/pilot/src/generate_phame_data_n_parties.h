@@ -50,12 +50,12 @@ struct PatientTuple {
 
     string toString() const {
         std::stringstream s;
-        s << patid << "," << age_cat << "," << gender << "," << ethnicity << "," << race << "," << zip << "," << payer_primary << "," << payer_secondary << "," << site_id;
+        s << patid << "," << age_cat << "," << gender << "," << race << "," << ethnicity << "," << zip << "," << payer_primary << "," << payer_secondary << "," << site_id;
         return s.str();
     }
 
     static string getSchema()  {
-       return "(pat_id:int32, age_cat:char(1), gender:char(2),  ethnicity:char(1), race:char(1), zip_code:char(5), payer_primary char(1), payer_secondary char(1), site_id:int32)";
+       return "(pat_id:int32, age_cat:char(1), gender:char(2),  race:char(1), ethnicity:char(1),  zip_code:char(5), payer_primary char(1), payer_secondary char(1), site_id:int32)";
     }
 };
 
