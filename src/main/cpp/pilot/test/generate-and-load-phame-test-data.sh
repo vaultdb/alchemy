@@ -23,7 +23,7 @@ mkdir pilot/secret_shares/input/3
 #clear out old data
 rm pilot/secret_shares/input/*/*
 
-make generate_phame_data_n_parties
+make generate_phame_data_n_parties secret_share_csv
 ./bin/generate_phame_data_n_parties pilot/test/input $HOST_COUNT $TUPLE_COUNT
 
 

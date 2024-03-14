@@ -98,7 +98,7 @@ CREATE OR REPLACE FUNCTION rollup_query (sid INT)
 AS $$
 BEGIN
     RETURN QUERY
-        SELECT demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary, COUNT(demo.patid) patient_cnt, COUNT(dx_diabetes) diabetes_cnt, COUNT(dx_hypertension) hypertension_cnt, COUNT(dx_cervical_cancer) cervical_cancer_cnt, COUNT(dx_breast_cancer) breast_cancer_cnt, COUNT(dx_lung_cancer) lung_cancer_cnt, COUNT(dx_colorectal_cancer) colorectal_cancer_cnt
+        SELECT demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary, COUNT(demo.patid) patient_cnt, SUM(dx_diabetes::INT) diabetes_cnt, SUM(dx_hypertension::INT) hypertension_cnt, SUM(dx_cervical_cancer::INT) cervical_cancer_cnt, SUM(dx_breast_cancer::INT) breast_cancer_cnt, SUM(dx_lung_cancer::INT) lung_cancer_cnt, SUM(dx_colorectal_cancer::INT) colorectal_cancer_cnt
         FROM phame_demographic demo LEFT JOIN phame_diagnosis pd on demo.patid = pd.patid
         WHERE demo.site_id = sid AND pd.site_id = sid
         GROUP BY demo.age_cat, demo.gender, demo.race, demo.ethnicity, demo.zip, demo.payer_primary, demo.payer_secondary
