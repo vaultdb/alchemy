@@ -6,8 +6,8 @@ CREATE TABLE phame_demographic (patid int,
                          race char(1),
                         ethnicity char(1),
                         zip char(5),
-                            payer_primary char(2),
-                            payer_secondary char(2),
+                            payer_primary char(1),
+                            payer_secondary char(1),
                             site_id int);
 
 
