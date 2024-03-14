@@ -117,9 +117,9 @@ END; $$
 
 -- sites 1 and 3 are row contributors in our test
 -- output their phame_demo and phame_diagnosis tables without site_id to reflect the setup in their SQL calls
-\copy (SELECT patid, age_cat, gender, ethnicity, race, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 1) TO 'pilot/secret_shares/input/1/phame_demographic.csv' WITH DELIMITER ',';
+\copy (SELECT patid, age_cat, gender, race, ethnicity, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 1) TO 'pilot/secret_shares/input/1/phame_demographic.csv' WITH DELIMITER ',';
 \copy (SELECT patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 1) TO 'pilot/secret_shares/input/1/phame_diagnosis.csv' WITH DELIMITER ',';
-\copy (SELECT patid, age_cat, gender, ethnicity, race, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 3) TO 'pilot/secret_shares/input/3/phame_demographic.csv' WITH DELIMITER ',';
+\copy (SELECT patid, age_cat, gender, race, ethnicity, zip, payer_primary, payer_secondary FROM phame_demographic WHERE site_id = 3) TO 'pilot/secret_shares/input/3/phame_demographic.csv' WITH DELIMITER ',';
 \copy (SELECT patid, dx_diabetes, dx_hypertension, dx_breast_cancer, dx_lung_cancer, dx_colorectal_cancer, dx_cervical_cancer FROM phame_diagnosis WHERE site_id = 3) TO 'pilot/secret_shares/input/3/phame_diagnosis.csv' WITH DELIMITER ',';
 
 -- generate expected results

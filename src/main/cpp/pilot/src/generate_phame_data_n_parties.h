@@ -41,8 +41,8 @@ struct PatientTuple {
     int patid = -1;
     char age_cat;
   char gender;
-  char ethnicity;
   char  race;
+    char ethnicity;
     std::string zip;
     char payer_primary;
     char payer_secondary;
