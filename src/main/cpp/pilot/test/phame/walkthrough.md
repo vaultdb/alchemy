@@ -109,7 +109,7 @@ Example JSON:
   "protocol": "sh2pc",
   "alice_host":  "127.0.0.1",
   "port": "65432",
-  "note": "all paths are relative to $VAULTDB_ROOT/src/main/cpp",
+  "note": "all relative paths start from $VAULTDB_ROOT/src/main/cpp - this is where we launch MPC from.",
   "secret_shares_path": "pilot/secret_shares/output",
   "query_path": "pilot/study/phame/plans",
   "dst_path": "pilot/results/phame",
