@@ -22,19 +22,18 @@ StudyParser::StudyParser(const std::string plan_filename) {
 
     // parse the study name
     study_.study_name_ = pt.get<std::string>("name");
-    study_.secret_shares_root_ = pt.get<std::string>("secret_shares_root");
-
-    if(study_.secret_shares_root_[0] != '/') {
-        study_.secret_shares_root_ = Utilities::getCurrentWorkingDirectory() + "/" + study_.secret_shares_root_;
-    }
+    study_.secret_shares_path_ = Utilities::getFullyQualifiedPath(pt.get<std::string>("secret_shares_path"));
 
     port_ = pt.get<int>("port");
     alice_host_ = pt.get<std::string>("alice_host");
     protocol_ = pt.get<std::string>("protocol");
+    study_.min_cell_cnt_ = pt.get<int>("min_cell_count");
+    string query_path = Utilities::getFullyQualifiedPath(pt.get<std::string>("query_path"));
+    study_.dst_path_ = Utilities::getFullyQualifiedPath(pt.get<std::string>("dst_path"));
 
-    // drop and recreate DB if it exists
-//    Utilities::runCommand("psql -c 'DROP DATABASE IF EXISTS " + study_.db_name_ + "'");
-//    Utilities::runCommand("psql -c 'CREATE DATABASE " + study_.db_name_ + "'");
+    Utilities::mkdir(study_.dst_path_);
+
+
     TableManager & table_manager = TableManager::getInstance();
 
     // parse the input tables
@@ -46,26 +45,25 @@ StudyParser::StudyParser(const std::string plan_filename) {
             input_table.data_contributors_.push_back(contributor.second.get_value<int>());
         }
         study_.input_tables_.push_back(input_table);
-
-        // set up the schema in psql backend for use in parsing queries
-//        string create_table_statement = input_table.schema_.createTableStatement(input_table.name_);
-//        DataUtilities::runQueryNoOutput(study_.db_name_, create_table_statement);
         table_manager.addEmptyTable(input_table.name_, input_table.schema_);
     }
 
 
     // parse the queries
-    study_.query_path_ = pt.get_child("queries").get<std::string>("query_path");
-    study_.dst_path_ = pt.get_child("queries").get<std::string>("dst_path");
-    for(auto &query_file : pt.get_child("queries").get_child("names")) {
-        string query_name = query_file.second.get_value<string>();
-        string fq_json_filename =  study_.query_path_ + "/" + query_name + ".json";
-        if(fq_json_filename[0] != '/') {
-            fq_json_filename = Utilities::getCurrentWorkingDirectory() + "/" + fq_json_filename;
-        }
+
+    for(auto &query_spec : pt.get_child("queries")) {
+        QuerySpec s;
+        s.name_ = query_spec.second.get<std::string>("name");
+
+        string fq_json_filename =  query_path + "/" + s.name_ + ".json";
+
         // need to delay query parsing until EMP manager set up in case of local secret sharing
         // since port and host info are stored in JSON, we need to parse JSON to set up EMPManager
-        query_files_[query_name] = fq_json_filename;
+        s.plan_file_ = fq_json_filename;
+        for(auto &col : query_spec.second.get_child("count_cols")) {
+            s.count_cols_.push_back(col.second.get_value<int>());
+        }
+        study_.queries_[s.name_] = s;
     }
 
 }

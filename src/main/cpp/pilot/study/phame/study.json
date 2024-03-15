@@ -4,7 +4,10 @@
   "alice_host":  "127.0.0.1",
   "port": "65432",
   "note": "all paths are relative to $VAULTDB_ROOT/src/main/cpp",
-  "secret_shares_root": "pilot/secret_shares/output",
+  "secret_shares_path": "pilot/secret_shares/output",
+  "query_path": "pilot/study/phame/plans",
+  "dst_path": "pilot/results/phame",
+  "min_cell_count": 11,
   "tables": [
      {
        "name": "phame_cohort_counts",
@@ -27,12 +30,15 @@
       "input_parties": [0, 2]
     }
   ],
- "queries": {
-   "query_path": "pilot/study/phame/plans",
-   "dst_path": "pilot/results/phame",
-   "names": [
-     "phame_cohort_counts",
-     "phame_diagnosis_rollup"
+ "queries": [
+     {
+      "name": "phame_cohort_counts",
+      "count_cols": [1],
+       "note": "count cols are zero-indexed."
+    },
+     {
+       "name": "phame_diagnosis_rollup",
+       "count_cols": [7, 8, 9, 10, 11, 12, 13]
+     }
    ]
- }
 }

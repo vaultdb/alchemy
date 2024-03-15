@@ -95,12 +95,6 @@ Study table: N/A, this will take the place of the B5-B16 tables\
 **Partners**: all
 
 
-## Query Processing
-
-Step zero will be to add site_ids to all  `phame_demographic` and `phame_diagnosis` rows.  I will likely just make this a standalone binary that reads in the secret shares for a given file, appends a `site_id` column to the schema, and writes the secret shares to a new file.  This will be a good drop test for the schema of the shares,  and will get the data into a format that we can use for the rest of the study.
-
-*See the comments in the markdown for more on this.*
-
 ## JSON Study Parameters 
 
 A study will need to be defined in a JSON file.  This will include the following parameters:
@@ -116,93 +110,18 @@ Example JSON:
   "alice_host":  "127.0.0.1",
   "port": "65432",
   "note": "all paths are relative to $VAULTDB_ROOT/src/main/cpp",
-  "secret_shares_root": "pilot/secret_shares/output",
-  "db": "phame",
+  "secret_shares_path": "pilot/secret_shares/output",
+  "query_path": "pilot/study/phame/plans",
+  "dst_path": "pilot/results/phame",
+  "min_cell_count": 11,
   "tables": [
     {
       "name": "phame_cohort_counts",
       "schema": "(description:varchar(42), count:int64, site_id:int32)",
-      "input_parties": [
-        "0",
-        "1",
-        "2",
-        "3"
-      ]
+      "input_parties": [0, 1, 2, 3]
     },
     {
       "name": "phame_demographic",
-      "schema": "(patid:int32, age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1))",
-      "input_parties": [
-        "1",
-        "3"
-      ]
-    },
-    {
-      "name": "phame_diagnosis",
-      "schema": "(patid:int32, dx_diabetes:bool, dx_hypertension:bool, dx_cervical_cancer:bool, dx_breast_cancer:bool, dx_lung_cancer:bool, dx_colorectal_cancer:bool)",
-      "input_parties": [
-        "1",
-        "3"
-      ]
-    },
-    {
-      "name": "phame_diagnosis_rollup",
-      "schema": "(age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64)",
-      "input_parties": [
-        "0",
-        "1",
-        "2",
-        "3"
-      ]
-    }
-  ],
-  "queries": {
-    "query_path": "pilot/study/phame/plans",
-    "dst_path": "pilot/results/phame",
-    "names": [
-      "phame_cohort_counts",
-      "phame_diagnosis_rollup"
-    ]
-  }
-}
-```
-
-### Input Files
-Implicitly each input table is the union of all secret shares in the file.
-
-The secret shares are stored according to a naming convention.  The alice and bob shares need to have different names so that we can test this efficiently on a single machine. 
-
-Filenames start from `$PHAME_ROOT`  In the JSON example above, this is `/home/vaultdb/vaultdb-core/src/main/cpp/pilot/test/input/phame`.
-
-Each party's secret shares are stored in a directory named after the party.  The secret shares are stored in files named after the table.  The filenames are the party's name followed by the table name with the computing party as the suffix.  We have the suffixes `.alice` and `.bob`.  We can change this if we want to test with more parties, but I am resisting the temptation to make the suffixes ".0" and ".1" because it is easy to conflate with the party IDs.
-
-For example, the `phame_demographic` table for Party 0 will have Alice's secret shares stored in: `$PHAME_ROOT/0/phame_demographic.alice`.  
-
-To parse the JSON files for our SQL statements, we need the schema to exist in a PostgreSQL database.  We can remove this dependeny later, but for now it just makes it easier to confirm the schema for constructing the operators.  
-
-When the pilot runner reads this JSON file it will create a new database with the name specified in the "db" line (in this case "phame").  It will then create the tables with the specified schemas.  *This call is destructive and it will overwrite any pre-existing DB with the same name.*
-
-### Query Files
-
-For each output table we will need a JSON file for the SQL statement.  This will query against the database we defined in the tables section of the JSON file.  We could eventually just make this take in a SQL statement and have the config parser run the SQL statement parser (that writes the query execution plan JSON) on the specified file.  But for now we'll just pre-generate these. 
-
-Recall that our example spec for this is:
-```json
-{
-  "name": "phame",
-  "protocol": "sh2pc",
-  "alice_host":  "127.0.0.1",
-  "port": "65432",
-  "note": "all paths are relative to $VAULTDB_ROOT/src/main/cpp",
-  "secret_shares_root": "pilot/secret_shares/output",
-  "tables": [
-     {
-       "name": "phame_cohort_counts",
-       "schema": "(description:varchar(42), count:int64, site_id:int32)",
-       "input_parties": [0, 1, 2, 3]
-    },
-    {
-     "name": "phame_demographic",
       "schema": "(patid:int32, age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), site_id:int32)",
       "input_parties": [1, 3]
     },
@@ -217,58 +136,67 @@ Recall that our example spec for this is:
       "input_parties": [0, 2]
     }
   ],
- "queries": {
-   "query_path": "pilot/study/phame/plans",
-   "dst_path": "pilot/results/phame",
-   "names": [
-     "phame_cohort_counts",
-     "phame_diagnosis_rollup"
-   ]
- }
+  "queries": [
+    {
+      "name": "phame_cohort_counts",
+      "count_cols": [1],
+      "note": "count cols are zero-indexed."
+    },
+    {
+      "name": "phame_diagnosis_rollup",
+      "count_cols": [7, 8, 9, 10, 11, 12, 13]
+    }
+  ]
 }
 ```
 
-The `query_path` is the directory where the JSON files are stored.  The `dst_path` is the directory where the output  secret shares will be stored.  
+### Input Tables
+The secret shares are stored in the directory specified in `secret_shares_path`.  The alice and bob shares need to have different names so that we can test this efficiently on a single machine.
+Implicitly each input table is the union of all secret shares in the file.  Each table entry has three parts:
+* Name: this tells the system where to look for the secret shares.
+* Schema: defines the column names and their types.
+* Input parties: this tells the system which parties will contribute to this table.
 
-The `queries` list has the SQL-to-JSON files that we will read and execute.  For example, Alice will first run the file:\
-`/home/vaultdb/vaultdb-core/src/main/cpp/pilot/plans/phame_cohort_counts.json`
+Each party's secret shares are stored in a subdirectory named after the party.  The secret shares are stored in files named after the table.  The filenames are the party's name followed by the table name with the computing party as the suffix.  We have the suffixes `.alice` and `.bob`.  We can change this if we want to test with more parties, but I am resisting the temptation to make the suffixes ".0" and ".1" because it is easy to conflate with the party IDs.
 
-This will generate the output file:\
-`/home/vaultdb/vaultdb-core/src/main/cpp/pilot/output/phame_cohort_counts.alice`
+For example, the `phame_demographic` table for Party 0 will have Alice's secret shares stored in: `$SECRET_SHARES_PATH/0/phame_demographic.alice`.  
+
+### Query Files
+
+For each output table we will need a JSON file for the SQL statement.  This will query against the database we defined in the tables section of the JSON file.  We could eventually just make this take in a SQL statement and have the config parser run the [Calcite](https://calcite.apache.org) SQL statement parser (that writes the query execution plan JSON) on the specified file.  But for now we'll just pre-generate these. 
+
+The `query_path` is the directory where we store one JSON file per SQL statement.  The `dst_path` denotes the directory where the output of a query will be stored as secret shares.
+
+Each query specification has:
+* Name: this tells the system where to look for the SQL file.
+* Count cols: this is a list of the zero-indexed column numbers that we will sum over. 
+
+
+The `queries` list has the SQL-to-JSON files that we will read and execute.  For example, Alice will first run the query specified in:\
+`$QUERY_PATH/phame_cohort_counts.json`
+
+We will then redact the summed patient counts in the second column of the output table.  After that, each computing party will write the secret shares to:\
+`$DST_PATH/phame_cohort_counts.alice`
 
 The latter will be sent to the investigator once we are done the study. This will work similarly for the `phame_diagnosis_rollup` table and for Bob's shares.
 
+## Testing the Pipeline
+
+To try out this pipeline, start from `$VAULTDB_ROOT/src/main/cpp`.  To generate synthetic PHAME data, run:
+```bash 
+bash pilot/test/generate-and-load-phame-test-data.sh 4 100
+```
+
+Right now this is configured for 4 hosts, 100 rows generated per host.  You can change the rows per host to try scaling up or down but the data loading is only configured for 4 hosts for now.  Since this is all a simulated pipeline, I am not going to add infra for varying the number of hosts.  
+
+In this test, we have parties (0, 2) as aggregate-only data partners and (1, 3) are row-level ones.  This is congruent with what we have in the sample json file.
+
+To run the pipeline on a single host, run:
+```bash
+#alice
+./bin/catalyst 1 pilot/study/phame/study.json 
+#bob
+./bin/catalyst 2 pilot/study/phame/study.json 
+```
 
 
-[//]: # (## Output Tables and Next Steps)
-
-[//]: # ()
-[//]: # (For each age category and gender, we will compute stratified counts by zip code, race, and ethnicity.  They seem to be doing this in the study independant of diagnosis codes.)
-
-[//]: # ()
-[//]: # (We will also stratify by dx codes.  If we start with:\)
-
-[//]: # (`phame_rollup&#40;age_cat:char&#40;1&#41;, gender:char&#40;1&#41;, race:char&#40;1&#41;, ethnicity:char&#40;1&#41;, zip:char&#40;5&#41;, payer_primary:char&#40;1&#41;, payer_secondary:char&#40;1&#41;, patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64&#41;`)
-
-[//]: # ()
-[//]: # (and we union these together for all sites, we will compute:)
-
-[//]: # (```sql)
-
-[//]: # (SELECT age_cat, gender, race, ethnicity, zip, SUM&#40;patient_cnt&#41; AS patient_cnt, SUM&#40;diabetes_cnt&#41; AS diabetes_cnt, SUM&#40;hypertension_cnt&#41; AS hypertension_cnt, SUM&#40;cervical_cancer_cnt&#41; AS cervical_cancer_cnt, SUM&#40;breast_cancer_cnt&#41; AS breast_cancer_cnt, SUM&#40;lung_cancer_cnt&#41; AS lung_cancer_cnt, SUM&#40;colorectal_cancer_cnt&#41; AS colorectal_cancer_cnt )
-
-[//]: # (FROM phame_rollup )
-
-[//]: # (GROUP BY age_cat, gender, race, ethnicity, zip;)
-
-[//]: # (```)
-
-[//]: # ()
-[//]: # (Our other major output is the population-level statistics over the denominator.  This is a simple sum over all sites using the `phame_cohort_counts` table &#40;described in [Population-Level Statistics]&#40;#population-level-statistics&#41;&#41;.)
-
-[//]: # ()
-[//]: # (Implementation:)
-
-[//]: # (* Start with data generator for testing the system.  Generate these 4 tables automatically for several parties.)
-
-[//]: # (* Implement these tests using JSON plan format.)

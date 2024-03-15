@@ -206,6 +206,11 @@ namespace vaultdb {
             return output.str();
         }
 
+        static string getFullyQualifiedPath(const string & relative_path) {
+            string cwd = getCurrentWorkingDirectory();
+            if(relative_path[0] == '/') return relative_path;
+            return cwd + "/" + relative_path;
+        }
 
     };
 
