@@ -168,7 +168,7 @@ For each output table we will need a JSON file for the SQL statement.  This will
 The `query_path` is the directory where we store one JSON file per SQL statement.  The `dst_path` denotes the directory where the output of a query will be stored as secret shares.
 
 Each query specification has:
-* Name: this tells the system where to look for the SQL file.
+* Name: this tells the system where to look for the JSON file that specifies the query logic.
 * Count cols: this is a list of the zero-indexed column numbers that we will sum over. 
 
 
