@@ -193,7 +193,7 @@ This generator depends on PostgreSQL and the secret share generating library use
 
 Right now this test is configured for 4 hosts, 100 rows generated per host.  You can change the rows per host to try scaling up or down but the data loading is only configured for 4 hosts for now.  Since this is all a simulated pipeline, I am not planning to add infra for varying the number of hosts unless we need it.  
 
-We are configured with have parties (0, 2) as aggregate-only data partners and (1, 3) are row-level ones.  This is congruent with the contents of the [sample JSON config](#json-study-parameters).  In the repo, this config is stored in `pilot/study/phame/study.json`.
+We are configured with have parties (0, 2) as aggregate-only data partners and (1, 3) are row-level ones.  This is congruent with the contents of the [sample JSON config](#json-study-parameters).  In the repo, this config is stored in [`pilot/study/phame/study.json`](https://github.com/vaultdb/vaultdb-core/blob/emp-operators/src/main/cpp/pilot/study/phame/study.json).
 
 To run the pipeline on a single host, run:
 ```bash
