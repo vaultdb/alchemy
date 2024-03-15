@@ -189,9 +189,11 @@ To try out this pipeline, start from `$VAULTDB_ROOT/src/main/cpp`.  To generate 
 bash pilot/test/generate-and-load-phame-test-data.sh 4 100
 ```
 
-Right now this is configured for 4 hosts, 100 rows generated per host.  You can change the rows per host to try scaling up or down but the data loading is only configured for 4 hosts for now.  Since this is all a simulated pipeline, I am not going to add infra for varying the number of hosts unless we need it.  
+This generator depends on PostgreSQL and the secret share generating library uses VaultDB tables (so it links to the VaultDB library).  
 
-In this test, we have parties (0, 2) as aggregate-only data partners and (1, 3) are row-level ones.  This is congruent with what we have in the sample json file.
+Right now this test is configured for 4 hosts, 100 rows generated per host.  You can change the rows per host to try scaling up or down but the data loading is only configured for 4 hosts for now.  Since this is all a simulated pipeline, I am not planning to add infra for varying the number of hosts unless we need it.  
+
+We are configured with have parties (0, 2) as aggregate-only data partners and (1, 3) are row-level ones.  This is congruent with the contents of the [sample JSON config](#json-study-parameters).  In the repo, this config is stored in `pilot/study/phame/study.json`.
 
 To run the pipeline on a single host, run:
 ```bash
