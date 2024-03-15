@@ -140,7 +140,7 @@ Example JSON:
     {
       "name": "phame_cohort_counts",
       "count_cols": [1],
-      "note": "count cols are zero-indexed."
+      "note": "count cols are zero-indexed.  This denotes the cells we will redact when they have vals < min_cell_count"
     },
     {
       "name": "phame_diagnosis_rollup",
