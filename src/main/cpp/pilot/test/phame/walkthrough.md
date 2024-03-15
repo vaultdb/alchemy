@@ -194,9 +194,11 @@ In this test, we have parties (0, 2) as aggregate-only data partners and (1, 3) 
 To run the pipeline on a single host, run:
 ```bash
 #alice
-./bin/catalyst 1 pilot/study/phame/study.json 
+./bin/catalyst 1 pilot/study/phame/study.json  &
 #bob
 ./bin/catalyst 2 pilot/study/phame/study.json 
 ```
 
+The output should look similar to:
 
+<img src="phame-catalyst-demo.png" width="800">
