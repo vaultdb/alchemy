@@ -175,8 +175,10 @@ Each query specification has:
 The `queries` list has the SQL-to-JSON files that we will read and execute.  For example, Alice will first run the query specified in:\
 `$QUERY_PATH/phame_cohort_counts.json`
 
-We will then redact the summed patient counts in the second column of the output table.  After that, each computing party will write the secret shares to:\
-`$DST_PATH/phame_cohort_counts.alice`
+We will then redact the summed patient counts in the second column of the output table under MPC.  We loop over the specified columns and if their secret-shared value is less than `min_cell_count`, we replace it with -1. 
+
+After that, each computing party will write its XOR-able secret shares to:\
+`$DST_PATH/phame_cohort_counts.(alice|bob)`
 
 The latter will be sent to the investigator once we are done the study. This will work similarly for the `phame_diagnosis_rollup` table and for Bob's shares.
 
@@ -187,7 +189,7 @@ To try out this pipeline, start from `$VAULTDB_ROOT/src/main/cpp`.  To generate 
 bash pilot/test/generate-and-load-phame-test-data.sh 4 100
 ```
 
-Right now this is configured for 4 hosts, 100 rows generated per host.  You can change the rows per host to try scaling up or down but the data loading is only configured for 4 hosts for now.  Since this is all a simulated pipeline, I am not going to add infra for varying the number of hosts.  
+Right now this is configured for 4 hosts, 100 rows generated per host.  You can change the rows per host to try scaling up or down but the data loading is only configured for 4 hosts for now.  Since this is all a simulated pipeline, I am not going to add infra for varying the number of hosts unless we need it.  
 
 In this test, we have parties (0, 2) as aggregate-only data partners and (1, 3) are row-level ones.  This is congruent with what we have in the sample json file.
 
