@@ -33,10 +33,9 @@ namespace vaultdb {
         Operator<B> *getRoot() const { return root_; }
         map<int, Operator<B> * > getOperatorMap() const { return operators_; }
         vector<Operator<B> * > getSupportOps() const { return support_ops_; }
+        map<int, vector<SortDefinition>> getInterestingSortOrders() { return interesting_sort_orders_; }
 
         Operator<B> *getOperator(const int &op_id);
-
-        Operator<B> *optimizeTree();
 
         static Operator<B> *
         parse(const std::string &db_name, const string &sql_file, const string &json_file, const int &limit = -1);
@@ -47,8 +46,6 @@ namespace vaultdb {
 
         static tuple<int, SortDefinition, int> parseSqlHeader(const string &header);
 
-        map<int, vector<SortDefinition>> getInterestingSortOrders() { return interesting_sort_orders_; }
-        int total_plan_cnt_ = 0;
     private:
         std::string db_name_;
         StorageModel storage_model_ = SystemConfiguration::getInstance().storageModel();
@@ -60,16 +57,12 @@ namespace vaultdb {
 
         // plan enumerator state
         map<int, vector<SortDefinition>> interesting_sort_orders_;
-        size_t min_plan_cost_ = std::numeric_limits<size_t>::max();
-        Operator<B> *min_cost_plan_ = nullptr;
         std::map<int, Operator<B> * > operators_; // op ID --> operator instantiation
         std::vector<Operator<B> * > support_ops_; // these ones don't get an operator ID from the JSON plan
         std::map<int, std::vector<SortDefinition>> scan_sorts_; // op ID --> sort definition
         std::vector<Operator<B>*> operatorPool;
 
-
         void parseSqlInputs(const std::string &input_file);
-
         void parseSecurePlan(const std::string &plan_file);
         void parseSecurePlanString(const string & json_plan);
 
@@ -111,36 +104,8 @@ namespace vaultdb {
             throw;
         }
 
-
         // utils
         Operator<B> *getChildOperator(const int &my_operator_id, const boost::property_tree::ptree &pt) const;
-
-        void optimizeTreeHelper(Operator<B> *child);
-
-        void recurseNode(Operator<B> *op);
-
-        Operator<B> *fetchLeaf(Operator<B> *op);
-
-        void recurseJoin(Operator<B> *join);
-        void recurseAgg(Operator<B> *agg);
-        void recurseSort(Operator<B> *sort);
-
-        vector<SortDefinition> getCollations(Operator<B> *op) {
-            map<SortDefinition, int> collations; // making a map to eliminate duplicate collations
-            collations[SortDefinition()] = 0; // empty set
-            collations[op->getSortOrder()] = 0; // default sort
-            for (auto collation: interesting_sort_orders_[op->getOperatorId()]) {
-                collations[collation] = 0;
-            }
-
-            vector<SortDefinition> sorts;
-            for (auto collation: collations) {
-                sorts.push_back(collation.first);
-            }
-            return sorts;
-        }
-
-
     };
 
 
