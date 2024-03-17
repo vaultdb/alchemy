@@ -6,16 +6,18 @@
 #include "operators/project.h"
 #include "expression/expression_node.h"
 #include "data/csv_reader.h"
+#include "parser/plan_parser.h"
 
-#define TESTBED 1
+#define TESTBED 0
 #define EXPECTED_RESULTS_PATH "pilot/study/phame/expected"
 
 using namespace catalyst;
 
 Catalyst::Catalyst(int party, const std::string json_config_filename)  {
-    parser_ = new StudyParser(json_config_filename);
-    assert(parser_->protocol_ == "sh2pc");
-    auto emp_manager = new SH2PCManager(parser_->alice_host_, party, parser_->port_);
+    StudyParser parser(json_config_filename);
+    assert(parser.protocol_ == "sh2pc");
+    auto emp_manager = new SH2PCManager(parser.alice_host_, party, parser.port_);
+    study_ = parser.study_;
     SystemConfiguration & s = SystemConfiguration::getInstance();
     s.emp_mode_ = EmpMode::SH2PC;
     s.emp_manager_ = emp_manager;
@@ -25,7 +27,7 @@ Catalyst::Catalyst(int party, const std::string json_config_filename)  {
 
 void Catalyst::loadStudyData() {
     // load secret shares into TableManager
-    for(auto &input_table : parser_->study_.input_tables_) {
+    for(auto &input_table : study_.input_tables_) {
         for(auto &contributor : input_table.data_contributors_) {
             importSecretShares(input_table.name_, contributor);
         }
@@ -33,49 +35,54 @@ void Catalyst::loadStudyData() {
     data_loaded_ = true;
 }
 
-void Catalyst::runQueries() {
+void Catalyst::parseAndRunQueries() {
     // parse and run queries
     // write out results to secret share files
     assert(data_loaded_);
+    string dst_dir = study_.dst_path_;
+    SystemConfiguration & c = SystemConfiguration::getInstance();
 
-    // data loaded, ok to parse queries
-    parser_->parseQueries();
-    CatalystStudy<Bit> study = parser_->study_;
+    for(auto q : study_.queries_) {
+        QuerySpec s = q.second;
+        cout << "Parsing query plan in "  << s.plan_file_ << endl;
+        auto root = PlanParser<Bit>::parse("", s.plan_file_);
+        string dst_table_name = s.name_ + "_res";
 
-    string dst_dir = study.dst_path_;
-    if(dst_dir[0] != '/') {
-        dst_dir = Utilities::getCurrentWorkingDirectory() + "/" + dst_dir;
-    }
-    Utilities::mkdir(dst_dir);
-
-    SystemConfiguration & s = SystemConfiguration::getInstance();
-
-    for(auto &query : study.queries_) {
-        string query_name = query.first;
-        // TODO: give this a better name later
-        string dst_table_name = query_name + "_res";
-
-        Operator<Bit> *root = query.second;
-        cout << "Running query with execution plan: \n" << root->printTree() << endl;
+        cout << "Running " << s.name_ << " with execution plan: \n" << root->printTree() << endl;
         QueryTable<Bit> *output = root->run();
         TableManager::getInstance().insertTable(dst_table_name, output);
 
-        string fq_filename = dst_dir + "/" + query_name + (s.party_ == 1 ? ".alice" : ".bob");
+        string fq_filename = dst_dir + "/" + s.name_ + (c.party_ == 1 ? ".alice" : ".bob");
+
+        if(!TESTBED) {
+            // redact small cell counts
+            for(auto &col : s.count_cols_) {
+                redactCellCounts(output, col, study_.min_cell_cnt_);
+            }
+        }
+
         std::vector<int8_t> results = output->reveal(emp::XOR)->serialize();
+        cout << "Writing output of " << s.name_ << " to " << fq_filename << endl;
         DataUtilities::writeFile(fq_filename, results);
     }
 
-    }
+}
 
 
 void Catalyst::importSecretShares(const string & table_name, const int & src_party) {
     // read secret shares from file
     // import into table_manager
-    string fq_table_file = parser_->study_.secret_shares_root_ + "/" + std::to_string(src_party) + "/" + table_name;
+    string fq_table_file = study_.secret_shares_path_ + "/" + std::to_string(src_party) + "/" + table_name;
     SystemConfiguration & s = SystemConfiguration::getInstance();
+    TableManager & table_manager = TableManager::getInstance();
+
     string suffix = (s.party_ == 1) ? "alice" : "bob";
     string secret_shares_file = fq_table_file + "." + suffix;
-    QuerySchema schema = QuerySchema::toPlain(table_manager_.getSchema(table_name));
+
+    cout << "Importing secret shares for " << table_name << " from party " << src_party << " with " << fq_table_file << endl;
+
+    QuerySchema schema = QuerySchema::toPlain(table_manager.getSchema(table_name));
+
     // temporarily drop the site_id and project it in from src_party
     bool drop_site_id = false;
     // JMR: this is a hack to support the format from CAPriCORN queries, not for long-term use
@@ -100,11 +107,11 @@ void Catalyst::importSecretShares(const string & table_name, const int & src_par
         Project<Bit> projection(secret_shares, builder.getExprs());
         secret_shares = projection.run();
         // need to call insertTable within this scope for the project output to be available for TableManager copy
-        table_manager_.insertTable(table_name, secret_shares);
+        table_manager.insertTable(table_name, secret_shares);
         return;
     }
 
-    table_manager_.insertTable(table_name, secret_shares);
+    table_manager.insertTable(table_name, secret_shares);
 }
 
 int main(int argc, char **argv) {
@@ -126,7 +133,8 @@ int main(int argc, char **argv) {
 
     Catalyst catalyst(party, argv[2]);
     catalyst.loadStudyData();
-    catalyst.runQueries();
+    catalyst.parseAndRunQueries();
+
 
     if(TESTBED) {
         CatalystStudy<Bit> study = catalyst.getStudy();
@@ -139,17 +147,19 @@ int main(int argc, char **argv) {
             string expected_results_file = string(EXPECTED_RESULTS_PATH) + "/" + query_name + ".csv";
             // the test generator (pilot/test/generate-and-load-phame-test-data.sh) will write out the results to a file
             // we generate expected results in pilot/test/phame/load-generated-data.sql
-            cout << "Verifying results of " << query_name << " against " << expected_results_file << endl;
+//            cout << "Verifying results of " << query_name << " against " << expected_results_file << endl;
             PlainTable *expected = CsvReader::readCsv(expected_results_file, revealed->getSchema());
             expected->order_by_ = revealed->order_by_;
 
-            cout << "Observed: " << DataUtilities::printTable(revealed, 5) << endl;
-            cout << "Expected: " << DataUtilities::printTable(expected, 5) << endl;
+//            cout << "Observed: " << DataUtilities::printTable(revealed, 5) << endl;
+//            cout << "Expected: " << DataUtilities::printTable(expected, 5) << endl;
 
 
             assert(*revealed == *expected);
-            cout << "Results match!" << endl;
+
         }
     }
+
+    cout << "Finished evaluation of " << catalyst.getStudy().study_name_ << " study." << endl;
 
 }
