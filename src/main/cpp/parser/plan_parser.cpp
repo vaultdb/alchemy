@@ -38,8 +38,6 @@ PlanParser<B>::PlanParser(const string &db_name, const string & sql_file, const 
     parseSqlInputs(sql_file);
     parseSecurePlan(json_file);
 
-    if(getAutoFlag())
-        calculateAutoAggregate();
 }
 
 template<typename B>
@@ -49,9 +47,6 @@ PlanParser<B>::PlanParser(const string &db_name, const string & json, const int 
         parseSecurePlan(json);
     else
         parseSecurePlanString(json);
-
-    if(getAutoFlag())
-        calculateAutoAggregate();
 
 }
 
@@ -501,34 +496,70 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
         if (agg_algo == "auto") {
             SortMergeAggregate<B> *sma;
             NestedLoopAggregate<B> *nla;
-            // if sort not aligned, insert a sort op
+
+            // for sma, check if sort is needed
             SortDefinition child_sort = child->getSortOrder();
+            SortDefinition group_by_sort;
+
+            bool sortNeededFlag = false;
+
+            // if sort is needed, and current order is not the same with group by orders
             if (!SortMergeAggregate<B>::sortCompatible(child_sort, group_by_ordinals)) {
+                sortNeededFlag = true;
                 // insert sort
-                SortDefinition child_sort;
                 for (uint32_t idx: group_by_ordinals) {
-                    child_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
+                    group_by_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
                 }
-                Sort<B> *sort_before_sma = new Sort<B>(child->clone(), child_sort);
+                Sort<B> *sort_before_sma = new Sort<B>(child->clone(), group_by_sort);
                 sma = new SortMergeAggregate<B>(sort_before_sma->clone(), group_by_ordinals, aggregators,
                                                 effective_sort, cardinality_bound);
                 sort_vector_.push_back(sort_before_sma);
                 sma->effective_sort_ = effective_sort;
-            } else {
+            }
+            // if sort is not needed
+            else {
                 sma = new SortMergeAggregate<B>(child->clone(), group_by_ordinals, aggregators, effective_sort,
                                                 cardinality_bound);
                 sort_vector_.push_back(nullptr);
                 sma->effective_sort_ = effective_sort;
             }
+
+            // create cloned nla
             nla = new NestedLoopAggregate<B>(child->clone(), group_by_ordinals, aggregators, effective_sort,
                                              cardinality_bound);
 
             sma_vector_.push_back(sma);
             nla_vector_.push_back(nla);
-            setAutoFlag(true);
+
             agg_id_.push_back(operator_id);
 
-            return sma;
+            size_t sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+            size_t nla_cost = OperatorCostModel::operatorCost((SecureOperator *) nla);
+
+            string selected_agg = (sma_cost < nla_cost) ? "sort-merge-aggregate" : "nested-loop-aggregate";
+
+            Logger* log = get_log();
+            log->write("Operator (" + std::to_string(operator_id) + "). " +
+                       "sma cost : " + std::to_string(sma_cost) +
+                       ", nla cost : " + std::to_string(nla_cost) +
+                       ", agg type : " + selected_agg, Level::INFO);
+
+            delete nla;
+            delete sma;
+
+            if (selected_agg == "sort-merge-aggregate") {
+                if(sortNeededFlag){
+                    Sort<B> *sort_before_sma = new Sort<B>(child, group_by_sort);
+                    return new SortMergeAggregate<B>(sort_before_sma, group_by_ordinals, aggregators,
+                                                effective_sort, cardinality_bound);
+                }
+                else
+                    return new SortMergeAggregate<B>(child, group_by_ordinals, aggregators,
+                                                     effective_sort, cardinality_bound);
+            }
+            else
+                return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, effective_sort,
+                                                      cardinality_bound);
         } // end auto aggregate setup
         SortDefinition child_sort = child->getSortOrder();
 

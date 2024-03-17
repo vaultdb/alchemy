@@ -7,6 +7,7 @@
 #include <test/support/tpch_queries.h>
 #include <boost/algorithm/string/replace.hpp>
 #include <parser/plan_parser.h>
+#include <opt/plan_optimizer.h>
 
 
 using namespace emp;
@@ -16,9 +17,9 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 7654, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
-DEFINE_string(unioned_db, "tpch_unioned_600", "unioned db name");
-DEFINE_string(alice_db, "tpch_alice_600", "alice db name");
-DEFINE_string(bob_db, "tpch_bob_600", "bob db name");
+DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
@@ -69,12 +70,15 @@ SecurePlanEnumerationTest::runTest(const int &test_id, const SortDefinition &exp
     PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
-//    std::cout << "Original Plan : " << endl;
-//    std::cout << root->printTree() << endl;
+    std::cout << "Original Plan : " << endl;
+    std::cout << root->printTree() << endl;
 
     time_point<high_resolution_clock> BeforePlanEnumeration = clock_start();
 
-    root = parser.optimizeTree();
+    //root = parser.optimizeTree();
+    PlanOptimizer<Bit> optimizer(root, parser.getOperatorMap(), parser.getSupportOps(), parser.getInterestingSortOrders());
+
+    root = optimizer.optimizeTree();
 
     double PlanEnumerationDuration = time_from(BeforePlanEnumeration) / 1e6;
 

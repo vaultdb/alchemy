@@ -31,6 +31,8 @@ namespace vaultdb {
 
 
         Operator<B> *getRoot() const { return root_; }
+        map<int, Operator<B> * > getOperatorMap() const { return operators_; }
+        vector<Operator<B> * > getSupportOps() const { return support_ops_; }
 
         Operator<B> *getOperator(const int &op_id);
 
@@ -45,9 +47,6 @@ namespace vaultdb {
 
         static tuple<int, SortDefinition, int> parseSqlHeader(const string &header);
 
-        bool getAutoFlag() const { return agg_auto_flag_; }
-
-        void setAutoFlag(bool inputFlag) { agg_auto_flag_ = inputFlag; }
         map<int, vector<SortDefinition>> getInterestingSortOrders() { return interesting_sort_orders_; }
         int total_plan_cnt_ = 0;
     private:
@@ -88,7 +87,6 @@ namespace vaultdb {
         Operator<B> *parseUnion(const int & operator_id, const boost::property_tree::ptree &union_tree);
         void calculateAutoAggregate();
 
-        bool agg_auto_flag_ = false;
         std::vector<SortMergeAggregate<B> *> sma_vector_;
         std::vector<NestedLoopAggregate<B> *> nla_vector_;
         std::vector<Sort<B> *> sort_vector_;
