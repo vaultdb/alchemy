@@ -151,14 +151,11 @@ int main(int argc, char **argv) {
                 PlainTable *expected = CsvReader::readCsv(expected_results_file, revealed->getSchema());
                 expected->order_by_ = revealed->order_by_;
 
-                cout << "Observed: " << DataUtilities::printTable(revealed, 7) << endl;
-                cout << "Expected: " << DataUtilities::printTable(expected, 7) << endl;
-
                 assert(*revealed == *expected);
         }
 
     }
 
-    cout << "Finished evaluation of " << catalyst.getStudy().study_name_ << " study." << endl;
+    cout << "Finished MPC evaluation of " << catalyst.getStudy().study_name_ << " study." << endl;
 
 }
