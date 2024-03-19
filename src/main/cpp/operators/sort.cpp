@@ -54,8 +54,6 @@ Sort<B>::Sort(QueryTable<B> *child, const SortDefinition &sort_def, const int & 
 template<typename B>
 QueryTable<B> *Sort<B>::runSelf() {
     QueryTable<B> *input = this->getChild()->getOutput();
-    cout << "Sort " << *this << endl;
-    cout << "Sort input: " << DataUtilities::printTable(input) << endl;
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
@@ -98,7 +96,6 @@ QueryTable<B> *Sort<B>::runSelf() {
         this->output_->resize(cutoff);
     }
 
-    cout << "Sorted output: " << DataUtilities::printTable(this->output_) << endl;
     return this->output_;
 }
 
