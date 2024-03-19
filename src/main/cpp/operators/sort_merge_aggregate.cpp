@@ -35,7 +35,7 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
 
             if (agg.type == AggregateId::COUNT) {
                 QueryFieldDesc packed_field(output_cursor, agg.alias, "", FieldType::SECURE_LONG);
-                packed_field.initializeFieldSizeWithCardinality(input->tuple_cnt_);
+//                packed_field.initializeFieldSizeWithCardinality(input->tuple_cnt_);
                 this->output_schema_.putField(packed_field);
             }
 
