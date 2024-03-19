@@ -12,18 +12,52 @@ HOST_COUNT=$1
 TUPLE_COUNT=$2
 DB_NAME='phame_unioned'
 
-mkdir -p pilot/test/input
-mkdir -p pilot/test/output
-mkdir -p pilot/secret_shares/input/0
-mkdir pilot/secret_shares/input/1
-mkdir pilot/secret_shares/input/2
-mkdir pilot/secret_shares/input/3
+if [ ! -d  pilot/test/input ] ; then
+    mkdir -p pilot/test/input
+fi
+
+if [ ! -d  pilot/test/output ] ; then
+    mkdir -p pilot/test/output
+fi
+
+if [ ! -d pilot/secret_shares/input/0 ] ; then
+    mkdir -p pilot/secret_shares/input/0
+fi
+
+if [ ! -d pilot/secret_shares/input/1 ] ; then
+    mkdir -p pilot/secret_shares/input/1
+fi
+
+if [ ! -d pilot/secret_shares/input/2 ] ; then
+    mkdir -p pilot/secret_shares/input/2
+fi
+
+if [ ! -d pilot/secret_shares/input/3 ] ; then
+    mkdir -p pilot/secret_shares/input/3
+fi
+
+
+if [ ! -d pilot/secret_shares/output/0 ] ; then
+    mkdir -p pilot/secret_shares/output/0
+fi
+
+if [ ! -d pilot/secret_shares/output/1 ] ; then
+    mkdir -p pilot/secret_shares/output/1
+fi
+
+if [ ! -d pilot/secret_shares/output/2 ] ; then
+    mkdir -p pilot/secret_shares/output/2
+fi
+
+if [ ! -d pilot/secret_shares/output/3 ] ; then
+    mkdir -p pilot/secret_shares/output/3
+fi
 
 
 #clear out old data
 rm pilot/secret_shares/input/*/*
 
-make generate_phame_data_n_parties secret_share_csv
+make -j4 generate_phame_data_n_parties secret_share_csv catalyst
 ./bin/generate_phame_data_n_parties pilot/test/input $HOST_COUNT $TUPLE_COUNT
 
 
@@ -53,10 +87,6 @@ done
 
 
 ### Generate the secret shares
-mkdir -p pilot/secret_shares/output/0
-mkdir pilot/secret_shares/output/1
-mkdir pilot/secret_shares/output/2
-mkdir pilot/secret_shares/output/3
 #clear out old data
 rm pilot/secret_shares/output/*/*
 
