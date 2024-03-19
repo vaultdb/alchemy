@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
             query = DataUtilities::readTextFileToString(vm["query-file"].as<string>());
         }
         else {
-            throw std::invalid_argument("Need sql file or sql statement to run.");
+            throw std::invalid_argument("Need sql file with query to run.");
         }
 
         if (vm.count("year")) {
