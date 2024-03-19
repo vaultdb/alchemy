@@ -67,7 +67,14 @@ namespace vaultdb {
 
         static string printFirstBytes(vector<int8_t> &bytes, const int &byteCount);
 
-        static string revealAndPrintFirstBytes(vector<Bit> &bits, const int &byteCount);
+        static string revealAndPrintFirstBits(Bit *bits, const int & bit_cnt) {
+            stringstream s;
+            for(int i = 0; i < bit_cnt; ++i) {
+                s << (bits[i].reveal()) ? "1" : "0";
+            }
+
+            return s.str();
+        }
 
         static size_t getTupleCount(const string &db_name, const string &sql, bool has_dummy_tag);
         static string printByteArray(const int8_t *bytes, const size_t & byte_cnt);

@@ -170,15 +170,6 @@ std::string DataUtilities::printFirstBytes(vector<int8_t> &bytes, const int &byt
 }
 
 
-std::string DataUtilities::revealAndPrintFirstBytes(vector<Bit> &bits, const int & byteCount) {
-    Integer anInt(bits.size(), 0L);
-    anInt.bits = bits;
-    std::string bitString = SystemConfiguration::getInstance().emp_manager_->revealToString(anInt);
-
-    vector<int8_t> decodedBytes = Utilities::boolsToBytes(bitString);
-    return printFirstBytes(decodedBytes, byteCount);
-
-}
 
 size_t DataUtilities::getTupleCount(const string &db_name, const string &sql, bool has_dummy_tag) {
     if(has_dummy_tag)  { // run it and count
