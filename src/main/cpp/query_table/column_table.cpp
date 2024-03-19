@@ -99,51 +99,17 @@ template<>
 void ColumnTable<Bit>::compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) {
 
     int col_cnt = schema_.getFieldCount();
-    // iterating on column_data to cover dummy tag at -1
-    // need to do this piecewise to avoid overhead we found in profiling from iterating over table
-    Field<bool> l_f, r_f;
-
-    bool to_swp = swap.reveal();
-    if(to_swp) {
-        cout << "Swapping rows " << lhs_row << " and " << rhs_row << endl;
-    }
 
     for(int col_id = 0; col_id < col_cnt; ++col_id) {
-        QueryFieldDesc p(schema_.getField(col_id), TypeUtilities::toPlain(schema_.getField(col_id).getType()));
-        stringstream tmp;
-        l_f = getField(lhs_row, col_id).reveal(p);
-        r_f = getField(rhs_row, col_id).reveal(p);
-        PlainField before = l_f;
-
 
         int field_len = schema_.fields_.at(col_id).size();
         Bit *l = (Bit *) getFieldPtr(lhs_row, col_id);
         Bit *r = (Bit *) getFieldPtr(rhs_row, col_id);
 
-        if(to_swp && col_id == 7) {
-            tmp << " Before: " << DataUtilities::revealAndPrintFirstBits(l, field_len) << " and " << DataUtilities::revealAndPrintFirstBits(r, field_len) << endl;
-            cout << "   Swapping col " << col_id << ": " << l_f << " and " << r_f << " to ";
-        }
-
-
         for(int i = 0; i < field_len; ++i) {
             emp::swap(swap, l[i], r[i]);
         }
 
-        l_f = getField(lhs_row, col_id).reveal(p);
-        r_f = getField(rhs_row, col_id).reveal(p);
-        if(to_swp && col_id == 7) {
-            cout << "   " << l_f << " and " << r_f << endl;
-            tmp << "  After: " << DataUtilities::revealAndPrintFirstBits(l, field_len) << " and " << DataUtilities::revealAndPrintFirstBits(r, field_len) << endl;
-            cout << tmp.str() << endl;
-        }
-
-        if(r_f != before && to_swp) {
-            cout << "Swap: " << swap.reveal() << " vs " << to_swp << endl;
-            cout << "Ouch: " << r_f << " vs " << before << " at col " << col_id << endl;
-//            assert(r_f == before);
-
-        }
     }
     // dummy tag
     Bit *l = (Bit *)  getFieldPtr(lhs_row, -1);
@@ -152,7 +118,6 @@ void ColumnTable<Bit>::compareSwap(const Bit &swap, const int &lhs_row, const in
     o ^= *r;
     *l ^= o;
     *r ^= o;
-
 
 }
 
