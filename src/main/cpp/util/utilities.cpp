@@ -17,17 +17,23 @@
 using namespace std::chrono;
 using namespace vaultdb;
 
+// start from $VAULTDB_ROOT/src/main/cpp
 std::string Utilities::getCurrentWorkingDirectory() {
     char cwd[PATH_MAX];
     getcwd(cwd, sizeof(cwd));
 
-    std::string  currentWorkingDirectory = std::string(cwd);
-    std::string suffix = currentWorkingDirectory.substr(currentWorkingDirectory.length() - 4, 4);
+    std::string  current_working_dir = std::string(cwd);
+    std::string suffix = current_working_dir.substr(current_working_dir.length() - 4, 4);
     if(suffix == std::string("/bin")) {
-        currentWorkingDirectory = currentWorkingDirectory.substr(0, currentWorkingDirectory.length() - 4);
+        current_working_dir = current_working_dir.substr(0, current_working_dir.length() - 4);
     }
 
-    return currentWorkingDirectory;
+    suffix = current_working_dir.substr(current_working_dir.length() - 4, 4);
+    if(suffix != std::string("/cpp")) {
+        current_working_dir += "/..";
+    }
+
+    return current_working_dir;
 }
 
 
