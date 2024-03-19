@@ -138,6 +138,7 @@ namespace vaultdb {
                 QueryFieldDesc f;
                 if((agg.type == AggregateId::MIN || agg.type == AggregateId::MAX) && std::is_same_v<B, Bit>) {
                     f = QueryFieldDesc(input_schema.getField(agg.ordinal), i + group_by_.size()); // copy out bit packing info
+                    f.setName("", agg.alias);
                 }
                 else if (agg.type == AggregateId::COUNT && std::is_same_v<B, Bit>) {
                     f = QueryFieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
