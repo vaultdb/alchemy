@@ -141,8 +141,7 @@ namespace vaultdb {
                 }
                 else if (agg.type == AggregateId::COUNT && std::is_same_v<B, Bit>) {
                     f = QueryFieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
-                    // input row count may be uninitialized if loading from file
-                    if(input_row_cnt > 0) f.initializeFieldSizeWithCardinality(input_row_cnt);
+//                  if(input_row_cnt > 0)   f.initializeFieldSizeWithCardinality(input_row_cnt);
                 }
                 else { // sum, avg
                     f = QueryFieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
