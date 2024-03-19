@@ -315,7 +315,9 @@ namespace vaultdb {
                 case FieldType::SECURE_LONG:
                 case FieldType::SECURE_STRING: {
                     Integer i = f.getInt();
-                    memcpy(dst, i.bits.data(), desc.size() * sizeof(emp::Bit));
+                    // take the smaller of the two
+                    int write_size = desc.size() < i.size() ? desc.size() : i.size();
+                    memcpy(dst, i.bits.data(), write_size * sizeof(emp::Bit));
                     break;
                 }
                 case FieldType::SECURE_FLOAT: {

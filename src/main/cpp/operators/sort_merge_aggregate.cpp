@@ -29,13 +29,12 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
             if ((agg.type == AggregateId::MIN || agg.type == AggregateId::MAX)){
                 QueryFieldDesc packed_field(input_schema.getField(agg.ordinal), output_cursor);
                 packed_field.setName("", agg.alias);
-
                 this->output_schema_.putField(packed_field);
             }
 
             if (agg.type == AggregateId::COUNT) {
                 QueryFieldDesc packed_field(output_cursor, agg.alias, "", FieldType::SECURE_LONG);
-//                packed_field.initializeFieldSizeWithCardinality(input->tuple_cnt_);
+                packed_field.initializeFieldSizeWithCardinality(input->tuple_cnt_);
                 this->output_schema_.putField(packed_field);
             }
 
