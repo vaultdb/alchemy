@@ -49,7 +49,6 @@ void Catalyst::parseAndRunQueries() {
         string dst_table_name = s.name_ + "_res";
 
         cout << "Running " << s.name_ << " with execution plan: \n" << root->printTree() << endl;
-        if (s.name_ == "phame_diagnosis_rollup") { // CAUTION: THIS IS TEMPORARY
             QueryTable<Bit> *output = root->run();
             TableManager::getInstance().insertTable(dst_table_name, output);
 
@@ -66,7 +65,6 @@ void Catalyst::parseAndRunQueries() {
             cout << "Writing output of " << s.name_ << " to " << fq_filename << endl;
             DataUtilities::writeFile(fq_filename, results);
         }
-    }
 
 }
 
@@ -141,7 +139,6 @@ int main(int argc, char **argv) {
     if(TESTBED) {
         CatalystStudy<Bit> study = catalyst.getStudy();
         for(auto &query : study.queries_) {
-            if (query.first == "phame_diagnosis_rollup") { // CAUTION: THIS IS TEMPORARY
                 string query_name = query.first;
                 string dst_table_name = query_name + "_res";
                 SecureTable *output = TableManager::getInstance().getSecureTable(dst_table_name);
@@ -154,14 +151,12 @@ int main(int argc, char **argv) {
                 PlainTable *expected = CsvReader::readCsv(expected_results_file, revealed->getSchema());
                 expected->order_by_ = revealed->order_by_;
 
-                cout << "Observed: " << DataUtilities::printTable(revealed, 5) << endl;
-                cout << "Expected: " << DataUtilities::printTable(expected, 5) << endl;
+                cout << "Observed: " << DataUtilities::printTable(revealed, 7) << endl;
+                cout << "Expected: " << DataUtilities::printTable(expected, 7) << endl;
 
-
-               if(*revealed == *expected) { cout << "Output matched!"; }
-               else { cout << "Output did not match!"; }
-            }
+                assert(*revealed == *expected);
         }
+
     }
 
     cout << "Finished evaluation of " << catalyst.getStudy().study_name_ << " study." << endl;
