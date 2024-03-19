@@ -21,6 +21,7 @@ vector<int8_t> QueryTable<B>::serialize() const {
 
     int dst_size = tuple_size_bytes_ * tuple_cnt_;
     vector<int8_t> dst(dst_size);
+    if(dst_size == 0) return dst;
 
     int8_t *write_ptr = dst.data();
     int write_size;

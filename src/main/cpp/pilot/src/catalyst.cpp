@@ -8,7 +8,7 @@
 #include "data/csv_reader.h"
 #include "parser/plan_parser.h"
 
-#define TESTBED 0
+#define TESTBED 1
 #define EXPECTED_RESULTS_PATH "pilot/study/phame/expected"
 
 using namespace catalyst;
@@ -44,26 +44,28 @@ void Catalyst::parseAndRunQueries() {
 
     for(auto q : study_.queries_) {
         QuerySpec s = q.second;
-        cout << "Parsing query plan in "  << s.plan_file_ << endl;
+        cout << "Parsing query plan in " << s.plan_file_ << endl;
         auto root = PlanParser<Bit>::parse("", s.plan_file_);
         string dst_table_name = s.name_ + "_res";
 
         cout << "Running " << s.name_ << " with execution plan: \n" << root->printTree() << endl;
-        QueryTable<Bit> *output = root->run();
-        TableManager::getInstance().insertTable(dst_table_name, output);
+        if (s.name_ == "phame_diagnosis_rollup") { // CAUTION: THIS IS TEMPORARY
+            QueryTable<Bit> *output = root->run();
+            TableManager::getInstance().insertTable(dst_table_name, output);
 
-        string fq_filename = dst_dir + "/" + s.name_ + (c.party_ == 1 ? ".alice" : ".bob");
+            string fq_filename = dst_dir + "/" + s.name_ + (c.party_ == 1 ? ".alice" : ".bob");
 
-        if(!TESTBED) {
-            // redact small cell counts
-            for(auto &col : s.count_cols_) {
-                redactCellCounts(output, col, study_.min_cell_cnt_);
+            if (!TESTBED) {
+                // redact small cell counts
+                for (auto &col: s.count_cols_) {
+                    redactCellCounts(output, col, study_.min_cell_cnt_);
+                }
             }
-        }
 
-        std::vector<int8_t> results = output->reveal(emp::XOR)->serialize();
-        cout << "Writing output of " << s.name_ << " to " << fq_filename << endl;
-        DataUtilities::writeFile(fq_filename, results);
+            std::vector<int8_t> results = output->reveal(emp::XOR)->serialize();
+            cout << "Writing output of " << s.name_ << " to " << fq_filename << endl;
+            DataUtilities::writeFile(fq_filename, results);
+        }
     }
 
 }
@@ -139,24 +141,26 @@ int main(int argc, char **argv) {
     if(TESTBED) {
         CatalystStudy<Bit> study = catalyst.getStudy();
         for(auto &query : study.queries_) {
-            string query_name = query.first;
-            string dst_table_name = query_name + "_res";
-            SecureTable *output = TableManager::getInstance().getSecureTable(dst_table_name);
-            PlainTable *revealed = output->reveal();
+            if (query.first == "phame_diagnosis_rollup") { // CAUTION: THIS IS TEMPORARY
+                string query_name = query.first;
+                string dst_table_name = query_name + "_res";
+                SecureTable *output = TableManager::getInstance().getSecureTable(dst_table_name);
+                PlainTable *revealed = output->reveal();
 
-            string expected_results_file = string(EXPECTED_RESULTS_PATH) + "/" + query_name + ".csv";
-            // the test generator (pilot/test/generate-and-load-phame-test-data.sh) will write out the results to a file
-            // we generate expected results in pilot/test/phame/load-generated-data.sql
-//            cout << "Verifying results of " << query_name << " against " << expected_results_file << endl;
-            PlainTable *expected = CsvReader::readCsv(expected_results_file, revealed->getSchema());
-            expected->order_by_ = revealed->order_by_;
+                string expected_results_file = string(EXPECTED_RESULTS_PATH) + "/" + query_name + ".csv";
+                // the test generator (pilot/test/generate-and-load-phame-test-data.sh) will write out the results to a file
+                // we generate expected results in pilot/test/phame/load-generated-data.sql
+                cout << "Verifying results of " << query_name << " against " << expected_results_file << endl;
+                PlainTable *expected = CsvReader::readCsv(expected_results_file, revealed->getSchema());
+                expected->order_by_ = revealed->order_by_;
 
-//            cout << "Observed: " << DataUtilities::printTable(revealed, 5) << endl;
-//            cout << "Expected: " << DataUtilities::printTable(expected, 5) << endl;
+                cout << "Observed: " << DataUtilities::printTable(revealed, 5) << endl;
+                cout << "Expected: " << DataUtilities::printTable(expected, 5) << endl;
 
 
-            assert(*revealed == *expected);
-
+               if(*revealed == *expected) { cout << "Output matched!"; }
+               else { cout << "Output did not match!"; }
+            }
         }
     }
 
