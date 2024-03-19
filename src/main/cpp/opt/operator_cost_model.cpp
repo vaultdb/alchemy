@@ -12,14 +12,11 @@ size_t OperatorCostModel::operatorCost(const SecureOperator *op) {
            return filterCost((Filter<Bit> *) op);
            case OperatorType::SECURE_SQL_INPUT:
                return secureSqlInputCost((SecureSqlInput *) op);
-           case OperatorType::TABLE_SCAN:
-                   return 0;
           case OperatorType::MERGE_INPUT:
               return mergeInputCost((MergeInput *) op);
             case OperatorType::SORT:
                 return sortCost((Sort<Bit> *) op);
             case OperatorType::KEYED_NESTED_LOOP_JOIN:
-            case OperatorType::LEFT_KEYED_NESTED_LOOP_JOIN:
                 return keyedJoinCost((KeyedJoin<Bit> *) op);
             case OperatorType::NESTED_LOOP_JOIN:
                 return basicJoinCost((BasicJoin<Bit> *) op);
@@ -32,7 +29,7 @@ size_t OperatorCostModel::operatorCost(const SecureOperator *op) {
            case OperatorType::PROJECT:
                 return projectCost((Project<Bit> *) op);
            case OperatorType::SORT_MERGE_AGGREGATE:
-                return sortMergeAggregateCost((SortMergeAggregate<Bit> *) op);
+                return groupByAggregateCost((SortMergeAggregate<Bit> *) op);
            case OperatorType::NESTED_LOOP_AGGREGATE:
               return nestedLoopAggregateCost((NestedLoopAggregate<Bit> *) op);
            case OperatorType::SCALAR_AGGREGATE:
@@ -204,7 +201,7 @@ size_t OperatorCostModel::keyedSortMergeJoinCost(KeyedSortMergeJoin<Bit> *join) 
 
 // only count SortMergeAggregate cost, sort cost is accounted for in Sort operator
 // Sort is sometimes pushed out of MPC, thus separate accounting
-size_t OperatorCostModel::sortMergeAggregateCost(const SortMergeAggregate<Bit> *aggregate) {
+size_t OperatorCostModel::groupByAggregateCost(const SortMergeAggregate<Bit> *aggregate) {
     // Cost : Sort_Cost + Input_Row_Count * Agg_Cost_Per_Row(=per_row_cost)
     QuerySchema input_schema = aggregate->getChild()->getOutputSchema();
     QuerySchema output_schema = aggregate->getOutputSchema();

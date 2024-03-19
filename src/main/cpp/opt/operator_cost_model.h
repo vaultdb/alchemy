@@ -29,7 +29,7 @@ namespace vaultdb {
         static size_t keyedJoinCost(const KeyedJoin<Bit> *join);
         static size_t keyedSortMergeJoinCost(KeyedSortMergeJoin<Bit> *join);
         static size_t mergeJoinCost(MergeJoin<Bit> *join);
-        static size_t sortMergeAggregateCost(const SortMergeAggregate<Bit> *aggregate);
+        static size_t groupByAggregateCost(const SortMergeAggregate<Bit> *aggregate);
         static size_t nestedLoopAggregateCost(const NestedLoopAggregate<Bit> *aggregate);
         static size_t sortCost(const Sort<Bit> *sort);
         static size_t shrinkwrapCost(const Shrinkwrap<Bit> *shrinkwrap);
