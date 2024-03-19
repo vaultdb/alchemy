@@ -27,15 +27,6 @@ std::string Utilities::getCurrentWorkingDirectory() {
     while(!std::filesystem::exists(current_working_dir + "/CMakeLists.txt")) {
         current_working_dir += "/..";
     }
-//    std::string suffix = current_working_dir.substr(current_working_dir.length() - 4, 4);
-//    if(suffix == std::string("/bin")) {
-//        current_working_dir = current_working_dir.substr(0, current_working_dir.length() - 4);
-//    }
-//
-//    suffix = current_working_dir.substr(current_working_dir.length() - 4, 4);
-//    if(suffix != std::string("/cpp")) {
-//        current_working_dir += "/..";
-//    }
 
     return current_working_dir;
 }
