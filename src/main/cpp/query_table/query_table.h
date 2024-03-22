@@ -300,6 +300,7 @@ namespace  vaultdb {
         virtual void compareSwap(const B & swap, const int  & lhs_row, const int & rhs_row) = 0;
 
         bool operator==(const QueryTable<B> &other) const;
+        bool operator!=(const QueryTable<B> &other) const { return !(*this == other); }
         string toString(const bool &show_dummies = false) const;
         string toString(const size_t &limit, const bool &show_dummies = false) const;
 
