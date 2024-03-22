@@ -59,7 +59,7 @@ QueryTable<B> *Operator<B>::run() {
     end_time_ = high_resolution_clock::now();
     runtime_ms_ = time_from(start_time_)/1e3;
 
-    if(std::is_same_v<B, Bit> && this->getOperatorId() > -1) {
+    if(std::is_same_v<B, Bit> && this->getOperatorId() > -2) {
 		Logger* log = get_log();
 
         log->write("Operator #" + std::to_string(this->getOperatorId()) + " " + getTypeString() +
