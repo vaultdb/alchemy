@@ -70,7 +70,7 @@ namespace vaultdb {
         static string revealAndPrintFirstBits(Bit *bits, const int & bit_cnt) {
             stringstream s;
             for(int i = 0; i < bit_cnt; ++i) {
-                s << (bits[i].reveal()) ? "1" : "0";
+                s << (bits[i].reveal() ? "1" : "0");
             }
 
             return s.str();
