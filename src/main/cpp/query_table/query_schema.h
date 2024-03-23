@@ -76,6 +76,16 @@ namespace  vaultdb {
 
         QueryFieldDesc getField(const std::string & fieldName) const;
 
+        // Check if the schema has a field with the given name
+        bool hasField(string input_field_name) const {
+            for(auto it = fields_.begin(); it != fields_.end(); ++it) {
+                if(it->second.getName() == input_field_name) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         QuerySchema &operator=(const QuerySchema &other);
 
         inline size_t getFieldOffset(const int32_t idx) const { return offsets_.at(idx); }

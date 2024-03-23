@@ -232,6 +232,8 @@ namespace  vaultdb {
 
         bool is_optimized_ = false;
 
+        virtual std::string getParameters() const = 0;
+
     protected:
         // to be implemented by the operator classes, e.g., sort, filter, et cetera
         virtual QueryTable<B> *runSelf() = 0;
@@ -288,7 +290,6 @@ namespace  vaultdb {
             return lhs && rhs; // true for self and children
         }
 
-        virtual std::string getParameters() const = 0;
         inline void reset() {
             if(output_ != nullptr && !output_->pinned_) {
                 delete output_;
