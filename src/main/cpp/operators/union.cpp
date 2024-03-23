@@ -59,28 +59,29 @@ QueryTable<B> * Union<B>::runSelf() {
         }
     }
 
+    // intentionally empty sort definition
+    this->output_ = QueryTable<B>::getTable(tuple_cnt, dst_schema);
+
     if(fast_lane) {
-        // intentionally empty sort definition
-        this->output_ = QueryTable<B>::getTable(tuple_cnt, dst_schema);
 
         this->output_->cloneTable(0, lhs);
         this->output_->cloneTable(lhs->tuple_cnt_, rhs);
         lhs->pinned_ = false;
         return this->output_;
     }
+
     // else copy in one field at a time
-    this->output_ =  QueryTable<B>::getTable(tuple_cnt, dst_schema);
-    int cursor = 0;
     // TODO: decide on cloneColumn vs field-at-a-time once per column
     for(int i = 0; i < lhs->tuple_cnt_; ++i) {
         for(int j = 0; j < dst_schema.getFieldCount(); ++j) {
             auto f = lhs->getField(i, j);
-            this->output_->setField(cursor, j, f);
+            this->output_->setField(i, j, f);
         }
         auto f = lhs->getField(i, -1);
-        this->output_->setField(cursor, -1, f);
-        ++cursor;
+        this->output_->setField(i, -1, f);
     }
+
+    int cursor = lhs->tuple_cnt_;
 
 
     for(int i = 0; i < rhs->tuple_cnt_; ++i) {
@@ -88,7 +89,7 @@ QueryTable<B> * Union<B>::runSelf() {
             auto f = rhs->getField(i, j);
             this->output_->setField(cursor, j, f);
         }
-        auto f = lhs->getField(i, -1);
+        auto f = rhs->getField(i, -1);
         this->output_->setField(cursor, -1, f);
         ++cursor;
     }
