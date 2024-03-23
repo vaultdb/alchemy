@@ -17,9 +17,21 @@ namespace vaultdb {
     template<typename B> class NestedLoopAggregate;
 
     template<typename B>
+    struct JoinPairInfo {
+        std::pair<Operator<B> *, string> lhs;
+        std::pair<Operator<B> *, string> rhs;
+        char joinType;
+        int outputCardinality;
+
+        JoinPairInfo(std::pair<Operator<B> *, string> lhs, std::pair<Operator<B> *, string> rhs, char joinType, int outputCardinality)
+                : lhs(lhs), rhs(rhs), joinType(joinType), outputCardinality(outputCardinality) {}
+    };
+
+    template<typename B>
     class BushyPlanEnumerator {
     public:
         typedef std::tuple<SortDefinition, int /*parent_id*/, int /*child_id*/, std::string> SortEntry;// Adding operator type as a string.
+        std::vector<JoinPairInfo<B>> join_pairs;
 
         BushyPlanEnumerator(Operator<B> * root, std::map<int, Operator<B> * > operators, std::vector<Operator<B> * > support_ops, map<int, vector<SortDefinition>> interesting_orders);
 
@@ -42,11 +54,11 @@ namespace vaultdb {
         std::vector<Operator<B> * > support_ops_; // these ones don't get an operator ID from the JSON plan
 
         void collectSQLInputOps(Operator<B> * op, std::map<int, Operator<B> *> &sqlInputOps);
-        std::vector<std::tuple<std::pair<Operator<B> *,string>,std::pair<Operator<B> *,string>, char, int>> findJoinPairs(Operator<B> * left_deep_root, std::vector<std::tuple<std::pair<Operator<B> *,string>,std::pair<Operator<B> *,string>, char, int>> &join_pairs, std::map<int, Operator<B> *> &sqlInputOps);
+        void findJoinPairs(Operator<B> * left_deep_root, std::map<int, Operator<B> *> &sqlInputOps);
         Operator<B>* findJoinChildFromSqlInput(string join_predicate, std::map<int, Operator<B> *> &sqlInputOps);
         std::vector<std::pair<int, int>> extractIntegers(const std::string& input);
         std::pair<char, size_t> getJoinType(const std::string& lhs_predicate, const std::string& rhs_predicate, const size_t& lhs_output_cardinality, const size_t& rhs_output_cardinality);
-
+        std::vector<JoinPairInfo<B>> findJoinOfDisjointTables(JoinPairInfo<B> selectedPair);
     };
 
 

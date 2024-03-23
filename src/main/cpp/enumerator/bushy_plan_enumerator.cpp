@@ -66,7 +66,6 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
                                 min_cost = cost
                                 */
 
-    std::vector<std::tuple<std::pair<Operator<B> *,string>,std::pair<Operator<B> *,string>, char, int>> join_pairs;
     std::map<int, Operator<B> *> sqlInputOps;
     auto left_deep_root = getRoot();
 
@@ -74,16 +73,40 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
     collectSQLInputOps(left_deep_root, sqlInputOps);
 
     // Step 2: Recursively find join pairs starting from the left deep root
-    findJoinPairs(left_deep_root, join_pairs, sqlInputOps);
+    findJoinPairs(left_deep_root, sqlInputOps);
 
     // Step 3 : Sort join_pairs with the output cardinality of join_pairs' 4th value(output cardainlity). Put minimum card in the first
-    std::sort(join_pairs.begin(), join_pairs.end(), [](const std::tuple<std::pair<Operator<B> *,string>,std::pair<Operator<B> *,string>, char, int> &a, const std::tuple<std::pair<Operator<B> *,string>,std::pair<Operator<B> *,string>, char, int> &b) {
-        return std::get<3>(a) < std::get<3>(b);
+    std::sort(join_pairs.begin(), join_pairs.end(), [](const JoinPairInfo<B> &a, const JoinPairInfo<B> &b) {
+        return a.outputCardinality < b.outputCardinality;
     });
 
     size_t min_plan_cost_ = left_deep_root_->planCost();
     Operator<B> *min_cost_plan_ = left_deep_root_;
 
+    // Step 4: Iterate through join pairs and create bushy plan
+    for(auto it = join_pairs.begin(); it != join_pairs.end(); ++it) {
+        JoinPairInfo<B> pair = *it;
+
+        // Recursively find all disjoint table pairs
+        auto disjoint_joins = findJoinOfDisjointTables(pair);
+
+        // If disjoint_joins are None, then do not create bushy plan. It is not possible to create bushy plan
+        if (disjoint_joins.empty()) {
+            continue;
+        }
+
+        // Create bushy plan
+        //auto plan = createBushyPlan(disjoint_joins, pair, join_type);
+
+        // Calculate cost of the plan
+//        auto cost = plan->planCost();
+//
+//        // If cost is less than min_cost, update min_cost and min_plan
+//        if (cost < min_plan_cost_) {
+//            min_plan_cost_ = cost;
+//            min_cost_plan_ = plan;
+//        }
+    }
 }
 
 template<typename B>
@@ -100,10 +123,7 @@ void BushyPlanEnumerator<B>::collectSQLInputOps(Operator<B> * op, std::map<int, 
 }
 
 template<typename B>
-std::vector<std::tuple<
-        std::pair<Operator<B> *,string>,
-        std::pair<Operator<B> *,string>, char, int
-        >> BushyPlanEnumerator<B>::findJoinPairs(Operator<B> * left_deep_root, std::vector<std::tuple<std::pair<Operator<B> *,string>,std::pair<Operator<B> *,string>,char, int>> &join_pairs, std::map<int, Operator<B> *> &sqlInputOps) {
+void BushyPlanEnumerator<B>::findJoinPairs(Operator<B> * left_deep_root, std::map<int, Operator<B> *> &sqlInputOps) {
 
     auto op = left_deep_root;
     while (op->getChild() != nullptr)
@@ -131,13 +151,12 @@ std::vector<std::tuple<
                     auto rhs = findJoinChildFromSqlInput(rhs_predicate, sqlInputOps);
 
                     auto join_info = getJoinType(lhs_predicate, rhs_predicate, lhs->getOutputCardinality(), rhs->getOutputCardinality());
-                    join_pairs.push_back(std::make_tuple(std::make_pair(lhs, lhs_predicate), std::make_pair(rhs, rhs_predicate), join_info.first, join_info.second));
+                    join_pairs.push_back(JoinPairInfo<B>(std::make_pair(lhs, lhs_predicate), std::make_pair(rhs, rhs_predicate), join_info.first, join_info.second));
                 }
             }
         }
         op = parent;
     }
-    return join_pairs;
 }
 
 template<typename B>
@@ -189,6 +208,20 @@ std::vector<std::pair<int, int>> BushyPlanEnumerator<B>::extractIntegers(const s
 
     return integerPairs;
 }
+
+template<typename B>
+std::vector<JoinPairInfo<B>> BushyPlanEnumerator<B>::findJoinOfDisjointTables(JoinPairInfo<B> selectedPair) {
+
+    std::vector<JoinPairInfo<B>> disjointPairs;
+    for (const auto& pair : join_pairs) {
+        if (pair.lhs.first != selectedPair.lhs.first && pair.lhs.first != selectedPair.rhs.first &&
+            pair.rhs.first != selectedPair.lhs.first && pair.rhs.first != selectedPair.rhs.first) {
+            disjointPairs.push_back(pair);
+        }
+    }
+    return disjointPairs;
+}
+
 
 
 template class vaultdb::BushyPlanEnumerator<bool>;
