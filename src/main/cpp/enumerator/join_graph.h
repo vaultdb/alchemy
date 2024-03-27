@@ -17,7 +17,7 @@ namespace vaultdb {
         char joinType;
         size_t outputCardinality;
 
-        JoinPairInfo(std::pair<Operator<B> *, string> lhs, std::pair<Operator<B> *, string> rhs, char joinType, int outputCardinality)
+        JoinPairInfo(std::pair<Operator<B> *, string> lhs, std::pair<Operator<B> *, string> rhs, char joinType, size_t outputCardinality)
                 : lhs(lhs), rhs(rhs), joinType(joinType), outputCardinality(outputCardinality) {}
     };
 
