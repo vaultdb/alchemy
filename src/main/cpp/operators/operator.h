@@ -205,6 +205,8 @@ namespace  vaultdb {
                     return "Project";
                 case OperatorType::NESTED_LOOP_JOIN:
                     return "BasicJoin";
+                case OperatorType::BLOCK_NESTED_LOOP_JOIN:
+                    return "BlockNestedLoopJoin";
                 case OperatorType::KEYED_NESTED_LOOP_JOIN:
                     return "KeyedJoin";
                 case OperatorType::LEFT_KEYED_NESTED_LOOP_JOIN:

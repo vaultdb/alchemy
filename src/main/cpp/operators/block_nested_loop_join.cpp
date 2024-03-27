@@ -32,10 +32,6 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
 
     BufferPoolManager *bpm = sys_conf.bpm_;
 
-    cout << "It is packed column store" << endl;
-    cout << "Buffer pool is enabled" << endl;
-    cout << "Ready for block nested loop join" << endl;
-
     PackedColumnTable *lhs = (PackedColumnTable *) Operator<B>::getChild(0)->getOutput();
     lhs->pinned_ = true;
     PackedColumnTable *rhs = (PackedColumnTable *) Operator<B>::getChild(1)->getOutput();
@@ -50,23 +46,15 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
     int cursor = 0;
     int rhs_col_offset = this->output_->getSchema().getFieldCount() - rhs->getSchema().getFieldCount();
 
-    cout << "lhs schema: " << lhs->getSchema() << endl;
-
     // calculate the largest fields per wire
     int outer_largest_fields_per_wire = 0;
     int inner_largest_fields_per_wire = 0;
 
-    cout << "lhs->getSchema().getFieldCount(): " << lhs->getSchema().getFieldCount() << endl;
-
     for(int i = 0; i < lhs->getSchema().getFieldCount(); ++i) {
-        cout << "lhs->fields_per_wire_[i]: " << lhs->fields_per_wire_[i] << endl;
-
         if(lhs->fields_per_wire_[i] > outer_largest_fields_per_wire) {
             outer_largest_fields_per_wire = lhs->fields_per_wire_[i];
         }
     }
-
-    cout << "outer_largest_fields_per_wire: " << outer_largest_fields_per_wire << endl;
 
     for(int i = 0; i < rhs->getSchema().getFieldCount(); ++i) {
         if(rhs->fields_per_wire_[i] > inner_largest_fields_per_wire) {
@@ -80,15 +68,11 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
 
     for(int i = 0; i < lhs->getSchema().getFieldCount(); ++i){
         int fields_size_to_match_largest_fields = (outer_largest_fields_per_wire / lhs->fields_per_wire_[i]) * lhs->fields_per_wire_[i];
-        cout << "lhs->fields_per_wire_[i]: " << lhs->fields_per_wire_[i] << endl;
-        cout << "fields_size_to_match_largest_fields: " << fields_size_to_match_largest_fields << endl;
 
         if(fields_size_to_match_largest_fields < outer_block_fields_size) {
             outer_block_fields_size = fields_size_to_match_largest_fields;
         }
     }
-
-    cout << "outer_block_fields_size: " << outer_block_fields_size << endl;
 
     for(int i = 0; i < rhs->getSchema().getFieldCount(); ++i){
         int fields_size_to_match_largest_fields = (inner_largest_fields_per_wire / rhs->fields_per_wire_[i]) * rhs->fields_per_wire_[i];
@@ -104,7 +88,6 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
 
     for(int i = 0; i < lhs->getSchema().getFieldCount(); ++i){
         int page_cnts = (outer_block_fields_size > lhs->fields_per_wire_[i]) ? (outer_block_fields_size / lhs->fields_per_wire_[i]) : 1;
-        cout << "page cnts: " << page_cnts << endl;
         outer_block_pages.push_back(page_cnts);
     }
 
@@ -117,19 +100,11 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
     vector<int> outer_col_page_offsets(outer_block_pages.size(), 0);
     vector<int> inner_col_page_offsets(inner_block_pages.size(), 0);
 
-    cout << "lhs tuple cnt: " << lhs->tuple_cnt_ << endl;
-    cout << "rhs tuple cnt: " << rhs->tuple_cnt_ << endl;
-    cout << "lhs id: " << lhs->table_id_ << endl;
-    cout << "rhs id: " << rhs->table_id_ << endl;
-    cout << "output id: " << ((PackedColumnTable *) this->output_)->table_id_ << endl;
-
-
     for(int i = 0; i < lhs->tuple_cnt_; i += outer_block_fields_size) {
         // get unpacked pages for each col and pin those pages
         for(int outer_col_idx = 0; outer_col_idx < lhs->getSchema().getFieldCount(); ++outer_col_idx) {
             int outer_page_cnts = outer_block_pages[outer_col_idx];
             int max_page = ceil(static_cast<double>(lhs->tuple_cnt_) / lhs->fields_per_wire_[outer_col_idx]);
-            cout << "max page: " << max_page << endl;
 
             for(int page_offset = 0; page_offset < outer_page_cnts; ++page_offset) {
                 // check if the page is valid (up to maximum number of pages)
@@ -138,7 +113,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
                                                                    (outer_col_page_offsets[outer_col_idx] + page_offset) *
                                                                    lhs->fields_per_wire_[outer_col_idx],
                                                                    lhs->fields_per_wire_[outer_col_idx]);
-                    cout << "page id: " << bpm->getPageIdKey(pid) << endl;
+
                     BufferPoolManager::UnpackedPage up = bpm->getUnpackedPage(pid);
                     up.pined = true;
                     bpm->unpacked_page_buffer_pool_[bpm->getPageIdKey(pid)] = up;
@@ -148,13 +123,14 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
             outer_col_page_offsets[outer_col_idx] += outer_page_cnts;
         }
 
-        cout << "print current unpacked buffer pool" << endl;
-        for (auto &[key, page]: bpm->unpacked_page_buffer_pool_) {
-            cout << "key: " << key << endl;
-            cout << "pined: " << page.pined << endl;
+        if(i + outer_block_fields_size > lhs->tuple_cnt_) {
+            outer_block_fields_size = lhs->tuple_cnt_ - i;
         }
 
         for(int j = 0; j < rhs->tuple_cnt_; j += inner_block_fields_size) {
+            if(j + inner_block_fields_size > rhs->tuple_cnt_) {
+                inner_block_fields_size = rhs->tuple_cnt_ - j;
+            }
 
             // join for each block
             for(int outer_block_idx = 0; outer_block_idx < outer_block_fields_size; ++outer_block_idx) {
@@ -169,22 +145,12 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
                     ++cursor;
                 }
             }
-
-
-            if(j + inner_block_fields_size > rhs->tuple_cnt_) {
-                inner_block_fields_size = rhs->tuple_cnt_ - j;
-            }
-        }
-
-        if(i + outer_block_fields_size > lhs->tuple_cnt_) {
-            outer_block_fields_size = lhs->tuple_cnt_ - i;
         }
 
         // unpin page
         for(int outer_col_idx = 0; outer_col_idx < lhs->getSchema().getFieldCount(); ++outer_col_idx) {
             int outer_page_cnts = outer_block_pages[outer_col_idx];
             int max_page = ceil(static_cast<double>(lhs->tuple_cnt_) / lhs->fields_per_wire_[outer_col_idx]);
-            cout << "max page: " << max_page << endl;
 
             for(int page_offset = 0; page_offset < outer_page_cnts; ++page_offset) {
                 // check if the page is valid (up to maximum number of pages)
@@ -193,7 +159,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
                                                                    (outer_col_page_offsets[outer_col_idx] + page_offset) *
                                                                    lhs->fields_per_wire_[outer_col_idx],
                                                                    lhs->fields_per_wire_[outer_col_idx]);
-                    cout << "unpin page id: " << bpm->getPageIdKey(pid) << endl;
+
                     BufferPoolManager::UnpackedPage up = bpm->getUnpackedPage(pid);
                     up.pined = false;
                     bpm->unpacked_page_buffer_pool_[bpm->getPageIdKey(pid)] = up;
@@ -206,8 +172,6 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
 
     lhs->pinned_ = false;
 
-    cout << "Finished block nested loop join" << endl;
-    exit(0);
     return this->output_;
 }
 
