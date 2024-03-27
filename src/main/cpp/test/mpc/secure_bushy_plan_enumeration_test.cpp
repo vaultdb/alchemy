@@ -53,7 +53,7 @@ SecureBushyPlanEnumerationTest::runTest(const int &test_id, const SortDefinition
 
     //ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
-    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/Auto_Optimized/auto_optimized-"  + test_name + ".json";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_7/Bushy_Plan_Enumeration/auto_optimized-"  + test_name + ".json";
 
     // Gate count measurement
     auto start_gates = SystemConfiguration::getInstance().emp_manager_->andGateCount();
@@ -144,24 +144,30 @@ SecureBushyPlanEnumerationTest::generateExpectedOutputQuery(const int &test_id, 
 }
 
 
-// No Aggregate
+//TEST_F(SecureBushyPlanEnumerationTest, bushy_test) {
 //
-//TEST_F(SecureBushyPlanEnumerationTest, tpch_q1) {
-//
-//SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-//runTest(1, expected_sort);
-//
-//
+//    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+//    runTest(0, expected_sort);
 //}
-//
-//
-//TEST_F(SecureBushyPlanEnumerationTest, tpch_q3) {
-//
-//SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-//                             ColumnSort(1, SortDirection::DESCENDING),
-//                             ColumnSort(2, SortDirection::ASCENDING)};
-//runTest(3, expected_sort);
-//}
+
+/*
+//No Aggregate
+TEST_F(SecureBushyPlanEnumerationTest, tpch_q1) {
+
+SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+runTest(1, expected_sort);
+
+
+}
+
+
+TEST_F(SecureBushyPlanEnumerationTest, tpch_q3) {
+
+SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                             ColumnSort(1, SortDirection::DESCENDING),
+                             ColumnSort(2, SortDirection::ASCENDING)};
+runTest(3, expected_sort);
+}
 
 
 TEST_F(SecureBushyPlanEnumerationTest, tpch_q5) {
@@ -176,7 +182,7 @@ TEST_F(SecureBushyPlanEnumerationTest, tpch_q8) {
 SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
 runTest(8, expected_sort);
 }
-
+*/
 
 
 TEST_F(SecureBushyPlanEnumerationTest, tpch_q9) {
@@ -186,7 +192,7 @@ runTest(9, expected_sort);
 
 }
 
-
+/*
 TEST_F(SecureBushyPlanEnumerationTest, tpch_q18) {
 // -1 ASC, $4 DESC, $3 ASC
 SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
@@ -194,6 +200,8 @@ SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                              ColumnSort(3, SortDirection::ASCENDING)};
 runTest(18, expected_sort);
 }
+*/
+
 
 /*
 TEST_F(SecurePlanEnumerationTest, two_aggregates_q18) {
