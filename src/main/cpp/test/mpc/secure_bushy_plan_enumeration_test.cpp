@@ -150,6 +150,12 @@ SecureBushyPlanEnumerationTest::generateExpectedOutputQuery(const int &test_id, 
 //    runTest(0, expected_sort);
 //}
 
+//TEST_F(SecureBushyPlanEnumerationTest, balanced_bushy_test) {
+//
+//    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+//    runTest(100, expected_sort);
+//}
+
 /*
 //No Aggregate
 TEST_F(SecureBushyPlanEnumerationTest, tpch_q1) {
@@ -159,7 +165,7 @@ runTest(1, expected_sort);
 
 
 }
-
+*/
 
 TEST_F(SecureBushyPlanEnumerationTest, tpch_q3) {
 
@@ -169,7 +175,7 @@ SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
 runTest(3, expected_sort);
 }
 
-
+/*
 TEST_F(SecureBushyPlanEnumerationTest, tpch_q5) {
 
 SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
