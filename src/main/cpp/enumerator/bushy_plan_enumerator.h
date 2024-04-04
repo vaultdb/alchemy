@@ -14,40 +14,16 @@
 
 namespace vaultdb {
     template<typename B>
-    struct SubJoinPlan {
-        JoinPairInfo<B> leftJoinPair;
-        JoinPairInfo<B> rightJoinPair;  // The join pairs involved in this plan.
-        std::vector<JoinPairInfo<B>> linkages; // Direct linkages between join pairs.
-
-        SubJoinPlan(JoinPairInfo<B> leftJoinPair, JoinPairInfo<B> rightJoinPair, std::vector<JoinPairInfo<B>> linkages)
-                : leftJoinPair(leftJoinPair), rightJoinPair(rightJoinPair), linkages(linkages) {}
-
-        // Adds a direct linkage between two join pairs.
-        void addLinkage(const JoinPairInfo<B>& joinPair) {
-            linkages.push_back(joinPair);
-        }
-    };
-
-    template<typename B>
-    struct JoinPlan {
-        SubJoinPlan<B> leftSubJoinPlan;
-        JoinPairInfo<B> rightJoinPair; // The join pairs involved in this plan.
-        std::vector<JoinPairInfo<B>> linkages; // Direct linkages between join pairs.
-
-        JoinPlan(SubJoinPlan<B> leftSubJoinPlan, JoinPairInfo<B> rightJoinPair, std::vector<JoinPairInfo<B>> linkages)
-                : leftSubJoinPlan(leftSubJoinPlan), rightJoinPair(rightJoinPair), linkages(linkages) {}
-
-        // Adds a direct linkage between two join pairs.
-        void addLinkage(const JoinPairInfo<B>& joinPair) {
-            linkages.push_back(joinPair);
-        }
-    };
+    using DisjointJoinPairs = std::vector<JoinPairInfo<B>>;
 
     template<typename B>
     class BushyPlanEnumerator {
     public:
         typedef std::tuple<SortDefinition, int /*parent_id*/, int /*child_id*/, std::string> SortEntry;// Adding operator type as a string.
         std::vector<JoinPairInfo<B>> join_pairs_;
+        std::vector<JoinPair<B>> join_pairs_vector_;
+        std::map<string, inputRelation<B>> sql_input_ops_;
+        std::vector<std::vector<subPlan<B>>> memoization_table_;
 
         BushyPlanEnumerator(Operator<B> * root, std::map<int, Operator<B> * > operators, std::vector<Operator<B> * > support_ops, map<int, vector<SortDefinition>> interesting_orders);
 
@@ -56,7 +32,7 @@ namespace vaultdb {
         map<int, vector<SortDefinition>> getInterestingSortOrders() { return interesting_sort_orders_; }
 
         void createBushyBalancedTree();
-        std::vector<JoinPlan<B>> possible_plans_;
+        std::vector<DisjointJoinPairs<B>> possible_disjoint_pairs_;
 
         int total_plan_cnt_ = 0;
     private:
@@ -70,16 +46,16 @@ namespace vaultdb {
         std::map<int, Operator<B> * > operators_; // op ID --> operator instantiation
         std::vector<Operator<B> * > support_ops_; // these ones don't get an operator ID from the JSON plan
 
-        void collectSQLInputOps(Operator<B> * op, std::map<int, Operator<B> *> &sqlInputOps);
-        void findJoinPairs(Operator<B> * left_deep_root, std::map<int, Operator<B> *> &sqlInputOps);
+        void collectSQLInputOps(Operator<B> * op);
+        Operator<B>* findJoinChildFromSqlInput(string join_predicate);
         void addTransitivity();
         void addTransitivePairs(const std::pair<Operator<B> *, string> pair1, const std::pair<Operator<B> *, string> pair2, const size_t pair1_cardinality, const size_t pair2_cardinality, const std::vector<std::string> commonConditions, std::vector<JoinPairInfo<B>>& transitivePairs);
-        Operator<B>* findJoinChildFromSqlInput(string join_predicate, std::map<int, Operator<B> *> &sqlInputOps);
         std::vector<std::pair<int, int>> extractIntegers(const std::string& input);
         std::pair<char, size_t> getJoinType(const std::string& lhs_predicate, const std::string& rhs_predicate, const size_t& lhs_output_cardinality, const size_t& rhs_output_cardinality);
-        void findJoinOfDisjointTables(const JoinPairInfo<B>& initialPair, const JoinGraph<B>& joinGraph) ;
-        bool findDisjointPair(Operator<B>* op, const std::vector<JoinPairInfo<B>>& linkagePairs, std::vector<JoinPairInfo<B>>& resultPairs);
-        bool isDisjointFromLinkagePair(const JoinPairInfo<B>& candidatePair, const JoinPairInfo<B>& linkagePair);
+        void findJoinOfDisjointTables(const JoinPairInfo<B>& initialPair, const JoinGraph<B>& joinGraph, std::vector<JoinPairInfo<B>>& currentDisjointPairs, bool isInitialCall) ;
+        std::vector<JoinPairInfo<B>> findCandidateDisjointPairs(Operator<B>* connectedOp,const std::vector<JoinPairInfo<B>>& currentDisjointPairs) const;
+        bool isDisjoint(const JoinPairInfo<B>& candidatePair, const std::vector<JoinPairInfo<B>>& currentDisjointPairs) const;
+        void addMissingInputs(std::vector<JoinPairInfo<B>>& currentDisjointPairs);
         JoinGraph<B> createJoinGraph(const std::map<int, Operator<B> *> &sqlInputOps, const std::vector<JoinPairInfo<B>>& joinPairs);
         std::string joinPredicates(const std::set<std::string>& predicates) {
             std::string result;
@@ -90,6 +66,45 @@ namespace vaultdb {
                 result += *it;
             }
             return result;
+        }
+
+        std::string sortDirectionToString(SortDirection direction) {
+            switch (direction) {
+                case SortDirection::ASCENDING:
+                    return "ASC";
+                case SortDirection::DESCENDING:
+                    return "DESC";
+                case SortDirection::INVALID:
+                default:
+                    return "INVALID";
+            }
+        }
+
+        std::string sortToString(const SortDefinition& sort) {
+            // Extract the column ordinal and direction
+            int32_t columnOrdinal = sort[0].first;
+            SortDirection sortDirection = sort[0].second;
+
+            // Convert both parts to string
+            std::string sortInfo = std::to_string(columnOrdinal) + "-" + sortDirectionToString(sortDirection);
+
+            return sortInfo;
+        }
+
+
+        vector<SortDefinition> getCollations(Operator<B> *op) {
+            map<SortDefinition, int> collations; // making a map to eliminate duplicate collations
+            collations[SortDefinition()] = 0; // empty set
+            collations[op->getSortOrder()] = 0; // default sort
+            for (auto collation: interesting_sort_orders_[op->getOperatorId()]) {
+                collations[collation] = 0;
+            }
+
+            vector<SortDefinition> sorts;
+            for (auto collation: collations) {
+                sorts.push_back(collation.first);
+            }
+            return sorts;
         }
     };
 }

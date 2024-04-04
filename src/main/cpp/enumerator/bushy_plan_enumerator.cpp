@@ -45,24 +45,24 @@ BushyPlanEnumerator<B>::BushyPlanEnumerator(Operator<B> * left_deep_root, map<in
 template<typename B>
 void BushyPlanEnumerator<B>::createBushyBalancedTree() {
 
-    std::map<int, Operator<B> *> sqlInputOps;
-
     // Step 1: Collect all SQLInput operations and map them by their operator ID
-    collectSQLInputOps(left_deep_root_, sqlInputOps);
+    // find join pairs from the left deep tree, and store them in join_pairs_vector
+    collectSQLInputOps(left_deep_root_);
 
-    // Step 2: Recursively find join pairs starting from the left deep root
-    findJoinPairs(left_deep_root_, sqlInputOps);
-
-    // Step 3 : Add transitivity to the join_pairs_
+    // Step 2 : Add transitivity to the join_pairs_ and create join graph
     addTransitivity();
 
+    // Step 3 : Calcuate join cost for each join pair
+
+
+    /*
     // Step 4 : Sort join_pairs_ with the output cardinality of join_pairs_' 4th value(output cardainlity). Put minimum card in the first
     std::sort(join_pairs_.begin(), join_pairs_.end(), [](const JoinPairInfo<B> &a, const JoinPairInfo<B> &b) {
         return a.outputCardinality < b.outputCardinality;
     });
 
     // Step 5 : Create join graph from the join_pairs_
-    JoinGraph<B> joinGraph = createJoinGraph(sqlInputOps, join_pairs_);
+    JoinGraph<B> joinGraph = createJoinGraph(sql_input_ops_, join_pairs_);
 
     size_t min_plan_cost_ = left_deep_root_->planCost();
     Operator<B> *min_cost_plan_ = left_deep_root_;
@@ -71,11 +71,13 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
     for(auto it = join_pairs_.begin(); it != join_pairs_.end(); ++it) {
         JoinPairInfo<B> pair = *it;
 
+        std::vector<JoinPairInfo<B>> currentDisjointPairs;
+
         // Recursively find all disjoint table pairs
-        findJoinOfDisjointTables(pair, joinGraph);
+        findJoinOfDisjointTables(pair, joinGraph, currentDisjointPairs, true);
 
         // If disjoint_joins are None, then do not create bushy plan. It is not possible to create bushy plan
-        if (possible_plans_.empty()) {
+        if (possible_disjoint_pairs_.empty()) {
             continue;
         }
 
@@ -92,68 +94,67 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
 //            min_cost_plan_ = plan;
 //        }
     }
+     */
 }
 
 template<typename B>
-void BushyPlanEnumerator<B>::collectSQLInputOps(Operator<B> * op, std::map<int, Operator<B> *> &sqlInputOps) {
+void BushyPlanEnumerator<B>::collectSQLInputOps(Operator<B> * op) {
     if (op == nullptr) return;
 
     if (op->getType() == OperatorType::SECURE_SQL_INPUT) {
-        sqlInputOps[op->getOperatorId()] = op;
+        auto sorts = getCollations(op);
+        for (auto &sort: sorts) {
+            Operator<B>* node = op->clone();
+            node->setSortOrder(sort);
+
+            string key = std::to_string(op->getOperatorId()) + "-"; // Generate unique key
+            if(sort.size() == 0)
+                key += "unordered";
+            else
+                key += sortToString(sort);
+
+            sql_input_ops_.emplace(key, inputRelation<B>(node, node->planCost()));
+        }
+    }
+    else if(op->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN || op->getType() == OperatorType::KEYED_SORT_MERGE_JOIN){
+        // find join predicates
+        std::vector<std::pair<int, int>> join_predicates = extractIntegers(op->getParameters());
+        auto join_schema = op->getOutputSchema();
+
+        // find the join child from the SQLInput operations
+        for (auto& jp : join_predicates) {
+            string lhs_predicate = join_schema.fields_[jp.first].getName();
+            string rhs_predicate = join_schema.fields_[jp.second].getName();
+
+            Operator<B> *lhs = op->getChild(0);
+            Operator<B> *rhs = op->getChild(1);
+
+            if (lhs->getType() != OperatorType::SECURE_SQL_INPUT)
+                lhs = findJoinChildFromSqlInput(lhs_predicate);
+
+            if (rhs->getType() != OperatorType::SECURE_SQL_INPUT)
+                rhs = findJoinChildFromSqlInput(rhs_predicate);
+
+            join_pairs_vector_.push_back(JoinPair<B>{lhs, rhs, lhs_predicate, rhs_predicate});
+        }
     }
 
-    collectSQLInputOps(op->getChild(0), sqlInputOps);
+    collectSQLInputOps(op->getChild(0));
     if(op->getChild(1) != nullptr)
-        collectSQLInputOps(op->getChild(1), sqlInputOps);
+        collectSQLInputOps(op->getChild(1));
 }
 
 template<typename B>
-void BushyPlanEnumerator<B>::findJoinPairs(Operator<B> * left_deep_root, std::map<int, Operator<B> *> &sqlInputOps) {
-
-    auto op = left_deep_root;
-    while (op->getChild() != nullptr)
-        op = op->getChild();
-
-    assert(op->getType() == OperatorType::SECURE_SQL_INPUT);
-
-    // recursively traverse this leaf to the root and create join pairs
-    while (op != nullptr) {
-        auto parent = op->getParent();
-        if (parent != nullptr) {
-            if (parent->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN ||
-                parent->getType() == OperatorType::KEYED_SORT_MERGE_JOIN) {
-
-                // find join predicates
-                std::vector<std::pair<int, int>> join_predicates = extractIntegers(parent->getParameters());
-                auto join_schema = parent->getOutputSchema();
-
-                // find the join child from the SQLInput operations
-                for (auto& jp : join_predicates) {
-                    string lhs_predicate = join_schema.fields_[jp.first].getName();
-                    string rhs_predicate = join_schema.fields_[jp.second].getName();
-                    auto lhs = findJoinChildFromSqlInput(lhs_predicate, sqlInputOps);
-                    auto rhs = findJoinChildFromSqlInput(rhs_predicate, sqlInputOps);
-
-                    // Check if an existing pair matches the current LHS and RHS
-                    auto it = std::find_if(join_pairs_.begin(), join_pairs_.end(), [&](const JoinPairInfo<B>& existingPair) {
-                        return (existingPair.lhs.first == lhs && existingPair.rhs.first == rhs) ||
-                               (existingPair.lhs.first == rhs && existingPair.rhs.first == lhs);
-                    });
-
-                    if (it != join_pairs_.end()) {
-                        // An existing pair is found, combine predicates
-                        it->lhs.second += " AND " + lhs_predicate; // Combine LHS predicates
-                        it->rhs.second += " AND " + rhs_predicate; // Combine RHS predicates
-                    } else {
-                        // No existing pair, add new one
-                        auto join_info = getJoinType(lhs_predicate, rhs_predicate, lhs->getOutputCardinality(), rhs->getOutputCardinality());
-                        join_pairs_.push_back(JoinPairInfo<B>{std::make_pair(lhs, lhs_predicate), std::make_pair(rhs, rhs_predicate), join_info.first, join_info.second});
-                    }
-                }
-            }
+Operator<B> *BushyPlanEnumerator<B>::findJoinChildFromSqlInput(string join_predicate) {
+    for(auto it = operators_.begin(); it != operators_.end(); ++it){
+        Operator<B> *op = it->second;
+        if(op->getType() == OperatorType::SECURE_SQL_INPUT){
+            auto sqlInputSchema = op->getOutputSchema();
+            if(sqlInputSchema.hasField(join_predicate))
+                return op;
         }
-        op = parent;
     }
+    return nullptr;
 }
 
 template<typename B>
@@ -275,17 +276,6 @@ void BushyPlanEnumerator<B>::addTransitivePairs(const std::pair<Operator<B> *, s
     transitivePairs.push_back(newTransitivePair);
 }
 
-
-template<typename B>
-Operator<B> *BushyPlanEnumerator<B>::findJoinChildFromSqlInput(string join_predicate, std::map<int, Operator<B> *> &sqlInputOps) {
-    for(auto it = sqlInputOps.begin(); it != sqlInputOps.end(); ++it) {
-        Operator<B> *sqlInputOp = it->second;
-        auto sqlInputSchema = sqlInputOp->getOutputSchema();
-        if(sqlInputSchema.hasField(join_predicate))
-            return sqlInputOp;
-    }
-}
-
 template<typename B>
 std::pair<char, size_t> BushyPlanEnumerator<B>::getJoinType(const std::string& lhs_predicate, const std::string& rhs_predicate,
                                                             const size_t& lhs_output_cardinality, const size_t& rhs_output_cardinality) {
@@ -327,95 +317,101 @@ std::vector<std::pair<int, int>> BushyPlanEnumerator<B>::extractIntegers(const s
 }
 
 template<typename B>
-void BushyPlanEnumerator<B>::findJoinOfDisjointTables(const JoinPairInfo<B>& initialPair, const JoinGraph<B>& joinGraph) {
-    std::vector<JoinPairInfo<B>> initialPairs{initialPair};
-    auto connectedOperatorsWithLinkages = joinGraph.getConnectedOperators(initialPairs, join_pairs_);
+void BushyPlanEnumerator<B>::findJoinOfDisjointTables(const JoinPairInfo<B>& initialPair, const JoinGraph<B>& joinGraph, std::vector<JoinPairInfo<B>>& currentDisjointPairs, bool isInitialCall) {
+    if (isInitialCall) {
+        currentDisjointPairs.clear();
+        currentDisjointPairs.push_back(initialPair);
+    }
 
-    for (auto& [op, linkagePairs] : connectedOperatorsWithLinkages) {
-        std::vector<JoinPairInfo<B>> foundDisjointPairs;
-        if (findDisjointPair(op, linkagePairs, foundDisjointPairs)) {
-            // For each found disjoint pair, create a SubJoinPlan or similar structure
-            for (auto& newPair : foundDisjointPairs) {
-                // Example: Building a vector of SubJoinPlans or similar structure
-                // This will likely need to be aggregated into a larger structure like possible_plans_ or equivalent
+    // Since getConnectedOperators now only returns a list of operators, we adjust accordingly.
+    auto connectedOperators = joinGraph.getConnectedOperators(currentDisjointPairs);
+
+    // Iterate over connected operators to find potential join pairs.
+    for (Operator<B>* connectedOp : connectedOperators) {
+        // Find disjoint pairs that includes connectedOp and are disjoint with currentDisjointPairs.
+        std::vector<JoinPairInfo<B>> foundDisjointPairs = findCandidateDisjointPairs(connectedOp, currentDisjointPairs);
+
+        // If no disjoint pairs were found, terminate the recursion.
+        if (foundDisjointPairs.empty()) {
+            // Compare and add missing inputs, finalize the plan.
+            addMissingInputs(currentDisjointPairs);
+            // Add the plan formed by newDisjointPairs to the list of potential plans.
+            possible_disjoint_pairs_.push_back(currentDisjointPairs);
+            continue;
+        }
+
+        // For each found disjoint pair, recurse or process further as needed.
+        for (const auto& newPair : foundDisjointPairs) {
+            std::vector<JoinPairInfo<B>> newDisjointPairs = currentDisjointPairs;
+            newDisjointPairs.push_back(newPair);
+
+            // Recursive call to explore further disjoint pairs from this new pair.
+            findJoinOfDisjointTables(newPair, joinGraph, newDisjointPairs, false);
+        }
+    }
+}
+
+template<typename B>
+std::vector<JoinPairInfo<B>> BushyPlanEnumerator<B>::findCandidateDisjointPairs(
+        Operator<B>* connectedOp,
+        const std::vector<JoinPairInfo<B>>& currentDisjointPairs) const
+{
+    std::vector<JoinPairInfo<B>> foundDisjointPairs;
+
+    for (const auto& candidatePair : join_pairs_) {
+        // Check if the candidatePair includes the connectedOp and is not already in currentDisjointPairs.
+        if ((candidatePair.lhs.first == connectedOp || candidatePair.rhs.first == connectedOp) &&
+            std::find(currentDisjointPairs.begin(), currentDisjointPairs.end(), candidatePair) == currentDisjointPairs.end()) {
+            // Verify if the candidatePair is disjoint with respect to currentDisjointPairs.
+            if (isDisjoint(candidatePair, currentDisjointPairs)) {
+                foundDisjointPairs.push_back(candidatePair);
             }
         }
     }
-    // Further actions or recursive calls as needed
+    return foundDisjointPairs;
 }
 
+template<typename B>
+bool BushyPlanEnumerator<B>::isDisjoint(const JoinPairInfo<B>& candidatePair, const std::vector<JoinPairInfo<B>>& currentDisjointPairs) const {
+    // Iterate over currentDisjointPairs to check for any overlap with candidatePair.
+    for (const auto& existingPair : currentDisjointPairs) {
+        // Check if either side of the candidatePair matches either side of the existingPair.
+        if (candidatePair.lhs.first == existingPair.lhs.first || candidatePair.lhs.first == existingPair.rhs.first ||
+            candidatePair.rhs.first == existingPair.lhs.first || candidatePair.rhs.first == existingPair.rhs.first) {
+            // If there's any overlap, the pair is not disjoint.
+            return false;
+        }
+    }
+    // If no overlaps were found, the candidatePair is considered disjoint.
+    return true;
+}
+
+template<typename B>
+void BushyPlanEnumerator<B>::addMissingInputs(std::vector<JoinPairInfo<B>>& currentDisjointPairs) {
+    // Convert current disjoint pairs to a set of Operators to easily check for presence.
+    std::set<Operator<B>*> presentOps;
+//    for (const auto& pair : currentDisjointPairs) {
+//        presentOps.insert(pair.lhs.first);
+//        presentOps.insert(pair.rhs.first);
+//    }
 //
-//template<typename B>
-//void BushyPlanEnumerator<B>::recursivelyFindDisjointPairs(std::vector<JoinPairInfo<B>>& derivedJoinPairs, const JoinGraph<B>& joinGraph) {
-//    bool foundNewPair = false;
-//    for (const auto& pair : derivedJoinPairs) {
-//        std::vector<Operator<B>*> connectedOperators = joinGraph.getConnectedOperators(pair);
-//        for (Operator<B>* op : connectedOperators) {
-//            std::vector<JoinPairInfo<B>> newDisjointPairs;
-//            if (findDisjointPair(op, pair, derivedJoinPairs, newDisjointPairs)) {
-//                foundNewPair = true;
-//                for (const auto& newPair : newDisjointPairs) {
-//                    SubJoinPlan<B> subPlan{pair, newPair, {/* linkage info here based on op */}};
-//                    possible_plans_.push_back({subPlan, /* rightJoinPair if applicable */, {/* linkages if applicable */}});
-//                    // Consider recursive call with newDisjointPairs to explore deeper connections
-//                }
-//            }
+//    // Find the missing input operator by comparing with sql_input_ops.
+//    for (const auto& entry : sql_input_ops_) {
+//        Operator<B>* op = entry.second;
+//
+//        if (presentOps.find(op) == presentOps.end()) { // If op is missing
+//            // Add the missing op. Since you mentioned at most one might be missing,
+//            // we can handle it here. Determine how to add it (e.g., as a new pair with a dummy operator or attached to an existing pair).
+//            // For simplicity, let's create a dummy operator and a new JoinPairInfo with the missing op.
+//            Operator<B>* dummyOp = nullptr; // Assuming you have a way to create or specify a dummy operator.
+//            char joinType = 'N'; // Example join type, adjust based on your schema.
+//            size_t outputCardinality = 0; // Example cardinality, adjust as needed.
+//
+//            currentDisjointPairs.push_back(JoinPairInfo<B>(std::make_pair(op, ""), std::make_pair(dummyOp, ""), joinType, outputCardinality));
+//            break; // Since at most one op might be missing, we can break after handling.
 //        }
 //    }
-//
-//    if (!foundNewPair) {
-//        // Finalize and store the current plan if no new pairs can be connected
-//        //finalizeCurrentPlan(derivedJoinPairs);
-//    }
-//}
-
-template<typename B>
-bool BushyPlanEnumerator<B>::findDisjointPair(
-        Operator<B>* op,
-        const std::vector<JoinPairInfo<B>>& linkagePairs,
-        std::vector<JoinPairInfo<B>>& resultPairs) {
-    bool found = false;
-
-    for (const auto& linkagePair : linkagePairs) { // Iterate through each linkage pair
-        for (const auto& candidatePair : join_pairs_) {
-            if ((candidatePair.lhs.first == op || candidatePair.rhs.first == op) &&
-                isDisjointFromLinkagePair(candidatePair, linkagePair)) {
-                resultPairs.push_back(candidatePair);
-                found = true;
-            }
-        }
-    }
-    return found;
 }
-
-
-template<typename B>
-bool BushyPlanEnumerator<B>::isDisjointFromLinkagePair(
-        const JoinPairInfo<B>& candidatePair,
-        const JoinPairInfo<B>& linkagePair) {
-    // A candidate pair is disjoint from a linkage pair if it does not overlap with it
-    // except possibly at the connection point (operator) between them.
-
-    // Check if the candidate pair's lhs or rhs is the same as the linkage pair's lhs or rhs,
-    // which would mean they are directly connected or possibly overlapping.
-    bool lhsOverlap = candidatePair.lhs.first == linkagePair.lhs.first || candidatePair.lhs.first == linkagePair.rhs.first;
-    bool rhsOverlap = candidatePair.rhs.first == linkagePair.lhs.first || candidatePair.rhs.first == linkagePair.rhs.first;
-
-    // If both lhs and rhs of the candidate pair overlap with the linkage pair, it's not disjoint.
-    if (lhsOverlap && rhsOverlap) {
-        return false; // Not disjoint because it fully overlaps with the linkage pair.
-    }
-
-    // Additional checks can be implemented here if there are more complex conditions
-    // for determining disjointness in your specific application or data model.
-
-    return true; // Considered disjoint if it doesn't fully overlap with the linkage pair.
-}
-
-
-
-
-
 
 template<typename B>
 JoinGraph<B> BushyPlanEnumerator<B>::createJoinGraph(const std::map<int, Operator<B> *> &sqlInputOps, const std::vector<JoinPairInfo<B>>& joinPairs) {

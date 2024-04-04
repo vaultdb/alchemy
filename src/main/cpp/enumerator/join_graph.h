@@ -11,6 +11,44 @@
 
 namespace vaultdb {
     template<typename B>
+    struct inputRelation {
+        Operator<B> * table;
+        size_t cost;
+
+        inputRelation(Operator<B> * table, size_t cost) : table(table), cost(cost) {}
+    };
+
+    template<typename B>
+    struct subPlan {
+        string lhs;
+        string rhs;
+        OperatorType type;
+        size_t cost;
+        SortDefinition output_order;
+
+        subPlan(string lhs, string rhs, OperatorType type, size_t cost, SortDefinition output_order)
+        : lhs(lhs), rhs(rhs), type(type), cost(cost), output_order(output_order) {}
+
+    };
+
+    template<typename B>
+    struct JoinPair {
+        Operator<B> *lhs;
+        Operator<B> *rhs;
+        string lhs_predicate;
+        string rhs_predicate;
+
+        JoinPair(Operator<B> *lhs, Operator<B> *rhs, string lhs_predicate, string rhs_predicate)
+                : lhs(lhs), rhs(rhs), lhs_predicate(lhs_predicate), rhs_predicate(rhs_predicate) {}
+
+        bool operator==(const JoinPair& other) const {
+            // Assuming equality is determined by the operators
+            return (*this->lhs == *other.lhs && *this->rhs == *other.rhs) ||
+                    (*this->lhs == *other.rhs && *this->rhs == *other.lhs);
+        }
+    };
+
+    template<typename B>
     struct JoinPairInfo {
         std::pair<Operator<B> *, string> lhs;
         std::pair<Operator<B> *, string> rhs;
@@ -19,6 +57,14 @@ namespace vaultdb {
 
         JoinPairInfo(std::pair<Operator<B> *, string> lhs, std::pair<Operator<B> *, string> rhs, char joinType, size_t outputCardinality)
                 : lhs(lhs), rhs(rhs), joinType(joinType), outputCardinality(outputCardinality) {}
+
+        bool operator==(const JoinPairInfo& other) const {
+            // Assuming equality is determined by the operators and the join type
+            // You might need to adjust the logic based on what you consider makes two JoinPairInfo instances equal
+            return *this->lhs.first == *other.lhs.first && *this->rhs.first == *other.rhs.first &&
+                   this->lhs.second == other.lhs.second && this->rhs.second == other.rhs.second &&
+                   this->joinType == other.joinType;
+        }
     };
 
     template<typename B>
@@ -79,63 +125,34 @@ namespace vaultdb {
         }
 
         // Method to get operators connected to a given join pair
-        std::vector<std::pair<Operator<B>*, std::vector<JoinPairInfo<B>>>> getConnectedOperators(
-                const std::vector<JoinPairInfo<B>>& currentjoinPairs, const std::vector<JoinPairInfo<B>>& alljoinPairs) const {
-            // Map to accumulate connections and their corresponding linkages.
-            std::map<Operator<B>*, std::vector<JoinPairInfo<B>>> connectedOperatorsMap;
-
-            // Set to track operators directly involved in the initial join pairs.
+        std::vector<Operator<B>*> getConnectedOperators(const std::vector<JoinPairInfo<B>>& currentJoinPairs) const {
             std::set<Operator<B>*> directlyInvolvedOperators;
-            for (const auto& pair : currentjoinPairs) {
+            for (const auto& pair : currentJoinPairs) {
                 directlyInvolvedOperators.insert(pair.lhs.first);
                 directlyInvolvedOperators.insert(pair.rhs.first);
             }
 
-            // Process each edge to find connections excluding direct ones.
+            std::set<Operator<B>*> connectedOperators;
+            // Iterate through each edge to check for connections.
             for (const auto& edge : edges) {
                 Operator<B>* fromOp = edge.from->op;
                 Operator<B>* toOp = edge.to->op;
 
-                // Check if this edge represents a direct connection already accounted for.
+                // If fromOp is directly involved and toOp is not already considered, mark toOp as connected.
                 if (directlyInvolvedOperators.find(fromOp) != directlyInvolvedOperators.end() &&
-                    directlyInvolvedOperators.find(toOp) != directlyInvolvedOperators.end()) {
-                    continue; // Skip as it's the same edge.
+                    directlyInvolvedOperators.find(toOp) == directlyInvolvedOperators.end()) {
+                    connectedOperators.insert(toOp);
                 }
-
-                // For edges not representing the same edge, accumulate linkages.
-
-                // If fromOp is directly involved, add the connection to the map.
-                if (directlyInvolvedOperators.find(fromOp) != directlyInvolvedOperators.end()) {
-                    // Find the join pair from alljoinPairs that includes fromOp and toOp.
-                    auto joinPairIt = std::find_if(alljoinPairs.begin(), alljoinPairs.end(),
-                            [fromOp, toOp](const JoinPairInfo<B>& joinPair) {
-                                return (joinPair.lhs.first == fromOp && joinPair.rhs.first == toOp) ||
-                                       (joinPair.lhs.first == toOp && joinPair.rhs.first == fromOp);
-                            });
-                    connectedOperatorsMap[toOp].push_back({*joinPairIt});
-                }
-                // If toOp is directly involved, add the connection to the map.
-                else if (directlyInvolvedOperators.find(toOp) != directlyInvolvedOperators.end()) {
-                    // Find the join pair from alljoinPairs that includes fromOp and toOp.
-                    auto joinPairIt = std::find_if(alljoinPairs.begin(), alljoinPairs.end(),
-                                                   [fromOp, toOp](const JoinPairInfo<B>& joinPair) {
-                                                       return (joinPair.lhs.first == fromOp && joinPair.rhs.first == toOp) ||
-                                                              (joinPair.lhs.first == toOp && joinPair.rhs.first == fromOp);
-                                                   });
-                    connectedOperatorsMap[fromOp].push_back({*joinPairIt});
+                    // Similarly, if toOp is directly involved and fromOp is not, mark fromOp as connected.
+                else if (directlyInvolvedOperators.find(toOp) != directlyInvolvedOperators.end() &&
+                         directlyInvolvedOperators.find(fromOp) == directlyInvolvedOperators.end()) {
+                    connectedOperators.insert(fromOp);
                 }
             }
 
-            // Convert the map to the expected vector format.
-            std::vector<std::pair<Operator<B>*, std::vector<JoinPairInfo<B>>>> connectedOperatorsWithLinkages;
-            for (const auto& entry : connectedOperatorsMap) {
-                connectedOperatorsWithLinkages.push_back({entry.first, entry.second});
-            }
-
-            return connectedOperatorsWithLinkages;
+            // Convert the set of connected operators to the expected vector format.
+            return std::vector<Operator<B>*>(connectedOperators.begin(), connectedOperators.end());
         }
-
-
 
 
         const std::vector<Node> &getNodes() const { return nodes; }
