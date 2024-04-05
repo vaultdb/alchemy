@@ -14,6 +14,39 @@
 
 namespace vaultdb {
     template<typename B>
+    struct SqlInputKey{
+        int op_id;
+        SortDefinition sort_orders;
+
+        SqlInputKey(int op_id, SortDefinition sort_orders) : op_id(op_id), sort_orders(sort_orders) {}
+
+        // Comparison operator
+        bool operator<(const SqlInputKey& other) const {
+            if (op_id != other.op_id) {
+                return op_id < other.op_id;
+            }
+
+            // Now, compare SortDefinition
+            const auto& lhs = this->sort_orders;
+            const auto& rhs = other.sort_orders;
+
+            for (size_t i = 0; i < std::min(lhs.size(), rhs.size()); ++i) {
+                // Compare ordinal
+                if (lhs[i].first != rhs[i].first) {
+                    return lhs[i].first < rhs[i].first;
+                }
+                // If ordinals are equal, compare direction
+                if (lhs[i].second != rhs[i].second) {
+                    return lhs[i].second < rhs[i].second;
+                }
+            }
+
+            // If all compared elements are equal, the shorter SortDefinition is considered "less than" if they are of different lengths
+            return lhs.size() < rhs.size();
+        }
+    };
+
+    template<typename B>
     using DisjointJoinPairs = std::vector<JoinPairInfo<B>>;
 
     template<typename B>
@@ -22,7 +55,7 @@ namespace vaultdb {
         typedef std::tuple<SortDefinition, int /*parent_id*/, int /*child_id*/, std::string> SortEntry;// Adding operator type as a string.
         std::vector<JoinPairInfo<B>> join_pairs_;
         std::vector<JoinPair<B>> join_pairs_vector_;
-        std::map<string, inputRelation<B>> sql_input_ops_;
+        std::map<SqlInputKey<B>, inputRelation<B>> sql_input_ops_;
         std::vector<std::vector<subPlan<B>>> memoization_table_;
 
         BushyPlanEnumerator(Operator<B> * root, std::map<int, Operator<B> * > operators, std::vector<Operator<B> * > support_ops, map<int, vector<SortDefinition>> interesting_orders);
@@ -46,11 +79,13 @@ namespace vaultdb {
         std::map<int, Operator<B> * > operators_; // op ID --> operator instantiation
         std::vector<Operator<B> * > support_ops_; // these ones don't get an operator ID from the JSON plan
 
-        void collectSQLInputOps(Operator<B> * op);
+        void collectSQLInputsAndJoinPairs(Operator<B> * op, std::vector<JoinPair<B>> &join_pairs);
         Operator<B>* findJoinChildFromSqlInput(string join_predicate);
         void addTransitivity();
         void addTransitivePairs(const std::pair<Operator<B> *, string> pair1, const std::pair<Operator<B> *, string> pair2, const size_t pair1_cardinality, const size_t pair2_cardinality, const std::vector<std::string> commonConditions, std::vector<JoinPairInfo<B>>& transitivePairs);
         std::vector<std::pair<int, int>> extractIntegers(const std::string& input);
+        void calculateCostsforJoinPairs(std::vector<JoinPair<B>> &joinPairs);
+        boost::property_tree::ptree createJoinConditionTree(const QuerySchema& lhs, const QuerySchema& rhs, const string lhs_predicate, const string rhs_predicate);
         std::pair<char, size_t> getJoinType(const std::string& lhs_predicate, const std::string& rhs_predicate, const size_t& lhs_output_cardinality, const size_t& rhs_output_cardinality);
         void findJoinOfDisjointTables(const JoinPairInfo<B>& initialPair, const JoinGraph<B>& joinGraph, std::vector<JoinPairInfo<B>>& currentDisjointPairs, bool isInitialCall) ;
         std::vector<JoinPairInfo<B>> findCandidateDisjointPairs(Operator<B>* connectedOp,const std::vector<JoinPairInfo<B>>& currentDisjointPairs) const;
@@ -66,6 +101,29 @@ namespace vaultdb {
                 result += *it;
             }
             return result;
+        }
+
+        std::vector<std::pair<std::string, inputRelation<B>>> findEntriesWithPrefix(const std::string& prefix) {
+
+            std::vector<std::pair<std::string, inputRelation<B>>> matchingEntries;
+
+            // Find the lower bound for the prefix, which gives us the starting iterator
+//            auto it = sql_input_ops_.lower_bound(prefix);
+//
+//            // Iterate over the map from the starting point
+//            while (it != sql_input_ops_.end()) {
+//                // Check if the current key starts with the prefix
+//                if (it->first.substr(0, prefix.size()) == prefix) {
+//                    matchingEntries.push_back(*it);
+//                } else {
+//                    // Since the map is ordered, once a key does not match the prefix,
+//                    // no subsequent keys will match the prefix either
+//                    break;
+//                }
+//                ++it;
+//            }
+
+            return matchingEntries;
         }
 
         std::string sortDirectionToString(SortDirection direction) {
@@ -90,7 +148,6 @@ namespace vaultdb {
 
             return sortInfo;
         }
-
 
         vector<SortDefinition> getCollations(Operator<B> *op) {
             map<SortDefinition, int> collations; // making a map to eliminate duplicate collations

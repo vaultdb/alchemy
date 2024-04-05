@@ -47,13 +47,14 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
 
     // Step 1: Collect all SQLInput operations and map them by their operator ID
     // find join pairs from the left deep tree, and store them in join_pairs_vector
-    collectSQLInputOps(left_deep_root_);
+    std::vector<JoinPair<B>> join_pairs;
+    collectSQLInputsAndJoinPairs(left_deep_root_, join_pairs);
 
     // Step 2 : Add transitivity to the join_pairs_ and create join graph
     addTransitivity();
 
     // Step 3 : Calcuate join cost for each join pair
-
+    calculateCostsforJoinPairs(join_pairs);
 
     /*
     // Step 4 : Sort join_pairs_ with the output cardinality of join_pairs_' 4th value(output cardainlity). Put minimum card in the first
@@ -98,22 +99,18 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
 }
 
 template<typename B>
-void BushyPlanEnumerator<B>::collectSQLInputOps(Operator<B> * op) {
+void BushyPlanEnumerator<B>::collectSQLInputsAndJoinPairs(Operator<B> * op, std::vector<JoinPair<B>> &join_pairs) {
     if (op == nullptr) return;
 
     if (op->getType() == OperatorType::SECURE_SQL_INPUT) {
+        int op_id = op->getOperatorId();
         auto sorts = getCollations(op);
         for (auto &sort: sorts) {
             Operator<B>* node = op->clone();
             node->setSortOrder(sort);
 
-            string key = std::to_string(op->getOperatorId()) + "-"; // Generate unique key
-            if(sort.size() == 0)
-                key += "unordered";
-            else
-                key += sortToString(sort);
-
-            sql_input_ops_.emplace(key, inputRelation<B>(node, node->planCost()));
+            // Add the SQLInput operator to the map
+            sql_input_ops_.insert(std::make_pair(SqlInputKey<B>(op_id, sort), inputRelation<B>(node, node->planCost())));
         }
     }
     else if(op->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN || op->getType() == OperatorType::KEYED_SORT_MERGE_JOIN){
@@ -135,13 +132,13 @@ void BushyPlanEnumerator<B>::collectSQLInputOps(Operator<B> * op) {
             if (rhs->getType() != OperatorType::SECURE_SQL_INPUT)
                 rhs = findJoinChildFromSqlInput(rhs_predicate);
 
-            join_pairs_vector_.push_back(JoinPair<B>{lhs, rhs, lhs_predicate, rhs_predicate});
+            join_pairs.push_back(JoinPair<B>{lhs, rhs, lhs_predicate, rhs_predicate});
         }
     }
 
-    collectSQLInputOps(op->getChild(0));
+    collectSQLInputsAndJoinPairs(op->getChild(0), join_pairs);
     if(op->getChild(1) != nullptr)
-        collectSQLInputOps(op->getChild(1));
+        collectSQLInputsAndJoinPairs(op->getChild(1), join_pairs);
 }
 
 template<typename B>
@@ -274,6 +271,133 @@ void BushyPlanEnumerator<B>::addTransitivePairs(const std::pair<Operator<B> *, s
 
     // Add to the list of transitive pairs
     transitivePairs.push_back(newTransitivePair);
+}
+
+template<typename B>
+void BushyPlanEnumerator<B>::calculateCostsforJoinPairs(std::vector<JoinPair<B>> &joinPairs){
+    for(JoinPair<B> pair : joinPairs){
+        Operator<B> *lhs = pair.lhs;
+        string lhs_key = std::to_string(lhs->getOperatorId()) + '-';
+        Operator<B> *rhs = pair.rhs;
+        string rhs_key = std::to_string(rhs->getOperatorId()) + '-';
+
+        // get sql input operators costs from sql_input_ops with key is starting with 'op_id-'
+        std::vector<std::pair<std::string, inputRelation<B>>> lhs_sql_inputs = findEntriesWithPrefix(lhs_key);
+        std::vector<std::pair<std::string, inputRelation<B>>> rhs_sql_inputs = findEntriesWithPrefix(rhs_key);
+
+        for(auto it = lhs_sql_inputs.begin(); it != lhs_sql_inputs.end(); ++it){
+            for(auto jt = rhs_sql_inputs.begin(); jt != rhs_sql_inputs.end(); ++jt){
+                // Try SMJ(lhs, rhs), SMJ(rhs, lhs), NLJ(lhs, rhs), NLJ(rhs, lhs) and calculate the cost and store in the memoization table
+                using boost::property_tree::ptree;
+                ptree join_condition_tree = createJoinConditionTree(lhs->getOutputSchema(), rhs->getOutputSchema(), pair.lhs_predicate, pair.rhs_predicate);
+
+                Expression<B> *join_condition = ExpressionParser<B>::parseExpression(join_condition_tree, lhs->getOutputSchema(), rhs->getOutputSchema());
+
+                // SMJ(lhs, rhs)
+                Operator<B> *smj = new KeyedSortMergeJoin<B>(lhs->clone(), rhs->clone(), 0, join_condition->clone());
+
+                /*
+                // check sort compatibility for SMJ
+
+                // TODO : Need to check sort compatibility for SMJ
+                if (smj->sortCompatible(lhs)) {
+                    // If rhs is not scan, then add sort operator
+                    // If rhs is scan, then do not add sort operator, just setSortOrder and updateCollation
+                    if(rhs->getType() != OperatorType::SECURE_SQL_INPUT) {
+                        // try inserting sort for RHS
+                        auto join_key_idxs = smj->joinKeyIdxs();
+                        // rhs will have second keys
+                        vector<ColumnSort> rhs_sort;
+                        int lhs_col_cnt = lhs->getOutputSchema().getFieldCount();
+                        SortDefinition lhs_sort = lhs->getSortOrder();
+
+                        for (size_t i = 0; i < join_key_idxs.size(); ++i) {
+                            int idx = join_key_idxs[i].second;
+                            rhs_sort.emplace_back(ColumnSort(idx - lhs_col_cnt, lhs_sort[i].second));
+                        }
+
+                        delete smj;
+
+                        // Define sort before rhs_leaf
+                        Operator<B> *rhs_sorter = new Sort<B>(rhs->clone(), rhs_sort);
+                        smj = new KeyedSortMergeJoin<B>(lhs->clone(), rhs_sorter, kj->foreignKeyChild(),
+                                                        kj->getPredicate()->clone());
+                    }
+                }
+                else if (smj->sortCompatible(rhs)) {
+                    // If lhs is not scan, then add sort operator
+                    // If lhs is scan, then do not add sort operator, just setSortOrder and updateCollation
+                    if(lhs->getType() != OperatorType::SECURE_SQL_INPUT) {
+                        // add sort to lhs
+                        // try inserting sort for RHS
+                        auto join_key_idxs = smj->joinKeyIdxs();
+                        // rhs will have second keys
+                        vector<ColumnSort> lhs_sort;
+                        SortDefinition rhs_sort = rhs->getSortOrder();
+
+                        for (size_t i = 0; i < join_key_idxs.size(); ++i) {
+                            int idx = join_key_idxs[i].first;
+                            lhs_sort.emplace_back(ColumnSort(idx, rhs_sort[i].second));
+                        }
+
+                        delete smj;
+
+                        // Define sort before lhs
+                        Operator<B> *lhs_sorter = new Sort<B>(lhs->clone(), lhs_sort);
+                        smj = new KeyedSortMergeJoin<B>(lhs_sorter, rhs->clone(), kj->foreignKeyChild(),
+                                                        kj->getPredicate()->clone());
+                        lhs_sorter->setParent(smj);
+                    }
+                }
+                */
+            }
+        }
+
+    }
+}
+
+template<typename B>
+boost::property_tree::ptree BushyPlanEnumerator<B>::createJoinConditionTree(const QuerySchema& lhs, const QuerySchema& rhs, const string lhs_predicate, const string rhs_predicate) {
+    using boost::property_tree::ptree;
+    ptree join_condition_tree;
+
+    // Construct the operation (op) part
+    ptree op_tree;
+    op_tree.put("name", "=");
+    op_tree.put("kind", "EQUALS");
+    op_tree.put("syntax", "BINARY");
+
+    // Construct the operands part
+    ptree operands_tree;
+    ptree operand1, operand2;
+
+    QuerySchema input_schema = QuerySchema::concatenate(lhs, rhs);
+
+    // iterate input_schema and find the index of the lhs_predicate and rhs_predicate
+    int lhs_ordinal = -1;
+    int rhs_ordinal = -1;
+    for(int i = 0; i < input_schema.getFieldCount(); i++){
+        if(input_schema.fields_[i].getName() == lhs_predicate)
+            lhs_ordinal = i;
+        if(input_schema.fields_[i].getName() == rhs_predicate)
+            rhs_ordinal = i;
+    }
+
+    // Set operands with the given ordinals
+    operand1.put("input", lhs_ordinal);
+    operand1.put("name", "$" + std::to_string(lhs_ordinal));
+
+    operand2.put("input", rhs_ordinal);
+    operand2.put("name", "$" + std::to_string(rhs_ordinal));
+
+    operands_tree.push_back(std::make_pair("", operand1));
+    operands_tree.push_back(std::make_pair("", operand2));
+
+    // Assemble the condition tree
+    join_condition_tree.put_child("op", op_tree);
+    join_condition_tree.put_child("operands", operands_tree);
+
+    return join_condition_tree;
 }
 
 template<typename B>
