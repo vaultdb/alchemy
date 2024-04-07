@@ -40,6 +40,7 @@ BushyPlanEnumerator<B>::BushyPlanEnumerator(Operator<B> * left_deep_root, map<in
     operators_ = operators;
     support_ops_ = support_ops;
     interesting_sort_orders_ = interesting_orders;
+    memoization_table_.resize(2);
 }
 
 template<typename B>
@@ -51,19 +52,18 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
     collectSQLInputsAndJoinPairs(left_deep_root_, join_pairs);
 
     // Step 2 : Add transitivity to the join_pairs_ and create join graph
-    addTransitivity();
+    JoinGraph<B> joinGraph;
+    addTransitivity(join_pairs, joinGraph);
 
     // Step 3 : Calcuate join cost for each join pair
     calculateCostsforJoinPairs(join_pairs);
 
-    /*
-    // Step 4 : Sort join_pairs_ with the output cardinality of join_pairs_' 4th value(output cardainlity). Put minimum card in the first
-    std::sort(join_pairs_.begin(), join_pairs_.end(), [](const JoinPairInfo<B> &a, const JoinPairInfo<B> &b) {
-        return a.outputCardinality < b.outputCardinality;
-    });
+    size_t min_plan_cost_ = left_deep_root_->planCost();
+    Operator<B> *min_cost_plan_ = left_deep_root_;
 
-    // Step 5 : Create join graph from the join_pairs_
-    JoinGraph<B> joinGraph = createJoinGraph(sql_input_ops_, join_pairs_);
+    // Step 4 : Find all paths from join graph.
+
+    /*
 
     size_t min_plan_cost_ = left_deep_root_->planCost();
     Operator<B> *min_cost_plan_ = left_deep_root_;
@@ -155,8 +155,9 @@ Operator<B> *BushyPlanEnumerator<B>::findJoinChildFromSqlInput(string join_predi
 }
 
 template<typename B>
-void BushyPlanEnumerator<B>::addTransitivity() {
-    std::vector<JoinPairInfo<B>> transitivePairs;
+void BushyPlanEnumerator<B>::addTransitivity(std::vector<JoinPair<B>> join_pairs, JoinGraph<B>& joinGraph) {
+
+    std::vector<JoinPair<B>> transitivePairs;
 
     // Helper function to split predicates into a set of conditions
     auto splitPredicates = [](const std::string& predicateInput) -> std::set<std::string> {
@@ -178,13 +179,18 @@ void BushyPlanEnumerator<B>::addTransitivity() {
     };
 
 
-    for (auto& pair1 : join_pairs_) {
-        auto conditions1 = splitPredicates(pair1.rhs.second);
+    for (auto& pair1 : join_pairs) {
+        // Add nodes and edges to joinGraph
+        joinGraph.addNode(pair1.lhs);
+        joinGraph.addNode(pair1.rhs);
+        joinGraph.addEdge(pair1.lhs, pair1.rhs);
 
-        for (auto& pair2 : join_pairs_) {
+        auto conditions1 = splitPredicates(pair1.rhs_predicate);
+
+        for (auto& pair2 : join_pairs) {
             if (&pair1 == &pair2) continue;
 
-            auto conditions2 = splitPredicates(pair2.lhs.second);
+            auto conditions2 = splitPredicates(pair2.lhs_predicate);
 
             // Find intersection of conditions to identify potential transitivity
             std::vector<std::string> commonConditions;
@@ -193,27 +199,24 @@ void BushyPlanEnumerator<B>::addTransitivity() {
                                   std::back_inserter(commonConditions));
 
             if (!commonConditions.empty()) {
-                if (pair1.lhs.first != pair2.rhs.first)
-                    addTransitivePairs(pair1.lhs, pair2.rhs, pair1.outputCardinality, pair2.outputCardinality, commonConditions, transitivePairs);
-                else if (pair1.lhs.first != pair2.lhs.first)
-                    addTransitivePairs(pair1.lhs, pair2.lhs, pair1.outputCardinality, pair2.outputCardinality, commonConditions, transitivePairs);
-                else if (pair1.rhs.first != pair2.lhs.first)
-                    addTransitivePairs(pair1.rhs, pair2.lhs, pair1.outputCardinality, pair2.outputCardinality, commonConditions, transitivePairs);
-                else if (pair1.rhs.first != pair2.rhs.first)
-                    addTransitivePairs(pair1.rhs, pair2.rhs, pair1.outputCardinality, pair2.outputCardinality, commonConditions, transitivePairs);
+                if (pair1.lhs != pair2.rhs)
+                    addTransitivePairs(pair1.lhs, pair1.lhs_predicate, pair2.rhs, pair2.rhs_predicate, commonConditions, transitivePairs, joinGraph);
+                else if (pair1.lhs != pair2.lhs)
+                    addTransitivePairs(pair1.lhs, pair1.lhs_predicate, pair2.lhs, pair2.lhs_predicate, commonConditions, transitivePairs, joinGraph);
+                else if (pair1.rhs != pair2.lhs)
+                    addTransitivePairs(pair1.rhs, pair1.rhs_predicate, pair2.lhs, pair2.lhs_predicate, commonConditions, transitivePairs, joinGraph);
+                else if (pair1.rhs != pair2.rhs)
+                    addTransitivePairs(pair1.rhs, pair1.rhs_predicate, pair2.rhs, pair2.rhs_predicate, commonConditions, transitivePairs, joinGraph);
             }
         }
     }
 
     // Incorporate transitive join pairs into the existing list of join pairs
-    join_pairs_.insert(join_pairs_.end(), transitivePairs.begin(), transitivePairs.end());
+    join_pairs.insert(join_pairs.end(), transitivePairs.begin(), transitivePairs.end());
 }
 
 template<typename B>
-void BushyPlanEnumerator<B>::addTransitivePairs(const std::pair<Operator<B> *, string> pair1, const std::pair<Operator<B> *, string> pair2, const size_t pair1_cardinality, const size_t pair2_cardinality, const std::vector<std::string> commonConditions, std::vector<JoinPairInfo<B>>& transitivePairs){
-    // Identified a transitive relationship based on common predicates
-    auto joinInfo = getJoinType(pair1.second, pair2.second, pair1_cardinality, pair2_cardinality);
-
+void BushyPlanEnumerator<B>::addTransitivePairs(Operator<B>* pair1, const string pair1_predicate, Operator<B>* pair2, const string pair2_predicate, const std::vector<std::string> commonConditions, std::vector<JoinPair<B>>& transitivePairs, JoinGraph<B>& joinGraph){
     // Helper function to split predicates into a set of conditions
     auto splitPredicates = [](const std::string& predicateInput) -> std::set<std::string> {
         std::string predicate = predicateInput; // Make a copy of the input string to manipulate
@@ -233,16 +236,16 @@ void BushyPlanEnumerator<B>::addTransitivePairs(const std::pair<Operator<B> *, s
         return conditions;
     };
 
-    std::set<std::string> pair1_predicate = splitPredicates(pair1.second);
-    std::set<std::string> pair2_predicate = splitPredicates(pair2.second);
+    std::set<std::string> pair1_predicate_sets = splitPredicates(pair1_predicate);
+    std::set<std::string> pair2_predicate_sets = splitPredicates(pair2_predicate);
 
     for(auto it = commonConditions.begin(); it != commonConditions.end(); ++it){
         // compare commonConditions with pair1_predicate and pair2_predicate after '_' for both string,
         // if not same, then remove the condition from that pair_predicate
-        for (auto jp = pair1_predicate.begin(); jp != pair1_predicate.end();) {
+        for (auto jp = pair1_predicate_sets.begin(); jp != pair1_predicate_sets.end();) {
             if (it->substr(it->find('_') + 1) != jp->substr(jp->find('_') + 1)) {
                 // Erase and update the iterator to the next valid element
-                jp = pair1_predicate.erase(jp);
+                jp = pair1_predicate_sets.erase(jp);
             } else {
                 // Only increment the iterator if no erasure took place
                 ++jp;
@@ -250,40 +253,33 @@ void BushyPlanEnumerator<B>::addTransitivePairs(const std::pair<Operator<B> *, s
         }
 
         // Repeat for pair2_predicate with the same logic
-        for (auto jp = pair2_predicate.begin(); jp != pair2_predicate.end();) {
+        for (auto jp = pair2_predicate_sets.begin(); jp != pair2_predicate_sets.end();) {
             if (it->substr(it->find('_') + 1) != jp->substr(jp->find('_') + 1)) {
-                jp = pair2_predicate.erase(jp);
+                jp = pair2_predicate_sets.erase(jp);
             } else {
                 ++jp;
             }
         }
     }
 
-    // Construct a new JoinPairInfo with lhs from pair1 and rhs from pair2
-    JoinPairInfo<B> newTransitivePair{
-            {pair1.first,
-             joinPredicates(pair1_predicate)}, // Example condition combination
-            {pair2.first,
-             joinPredicates(pair2_predicate)}, // Needs refinement
-            joinInfo.first,
-            joinInfo.second
-    };
-
     // Add to the list of transitive pairs
-    transitivePairs.push_back(newTransitivePair);
+    transitivePairs.push_back(JoinPair<B>{pair1, pair2, joinPredicates(pair1_predicate_sets), joinPredicates(pair2_predicate_sets)});
+
+    // Add edges to joinGraph
+    joinGraph.addEdge(pair1, pair2);
 }
 
 template<typename B>
 void BushyPlanEnumerator<B>::calculateCostsforJoinPairs(std::vector<JoinPair<B>> &joinPairs){
     for(JoinPair<B> pair : joinPairs){
         Operator<B> *lhs = pair.lhs;
-        string lhs_key = std::to_string(lhs->getOperatorId()) + '-';
+        int lhs_id = lhs->getOperatorId();
         Operator<B> *rhs = pair.rhs;
-        string rhs_key = std::to_string(rhs->getOperatorId()) + '-';
+        int rhs_id = rhs->getOperatorId();
 
         // get sql input operators costs from sql_input_ops with key is starting with 'op_id-'
-        std::vector<std::pair<std::string, inputRelation<B>>> lhs_sql_inputs = findEntriesWithPrefix(lhs_key);
-        std::vector<std::pair<std::string, inputRelation<B>>> rhs_sql_inputs = findEntriesWithPrefix(rhs_key);
+        std::vector<std::pair<SqlInputKey<B>, inputRelation<B>>> lhs_sql_inputs = findEntriesWithPrefix(lhs_id);
+        std::vector<std::pair<SqlInputKey<B>, inputRelation<B>>> rhs_sql_inputs = findEntriesWithPrefix(rhs_id);
 
         for(auto it = lhs_sql_inputs.begin(); it != lhs_sql_inputs.end(); ++it){
             for(auto jt = rhs_sql_inputs.begin(); jt != rhs_sql_inputs.end(); ++jt){
@@ -293,63 +289,42 @@ void BushyPlanEnumerator<B>::calculateCostsforJoinPairs(std::vector<JoinPair<B>>
 
                 Expression<B> *join_condition = ExpressionParser<B>::parseExpression(join_condition_tree, lhs->getOutputSchema(), rhs->getOutputSchema());
 
-                // SMJ(lhs, rhs)
-                Operator<B> *smj = new KeyedSortMergeJoin<B>(lhs->clone(), rhs->clone(), 0, join_condition->clone());
+                int fk_id = getFKId(pair.lhs_predicate, pair.rhs_predicate);
 
-                /*
-                // check sort compatibility for SMJ
+                if(fk_id != -1) {
+                    // SMJ(lhs, rhs)
+                    KeyedSortMergeJoin<B> *smj = new KeyedSortMergeJoin<B>(lhs->clone(), rhs->clone(), fk_id, join_condition->clone());
+                    // Insert cost of smj to memoization_table_
+                    memoization_table_[0].push_back(
+                            subPlan<B>{it->first, jt->first, OperatorType::KEYED_SORT_MERGE_JOIN, smj->planCost(),
+                                       smj->getSortOrder()});
 
-                // TODO : Need to check sort compatibility for SMJ
-                if (smj->sortCompatible(lhs)) {
-                    // If rhs is not scan, then add sort operator
-                    // If rhs is scan, then do not add sort operator, just setSortOrder and updateCollation
-                    if(rhs->getType() != OperatorType::SECURE_SQL_INPUT) {
-                        // try inserting sort for RHS
-                        auto join_key_idxs = smj->joinKeyIdxs();
-                        // rhs will have second keys
-                        vector<ColumnSort> rhs_sort;
-                        int lhs_col_cnt = lhs->getOutputSchema().getFieldCount();
-                        SortDefinition lhs_sort = lhs->getSortOrder();
+                    // NLJ(lhs, rhs)
+                    KeyedJoin<B> *nlj = new KeyedJoin<B>(lhs->clone(), rhs->clone(), fk_id, join_condition->clone());
+                    // Insert cost of nlj to memoization_table_
+                    memoization_table_[0].push_back(
+                            subPlan<B>{it->first, jt->first, OperatorType::KEYED_NESTED_LOOP_JOIN, nlj->planCost(),
+                                       nlj->getSortOrder()});
 
-                        for (size_t i = 0; i < join_key_idxs.size(); ++i) {
-                            int idx = join_key_idxs[i].second;
-                            rhs_sort.emplace_back(ColumnSort(idx - lhs_col_cnt, lhs_sort[i].second));
-                        }
+                    fk_id = 1 - fk_id;
 
-                        delete smj;
+                    // SMJ(rhs, lhs)
+                    KeyedSortMergeJoin<B> *smj_swapped = new KeyedSortMergeJoin<B>(rhs->clone(), lhs->clone(), fk_id, join_condition->clone());
+                    // Insert cost of smj to memoization_table_
+                    memoization_table_[0].push_back(
+                            subPlan<B>{it->first, jt->first, OperatorType::KEYED_SORT_MERGE_JOIN,
+                                       smj_swapped->planCost(), smj_swapped->getSortOrder()});
 
-                        // Define sort before rhs_leaf
-                        Operator<B> *rhs_sorter = new Sort<B>(rhs->clone(), rhs_sort);
-                        smj = new KeyedSortMergeJoin<B>(lhs->clone(), rhs_sorter, kj->foreignKeyChild(),
-                                                        kj->getPredicate()->clone());
-                    }
+                    // NLJ(rhs, lhs)
+                    KeyedJoin<B> *nlj_swapped = new KeyedJoin<B>(rhs->clone(), lhs->clone(), fk_id, join_condition->clone());
+                    // Insert cost of nlj to memoization_table_
+                    memoization_table_[0].push_back(
+                            subPlan<B>{it->first, jt->first, OperatorType::KEYED_NESTED_LOOP_JOIN,
+                                       nlj_swapped->planCost(), nlj_swapped->getSortOrder()});
+
+                    // TODO : Need to check output order is right, Also, need to think we need to keep those created Join to memoization_table_ or not.
+                    // IF not, then need to delete those created join.
                 }
-                else if (smj->sortCompatible(rhs)) {
-                    // If lhs is not scan, then add sort operator
-                    // If lhs is scan, then do not add sort operator, just setSortOrder and updateCollation
-                    if(lhs->getType() != OperatorType::SECURE_SQL_INPUT) {
-                        // add sort to lhs
-                        // try inserting sort for RHS
-                        auto join_key_idxs = smj->joinKeyIdxs();
-                        // rhs will have second keys
-                        vector<ColumnSort> lhs_sort;
-                        SortDefinition rhs_sort = rhs->getSortOrder();
-
-                        for (size_t i = 0; i < join_key_idxs.size(); ++i) {
-                            int idx = join_key_idxs[i].first;
-                            lhs_sort.emplace_back(ColumnSort(idx, rhs_sort[i].second));
-                        }
-
-                        delete smj;
-
-                        // Define sort before lhs
-                        Operator<B> *lhs_sorter = new Sort<B>(lhs->clone(), lhs_sort);
-                        smj = new KeyedSortMergeJoin<B>(lhs_sorter, rhs->clone(), kj->foreignKeyChild(),
-                                                        kj->getPredicate()->clone());
-                        lhs_sorter->setParent(smj);
-                    }
-                }
-                */
             }
         }
 
@@ -398,6 +373,23 @@ boost::property_tree::ptree BushyPlanEnumerator<B>::createJoinConditionTree(cons
     join_condition_tree.put_child("operands", operands_tree);
 
     return join_condition_tree;
+}
+
+template<typename B>
+int BushyPlanEnumerator<B>::getFKId(const std::string& lhs_predicate, const std::string& rhs_predicate) {
+    std::vector<std::string> PKList = {"n_nationkey", "r_regionkey", "s_suppkey", "c_custkey", "p_partkey", "ps_partkey", "ps_suppkey", "o_orderkey", "l_orderkey", "l_linenumber"};
+    bool lhs_found = std::find(PKList.begin(), PKList.end(), lhs_predicate) != PKList.end();
+    bool rhs_found = std::find(PKList.begin(), PKList.end(), rhs_predicate) != PKList.end();
+
+    if (lhs_found)
+        // rhs is FK.
+        return 1;
+    else if (rhs_found)
+        // lhs is FK
+        return 0;
+    else
+        // Not PK-FK relationship
+        return -1;
 }
 
 template<typename B>
@@ -535,24 +527,6 @@ void BushyPlanEnumerator<B>::addMissingInputs(std::vector<JoinPairInfo<B>>& curr
 //            break; // Since at most one op might be missing, we can break after handling.
 //        }
 //    }
-}
-
-template<typename B>
-JoinGraph<B> BushyPlanEnumerator<B>::createJoinGraph(const std::map<int, Operator<B> *> &sqlInputOps, const std::vector<JoinPairInfo<B>>& joinPairs) {
-    JoinGraph<B> joinGraph;
-
-    // Step 1: Add all operators as nodes
-    for (const auto& opPair : sqlInputOps) {
-        joinGraph.addNode(opPair.second);
-    }
-
-    // Step 2: Add edges based on join pairs
-    for (const auto& joinPair : joinPairs) {
-        // Directly use Operator<B>* pointers to add edges since all operators are already added as nodes
-        joinGraph.addEdge(joinPair.lhs.first, joinPair.rhs.first, joinPair.joinType);
-    }
-
-    return joinGraph;
 }
 
 

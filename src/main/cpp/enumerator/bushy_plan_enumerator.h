@@ -47,6 +47,31 @@ namespace vaultdb {
     };
 
     template<typename B>
+    struct MemoIndex {
+        // Option 1: Direct reference to sql_input_ops_ entry (e.g., by SqlInputKey or UID)
+        // Option 2: Pair of integers to reference memoization_table_ entries (row, column)
+        std::variant<SqlInputKey<B>, std::pair<int, int>> index;
+
+        // Constructor for SqlInputKey<B>
+        MemoIndex(const SqlInputKey<B>& key) : index(key) {}
+
+        // Constructor for a pair of integers
+        MemoIndex(int row, int col) : index(std::make_pair(row, col)) {}
+    };
+
+    template<typename B>
+    struct subPlan {
+        MemoIndex<B> lhs;
+        MemoIndex<B> rhs;
+        OperatorType type;
+        size_t cost;
+        SortDefinition output_order;
+
+        subPlan(MemoIndex<B> lhs, MemoIndex<B> rhs, OperatorType type, size_t cost, SortDefinition output_order)
+                : lhs(lhs), rhs(rhs), type(type), cost(cost), output_order(output_order) {}
+    };
+
+    template<typename B>
     using DisjointJoinPairs = std::vector<JoinPairInfo<B>>;
 
     template<typename B>
@@ -81,17 +106,17 @@ namespace vaultdb {
 
         void collectSQLInputsAndJoinPairs(Operator<B> * op, std::vector<JoinPair<B>> &join_pairs);
         Operator<B>* findJoinChildFromSqlInput(string join_predicate);
-        void addTransitivity();
-        void addTransitivePairs(const std::pair<Operator<B> *, string> pair1, const std::pair<Operator<B> *, string> pair2, const size_t pair1_cardinality, const size_t pair2_cardinality, const std::vector<std::string> commonConditions, std::vector<JoinPairInfo<B>>& transitivePairs);
+        void addTransitivity(std::vector<JoinPair<B>> join_pairs, JoinGraph<B>& joinGraph);
+        void addTransitivePairs(Operator<B>* pair1, const string pair1_predicate, Operator<B>* pair2, const string pair2_predicate, const std::vector<std::string> commonConditions, std::vector<JoinPair<B>>& transitivePairs, JoinGraph<B>& joinGraph);
         std::vector<std::pair<int, int>> extractIntegers(const std::string& input);
         void calculateCostsforJoinPairs(std::vector<JoinPair<B>> &joinPairs);
         boost::property_tree::ptree createJoinConditionTree(const QuerySchema& lhs, const QuerySchema& rhs, const string lhs_predicate, const string rhs_predicate);
+        int getFKId(const std::string& lhs_predicate, const std::string& rhs_predicate);
         std::pair<char, size_t> getJoinType(const std::string& lhs_predicate, const std::string& rhs_predicate, const size_t& lhs_output_cardinality, const size_t& rhs_output_cardinality);
         void findJoinOfDisjointTables(const JoinPairInfo<B>& initialPair, const JoinGraph<B>& joinGraph, std::vector<JoinPairInfo<B>>& currentDisjointPairs, bool isInitialCall) ;
         std::vector<JoinPairInfo<B>> findCandidateDisjointPairs(Operator<B>* connectedOp,const std::vector<JoinPairInfo<B>>& currentDisjointPairs) const;
         bool isDisjoint(const JoinPairInfo<B>& candidatePair, const std::vector<JoinPairInfo<B>>& currentDisjointPairs) const;
         void addMissingInputs(std::vector<JoinPairInfo<B>>& currentDisjointPairs);
-        JoinGraph<B> createJoinGraph(const std::map<int, Operator<B> *> &sqlInputOps, const std::vector<JoinPairInfo<B>>& joinPairs);
         std::string joinPredicates(const std::set<std::string>& predicates) {
             std::string result;
             for (auto it = predicates.begin(); it != predicates.end(); ++it) {
@@ -103,50 +128,16 @@ namespace vaultdb {
             return result;
         }
 
-        std::vector<std::pair<std::string, inputRelation<B>>> findEntriesWithPrefix(const std::string& prefix) {
+        std::vector<std::pair<SqlInputKey<B>, inputRelation<B>>> findEntriesWithPrefix(const int& op_id) {
+            std::vector<std::pair<SqlInputKey<B>, inputRelation<B>>> matchingEntries;
 
-            std::vector<std::pair<std::string, inputRelation<B>>> matchingEntries;
-
-            // Find the lower bound for the prefix, which gives us the starting iterator
-//            auto it = sql_input_ops_.lower_bound(prefix);
-//
-//            // Iterate over the map from the starting point
-//            while (it != sql_input_ops_.end()) {
-//                // Check if the current key starts with the prefix
-//                if (it->first.substr(0, prefix.size()) == prefix) {
-//                    matchingEntries.push_back(*it);
-//                } else {
-//                    // Since the map is ordered, once a key does not match the prefix,
-//                    // no subsequent keys will match the prefix either
-//                    break;
-//                }
-//                ++it;
-//            }
-
-            return matchingEntries;
-        }
-
-        std::string sortDirectionToString(SortDirection direction) {
-            switch (direction) {
-                case SortDirection::ASCENDING:
-                    return "ASC";
-                case SortDirection::DESCENDING:
-                    return "DESC";
-                case SortDirection::INVALID:
-                default:
-                    return "INVALID";
+            // Iterate over the entire container, as lower_bound usage is incorrect with just an int and previous key definition.
+            for (const auto& entry : sql_input_ops_) {
+                if (entry.first.op_id == op_id) {
+                    matchingEntries.push_back(entry);
+                }
             }
-        }
-
-        std::string sortToString(const SortDefinition& sort) {
-            // Extract the column ordinal and direction
-            int32_t columnOrdinal = sort[0].first;
-            SortDirection sortDirection = sort[0].second;
-
-            // Convert both parts to string
-            std::string sortInfo = std::to_string(columnOrdinal) + "-" + sortDirectionToString(sortDirection);
-
-            return sortInfo;
+            return matchingEntries;
         }
 
         vector<SortDefinition> getCollations(Operator<B> *op) {
