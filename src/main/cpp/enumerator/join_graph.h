@@ -19,19 +19,6 @@ namespace vaultdb {
     };
 
     template<typename B>
-    struct subPlan {
-        string lhs;
-        string rhs;
-        OperatorType type;
-        size_t cost;
-        SortDefinition output_order;
-
-        subPlan(string lhs, string rhs, OperatorType type, size_t cost, SortDefinition output_order)
-        : lhs(lhs), rhs(rhs), type(type), cost(cost), output_order(output_order) {}
-
-    };
-
-    template<typename B>
     struct JoinPair {
         Operator<B> *lhs;
         Operator<B> *rhs;
@@ -77,10 +64,9 @@ namespace vaultdb {
         struct Edge {
             Node *from;
             Node *to;
-            char joinType;
 
-            Edge(Node *from, Node *to, char joinType)
-                    : from(from), to(to), joinType(joinType) {}
+            Edge(Node *from, Node *to)
+                    : from(from), to(to) {}
         };
 
     private:
@@ -105,7 +91,7 @@ namespace vaultdb {
         }
 
         // Add an edge between two operators
-        void addEdge(Operator<B>* from, Operator<B>* to, char joinType) {
+        void addEdge(Operator<B>* from, Operator<B>* to) {
             // Check if the nodes exist in the map, and retrieve their indices
             auto fromIt = operatorToIndex.find(from);
             auto toIt = operatorToIndex.find(to);
@@ -121,7 +107,7 @@ namespace vaultdb {
             Node* toNode = &nodes[toIt->second];
 
             // Add the edge
-            edges.emplace_back(Edge{fromNode, toNode, joinType});
+            edges.emplace_back(Edge{fromNode, toNode});
         }
 
         // Method to get operators connected to a given join pair
