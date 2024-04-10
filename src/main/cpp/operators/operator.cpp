@@ -224,6 +224,42 @@ double Operator<B>::planRuntime() const {
 	return summed_cost;
 }
 
+template<typename B>
+std::string Operator<B>::getOutputOrderinString() const{
+    QuerySchema output_schema = getOutputSchema();
+    SortDefinition output_order = getSortOrder();
+    std::string output_order_str = "";
+    std::set<std::string> included_suffixes;
+
+    if (output_order.empty())
+        output_order_str = "unordered";
+    else {
+        for (const auto& sort : output_order) {
+            if (sort.first == -1)
+                continue;
+
+            std::string column_name = output_schema.fields_[sort.first].getName();
+            // Split the column_name by '_' and take the part after it
+            auto pos = column_name.find_last_of('_');
+            std::string suffix = (pos != std::string::npos) ? column_name.substr(pos + 1) : column_name;
+
+            // Check if this suffix is already included
+            if (included_suffixes.find(suffix) == included_suffixes.end()) {
+                // Not included yet, so let's add it
+                included_suffixes.insert(suffix);
+                if (sort.second == SortDirection::DESCENDING)
+                    output_order_str += suffix + " DESC, ";
+                else
+                    output_order_str += suffix + ", ";
+            }
+        }
+        // Remove trailing comma and space if there is one
+        if (!output_order_str.empty())
+            output_order_str.erase(output_order_str.length() - 2);
+    }
+    return output_order_str;
+}
+
 template class vaultdb::Operator<bool>;
 template class vaultdb::Operator<emp::Bit>;
 

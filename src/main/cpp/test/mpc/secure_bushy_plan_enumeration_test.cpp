@@ -149,7 +149,7 @@ SecureBushyPlanEnumerationTest::generateExpectedOutputQuery(const int &test_id, 
 //    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
 //    runTest(0, expected_sort);
 //}
-
+//
 //TEST_F(SecureBushyPlanEnumerationTest, balanced_bushy_test) {
 //
 //    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);

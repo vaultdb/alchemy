@@ -74,6 +74,30 @@ namespace vaultdb {
         std::vector<Edge> edges; // List of edges
         std::map<Operator<B>*, size_t> operatorToIndex; // Map to track existing nodes
 
+        // Helper method for findHamiltonianPaths
+        void findPaths(Node* node, std::vector<bool>& visited, std::vector<std::string>& paths, std::string currentPath) {
+            // Mark the current node as visited
+            visited[operatorToIndex[node->op]] = true;
+            currentPath += node->op->getOperatorId() + "-";
+
+            // Check if all nodes are visited; if so, add the path to the list of paths
+            if (std::all_of(visited.begin(), visited.end(), [](bool v) { return v; })) {
+                // Remove the trailing dash
+                currentPath.pop_back();
+                paths.push_back(currentPath);
+            } else {
+                // Recurse for all adjacent nodes
+                for (Edge& edge : edges) {
+                    if (edge.from == node && !visited[operatorToIndex[edge.to->op]]) {
+                        findPaths(edge.to, visited, paths, currentPath);
+                    }
+                }
+            }
+
+            // Backtrack
+            visited[operatorToIndex[node->op]] = false;
+        }
+
     public:
         // Add a node if it doesn't already exist
         Node* addNode(Operator<B>* op) {
@@ -109,6 +133,20 @@ namespace vaultdb {
             // Add the edge
             edges.emplace_back(Edge{fromNode, toNode});
         }
+
+        // Method to find Hamiltonian Paths
+        std::vector<string> findHamiltonianPaths() {
+            std::vector<std::string> paths;
+            std::vector<bool> visited(nodes.size(), false);
+
+            // Try to find paths starting from each node
+            for (Node& node : nodes) {
+                findPaths(&node, visited, paths, "");
+            }
+
+            return paths;
+        }
+
 
         // Method to get operators connected to a given join pair
         std::vector<Operator<B>*> getConnectedOperators(const std::vector<JoinPairInfo<B>>& currentJoinPairs) const {

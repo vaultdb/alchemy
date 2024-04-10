@@ -182,6 +182,7 @@ namespace  vaultdb {
 
 		//returns total runtime of this operator and its children
 		double planRuntime() const;
+        std::string getOutputOrderinString() const;
 
         inline string getTypeString() const {
             switch(this->getType()) {
