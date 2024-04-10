@@ -66,10 +66,15 @@ namespace vaultdb {
         OperatorType type;
         size_t cost;
         SortDefinition output_order;
+        std::string output_order_str;
 
-        subPlan(MemoIndex<B> lhs, MemoIndex<B> rhs, OperatorType type, size_t cost, SortDefinition output_order)
-                : lhs(lhs), rhs(rhs), type(type), cost(cost), output_order(output_order) {}
+        subPlan(MemoIndex<B> lhs, MemoIndex<B> rhs, OperatorType type, size_t cost, SortDefinition output_order, std::string output_order_str)
+                : lhs(lhs), rhs(rhs), type(type), cost(cost), output_order(output_order), output_order_str(output_order_str) {}
     };
+
+    // Definition for the overloaded helper
+    template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+    template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
     template<typename B>
     using DisjointJoinPairs = std::vector<JoinPairInfo<B>>;
@@ -106,13 +111,16 @@ namespace vaultdb {
 
         void collectSQLInputsAndJoinPairs(Operator<B> * op, std::vector<JoinPair<B>> &join_pairs);
         Operator<B>* findJoinChildFromSqlInput(string join_predicate);
-        void addTransitivity(std::vector<JoinPair<B>> join_pairs, JoinGraph<B>& joinGraph);
+        void addTransitivity(std::vector<JoinPair<B>>& join_pairs, JoinGraph<B>& joinGraph);
         void addTransitivePairs(Operator<B>* pair1, const string pair1_predicate, Operator<B>* pair2, const string pair2_predicate, const std::vector<std::string> commonConditions, std::vector<JoinPair<B>>& transitivePairs, JoinGraph<B>& joinGraph);
         std::vector<std::pair<int, int>> extractIntegers(const std::string& input);
         void calculateCostsforJoinPairs(std::vector<JoinPair<B>> &joinPairs);
-        boost::property_tree::ptree createJoinConditionTree(const QuerySchema& lhs, const QuerySchema& rhs, const string lhs_predicate, const string rhs_predicate);
+        boost::property_tree::ptree createJoinConditionTree(const QuerySchema& lhs, const QuerySchema& rhs, const string& lhs_predicate, const string& rhs_predicate);
+        boost::property_tree::ptree createSimpleConditionTree(const QuerySchema& input_schema, const std::string& lhs_predicate, const std::string& rhs_predicate);
+        int findFieldOrdinal(const QuerySchema& schema, const std::string& predicate);
         int getFKId(const std::string& lhs_predicate, const std::string& rhs_predicate);
         std::pair<char, size_t> getJoinType(const std::string& lhs_predicate, const std::string& rhs_predicate, const size_t& lhs_output_cardinality, const size_t& rhs_output_cardinality);
+        void pickCheapJoinByGroup(int row_idx);
         void findJoinOfDisjointTables(const JoinPairInfo<B>& initialPair, const JoinGraph<B>& joinGraph, std::vector<JoinPairInfo<B>>& currentDisjointPairs, bool isInitialCall) ;
         std::vector<JoinPairInfo<B>> findCandidateDisjointPairs(Operator<B>* connectedOp,const std::vector<JoinPairInfo<B>>& currentDisjointPairs) const;
         bool isDisjoint(const JoinPairInfo<B>& candidatePair, const std::vector<JoinPairInfo<B>>& currentDisjointPairs) const;
