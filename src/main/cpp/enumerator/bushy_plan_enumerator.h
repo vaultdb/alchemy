@@ -121,10 +121,7 @@ namespace vaultdb {
         int getFKId(const std::string& lhs_predicate, const std::string& rhs_predicate);
         std::pair<char, size_t> getJoinType(const std::string& lhs_predicate, const std::string& rhs_predicate, const size_t& lhs_output_cardinality, const size_t& rhs_output_cardinality);
         void pickCheapJoinByGroup(int row_idx);
-        void findJoinOfDisjointTables(const JoinPairInfo<B>& initialPair, const JoinGraph<B>& joinGraph, std::vector<JoinPairInfo<B>>& currentDisjointPairs, bool isInitialCall) ;
-        std::vector<JoinPairInfo<B>> findCandidateDisjointPairs(Operator<B>* connectedOp,const std::vector<JoinPairInfo<B>>& currentDisjointPairs) const;
-        bool isDisjoint(const JoinPairInfo<B>& candidatePair, const std::vector<JoinPairInfo<B>>& currentDisjointPairs) const;
-        void addMissingInputs(std::vector<JoinPairInfo<B>>& currentDisjointPairs);
+        Operator<B>* createBushyJoinPlan(const std::string hamiltonianPath);
         std::string joinPredicates(const std::set<std::string>& predicates) {
             std::string result;
             for (auto it = predicates.begin(); it != predicates.end(); ++it) {

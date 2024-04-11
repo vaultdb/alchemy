@@ -91,6 +91,15 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
     size_t min_plan_cost_ = left_deep_root_->planCost();
     Operator<B> *min_cost_plan_ = left_deep_root_;
 
+    for(auto path : hamiltonian_paths){
+        Operator<B>* plan = createBushyJoinPlan(path);
+        size_t cost = plan->planCost();
+        if(cost < min_plan_cost_){
+            min_plan_cost_ = cost;
+            min_cost_plan_ = plan;
+        }
+    }
+
     /*
 
     size_t min_plan_cost_ = left_deep_root_->planCost();
@@ -633,105 +642,17 @@ void BushyPlanEnumerator<B>::pickCheapJoinByGroup(int row_idx) {
     }
 }
 
-
-
 template<typename B>
-void BushyPlanEnumerator<B>::findJoinOfDisjointTables(const JoinPairInfo<B>& initialPair, const JoinGraph<B>& joinGraph, std::vector<JoinPairInfo<B>>& currentDisjointPairs, bool isInitialCall) {
-    if (isInitialCall) {
-        currentDisjointPairs.clear();
-        currentDisjointPairs.push_back(initialPair);
-    }
+Operator<B>* BushyPlanEnumerator<B>::createBushyJoinPlan(const std::string hamiltonianPath) {
+    std::vector<int> path;
+    std::istringstream iss(hamiltonianPath);
+    std::string node;
 
-    // Since getConnectedOperators now only returns a list of operators, we adjust accordingly.
-    auto connectedOperators = joinGraph.getConnectedOperators(currentDisjointPairs);
-
-    // Iterate over connected operators to find potential join pairs.
-    for (Operator<B>* connectedOp : connectedOperators) {
-        // Find disjoint pairs that includes connectedOp and are disjoint with currentDisjointPairs.
-        std::vector<JoinPairInfo<B>> foundDisjointPairs = findCandidateDisjointPairs(connectedOp, currentDisjointPairs);
-
-        // If no disjoint pairs were found, terminate the recursion.
-        if (foundDisjointPairs.empty()) {
-            // Compare and add missing inputs, finalize the plan.
-            addMissingInputs(currentDisjointPairs);
-            // Add the plan formed by newDisjointPairs to the list of potential plans.
-            possible_disjoint_pairs_.push_back(currentDisjointPairs);
-            continue;
-        }
-
-        // For each found disjoint pair, recurse or process further as needed.
-        for (const auto& newPair : foundDisjointPairs) {
-            std::vector<JoinPairInfo<B>> newDisjointPairs = currentDisjointPairs;
-            newDisjointPairs.push_back(newPair);
-
-            // Recursive call to explore further disjoint pairs from this new pair.
-            findJoinOfDisjointTables(newPair, joinGraph, newDisjointPairs, false);
-        }
+    // Split the string by '-' and convert to integers
+    while (std::getline(iss, node, '-')) {
+        path.push_back(std::stoi(node));
     }
 }
-
-template<typename B>
-std::vector<JoinPairInfo<B>> BushyPlanEnumerator<B>::findCandidateDisjointPairs(
-        Operator<B>* connectedOp,
-        const std::vector<JoinPairInfo<B>>& currentDisjointPairs) const
-{
-    std::vector<JoinPairInfo<B>> foundDisjointPairs;
-
-    for (const auto& candidatePair : join_pairs_) {
-        // Check if the candidatePair includes the connectedOp and is not already in currentDisjointPairs.
-        if ((candidatePair.lhs.first == connectedOp || candidatePair.rhs.first == connectedOp) &&
-            std::find(currentDisjointPairs.begin(), currentDisjointPairs.end(), candidatePair) == currentDisjointPairs.end()) {
-            // Verify if the candidatePair is disjoint with respect to currentDisjointPairs.
-            if (isDisjoint(candidatePair, currentDisjointPairs)) {
-                foundDisjointPairs.push_back(candidatePair);
-            }
-        }
-    }
-    return foundDisjointPairs;
-}
-
-template<typename B>
-bool BushyPlanEnumerator<B>::isDisjoint(const JoinPairInfo<B>& candidatePair, const std::vector<JoinPairInfo<B>>& currentDisjointPairs) const {
-    // Iterate over currentDisjointPairs to check for any overlap with candidatePair.
-    for (const auto& existingPair : currentDisjointPairs) {
-        // Check if either side of the candidatePair matches either side of the existingPair.
-        if (candidatePair.lhs.first == existingPair.lhs.first || candidatePair.lhs.first == existingPair.rhs.first ||
-            candidatePair.rhs.first == existingPair.lhs.first || candidatePair.rhs.first == existingPair.rhs.first) {
-            // If there's any overlap, the pair is not disjoint.
-            return false;
-        }
-    }
-    // If no overlaps were found, the candidatePair is considered disjoint.
-    return true;
-}
-
-template<typename B>
-void BushyPlanEnumerator<B>::addMissingInputs(std::vector<JoinPairInfo<B>>& currentDisjointPairs) {
-    // Convert current disjoint pairs to a set of Operators to easily check for presence.
-    std::set<Operator<B>*> presentOps;
-//    for (const auto& pair : currentDisjointPairs) {
-//        presentOps.insert(pair.lhs.first);
-//        presentOps.insert(pair.rhs.first);
-//    }
-//
-//    // Find the missing input operator by comparing with sql_input_ops.
-//    for (const auto& entry : sql_input_ops_) {
-//        Operator<B>* op = entry.second;
-//
-//        if (presentOps.find(op) == presentOps.end()) { // If op is missing
-//            // Add the missing op. Since you mentioned at most one might be missing,
-//            // we can handle it here. Determine how to add it (e.g., as a new pair with a dummy operator or attached to an existing pair).
-//            // For simplicity, let's create a dummy operator and a new JoinPairInfo with the missing op.
-//            Operator<B>* dummyOp = nullptr; // Assuming you have a way to create or specify a dummy operator.
-//            char joinType = 'N'; // Example join type, adjust based on your schema.
-//            size_t outputCardinality = 0; // Example cardinality, adjust as needed.
-//
-//            currentDisjointPairs.push_back(JoinPairInfo<B>(std::make_pair(op, ""), std::make_pair(dummyOp, ""), joinType, outputCardinality));
-//            break; // Since at most one op might be missing, we can break after handling.
-//        }
-//    }
-}
-
 
 
 template class vaultdb::BushyPlanEnumerator<bool>;
