@@ -81,7 +81,6 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
     }
 
     // Step 4 : group join pairs by their output sort order in memoization_table_[0]
-    // TODO : first, need to check if calculated cost is right
     pickCheapJoinByGroup(0);
 
     // Step 5 : Find all paths from join graph.

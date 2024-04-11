@@ -62,11 +62,11 @@ namespace vaultdb {
         };
 
         struct Edge {
-            Node *from;
-            Node *to;
+            size_t fromIndex;
+            size_t toIndex;
 
-            Edge(Node *from, Node *to)
-                    : from(from), to(to) {}
+            Edge(size_t fromIndex, size_t toIndex)
+                    : fromIndex(fromIndex), toIndex(toIndex) {}
         };
 
     private:
@@ -75,27 +75,34 @@ namespace vaultdb {
         std::map<Operator<B>*, size_t> operatorToIndex; // Map to track existing nodes
 
         // Helper method for findHamiltonianPaths
-        void findPaths(Node* node, std::vector<bool>& visited, std::vector<std::string>& paths, std::string currentPath) {
-            // Mark the current node as visited
-            visited[operatorToIndex[node->op]] = true;
-            currentPath += node->op->getOperatorId() + "-";
+        void findPaths(size_t nodeIndex, std::vector<bool>& visited, std::vector<std::string>& paths, std::string currentPath) {
+            visited[nodeIndex] = true;
 
-            // Check if all nodes are visited; if so, add the path to the list of paths
+            currentPath += std::to_string(nodes[nodeIndex].op->getOperatorId()) + "-";
+
             if (std::all_of(visited.begin(), visited.end(), [](bool v) { return v; })) {
-                // Remove the trailing dash
                 currentPath.pop_back();
                 paths.push_back(currentPath);
             } else {
-                // Recurse for all adjacent nodes
-                for (Edge& edge : edges) {
-                    if (edge.from == node && !visited[operatorToIndex[edge.to->op]]) {
-                        findPaths(edge.to, visited, paths, currentPath);
+                for (const Edge& edge : edges) {
+                    if (edge.fromIndex == nodeIndex && !visited[edge.toIndex]) {
+                        findPaths(edge.toIndex, visited, paths, currentPath);
+                    } else if (edge.toIndex == nodeIndex && !visited[edge.fromIndex]) {
+                        findPaths(edge.fromIndex, visited, paths, currentPath);
                     }
                 }
             }
 
-            // Backtrack
-            visited[operatorToIndex[node->op]] = false;
+            visited[nodeIndex] = false;
+        }
+
+        Operator<B>* findOperatorByIndex(const size_t operatorIndex) {
+            auto it = std::find_if(operatorToIndex.begin(), operatorToIndex.end(),
+                                   [operatorIndex](const auto& pair) { return pair.second == operatorIndex; });
+            if (it != operatorToIndex.end()) {
+                return it->first;
+            }
+            return nullptr; // or throw an exception if appropriate
         }
 
     public:
@@ -126,22 +133,17 @@ namespace vaultdb {
                 throw std::runtime_error("Attempting to add an edge for an operator without a node.");
             }
 
-            // Retrieve nodes for 'from' and 'to' operators using the indices
-            Node* fromNode = &nodes[fromIt->second];
-            Node* toNode = &nodes[toIt->second];
-
-            // Add the edge
-            edges.emplace_back(Edge{fromNode, toNode});
+            // Add the edge using indices
+            edges.emplace_back(Edge{fromIt->second, toIt->second});
         }
 
         // Method to find Hamiltonian Paths
-        std::vector<string> findHamiltonianPaths() {
+        std::vector<std::string> findHamiltonianPaths() {
             std::vector<std::string> paths;
             std::vector<bool> visited(nodes.size(), false);
 
-            // Try to find paths starting from each node
-            for (Node& node : nodes) {
-                findPaths(&node, visited, paths, "");
+            for (size_t i = 0; i < nodes.size(); ++i) {
+                findPaths(i, visited, paths, "");
             }
 
             return paths;
@@ -150,32 +152,32 @@ namespace vaultdb {
 
         // Method to get operators connected to a given join pair
         std::vector<Operator<B>*> getConnectedOperators(const std::vector<JoinPairInfo<B>>& currentJoinPairs) const {
-            std::set<Operator<B>*> directlyInvolvedOperators;
-            for (const auto& pair : currentJoinPairs) {
-                directlyInvolvedOperators.insert(pair.lhs.first);
-                directlyInvolvedOperators.insert(pair.rhs.first);
-            }
-
-            std::set<Operator<B>*> connectedOperators;
-            // Iterate through each edge to check for connections.
-            for (const auto& edge : edges) {
-                Operator<B>* fromOp = edge.from->op;
-                Operator<B>* toOp = edge.to->op;
-
-                // If fromOp is directly involved and toOp is not already considered, mark toOp as connected.
-                if (directlyInvolvedOperators.find(fromOp) != directlyInvolvedOperators.end() &&
-                    directlyInvolvedOperators.find(toOp) == directlyInvolvedOperators.end()) {
-                    connectedOperators.insert(toOp);
-                }
-                    // Similarly, if toOp is directly involved and fromOp is not, mark fromOp as connected.
-                else if (directlyInvolvedOperators.find(toOp) != directlyInvolvedOperators.end() &&
-                         directlyInvolvedOperators.find(fromOp) == directlyInvolvedOperators.end()) {
-                    connectedOperators.insert(fromOp);
-                }
-            }
-
-            // Convert the set of connected operators to the expected vector format.
-            return std::vector<Operator<B>*>(connectedOperators.begin(), connectedOperators.end());
+//            std::set<Operator<B>*> directlyInvolvedOperators;
+//            for (const auto& pair : currentJoinPairs) {
+//                directlyInvolvedOperators.insert(pair.lhs.first);
+//                directlyInvolvedOperators.insert(pair.rhs.first);
+//            }
+//
+//            std::set<Operator<B>*> connectedOperators;
+//            // Iterate through each edge to check for connections.
+//            for (const auto& edge : edges) {
+//                Operator<B>* fromOp = edge.from->op;
+//                Operator<B>* toOp = edge.to->op;
+//
+//                // If fromOp is directly involved and toOp is not already considered, mark toOp as connected.
+//                if (directlyInvolvedOperators.find(fromOp) != directlyInvolvedOperators.end() &&
+//                    directlyInvolvedOperators.find(toOp) == directlyInvolvedOperators.end()) {
+//                    connectedOperators.insert(toOp);
+//                }
+//                    // Similarly, if toOp is directly involved and fromOp is not, mark fromOp as connected.
+//                else if (directlyInvolvedOperators.find(toOp) != directlyInvolvedOperators.end() &&
+//                         directlyInvolvedOperators.find(fromOp) == directlyInvolvedOperators.end()) {
+//                    connectedOperators.insert(fromOp);
+//                }
+//            }
+//
+//            // Convert the set of connected operators to the expected vector format.
+//            return std::vector<Operator<B>*>(connectedOperators.begin(), connectedOperators.end());
         }
 
 
