@@ -14,67 +14,19 @@
 
 namespace vaultdb {
     template<typename B>
-    struct SqlInputKey{
-        int op_id;
-        SortDefinition sort_orders;
-
-        SqlInputKey(int op_id, SortDefinition sort_orders) : op_id(op_id), sort_orders(sort_orders) {}
-
-        // Comparison operator
-        bool operator<(const SqlInputKey& other) const {
-            if (op_id != other.op_id) {
-                return op_id < other.op_id;
-            }
-
-            // Now, compare SortDefinition
-            const auto& lhs = this->sort_orders;
-            const auto& rhs = other.sort_orders;
-
-            for (size_t i = 0; i < std::min(lhs.size(), rhs.size()); ++i) {
-                // Compare ordinal
-                if (lhs[i].first != rhs[i].first) {
-                    return lhs[i].first < rhs[i].first;
-                }
-                // If ordinals are equal, compare direction
-                if (lhs[i].second != rhs[i].second) {
-                    return lhs[i].second < rhs[i].second;
-                }
-            }
-
-            // If all compared elements are equal, the shorter SortDefinition is considered "less than" if they are of different lengths
-            return lhs.size() < rhs.size();
-        }
-    };
-
-    template<typename B>
-    struct MemoIndex {
-        // Option 1: Direct reference to sql_input_ops_ entry (e.g., by SqlInputKey or UID)
-        // Option 2: Pair of integers to reference memoization_table_ entries (row, column)
-        std::variant<SqlInputKey<B>, std::pair<int, int>> index;
-
-        // Constructor for SqlInputKey<B>
-        MemoIndex(const SqlInputKey<B>& key) : index(key) {}
-
-        // Constructor for a pair of integers
-        MemoIndex(int row, int col) : index(std::make_pair(row, col)) {}
-    };
-
-    template<typename B>
     struct subPlan {
-        MemoIndex<B> lhs;
-        MemoIndex<B> rhs;
+        std::unique_ptr<Operator<B>> lhs;
+        std::unique_ptr<Operator<B>> rhs;
         OperatorType type;
         size_t cost;
         SortDefinition output_order;
         std::string output_order_str;
 
-        subPlan(MemoIndex<B> lhs, MemoIndex<B> rhs, OperatorType type, size_t cost, SortDefinition output_order, std::string output_order_str)
+        subPlan() = default;
+
+        subPlan(Operator<B>* lhs, Operator<B>* rhs, OperatorType type, size_t cost, SortDefinition output_order, std::string output_order_str)
                 : lhs(lhs), rhs(rhs), type(type), cost(cost), output_order(output_order), output_order_str(output_order_str) {}
     };
-
-    // Definition for the overloaded helper
-    template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-    template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
     template<typename B>
     using DisjointJoinPairs = std::vector<JoinPairInfo<B>>;
@@ -85,7 +37,7 @@ namespace vaultdb {
         typedef std::tuple<SortDefinition, int /*parent_id*/, int /*child_id*/, std::string> SortEntry;// Adding operator type as a string.
         std::vector<JoinPairInfo<B>> join_pairs_;
         std::vector<JoinPair<B>> join_pairs_vector_;
-        std::map<SqlInputKey<B>, inputRelation<B>> sql_input_ops_;
+        std::multimap<int, inputRelation<B>> sql_input_ops_;
         std::vector<std::vector<subPlan<B>>> memoization_table_;
 
         BushyPlanEnumerator(Operator<B> * root, std::map<int, Operator<B> * > operators, std::vector<Operator<B> * > support_ops, map<int, vector<SortDefinition>> interesting_orders);
@@ -116,12 +68,11 @@ namespace vaultdb {
         std::vector<std::pair<int, int>> extractIntegers(const std::string& input);
         void calculateCostsforJoinPairs(std::vector<JoinPair<B>> &joinPairs);
         std::vector<uint32_t> convertPredicateToOrdinals(const QuerySchema& schema, const string& predicates);
-        boost::property_tree::ptree createJoinConditionTree(const QuerySchema& lhs, const QuerySchema& rhs, const string& lhs_predicate, const string& rhs_predicate);
-        boost::property_tree::ptree createSimpleConditionTree(const QuerySchema& input_schema, const std::string& lhs_predicate, const std::string& rhs_predicate);
         int findFieldOrdinal(const QuerySchema& schema, const std::string& predicate);
         int getFKId(const std::string& lhs_predicate, const std::string& rhs_predicate);
         std::pair<char, size_t> getJoinType(const std::string& lhs_predicate, const std::string& rhs_predicate, const size_t& lhs_output_cardinality, const size_t& rhs_output_cardinality);
         void pickCheapJoinByGroup(int row_idx);
+        std::string formatJoinPlan(const std::vector<int>& path);
         Operator<B>* createBushyJoinPlan(const std::string hamiltonianPath);
         std::string joinPredicates(const std::set<std::string>& predicates) {
             std::string result;
@@ -134,13 +85,13 @@ namespace vaultdb {
             return result;
         }
 
-        std::vector<std::pair<SqlInputKey<B>, inputRelation<B>>> findEntriesWithPrefix(const int& op_id) {
-            std::vector<std::pair<SqlInputKey<B>, inputRelation<B>>> matchingEntries;
+        std::vector<Operator<B>*> findEntriesWithPrefix(const int& op_id) {
+            std::vector<Operator<B>*> matchingEntries;
 
             // Iterate over the entire container, as lower_bound usage is incorrect with just an int and previous key definition.
             for (const auto& entry : sql_input_ops_) {
-                if (entry.first.op_id == op_id) {
-                    matchingEntries.push_back(entry);
+                if (entry.first == op_id) {
+                    matchingEntries.push_back(entry.second.table);
                 }
             }
             return matchingEntries;

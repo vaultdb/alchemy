@@ -65,23 +65,36 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
         else
             type = "NestedLoopJoin";
 
-        if (std::holds_alternative<SqlInputKey<B>>(plan.lhs.index) && std::holds_alternative<SqlInputKey<B>>(plan.rhs.index)) {
-            std::cout << "LHS Index: " << std::get<SqlInputKey<B>>(plan.lhs.index).op_id << ", "
-                      << " order by: " << DataUtilities::printSortDefinition(std::get<SqlInputKey<B>>(plan.lhs.index).sort_orders) << ", "
-                      << "RHS Index: " << std::get<SqlInputKey<B>>(plan.rhs.index).op_id << ", "
-                      << " order by: " << DataUtilities::printSortDefinition(std::get<SqlInputKey<B>>(plan.rhs.index).sort_orders) << ", "
+        std::cout << "LHS Index: " << plan.lhs->getChild(0)->getOperatorId() << ", "
+                      << " order by: " << DataUtilities::printSortDefinition(plan.lhs->getSortOrder()) << ", "
+                      << "RHS Index: " << plan.rhs->getChild(0)->getOperatorId() << ", "
+                      << " order by: " << DataUtilities::printSortDefinition(plan.rhs->getSortOrder()) << ", "
                       << "Type: " << type << ", "
                       << "Cost: " << plan.cost << ", "
                       << "Output Order: " << DataUtilities::printSortDefinition(plan.output_order) << ", "
                       << "Output Order String : " << plan.output_order_str << std::endl;
-        } else {
-            // Handle the unexpected case where the index is not SqlInputKey<B>
-            std::cerr << "Unexpected type in index. Expected SqlInputKey<B>." << std::endl;
-        }
     }
 
     // Step 4 : group join pairs by their output sort order in memoization_table_[0]
     pickCheapJoinByGroup(0);
+
+    std::cout << "After picking cheap join by group" << std::endl;
+    for(auto& plan : memoization_table_[0]){
+        string type = "";
+        if(plan.type == OperatorType::KEYED_SORT_MERGE_JOIN)
+            type = "SortMergeJoin";
+        else
+            type = "NestedLoopJoin";
+
+        std::cout << "LHS Index: " << plan.lhs->getChild(0)->getOperatorId() << ", "
+                  << " order by: " << DataUtilities::printSortDefinition(plan.lhs->getSortOrder()) << ", "
+                  << "RHS Index: " << plan.rhs->getChild(0)->getOperatorId() << ", "
+                  << " order by: " << DataUtilities::printSortDefinition(plan.rhs->getSortOrder()) << ", "
+                  << "Type: " << type << ", "
+                  << "Cost: " << plan.cost << ", "
+                  << "Output Order: " << DataUtilities::printSortDefinition(plan.output_order) << ", "
+                  << "Output Order String : " << plan.output_order_str << std::endl;
+    }
 
     // Step 5 : Find all paths from join graph.
     std::vector<string> hamiltonian_paths = joinGraph.findHamiltonianPaths();
@@ -147,7 +160,7 @@ void BushyPlanEnumerator<B>::collectSQLInputsAndJoinPairs(Operator<B> * op, std:
             node->setSortOrder(sort);
 
             // Add the SQLInput operator to the map
-            sql_input_ops_.insert(std::make_pair(SqlInputKey<B>(op_id, sort), inputRelation<B>(node, node->planCost())));
+            sql_input_ops_.insert(std::make_pair(op_id, inputRelation<B>(node, node->planCost())));
         }
     }
     else if(op->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN || op->getType() == OperatorType::KEYED_SORT_MERGE_JOIN){
@@ -360,11 +373,11 @@ void BushyPlanEnumerator<B>::calculateCostsforJoinPairs(std::vector<JoinPair<B>>
         int rhs_id = rhs->getOperatorId();
 
         // get sql input operators costs from sql_input_ops with key is starting with 'op_id-'
-        std::vector<std::pair<SqlInputKey<B>, inputRelation<B>>> lhs_sql_inputs = findEntriesWithPrefix(lhs_id);
-        std::vector<std::pair<SqlInputKey<B>, inputRelation<B>>> rhs_sql_inputs = findEntriesWithPrefix(rhs_id);
+        std::vector<Operator<B>*> lhs_sql_inputs = findEntriesWithPrefix(lhs_id);
+        std::vector<Operator<B>*> rhs_sql_inputs = findEntriesWithPrefix(rhs_id);
 
-        for(auto it = lhs_sql_inputs.begin(); it != lhs_sql_inputs.end(); ++it){
-            for(auto jt = rhs_sql_inputs.begin(); jt != rhs_sql_inputs.end(); ++jt){
+        for(auto it : lhs_sql_inputs){
+            for(auto jt : rhs_sql_inputs){
 
                 QuerySchema lhs_schema = lhs->getOutputSchema();
                 QuerySchema rhs_schema = rhs->getOutputSchema();
@@ -381,54 +394,46 @@ void BushyPlanEnumerator<B>::calculateCostsforJoinPairs(std::vector<JoinPair<B>>
                 GenericExpression<B> *swapped_join_condition = FieldUtilities::getEqualityPredicate<B>(swapped_lhs_predicates, rhs_schema, swapped_rhs_predicates, lhs_schema);
 
                 // Try SMJ(lhs, rhs), SMJ(rhs, lhs), NLJ(lhs, rhs), NLJ(rhs, lhs) and calculate the cost and store in the memoization table
-//                using boost::property_tree::ptree;
-//                ptree join_condition_tree = createJoinConditionTree(lhs->getOutputSchema(), rhs->getOutputSchema(), pair.lhs_predicate, pair.rhs_predicate);
-//                ptree swapped_join_condition_tree = createJoinConditionTree(rhs->getOutputSchema(), lhs->getOutputSchema(), pair.rhs_predicate, pair.lhs_predicate);
-//
-//                Expression<B> *join_condition_tr = ExpressionParser<B>::parseExpression(join_condition_tree, lhs->getOutputSchema(), rhs->getOutputSchema());
-//                Expression<B> *swapped_join_condition = ExpressionParser<B>::parseExpression(swapped_join_condition_tree, rhs->getOutputSchema(), lhs->getOutputSchema());
-
                 int fk_id = getFKId(pair.lhs_predicate, pair.rhs_predicate);
 
                 if(fk_id != -1) {
-
                     Operator<B> *lhs_sorted = lhs->clone();
-                    lhs_sorted->setSortOrder(it->first.sort_orders);
+                    lhs_sorted->setSortOrder(it->getSortOrder());
+                    Operator<B> *lhs_sort_before_join = new Sort<B>(lhs_sorted, it->getSortOrder());
+
                     Operator<B> *rhs_sorted = rhs->clone();
-                    rhs_sorted->setSortOrder(jt->first.sort_orders);
+                    rhs_sorted->setSortOrder(jt->getSortOrder());
+                    Operator<B> *rhs_sort_before_join = new Sort<B>(rhs_sorted, jt->getSortOrder());
 
                     // SMJ(lhs, rhs)
-                    KeyedSortMergeJoin<B> *smj = new KeyedSortMergeJoin<B>(lhs_sorted, rhs_sorted, fk_id, join_condition->clone());
+                    KeyedSortMergeJoin<B> *smj = new KeyedSortMergeJoin<B>(lhs_sort_before_join, rhs_sort_before_join, fk_id, join_condition->clone());
                     // Insert cost of smj to memoization_table_
                     memoization_table_[0].push_back(
-                            subPlan<B>{it->first, jt->first, OperatorType::KEYED_SORT_MERGE_JOIN, smj->planCost(),
+                            subPlan<B>{lhs_sort_before_join, rhs_sort_before_join, OperatorType::KEYED_SORT_MERGE_JOIN, smj->planCost(),
                                        smj->getSortOrder(), smj->getOutputOrderinString()});
 
                     // NLJ(lhs, rhs)
-                    KeyedJoin<B> *nlj = new KeyedJoin<B>(lhs_sorted->clone(), rhs_sorted->clone(), fk_id, join_condition->clone());
+                    KeyedJoin<B> *nlj = new KeyedJoin<B>(lhs_sort_before_join->clone(), rhs_sort_before_join->clone(), fk_id, join_condition->clone());
                     // Insert cost of nlj to memoization_table_
                     memoization_table_[0].push_back(
-                            subPlan<B>{it->first, jt->first, OperatorType::KEYED_NESTED_LOOP_JOIN, nlj->planCost(),
+                            subPlan<B>{nlj->getChild(0), nlj->getChild(1), OperatorType::KEYED_NESTED_LOOP_JOIN, nlj->planCost(),
                                        nlj->getSortOrder(), nlj->getOutputOrderinString()});
 
                     fk_id = 1 - fk_id;
 
                     // SMJ(rhs, lhs)
-                    KeyedSortMergeJoin<B> *smj_swapped = new KeyedSortMergeJoin<B>(rhs_sorted->clone(), lhs_sorted->clone(), fk_id, swapped_join_condition->clone());
+                    KeyedSortMergeJoin<B> *smj_swapped = new KeyedSortMergeJoin<B>(rhs_sort_before_join->clone(), lhs_sort_before_join->clone(), fk_id, swapped_join_condition->clone());
                     // Insert cost of smj to memoization_table_
                     memoization_table_[0].push_back(
-                            subPlan<B>{jt->first, it->first, OperatorType::KEYED_SORT_MERGE_JOIN,
+                            subPlan<B>{smj_swapped->getChild(0), smj_swapped->getChild(1), OperatorType::KEYED_SORT_MERGE_JOIN,
                                        smj_swapped->planCost(), smj_swapped->getSortOrder(), smj_swapped->getOutputOrderinString()});
 
                     // NLJ(rhs, lhs)
-                    KeyedJoin<B> *nlj_swapped = new KeyedJoin<B>(rhs_sorted->clone(), lhs_sorted->clone(), fk_id, swapped_join_condition->clone());
+                    KeyedJoin<B> *nlj_swapped = new KeyedJoin<B>(rhs_sort_before_join->clone(), lhs_sort_before_join->clone(), fk_id, swapped_join_condition->clone());
                     // Insert cost of nlj to memoization_table_
                     memoization_table_[0].push_back(
-                            subPlan<B>{jt->first, it->first, OperatorType::KEYED_NESTED_LOOP_JOIN,
+                            subPlan<B>{nlj_swapped->getChild(0), nlj_swapped->getChild(1), OperatorType::KEYED_NESTED_LOOP_JOIN,
                                        nlj_swapped->planCost(), nlj_swapped->getSortOrder(), nlj_swapped->getOutputOrderinString()});
-
-                    // TODO : Need to think we need to keep those created Join to memoization_table_ or not.
-                    // IF not, then need to delete those created join.
                 }
             }
         }
@@ -459,89 +464,6 @@ std::vector<uint32_t> BushyPlanEnumerator<B>::convertPredicateToOrdinals(const Q
         ordinals.push_back(ordinal);
     }
     return ordinals;
-}
-
-template<typename B>
-boost::property_tree::ptree BushyPlanEnumerator<B>::createJoinConditionTree(const QuerySchema& lhs, const QuerySchema& rhs, const string& lhs_predicate, const string& rhs_predicate) {
-    using boost::property_tree::ptree;
-    ptree join_condition_tree;
-
-    // Function to split predicates by " AND "
-    auto splitPredicates = [](const std::string& predicate) -> std::vector<std::string> {
-        std::vector<std::string> parts;
-        std::string temp = predicate;
-        size_t pos = 0;
-        std::string delimiter = " AND ";
-        while ((pos = temp.find(delimiter)) != std::string::npos) {
-            parts.push_back(temp.substr(0, pos));
-            temp.erase(0, pos + delimiter.length());
-        }
-        parts.push_back(temp); // Add the last or only part
-        return parts;
-    };
-
-    // Check and split the lhs_predicate and rhs_predicate
-    auto lhs_parts = splitPredicates(lhs_predicate);
-    auto rhs_parts = splitPredicates(rhs_predicate);
-
-    // Ensure both parts have equal size, otherwise, it's a malformed condition
-    if (lhs_parts.size() != rhs_parts.size()) {
-        throw std::runtime_error("Mismatch in number of predicates.");
-    }
-
-    QuerySchema input_schema = QuerySchema::concatenate(lhs, rhs);
-
-    if (lhs_parts.size() == 1) { // Handle simple condition
-        return createSimpleConditionTree(input_schema, lhs_parts[0], rhs_parts[0]);
-    } else { // Handle composite condition
-        ptree and_tree;
-        and_tree.put("name", "AND");
-        and_tree.put("kind", "AND");
-        and_tree.put("syntax", "BINARY");
-
-        ptree operands_tree;
-
-        for (size_t i = 0; i < lhs_parts.size(); ++i) {
-            operands_tree.push_back(std::make_pair("", createSimpleConditionTree(input_schema, lhs_parts[i], rhs_parts[i])));
-        }
-
-        and_tree.add_child("operands", operands_tree);
-        join_condition_tree.add_child("condition", and_tree);
-
-        return join_condition_tree;
-    }
-}
-
-template<typename B>
-boost::property_tree::ptree BushyPlanEnumerator<B>::createSimpleConditionTree(const QuerySchema& input_schema, const std::string& lhs_predicate, const std::string& rhs_predicate) {
-    using boost::property_tree::ptree;
-    ptree condition_tree;
-
-    // Similar construction to your original function for EQUALS condition
-    ptree op_tree;
-    op_tree.put("name", "=");
-    op_tree.put("kind", "EQUALS");
-    op_tree.put("syntax", "BINARY");
-
-    ptree operands_tree;
-    ptree operand1, operand2;
-
-    // Find the index of lhs_predicate and rhs_predicate in input_schema
-    int lhs_ordinal = findFieldOrdinal(input_schema, lhs_predicate);
-    int rhs_ordinal = findFieldOrdinal(input_schema, rhs_predicate);
-
-    operand1.put("input", lhs_ordinal);
-    operand1.put("name", "$" + std::to_string(lhs_ordinal));
-    operand2.put("input", rhs_ordinal);
-    operand2.put("name", "$" + std::to_string(rhs_ordinal));
-
-    operands_tree.push_back(std::make_pair("", operand1));
-    operands_tree.push_back(std::make_pair("", operand2));
-
-    condition_tree.put_child("op", op_tree);
-    condition_tree.put_child("operands", operands_tree);
-
-    return condition_tree;
 }
 
 template<typename B>
@@ -639,28 +561,24 @@ std::vector<std::pair<int, int>> BushyPlanEnumerator<B>::extractIntegers(const s
 
 template<typename B>
 void BushyPlanEnumerator<B>::pickCheapJoinByGroup(int row_idx) {
-    // Helper lambda to extract op_id
-    auto getOpId = [](const auto& index) -> int {
-        return std::visit(overloaded{
-                [](const SqlInputKey<B>& key) { return key.op_id; },
-                [](const std::pair<int, int>&) { return -1; }
-        }, index);
-    };
 
     // Modified GroupKey to sort lhs and rhs op_id without considering their order
     using GroupKey = std::tuple<int, int, string>;
-
-    auto comparator = [](const GroupKey& a, const GroupKey& b) -> bool {
-        return a < b; // Tuple provides a lexicographical comparison by default
-    };
-
-    std::map<GroupKey, subPlan<B>*> groupedPlans;
+    std::map<GroupKey, subPlan<B>> groupedPlans;
 
     // Change the memoization_table_[row_idx] to a map with GroupKey as key
-    for (auto& plan : memoization_table_[row_idx]) {
+    for (auto &plan: memoization_table_[row_idx]) {
         // Extract lhs and rhs op_ids
-        int lhs_op_id = getOpId(plan.lhs.index);
-        int rhs_op_id = getOpId(plan.rhs.index);
+        int lhs_op_id, rhs_op_id;
+        if (plan.lhs->getType() == OperatorType::SORT)
+            lhs_op_id = plan.lhs->getChild(0)->getOperatorId();
+        else
+            lhs_op_id = plan.lhs->getOperatorId();
+
+        if (plan.rhs->getType() == OperatorType::SORT)
+            rhs_op_id = plan.rhs->getChild(0)->getOperatorId();
+        else
+            rhs_op_id = plan.rhs->getOperatorId();
 
         // Ensure lhs_op_id is always <= rhs_op_id for consistent ordering
         if (lhs_op_id > rhs_op_id) {
@@ -668,17 +586,19 @@ void BushyPlanEnumerator<B>::pickCheapJoinByGroup(int row_idx) {
         }
 
         // Create the key with sorted op_ids and output_order_str
-        GroupKey key = std::make_tuple(lhs_op_id, rhs_op_id, plan.output_order_str);
+        GroupKey key(lhs_op_id, rhs_op_id, plan.output_order_str);
+
         auto it = groupedPlans.find(key);
-        if (it == groupedPlans.end() || it->second->cost > plan.cost) {
-            groupedPlans[key] = &plan; // Update to point to the lower-cost plan
+        if (it == groupedPlans.end() || it->second.cost > plan.cost) {
+            groupedPlans[key] = std::move(plan);
         }
     }
+
     // Replace memoization_table_[row_idx] with grouped entries
     memoization_table_[row_idx].clear();
-    for (const auto& pair : groupedPlans) {
-        // Dereference the stored pointer to add the object back to the vector
-        memoization_table_[row_idx].push_back(*(pair.second));
+
+    for (auto &pair : groupedPlans) {
+        memoization_table_[row_idx].push_back(std::move(pair.second)); // Ensure move semantics are used
     }
 }
 
@@ -691,6 +611,27 @@ Operator<B>* BushyPlanEnumerator<B>::createBushyJoinPlan(const std::string hamil
     // Split the string by '-' and convert to integers
     while (std::getline(iss, node, '-')) {
         path.push_back(std::stoi(node));
+    }
+    string plan = formatJoinPlan(path);
+    std::cout << plan << std::endl;
+}
+
+template<typename B>
+std::string BushyPlanEnumerator<B>::formatJoinPlan(const std::vector<int>& path) {
+    if (path.size() == 1) {
+        // Base case: single node, return its string representation
+        return std::to_string(path[0]);
+    } else if (path.size() == 2) {
+        // Two nodes, simple JOIN
+        return "(" + std::to_string(path[0]) + " JOIN " + std::to_string(path[1]) + ")";
+    } else {
+        // More than two nodes, split into two halves
+        size_t mid = (path.size() + 1) / 2; // If odd, left half includes the extra node
+        std::vector<int> left(path.begin(), path.begin() + mid);
+        std::vector<int> right(path.begin() + mid, path.end());
+
+        // Format the left and right halves and join them
+        return "(" + formatJoinPlan(left) + " JOIN " + formatJoinPlan(right) + ")";
     }
 }
 
