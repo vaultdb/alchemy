@@ -60,19 +60,19 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
 
     for (const auto& plan : memoization_table_[0]) {
         string type = "";
-        if(plan.type == OperatorType::KEYED_SORT_MERGE_JOIN)
+        if(plan.second.type == OperatorType::KEYED_SORT_MERGE_JOIN)
             type = "SortMergeJoin";
         else
             type = "NestedLoopJoin";
 
-        std::cout << "LHS Index: " << plan.lhs->getChild(0)->getOperatorId() << ", "
-                      << " order by: " << DataUtilities::printSortDefinition(plan.lhs->getSortOrder()) << ", "
-                      << "RHS Index: " << plan.rhs->getChild(0)->getOperatorId() << ", "
-                      << " order by: " << DataUtilities::printSortDefinition(plan.rhs->getSortOrder()) << ", "
+        std::cout << "LHS Index: " << plan.second.lhs->getChild(0)->getOperatorId() << ", "
+                      << " order by: " << DataUtilities::printSortDefinition(plan.second.lhs->getSortOrder()) << ", "
+                      << "RHS Index: " << plan.second.rhs->getChild(0)->getOperatorId() << ", "
+                      << " order by: " << DataUtilities::printSortDefinition(plan.second.rhs->getSortOrder()) << ", "
                       << "Type: " << type << ", "
-                      << "Cost: " << plan.cost << ", "
-                      << "Output Order: " << DataUtilities::printSortDefinition(plan.output_order) << ", "
-                      << "Output Order String : " << plan.output_order_str << std::endl;
+                      << "Cost: " << plan.second.cost << ", "
+                      << "Output Order: " << DataUtilities::printSortDefinition(plan.second.output_order) << ", "
+                      << "Output Order String : " << plan.second.output_order_str << std::endl;
     }
 
     // Step 4 : group join pairs by their output sort order in memoization_table_[0]
@@ -81,19 +81,19 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
     std::cout << "After picking cheap join by group" << std::endl;
     for(auto& plan : memoization_table_[0]){
         string type = "";
-        if(plan.type == OperatorType::KEYED_SORT_MERGE_JOIN)
+        if(plan.second.type == OperatorType::KEYED_SORT_MERGE_JOIN)
             type = "SortMergeJoin";
         else
             type = "NestedLoopJoin";
 
-        std::cout << "LHS Index: " << plan.lhs->getChild(0)->getOperatorId() << ", "
-                  << " order by: " << DataUtilities::printSortDefinition(plan.lhs->getSortOrder()) << ", "
-                  << "RHS Index: " << plan.rhs->getChild(0)->getOperatorId() << ", "
-                  << " order by: " << DataUtilities::printSortDefinition(plan.rhs->getSortOrder()) << ", "
+        std::cout << "LHS Index: " << plan.second.lhs->getChild(0)->getOperatorId() << ", "
+                  << " order by: " << DataUtilities::printSortDefinition(plan.second.lhs->getSortOrder()) << ", "
+                  << "RHS Index: " << plan.second.rhs->getChild(0)->getOperatorId() << ", "
+                  << " order by: " << DataUtilities::printSortDefinition(plan.second.rhs->getSortOrder()) << ", "
                   << "Type: " << type << ", "
-                  << "Cost: " << plan.cost << ", "
-                  << "Output Order: " << DataUtilities::printSortDefinition(plan.output_order) << ", "
-                  << "Output Order String : " << plan.output_order_str << std::endl;
+                  << "Cost: " << plan.second.cost << ", "
+                  << "Output Order: " << DataUtilities::printSortDefinition(plan.second.output_order) << ", "
+                  << "Output Order String : " << plan.second.output_order_str << std::endl;
     }
 
     // Step 5 : Find all paths from join graph.
@@ -101,51 +101,23 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
 
     // Step 6 : Iterate hamiltonian path and create bushy plan
     // Prune the paths that are the same bushy plan (i.e., rhs lhs swapped)
-    size_t min_plan_cost_ = left_deep_root_->planCost();
-    Operator<B> *min_cost_plan_ = left_deep_root_;
 
-    for(auto path : hamiltonian_paths){
-        Operator<B>* plan = createBushyJoinPlan(path);
-        size_t cost = plan->planCost();
-        if(cost < min_plan_cost_){
-            min_plan_cost_ = cost;
-            min_cost_plan_ = plan;
+    // If there are no hamiltonian paths, then bushy plan is not possible
+    if(hamiltonian_paths.size() == 0)
+        std::cout << "Bushy plan is not possible" << std::endl;
+    else {
+        size_t min_plan_cost_ = left_deep_root_->planCost();
+        Operator<B> *min_cost_plan_ = left_deep_root_;
+
+        for (auto path: hamiltonian_paths) {
+            Operator<B> *plan = createBushyJoinPlan(path);
+            size_t cost = plan->planCost();
+            if (cost < min_plan_cost_) {
+                min_plan_cost_ = cost;
+                min_cost_plan_ = plan;
+            }
         }
     }
-
-    /*
-
-    size_t min_plan_cost_ = left_deep_root_->planCost();
-    Operator<B> *min_cost_plan_ = left_deep_root_;
-
-    // Step 6: Iterate through join pairs and create bushy plan
-    for(auto it = join_pairs_.begin(); it != join_pairs_.end(); ++it) {
-        JoinPairInfo<B> pair = *it;
-
-        std::vector<JoinPairInfo<B>> currentDisjointPairs;
-
-        // Recursively find all disjoint table pairs
-        findJoinOfDisjointTables(pair, joinGraph, currentDisjointPairs, true);
-
-        // If disjoint_joins are None, then do not create bushy plan. It is not possible to create bushy plan
-        if (possible_disjoint_pairs_.empty()) {
-            continue;
-        }
-
-        // Create bushy plan
-        // TODO : Implement createBushyPlan
-        //auto plan = createBushyPlan(disjoint_joins, pair, join_type);
-
-        // Calculate cost of the plan
-//        auto cost = plan->planCost();
-//
-//        // If cost is less than min_cost, update min_cost and min_plan
-//        if (cost < min_plan_cost_) {
-//            min_plan_cost_ = cost;
-//            min_cost_plan_ = plan;
-//        }
-    }
-     */
 }
 
 template<typename B>
@@ -405,35 +377,33 @@ void BushyPlanEnumerator<B>::calculateCostsforJoinPairs(std::vector<JoinPair<B>>
                     rhs_sorted->setSortOrder(jt->getSortOrder());
                     Operator<B> *rhs_sort_before_join = new Sort<B>(rhs_sorted, jt->getSortOrder());
 
+                    string memoization_key = addMemoizationKey(std::to_string(lhs_id), std::to_string(rhs_id));
+
                     // SMJ(lhs, rhs)
                     KeyedSortMergeJoin<B> *smj = new KeyedSortMergeJoin<B>(lhs_sort_before_join, rhs_sort_before_join, fk_id, join_condition->clone());
                     // Insert cost of smj to memoization_table_
-                    memoization_table_[0].push_back(
-                            subPlan<B>{lhs_sort_before_join, rhs_sort_before_join, OperatorType::KEYED_SORT_MERGE_JOIN, smj->planCost(),
-                                       smj->getSortOrder(), smj->getOutputOrderinString()});
+                    memoization_table_[0].insert(std::make_pair(memoization_key, subPlan<B>{lhs_sort_before_join, rhs_sort_before_join, OperatorType::KEYED_SORT_MERGE_JOIN, smj->planCost(),
+                                                                                          smj->getSortOrder(), smj->getOutputOrderinString()}));
 
                     // NLJ(lhs, rhs)
                     KeyedJoin<B> *nlj = new KeyedJoin<B>(lhs_sort_before_join->clone(), rhs_sort_before_join->clone(), fk_id, join_condition->clone());
                     // Insert cost of nlj to memoization_table_
-                    memoization_table_[0].push_back(
-                            subPlan<B>{nlj->getChild(0), nlj->getChild(1), OperatorType::KEYED_NESTED_LOOP_JOIN, nlj->planCost(),
-                                       nlj->getSortOrder(), nlj->getOutputOrderinString()});
+                    memoization_table_[0].insert(std::make_pair(memoization_key, subPlan<B>{nlj->getChild(0), nlj->getChild(1), OperatorType::KEYED_NESTED_LOOP_JOIN, nlj->planCost(),
+                                                                        nlj->getSortOrder(), nlj->getOutputOrderinString()}));
 
                     fk_id = 1 - fk_id;
 
                     // SMJ(rhs, lhs)
                     KeyedSortMergeJoin<B> *smj_swapped = new KeyedSortMergeJoin<B>(rhs_sort_before_join->clone(), lhs_sort_before_join->clone(), fk_id, swapped_join_condition->clone());
                     // Insert cost of smj to memoization_table_
-                    memoization_table_[0].push_back(
-                            subPlan<B>{smj_swapped->getChild(0), smj_swapped->getChild(1), OperatorType::KEYED_SORT_MERGE_JOIN,
-                                       smj_swapped->planCost(), smj_swapped->getSortOrder(), smj_swapped->getOutputOrderinString()});
+                    memoization_table_[0].insert(std::make_pair(memoization_key, subPlan<B>{smj_swapped->getChild(0), smj_swapped->getChild(1), OperatorType::KEYED_SORT_MERGE_JOIN,
+                                       smj_swapped->planCost(), smj_swapped->getSortOrder(), smj_swapped->getOutputOrderinString()}));
 
                     // NLJ(rhs, lhs)
                     KeyedJoin<B> *nlj_swapped = new KeyedJoin<B>(rhs_sort_before_join->clone(), lhs_sort_before_join->clone(), fk_id, swapped_join_condition->clone());
                     // Insert cost of nlj to memoization_table_
-                    memoization_table_[0].push_back(
-                            subPlan<B>{nlj_swapped->getChild(0), nlj_swapped->getChild(1), OperatorType::KEYED_NESTED_LOOP_JOIN,
-                                       nlj_swapped->planCost(), nlj_swapped->getSortOrder(), nlj_swapped->getOutputOrderinString()});
+                    memoization_table_[0].insert(std::make_pair(memoization_key, subPlan<B>{nlj_swapped->getChild(0), nlj_swapped->getChild(1), OperatorType::KEYED_NESTED_LOOP_JOIN,
+                                       nlj_swapped->planCost(), nlj_swapped->getSortOrder(), nlj_swapped->getOutputOrderinString()}));
                 }
             }
         }
@@ -567,18 +537,12 @@ void BushyPlanEnumerator<B>::pickCheapJoinByGroup(int row_idx) {
     std::map<GroupKey, subPlan<B>> groupedPlans;
 
     // Change the memoization_table_[row_idx] to a map with GroupKey as key
-    for (auto &plan: memoization_table_[row_idx]) {
-        // Extract lhs and rhs op_ids
-        int lhs_op_id, rhs_op_id;
-        if (plan.lhs->getType() == OperatorType::SORT)
-            lhs_op_id = plan.lhs->getChild(0)->getOperatorId();
-        else
-            lhs_op_id = plan.lhs->getOperatorId();
+    for (auto &entry: memoization_table_[row_idx]) {
+        const subPlan<B> &plan = entry.second;
 
-        if (plan.rhs->getType() == OperatorType::SORT)
-            rhs_op_id = plan.rhs->getChild(0)->getOperatorId();
-        else
-            rhs_op_id = plan.rhs->getOperatorId();
+        // Extract lhs and rhs op_ids
+        int lhs_op_id = (plan.lhs->getType() == OperatorType::SORT) ? plan.lhs->getChild(0)->getOperatorId() : plan.lhs->getOperatorId();
+        int rhs_op_id = (plan.rhs->getType() == OperatorType::SORT) ? plan.rhs->getChild(0)->getOperatorId() : plan.rhs->getOperatorId();
 
         // Ensure lhs_op_id is always <= rhs_op_id for consistent ordering
         if (lhs_op_id > rhs_op_id) {
@@ -590,15 +554,17 @@ void BushyPlanEnumerator<B>::pickCheapJoinByGroup(int row_idx) {
 
         auto it = groupedPlans.find(key);
         if (it == groupedPlans.end() || it->second.cost > plan.cost) {
-            groupedPlans[key] = std::move(plan);
+            groupedPlans[key] = std::move(entry.second);
         }
     }
 
     // Replace memoization_table_[row_idx] with grouped entries
     memoization_table_[row_idx].clear();
 
+    // get groupkey's first value
+
     for (auto &pair : groupedPlans) {
-        memoization_table_[row_idx].push_back(std::move(pair.second)); // Ensure move semantics are used
+        memoization_table_[0].insert(std::make_pair(addMemoizationKey(std::to_string(std::get<0>(pair.first)), std::to_string(std::get<1>(pair.first))), std::move(pair.second))); // Ensure move semantics are used
     }
 }
 

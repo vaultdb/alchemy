@@ -26,6 +26,7 @@ namespace vaultdb {
 
         subPlan(Operator<B>* lhs, Operator<B>* rhs, OperatorType type, size_t cost, SortDefinition output_order, std::string output_order_str)
                 : lhs(lhs), rhs(rhs), type(type), cost(cost), output_order(output_order), output_order_str(output_order_str) {}
+
     };
 
     template<typename B>
@@ -38,7 +39,7 @@ namespace vaultdb {
         std::vector<JoinPairInfo<B>> join_pairs_;
         std::vector<JoinPair<B>> join_pairs_vector_;
         std::multimap<int, inputRelation<B>> sql_input_ops_;
-        std::vector<std::vector<subPlan<B>>> memoization_table_;
+        std::vector<std::multimap<std::string, subPlan<B>>> memoization_table_;
 
         BushyPlanEnumerator(Operator<B> * root, std::map<int, Operator<B> * > operators, std::vector<Operator<B> * > support_ops, map<int, vector<SortDefinition>> interesting_orders);
 
@@ -110,6 +111,10 @@ namespace vaultdb {
                 sorts.push_back(collation.first);
             }
             return sorts;
+        }
+
+        string addMemoizationKey(string lhsId, string rhsId) {
+            return "(" + lhsId + " JOIN " + rhsId + ")";
         }
     };
 }
