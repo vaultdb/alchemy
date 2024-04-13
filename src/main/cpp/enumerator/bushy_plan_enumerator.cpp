@@ -365,13 +365,28 @@ void BushyPlanEnumerator<B>::calculateCostsforJoinPairs(std::vector<JoinPair<B>>
 
         for(auto it = lhs_sql_inputs.begin(); it != lhs_sql_inputs.end(); ++it){
             for(auto jt = rhs_sql_inputs.begin(); jt != rhs_sql_inputs.end(); ++jt){
-                // Try SMJ(lhs, rhs), SMJ(rhs, lhs), NLJ(lhs, rhs), NLJ(rhs, lhs) and calculate the cost and store in the memoization table
-                using boost::property_tree::ptree;
-                ptree join_condition_tree = createJoinConditionTree(lhs->getOutputSchema(), rhs->getOutputSchema(), pair.lhs_predicate, pair.rhs_predicate);
-                ptree swapped_join_condition_tree = createJoinConditionTree(rhs->getOutputSchema(), lhs->getOutputSchema(), pair.rhs_predicate, pair.lhs_predicate);
 
-                Expression<B> *join_condition = ExpressionParser<B>::parseExpression(join_condition_tree, lhs->getOutputSchema(), rhs->getOutputSchema());
-                Expression<B> *swapped_join_condition = ExpressionParser<B>::parseExpression(swapped_join_condition_tree, rhs->getOutputSchema(), lhs->getOutputSchema());
+                QuerySchema lhs_schema = lhs->getOutputSchema();
+                QuerySchema rhs_schema = rhs->getOutputSchema();
+                QuerySchema output_schema = QuerySchema::concatenate(lhs_schema, rhs_schema);
+                QuerySchema swapped_output_schema = QuerySchema::concatenate(rhs_schema, lhs_schema);
+
+                std::vector<uint32_t> lhs_predicates = convertPredicateToOrdinals(lhs_schema, pair.lhs_predicate);
+                std::vector<uint32_t> rhs_predicates = convertPredicateToOrdinals(output_schema, pair.rhs_predicate);
+
+                std::vector<uint32_t> swapped_lhs_predicates = convertPredicateToOrdinals(rhs_schema, pair.rhs_predicate);
+                std::vector<uint32_t> swapped_rhs_predicates = convertPredicateToOrdinals(swapped_output_schema, pair.lhs_predicate);
+
+                GenericExpression<B> *join_condition = FieldUtilities::getEqualityPredicate<B>(lhs_predicates, lhs_schema, rhs_predicates, rhs_schema);
+                GenericExpression<B> *swapped_join_condition = FieldUtilities::getEqualityPredicate<B>(swapped_lhs_predicates, rhs_schema, swapped_rhs_predicates, lhs_schema);
+
+                // Try SMJ(lhs, rhs), SMJ(rhs, lhs), NLJ(lhs, rhs), NLJ(rhs, lhs) and calculate the cost and store in the memoization table
+//                using boost::property_tree::ptree;
+//                ptree join_condition_tree = createJoinConditionTree(lhs->getOutputSchema(), rhs->getOutputSchema(), pair.lhs_predicate, pair.rhs_predicate);
+//                ptree swapped_join_condition_tree = createJoinConditionTree(rhs->getOutputSchema(), lhs->getOutputSchema(), pair.rhs_predicate, pair.lhs_predicate);
+//
+//                Expression<B> *join_condition_tr = ExpressionParser<B>::parseExpression(join_condition_tree, lhs->getOutputSchema(), rhs->getOutputSchema());
+//                Expression<B> *swapped_join_condition = ExpressionParser<B>::parseExpression(swapped_join_condition_tree, rhs->getOutputSchema(), lhs->getOutputSchema());
 
                 int fk_id = getFKId(pair.lhs_predicate, pair.rhs_predicate);
 
@@ -419,6 +434,31 @@ void BushyPlanEnumerator<B>::calculateCostsforJoinPairs(std::vector<JoinPair<B>>
         }
 
     }
+}
+
+template<typename B>
+std::vector<uint32_t> BushyPlanEnumerator<B>::convertPredicateToOrdinals(const QuerySchema& schema, const std::string& predicates) {
+    // Function to split predicates by " AND "
+    auto splitPredicates = [](const std::string& predicate) -> std::vector<std::string> {
+        std::vector<std::string> parts;
+        std::string temp = predicate;
+        size_t pos = 0;
+        std::string delimiter = " AND ";
+        while ((pos = temp.find(delimiter)) != std::string::npos) {
+            parts.push_back(temp.substr(0, pos));
+            temp.erase(0, pos + delimiter.length());
+        }
+        parts.push_back(temp); // Add the last or only part
+        return parts;
+    };
+
+    std::vector<std::string> split_parts = splitPredicates(predicates);
+    std::vector<uint32_t> ordinals;
+    for (const auto& part : split_parts) {
+        int ordinal = findFieldOrdinal(schema, part);
+        ordinals.push_back(ordinal);
+    }
+    return ordinals;
 }
 
 template<typename B>

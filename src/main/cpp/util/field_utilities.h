@@ -152,18 +152,17 @@ namespace vaultdb {
         }
 
         template<typename B>
-        static  Expression<B> *
+        static  GenericExpression<B> *
         getEqualityPredicate(const std::vector<uint32_t> &lhs_idx, const QuerySchema &lhs, const std::vector<uint32_t> &rhs_idx,
                              const QuerySchema & rhs) {
 
             assert(lhs_idx.size() == rhs_idx.size());
-            Expression<B> *prev_predicate;
-            Expression<B> *cur_predicate;
+            GenericExpression<B> *cur_predicate;
+            GenericExpression<B> *prev_predicate = ((GenericExpression<B> *)FieldUtilities::getEqualityPredicate<B>(lhs_idx[0], lhs, rhs_idx[0], rhs));
 
-            prev_predicate = FieldUtilities::getEqualityPredicate<B>(lhs_idx[0], lhs, rhs_idx[0], rhs);
             for(auto i = 1; i < lhs_idx.size(); ++i) {
-                cur_predicate = FieldUtilities::getEqualityPredicate<B>(lhs_idx[i], lhs, rhs_idx[i], rhs);
-                prev_predicate = new AndNode<B>(prev_predicate, cur_predicate);
+                cur_predicate = ((GenericExpression<B>*)FieldUtilities::getEqualityPredicate<B>(lhs_idx[i], lhs, rhs_idx[i], rhs));
+                prev_predicate->root_ = new AndNode<B>(prev_predicate->root_, cur_predicate->root_);
             }
             return prev_predicate;
         }

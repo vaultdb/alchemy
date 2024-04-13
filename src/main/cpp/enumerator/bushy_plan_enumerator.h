@@ -115,6 +115,7 @@ namespace vaultdb {
         void addTransitivePairs(Operator<B>* pair1, const string pair1_predicate, Operator<B>* pair2, const string pair2_predicate, const std::vector<std::string> commonConditions, std::vector<JoinPair<B>>& transitivePairs, JoinGraph<B>& joinGraph);
         std::vector<std::pair<int, int>> extractIntegers(const std::string& input);
         void calculateCostsforJoinPairs(std::vector<JoinPair<B>> &joinPairs);
+        std::vector<uint32_t> convertPredicateToOrdinals(const QuerySchema& schema, const string& predicates);
         boost::property_tree::ptree createJoinConditionTree(const QuerySchema& lhs, const QuerySchema& rhs, const string& lhs_predicate, const string& rhs_predicate);
         boost::property_tree::ptree createSimpleConditionTree(const QuerySchema& input_schema, const std::string& lhs_predicate, const std::string& rhs_predicate);
         int findFieldOrdinal(const QuerySchema& schema, const std::string& predicate);
