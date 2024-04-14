@@ -36,25 +36,6 @@ namespace vaultdb {
     };
 
     template<typename B>
-    struct JoinPairInfo {
-        std::pair<Operator<B> *, string> lhs;
-        std::pair<Operator<B> *, string> rhs;
-        char joinType;
-        size_t outputCardinality;
-
-        JoinPairInfo(std::pair<Operator<B> *, string> lhs, std::pair<Operator<B> *, string> rhs, char joinType, size_t outputCardinality)
-                : lhs(lhs), rhs(rhs), joinType(joinType), outputCardinality(outputCardinality) {}
-
-        bool operator==(const JoinPairInfo& other) const {
-            // Assuming equality is determined by the operators and the join type
-            // You might need to adjust the logic based on what you consider makes two JoinPairInfo instances equal
-            return *this->lhs.first == *other.lhs.first && *this->rhs.first == *other.rhs.first &&
-                   this->lhs.second == other.lhs.second && this->rhs.second == other.rhs.second &&
-                   this->joinType == other.joinType;
-        }
-    };
-
-    template<typename B>
     class JoinGraph {
     public:
         struct Node {
@@ -64,9 +45,11 @@ namespace vaultdb {
         struct Edge {
             size_t fromIndex;
             size_t toIndex;
+            string from_predicate;
+            string to_predicate;
 
-            Edge(size_t fromIndex, size_t toIndex)
-                    : fromIndex(fromIndex), toIndex(toIndex) {}
+            Edge(size_t fromIndex, size_t toIndex, string from_predicate, string to_predicate)
+                    : fromIndex(fromIndex), toIndex(toIndex), from_predicate(from_predicate), to_predicate(to_predicate) {}
         };
 
     private:
@@ -78,23 +61,32 @@ namespace vaultdb {
         void findPaths(size_t nodeIndex, std::vector<bool>& visited, std::vector<std::string>& paths, std::string currentPath) {
             visited[nodeIndex] = true;
 
-            currentPath += std::to_string(nodes[nodeIndex].op->getOperatorId()) + "-";
+            if (!currentPath.empty()) {
+                currentPath += "-";  // Only add a hyphen if not the start of the path
+            }
+            currentPath += std::to_string(nodes[nodeIndex].op->getOperatorId());
 
-            if (std::all_of(visited.begin(), visited.end(), [](bool v) { return v; })) {
-                currentPath.pop_back();
+            bool isCompletePath = std::all_of(visited.begin(), visited.end(), [](bool v) { return v; });
+
+            if (isCompletePath) {
                 paths.push_back(currentPath);
             } else {
                 for (const Edge& edge : edges) {
                     if (edge.fromIndex == nodeIndex && !visited[edge.toIndex]) {
-                        findPaths(edge.toIndex, visited, paths, currentPath);
+                        // When moving from 'fromIndex' to 'toIndex'
+                        std::string extendedPath = currentPath + " {" + edge.from_predicate + "," + edge.to_predicate + "} ";
+                        findPaths(edge.toIndex, visited, paths, extendedPath);
                     } else if (edge.toIndex == nodeIndex && !visited[edge.fromIndex]) {
-                        findPaths(edge.fromIndex, visited, paths, currentPath);
+                        // When moving from 'toIndex' to 'fromIndex' (reverse direction)
+                        std::string extendedPath = currentPath + " {" + edge.to_predicate + "," + edge.from_predicate + "} ";
+                        findPaths(edge.fromIndex, visited, paths, extendedPath);
                     }
                 }
             }
 
             visited[nodeIndex] = false;
         }
+
 
         Operator<B>* findOperatorByIndex(const size_t operatorIndex) {
             auto it = std::find_if(operatorToIndex.begin(), operatorToIndex.end(),
@@ -137,6 +129,22 @@ namespace vaultdb {
             edges.emplace_back(Edge{fromIt->second, toIt->second});
         }
 
+        // Add an edge between two operators with predicate
+        void addEdge(Operator<B>* from, Operator<B>* to, string from_predicate, string to_predicate) {
+            // Check if the nodes exist in the map, and retrieve their indices
+            auto fromIt = operatorToIndex.find(from);
+            auto toIt = operatorToIndex.find(to);
+
+            if (fromIt == operatorToIndex.end() || toIt == operatorToIndex.end()) {
+                // One of the operators does not have a corresponding node in the graph,
+                // which should likely be handled as an error or by adding the node.
+                throw std::runtime_error("Attempting to add an edge for an operator without a node.");
+            }
+
+            // Add the edge using indices
+            edges.emplace_back(Edge{fromIt->second, toIt->second, from_predicate, to_predicate});
+        }
+
         // Method to find Hamiltonian Paths
         std::vector<std::string> findHamiltonianPaths() {
             std::vector<std::string> paths;
@@ -149,36 +157,6 @@ namespace vaultdb {
             return paths;
         }
 
-
-        // Method to get operators connected to a given join pair
-        std::vector<Operator<B>*> getConnectedOperators(const std::vector<JoinPairInfo<B>>& currentJoinPairs) const {
-//            std::set<Operator<B>*> directlyInvolvedOperators;
-//            for (const auto& pair : currentJoinPairs) {
-//                directlyInvolvedOperators.insert(pair.lhs.first);
-//                directlyInvolvedOperators.insert(pair.rhs.first);
-//            }
-//
-//            std::set<Operator<B>*> connectedOperators;
-//            // Iterate through each edge to check for connections.
-//            for (const auto& edge : edges) {
-//                Operator<B>* fromOp = edge.from->op;
-//                Operator<B>* toOp = edge.to->op;
-//
-//                // If fromOp is directly involved and toOp is not already considered, mark toOp as connected.
-//                if (directlyInvolvedOperators.find(fromOp) != directlyInvolvedOperators.end() &&
-//                    directlyInvolvedOperators.find(toOp) == directlyInvolvedOperators.end()) {
-//                    connectedOperators.insert(toOp);
-//                }
-//                    // Similarly, if toOp is directly involved and fromOp is not, mark fromOp as connected.
-//                else if (directlyInvolvedOperators.find(toOp) != directlyInvolvedOperators.end() &&
-//                         directlyInvolvedOperators.find(fromOp) == directlyInvolvedOperators.end()) {
-//                    connectedOperators.insert(fromOp);
-//                }
-//            }
-//
-//            // Convert the set of connected operators to the expected vector format.
-//            return std::vector<Operator<B>*>(connectedOperators.begin(), connectedOperators.end());
-        }
 
 
         const std::vector<Node> &getNodes() const { return nodes; }

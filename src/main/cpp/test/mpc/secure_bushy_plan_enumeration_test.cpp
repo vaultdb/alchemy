@@ -82,6 +82,9 @@ SecureBushyPlanEnumerationTest::runTest(const int &test_id, const SortDefinition
     BushyPlanEnumerator<Bit> enumerator(root, parser.getOperatorMap(), parser.getSupportOps(), parser.getInterestingSortOrders());
     enumerator.createBushyBalancedTree();
 
+    std::cout << "Minimal Bushy Plan : " << endl;
+    std::cout << enumerator.getMinCostPlan()->printTree() << endl;
+
     //root = optimizer.optimizeTree();
 
     double PlanEnumerationDuration = time_from(BeforePlanEnumeration) / 1e6;

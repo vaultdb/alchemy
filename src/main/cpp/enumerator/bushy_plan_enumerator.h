@@ -15,28 +15,31 @@
 namespace vaultdb {
     template<typename B>
     struct subPlan {
-        std::unique_ptr<Operator<B>> lhs;
-        std::unique_ptr<Operator<B>> rhs;
-        OperatorType type;
+        std::shared_ptr<Operator<B>> join;
         size_t cost;
-        SortDefinition output_order;
         std::string output_order_str;
+        int height;
 
         subPlan() = default;
 
-        subPlan(Operator<B>* lhs, Operator<B>* rhs, OperatorType type, size_t cost, SortDefinition output_order, std::string output_order_str)
-                : lhs(lhs), rhs(rhs), type(type), cost(cost), output_order(output_order), output_order_str(output_order_str) {}
+        subPlan(Operator<B>* join, size_t cost, std::string output_order_str, int height)
+                : join(join), cost(cost), output_order_str(output_order_str), height(height) {}
 
     };
 
     template<typename B>
-    using DisjointJoinPairs = std::vector<JoinPairInfo<B>>;
+    struct subPlanWithKey {
+        string key;
+        subPlan<B> plan;
+
+        subPlanWithKey() = default;
+        subPlanWithKey(string key, subPlan<B> plan) :  key(key), plan(plan) {}
+    };
 
     template<typename B>
     class BushyPlanEnumerator {
     public:
         typedef std::tuple<SortDefinition, int /*parent_id*/, int /*child_id*/, std::string> SortEntry;// Adding operator type as a string.
-        std::vector<JoinPairInfo<B>> join_pairs_;
         std::vector<JoinPair<B>> join_pairs_vector_;
         std::multimap<int, inputRelation<B>> sql_input_ops_;
         std::vector<std::multimap<std::string, subPlan<B>>> memoization_table_;
@@ -46,9 +49,9 @@ namespace vaultdb {
         Operator<B> *getRoot() const { return left_deep_root_; }
         Operator<B> *getOperator(const int &op_id);
         map<int, vector<SortDefinition>> getInterestingSortOrders() { return interesting_sort_orders_; }
+        Operator<B> *getMinCostPlan() const { return min_cost_plan_; }
 
         void createBushyBalancedTree();
-        std::vector<DisjointJoinPairs<B>> possible_disjoint_pairs_;
 
         int total_plan_cnt_ = 0;
     private:
@@ -61,6 +64,7 @@ namespace vaultdb {
         Operator<B> *min_cost_plan_ = nullptr;
         std::map<int, Operator<B> * > operators_; // op ID --> operator instantiation
         std::vector<Operator<B> * > support_ops_; // these ones don't get an operator ID from the JSON plan
+        int next_op_id_ = 0;
 
         void collectSQLInputsAndJoinPairs(Operator<B> * op, std::vector<JoinPair<B>> &join_pairs);
         Operator<B>* findJoinChildFromSqlInput(string join_predicate);
@@ -73,7 +77,9 @@ namespace vaultdb {
         int getFKId(const std::string& lhs_predicate, const std::string& rhs_predicate);
         std::pair<char, size_t> getJoinType(const std::string& lhs_predicate, const std::string& rhs_predicate, const size_t& lhs_output_cardinality, const size_t& rhs_output_cardinality);
         void pickCheapJoinByGroup(int row_idx);
-        std::string formatJoinPlan(const std::vector<int>& path);
+        void pickCheapJoinByGroup(std::multimap<std::string, subPlan<B>>& plan_candidates);
+        void printCalculatedValues(const std::multimap<std::string, subPlan<B>> plan_candidates);
+        std::vector<subPlanWithKey<B>> formatJoinPlan(const std::vector<std::tuple<int, std::string, std::string>>& path);
         Operator<B>* createBushyJoinPlan(const std::string hamiltonianPath);
         std::string joinPredicates(const std::set<std::string>& predicates) {
             std::string result;
@@ -113,8 +119,12 @@ namespace vaultdb {
             return sorts;
         }
 
-        string addMemoizationKey(string lhsId, string rhsId) {
-            return "(" + lhsId + " JOIN " + rhsId + ")";
+        std::string addMemoizationKey(const std::string& lhsId, const std::string& rhsId) {
+            // Ensure consistent ordering by comparing the complete string lexicographically
+            if (lhsId.compare(rhsId) > 0)
+                return "(" + rhsId + " JOIN " + lhsId + ")";
+            else
+                return "(" + lhsId + " JOIN " + rhsId + ")";
         }
     };
 }
