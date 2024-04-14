@@ -170,22 +170,22 @@ runTest(1, expected_sort);
 }
 */
 
-TEST_F(SecureBushyPlanEnumerationTest, tpch_q3) {
+//TEST_F(SecureBushyPlanEnumerationTest, tpch_q3) {
+//
+//SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+//                             ColumnSort(1, SortDirection::DESCENDING),
+//                             ColumnSort(2, SortDirection::ASCENDING)};
+//runTest(3, expected_sort);
+//}
 
-SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                             ColumnSort(1, SortDirection::DESCENDING),
-                             ColumnSort(2, SortDirection::ASCENDING)};
-runTest(3, expected_sort);
-}
 
-/*
 TEST_F(SecureBushyPlanEnumerationTest, tpch_q5) {
 
 SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
 runTest(5, expected_sort);
 }
 
-
+/*
 TEST_F(SecureBushyPlanEnumerationTest, tpch_q8) {
 
 SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);

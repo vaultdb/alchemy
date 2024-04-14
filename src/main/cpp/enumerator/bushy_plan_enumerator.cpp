@@ -51,6 +51,7 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
     // find join pairs from the left deep tree, and store them in join_pairs_vector
     std::vector<JoinPair<B>> join_pairs;
     collectSQLInputsAndJoinPairs(left_deep_root_, join_pairs);
+    refineJoinPairs(join_pairs);
 
     // Step 2 : Add transitivity to the join_pairs_ and create join graph
     JoinGraph<B> joinGraph;
@@ -147,6 +148,127 @@ Operator<B> *BushyPlanEnumerator<B>::findJoinChildFromSqlInput(string join_predi
     }
     return nullptr;
 }
+
+template<typename B>
+void BushyPlanEnumerator<B>::refineJoinPairs(std::vector<JoinPair<B>>& join_pairs) {
+    std::vector<JoinPair<B>> refined_pairs;
+    std::vector<JoinPair<B>> new_pairs;
+
+    auto splitPredicates = [](const std::string& predicates) -> std::vector<std::string> {
+        std::vector<std::string> result;
+        size_t pos = 0;
+        std::string delimiter = " AND ";
+        std::string copyPredicates = predicates; // Create a copy to avoid modifying the original string
+
+        while ((pos = copyPredicates.find(delimiter)) != std::string::npos) {
+            std::string token = copyPredicates.substr(0, pos);
+            // Remove leading and trailing spaces
+            token.erase(0, token.find_first_not_of(" "));
+            token.erase(token.find_last_not_of(" ") + 1);
+            result.push_back(token);
+            copyPredicates.erase(0, pos + delimiter.length());
+        }
+        // Add the last element after parsing
+        std::string lastToken = copyPredicates;
+        lastToken.erase(0, lastToken.find_first_not_of(" "));
+        lastToken.erase(lastToken.find_last_not_of(" ") + 1);
+        if (!lastToken.empty()) {
+            result.push_back(lastToken);
+        }
+        return result;
+    };
+
+    for (auto& pair : join_pairs) {
+        std::vector<std::string> lhs_predicates = splitPredicates(pair.lhs_predicate);
+        std::vector<std::string> rhs_predicates = splitPredicates(pair.rhs_predicate);
+
+        assert(lhs_predicates.size() == rhs_predicates.size());
+        std::vector<std::pair<std::string, std::string>> predicatePairs;
+        for(int idx = 0; idx < lhs_predicates.size(); idx++)
+            predicatePairs.emplace_back(lhs_predicates[idx], rhs_predicates[idx]);
+
+
+        // Filter predicates based on schema
+        auto filterValidPredicates = [&](const std::vector<std::pair<std::string, std::string>>& predicatePairs, Operator<B>* lhs_op, Operator<B>* rhs_op) {
+            std::vector<std::pair<std::string, std::string>> validPairs;
+            std::vector<std::pair<std::string, std::string>> invalidPairs;
+
+            // Check pairs
+            for (const auto& pair : predicatePairs) {
+                const auto& lhs_predicate = pair.first;
+                const auto& rhs_predicate = pair.second;
+
+                bool lhs_valid = lhs_op->getOutputSchema().hasField(lhs_predicate);
+                bool rhs_valid = rhs_op->getOutputSchema().hasField(rhs_predicate);
+
+                if (lhs_valid && rhs_valid) {
+                    validPairs.push_back(pair);
+                } else {
+                    invalidPairs.push_back(pair);
+                }
+            }
+
+            std::multimap<std::string, std::vector<std::pair<std::string, std::string>>> classifiedPredicates;
+            classifiedPredicates.insert({"valid", validPairs});
+            classifiedPredicates.insert({"invalid", invalidPairs});
+
+            return classifiedPredicates;
+        };
+
+        // Filter predicates based on schema and classify them
+        std::multimap<std::string, std::vector<std::pair<std::string, std::string>>> classified = filterValidPredicates(predicatePairs, pair.lhs, pair.rhs);
+
+        // Extract valid and invalid predicates
+        auto invalid_predicates = classified.find("invalid")->second;
+
+        // If there are no invalid predicates, continue to the next pair
+        if(invalid_predicates.size() == 0){
+            refined_pairs.emplace_back(pair.lhs, pair.rhs, pair.lhs_predicate, pair.rhs_predicate);
+            continue;
+        }
+
+        auto valid_predicates = classified.find("valid")->second;
+
+        // Add refined pairs to the refined_pairs vector
+        if (!valid_predicates.empty()) {
+            // Rebuild the predicate strings
+            for (int idx = 0; idx < valid_predicates.size(); idx++) {
+                auto valid_pair = valid_predicates[idx];
+                if (idx == 0) {
+                    pair.lhs_predicate = valid_pair.first;
+                    pair.rhs_predicate = valid_pair.second;
+                } else {
+                    pair.lhs_predicate += " AND " + valid_pair.first;
+                    pair.rhs_predicate += " AND " + valid_pair.second;
+                }
+            }
+            refined_pairs.emplace_back(pair.lhs, pair.rhs, pair.lhs_predicate, pair.rhs_predicate);
+        }
+
+        for(int idx = 0; idx < invalid_predicates.size(); idx++){
+            Operator<B>* lhs = findJoinChildFromSqlInput(invalid_predicates[idx].first);
+            Operator<B>* rhs = findJoinChildFromSqlInput(invalid_predicates[idx].second);
+
+            // Create a new pair with the invalid predicates
+            new_pairs.emplace_back(lhs, rhs, invalid_predicates[idx].first, invalid_predicates[idx].second);
+        }
+    }
+
+    // Combine the original refined pairs with any new pairs formed
+    join_pairs = std::move(refined_pairs);
+    join_pairs.insert(join_pairs.end(), new_pairs.begin(), new_pairs.end());
+}
+
+template<typename B>
+std::string BushyPlanEnumerator<B>::joinString(const std::vector<std::string>& strings, const std::string& delimiter) {
+    std::string result;
+    for (const auto& str : strings) {
+        if (!result.empty()) result += delimiter;
+        result += str;
+    }
+    return result;
+}
+
 
 template<typename B>
 void BushyPlanEnumerator<B>::addTransitivity(std::vector<JoinPair<B>>& join_pairs, JoinGraph<B>& joinGraph) {
@@ -741,6 +863,12 @@ std::vector<subPlanWithKey<B>> BushyPlanEnumerator<B>::formatJoinPlan(const std:
 
         // Convert map to vector
         std::vector<subPlanWithKey<B>> final_candidates;
+
+        // Ensure the vector is large enough to accommodate the maximum_height index
+        if (maximum_height >= memoization_table_.size()) {
+            memoization_table_.resize(maximum_height + 1);
+        }
+
         for (auto &candidate: plan_candidates){
             final_candidates.push_back({candidate.first, candidate.second});
             memoization_table_[maximum_height].insert(std::make_pair(candidate.first, candidate.second));

@@ -68,6 +68,8 @@ namespace vaultdb {
 
         void collectSQLInputsAndJoinPairs(Operator<B> * op, std::vector<JoinPair<B>> &join_pairs);
         Operator<B>* findJoinChildFromSqlInput(string join_predicate);
+        void refineJoinPairs(std::vector<JoinPair<B>>& join_pairs);
+        std::string joinString(const std::vector<std::string>& strings, const std::string& delimiter);
         void addTransitivity(std::vector<JoinPair<B>>& join_pairs, JoinGraph<B>& joinGraph);
         void addTransitivePairs(Operator<B>* pair1, const string pair1_predicate, Operator<B>* pair2, const string pair2_predicate, const std::vector<std::string> commonConditions, std::vector<JoinPair<B>>& transitivePairs, JoinGraph<B>& joinGraph);
         std::vector<std::pair<int, int>> extractIntegers(const std::string& input);
