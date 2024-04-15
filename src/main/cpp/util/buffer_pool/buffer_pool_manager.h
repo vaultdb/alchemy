@@ -82,6 +82,8 @@ namespace vaultdb {
             return up;
         }
 
+        void flushPagesGivenTableId(int table_id) {}
+
 
 
         EmpManager *emp_manager_ = nullptr;
@@ -244,6 +246,38 @@ namespace vaultdb {
                 unpacked_page_buffer_pool_[getPageIdKey(unpacked_page.pid_)] = unpacked_page;
 
                 return unpacked_page;
+            }
+        }
+
+        void flushPagesGivenTableId(int table_id) {
+            for(auto it = unpacked_page_buffer_pool_.begin(); it != unpacked_page_buffer_pool_.end();) {
+                std::istringstream ss(it->first);
+                string table_id_str;
+                std::getline(ss, table_id_str, ',');
+
+                int id = std::stoi(table_id_str);
+
+                if(id == table_id) {
+                   unpacked_page_buffer_pool_.erase(it++);
+                }
+                else {
+                    ++it;
+                }
+            }
+
+            for(auto it = packed_page_buffer_pool_.begin(); it != packed_page_buffer_pool_.end();) {
+                std::istringstream ss(it->first);
+                string table_id_str;
+                std::getline(ss, table_id_str, ',');
+
+                int id = std::stoi(table_id_str);
+
+                if(id == table_id) {
+                    packed_page_buffer_pool_.erase(it++);
+                }
+                else {
+                    ++it;
+                }
             }
         }
 

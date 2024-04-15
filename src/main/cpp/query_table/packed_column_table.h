@@ -495,6 +495,13 @@ namespace vaultdb {
             }
         }
 
+        ~PackedColumnTable() {
+            if(bp_enabled_) {
+                // Flush pages in buffer pools
+                bpm_->flushPagesGivenTableId(this->table_id_);
+            }
+        }
+
     private:
         inline bool isMultiwire(const int & col_id) const {
             return blocks_per_field_.at(col_id) > 1;
