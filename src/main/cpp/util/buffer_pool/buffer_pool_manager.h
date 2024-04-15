@@ -84,6 +84,8 @@ namespace vaultdb {
 
         void flushPagesGivenTableId(int table_id) {}
 
+        void clonePage(PageId &src_pid, PageId &dst_pid) {}
+
 
 
         EmpManager *emp_manager_ = nullptr;
@@ -278,6 +280,39 @@ namespace vaultdb {
                 else {
                     ++it;
                 }
+            }
+        }
+
+        void clonePage(PageId &src_pid, PageId &dst_pid) {
+            if(!hasPage(src_pid)) {
+                cout << "src pid: " << getPageIdKey(src_pid) << endl;
+                throw std::runtime_error("Source page not found.");
+            }
+
+            if(hasPage(dst_pid)) {
+                throw std::runtime_error("Destination page already exists.");
+            }
+
+            if(hasPackedPage(src_pid)) {
+                PackedPage src_page = packed_page_buffer_pool_[getPageIdKey(src_pid)];
+                PackedPage dst_page;
+                dst_page.pid_ = dst_pid;
+                dst_page.page_payload_ = src_page.page_payload_;
+                dst_page.access_counters_ = src_page.access_counters_;
+                packed_page_buffer_pool_[getPageIdKey(dst_pid)] = dst_page;
+            }
+            else {
+                UnpackedPage src_page = unpacked_page_buffer_pool_[getPageIdKey(src_pid)];
+                src_page.pined = true;
+                unpacked_page_buffer_pool_[getPageIdKey(src_pid)] = src_page;
+
+                UnpackedPage dst_page = getUnpackedPage(dst_pid);
+                dst_page.page_payload_ = src_page.page_payload_;
+                dst_page.access_counters_ = src_page.access_counters_;
+                unpacked_page_buffer_pool_[getPageIdKey(dst_pid)] = dst_page;
+
+                src_page.pined = false;
+                unpacked_page_buffer_pool_[getPageIdKey(src_pid)] = src_page;
             }
         }
 

@@ -436,8 +436,6 @@ namespace vaultdb {
         void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<Bit> *src, const int & src_col, const int & src_row = 0) override {
             assert(src->getSchema().getField(src_col) == this->getSchema().getField(dst_col));
 
-
-            // how many wires do we need to write?
             int rows_to_cp = src->tuple_cnt_ - src_row;
             if(rows_to_cp > (this->tuple_cnt_ - dst_row)) {
                 rows_to_cp = this->tuple_cnt_ - dst_row; // truncate to our available slots
@@ -446,13 +444,27 @@ namespace vaultdb {
             int read_cursor = src_row;
             int write_cursor = dst_row;
 
-            // simple approach for now: simply call getField and setField for each entry
-            // TODO: optimize this later
-            for(int i = 0; i < rows_to_cp; ++i) {
-                auto f = src->getField(read_cursor, src_col);
-                this->setField(write_cursor, dst_col, f);
-                ++read_cursor;
-                ++write_cursor;
+            if(bp_enabled_) {
+                PackedColumnTable *src_table = (PackedColumnTable *) src;
+
+                for (int i = 0; i < rows_to_cp; i = i + src_table->fields_per_wire_.at(src_col)) {
+                    BufferPoolManager::PageId src_pid = bpm_->getPageId(src_table->table_id_, src_col,
+                                                                        read_cursor,
+                                                                        src_table->fields_per_wire_.at(src_col));
+                    BufferPoolManager::PageId dst_pid = bpm_->getPageId(table_id_, dst_col, write_cursor,
+                                                                        fields_per_wire_.at(dst_col));
+                    bpm_->clonePage(src_pid, dst_pid);
+                    read_cursor += src_table->fields_per_wire_.at(src_col);
+                    write_cursor += fields_per_wire_.at(dst_col);
+                }
+            }
+            else {
+                for(int i = 0; i < rows_to_cp; ++i) {
+                    auto f = src->getField(read_cursor, src_col);
+                    this->setField(write_cursor, dst_col, f);
+                    ++read_cursor;
+                    ++write_cursor;
+                }
             }
 
         }
