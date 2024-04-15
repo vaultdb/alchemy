@@ -70,9 +70,20 @@ namespace vaultdb {
             if(src.tuple_cnt_ == 0)
                 return;
 
-            table_id_ = src.table_id_;
+            table_id_ = SystemConfiguration::getInstance().num_tables_++;
 
             if(!bp_enabled_) {
+                PackedColumnTable *src_table = (PackedColumnTable *) &src;
+
+                for(int i = 0; i < src_table->getSchema().getFieldCount(); ++i) {
+                    for(int j = 0; j < src_table->tuple_cnt_; j = j + src_table->fields_per_wire_.at(i)) {
+                        BufferPoolManager::PageId src_pid = bpm_->getPageId(src_table->table_id_, i, j, src_table->fields_per_wire_.at(i));
+                        BufferPoolManager::PageId dst_pid = bpm_->getPageId(table_id_, i, j, fields_per_wire_.at(i));
+                        bpm_->clonePage(src_pid, dst_pid);
+                    }
+                }
+            }
+            else {
                 for (int i = 0; i < schema_.getFieldCount(); ++i) {
                     int wires_cnt = isMultiwire(i) ? tuple_cnt_ : (tuple_cnt_ / fields_per_wire_.at(i) +
                                                                    (tuple_cnt_ % fields_per_wire_.at(i) != 0));

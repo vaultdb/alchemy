@@ -285,8 +285,7 @@ namespace vaultdb {
 
         void clonePage(PageId &src_pid, PageId &dst_pid) {
             if(!hasPage(src_pid)) {
-                cout << "src pid: " << getPageIdKey(src_pid) << endl;
-                throw std::runtime_error("Source page not found.");
+                throw std::runtime_error("Source page not found for pid: " + getPageIdKey(src_pid));
             }
 
             if(hasPage(dst_pid)) {
