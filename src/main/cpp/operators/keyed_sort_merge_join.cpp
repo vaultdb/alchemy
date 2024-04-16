@@ -366,7 +366,15 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionTables(QueryTable<B> *lhs, QueryTable
 
     // always FK --> PK
     // TODO: add conditional so we only reshuffle columns for smaller relation
+    SystemConfiguration *sys_conf = &SystemConfiguration::getInstance();
     int cursor = 0;
+    // Initialize non-key columns in unioned to make sure we have pages in the buffer pool.
+    if(sys_conf->bp_enabled_) {
+        for(int i = join_idxs_.size(); i < unioned->getSchema().getFieldCount(); ++i) {
+            unioned->cloneColumn(i, -1, unioned, i);
+        }
+    }
+
     for(int i = lhs->tuple_cnt_ - 1; i >= 0; --i) {
         auto r = lhs->serializeRow(i);
         unioned->deserializeRow(cursor, r);

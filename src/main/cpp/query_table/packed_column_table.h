@@ -72,10 +72,10 @@ namespace vaultdb {
 
             table_id_ = SystemConfiguration::getInstance().num_tables_++;
 
-            if(!bp_enabled_) {
+            if(bp_enabled_) {
                 PackedColumnTable *src_table = (PackedColumnTable *) &src;
 
-                for(int i = 0; i < src_table->getSchema().getFieldCount(); ++i) {
+                for(int i = -1; i < src_table->getSchema().getFieldCount(); ++i) {
                     for(int j = 0; j < src_table->tuple_cnt_; j = j + src_table->fields_per_wire_.at(i)) {
                         BufferPoolManager::PageId src_pid = bpm_->getPageId(src_table->table_id_, i, j, src_table->fields_per_wire_.at(i));
                         BufferPoolManager::PageId dst_pid = bpm_->getPageId(table_id_, i, j, fields_per_wire_.at(i));
@@ -211,23 +211,19 @@ namespace vaultdb {
             tuple_size_bytes_ += field_size_bytes;
             field_sizes_bytes_[ordinal] = field_size_bytes;
 
-            int packed_blocks;
-            int field_packed_size_bytes;
-            if(desc.size() / 128 > 0) {
-                packed_blocks = desc.size() / 128 + (desc.size() % 128 != 0);
-                field_packed_size_bytes = (1 + 2 * packed_blocks) * block_byte_size_;
+            int size_threshold = bp_enabled_ ? bpm_->unpacked_page_size_ : 128;
+            int packed_blocks = desc.size() / size_threshold + (desc.size() % size_threshold != 0);
 
+            if(desc.size() / size_threshold > 0) {
                 fields_per_wire_[ordinal] = 1;
                 blocks_per_field_[ordinal] = packed_blocks;
             }
             else {
-                packed_blocks = 1;
-                field_packed_size_bytes = 3 * block_byte_size_;
-
-                fields_per_wire_[ordinal] = 128 / desc.size();
+                fields_per_wire_[ordinal] = size_threshold / desc.size();
                 blocks_per_field_[ordinal] = 1;
             }
 
+            int field_packed_size_bytes = (1 + 2 * packed_blocks) * block_byte_size_;
             tuple_packed_size_bytes_ += field_packed_size_bytes;
             field_packed_sizes_bytes_[ordinal] = field_packed_size_bytes;
 
@@ -240,7 +236,8 @@ namespace vaultdb {
                                                                                   emp::Bit(0));
             }
             else {
-                throw; // NYI
+                // TODO: check if we need to create empty pages for the new column
+                cloneColumn(ordinal, -1, this, ordinal);
             }
         }
 
@@ -278,7 +275,34 @@ namespace vaultdb {
                 }
             }
             else {
-                throw; // NYI
+                // TODO: check if we need to add or remove pages at this point
+                for(int i = 0; i < schema_.getFieldCount(); ++i) {
+                    int fields_per_wire = fields_per_wire_.at(i);
+
+                    if(this->tuple_cnt_ > old_tuple_cnt) {
+                        cout << "new table large\n";
+                        int old_pos_in_last_page = old_tuple_cnt % fields_per_wire;
+
+                        if(this->tuple_cnt_ - old_tuple_cnt > fields_per_wire - old_pos_in_last_page - 1) {
+                            int rows_to_add = (this->tuple_cnt_ - old_tuple_cnt) - (fields_per_wire - old_pos_in_last_page - 1);
+
+                            int pages_to_add = rows_to_add / fields_per_wire + ((rows_to_add % fields_per_wire) != 0);
+                            bpm_->addConsecutivePages(table_id_, i, old_tuple_cnt + fields_per_wire - old_pos_in_last_page, pages_to_add, fields_per_wire);
+
+                        }
+                    }
+                    else{
+                        cout << "old table large\n";
+                        int new_pos_in_last_page = this->tuple_cnt_ % fields_per_wire;
+
+                        if(old_tuple_cnt - this->tuple_cnt_ > fields_per_wire - new_pos_in_last_page - 1) {
+                            int rows_to_remove = (old_tuple_cnt - this->tuple_cnt_) - (fields_per_wire - new_pos_in_last_page - 1);
+
+                            int pages_to_remove = rows_to_remove / fields_per_wire + ((rows_to_remove % fields_per_wire) != 0);
+                            bpm_->removeConsecutivePages(table_id_, i, this->tuple_cnt_ + fields_per_wire - new_pos_in_last_page, pages_to_remove, fields_per_wire);
+                        }
+                    }
+                }
             }
         }
 
@@ -447,6 +471,13 @@ namespace vaultdb {
         void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<Bit> *src, const int & src_col, const int & src_row = 0) override {
             assert(src->getSchema().getField(src_col) == this->getSchema().getField(dst_col));
 
+            // if dst_row == -1, we initialize the column with zero based on src schema.
+            if(dst_row == -1) {
+                PackedColumnTable *src_table = (PackedColumnTable *) src;
+                bpm_->initializeColumnPages(table_id_, dst_col, src_table->tuple_cnt_, src_table->fields_per_wire_.at(src_col));
+                return;
+            }
+
             int rows_to_cp = src->tuple_cnt_ - src_row;
             if(rows_to_cp > (this->tuple_cnt_ - dst_row)) {
                 rows_to_cp = this->tuple_cnt_ - dst_row; // truncate to our available slots
@@ -498,7 +529,10 @@ namespace vaultdb {
                 memcpy(dst_arr.data(), src.data() + cursor, to_read);
                 Field<Bit> dst_field = Field<Bit>::deserialize(this->schema_.getField(write_idx), dst_arr.data());
                 setField(row, write_idx, dst_field);
-                packColumn(write_idx);
+
+                if(!bp_enabled_) {
+                    packColumn(write_idx);
+                }
 
                 cursor += to_read;
                 ++write_idx;

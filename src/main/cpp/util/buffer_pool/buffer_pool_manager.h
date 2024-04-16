@@ -86,6 +86,12 @@ namespace vaultdb {
 
         void clonePage(PageId &src_pid, PageId &dst_pid) {}
 
+        void initializeColumnPages(int table_id, int col_idx, int tuple_cnt, int rows_per_page) {}
+
+        void removeConsecutivePages(int table_id, int col_idx, int start_row_idx, int pages_to_remove, int rows_per_page) {}
+
+        void addConsecutivePages(int table_id, int col_idx, int start_row_idx, int pages_to_add, int rows_per_page) {}
+
 
 
         EmpManager *emp_manager_ = nullptr;
@@ -289,7 +295,7 @@ namespace vaultdb {
             }
 
             if(hasPage(dst_pid)) {
-                throw std::runtime_error("Destination page already exists.");
+                throw std::runtime_error("Destination page already exists: " + getPageIdKey(src_pid));
             }
 
             if(hasPackedPage(src_pid)) {
@@ -312,6 +318,39 @@ namespace vaultdb {
 
                 src_page.pined = false;
                 unpacked_page_buffer_pool_[getPageIdKey(src_pid)] = src_page;
+            }
+        }
+
+        void initializeColumnPages(int table_id, int col_idx, int tuple_cnt, int rows_per_page) {
+            for(int i = 0; i < tuple_cnt; i += rows_per_page) {
+                PageId pid = getPageId(table_id, col_idx, i, rows_per_page);
+                UnpackedPage up = getUnpackedPage(pid);
+                // TODO: pin the pages if necessary
+            }
+        }
+
+        void removeConsecutivePages(int table_id, int col_idx, int start_row_idx, int pages_to_remove, int rows_per_page) {
+            for(int i = 0; i < pages_to_remove; ++i) {
+                PageId pid = {table_id, col_idx, start_row_idx + i * rows_per_page, start_row_idx + (i + 1) * rows_per_page - 1};
+
+                if(!hasPage(pid)) {
+                    throw std::runtime_error("Page not found for pid: " + getPageIdKey(pid));
+                }
+
+                if(hasUnpackedPage(pid)) {
+                    unpacked_page_buffer_pool_.erase(getPageIdKey(pid));
+                }
+                else {
+                    packed_page_buffer_pool_.erase(getPageIdKey(pid));
+                }
+            }
+        }
+
+        void addConsecutivePages(int table_id, int col_idx, int start_row_idx, int pages_to_add, int rows_per_page) {
+            for(int i = 0; i < pages_to_add; ++i) {
+                PageId pid = {table_id, col_idx, start_row_idx + i * rows_per_page, start_row_idx + (i + 1) * rows_per_page - 1};
+                UnpackedPage up = getUnpackedPage(pid);
+                // TODO: pin the pages if necessary
             }
         }
 
