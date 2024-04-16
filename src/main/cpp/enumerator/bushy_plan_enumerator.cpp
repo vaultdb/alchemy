@@ -57,20 +57,24 @@ void BushyPlanEnumerator<B>::createBushyBalancedTree() {
     JoinGraph<B> joinGraph;
     addTransitivity(join_pairs, joinGraph);
 
-    // Step 3 : Calcuate join cost for each join pair
+    // Step 3 : Construct all_predicates_ to track join predicates
+    for (auto& pair : join_pairs)
+        insertPredicate(pair);
+
+    // Step 4 : Calcuate join cost for each join pair
     calculateCostsforJoinPairs(join_pairs);
     printCalculatedValues(memoization_table_[0]);
 
-    // Step 4 : group join pairs by their output sort order in memoization_table_[0]
+    // Step 5 : group join pairs by their output sort order in memoization_table_[0]
     pickCheapJoinByGroup(0);
 
     std::cout << "After picking cheap join by group" << std::endl;
     printCalculatedValues(memoization_table_[0]);
 
-    // Step 5 : Find all paths from join graph.
+    // Step 6 : Find all paths from join graph.
     std::vector<string> hamiltonian_paths = joinGraph.findHamiltonianPaths();
 
-    // Step 6 : Iterate hamiltonian path and create bushy plan
+    // Step 7 : Iterate hamiltonian path and create bushy plan
     // Prune the paths that are the same bushy plan (i.e., rhs lhs swapped)
 
     // If there are no hamiltonian paths, then bushy plan is not possible
@@ -320,8 +324,8 @@ void BushyPlanEnumerator<B>::addTransitivity(std::vector<JoinPair<B>>& join_pair
                                   std::back_inserter(commonConditions));
 
             if (!commonConditions.empty()) {
-                bool pair1_overlapped = (pair1.lhs_predicate == commonConditions[0]);
-                bool pair2_overlapped = (pair2.lhs_predicate == commonConditions[0]);
+                bool pair1_overlapped = (pair1.lhs_predicate.find(commonConditions[0]) != std::string::npos);
+                bool pair2_overlapped = (pair2.lhs_predicate.find(commonConditions[0]) != std::string::npos);
 
                 // pair1.lhs, pair2.lhs are overlapped.
                 if(pair1_overlapped && pair2_overlapped){
@@ -424,6 +428,42 @@ void BushyPlanEnumerator<B>::addTransitivePairs(Operator<B>* pair1, const string
 
     // Add to the list of transitive pairs
     transitivePairs.push_back(JoinPair<B>{pair1, pair2, joinPredicates(pair1_predicate_sets), joinPredicates(pair2_predicate_sets)});
+}
+
+template<typename B>
+void BushyPlanEnumerator<B>::insertPredicate(const JoinPair<B> &joinpair) {
+    int fromIndex = -1, toIndex = -1;
+    pair<int, string> from = {joinpair.lhs->getOperatorId(), joinpair.lhs_predicate};
+    pair<int, string> to = {joinpair.rhs->getOperatorId(), joinpair.rhs_predicate};
+
+    for (int i = 0; i < all_predicates_.size(); ++i) {
+        if (all_predicates_[i].contains(from)) {
+            fromIndex = i;
+        }
+        if (all_predicates_[i].contains(to)) {
+            toIndex = i;
+        }
+    }
+
+    if (fromIndex != -1 && toIndex != -1) {
+        if (fromIndex != toIndex) {
+            auto& fromGroup = all_predicates_[fromIndex];
+            auto& toGroup = all_predicates_[toIndex];
+            for (auto& p : toGroup.predicates) {
+                fromGroup.addPredicate(p);
+            }
+            all_predicates_.erase(all_predicates_.begin() + toIndex);
+        }
+    } else if (fromIndex != -1) {
+        all_predicates_[fromIndex].addPredicate(to);
+    } else if (toIndex != -1) {
+        all_predicates_[toIndex].addPredicate(from);
+    } else {
+        JoinPredicate<B> newGroup;
+        newGroup.addPredicate(from);
+        newGroup.addPredicate(to);
+        all_predicates_.push_back(newGroup);
+    }
 }
 
 template<typename B>
@@ -692,6 +732,10 @@ Operator<B>* BushyPlanEnumerator<B>::createBushyJoinPlan(const std::string hamil
     std::regex pathRegex(R"((\d+)\s*(?:\{\s*([^,]*),\s*([^}]*)\})?)"); // Matches "id" and optionally "{predicate_from, predicate_to}"
     std::smatch match;
 
+    std::vector<JoinPredicate<B>> missing_predicates = all_predicates_;
+    int prev_opId = -1;
+    std::string prev_from_predicate, prev_to_predicate;
+
     // Process each segment split by '-'
     while (std::getline(iss, token, '-')) {
         // Trim whitespace
@@ -703,10 +747,37 @@ Operator<B>* BushyPlanEnumerator<B>::createBushyJoinPlan(const std::string hamil
             std::string fromPredicate = match.size() > 2 && !match[2].str().empty() ? match[2].str() : "N/A";
             std::string toPredicate = match.size() > 3 && !match[3].str().empty() ? match[3].str() : "N/A";
             path.emplace_back(operatorId, fromPredicate, toPredicate);
+
+            // If this is not the first operator, process the predicates
+            if (prev_opId != -1) {
+                auto from = std::make_pair(prev_opId, prev_from_predicate);
+                auto to = std::make_pair(operatorId, prev_to_predicate);
+
+                // Check if the predicates are in the missing predicates list and remove them
+                auto it = std::find_if(missing_predicates.begin(), missing_predicates.end(),
+                                       [&](const JoinPredicate<B>& jp) {
+                                           return jp.contains(from) || jp.contains(to);
+                                       });
+                if (it != missing_predicates.end()) {
+                    it->removePredicate(from);
+                    it->removePredicate(to);
+                    if (it->predicates.empty()) {
+                        missing_predicates.erase(it); // Remove the group if it's empty
+                    }
+                }
+            }
+
+            prev_opId = operatorId;
+            prev_from_predicate = fromPredicate;
+            prev_to_predicate = toPredicate;
         }
     }
 
-    std::vector<subPlanWithKey<B>> plans = formatJoinPlan(path);
+    bool isMissingPredicates = !missing_predicates.empty();
+    missing_predicates_ = missing_predicates;
+
+    // Evaluate the cheapest bushy plan for the given path
+    std::vector<subPlanWithKey<B>> plans = formatJoinPlan(path, isMissingPredicates);
     Operator<B>* cheapest_plan = nullptr;
     size_t min_cost = std::numeric_limits<size_t>::max();
     for(auto it : plans){
@@ -719,7 +790,7 @@ Operator<B>* BushyPlanEnumerator<B>::createBushyJoinPlan(const std::string hamil
 }
 
 template<typename B>
-std::vector<subPlanWithKey<B>> BushyPlanEnumerator<B>::formatJoinPlan(const std::vector<std::tuple<int, std::string, std::string>>& path) {
+std::vector<subPlanWithKey<B>> BushyPlanEnumerator<B>::formatJoinPlan(const std::vector<std::tuple<int, std::string, std::string>>& path, const bool isMissingPredicates) {
     if (path.size() == 1) {
         std::vector<Operator<B> *> ops = findEntriesWithPrefix(std::get<0>(path[0]));
         std::vector<subPlanWithKey<B>> result;
@@ -755,12 +826,17 @@ std::vector<subPlanWithKey<B>> BushyPlanEnumerator<B>::formatJoinPlan(const std:
         string join_predicate_1 = std::get<1>(left.back());
         string join_predicate_2 = std::get<2>(left.back());
 
-        auto left_candidates = formatJoinPlan(left);
+        auto left_candidates = formatJoinPlan(left, isMissingPredicates);
         auto right_candidates = formatJoinPlan(
-                std::vector<std::tuple<int, std::string, std::string>>(path.begin() + mid, path.end()));
+                std::vector<std::tuple<int, std::string, std::string>>(path.begin() + mid, path.end()), isMissingPredicates);
 
         std::multimap<std::string, subPlan<B>> plan_candidates;
         int maximum_height;
+
+        // If there are missing predicates, checks if it possible to add current join, if yes, add it to the join_predicate
+        if(isMissingPredicates)
+            addMissingPredicatesToJoin(join_predicate_1, join_predicate_2, left_candidates[0].key, right_candidates[0].key);
+
         // Evaluate all combinations of joins
         for (auto &left: left_candidates) {
             QuerySchema lhs_schema = left.plan.join->getOutputSchema();
@@ -808,6 +884,7 @@ std::vector<subPlanWithKey<B>> BushyPlanEnumerator<B>::formatJoinPlan(const std:
 
                     string memoization_key = addMemoizationKey(left.key, right.key);
 
+                    std::cout << "JOIN calculated values" << std::endl;
                     std::cout << memoization_key << std::endl;
 
                     // SMJ(lhs, rhs)
@@ -876,6 +953,51 @@ std::vector<subPlanWithKey<B>> BushyPlanEnumerator<B>::formatJoinPlan(const std:
         return final_candidates;
     }
 }
+
+template<typename B>
+void BushyPlanEnumerator<B>::addMissingPredicatesToJoin(std::string& join_predicate_1, std::string& join_predicate_2, const std::string& left_key, const std::string& right_key) {
+    // Helper function to extract numbers from complex nested joins
+    auto extractIds = [](const std::string& key) {
+        std::vector<int> ids;
+        std::regex regex("\\d+");
+        std::sregex_iterator it(key.begin(), key.end(), regex);
+        std::sregex_iterator end;
+        while (it != end) {
+            ids.push_back(std::stoi((*it).str()));
+            ++it;
+        }
+        return ids;
+    };
+
+    // Extract operator IDs from both keys
+    auto left_ids = extractIds(left_key);
+    auto right_ids = extractIds(right_key);
+    std::set<int> left_ids_set(left_ids.begin(), left_ids.end());
+    std::set<int> right_ids_set(right_ids.begin(), right_ids.end());
+
+    // Check each missing predicate
+    for (const auto& predicate_group : missing_predicates_) {
+        int left_id = -1;
+        string left_predicate;
+        for (int idx = 0; idx < predicate_group.predicates.size(); idx++) {
+            if(idx != 0) {
+                // Check if the predicate operator ID is in either left or right keys
+                if (left_ids_set.count(left_id) && right_ids_set.count(predicate_group.predicates[idx].first)) {
+                    // Predicate matches with IDs on left and right
+                    join_predicate_1 += " AND " + left_predicate;
+                    join_predicate_2 += " AND " + predicate_group.predicates[idx].second;
+                } else if (right_ids_set.count(left_id) && left_ids_set.count(predicate_group.predicates[idx].first)) {
+                    // Predicate matches with IDs on right and left (reversed)
+                    join_predicate_1 += " AND " + predicate_group.predicates[idx].second;
+                    join_predicate_2 += " AND " + left_predicate;
+                }
+            }
+            left_id = predicate_group.predicates[idx].first;
+            left_predicate = predicate_group.predicates[idx].second;
+        }
+    }
+}
+
 
 template<typename B>
 void BushyPlanEnumerator<B>::printCalculatedValues(const std::multimap<std::string, subPlan<B>> plan_candidates) {
