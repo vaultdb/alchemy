@@ -225,11 +225,25 @@ double Operator<B>::planRuntime() const {
 }
 
 template<typename B>
-std::string Operator<B>::getOutputOrderinString() const{
+std::string Operator<B>::getOutputOrderinString(bool order_by_first_collation_) const{
     QuerySchema output_schema = getOutputSchema();
     SortDefinition output_order = getSortOrder();
     std::string output_order_str = "";
     std::set<std::string> included_suffixes;
+
+    if (order_by_first_collation_ && !output_order.empty()) {
+        const auto& first_sort = output_order[1];
+        if (first_sort.first != -1) {
+            std::string first_column_name = output_schema.fields_[first_sort.first].getName();
+            auto pos = first_column_name.find_last_of('_');
+            std::string first_suffix = (pos != std::string::npos) ? first_column_name.substr(pos + 1) : first_column_name;
+
+            output_order_str += first_suffix;
+            if (first_sort.second == SortDirection::DESCENDING)
+                output_order_str += " DESC";
+        }
+        return output_order_str;
+    }
 
     if (output_order.empty())
         output_order_str = "unordered";

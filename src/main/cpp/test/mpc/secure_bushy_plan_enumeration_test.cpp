@@ -79,7 +79,7 @@ SecureBushyPlanEnumerationTest::runTest(const int &test_id, const SortDefinition
     //root = parser.optimizeTree();
     //PlanOptimizer<Bit> optimizer(root, parser.getOperatorMap(), parser.getSupportOps(), parser.getInterestingSortOrders());
 
-    BushyPlanEnumerator<Bit> enumerator(root, parser.getOperatorMap(), parser.getSupportOps(), parser.getInterestingSortOrders());
+    BushyPlanEnumerator<Bit> enumerator(root, parser.getOperatorMap(), parser.getSupportOps(), parser.getInterestingSortOrders(), true);
     enumerator.createBushyBalancedTree();
 
     std::cout << "Minimal Bushy Plan : " << endl;
@@ -170,28 +170,28 @@ runTest(1, expected_sort);
 }
 */
 
-//TEST_F(SecureBushyPlanEnumerationTest, tpch_q3) {
+TEST_F(SecureBushyPlanEnumerationTest, tpch_q3) {
+
+SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                             ColumnSort(1, SortDirection::DESCENDING),
+                             ColumnSort(2, SortDirection::ASCENDING)};
+runTest(3, expected_sort);
+}
+
+
+//TEST_F(SecureBushyPlanEnumerationTest, tpch_q5) {
 //
-//SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-//                             ColumnSort(1, SortDirection::DESCENDING),
-//                             ColumnSort(2, SortDirection::ASCENDING)};
-//runTest(3, expected_sort);
+//SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+//runTest(5, expected_sort);
 //}
 
 
-TEST_F(SecureBushyPlanEnumerationTest, tpch_q5) {
+//TEST_F(SecureBushyPlanEnumerationTest, tpch_q8) {
+//
+//SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+//runTest(8, expected_sort);
+//}
 
-SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-runTest(5, expected_sort);
-}
-
-/*
-TEST_F(SecureBushyPlanEnumerationTest, tpch_q8) {
-
-SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-runTest(8, expected_sort);
-}
-*/
 
 
 TEST_F(SecureBushyPlanEnumerationTest, tpch_q9) {

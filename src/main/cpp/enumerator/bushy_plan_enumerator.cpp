@@ -34,7 +34,7 @@ using boost::property_tree::ptree;
 using namespace Logging;
 
 template<typename B>
-BushyPlanEnumerator<B>::BushyPlanEnumerator(Operator<B> * left_deep_root, map<int, Operator<B> * > operators, vector<Operator<B> * > support_ops, map<int, vector<SortDefinition>> interesting_orders){
+BushyPlanEnumerator<B>::BushyPlanEnumerator(Operator<B> * left_deep_root, map<int, Operator<B> * > operators, vector<Operator<B> * > support_ops, map<int, vector<SortDefinition>> interesting_orders, bool order_by_first_collation){
     left_deep_root_ = left_deep_root;
     left_deep_root_->setParent(nullptr);
     operators_ = operators;
@@ -42,6 +42,7 @@ BushyPlanEnumerator<B>::BushyPlanEnumerator(Operator<B> * left_deep_root, map<in
     interesting_sort_orders_ = interesting_orders;
     memoization_table_.resize(2);
     next_op_id_ = operators.size();
+    order_by_first_collation_ = order_by_first_collation;
 }
 
 template<typename B>
@@ -509,13 +510,13 @@ void BushyPlanEnumerator<B>::calculateCostsforJoinPairs(std::vector<JoinPair<B>>
                     KeyedSortMergeJoin<B> *smj = new KeyedSortMergeJoin<B>(lhs_sort_before_join, rhs_sort_before_join, fk_id, join_condition->clone());
                     smj->setOperatorId(next_op_id_);
                     // Insert cost of smj to memoization_table_
-                    memoization_table_[0].insert(std::make_pair(memoization_key, subPlan<B>{smj, smj->planCost(), smj->getOutputOrderinString(), 1}));
+                    memoization_table_[0].insert(std::make_pair(memoization_key, subPlan<B>{smj, smj->planCost(), smj->getOutputOrderinString(order_by_first_collation_), 1}));
 
                     // NLJ(lhs, rhs)
                     KeyedJoin<B> *nlj = new KeyedJoin<B>(lhs_sort_before_join->clone(), rhs_sort_before_join->clone(), fk_id, join_condition->clone());
                     nlj->setOperatorId(next_op_id_);
                     // Insert cost of nlj to memoization_table_
-                    memoization_table_[0].insert(std::make_pair(memoization_key, subPlan<B>{nlj, nlj->planCost(), nlj->getOutputOrderinString(), 1}));
+                    memoization_table_[0].insert(std::make_pair(memoization_key, subPlan<B>{nlj, nlj->planCost(), nlj->getOutputOrderinString(order_by_first_collation_), 1}));
 
                     fk_id = 1 - fk_id;
 
@@ -523,13 +524,13 @@ void BushyPlanEnumerator<B>::calculateCostsforJoinPairs(std::vector<JoinPair<B>>
                     KeyedSortMergeJoin<B> *smj_swapped = new KeyedSortMergeJoin<B>(rhs_sort_before_join->clone(), lhs_sort_before_join->clone(), fk_id, swapped_join_condition->clone());
                     smj_swapped->setOperatorId(next_op_id_);
                     // Insert cost of smj to memoization_table_
-                    memoization_table_[0].insert(std::make_pair(memoization_key, subPlan<B>{smj_swapped, smj_swapped->planCost(), smj_swapped->getOutputOrderinString(), 1}));
+                    memoization_table_[0].insert(std::make_pair(memoization_key, subPlan<B>{smj_swapped, smj_swapped->planCost(), smj_swapped->getOutputOrderinString(order_by_first_collation_), 1}));
 
                     // NLJ(rhs, lhs)
                     KeyedJoin<B> *nlj_swapped = new KeyedJoin<B>(rhs_sort_before_join->clone(), lhs_sort_before_join->clone(), fk_id, swapped_join_condition->clone());
                     nlj_swapped->setOperatorId(next_op_id_);
                     // Insert cost of nlj to memoization_table_
-                    memoization_table_[0].insert(std::make_pair(memoization_key, subPlan<B>{nlj_swapped, nlj_swapped->planCost(),nlj_swapped->getOutputOrderinString(), 1}));
+                    memoization_table_[0].insert(std::make_pair(memoization_key, subPlan<B>{nlj_swapped, nlj_swapped->planCost(),nlj_swapped->getOutputOrderinString(order_by_first_collation_), 1}));
                 }
             }
         }
@@ -795,7 +796,7 @@ std::vector<subPlanWithKey<B>> BushyPlanEnumerator<B>::formatJoinPlan(const std:
         std::vector<Operator<B> *> ops = findEntriesWithPrefix(std::get<0>(path[0]));
         std::vector<subPlanWithKey<B>> result;
         for (auto op: ops) {
-            subPlan<B> plan = {op, 0, op->getOutputOrderinString(), 0};
+            subPlan<B> plan = {op, 0, op->getOutputOrderinString(order_by_first_collation_), 0};
             result.push_back({std::to_string(op->getOperatorId()), plan});
         }
         return result;
@@ -893,7 +894,7 @@ std::vector<subPlanWithKey<B>> BushyPlanEnumerator<B>::formatJoinPlan(const std:
                     smj->setOperatorId(next_op_id_);
                     // Insert cost of smj to memoization_table_
                     plan_candidates.insert(std::make_pair(memoization_key, subPlan<B>{smj, smj->planCost(),
-                                                                                      smj->getOutputOrderinString(),
+                                                                                      smj->getOutputOrderinString(order_by_first_collation_),
                                                                                       maximum_height + 1}));
 
                     // NLJ(lhs, rhs)
@@ -902,7 +903,7 @@ std::vector<subPlanWithKey<B>> BushyPlanEnumerator<B>::formatJoinPlan(const std:
                     nlj->setOperatorId(next_op_id_);
                     // Insert cost of nlj to memoization_table_
                     plan_candidates.insert(std::make_pair(memoization_key, subPlan<B>{nlj, nlj->planCost(),
-                                                                                      nlj->getOutputOrderinString(),
+                                                                                      nlj->getOutputOrderinString(order_by_first_collation_),
                                                                                       maximum_height + 1}));
 
                     fk_id = 1 - fk_id;
@@ -915,7 +916,7 @@ std::vector<subPlanWithKey<B>> BushyPlanEnumerator<B>::formatJoinPlan(const std:
                     // Insert cost of smj to memoization_table_
                     plan_candidates.insert(std::make_pair(memoization_key,
                                                           subPlan<B>{smj_swapped, smj_swapped->planCost(),
-                                                                     smj_swapped->getOutputOrderinString(),
+                                                                     smj_swapped->getOutputOrderinString(order_by_first_collation_),
                                                                      maximum_height + 1}));
 
                     // NLJ(rhs, lhs)
@@ -926,7 +927,7 @@ std::vector<subPlanWithKey<B>> BushyPlanEnumerator<B>::formatJoinPlan(const std:
                     // Insert cost of nlj to memoization_table_
                     plan_candidates.insert(std::make_pair(memoization_key,
                                                           subPlan<B>{nlj_swapped, nlj_swapped->planCost(),
-                                                                     nlj_swapped->getOutputOrderinString(),
+                                                                     nlj_swapped->getOutputOrderinString(order_by_first_collation_),
                                                                      maximum_height + 1}));
                 }
             }

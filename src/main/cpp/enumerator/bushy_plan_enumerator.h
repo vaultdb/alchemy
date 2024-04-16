@@ -78,7 +78,7 @@ namespace vaultdb {
         std::vector<JoinPredicate<B>> all_predicates_;
         std::vector<JoinPredicate<B>> missing_predicates_;
 
-        BushyPlanEnumerator(Operator<B> * root, std::map<int, Operator<B> * > operators, std::vector<Operator<B> * > support_ops, map<int, vector<SortDefinition>> interesting_orders);
+        BushyPlanEnumerator(Operator<B> * root, std::map<int, Operator<B> * > operators, std::vector<Operator<B> * > support_ops, map<int, vector<SortDefinition>> interesting_orders, bool order_by_first_collation);
 
         Operator<B> *getRoot() const { return left_deep_root_; }
         Operator<B> *getOperator(const int &op_id);
@@ -88,6 +88,7 @@ namespace vaultdb {
         void createBushyBalancedTree();
 
         int total_plan_cnt_ = 0;
+        bool order_by_first_collation_;
     private:
 
         Operator<B> *left_deep_root_;
