@@ -24,6 +24,8 @@ size_t OperatorCostModel::operatorCost(const SecureOperator *op) {
                 return mergeJoinCost((MergeJoin<Bit> *) op);
            case OperatorType::KEYED_SORT_MERGE_JOIN:
               return keyedSortMergeJoinCost((KeyedSortMergeJoin<Bit> *) op);
+           case OperatorType::SORT_MERGE_JOIN:
+               return sortMergeJoinCost((SortMergeJoin<Bit> *) op);
            case OperatorType::SHRINKWRAP:
               return shrinkwrapCost((Shrinkwrap<Bit> *) op);
            case OperatorType::PROJECT:
@@ -198,6 +200,106 @@ size_t OperatorCostModel::keyedSortMergeJoinCost(KeyedSortMergeJoin<Bit> *join) 
 	
     return cost;
 }
+
+
+size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
+    size_t cost = 0;
+
+    Operator<Bit>* lhs = join->getChild(0);
+    Operator<Bit>* rhs = join->getChild(1);
+    QuerySchema augmented_schema = join->deriveAugmentedSchema();
+    auto max_output_cardinality = lhs->getOutputCardinality();// * rhs->getOutputCardinality();
+    auto lhs_cardinality = lhs->getOutputCardinality();
+    auto rhs_cardinality = rhs->getOutputCardinality();
+
+    //first we have the cost of two sorts from augmentTables
+    auto p = (GenericExpression<Bit>*) join->getPredicate();
+    JoinEqualityConditionVisitor<Bit> join_visitor(p->root_);
+    vector<pair<uint32_t, uint32_t> > join_idxs  = join_visitor.getEqualities();
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join_idxs.size());
+
+    size_t table_id_idx = augmented_schema.getFieldCount() - 1;
+    sort_def.emplace_back(table_id_idx, SortDirection::ASCENDING);
+
+    size_t augment_cost = 0;
+
+    augment_cost += sortCost(augmented_schema, sort_def, rhs_cardinality);
+    augment_cost += sortCost(augmented_schema, sort_def, lhs_cardinality);
+
+    sort_def.clear();
+    sort_def.emplace_back(table_id_idx, SortDirection::ASCENDING);
+    for(int i = 0; i < join_idxs.size(); ++i) {
+        sort_def.emplace_back(i, SortDirection::ASCENDING);
+    }
+
+    augment_cost += sortCost(augmented_schema, sort_def, rhs_cardinality);
+    augment_cost += sortCost(augmented_schema, sort_def, lhs_cardinality);
+    cost += augment_cost;
+
+    //next we have the cost of the sort from obliviousDistribute
+    QueryFieldDesc weight(augmented_schema.getFieldCount(), "weight", "", FieldType::SECURE_INT);
+    augmented_schema.putField(weight);
+    QueryFieldDesc is_new(augmented_schema.getFieldCount(), "is_new", "", FieldType::SECURE_INT);
+    augmented_schema.putField(is_new);
+    augmented_schema.initializeFieldOffsets();
+
+    size_t is_new_idx = augmented_schema.getFieldCount() - 1;
+    size_t weight_idx = augmented_schema.getFieldCount() - 2;
+
+    SortDefinition second_sort_def{ ColumnSort(is_new_idx, SortDirection::ASCENDING), ColumnSort(weight_idx, SortDirection::ASCENDING)};
+
+    size_t distribute_cost = 0;
+
+    distribute_cost += sortCost(augmented_schema, second_sort_def, max_output_cardinality);
+
+    //obliviousDistribute
+    //size_t n = join->getOutputCardinality();
+    size_t n = max_output_cardinality;
+    float inner_loop = n;
+    float outer_loop = floor(log2(inner_loop));
+
+    float comparisons = outer_loop * inner_loop;
+    size_t c_and_s_cost = compareSwapCost(augmented_schema, second_sort_def, n);
+    distribute_cost += c_and_s_cost * (size_t) comparisons;
+
+    cost += 2 * distribute_cost;
+
+    //cost of conditional write step from expand
+    InputReference<Bit> read_field(is_new_idx, augmented_schema);
+    Field<Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
+    LiteralNode<Bit> constant_input(one);
+    EqualNode equality_check((ExpressionNode<Bit> *) &read_field, (ExpressionNode<Bit> *) &constant_input);
+
+    ExpressionCostModel<Bit> model(&equality_check, augmented_schema);
+    auto if_cost = model.cost();
+
+    size_t conditional_write_cost = n * (if_cost + augmented_schema.size() + 2);
+    cost += 2 * conditional_write_cost;
+
+
+    // AlignTable
+
+    // Update schema with new col idx and sort cost
+    QueryFieldDesc new_idx_field(augmented_schema.getFieldCount(), "new_idx", "", FieldType::SECURE_INT);
+    augmented_schema.putField(new_idx_field);
+    augmented_schema.initializeFieldOffsets();
+    size_t new_idx_col_pos = augmented_schema.getFieldCount() - 1;
+
+    sort_def.clear();
+    sort_def.emplace_back(-1, SortDirection::ASCENDING); // Sort dummy vals to end
+    sort_def.emplace_back(0, SortDirection::ASCENDING); // Join key
+    sort_def.emplace_back(new_idx_col_pos, SortDirection::ASCENDING); // New idx col
+    size_t align_cost = sortCost(augmented_schema, sort_def, max_output_cardinality);
+
+    // Cost of new_idx calculation and write to new_idx for length of table
+//    size_t new_idx_write_cost = rhs_cardinality * (augmented_schema.size() + 1);
+//    align_cost += new_idx_write_cost;
+
+    cost += align_cost;
+
+    return cost;
+}
+
 
 // only count SortMergeAggregate cost, sort cost is accounted for in Sort operator
 // Sort is sometimes pushed out of MPC, thus separate accounting

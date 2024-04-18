@@ -138,7 +138,7 @@ set(sources
 		opt/plan_optimizer.cpp
 
 		enumerator/bushy_plan_enumerator.cpp
-		)
+)
 
 
 

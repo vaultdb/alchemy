@@ -93,7 +93,7 @@ package_add_test(secure_sort_test mpc/secure_sort_test.cpp mpc/emp_base_test.cpp
 package_add_test(secure_basic_join_test mpc/secure_basic_join_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_merge_join_test mpc/secure_merge_join_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_keyed_join_test mpc/secure_keyed_join_test.cpp mpc/emp_base_test.cpp)
-#package_add_test(secure_sort_merge_join_test mpc/secure_sort_merge_join_test.cpp mpc/emp_base_test.cpp)
+package_add_test(secure_sort_merge_join_test mpc/secure_sort_merge_join_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_keyed_sort_merge_join_test mpc/secure_keyed_sort_merge_join_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_scalar_aggregate_test mpc/secure_scalar_aggregate_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_sort_merge_aggregate_test mpc/secure_sort_merge_aggregate_test.cpp mpc/emp_base_test.cpp)

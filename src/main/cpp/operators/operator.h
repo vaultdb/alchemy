@@ -212,6 +212,8 @@ namespace  vaultdb {
                 case OperatorType::LEFT_KEYED_NESTED_LOOP_JOIN:
                     return "LeftKeyedJoin";
                 case OperatorType::KEYED_SORT_MERGE_JOIN:
+                    return "KeyedSortMergeJoin";
+                case OperatorType::SORT_MERGE_JOIN:
                     return "SortMergeJoin";
                 case OperatorType::MERGE_JOIN:
                     return "MergeJoin";

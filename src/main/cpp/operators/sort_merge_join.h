@@ -16,18 +16,12 @@ namespace  vaultdb {
     public:
 
         SortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key, Expression<B> *predicate,
-                           const SortDefinition &sort = SortDefinition());
+                      const SortDefinition &sort = SortDefinition());
 
         SortMergeJoin(QueryTable<B> *foreign_key, QueryTable<B> *primary_key, Expression<B> *predicate,
-                           const SortDefinition &sort = SortDefinition());
+                      const SortDefinition &sort = SortDefinition());
 
-        SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,
-                           const SortDefinition &sort = SortDefinition());
-
-        SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
-                           const SortDefinition &sort = SortDefinition());
         SortMergeJoin(const SortMergeJoin & src) : Join<B>(src) {
-            foreign_key_input_ = src.foreignKeyChild();
             setup();
         }
 
@@ -51,7 +45,6 @@ namespace  vaultdb {
         }
 
 
-        int foreignKeyChild() const { return foreign_key_input_; }
         QuerySchema deriveProjectedSchema() const;
         QuerySchema deriveAugmentedSchema() const;
         const vector<pair<uint32_t, uint32_t>> joinKeyIdxs() const { return join_idxs_; }
@@ -94,28 +87,26 @@ namespace  vaultdb {
         }
 
         bool operator==(const Operator<B> &other) const override {
-            if (other.getType() != OperatorType::KEYED_SORT_MERGE_JOIN) {
+            if (other.getType() != OperatorType::SORT_MERGE_JOIN) {
                 return false;
             }
 
             auto rhs = dynamic_cast<const SortMergeJoin<B> &>(other);
 
-            if(*this->predicate_ != *rhs.predicate_ || this->foreign_key_input_ != rhs.foreign_key_input_) return false;
+            if(*this->predicate_ != *rhs.predicate_) return false;
             return this->operatorEquality(other);
         }
 
     protected:
         QueryTable<B> *runSelf() override;
 
-        OperatorType getType() const override { return OperatorType::KEYED_SORT_MERGE_JOIN; }
+        OperatorType getType() const override { return OperatorType::SORT_MERGE_JOIN; }
 
     private:
-        int alpha_idx_=-1, table_id_idx_ = -1, weight_idx_ = -1, is_new_idx_ = -1; // alpha_2_idx_ = -1,
+        int alpha_idx_=-1, table_id_idx_ = -1, weight_idx_ = -1, is_new_idx_ = -1, new_idx_col = -1; // alpha_2_idx_ = -1,
         int alpha1_idx_ = -1;
         int alpha2_idx_ = -1;
         vector<pair<uint32_t, uint32_t> > join_idxs_; // lhs, rhs
-        bool foreign_key_input_ = false; // default: lhs = fkey (input 0, F), if rhs = fk, foreign_key_input_ = true
-        int foreign_key_cardinality_ = 0; // public bound on output size
         bool lhs_smaller_ = true;
         Field<B> zero_, one_;
         FieldType int_field_type_, bool_field_type_;
