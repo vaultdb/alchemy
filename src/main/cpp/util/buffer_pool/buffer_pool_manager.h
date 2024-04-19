@@ -23,14 +23,14 @@ namespace vaultdb {
             PageId pid_;
             vector<emp::Bit> page_payload_;
             int access_counters_; // for LRU
-            bool pined = false;
+            bool pinned_ = false;
         } UnpackedPage;
 
         typedef struct packd_page_ {
             PageId pid_;
             emp::OMPCPackedWire page_payload_;
             int access_counters_; // for LRU
-            bool pined = false;
+            bool pinned_ = false;
         } PackedPage;
 
         BufferPoolManager() {};
@@ -128,14 +128,14 @@ namespace vaultdb {
             PageId pid_;
             vector<emp::Bit> page_payload_;
             int access_counters_; // for LRU
-            bool pined = false;
+            bool pinned_ = false;
         } UnpackedPage;
 
         typedef struct packd_page_ {
             PageId pid_;
             emp::OMPCPackedWire page_payload_;
             int access_counters_; // for LRU
-            bool pined = false;
+            bool pinned_ = false;
         } PackedPage;
 
         BufferPoolManager() {};
@@ -185,7 +185,7 @@ namespace vaultdb {
                 int least_counters = INT_MAX;
                 string oldest_key;
                 for (auto &[key, page]: unpacked_page_buffer_pool_) {
-                    if(page.pined) {
+                    if(page.pinned_) {
                         continue;
                     }
                     if (page.access_counters_ < least_counters) {
@@ -308,7 +308,7 @@ namespace vaultdb {
             }
             else {
                 UnpackedPage src_page = unpacked_page_buffer_pool_[getPageIdKey(src_pid)];
-                src_page.pined = true;
+                src_page.pinned_ = true;
                 unpacked_page_buffer_pool_[getPageIdKey(src_pid)] = src_page;
 
                 UnpackedPage dst_page = getUnpackedPage(dst_pid);
@@ -316,7 +316,7 @@ namespace vaultdb {
                 dst_page.access_counters_ = src_page.access_counters_;
                 unpacked_page_buffer_pool_[getPageIdKey(dst_pid)] = dst_page;
 
-                src_page.pined = false;
+                src_page.pinned_ = false;
                 unpacked_page_buffer_pool_[getPageIdKey(src_pid)] = src_page;
             }
         }

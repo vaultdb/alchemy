@@ -115,7 +115,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
                                                                    lhs->fields_per_wire_[outer_col_idx]);
 
                     BufferPoolManager::UnpackedPage up = bpm->getUnpackedPage(pid);
-                    up.pined = true;
+                    up.pinned_ = true;
                     bpm->unpacked_page_buffer_pool_[bpm->getPageIdKey(pid)] = up;
                 }
             }
@@ -161,7 +161,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
                                                                    lhs->fields_per_wire_[outer_col_idx]);
 
                     BufferPoolManager::UnpackedPage up = bpm->getUnpackedPage(pid);
-                    up.pined = false;
+                    up.pinned_ = false;
                     bpm->unpacked_page_buffer_pool_[bpm->getPageIdKey(pid)] = up;
                 }
             }
