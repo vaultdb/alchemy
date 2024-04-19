@@ -116,7 +116,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
 
                     BufferPoolManager::UnpackedPage up = bpm->getUnpackedPage(pid);
                     up.pinned_ = true;
-                    bpm->unpacked_page_buffer_pool_[bpm->getPageIdKey(pid)] = up;
+                    bpm->unpacked_page_buffer_pool_[pid] = up;
                 }
             }
 
@@ -162,7 +162,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
 
                     BufferPoolManager::UnpackedPage up = bpm->getUnpackedPage(pid);
                     up.pinned_ = false;
-                    bpm->unpacked_page_buffer_pool_[bpm->getPageIdKey(pid)] = up;
+                    bpm->unpacked_page_buffer_pool_[pid] = up;
                 }
             }
 

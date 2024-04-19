@@ -48,10 +48,10 @@ namespace vaultdb {
 
             if(!bp_enabled_) {
                 for (int i = 0; i < schema_.getFieldCount(); ++i) {
-                    int wires_cnt = isMultiwire(i) ? tuple_cnt : (tuple_cnt_ / fields_per_wire_.at(i) +
+                    int wire_cnt = isMultiwire(i) ? tuple_cnt : (tuple_cnt_ / fields_per_wire_.at(i) +
                                                                   (tuple_cnt_ % fields_per_wire_.at(i) != 0));
                     emp::OMPCPackedWire pack_wire(blocks_per_field_.at(i));
-                    packed_column_data_[i] = std::vector<emp::OMPCPackedWire>(wires_cnt, pack_wire);
+                    packed_column_data_[i] = std::vector<emp::OMPCPackedWire>(wire_cnt, pack_wire);
                     unpacked_wires_[i].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_.at(i) * 128,
                                                                                 emp::Bit(0));
                 }
@@ -162,7 +162,7 @@ namespace vaultdb {
 
                 up.access_counters_++;
 
-                bpm_->unpacked_page_buffer_pool_[bpm_->getPageIdKey(pid)] = up;
+                bpm_->unpacked_page_buffer_pool_[pid] = up;
 
                 return Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
             }
@@ -184,7 +184,7 @@ namespace vaultdb {
                 f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
                 up.access_counters_++;
 
-                bpm_->unpacked_page_buffer_pool_[bpm_->getPageIdKey(pid)] = up;
+                bpm_->unpacked_page_buffer_pool_[pid] = up;
             }
             else {
                 cacheField(row, col);
@@ -312,7 +312,7 @@ namespace vaultdb {
                 BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
 
                 up.access_counters_++;
-                bpm_->unpacked_page_buffer_pool_[bpm_->getPageIdKey(pid)] = up;
+                bpm_->unpacked_page_buffer_pool_[pid] = up;
 
                 return up.page_payload_[row % fields_per_wire_.at(-1)];
             }
@@ -330,7 +330,7 @@ namespace vaultdb {
                 up.page_payload_[row % fields_per_wire_.at(-1)] = val;
                 up.access_counters_++;
 
-                bpm_->unpacked_page_buffer_pool_[bpm_->getPageIdKey(pid)] = up;
+                bpm_->unpacked_page_buffer_pool_[pid] = up;
 
             }
             else {
