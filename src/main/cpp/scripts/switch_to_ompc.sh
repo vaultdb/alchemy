@@ -10,6 +10,10 @@ popd
 #for macos
 unlink bin/libemp-tool.dylib
 ln -s /usr/local/lib/libemp-tool.dylib bin/
+unlink libemp-tool.dylib
+ln -s /usr/local/lib/libemp-tool.dylib .
 
 unlink bin/libemp-zk.dylib
 ln -s /usr/local/lib/libemp-zk.dylib bin/
+unlink libemp-zk.dylib
+ln -s /usr/local/lib/libemp-zk.dylib .
