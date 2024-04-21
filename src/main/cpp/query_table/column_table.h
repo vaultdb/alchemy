@@ -15,7 +15,7 @@ namespace vaultdb {
             if(tuple_cnt == 0)
                 return;
 
-            long write_size;
+            int write_size;
             for(auto col_entry : this->field_sizes_bytes_) {
                 vector<int8_t> fields;
                 write_size = tuple_cnt * col_entry.second;
@@ -50,7 +50,7 @@ namespace vaultdb {
         }
 
 
-        inline int8_t *getFieldPtr(const long & row, const long & col) const  {
+        inline int8_t *getFieldPtr(const int & row, const int & col) const  {
             return const_cast<int8_t *>(this->column_data_.at(col).data() + row * this->field_sizes_bytes_.at(col));
         }
 
@@ -58,43 +58,43 @@ namespace vaultdb {
             return new ColumnTable<B>(*this);
         }
 
-         void setSchema(const QuerySchema &schema) override {
-             this->schema_ = schema;
-             this->plain_schema_ = QuerySchema::toPlain(schema);
+        void setSchema(const QuerySchema &schema) override {
+            this->schema_ = schema;
+            this->plain_schema_ = QuerySchema::toPlain(schema);
 
-             int running_count = 0;
-             int field_size_bytes;
+            int running_count = 0;
+            int field_size_bytes;
 
-             if(this->isEncrypted()) {
-                 // covers dummy tag as -1
-                 this->tuple_size_bytes_ = 0;
-                 QueryFieldDesc desc;
+            if(this->isEncrypted()) {
+                // covers dummy tag as -1
+                this->tuple_size_bytes_ = 0;
+                QueryFieldDesc desc;
 
-                 for(auto pos : this->schema_.offsets_) {
-                     desc = this->schema_.getField(pos.first);
-                     field_size_bytes =  desc.size() * sizeof(emp::Bit);
-                     this->tuple_size_bytes_ += field_size_bytes;
-                     this->field_sizes_bytes_[pos.first] = field_size_bytes;
-                     running_count += field_size_bytes;
-                 }
+                for(auto pos : this->schema_.offsets_) {
+                    desc = this->schema_.getField(pos.first);
+                    field_size_bytes =  desc.size() * sizeof(emp::Bit);
+                    this->tuple_size_bytes_ += field_size_bytes;
+                    this->field_sizes_bytes_[pos.first] = field_size_bytes;
+                    running_count += field_size_bytes;
+                }
 
-                 return;
-             }
+                return;
+            }
 
-             // plaintext case
-             this->tuple_size_bytes_ = this->schema_.size() / 8; // bytes for plaintext
-             for(auto pos : this->schema_.offsets_) {
-                 field_size_bytes = this->schema_.getField(pos.first).size() / 8;
-                 this->field_sizes_bytes_[pos.first] = field_size_bytes;
-                 running_count += field_size_bytes;
-             }
-         }
+            // plaintext case
+            this->tuple_size_bytes_ = this->schema_.size() / 8; // bytes for plaintext
+            for(auto pos : this->schema_.offsets_) {
+                field_size_bytes = this->schema_.getField(pos.first).size() / 8;
+                this->field_sizes_bytes_[pos.first] = field_size_bytes;
+                running_count += field_size_bytes;
+            }
+        }
 
-         void resize(const size_t &tuple_cnt) override {
+        void resize(const size_t &tuple_cnt) override {
             int prev_size = this->tuple_cnt_;
-             if(tuple_cnt == this->tuple_cnt_) return;
+            if(tuple_cnt == this->tuple_cnt_) return;
 
-             this->tuple_cnt_ = tuple_cnt;
+            this->tuple_cnt_ = tuple_cnt;
             if(prev_size == 0) {
                 for(int i = 0; i < this->schema_.getFieldCount(); ++i) {
                     this->column_data_[i] = std::vector<int8_t>(tuple_cnt * this->field_sizes_bytes_[i]);
@@ -107,15 +107,15 @@ namespace vaultdb {
                 }
             }
 
-             if(tuple_cnt > prev_size) {
-                 // initialize dummy tags to true
-                 B d(true);
-                 B *dummy_col = (B *) this->column_data_[-1].data();
+            if(tuple_cnt > prev_size) {
+                // initialize dummy tags to true
+                B d(true);
+                B *dummy_col = (B *) this->column_data_[-1].data();
 
-                 for(int i = prev_size; i < tuple_cnt; ++i) {
-                     dummy_col[i] = d;
-                 }
-             }
+                for(int i = prev_size; i < tuple_cnt; ++i) {
+                    dummy_col[i] = d;
+                }
+            }
         }
 
         QueryTuple<B> getRow(const int & idx) override {
@@ -167,62 +167,47 @@ namespace vaultdb {
         }
 
 
-
         // copy all columns from src to dst
-        void cloneTable(const int & dst_row, const int & dst_col, QueryTable<B> *s) override {
+        void cloneTable(const int & dst_row, QueryTable<B> *s) override {
 
+            assert(s->getSchema() == this->schema_);
             assert((s->tuple_cnt_ + dst_row) <= this->tuple_cnt_);
             assert(s->storageModel() == StorageModel::COLUMN_STORE);
-            assert(s->getSchema().getFieldCount() <= this->schema_.getFieldCount() - dst_col);
-
-            // check compatibility
-            auto src_schema = s->getSchema();
-            for(int i = 0; i < src_schema.getFieldCount(); ++i) {
-                assert(this->schema_.getField(i+dst_col) == src_schema.getField(i));
-            }
-
 
             auto src = (ColumnTable<B> *) s;
             int8_t *write_pos, *read_pos;
 
             // copy out entire cols
-            for(int i = 0; i <  src_schema.getFieldCount(); ++i) {
-                int col_id = i + dst_col;
-                int field_size = this->field_sizes_bytes_.at(col_id);
+            for(auto pos : this->field_sizes_bytes_) {
+                int col_id = pos.first;
+                int field_size = pos.second;
                 write_pos = getFieldPtr(dst_row, col_id);
-                read_pos = src->column_data_.at(i).data();
+                read_pos = src->column_data_.at(col_id).data();
                 memcpy(write_pos, read_pos, field_size * src->tuple_cnt_);
             }
-
-            // cover dummy tag
-            write_pos = getFieldPtr(dst_row, -1);
-            read_pos = src->column_data_.at(-1).data();
-            memcpy(write_pos, read_pos, src->field_sizes_bytes_.at(-1) * src->tuple_cnt_);
-
         }
 
-
         // dummy tag included
-        void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * s, const int & src_row) override {
+        void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * s, const int & src_row) override{
             assert(s->storageModel() == StorageModel::COLUMN_STORE);
             auto src = (ColumnTable<B> *) s;
             int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
 
             int cursor = 0; // bytes
             int write_idx = dst_col; // field indexes
-            // serialize src vals into a temp row˛
+
+            // serialize src vals into a temp row
             // does not include dummy tag - handle further down in this method
-//            vector<int8_t> row = src->unpackRowBytes(src_row, src->schema_.getFieldCount());
+            vector<int8_t> row = src->unpackRowBytes(src_row, src->schema_.getFieldCount());
 
             // re-pack row
-            for(int i = 0; i < src->schema_.getFieldCount(); ++i) {
+            while(cursor < src_size) {
                 int8_t *write_pos = getFieldPtr(dst_row, write_idx);
-                int8_t *read_pos = src->getFieldPtr(src_row, i);
                 int bytes_remaining = src_size - cursor;
                 int dst_len = this->field_sizes_bytes_.at(write_idx);
-                int src_len = src->field_sizes_bytes_.at(i);
-                int to_read = (dst_len < src_len) ? dst_len : src_len; // take the min length
-                memcpy(write_pos, read_pos, to_read);
+                int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
+                memcpy(write_pos, row.data() + cursor, to_read);
+                cursor += to_read;
                 ++write_idx;
             }
 
@@ -232,30 +217,8 @@ namespace vaultdb {
 
         void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) override;
 
-        // includes dummy tag
-        void cloneRowRange(const int & dst_row, const int & dst_col, const QueryTable<B> *s, const int & src_row, const int & copies) override {
-            assert(s->storageModel() == StorageModel::COLUMN_STORE);
-            auto src = (ColumnTable<B> *) s;
-
-            for(int i = 0; i <src->schema_.getFieldCount(); ++i) {
-                int8_t *read_pos = src->getFieldPtr(src_row, i);
-                int8_t *write_pos = getFieldPtr(dst_row, dst_col + i);
-                auto dst_size = this->field_sizes_bytes_.at(dst_col + i);
-                int write_size = (src->field_sizes_bytes_[i] <dst_size ) ? src->field_sizes_bytes_[i] : dst_size;
-                for(int j = 0; j < copies; ++j) {
-                    memcpy(write_pos, read_pos, write_size);
-                    write_pos += dst_size;
-                }
-            }
-
-            // copy dummy tag
-            B dummy_tag = src->getFieldPtr(src_row, -1);
-            B *write_pos = (B *) getFieldPtr(dst_row, -1);
-            for(int i = 0; i < copies; ++i) {
-                *((B *) write_pos) = dummy_tag;
-                ++write_pos;
-            }
-
+        virtual void cloneRowRange(const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row, const int & copies) override {
+            throw runtime_error("Not yet implemented");
         }
 
         void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<B> *s, const int & src_col, const int & src_row = 0) override {

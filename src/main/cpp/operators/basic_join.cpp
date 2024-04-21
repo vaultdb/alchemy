@@ -6,16 +6,16 @@ using namespace vaultdb;
 template<typename B>
 BasicJoin<B>::BasicJoin(Operator<B> *lhs, Operator<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(lhs, rhs, predicate, sort) {
-            this->output_cardinality_ = lhs->getOutputCardinality() * rhs->getOutputCardinality();
-            this->updateCollation();
-        }
+    this->output_cardinality_ = lhs->getOutputCardinality() * rhs->getOutputCardinality();
+    this->updateCollation();
+}
 
 template<typename B>
 BasicJoin<B>::BasicJoin(QueryTable<B> *lhs, QueryTable<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(lhs, rhs, predicate, sort) {
-            this->output_cardinality_ = lhs->tuple_cnt_ * rhs->tuple_cnt_;
+    this->output_cardinality_ = lhs->tuple_cnt_ * rhs->tuple_cnt_;
 
-        this->updateCollation();
+    this->updateCollation();
 }
 
 template<typename B>
@@ -34,25 +34,19 @@ QueryTable<B> *BasicJoin<B>::runSelf() {
     B selected, dst_dummy_tag, lhs_dummy_tag;
     // output size, colCount, is_encrypted
     this->output_ =  QueryTable<B>::getTable(lhs->tuple_cnt_ * rhs->tuple_cnt_, this->output_schema_,
-                                              this->sort_definition_);
+                                             this->sort_definition_);
     int cursor = 0;
     int rhs_col_offset = this->output_->getSchema().getFieldCount() - rhs->getSchema().getFieldCount();
 
-
     for(uint32_t i = 0; i < lhs->tuple_cnt_; ++i) {
-         lhs_dummy_tag  = lhs->getDummyTag(i);
-
-         // copy the lhs |rhs| times
-         this->output_->cloneRowRange(cursor, 0, lhs, i, rhs->tuple_cnt_);
-
-        // initialize the rhs output
-        this->output_->cloneTable(cursor, rhs_col_offset, rhs);
-
-        // make |rhs| copies of the lhs row
+        lhs_dummy_tag  = lhs->getDummyTag(i);
         for(uint32_t j = 0; j < rhs->tuple_cnt_; ++j) {
+            this->output_->cloneRow(cursor, 0, lhs, i); //   Join<B>::write_left(this->output_, cursor,  lhs, i);
+            this->output_->cloneRow(cursor, rhs_col_offset, rhs, j); // Join<B>::write_right(this->output_, cursor,  rhs, j);
             selected = Join<B>::predicate_->call(lhs, i, rhs, j).template getValue<B>();
             dst_dummy_tag = (!selected) | lhs_dummy_tag | rhs->getDummyTag(j);
-            this->output_->setDummyTag(cursor, dst_dummy_tag);
+
+            Operator<B>::output_->setDummyTag(cursor, dst_dummy_tag);
             ++cursor;
         }
     }
