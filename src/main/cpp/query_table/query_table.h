@@ -145,6 +145,10 @@ namespace  vaultdb {
         // conditional writes
         virtual void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) = 0;
 
+        // includes dummy tag for cloneRow
+        // copy row src_row from src to self at dst_row and fill the next copies rows with the same data
+        virtual void cloneRowRange(const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row, const int & copies) = 0;
+
         void cloneColumn(const int & dst_col, const QueryTable<B> *src, const int & src_col) {
             assert(src->tuple_cnt_ == this->tuple_cnt_);
             assert(src->getSchema().getField(src_col).size() == getSchema().getField(dst_col).size());
@@ -161,7 +165,12 @@ namespace  vaultdb {
         // to self at dst_col starting at dst_row.
         virtual void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<B> *src, const int & src_col, const int & src_row = 0) = 0;
 
-        virtual void cloneTable(const int & dst_row, QueryTable<B> *src) = 0;
+        virtual void cloneTable(const int & dst_row, const int & dst_col, QueryTable<B> *src) = 0;
+
+        virtual void cloneTable(const int & dst_row, QueryTable<B> *src) {
+            this->cloneTable(dst_row, 0, src);
+        }
+
 
         // for serializing a row
        Integer unpackRow(const int & row, const int & col_cnt=-1) const {

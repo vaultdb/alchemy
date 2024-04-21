@@ -136,7 +136,6 @@ namespace vaultdb {
 
         void cacheField(const int & row, const int & col) const {
 
-
             int current_page_idx = getPackedWireIdx(row, col);
 
 	        if(unpacked_wires_[col].page_idx_ != current_page_idx) {
@@ -436,10 +435,11 @@ namespace vaultdb {
             setDummyTag(rhs_row, rhs_dummy);
         }
 
-        void cloneTable(const int & dst_row, QueryTable<Bit> *src) override {
-            exit(-1);
-            throw;
-            // NYI
+
+        void cloneTable(const int & dst_row, const int & dst_col, QueryTable<Bit> *src) override {
+            for(int i = -1; i < src->getSchema().getFieldCount(); ++i) {
+                cloneColumn(dst_col + i, dst_row, src, i);
+            }
         }
 
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<Bit> * src, const int & src_row) override {
@@ -466,6 +466,10 @@ namespace vaultdb {
             Bit dst_bit = getDummyTag(dst_row);
             Bit src_bit = src->getDummyTag(src_row);
             setDummyTag(dst_row, emp::If(write, src_bit, dst_bit));
+        }
+
+        void cloneRowRange(const int & dst_row, const int & dst_col, const QueryTable<Bit> *src, const int & src_row, const int & copies) override {
+            throw std::invalid_argument("Not yet implemented!");
         }
 
         void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<Bit> *src, const int & src_col, const int & src_row = 0) override {
