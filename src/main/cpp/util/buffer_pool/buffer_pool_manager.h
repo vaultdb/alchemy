@@ -15,6 +15,30 @@ namespace vaultdb {
             int table_id_;
             int col_id_;
             int page_idx_;
+
+            bool operator==(const page_id_ &other) const {
+                return table_id_ == other.table_id_ && col_id_ == other.col_id_ && page_idx_ == other.page_idx_;
+            }
+
+            bool operator<(const page_id_ &o)  const {
+                if(table_id_ < o.table_id_) {
+                    return true;
+                }
+                else if(table_id_ == o.table_id_) {
+                    if(col_id_ < o.col_id_) {
+                        return true;
+                    }
+                    else if(col_id_ == o.col_id_) {
+                        return page_idx_ < o.page_idx_;
+                    }
+                }
+                return false;
+            }
+
+            string toString() const {
+                return "(" + to_string(table_id_) + ", " + to_string(col_id_) + ", " + to_string(page_idx_) + ")";
+            }
+
         } PageId;
 
         // data from same column can be same page - easy to get offset.
@@ -44,9 +68,6 @@ namespace vaultdb {
             return {0, 0, 0};
         }
 
-        string getPageIdKey(const PageId &page_id) {
-            return "";
-        }
 
         void insertPageIdMap(const PageId &page_id) {
             
@@ -102,9 +123,8 @@ namespace vaultdb {
 
         int block_n_;
 
-        std::map<string, PageId> page_id_map_;
-        std::map<string, UnpackedPage> unpacked_page_buffer_pool_;
-        std::map<string, PackedPage> packed_page_buffer_pool_;
+        std::map<PageId, UnpackedPage> unpacked_page_buffer_pool_;
+        std::map<PageId, PackedPage> packed_page_buffer_pool_;
 
     };
 }
