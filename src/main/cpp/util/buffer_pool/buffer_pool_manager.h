@@ -41,7 +41,7 @@ namespace vaultdb {
         ~BufferPoolManager() {};
 
         PageId getPageId(int table_id, int col, int row, int rows_per_page) {
-            return {0, 0, 0, 0};
+            return {0, 0, 0};
         }
 
         string getPageIdKey(const PageId &page_id) {
