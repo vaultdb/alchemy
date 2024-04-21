@@ -210,28 +210,24 @@ namespace vaultdb {
 
             int cursor = 0; // bytes
             int write_idx = dst_col; // field indexes
-            int read_idx = 0;
-            // serialize src vals into a temp row
+            // serialize src vals into a temp row˛
             // does not include dummy tag - handle further down in this method
 //            vector<int8_t> row = src->unpackRowBytes(src_row, src->schema_.getFieldCount());
 
             // re-pack row
-            for(int i = -1; i < src->schema_.getFieldCount(); ++i) {
+            for(int i = 0; i < src->schema_.getFieldCount(); ++i) {
                 int8_t *write_pos = getFieldPtr(dst_row, write_idx);
-                int8_t *read_pos = src->getFieldPtr(src_row, read_idx);
+                int8_t *read_pos = src->getFieldPtr(src_row, i);
                 int bytes_remaining = src_size - cursor;
                 int dst_len = this->field_sizes_bytes_.at(write_idx);
-                int src_len = src->field_sizes_bytes_.at(read_idx);
-                int to_read = (dst_len < src_len) ? dst_len : src_len; // take the smaller length
-//                int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
+                int src_len = src->field_sizes_bytes_.at(i);
+                int to_read = (dst_len < src_len) ? dst_len : src_len; // take the min length
                 memcpy(write_pos, read_pos, to_read);
-//                cursor += to_read;
                 ++write_idx;
-                ++read_idx;
             }
 
-//            B *dummy_tag = (B*) src->getFieldPtr(src_row, -1);
-//            *((B *) getFieldPtr(dst_row, -1)) = *dummy_tag;
+            B *dummy_tag = (B*) src->getFieldPtr(src_row, -1);
+            *((B *) getFieldPtr(dst_row, -1)) = *dummy_tag;
         }
 
         void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) override;
