@@ -168,7 +168,7 @@ namespace vaultdb {
 
 
         // copy all columns from src to dst
-        void cloneTable(const int & dst_row, QueryTable<B> *s) override {
+        void cloneTable(const int & dst_row,  const int & dst_col, QueryTable<B> *s) override {
 
             assert(s->getSchema() == this->schema_);
             assert((s->tuple_cnt_ + dst_row) <= this->tuple_cnt_);
