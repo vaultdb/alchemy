@@ -148,6 +148,7 @@ Operator<B> *BushyPlanEnumerator<B>::findJoinChildFromSqlInput(string join_predi
         if(sqlInputSchema.hasField(join_predicate))
             return sqlInputOp;
     }
+    return nullptr;
 }
 
 template<typename B>
