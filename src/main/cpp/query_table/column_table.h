@@ -170,21 +170,25 @@ namespace vaultdb {
         // copy all columns from src to dst
         void cloneTable(const int & dst_row,  const int & dst_col, QueryTable<B> *s) override {
 
-            assert(s->getSchema() == this->schema_);
             assert((s->tuple_cnt_ + dst_row) <= this->tuple_cnt_);
             assert(s->storageModel() == StorageModel::COLUMN_STORE);
 
             auto src = (ColumnTable<B> *) s;
             int8_t *write_pos, *read_pos;
+            int write_idx = dst_col;
 
             // copy out entire cols
-            for(auto pos : this->field_sizes_bytes_) {
-                int col_id = pos.first;
-                int field_size = pos.second;
-                write_pos = getFieldPtr(dst_row, col_id);
-                read_pos = src->column_data_.at(col_id).data();
-                memcpy(write_pos, read_pos, field_size * src->tuple_cnt_);
+            for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+                write_pos = getFieldPtr(dst_row, write_idx);
+                read_pos = src->column_data_.at(i).data();
+                memcpy(write_pos, read_pos, this->field_sizes_bytes_.at(write_idx) * src->tuple_cnt_);
+                ++write_idx;
             }
+
+            write_pos = getFieldPtr(dst_row, -1);
+            read_pos = src->column_data_.at(-1).data();
+            memcpy(write_pos, read_pos, this->field_sizes_bytes_.at(-1) * src->tuple_cnt_);
+
         }
 
         // dummy tag included
