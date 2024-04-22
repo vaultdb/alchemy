@@ -21,7 +21,7 @@ namespace vaultdb{
         EmpMode emp_mode_ = EmpMode::PLAIN;
         int party_;
 
-        bool bp_enabled_ = true;
+        bool bp_enabled_ = false;
         BufferPoolManager *bpm_ = nullptr;
 
         int num_tables_;
