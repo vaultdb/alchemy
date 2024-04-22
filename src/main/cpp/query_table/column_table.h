@@ -192,24 +192,11 @@ namespace vaultdb {
             assert(s->storageModel() == StorageModel::COLUMN_STORE);
 
             auto src = (ColumnTable<B> *) s;
-            int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
 
-            int cursor = 0; // bytes
-            int write_idx = dst_col; // field indexes
-
-            // serialize src vals into a temp row
-            // does not include dummy tag - handle further down in this method
-            vector<int8_t> row = src->unpackRowBytes(src_row, src->schema_.getFieldCount());
-
-            // re-pack row
-            while(cursor < src_size) {
-                int8_t *write_pos = getFieldPtr(dst_row, write_idx);
-                int bytes_remaining = src_size - cursor;
-                int dst_len = this->field_sizes_bytes_.at(write_idx);
-                int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
-                memcpy(write_pos, row.data() + cursor, to_read);
-                cursor += to_read;
-                ++write_idx;
+            for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+                auto read_pos = src->getFieldPtr(src_row, i);
+                auto write_pos = getFieldPtr(dst_row, dst_col + i);
+                memcpy(write_pos, read_pos, this->field_sizes_bytes_.at(dst_col + i));
             }
 
             B *dummy_tag = (B*) src->getFieldPtr(src_row, -1);
