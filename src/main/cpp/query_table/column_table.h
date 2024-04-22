@@ -190,6 +190,7 @@ namespace vaultdb {
         // dummy tag included
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * s, const int & src_row) override{
             assert(s->storageModel() == StorageModel::COLUMN_STORE);
+
             auto src = (ColumnTable<B> *) s;
             int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
 
@@ -217,8 +218,36 @@ namespace vaultdb {
 
         void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) override;
 
-        virtual void cloneRowRange(const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row, const int & copies) override {
-            throw runtime_error("Not yet implemented");
+        // make N copies of a row, starting at offset dst_row
+        virtual void cloneRowRange(const int & dst_row, const int & dst_col, const QueryTable<B> *s, const int & src_row, const int & copies) override {
+            assert(s->storageModel() == StorageModel::COLUMN_STORE);
+            for(int i = 0; i < s->getSchema().getFieldCount(); ++i) {
+                assert(s->getSchema().getField(i).size() == this->getSchema().getField(dst_col + i).size());
+            }
+
+            auto src = (ColumnTable<B> *) s;
+
+
+
+            int write_idx = dst_col; // field indexes
+            for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+                auto write_pos = getFieldPtr(dst_row, write_idx);
+                auto read_pos = src->getFieldPtr(src_row, i);
+                int write_len = src->field_sizes_bytes_[i];
+                for(int j = 0; j < copies; ++j) {
+                    memcpy(write_pos, read_pos, write_len);
+                    write_pos += write_len;
+                }
+                ++write_idx;
+            }
+
+            // copy dummy tag
+            B dummy_tag = src->getDummyTag(src_row);
+            B *write_pos = (B *) getFieldPtr(dst_row, -1);
+            for(int i = 0; i < copies; ++i) {
+                *write_pos = dummy_tag;
+                ++write_pos;
+            }
         }
 
         void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<B> *s, const int & src_col, const int & src_row = 0) override {
