@@ -10,8 +10,7 @@ namespace vaultdb {
     public:
 
         int table_id_ = -1;
-        bool bp_enabled_ = SystemConfiguration::getInstance().bp_enabled_;
-        BufferPoolManager *bpm_ = bp_enabled_ ? SystemConfiguration::getInstance().bpm_ : nullptr;
+        BufferPoolManager *bpm_ = SystemConfiguration::getInstance().bpm_;
 
         // choosing to branch instead of storing this in a float for now, need to analyze trade-off on this one
         // maps ordinal to wire count.  floor(128/field_size_bits)
@@ -24,17 +23,6 @@ namespace vaultdb {
 
         EmpManager *manager_;
 
-        // cache packed_block: blocks_per_field_[col] * 128 bits
-        typedef struct unpacked_t {
-            std::vector<emp::Bit> unpacked_blocks_;
-            int page_idx_;
-            bool dirty_bit_ = false;
-        }  Unpacked;
-
-        mutable std::map<int, Unpacked> unpacked_wires_;
-
-        mutable std::map<int, std::vector<emp::OMPCPackedWire> > packed_column_data_;
-
         int block_byte_size_ = 16; // 16 bytes per block = 128 bits
 
 
@@ -45,22 +33,6 @@ namespace vaultdb {
                 return;
 
             table_id_ = SystemConfiguration::getInstance().num_tables_++;
-
-            if(!bp_enabled_) {
-                for (int i = 0; i < schema_.getFieldCount(); ++i) {
-                    int wire_cnt = isMultiwire(i) ? tuple_cnt : (tuple_cnt_ / fields_per_wire_.at(i) +
-                                                                  (tuple_cnt_ % fields_per_wire_.at(i) != 0));
-                    emp::OMPCPackedWire pack_wire(blocks_per_field_.at(i));
-                    packed_column_data_[i] = std::vector<emp::OMPCPackedWire>(wire_cnt, pack_wire);
-                    unpacked_wires_[i].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_.at(i) * 128,
-                                                                                emp::Bit(0));
-                }
-
-                int dummy_tag_wire_cnt = tuple_cnt_ / 128 + (tuple_cnt_ % 128 != 0);
-                emp::OMPCPackedWire pack_dummy_wire(1);
-                packed_column_data_[-1] = std::vector<emp::OMPCPackedWire>(dummy_tag_wire_cnt, pack_dummy_wire);
-                unpacked_wires_[-1].unpacked_blocks_ = std::vector<emp::Bit>(128, emp::Bit(0));
-            }
         }
 
         PackedColumnTable(const PackedColumnTable &src) : QueryTable<Bit>(src), manager_(SystemConfiguration::getInstance().emp_manager_) {
@@ -72,38 +44,13 @@ namespace vaultdb {
 
             table_id_ = SystemConfiguration::getInstance().num_tables_++;
 
-            if(bp_enabled_) {
-                PackedColumnTable *src_table = (PackedColumnTable *) &src;
+            PackedColumnTable *src_table = (PackedColumnTable *) &src;
 
-                for(int i = -1; i < src_table->getSchema().getFieldCount(); ++i) {
-                    for(int j = 0; j < src_table->tuple_cnt_; j = j + src_table->fields_per_wire_.at(i)) {
-                        BufferPoolManager::PageId src_pid = bpm_->getPageId(src_table->table_id_, i, j, src_table->fields_per_wire_.at(i));
-                        BufferPoolManager::PageId dst_pid = bpm_->getPageId(table_id_, i, j, fields_per_wire_.at(i));
-                        bpm_->clonePage(src_pid, dst_pid);
-                    }
-                }
-            }
-            else {
-                for (int i = 0; i < schema_.getFieldCount(); ++i) {
-                    int wires_cnt = isMultiwire(i) ? tuple_cnt_ : (tuple_cnt_ / fields_per_wire_.at(i) +
-                                                                   (tuple_cnt_ % fields_per_wire_.at(i) != 0));
-                    emp::OMPCPackedWire pack_wire(blocks_per_field_.at(i));
-                    packed_column_data_[i] = std::vector<emp::OMPCPackedWire>(wires_cnt, pack_wire);
-                    unpacked_wires_[i].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_[i] * 128,
-                                                                                emp::Bit(0));
-                }
-
-                int dummy_tag_wire_cnt = tuple_cnt_ / 128 + (tuple_cnt_ % 128 != 0);
-                emp::OMPCPackedWire pack_dummy_wire(1);
-                packed_column_data_[-1] = std::vector<emp::OMPCPackedWire>(dummy_tag_wire_cnt, pack_dummy_wire);
-                unpacked_wires_[-1].unpacked_blocks_ = std::vector<emp::Bit>(128, emp::Bit(0));
-
-                for (int i = 0; i < tuple_cnt_; ++i) {
-                    for (int j = 0; j < getSchema().getFieldCount(); ++j) {
-                        setField(i, j, src.getField(i, j));
-                    }
-
-                    setDummyTag(i, src.getDummyTag(i));
+            for(int i = -1; i < src_table->getSchema().getFieldCount(); ++i) {
+                for(int j = 0; j < src_table->tuple_cnt_; j = j + src_table->fields_per_wire_.at(i)) {
+                    BufferPoolManager::PageId src_pid = bpm_->getPageId(src_table->table_id_, i, j, src_table->fields_per_wire_.at(i));
+                    BufferPoolManager::PageId dst_pid = bpm_->getPageId(table_id_, i, j, fields_per_wire_.at(i));
+                    bpm_->clonePage(src_pid, dst_pid);
                 }
             }
         }
@@ -127,71 +74,29 @@ namespace vaultdb {
             return 0;
         }
 
-        void packColumn(const int & col) const {
-            emp::OMPCPackedWire pack_wire(blocks_per_field_.at(col));
-            manager_->pack(unpacked_wires_.at(col).unpacked_blocks_.data(),(Bit *) &pack_wire, blocks_per_field_.at(col) * 128);
-            packed_column_data_[col][unpacked_wires_[col].page_idx_] = pack_wire;
-            unpacked_wires_[col].dirty_bit_ = false;
-        }
-
-        void cacheField(const int & row, const int & col) const {
-
-            int current_page_idx = getPackedWireIdx(row, col);
-
-	        if(unpacked_wires_[col].page_idx_ != current_page_idx) {
-                if(unpacked_wires_[col].dirty_bit_) {
-                    // Flush to column_data_
-                    packColumn(col);
-                }
-
-                emp::OMPCPackedWire& packed_wire = packed_column_data_.at(col).at(current_page_idx);
-                unpacked_wires_[col].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_.at(col) * 128, emp::Bit(0));
-                emp::Bit *unpack = unpacked_wires_.at(col).unpacked_blocks_.data();
-                manager_->unpack((Bit *) &packed_wire, unpack, blocks_per_field_.at(col) * 128);
-                unpacked_wires_[col].page_idx_ = current_page_idx;
-            }
-        }
-
         Field<Bit> getField(const int  & row, const int & col)  const override {
-            if(bp_enabled_) {
-                BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
-                BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
+            BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
+            BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
 
-                Bit *read_ptr = up.page_payload_.data() + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
+            Bit *read_ptr = up.page_payload_.data() + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
 
-                up.access_counters_++;
+            up.access_counters_++;
 
-                bpm_->unpacked_page_buffer_pool_[pid] = up;
+            bpm_->unpacked_page_buffer_pool_[pid] = up;
 
-                return Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
-            }
-            else {
-                cacheField(row, col);
-
-                Bit *read_ptr = unpacked_wires_.at(col).unpacked_blocks_.data() + getUnpackedBlockOffset(row, col);
-                return Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
-            }
+            return Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
         }
 
 
         inline void setField(const int  & row, const int & col, const Field<Bit> & f)  override {
-            if(bp_enabled_) {
-                BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
-                BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
+            BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
+            BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
 
-                Bit *write_ptr = up.page_payload_.data() + (((row % fields_per_wire_.at(col)) * schema_.getField(col).size()));
-                f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
-                up.access_counters_++;
+            Bit *write_ptr = up.page_payload_.data() + (((row % fields_per_wire_.at(col)) * schema_.getField(col).size()));
+            f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
+            up.access_counters_++;
 
-                bpm_->unpacked_page_buffer_pool_[pid] = up;
-            }
-            else {
-                cacheField(row, col);
-
-                Bit *write_ptr = unpacked_wires_.at(col).unpacked_blocks_.data() + getUnpackedBlockOffset(row, col);
-                f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
-                unpacked_wires_[col].dirty_bit_ = true;
-            }
+            bpm_->unpacked_page_buffer_pool_[pid] = up;
         }
 
         SecureTable *secretShare() override  {
@@ -210,7 +115,7 @@ namespace vaultdb {
             tuple_size_bytes_ += field_size_bytes;
             field_sizes_bytes_[ordinal] = field_size_bytes;
 
-            int size_threshold = bp_enabled_ ? bpm_->unpacked_page_size_ : 128;
+            int size_threshold = bpm_->unpacked_page_size_;
             int packed_blocks = desc.size() / size_threshold + (desc.size() % size_threshold != 0);
 
             if(desc.size() / size_threshold > 0) {
@@ -226,18 +131,8 @@ namespace vaultdb {
             tuple_packed_size_bytes_ += field_packed_size_bytes;
             field_packed_sizes_bytes_[ordinal] = field_packed_size_bytes;
 
-            if(!bp_enabled_) {
-                int wires_cnt = isMultiwire(ordinal) ? tuple_cnt_ : (tuple_cnt_ / fields_per_wire_.at(ordinal) +
-                                                                     (tuple_cnt_ % fields_per_wire_.at(ordinal) != 0));
-                emp::OMPCPackedWire pack_wire(blocks_per_field_.at(ordinal));
-                packed_column_data_[ordinal] = std::vector<emp::OMPCPackedWire>(wires_cnt, pack_wire);
-                unpacked_wires_[ordinal].unpacked_blocks_ = std::vector<emp::Bit>(blocks_per_field_.at(ordinal) * 128,
-                                                                                  emp::Bit(0));
-            }
-            else {
-                // TODO: check if we need to create empty pages for the new column
-                cloneColumn(ordinal, -1, this, ordinal);
-            }
+            // TODO: check if we need to create empty pages for the new column
+            cloneColumn(ordinal, -1, this, ordinal);
         }
 
         void resize(const size_t &tuple_cnt) override {
@@ -247,103 +142,58 @@ namespace vaultdb {
 
             this->tuple_cnt_ = tuple_cnt;
 
-            if(!bp_enabled_) {
-                for (int i = 0; i < schema_.getFieldCount(); ++i) {
-                    int old_wires_cnt = isMultiwire(i) ? old_tuple_cnt : (old_tuple_cnt / fields_per_wire_.at(i) +
-                                                                          (old_tuple_cnt % fields_per_wire_.at(i) !=
-                                                                           0));
-                    int wires_cnt = isMultiwire(i) ? tuple_cnt : (tuple_cnt / fields_per_wire_.at(i) +
-                                                                  (tuple_cnt % fields_per_wire_.at(i) != 0));
-                    emp::OMPCPackedWire pack_wire(blocks_per_field_.at(i));
-                    packed_column_data_[i].resize(wires_cnt);
+            // TODO: check if we need to add or remove pages at this point
+            for(int i = 0; i < schema_.getFieldCount(); ++i) {
+                int fields_per_wire = fields_per_wire_.at(i);
 
-                    for (int j = old_wires_cnt; j < wires_cnt; ++j) {
-                        packed_column_data_[i][j] = pack_wire;
+                if(this->tuple_cnt_ > old_tuple_cnt) {
+                    cout << "new table large\n";
+                    int old_pos_in_last_page = old_tuple_cnt % fields_per_wire;
+
+                    if(this->tuple_cnt_ - old_tuple_cnt > fields_per_wire - old_pos_in_last_page - 1) {
+                        int rows_to_add = (this->tuple_cnt_ - old_tuple_cnt) - (fields_per_wire - old_pos_in_last_page - 1);
+
+                        int pages_to_add = rows_to_add / fields_per_wire + ((rows_to_add % fields_per_wire) != 0);
+                        bpm_->addConsecutivePages(table_id_, i, old_tuple_cnt + fields_per_wire - old_pos_in_last_page, pages_to_add, fields_per_wire);
+
                     }
                 }
+                else{
+                    cout << "old table large\n";
+                    int new_pos_in_last_page = this->tuple_cnt_ % fields_per_wire;
 
-                if (tuple_cnt > old_tuple_cnt) {
-                    int old_dummy_tag_wire_cnt = old_tuple_cnt / 128 + (old_tuple_cnt % 128 != 0);
-                    int dummy_tag_wire_cnt = tuple_cnt / 128 + (tuple_cnt % 128 != 0);
-                    emp::OMPCPackedWire pack_wire(1);
-                    packed_column_data_[-1].resize(dummy_tag_wire_cnt, pack_wire);
+                    if(old_tuple_cnt - this->tuple_cnt_ > fields_per_wire - new_pos_in_last_page - 1) {
+                        int rows_to_remove = (old_tuple_cnt - this->tuple_cnt_) - (fields_per_wire - new_pos_in_last_page - 1);
 
-                    for (int i = old_dummy_tag_wire_cnt; i < dummy_tag_wire_cnt; ++i) {
-                        packed_column_data_[-1][i] = pack_wire;
-                    }
-                }
-            }
-            else {
-                // TODO: check if we need to add or remove pages at this point
-                for(int i = 0; i < schema_.getFieldCount(); ++i) {
-                    int fields_per_wire = fields_per_wire_.at(i);
-
-                    if(this->tuple_cnt_ > old_tuple_cnt) {
-                        cout << "new table large\n";
-                        int old_pos_in_last_page = old_tuple_cnt % fields_per_wire;
-
-                        if(this->tuple_cnt_ - old_tuple_cnt > fields_per_wire - old_pos_in_last_page - 1) {
-                            int rows_to_add = (this->tuple_cnt_ - old_tuple_cnt) - (fields_per_wire - old_pos_in_last_page - 1);
-
-                            int pages_to_add = rows_to_add / fields_per_wire + ((rows_to_add % fields_per_wire) != 0);
-                            bpm_->addConsecutivePages(table_id_, i, old_tuple_cnt + fields_per_wire - old_pos_in_last_page, pages_to_add, fields_per_wire);
-
-                        }
-                    }
-                    else{
-                        cout << "old table large\n";
-                        int new_pos_in_last_page = this->tuple_cnt_ % fields_per_wire;
-
-                        if(old_tuple_cnt - this->tuple_cnt_ > fields_per_wire - new_pos_in_last_page - 1) {
-                            int rows_to_remove = (old_tuple_cnt - this->tuple_cnt_) - (fields_per_wire - new_pos_in_last_page - 1);
-
-                            int pages_to_remove = rows_to_remove / fields_per_wire + ((rows_to_remove % fields_per_wire) != 0);
-                            bpm_->removeConsecutivePages(table_id_, i, this->tuple_cnt_ + fields_per_wire - new_pos_in_last_page, pages_to_remove, fields_per_wire);
-                        }
+                        int pages_to_remove = rows_to_remove / fields_per_wire + ((rows_to_remove % fields_per_wire) != 0);
+                        bpm_->removeConsecutivePages(table_id_, i, this->tuple_cnt_ + fields_per_wire - new_pos_in_last_page, pages_to_remove, fields_per_wire);
                     }
                 }
             }
         }
 
         Bit getDummyTag(const int & row)  const override {
-            if(bp_enabled_) {
-                BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
-                BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
+            BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
+            BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
 
-                up.access_counters_++;
-                bpm_->unpacked_page_buffer_pool_[pid] = up;
+            up.access_counters_++;
+            bpm_->unpacked_page_buffer_pool_[pid] = up;
 
-                return up.page_payload_[row % fields_per_wire_.at(-1)];
-            }
-            else {
-                cacheField(row, -1);
-                return unpacked_wires_.at(-1).unpacked_blocks_[row % 128];
-            }
+            return up.page_payload_[row % fields_per_wire_.at(-1)];
         }
 
         void setDummyTag(const int & row, const Bit & val) override {
-            if(bp_enabled_) {
-                BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
-                BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
+            BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
+            BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
 
-                up.page_payload_[row % fields_per_wire_.at(-1)] = val;
-                up.access_counters_++;
+            up.page_payload_[row % fields_per_wire_.at(-1)] = val;
+            up.access_counters_++;
 
-                bpm_->unpacked_page_buffer_pool_[pid] = up;
-
-            }
-            else {
-                cacheField(row, -1);
-                unpacked_wires_[-1].unpacked_blocks_[row % 128] = val;
-                unpacked_wires_[-1].dirty_bit_ = true;
-            }
+            bpm_->unpacked_page_buffer_pool_[pid] = up;
         }
 
 
         QueryTable<Bit> *clone()  override {
-            if(!bp_enabled_) {
-                this->flush();
-            }
             return new PackedColumnTable(*this);
         }
 
@@ -356,7 +206,7 @@ namespace vaultdb {
             for(int i = 0; i < schema_.getFieldCount(); ++i) {
                 QueryFieldDesc desc = schema_.fields_.at(i);
 
-                int size_threshold = bp_enabled_ ? bpm_->unpacked_page_size_ : 128;
+                int size_threshold = bpm_->unpacked_page_size_;
                 int packed_blocks = desc.size() / size_threshold + (desc.size() % size_threshold != 0);
 
                 if(desc.size() / size_threshold > 0) {
@@ -378,7 +228,7 @@ namespace vaultdb {
             }
 
             blocks_per_field_[-1] = 1;
-            fields_per_wire_[-1] = bp_enabled_ ? bpm_->unpacked_page_size_ : 128;
+            fields_per_wire_[-1] = bpm_->unpacked_page_size_;
 
             tuple_size_bytes_ += sizeof(emp::Bit);
             field_sizes_bytes_[-1] = sizeof(emp::Bit);
@@ -490,29 +340,18 @@ namespace vaultdb {
             int read_cursor = src_row;
             int write_cursor = dst_row;
 
-            if(bp_enabled_) {
-                PackedColumnTable *src_table = (PackedColumnTable *) src;
+            PackedColumnTable *src_table = (PackedColumnTable *) src;
 
-                for (int i = 0; i < rows_to_cp; i = i + src_table->fields_per_wire_.at(src_col)) {
-                    BufferPoolManager::PageId src_pid = bpm_->getPageId(src_table->table_id_, src_col,
-                                                                        read_cursor,
-                                                                        src_table->fields_per_wire_.at(src_col));
-                    BufferPoolManager::PageId dst_pid = bpm_->getPageId(table_id_, dst_col, write_cursor,
-                                                                        fields_per_wire_.at(dst_col));
-                    bpm_->clonePage(src_pid, dst_pid);
-                    read_cursor += src_table->fields_per_wire_.at(src_col);
-                    write_cursor += fields_per_wire_.at(dst_col);
-                }
+            for (int i = 0; i < rows_to_cp; i = i + src_table->fields_per_wire_.at(src_col)) {
+                BufferPoolManager::PageId src_pid = bpm_->getPageId(src_table->table_id_, src_col,
+                                                                    read_cursor,
+                                                                    src_table->fields_per_wire_.at(src_col));
+                BufferPoolManager::PageId dst_pid = bpm_->getPageId(table_id_, dst_col, write_cursor,
+                                                                    fields_per_wire_.at(dst_col));
+                bpm_->clonePage(src_pid, dst_pid);
+                read_cursor += src_table->fields_per_wire_.at(src_col);
+                write_cursor += fields_per_wire_.at(dst_col);
             }
-            else {
-                for(int i = 0; i < rows_to_cp; ++i) {
-                    auto f = src->getField(read_cursor, src_col);
-                    this->setField(write_cursor, dst_col, f);
-                    ++read_cursor;
-                    ++write_cursor;
-                }
-            }
-
         }
 
         StorageModel storageModel() const override { return StorageModel::PACKED_COLUMN_STORE; }
@@ -534,10 +373,6 @@ namespace vaultdb {
                 Field<Bit> dst_field = Field<Bit>::deserialize(this->schema_.getField(write_idx), dst_arr.data());
                 setField(row, write_idx, dst_field);
 
-                if(!bp_enabled_) {
-                    packColumn(write_idx);
-                }
-
                 cursor += to_read;
                 ++write_idx;
             }
@@ -546,21 +381,9 @@ namespace vaultdb {
             setDummyTag(row, *dummy_tag);
         }
 
-        void flush() {
-            for(auto unpacked_wire : unpacked_wires_) {
-                if(unpacked_wire.second.dirty_bit_) {
-                    emp::OMPCPackedWire& dst = packed_column_data_.at(unpacked_wire.first).at(unpacked_wire.second.page_idx_);
-                    manager_->pack(unpacked_wire.second.unpacked_blocks_.data(), (Bit *) &dst, blocks_per_field_.at(unpacked_wire.first) * 128);
-                    unpacked_wire.second.dirty_bit_ = false;
-                }
-            }
-        }
-
         ~PackedColumnTable() {
-            if(bp_enabled_) {
-                // Flush pages in buffer pools
-                bpm_->flushPagesGivenTableId(this->table_id_);
-            }
+            // Flush pages in buffer pools
+            bpm_->flushPagesGivenTableId(this->table_id_);
         }
 
     private:
