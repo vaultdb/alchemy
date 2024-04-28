@@ -101,6 +101,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
     vector<int> inner_col_page_offsets(inner_block_pages.size(), 0);
 
     for(int i = 0; i < lhs->tuple_cnt_; i += outer_block_fields_size) {
+        std::vector<BufferPoolManager::PageId> pinned_pages;
         // get unpacked pages for each col and pin those pages
         for(int outer_col_idx = 0; outer_col_idx < lhs->getSchema().getFieldCount(); ++outer_col_idx) {
             int outer_page_cnts = outer_block_pages[outer_col_idx];
@@ -114,9 +115,9 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
                                                                    lhs->fields_per_wire_[outer_col_idx],
                                                                    lhs->fields_per_wire_[outer_col_idx]);
 
-                    BufferPoolManager::UnpackedPage up = bpm->getUnpackedPage(pid);
-                    up.pinned_ = true;
-                    bpm->unpacked_page_buffer_pool_[pid] = up;
+                    emp::Bit *unpacked_page_ptr = bpm->getUnpackedPagePtr(pid);
+                    bpm->page_status_[pid] = {true, bpm->page_status_[pid][1]};
+                    pinned_pages.push_back(pid);
                 }
             }
 
@@ -148,25 +149,8 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
         }
 
         // unpin page
-        for(int outer_col_idx = 0; outer_col_idx < lhs->getSchema().getFieldCount(); ++outer_col_idx) {
-            int outer_page_cnts = outer_block_pages[outer_col_idx];
-            int max_page = ceil(static_cast<double>(lhs->tuple_cnt_) / lhs->fields_per_wire_[outer_col_idx]);
-
-            for(int page_offset = 0; page_offset < outer_page_cnts; ++page_offset) {
-                // check if the page is valid (up to maximum number of pages)
-                if(outer_col_page_offsets[outer_col_idx] + page_offset < max_page) {
-                    BufferPoolManager::PageId pid = bpm->getPageId(lhs->table_id_, outer_col_idx,
-                                                                   (outer_col_page_offsets[outer_col_idx] + page_offset) *
-                                                                   lhs->fields_per_wire_[outer_col_idx],
-                                                                   lhs->fields_per_wire_[outer_col_idx]);
-
-                    BufferPoolManager::UnpackedPage up = bpm->getUnpackedPage(pid);
-                    up.pinned_ = false;
-                    bpm->unpacked_page_buffer_pool_[pid] = up;
-                }
-            }
-
-            outer_col_page_offsets[outer_col_idx] += outer_page_cnts;
+        for(int i = 0; i < pinned_pages.size(); ++i) {
+            bpm->page_status_[pinned_pages[i]] = {false, bpm->page_status_[pinned_pages[i]][1]};
         }
     }
 

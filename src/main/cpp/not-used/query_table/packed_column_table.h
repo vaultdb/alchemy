@@ -29,9 +29,10 @@ namespace vaultdb {
         PackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<Bit>(tuple_cnt, schema, sort_def), manager_(SystemConfiguration::getInstance().emp_manager_) {
             assert(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE);
             setSchema(schema);
-
             if(tuple_cnt == 0)
                 return;
+
+            table_id_ = SystemConfiguration::getInstance().num_tables_++;
         }
 
         PackedColumnTable(const PackedColumnTable &src) : QueryTable<Bit>(src), manager_(SystemConfiguration::getInstance().emp_manager_) {
@@ -40,6 +41,8 @@ namespace vaultdb {
 
             if(src.tuple_cnt_ == 0)
                 return;
+
+            table_id_ = SystemConfiguration::getInstance().num_tables_++;
 
             PackedColumnTable *src_table = (PackedColumnTable *) &src;
 
@@ -52,9 +55,34 @@ namespace vaultdb {
             }
         }
 
+        inline int getPackedWireIdx(const int & row, const int & col) const {
+            if(isMultiwire(col)) {
+                return row;
+            }
+            else {
+                return row / fields_per_wire_.at(col);
+            }
+        }
+
+        // offset in bytes
+        inline int getUnpackedBlockOffset(const int & row, const int & col) const {
+            QueryFieldDesc desc = schema_.getField(col);
+
+            if(blocks_per_field_.at(col) == 1)  {
+                return  (row % fields_per_wire_.at(col)) * desc.size();
+            }
+            return 0;
+        }
+
         Field<Bit> getField(const int  & row, const int & col)  const override {
             BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
-            emp::Bit *read_ptr = bpm_->getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
+            BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
+
+            Bit *read_ptr = up.page_payload_.data() + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
+
+            up.access_counters_++;
+
+            bpm_->unpacked_page_buffer_pool_[pid] = up;
 
             return Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
         }
@@ -62,9 +90,13 @@ namespace vaultdb {
 
         inline void setField(const int  & row, const int & col, const Field<Bit> & f)  override {
             BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
-            emp::Bit *write_ptr = bpm_->getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
+            BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
+
+            Bit *write_ptr = up.page_payload_.data() + (((row % fields_per_wire_.at(col)) * schema_.getField(col).size()));
             f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
-            bpm_->page_status_[pid] = {bpm_->page_status_[pid][0], true};
+            up.access_counters_++;
+
+            bpm_->unpacked_page_buffer_pool_[pid] = up;
         }
 
         SecureTable *secretShare() override  {
@@ -115,6 +147,7 @@ namespace vaultdb {
                 int fields_per_wire = fields_per_wire_.at(i);
 
                 if(this->tuple_cnt_ > old_tuple_cnt) {
+                    cout << "new table large\n";
                     int old_pos_in_last_page = old_tuple_cnt % fields_per_wire;
 
                     if(this->tuple_cnt_ - old_tuple_cnt > fields_per_wire - old_pos_in_last_page - 1) {
@@ -122,9 +155,11 @@ namespace vaultdb {
 
                         int pages_to_add = rows_to_add / fields_per_wire + ((rows_to_add % fields_per_wire) != 0);
                         bpm_->addConsecutivePages(table_id_, i, old_tuple_cnt + fields_per_wire - old_pos_in_last_page, pages_to_add, fields_per_wire);
+
                     }
                 }
                 else{
+                    cout << "old table large\n";
                     int new_pos_in_last_page = this->tuple_cnt_ % fields_per_wire;
 
                     if(old_tuple_cnt - this->tuple_cnt_ > fields_per_wire - new_pos_in_last_page - 1) {
@@ -139,15 +174,22 @@ namespace vaultdb {
 
         Bit getDummyTag(const int & row)  const override {
             BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
-            emp::Bit *read_ptr = bpm_->getUnpackedPagePtr(pid) + (row % fields_per_wire_.at(-1));
-            return *read_ptr;
+            BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
+
+            up.access_counters_++;
+            bpm_->unpacked_page_buffer_pool_[pid] = up;
+
+            return up.page_payload_[row % fields_per_wire_.at(-1)];
         }
 
         void setDummyTag(const int & row, const Bit & val) override {
             BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
-            emp::Bit *write_ptr = bpm_->getUnpackedPagePtr(pid) + (row % fields_per_wire_.at(-1));
-            *write_ptr = val;
-            bpm_->page_status_[pid] = {bpm_->page_status_[pid][0], true};
+            BufferPoolManager::UnpackedPage up = bpm_->getUnpackedPage(pid);
+
+            up.page_payload_[row % fields_per_wire_.at(-1)] = val;
+            up.access_counters_++;
+
+            bpm_->unpacked_page_buffer_pool_[pid] = up;
         }
 
 
@@ -156,8 +198,6 @@ namespace vaultdb {
         }
 
         void setSchema(const QuerySchema &schema) override {
-            table_id_ = SystemConfiguration::getInstance().num_tables_++;
-
             schema_ = schema;
             this->plain_schema_ = QuerySchema::toPlain(schema);
 
@@ -343,8 +383,14 @@ namespace vaultdb {
 
         ~PackedColumnTable() {
             // Flush pages in buffer pools
-            bpm_->removeUnpackedPagesByTable(this->table_id_);
+            bpm_->flushPagesGivenTableId(this->table_id_);
         }
+
+    private:
+        inline bool isMultiwire(const int & col_id) const {
+            return blocks_per_field_.at(col_id) > 1;
+        }
+
     };
 }
 #endif
