@@ -342,6 +342,7 @@ namespace vaultdb {
             }
             else {
                 emp::Bit *src_page_ptr = unpacked_buffer_pool_.data() + unpacked_page_slots_[src_pid] * unpacked_page_size_;
+                page_status_[src_pid][0] = true;
                 emp::Bit *dst_page_ptr = getUnpackedPagePtr(dst_pid);
 
                 // TODO: Why does memcpy not work?
@@ -350,10 +351,10 @@ namespace vaultdb {
                     *(dst_page_ptr + i) = *(src_page_ptr + i);
                 }
 
-                eviction_queue_.push(src_pid);
                 eviction_queue_.push(dst_pid);
+                page_status_[dst_pid][1] = true;
 
-                page_status_[dst_pid] = {false, true};
+                page_status_[src_pid][0] = false;
             }
         }
 

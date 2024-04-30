@@ -64,7 +64,7 @@ namespace vaultdb {
             BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
             emp::Bit *write_ptr = bpm_->getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
             f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
-            bpm_->page_status_[pid] = {bpm_->page_status_[pid][0], true};
+            bpm_->page_status_[pid][1] = true;
         }
 
         SecureTable *secretShare() override  {
@@ -147,7 +147,7 @@ namespace vaultdb {
             BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
             emp::Bit *write_ptr = bpm_->getUnpackedPagePtr(pid) + (row % fields_per_wire_.at(-1));
             *write_ptr = val;
-            bpm_->page_status_[pid] = {bpm_->page_status_[pid][0], true};
+            bpm_->page_status_[pid][1] = true;
         }
 
 
@@ -291,7 +291,7 @@ namespace vaultdb {
                 // Get src unpacked page and pin it.
                 BufferPoolManager::PageId src_pid = bpm_->getPageId(src_table->table_id_, i, src_row, src_table->fields_per_wire_.at(i));
                 emp::Bit *src_ptr = bpm_->getUnpackedPagePtr(src_pid);
-                bpm_->page_status_[src_pid] = {true, bpm_->page_status_[src_pid][1]};
+                bpm_->page_status_[src_pid][0] = true;
 
                 int write_len = src_table->getSchema().getField(i).size();
 
@@ -314,7 +314,7 @@ namespace vaultdb {
 
                 ++write_idx;
 
-                bpm_->page_status_[src_pid] = {false, bpm_->page_status_[src_pid][1]};
+                bpm_->page_status_[src_pid][0] = false;
             }
 
             // Copy dummy tag

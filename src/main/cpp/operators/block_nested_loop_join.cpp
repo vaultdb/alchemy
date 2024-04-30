@@ -116,7 +116,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
                                                                    lhs->fields_per_wire_[outer_col_idx]);
 
                     emp::Bit *unpacked_page_ptr = bpm->getUnpackedPagePtr(pid);
-                    bpm->page_status_[pid] = {true, bpm->page_status_[pid][1]};
+                    bpm->page_status_[pid][0] = true;
                     pinned_pages.push_back(pid);
                 }
             }
@@ -150,7 +150,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
 
         // unpin page
         for(int i = 0; i < pinned_pages.size(); ++i) {
-            bpm->page_status_[pinned_pages[i]] = {false, bpm->page_status_[pinned_pages[i]][1]};
+            bpm->page_status_[pinned_pages[i]][0] = false;
         }
     }
 
