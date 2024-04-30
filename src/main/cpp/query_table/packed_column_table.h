@@ -245,9 +245,11 @@ namespace vaultdb {
 
 
         void cloneTable(const int & dst_row, const int & dst_col, QueryTable<Bit> *src) override {
-            for(int i = -1; i < src->getSchema().getFieldCount(); ++i) {
+            for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
                 cloneColumn(dst_col + i, dst_row, src, i);
             }
+
+            cloneColumn(-1, dst_row, src, -1);
         }
 
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<Bit> * src, const int & src_row) override {
@@ -277,7 +279,57 @@ namespace vaultdb {
         }
 
         void cloneRowRange(const int & dst_row, const int & dst_col, const QueryTable<Bit> *src, const int & src_row, const int & copies) override {
-            throw std::invalid_argument("Not yet implemented!");
+            assert(src->storageModel() == StorageModel::PACKED_COLUMN_STORE);
+            PackedColumnTable *src_table = (PackedColumnTable *) src;
+
+            for(int i = 0; i < src_table->getSchema().getFieldCount(); ++i) {
+                assert(src_table->getSchema().getField(i).size() == this->getSchema().getField(dst_col + i).size());
+            }
+
+            int write_idx = dst_col;
+            for(int i = 0; i < src_table->getSchema().getFieldCount(); ++i) {
+                // Get src unpacked page and pin it.
+                BufferPoolManager::PageId src_pid = bpm_->getPageId(src_table->table_id_, i, src_row, src_table->fields_per_wire_.at(i));
+                emp::Bit *src_ptr = bpm_->getUnpackedPagePtr(src_pid);
+                bpm_->page_status_[src_pid] = {true, bpm_->page_status_[src_pid][1]};
+
+                int write_len = src_table->getSchema().getField(i).size();
+
+                int src_offset = (src_row % src_table->fields_per_wire_.at(i)) * write_len;
+
+                int write_row_idx = dst_row;
+
+                // Write n copies of src rows to dst rows
+                for(int j = 0; j < copies; ++j) {
+                    // Get dst unpacked page
+                    BufferPoolManager::PageId dst_pid = bpm_->getPageId(table_id_, write_idx, write_row_idx, fields_per_wire_.at(write_idx));
+                    emp::Bit *dst_ptr = bpm_->getUnpackedPagePtr(dst_pid);
+
+                    int dst_offset = (write_row_idx % fields_per_wire_.at(write_idx)) * write_len;
+
+                    memcpy(dst_ptr + dst_offset, src_ptr + src_offset, write_len);
+
+                    ++write_row_idx;
+                }
+
+                ++write_idx;
+
+                bpm_->page_status_[src_pid] = {false, bpm_->page_status_[src_pid][1]};
+            }
+
+            // Copy dummy tag
+            BufferPoolManager::PageId src_dummy_pid = bpm_->getPageId(src_table->table_id_, -1, src_row, src_table->fields_per_wire_.at(-1));
+            emp::Bit *src_dummy_ptr = bpm_->getUnpackedPagePtr(src_dummy_pid);
+            Bit dummy_tag = src_dummy_ptr[src_row % src_table->fields_per_wire_.at(-1)];
+
+            int write_dummy_row_idx = dst_row;
+
+            for(int i = 0; i < copies; ++i) {
+                BufferPoolManager::PageId dst_dummy_pid = bpm_->getPageId(table_id_, -1, dst_row + i, fields_per_wire_.at(-1));
+                emp::Bit *dst_dummy_ptr = bpm_->getUnpackedPagePtr(dst_dummy_pid);
+                dst_dummy_ptr[write_dummy_row_idx % fields_per_wire_.at(-1)] = dummy_tag;
+                ++write_dummy_row_idx;
+            }
         }
 
         void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<Bit> *src, const int & src_col, const int & src_row = 0) override {

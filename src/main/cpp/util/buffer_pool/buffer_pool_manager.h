@@ -243,21 +243,22 @@ namespace vaultdb {
                 bool has_unpacked_page = hasUnpackedPage(evicted_pid);
                 bool is_pinned = has_unpacked_page ? page_status_[evicted_pid][0] : false;
                 while(!has_unpacked_page || is_pinned) {
-                    eviction_queue_.pop();
-                    evicted_pid = eviction_queue_.front();
-
-                    if(has_unpacked_page && page_status_[evicted_pid][0]) {
+                    if(has_unpacked_page && is_pinned) {
                         eviction_queue_.push(evicted_pid);
                     }
+
+                    eviction_queue_.pop();
+                    evicted_pid = eviction_queue_.front();
 
                     has_unpacked_page = hasUnpackedPage(evicted_pid);
                     is_pinned = has_unpacked_page ? page_status_[evicted_pid][0] : false;
                 }
 
+                slot_idx = unpacked_page_slots_[evicted_pid];
+
                 // if the page is dirty, pack it and store in packed buffer pool
                 // if not, we dont need to pack it
                 if(page_status_[evicted_pid][1]) {
-                    slot_idx = unpacked_page_slots_[evicted_pid];
                     emp::Bit *evicted_page = unpacked_buffer_pool_.data() + slot_idx * unpacked_page_size_;
 
                     PackedPage evicted_packed_page;
@@ -331,10 +332,6 @@ namespace vaultdb {
         void clonePage(PageId &src_pid, PageId &dst_pid) {
             if(!hasPage(src_pid)) {
                 throw std::runtime_error("Source page not found for pid: " + src_pid.toString());
-            }
-
-            if(hasPage(dst_pid)) {
-                throw std::runtime_error("Destination page already exists: " + dst_pid.toString());
             }
 
             if(hasPackedPage(src_pid)) {
