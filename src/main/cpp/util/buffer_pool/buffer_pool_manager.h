@@ -309,8 +309,6 @@ namespace vaultdb {
             }
 
             if(hasUnpackedPage(pid)) {
-                eviction_queue_.push(pid);
-
                 return unpacked_buffer_pool_.data() + unpacked_page_slots_[pid] * unpacked_page_size_;
             }
             else {
@@ -345,7 +343,12 @@ namespace vaultdb {
             else {
                 emp::Bit *src_page_ptr = unpacked_buffer_pool_.data() + unpacked_page_slots_[src_pid] * unpacked_page_size_;
                 emp::Bit *dst_page_ptr = getUnpackedPagePtr(dst_pid);
-                memcpy(dst_page_ptr, src_page_ptr, unpacked_page_size_);
+
+                // TODO: Why does memcpy not work?
+                //memcpy(dst_page_ptr, src_page_ptr, unpacked_page_size_);
+                for(int i = 0; i < unpacked_page_size_; ++i) {
+                    *(dst_page_ptr + i) = *(src_page_ptr + i);
+                }
 
                 eviction_queue_.push(src_pid);
                 eviction_queue_.push(dst_pid);
