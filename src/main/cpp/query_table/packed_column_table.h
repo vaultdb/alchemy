@@ -9,7 +9,7 @@ namespace vaultdb {
 
     public:
 
-        int table_id_ = -1;
+        int table_id_ = SystemConfiguration::getInstance().num_tables_++;
         BufferPoolManager *bpm_ = SystemConfiguration::getInstance().bpm_;
 
         // choosing to branch instead of storing this in a float for now, need to analyze trade-off on this one
@@ -156,8 +156,6 @@ namespace vaultdb {
         }
 
         void setSchema(const QuerySchema &schema) override {
-            table_id_ = SystemConfiguration::getInstance().num_tables_++;
-
             schema_ = schema;
             this->plain_schema_ = QuerySchema::toPlain(schema);
 
