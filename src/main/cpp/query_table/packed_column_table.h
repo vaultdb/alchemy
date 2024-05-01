@@ -9,8 +9,11 @@ namespace vaultdb {
 
     public:
 
+        // setup for buffer pool
         int table_id_ = SystemConfiguration::getInstance().num_tables_++;
         BufferPoolManager *bpm_ = SystemConfiguration::getInstance().bpm_;
+        mutable std::map<int, std::vector<emp::OMPCPackedWire>> packed_buffer_pool_; // map<col id, vector of OMPCPackedWires>
+        mutable std::map<int, std::vector<bool>> wire_status_; // map<col id, vector of bools indicating if wire is occupied>
 
         // choosing to branch instead of storing this in a float for now, need to analyze trade-off on this one
         // maps ordinal to wire count.  floor(128/field_size_bits)
@@ -32,6 +35,15 @@ namespace vaultdb {
 
             if(tuple_cnt == 0)
                 return;
+
+            // initialize packed buffer pool including dummy tags
+            for(int i = -1; i < schema_.getFieldCount(); ++i) {
+                int max_packed_wires = tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0);
+                packed_buffer_pool_[i] = std::vector<emp::OMPCPackedWire>(max_packed_wires, emp::OMPCPackedWire(bpm_->block_n_));
+                bpm_->packed_buffer_pool_[table_id_][i] = &packed_buffer_pool_[i];
+                wire_status_[i] = std::vector<bool>(max_packed_wires, false);
+                bpm_->wire_status_[table_id_][i] = &wire_status_[i];
+            }
         }
 
         PackedColumnTable(const PackedColumnTable &src) : QueryTable<Bit>(src), manager_(SystemConfiguration::getInstance().emp_manager_) {
@@ -40,6 +52,15 @@ namespace vaultdb {
 
             if(src.tuple_cnt_ == 0)
                 return;
+
+            // initialize packed buffer pool including dummy tags
+            for(int i = -1; i < schema_.getFieldCount(); ++i) {
+                int max_packed_wires = tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0);
+                packed_buffer_pool_[i] = std::vector<emp::OMPCPackedWire>(max_packed_wires, emp::OMPCPackedWire(bpm_->block_n_));
+                bpm_->packed_buffer_pool_[table_id_][i] = &packed_buffer_pool_[i];
+                wire_status_[i] = std::vector<bool>(max_packed_wires, false);
+                bpm_->wire_status_[table_id_][i] = &wire_status_[i];
+            }
 
             PackedColumnTable *src_table = (PackedColumnTable *) &src;
 
@@ -394,6 +415,8 @@ namespace vaultdb {
         ~PackedColumnTable() {
             // Flush pages in buffer pools
             bpm_->removeUnpackedPagesByTable(this->table_id_);
+            bpm_->packed_buffer_pool_.erase(this->table_id_);
+            bpm_->wire_status_.erase(this->table_id_);
         }
     };
 }

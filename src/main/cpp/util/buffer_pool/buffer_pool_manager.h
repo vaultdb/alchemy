@@ -41,21 +41,6 @@ namespace vaultdb {
 
         } PageId;
 
-        // data from same column can be same page - easy to get offset.
-        typedef struct unpackd_page_ {
-            PageId pid_;
-            vector<emp::Bit> page_payload_;
-            int access_counters_; // for LRU
-            bool pinned_ = false;
-        } UnpackedPage;
-
-        typedef struct packd_page_ {
-            PageId pid_;
-            emp::OMPCPackedWire page_payload_;
-            int access_counters_; // for LRU
-            bool pinned_ = false;
-        } PackedPage;
-
         BufferPoolManager() {};
 
         BufferPoolManager(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager) : unpacked_page_size_(unpacked_page_size), max_unpacked_pages_(num_unpacked_pages), packed_page_size_(packed_page_size), max_packed_pages_(num_packed_pages), emp_manager_(manager) {
@@ -93,7 +78,7 @@ namespace vaultdb {
             return false;
         }
 
-        void removePageFromUnpackedBufferPool(PageId &pid) {
+        void removeUnpackedPage(PageId &pid) {
 
         }
 
@@ -124,13 +109,22 @@ namespace vaultdb {
 
         int unpacked_page_size_; // in emp::Bits
         int max_unpacked_pages_;
-        int packed_page_size_; // in emp::OMPCPackedWire
+        int packed_page_size_; // in emp::OMPCPackedWires
         int max_packed_pages_;
 
         int block_n_;
 
-        std::map<PageId, UnpackedPage> unpacked_page_buffer_pool_;
-        std::map<PageId, PackedPage> packed_page_buffer_pool_;
+        // setup for unpacked buffer pool
+        std::vector<emp::Bit> unpacked_buffer_pool_;
+        std::vector<bool> occupied_status_; // 0 - free, 1 - occupied for each slot
+        std::queue<PageId> eviction_queue_; // LRU eviction by queue
+
+        std::map<PageId, int> unpacked_page_slots_; // map<pid, slot id in unpacked buffer pool>
+        std::map<PageId, std::vector<bool>> page_status_; // map<pid, <pinned_status (0 - unpinned, 1 - pinned), dirty_status (0 - clean, 1 - dirty)>>
+
+        // setup for packed buffer pool
+        std::map<int, std::map<int, std::vector<emp::OMPCPackedWire>*>> packed_buffer_pool_;
+        std::map<int, std::map<int, std::vector<bool>*>> wire_status_;
 
     };
 }
@@ -141,6 +135,7 @@ namespace vaultdb {
 namespace vaultdb {
     class BufferPoolManager {
     public:
+        // data from same column can be same page - easy to get offset.
         typedef struct page_id_ {
             int table_id_;
             int col_id_;
@@ -171,21 +166,6 @@ namespace vaultdb {
 
         } PageId;
 
-        // data from same column can be same page - easy to get offset.
-        typedef struct unpackd_page_ {
-            PageId pid_;
-            vector<emp::Bit> page_payload_;
-            int access_counters_; // for LRU
-            bool pinned_ = false;
-        } UnpackedPage;
-
-        typedef struct packd_page_ {
-            PageId pid_;
-            emp::OMPCPackedWire page_payload_;
-            int access_counters_; // for LRU
-            bool pinned_ = false;
-        } PackedPage;
-
         BufferPoolManager() {};
 
         BufferPoolManager(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager) : unpacked_page_size_(unpacked_page_size), max_unpacked_pages_(num_unpacked_pages), packed_page_size_(packed_page_size), max_packed_pages_(num_packed_pages), emp_manager_(manager) {
@@ -205,12 +185,17 @@ namespace vaultdb {
 
 
         bool hasUnpackedPage(PageId &page_id) {
-            //return unpacked_page_buffer_pool_.find(page_id) != unpacked_page_buffer_pool_.end();
             return unpacked_page_slots_.find(page_id) != unpacked_page_slots_.end();
         }
 
         bool hasPackedPage(PageId &page_id) {
-            return packed_page_buffer_pool_.find(page_id) != packed_page_buffer_pool_.end();
+            if(wire_status_.find(page_id.table_id_) != wire_status_.end()) {
+                std::map<int, std::vector<bool>*> col_map = wire_status_[page_id.table_id_];
+                if(col_map.find(page_id.col_id_) != col_map.end()) {
+                    return col_map[page_id.col_id_]->at(page_id.page_idx_);
+                }
+            }
+            return false;
         }
 
         bool hasPage(PageId &page_id) {
@@ -218,15 +203,14 @@ namespace vaultdb {
         }
 
         bool isUnpackedBufferPoolFull() const {
-            //return unpacked_page_buffer_pool_.size() >= max_unpacked_pages_;
             return unpacked_page_slots_.size() >= max_unpacked_pages_;
         }
 
         bool isPackedBufferPoolFull() const {
-            return packed_page_buffer_pool_.size() >= max_packed_pages_;
+            return false;
         }
 
-        void removePageFromUnpackedBufferPool(PageId &pid) {
+        void removeUnpackedPage(PageId &pid) {
             occupied_status_[unpacked_page_slots_[pid]] = false;
             unpacked_page_slots_.erase(pid);
             page_status_.erase(pid);
@@ -261,19 +245,16 @@ namespace vaultdb {
                 if(page_status_[evicted_pid][1]) {
                     emp::Bit *evicted_page = unpacked_buffer_pool_.data() + slot_idx * unpacked_page_size_;
 
-                    PackedPage evicted_packed_page;
-                    evicted_packed_page.pid_ = evicted_pid;
-
                     emp::OMPCPackedWire evicted_pack_wire(block_n_);
                     emp_manager_->pack((Bit *) evicted_page, (Bit *) &evicted_pack_wire, unpacked_page_size_);
-                    evicted_packed_page.page_payload_ = evicted_pack_wire;
-                    evicted_packed_page.access_counters_ = 0;
 
-                    packed_page_buffer_pool_[evicted_pid] = evicted_packed_page;
+                    emp::OMPCPackedWire *packed_wires_ptr = packed_buffer_pool_[evicted_pid.table_id_][evicted_pid.col_id_]->data() + evicted_pid.page_idx_;
+                    *packed_wires_ptr = evicted_pack_wire;
+                    (*wire_status_[evicted_pid.table_id_][evicted_pid.col_id_])[evicted_pid.page_idx_] = true;
                 }
 
                 eviction_queue_.pop();
-                removePageFromUnpackedBufferPool(evicted_pid);
+                removeUnpackedPage(evicted_pid);
             }
 
             return slot_idx;
@@ -312,10 +293,10 @@ namespace vaultdb {
                 return unpacked_buffer_pool_.data() + unpacked_page_slots_[pid] * unpacked_page_size_;
             }
             else {
-                PackedPage packed_page = packed_page_buffer_pool_[pid];
+                emp::OMPCPackedWire *packed_page_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_]->data() + pid.page_idx_;
 
                 int empty_slot_idx = getEmptySlot();
-                emp_manager_->unpack((Bit *) &packed_page.page_payload_, unpacked_buffer_pool_.data() + empty_slot_idx * unpacked_page_size_, unpacked_page_size_);
+                emp_manager_->unpack((Bit *) packed_page_ptr, unpacked_buffer_pool_.data() + empty_slot_idx * unpacked_page_size_, unpacked_page_size_);
                 occupied_status_[empty_slot_idx] = true;
 
                 unpacked_page_slots_[pid] = empty_slot_idx;
@@ -333,12 +314,10 @@ namespace vaultdb {
             }
 
             if(hasPackedPage(src_pid)) {
-                PackedPage src_page = packed_page_buffer_pool_[src_pid];
-                PackedPage dst_page;
-                dst_page.pid_ = dst_pid;
-                dst_page.page_payload_ = src_page.page_payload_;
-                dst_page.access_counters_ = src_page.access_counters_;
-                packed_page_buffer_pool_[dst_pid] = dst_page;
+                emp::OMPCPackedWire *src_page_ptr = packed_buffer_pool_[src_pid.table_id_][src_pid.col_id_]->data() + src_pid.page_idx_;
+                emp::OMPCPackedWire *dst_page_ptr = packed_buffer_pool_[dst_pid.table_id_][dst_pid.col_id_]->data() + dst_pid.page_idx_;
+                *dst_page_ptr = *src_page_ptr;
+                (*wire_status_[dst_pid.table_id_][dst_pid.col_id_])[dst_pid.page_idx_] = true;
             }
             else {
                 emp::Bit *src_page_ptr = unpacked_buffer_pool_.data() + unpacked_page_slots_[src_pid] * unpacked_page_size_;
@@ -374,10 +353,10 @@ namespace vaultdb {
                 }
 
                 if(hasUnpackedPage(pid)) {
-                    removePageFromUnpackedBufferPool(pid);
+                    removeUnpackedPage(pid);
                 }
                 else {
-                    packed_page_buffer_pool_.erase(pid);
+                    (*wire_status_[pid.table_id_][pid.col_id_])[pid.page_idx_] = false;
                 }
                 ++pid.page_idx_;
             }
@@ -402,7 +381,7 @@ namespace vaultdb {
             }
 
             for(auto pid : pids_to_remove) {
-                removePageFromUnpackedBufferPool(pid);
+                removeUnpackedPage(pid);
             }
         }
 
@@ -417,8 +396,7 @@ namespace vaultdb {
 
         int block_n_;
 
-        std::map<PageId, PackedPage> packed_page_buffer_pool_;
-
+        // setup for unpacked buffer pool
         std::vector<emp::Bit> unpacked_buffer_pool_;
         std::vector<bool> occupied_status_; // 0 - free, 1 - occupied for each slot
         std::queue<PageId> eviction_queue_; // LRU eviction by queue
@@ -426,6 +404,9 @@ namespace vaultdb {
         std::map<PageId, int> unpacked_page_slots_; // map<pid, slot id in unpacked buffer pool>
         std::map<PageId, std::vector<bool>> page_status_; // map<pid, <pinned_status (0 - unpinned, 1 - pinned), dirty_status (0 - clean, 1 - dirty)>>
 
+        // setup for packed buffer pool
+        std::map<int, std::map<int, std::vector<emp::OMPCPackedWire>*>> packed_buffer_pool_; // map<table_id, map<col_id, a pointer of a vector OMPCPackedWires>>
+        std::map<int, std::map<int, std::vector<bool>*>> wire_status_; // map<table_id, map<col_id, a pointer of a vector bool>> - 0 - free, 1 - occupied
     };
 }
 
