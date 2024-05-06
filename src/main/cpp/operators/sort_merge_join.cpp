@@ -36,7 +36,7 @@ void SortMergeJoin<B>::setup() {
 
     updateCollation();
 
-    max_intermediate_cardinality_ =  this->getChild(0)->getOutputCardinality();// * this->getChild(1)->getOutputCardinality();
+    max_intermediate_cardinality_ =  this->getChild(0)->getOutputCardinality() * this->getChild(1)->getOutputCardinality();
 
     if(is_secure_) {
         int card_bits = ceil(log2(max_intermediate_cardinality_)) + 1; // + 1 for sign bit
@@ -223,6 +223,7 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     // sort by table ID followed by join key
     SortDefinition sort_def;
     sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
+    sort_def.emplace_back(-1, SortDirection::ASCENDING);
     for(int i = 0; i < join_idxs_.size(); ++i) {
         sort_def.emplace_back(i, SortDirection::ASCENDING);
     }
@@ -306,8 +307,6 @@ QueryTable<B> *SortMergeJoin<B>::unionTables(QueryTable<B> *lhs, QueryTable<B> *
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs) {
-
-
 
     ExpressionMapBuilder<B> builder(src->getSchema());
     int write_cursor = 0;
@@ -397,8 +396,6 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::distribute(QueryTable<B> *input, size_t target_size) {
 
-    Logging::Logger* log = Logging::get_log();
-
     QuerySchema schema = input->getSchema();
 
     SortDefinition sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
@@ -439,16 +436,8 @@ QueryTable<B> *SortMergeJoin<B>::distribute(QueryTable<B> *input, size_t target_
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::expand(QueryTable<B> *input, bool is_lhs) {
 
-    // Sort dummies to end to prevent offset error
-
-    // Sort individual table dummies to end before expand
-    SortDefinition sort_def;
-    sort_def.emplace_back(-1, SortDirection::ASCENDING);
-    sort_def.emplace_back(0, SortDirection::ASCENDING);
-    Sort<B> sort_by_dummy(input, sort_def);
-    sort_by_dummy.setOperatorId(-2);
-    QueryTable<B> *intermediate_table = sort_by_dummy.run()->clone();
-    //QueryTable<B> *intermediate_table = input->clone();
+    // Get intermediate table
+    QueryTable<B> *intermediate_table = input->clone();
 
     weight_idx_ = input->getSchema().getFieldCount();
     is_new_idx_ = weight_idx_ + 1;
@@ -464,22 +453,25 @@ QueryTable<B> *SortMergeJoin<B>::expand(QueryTable<B> *input, bool is_lhs) {
     Field<B> s = one_;
     Field<B> one_b(bool_field_type_, B(true)), zero_b(bool_field_type_, B(false));
 
+    Field<B> total_cnt;
+
     // Iterate and set fields based on alpha values
-    for(int i = 0; i < input->tuple_cnt_; i++) {
+    for(int i = 0; i < intermediate_table->tuple_cnt_; i++) {
 
         // Allocate alpha1 * alpha2 rows for new table
         Field<B> cnt1 = intermediate_table->getField(i, alpha1_idx_);
         Field<B> cnt2 = intermediate_table->getField(i, alpha2_idx_);
-        Field<B> total_cnt;
 
         total_cnt = is_lhs ? cnt2 : cnt1;
 
-        B null_val = (total_cnt == zero_);
+        Field<B> prev_s = s;
+        s = s + total_cnt;
+        B null_val = (prev_s == s);
+        //B null_val = (total_cnt == zero_);
 
-        intermediate_table->setField(i, weight_idx_, Field<B>::If(null_val, zero_, s));
+        intermediate_table->setField(i, weight_idx_, Field<B>::If(null_val, zero_, prev_s));
         intermediate_table->setField(i, is_new_idx_, Field<B>::If(null_val, one_b, zero_b));
         intermediate_table->setDummyTag(i, input->getDummyTag(i) | null_val);
-        s = s + total_cnt;
     }
 
     QueryTable<B> *dst_table = distribute(intermediate_table, max_intermediate_cardinality_);
@@ -507,6 +499,7 @@ QueryTable<B> *SortMergeJoin<B>::expand(QueryTable<B> *input, bool is_lhs) {
         B dummy_tag = tmp_row.getDummyTag() | end_matches;
         dst_table->setDummyTag(i, dummy_tag);
     }
+
     return dst_table;
 }
 

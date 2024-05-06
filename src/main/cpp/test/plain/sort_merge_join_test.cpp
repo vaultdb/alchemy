@@ -12,7 +12,7 @@
 #include "util/field_utilities.h"
 
 
-DEFINE_int32(cutoff, 1000, "limit clause for queries");
+DEFINE_int32(cutoff, 10, "limit clause for queries");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "column", "storage model for columns (column or compressed)");

@@ -208,32 +208,32 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
     Operator<Bit>* lhs = join->getChild(0);
     Operator<Bit>* rhs = join->getChild(1);
     QuerySchema augmented_schema = join->deriveAugmentedSchema();
-    auto max_output_cardinality = lhs->getOutputCardinality();// * rhs->getOutputCardinality();
+    auto max_output_cardinality = lhs->getOutputCardinality() * rhs->getOutputCardinality();
     auto lhs_cardinality = lhs->getOutputCardinality();
     auto rhs_cardinality = rhs->getOutputCardinality();
 
-    //first we have the cost of two sorts from augmentTables
+    // first we have the cost of two sorts from augmentTables
     auto p = (GenericExpression<Bit>*) join->getPredicate();
     JoinEqualityConditionVisitor<Bit> join_visitor(p->root_);
     vector<pair<uint32_t, uint32_t> > join_idxs  = join_visitor.getEqualities();
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join_idxs.size());
 
     size_t table_id_idx = augmented_schema.getFieldCount() - 1;
+    sort_def.emplace_back(0, SortDirection::ASCENDING);
     sort_def.emplace_back(table_id_idx, SortDirection::ASCENDING);
 
     size_t augment_cost = 0;
 
-    augment_cost += sortCost(augmented_schema, sort_def, rhs_cardinality);
-    augment_cost += sortCost(augmented_schema, sort_def, lhs_cardinality);
+    augment_cost += sortCost(augmented_schema, sort_def, rhs_cardinality + lhs_cardinality);
 
     sort_def.clear();
     sort_def.emplace_back(table_id_idx, SortDirection::ASCENDING);
+    sort_def.emplace_back(-1, SortDirection::ASCENDING); // Sorting dummies to end of each table
     for(int i = 0; i < join_idxs.size(); ++i) {
         sort_def.emplace_back(i, SortDirection::ASCENDING);
     }
 
-    augment_cost += sortCost(augmented_schema, sort_def, rhs_cardinality);
-    augment_cost += sortCost(augmented_schema, sort_def, lhs_cardinality);
+    augment_cost += sortCost(augmented_schema, sort_def, rhs_cardinality + lhs_cardinality);
     cost += augment_cost;
 
     //next we have the cost of the sort from obliviousDistribute
@@ -248,13 +248,17 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 
     SortDefinition second_sort_def{ ColumnSort(is_new_idx, SortDirection::ASCENDING), ColumnSort(weight_idx, SortDirection::ASCENDING)};
 
-    size_t distribute_cost = 0;
+    size_t distribute_sort_cost = 0;
 
-    distribute_cost += sortCost(augmented_schema, second_sort_def, max_output_cardinality);
+    distribute_sort_cost += sortCost(augmented_schema, second_sort_def, lhs_cardinality);
+    distribute_sort_cost += sortCost(augmented_schema, second_sort_def, rhs_cardinality);
+
+    cost += distribute_sort_cost;
 
     //obliviousDistribute
-    //size_t n = join->getOutputCardinality();
-    size_t n = max_output_cardinality;
+    size_t distribute_cost = 0;
+    size_t n = join->getOutputCardinality();
+
     float inner_loop = n;
     float outer_loop = floor(log2(inner_loop));
 
@@ -290,10 +294,6 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
     sort_def.emplace_back(0, SortDirection::ASCENDING); // Join key
     sort_def.emplace_back(new_idx_col_pos, SortDirection::ASCENDING); // New idx col
     size_t align_cost = sortCost(augmented_schema, sort_def, max_output_cardinality);
-
-    // Cost of new_idx calculation and write to new_idx for length of table
-//    size_t new_idx_write_cost = rhs_cardinality * (augmented_schema.size() + 1);
-//    align_cost += new_idx_write_cost;
 
     cost += align_cost;
 
