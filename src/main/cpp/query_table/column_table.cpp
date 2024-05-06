@@ -16,22 +16,15 @@ void ColumnTable<Bit>::cloneRow(const Bit & write, const int & dst_row, const in
 
     assert(s->storageModel() == StorageModel::COLUMN_STORE);
     auto src = (ColumnTable<Bit> *) s;
-    int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
 
     int write_idx = dst_col; // field indexes
     int read_idx = 0;
     int bytes_read = 0;
 
-    // re-pack row
     while(read_idx < src->schema_.getFieldCount()) {
         Bit *write_pos = (Bit *) getFieldPtr(dst_row, write_idx);
         Bit *read_pos = (Bit *) src->getFieldPtr(src_row, read_idx);
-
-        int bytes_remaining = src_size - bytes_read;
-        int dst_len = field_sizes_bytes_.at(write_idx);
-        int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
-
-        int to_read_bits = to_read / sizeof(emp::Bit);
+        int to_read_bits = this->field_sizes_bytes_[write_idx] / sizeof(emp::Bit);
         for(int i = 0; i <  to_read_bits; ++i) {
             *write_pos = emp::If(write, *read_pos, *write_pos);
             ++write_pos;
@@ -39,7 +32,6 @@ void ColumnTable<Bit>::cloneRow(const Bit & write, const int & dst_row, const in
         }
         ++read_idx;
         ++write_idx;
-        bytes_read += to_read;
     }
 
     // copy dummy tag

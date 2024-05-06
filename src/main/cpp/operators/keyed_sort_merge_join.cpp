@@ -350,11 +350,11 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionAndMergeTables() {
     sorter.setOperatorId(-2);
     auto normalized = sorter.normalizeTable(unioned); // normalize to move up table_id field
     sorter.bitonicMerge(normalized, sorter.getSortOrder(), 0, normalized->tuple_cnt_, true, counter);
-    unioned =  sorter.denormalizeTable(normalized);
-    unioned->order_by_ = sort_def;
+    auto collated_union =  sorter.denormalizeTable(normalized);
+    collated_union->order_by_ = sort_def;
 
     delete normalized;
-    return unioned;
+    return collated_union;
 
 }
 

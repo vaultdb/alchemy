@@ -170,45 +170,37 @@ namespace vaultdb {
         // copy all columns from src to dst
         void cloneTable(const int & dst_row,  const int & dst_col, QueryTable<B> *s) override {
 
-            assert(s->getSchema() == this->schema_);
             assert((s->tuple_cnt_ + dst_row) <= this->tuple_cnt_);
             assert(s->storageModel() == StorageModel::COLUMN_STORE);
 
             auto src = (ColumnTable<B> *) s;
             int8_t *write_pos, *read_pos;
+            int write_idx = dst_col;
 
             // copy out entire cols
-            for(auto pos : this->field_sizes_bytes_) {
-                int col_id = pos.first;
-                int field_size = pos.second;
-                write_pos = getFieldPtr(dst_row, col_id);
-                read_pos = src->column_data_.at(col_id).data();
-                memcpy(write_pos, read_pos, field_size * src->tuple_cnt_);
+            for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+                write_pos = getFieldPtr(dst_row, write_idx);
+                read_pos = src->column_data_.at(i).data();
+                memcpy(write_pos, read_pos, this->field_sizes_bytes_.at(write_idx) * src->tuple_cnt_);
+                ++write_idx;
             }
+
+            write_pos = getFieldPtr(dst_row, -1);
+            read_pos = src->column_data_.at(-1).data();
+            memcpy(write_pos, read_pos, this->field_sizes_bytes_.at(-1) * src->tuple_cnt_);
+
         }
 
         // dummy tag included
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * s, const int & src_row) override{
             assert(s->storageModel() == StorageModel::COLUMN_STORE);
+
             auto src = (ColumnTable<B> *) s;
-            int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
 
-            int cursor = 0; // bytes
-            int write_idx = dst_col; // field indexes
-
-            // serialize src vals into a temp row
-            // does not include dummy tag - handle further down in this method
-            vector<int8_t> row = src->unpackRowBytes(src_row, src->schema_.getFieldCount());
-
-            // re-pack row
-            while(cursor < src_size) {
-                int8_t *write_pos = getFieldPtr(dst_row, write_idx);
-                int bytes_remaining = src_size - cursor;
-                int dst_len = this->field_sizes_bytes_.at(write_idx);
-                int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
-                memcpy(write_pos, row.data() + cursor, to_read);
-                cursor += to_read;
-                ++write_idx;
+            for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+                auto read_pos = src->getFieldPtr(src_row, i);
+                auto write_pos = getFieldPtr(dst_row, dst_col + i);
+                memcpy(write_pos, read_pos, this->field_sizes_bytes_.at(dst_col + i));
             }
 
             B *dummy_tag = (B*) src->getFieldPtr(src_row, -1);
@@ -217,8 +209,36 @@ namespace vaultdb {
 
         void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) override;
 
-        virtual void cloneRowRange(const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row, const int & copies) override {
-            throw runtime_error("Not yet implemented");
+        // make N copies of a row, starting at offset dst_row
+        virtual void cloneRowRange(const int & dst_row, const int & dst_col, const QueryTable<B> *s, const int & src_row, const int & copies) override {
+            assert(s->storageModel() == StorageModel::COLUMN_STORE);
+            for(int i = 0; i < s->getSchema().getFieldCount(); ++i) {
+                assert(s->getSchema().getField(i).size() == this->getSchema().getField(dst_col + i).size());
+            }
+
+            auto src = (ColumnTable<B> *) s;
+
+
+
+            int write_idx = dst_col; // field indexes
+            for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+                auto write_pos = getFieldPtr(dst_row, write_idx);
+                auto read_pos = src->getFieldPtr(src_row, i);
+                int write_len = src->field_sizes_bytes_[i];
+                for(int j = 0; j < copies; ++j) {
+                    memcpy(write_pos, read_pos, write_len);
+                    write_pos += write_len;
+                }
+                ++write_idx;
+            }
+
+            // copy dummy tag
+            B dummy_tag = src->getDummyTag(src_row);
+            B *write_pos = (B *) getFieldPtr(dst_row, -1);
+            for(int i = 0; i < copies; ++i) {
+                *write_pos = dummy_tag;
+                ++write_pos;
+            }
         }
 
         void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<B> *s, const int & src_col, const int & src_row = 0) override {

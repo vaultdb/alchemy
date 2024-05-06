@@ -21,7 +21,7 @@ namespace vaultdb{
         EmpMode emp_mode_ = EmpMode::PLAIN;
         int party_;
 
-        bool bp_enabled_ = true;
+        bool bp_enabled_ = false;
         BufferPoolManager *bpm_ = nullptr;
 
         int num_tables_;
@@ -45,9 +45,12 @@ namespace vaultdb{
             if(storage_model_ != StorageModel::PACKED_COLUMN_STORE) {
                 bp_enabled_ = false;
             }
+            else {
+                bp_enabled_ = true;
+            }
 
             if(bp_enabled_) {
-                bpm_ = new BufferPoolManager(256, 100, 5, 1000, emp_manager_);
+                bpm_ = new BufferPoolManager(1024, 50, 5, 1000, emp_manager_);
             }
         }
 

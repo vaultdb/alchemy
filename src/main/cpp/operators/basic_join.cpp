@@ -38,15 +38,18 @@ QueryTable<B> *BasicJoin<B>::runSelf() {
     int cursor = 0;
     int rhs_col_offset = this->output_->getSchema().getFieldCount() - rhs->getSchema().getFieldCount();
 
-    for(uint32_t i = 0; i < lhs->tuple_cnt_; ++i) {
+    for(int i = 0; i < lhs->tuple_cnt_; ++i) {
         lhs_dummy_tag  = lhs->getDummyTag(i);
-        for(uint32_t j = 0; j < rhs->tuple_cnt_; ++j) {
-            this->output_->cloneRow(cursor, 0, lhs, i); //   Join<B>::write_left(this->output_, cursor,  lhs, i);
-            this->output_->cloneRow(cursor, rhs_col_offset, rhs, j); // Join<B>::write_right(this->output_, cursor,  rhs, j);
+        // copy the lhs |rhs| times
+        this->output_->cloneRowRange(cursor, 0, lhs, i, rhs->tuple_cnt_);
+        // initialize the rhs output
+        this->output_->cloneTable(cursor, rhs_col_offset, rhs);
+
+        // make |rhs| copies of the lhs row
+        for(int j = 0; j < rhs->tuple_cnt_; ++j) {
             selected = Join<B>::predicate_->call(lhs, i, rhs, j).template getValue<B>();
             dst_dummy_tag = (!selected) | lhs_dummy_tag | rhs->getDummyTag(j);
-
-            Operator<B>::output_->setDummyTag(cursor, dst_dummy_tag);
+            this->output_->setDummyTag(cursor, dst_dummy_tag);
             ++cursor;
         }
     }
