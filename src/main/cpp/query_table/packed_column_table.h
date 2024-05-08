@@ -266,11 +266,13 @@ namespace vaultdb {
 
 
         void cloneTable(const int & dst_row, const int & dst_col, QueryTable<Bit> *src) override {
+            // TODO: need to check why cloneColumn does not work here.
             for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
-                cloneColumn(dst_col + i, dst_row, src, i);
+                for(int j = 0; j < src->tuple_cnt_; ++j) {
+                    setField(dst_row + j, dst_col + i, src->getField(j, i));
+                    setDummyTag(dst_row + j, src->getDummyTag(j));
+                }
             }
-
-            cloneColumn(-1, dst_row, src, -1);
         }
 
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<Bit> * src, const int & src_row) override {
@@ -314,22 +316,13 @@ namespace vaultdb {
                 emp::Bit *src_ptr = bpm_->getUnpackedPagePtr(src_pid);
                 bpm_->page_status_[src_pid][0] = true;
 
-                int write_len = src_table->getSchema().getField(i).size();
-
-                int src_offset = (src_row % src_table->fields_per_wire_.at(i)) * write_len;
+                Field<Bit> src_field = src_table->getField(src_row, i);
 
                 int write_row_idx = dst_row;
-
                 // Write n copies of src rows to dst rows
+                // TODO: maybe we can optimize this by cloneColumn.
                 for(int j = 0; j < copies; ++j) {
-                    // Get dst unpacked page
-                    BufferPoolManager::PageId dst_pid = bpm_->getPageId(table_id_, write_idx, write_row_idx, fields_per_wire_.at(write_idx));
-                    emp::Bit *dst_ptr = bpm_->getUnpackedPagePtr(dst_pid);
-
-                    int dst_offset = (write_row_idx % fields_per_wire_.at(write_idx)) * write_len;
-
-                    memcpy(dst_ptr + dst_offset, src_ptr + src_offset, write_len);
-
+                    setField(write_row_idx, write_idx, src_field);
                     ++write_row_idx;
                 }
 
@@ -339,16 +332,11 @@ namespace vaultdb {
             }
 
             // Copy dummy tag
-            BufferPoolManager::PageId src_dummy_pid = bpm_->getPageId(src_table->table_id_, -1, src_row, src_table->fields_per_wire_.at(-1));
-            emp::Bit *src_dummy_ptr = bpm_->getUnpackedPagePtr(src_dummy_pid);
-            Bit dummy_tag = src_dummy_ptr[src_row % src_table->fields_per_wire_.at(-1)];
+            Bit dummy_tag = src_table->getDummyTag(src_row);
 
             int write_dummy_row_idx = dst_row;
-
             for(int i = 0; i < copies; ++i) {
-                BufferPoolManager::PageId dst_dummy_pid = bpm_->getPageId(table_id_, -1, dst_row + i, fields_per_wire_.at(-1));
-                emp::Bit *dst_dummy_ptr = bpm_->getUnpackedPagePtr(dst_dummy_pid);
-                dst_dummy_ptr[write_dummy_row_idx % fields_per_wire_.at(-1)] = dummy_tag;
+                setDummyTag(write_dummy_row_idx, dummy_tag);
                 ++write_dummy_row_idx;
             }
         }
