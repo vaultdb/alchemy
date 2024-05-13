@@ -73,6 +73,43 @@ namespace vaultdb {
             }
         }
 
+        vector<int8_t> serializePackedWire(int col_id, int page_idx) {
+            emp::OMPCPackedWire *wire_ptr = packed_buffer_pool_[col_id].data() + page_idx;
+            vector<int8_t> dst((2 * bpm_->block_n_ + 1) * sizeof(block), 0);
+
+            int8_t * write_ptr = dst.data();
+
+            memcpy(write_ptr, (int8_t *) &wire_ptr->spdz_tag, sizeof(block));
+
+            write_ptr += sizeof(block);
+
+            memcpy(write_ptr, (int8_t *) wire_ptr->packed_masked_values.data(), bpm_->block_n_ * sizeof(block));
+
+            write_ptr += bpm_->block_n_ * sizeof(block);
+
+            memcpy(write_ptr, (int8_t *) wire_ptr->packed_lambdas.data(), bpm_->block_n_ * sizeof(block));
+
+            return dst;
+        }
+
+        emp::OMPCPackedWire deserializePackedWire(vector<int8_t> serialized_packed_wire) {
+            int8_t *read_ptr = serialized_packed_wire.data();
+
+            emp::OMPCPackedWire deserialized_wire(bpm_->block_n_);
+
+            memcpy((int8_t *) &deserialized_wire.spdz_tag, read_ptr, sizeof(block));
+
+            read_ptr += sizeof(block);
+
+            memcpy((int8_t *) deserialized_wire.packed_masked_values.data(), read_ptr, bpm_->block_n_ * sizeof(block));
+
+            read_ptr += bpm_->block_n_ * sizeof(block);
+
+            memcpy((int8_t *) deserialized_wire.packed_lambdas.data(), read_ptr, bpm_->block_n_ * sizeof(block));
+
+            return deserialized_wire;
+        }
+
         Field<Bit> getField(const int  & row, const int & col)  const override {
             BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
             emp::Bit *read_ptr = bpm_->getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());

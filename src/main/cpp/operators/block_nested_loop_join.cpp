@@ -48,7 +48,6 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
 
     // calculate the largest fields per wire
     int outer_largest_fields_per_wire = 0;
-    int inner_largest_fields_per_wire = 0;
 
     for(int i = 0; i < lhs->getSchema().getFieldCount(); ++i) {
         if(lhs->fields_per_wire_[i] > outer_largest_fields_per_wire) {
@@ -56,15 +55,8 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
         }
     }
 
-    for(int i = 0; i < rhs->getSchema().getFieldCount(); ++i) {
-        if(rhs->fields_per_wire_[i] > inner_largest_fields_per_wire) {
-            inner_largest_fields_per_wire = rhs->fields_per_wire_[i];
-        }
-    }
-
     // calculate the size of inner/outer block
     int outer_block_fields_size = INT_MAX;
-    int inner_block_fields_size = INT_MAX;
 
     for(int i = 0; i < lhs->getSchema().getFieldCount(); ++i){
         int fields_size_to_match_largest_fields = (outer_largest_fields_per_wire / lhs->fields_per_wire_[i]) * lhs->fields_per_wire_[i];
@@ -74,31 +66,16 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
         }
     }
 
-    for(int i = 0; i < rhs->getSchema().getFieldCount(); ++i){
-        int fields_size_to_match_largest_fields = (inner_largest_fields_per_wire / rhs->fields_per_wire_[i]) * rhs->fields_per_wire_[i];
-
-        if(fields_size_to_match_largest_fields < inner_block_fields_size) {
-            inner_block_fields_size = fields_size_to_match_largest_fields;
-        }
-    }
-
     // calculate the number of pages
     vector<int> outer_block_pages;
-    vector<int> inner_block_pages;
 
     for(int i = 0; i < lhs->getSchema().getFieldCount(); ++i){
         int page_cnts = (outer_block_fields_size > lhs->fields_per_wire_[i]) ? (outer_block_fields_size / lhs->fields_per_wire_[i]) : 1;
         outer_block_pages.push_back(page_cnts);
     }
 
-    for(int i = 0; i < rhs->getSchema().getFieldCount(); ++i){
-        int page_cnts = (inner_block_fields_size > rhs->fields_per_wire_[i]) ? (inner_block_fields_size / rhs->fields_per_wire_[i]) : 1;
-        inner_block_pages.push_back(page_cnts);
-    }
-
     // block nested loop join
     vector<int> outer_col_page_offsets(outer_block_pages.size(), 0);
-    vector<int> inner_col_page_offsets(inner_block_pages.size(), 0);
 
     for(int i = 0; i < lhs->tuple_cnt_; i += outer_block_fields_size) {
         std::vector<BufferPoolManager::PageId> pinned_pages;
@@ -128,23 +105,17 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
             outer_block_fields_size = lhs->tuple_cnt_ - i;
         }
 
-        for(int j = 0; j < rhs->tuple_cnt_; j += inner_block_fields_size) {
-            if(j + inner_block_fields_size > rhs->tuple_cnt_) {
-                inner_block_fields_size = rhs->tuple_cnt_ - j;
-            }
+        // join for each block
+        for(int outer_block_idx = 0; outer_block_idx < outer_block_fields_size; ++outer_block_idx) {
+            lhs_dummy_tag = ((QueryTable<B> *) lhs)->getDummyTag(i + outer_block_idx);
 
-            // join for each block
-            for(int outer_block_idx = 0; outer_block_idx < outer_block_fields_size; ++outer_block_idx) {
-                lhs_dummy_tag = ((QueryTable<B> *) lhs)->getDummyTag(i + outer_block_idx);
-
-                for(int inner_block_idx = 0; inner_block_idx < inner_block_fields_size; ++inner_block_idx) {
-                    this->output_->cloneRow(cursor, 0, (QueryTable<B> *) lhs, i + outer_block_idx);
-                    this->output_->cloneRow(cursor, rhs_col_offset, (QueryTable<B> *) rhs, j + inner_block_idx);
-                    selected = Join<B>::predicate_->call((QueryTable<B> *) lhs, i + outer_block_idx, (QueryTable<B> *) rhs, j + inner_block_idx).template getValue<B>();
-                    dst_dummy_tag = (!selected) | lhs_dummy_tag | ((QueryTable<B> *) rhs)->getDummyTag(j + inner_block_idx);
-                    Operator<B>::output_->setDummyTag(cursor, dst_dummy_tag);
-                    ++cursor;
-                }
+            for(int j = 0; j < rhs->tuple_cnt_; ++j) {
+                this->output_->cloneRow(cursor, 0, (QueryTable<B> *) lhs, i + outer_block_idx);
+                this->output_->cloneRow(cursor, rhs_col_offset, (QueryTable<B> *) rhs, j);
+                selected = Join<B>::predicate_->call((QueryTable<B> *) lhs, i + outer_block_idx, (QueryTable<B> *) rhs, j).template getValue<B>();
+                dst_dummy_tag = (!selected) | lhs_dummy_tag | ((QueryTable<B> *) rhs)->getDummyTag(j);
+                Operator<B>::output_->setDummyTag(cursor, dst_dummy_tag);
+                ++cursor;
             }
         }
 
