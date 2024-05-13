@@ -57,12 +57,14 @@ public:
 
         // save packed buffer pool
         for(int i = -1; i < this->table_->getSchema().getFieldCount(); ++i) {
-            for(int j = 0; j < this->table_->packed_buffer_pool_[i].size(); ++j) {
-                std::string file_name = path + "packed_" + this->table_name_ + "_col_" + std::to_string(i) + "_page_" + std::to_string(j) + "_" + std::to_string(party) + ".page";
+            std::string file_name = path + "packed_" + this->table_name_ + "_col_" + std::to_string(i) + "_" + std::to_string(party) + ".page";
+            vector<int8_t> serialized_wires_for_col;
 
+            for(int j = 0; j < this->table_->packed_buffer_pool_[i].size(); ++j) {
                 vector<int8_t> serialized_wire = this->table_->serializePackedWire(i, j);
-                DataUtilities::writeFile(file_name, serialized_wire);
+                serialized_wires_for_col.insert(serialized_wires_for_col.end(), serialized_wire.begin(), serialized_wire.end());
             }
+            DataUtilities::writeFile(file_name, serialized_wires_for_col);
         }
     }
 
@@ -76,11 +78,15 @@ public:
         // load packed buffer pool
         PackedColumnTable *loaded_table = (PackedColumnTable *) QueryTable<Bit>::getTable(tuple_cnt, schema);
 
-        for(int i = -1; i < schema.getFieldCount(); ++i) {
-            for(int j = 0; j < loaded_table->packed_buffer_pool_[i].size(); ++j) {
-                std::string file_name = path + "packed_" + this->table_name_ + "_col_" + std::to_string(i) + "_page_" + std::to_string(j) + "_" + std::to_string(party) + ".page";
+        int packed_page_size = (2 * bpm_->block_n_ + 1) * sizeof(block);
 
-                std::vector<int8_t> serialized_wire = DataUtilities::readFile(file_name);
+        for(int i = -1; i < schema.getFieldCount(); ++i) {
+            std::string file_name = path + "packed_" + this->table_name_ + "_col_" + std::to_string(i) + "_" + std::to_string(party) + ".page";
+            vector<int8_t> serialized_wires_for_col = DataUtilities::readFile(file_name);
+
+            for(int j = 0; j < loaded_table->packed_buffer_pool_[i].size(); ++j) {
+                std::vector<int8_t> serialized_wire = std::vector<int8_t>(serialized_wires_for_col.begin() + j * packed_page_size,
+                                                                         serialized_wires_for_col.begin() + (j + 1) * packed_page_size);
                 loaded_table->packed_buffer_pool_[i][j] = loaded_table->deserializePackedWire(serialized_wire);
                 loaded_table->wire_status_[i][j] = true;
             }
