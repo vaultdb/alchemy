@@ -309,6 +309,8 @@ TEST_F(EmpTest, secret_share_and_pack_tpch_data_from_query){
          vector<std::string> table_names = {"customer", "lineitem", "nation", "orders", "part", "region",
                                             "supplier", "partsupp"};
 
+         SecretShareAndPackTpchDataFromQuery ssp(db_name_, "", "");
+
          bool is_write = false;
 
          std::string src_path = Utilities::getCurrentWorkingDirectory();
@@ -323,13 +325,18 @@ TEST_F(EmpTest, secret_share_and_pack_tpch_data_from_query){
              std::string table_path = packed_pages_path + table_name + "_tpch_unioned_150/";
              Utilities::mkdir(table_path);
              std::string table_sql = "SELECT * FROM " + table_name;
-             SecretShareAndPackTpchDataFromQuery ssp(db_name_, table_sql, table_name);
+             ssp.set_sql(table_sql);
+             ssp.set_table_name(table_name);
 
              if(is_write) {
                  PackedColumnTable *table = ssp.getTable();
 
                  ssp.save_table_to_disk(table_path, FLAGS_party);
+
+                 ssp.save_backend_parameters(packed_pages_path, FLAGS_party);
              }
+
+             ((OMPCBackend<N> *) emp::backend)->multi_pack_delta = ssp.load_backend_parameters(packed_pages_path, FLAGS_party);
 
              ssp.verify_loaded_table(table_path, FLAGS_party);
 

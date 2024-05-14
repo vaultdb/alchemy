@@ -49,6 +49,23 @@ public:
         return table_;
     }
 
+    void save_backend_parameters(std::string path, int party) {
+        if(party == TP) {
+            vector<int8_t> serialized_parameters(sizeof(block), 0);
+            memcpy(serialized_parameters.data(), (int8_t *) &protocol_->multi_pack_delta, sizeof(block));
+            DataUtilities::writeFile(path + "multi_pack_delta.data", serialized_parameters);
+        }
+    }
+
+    block load_backend_parameters(std::string path, int party) {
+        if(party == TP) {
+            vector<int8_t> serialized_parameters = DataUtilities::readFile(path + "multi_pack_delta.data");
+            block multi_pack_delta = zero_block;
+            memcpy((int8_t *) &multi_pack_delta, serialized_parameters.data(), sizeof(block));
+            return multi_pack_delta;
+        }
+    }
+
     void save_table_to_disk(std::string path, int party) {
         // save tuple cnt
         DataUtilities::writeFile(path + "tuple.cnt", to_string(this->table_->tuple_cnt_));
@@ -112,6 +129,7 @@ private:
 
     BufferPoolManager *bpm_ = SystemConfiguration::getInstance().bpm_;
     EmpManager *emp_manager_ = SystemConfiguration::getInstance().emp_manager_;
+    OMPCBackend<N> *protocol_ = (OMPCBackend<N> *) emp::backend;
 };
 
 #endif //VAULTDB_EMP_SECRET_SHARE_AND_PACK_TPCH_DATA_FROM_QUERY_H
