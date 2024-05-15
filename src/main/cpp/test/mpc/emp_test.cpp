@@ -7,7 +7,7 @@
 #include "operators/support/normalize_fields.h"
 #include "query_table/column_table.h"
 //#include "data/secret_shared_tpch_data/secret_share_and_pack_tpch_data_from_query.h"
-#include "query_table/packed_column_table.h"
+//#include "query_table/packed_column_table.h"
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
