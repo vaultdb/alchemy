@@ -1,7 +1,6 @@
 #ifndef VAULTDB_EMP_SECRET_SHARE_AND_PACK_TPCH_DATA_FROM_QUERY_H
 #define VAULTDB_EMP_SECRET_SHARE_AND_PACK_TPCH_DATA_FROM_QUERY_H
 
-#include "operators/secure_sql_input.h"
 #include "query_table/packed_column_table.h"
 #include "util/buffer_pool/buffer_pool_manager.h"
 
@@ -26,8 +25,8 @@ public:
 
     PackedColumnTable *getTable() {
         // secret share
-        SecureSqlInput *secure_input = new SecureSqlInput(db_name_, sql_, false);
-        table_ = (PackedColumnTable *) secure_input->getOutput();
+        PlainTable *plain_input = DataUtilities::getQueryResults(db_name_, sql_, false);
+        table_ = (PackedColumnTable *) plain_input->secretShare();
 
         // pack everything in unpacked buffer pool to packed buffer pool
         std::map<BufferPoolManager::PageId, int> unpacked_page_slots = bpm_->unpacked_page_slots_;
@@ -118,7 +117,7 @@ public:
         PackedColumnTable *expected_customer_table = getTable();
         PlainTable *expected_customer_table_revealed = expected_customer_table->revealInsecure();
         PlainTable *loaded_table_revealed = loaded_table->revealInsecure();
-        ASSERT_EQ(*expected_customer_table_revealed, *loaded_table_revealed);
+        assert(*expected_customer_table_revealed == *loaded_table_revealed);
     }
 
 private:

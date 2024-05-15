@@ -3,6 +3,136 @@
 #include "query_table.h"
 #include "query_table/secure_tuple.h"
 
+#if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/zk.h")
+// only supports Bit for now
+namespace vaultdb {
+    class PackedColumnTable : public QueryTable<Bit> {
+
+    public:
+
+        // setup for buffer pool
+        int table_id_ = SystemConfiguration::getInstance().num_tables_++;
+        BufferPoolManager *bpm_ = SystemConfiguration::getInstance().bpm_;
+        mutable std::map<int, std::vector<emp::OMPCPackedWire>> packed_buffer_pool_; // map<col id, vector of OMPCPackedWires>
+        mutable std::map<int, std::vector<bool>> wire_status_; // map<col id, vector of bools indicating if wire is occupied>
+
+        // choosing to branch instead of storing this in a float for now, need to analyze trade-off on this one
+        // maps ordinal to wire count.  floor(128/field_size_bits)
+        map<int, int> fields_per_wire_;
+        // if a field spans more than one block per instance (e.g., a string with length > 16 chars) then we need to map the field to multiple blocks
+        map<int, int> blocks_per_field_;
+
+        int tuple_packed_size_bytes_ = 0;
+        std::map<int, int> field_packed_sizes_bytes_;
+
+        EmpManager *manager_;
+
+        int block_byte_size_ = 16; // 16 bytes per block = 128 bits
+
+
+        PackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<Bit>(tuple_cnt, schema, sort_def), manager_(SystemConfiguration::getInstance().emp_manager_) {
+
+        }
+
+        PackedColumnTable(const PackedColumnTable &src) : QueryTable<Bit>(src), manager_(SystemConfiguration::getInstance().emp_manager_) {
+
+        }
+
+        vector<int8_t> serializePackedWire(int col_id, int page_idx) {
+            vector<int8_t> dst(1, 0);
+            return dst;
+        }
+
+        emp::OMPCPackedWire deserializePackedWire(vector<int8_t> serialized_packed_wire) {
+            return emp::OMPCPackedWire();
+        }
+
+        Field<Bit> getField(const int  & row, const int & col)  const override {
+            return Field<Bit>();
+        }
+
+
+        inline void setField(const int  & row, const int & col, const Field<Bit> & f)  override {
+
+        }
+
+        SecureTable *secretShare() override  {
+            assert(this->isEncrypted());
+            throw; // can't secret share already encrypted table
+        }
+
+        void appendColumn(const QueryFieldDesc & desc) override {
+
+        }
+
+        void resize(const size_t &tuple_cnt) override {
+
+        }
+
+        Bit getDummyTag(const int & row)  const override {
+            return emp::Bit(0);
+        }
+
+        void setDummyTag(const int & row, const Bit & val) override {
+
+        }
+
+
+        QueryTable<Bit> *clone()  override {
+            return new PackedColumnTable(*this);
+        }
+
+        void setSchema(const QuerySchema &schema) override {
+
+        }
+
+        QueryTuple<Bit> getRow(const int & idx) override {
+            return QueryTuple<Bit>();
+        }
+
+        void setRow(const int & idx, const QueryTuple<Bit> &tuple) override {
+
+        }
+
+
+        void compareSwap(const Bit & swap, const int  & lhs_row, const int & rhs_row) override {
+
+        }
+
+
+        void cloneTable(const int & dst_row, const int & dst_col, QueryTable<Bit> *src) override {
+
+        }
+
+        void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<Bit> * src, const int & src_row) override {
+
+        }
+
+        void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<Bit> *src, const int & src_row) override {
+
+        }
+
+        void cloneRowRange(const int & dst_row, const int & dst_col, const QueryTable<Bit> *src, const int & src_row, const int & copies) override {
+
+        }
+
+        void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<Bit> *src, const int & src_col, const int & src_row = 0) override {
+
+        }
+
+        StorageModel storageModel() const override { return StorageModel::COLUMN_STORE; }
+
+        void deserializeRow(const int & row, vector<int8_t> & src) override {
+
+        }
+
+        ~PackedColumnTable() {
+
+        }
+    };
+}
+
+#else
 // only supports Bit for now
 namespace vaultdb {
     class PackedColumnTable : public QueryTable<Bit> {
@@ -445,4 +575,6 @@ namespace vaultdb {
         }
     };
 }
+#endif
+
 #endif
