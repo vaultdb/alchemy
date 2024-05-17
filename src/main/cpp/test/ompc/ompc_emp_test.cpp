@@ -18,7 +18,7 @@ DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(ctrl_port, 65455, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*.ompc_secret_share_and_pack_tpch_data_from_query", "run only the tests passing this filter");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "wire_packed", "storage model for columns (column, wire_packed or compressed)");
 
 
@@ -306,7 +306,7 @@ TEST_F(OMPCEmpTest, ompc_sort_and_share_table_one_column) {
 
 TEST_F(OMPCEmpTest, ompc_secret_share_and_pack_tpch_data_from_query){
      if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED) {
-         bool run_test = true;
+         bool run_test = false;
 
          if(run_test) {
              vector<std::string> table_names = {"customer", "lineitem", "nation", "orders", "part", "region",
