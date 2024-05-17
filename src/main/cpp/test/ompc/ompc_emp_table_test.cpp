@@ -1,6 +1,8 @@
 #include <test/mpc/emp_base_test.h>
 #include <util/data_utilities.h>
 #include <operators/sort.h>
+#include <operators/packed_table_scan.h>
+#include <data/secret_shared_tpch_data/secret_share_and_pack_tpch_data_from_query.h>
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -126,6 +128,29 @@ TEST_F(OMPCEmpTableTest, ompc_bit_packing_test) {
     delete expected;
     delete secret_shared;
 
+}
+
+TEST_F(OMPCEmpTableTest, ompc_test_packed_table_scan) {
+    std::string src_path = Utilities::getCurrentWorkingDirectory();
+    std::string packed_pages_path = src_path + "/packed_pages/";
+
+    std::string db_name = "tpch_unioned_150";
+    std::string table_name = "customer";
+
+    PackedTableScan packed_table_scan(db_name, table_name, packed_pages_path, FLAGS_party);
+    PackedColumnTable *packed_table = (PackedColumnTable *) packed_table_scan.run();
+
+    if(FLAGS_validation) {
+        std::string table_sql = "SELECT * FROM " + table_name;
+
+        SecretShareAndPackTpchDataFromQuery ssp(db_name, table_sql, table_name);
+        PackedColumnTable *expected = ssp.getTable();
+
+        PlainTable *expected_plain = expected->revealInsecure(emp::PUBLIC);
+        PlainTable *observed_plain = packed_table->revealInsecure(emp::PUBLIC);
+
+        ASSERT_EQ(*expected_plain, *observed_plain);
+    }
 }
 
 void OMPCEmpTableTest::secretShareAndValidate(const std::string & sql, const SortDefinition & sort) {

@@ -85,6 +85,7 @@ set(sources
 		operators/sql_input.cpp
 		operators/secure_sql_input.cpp
 		operators/table_scan.cpp
+		operators/packed_table_scan.h
 		operators/zk_sql_input.cpp
 		operators/filter.cpp
 		operators/project.cpp

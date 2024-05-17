@@ -121,7 +121,8 @@ namespace vaultdb {
         SORT_MERGE_AGGREGATE,
         NESTED_LOOP_AGGREGATE,
         UNION,
-        TABLE_SCAN
+        TABLE_SCAN,
+        PACKED_TABLE_SCAN
     };
 
 }

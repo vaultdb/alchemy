@@ -193,6 +193,8 @@ namespace  vaultdb {
                     return "SecureSqlInput";
                 case OperatorType::TABLE_SCAN:
                     return "TableScan";
+                case OperatorType::PACKED_TABLE_SCAN:
+                    return "PackedTableScan";
                 case OperatorType::TABLE_INPUT:
                         return "TableInput";
                 case OperatorType::CSV_INPUT:
