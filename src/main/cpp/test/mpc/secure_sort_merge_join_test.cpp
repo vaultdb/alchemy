@@ -206,7 +206,7 @@ TEST_F(SecureSortMergeJoinTest, test_tpch_q3_customer_supplier_cutoff_NLJ) {
     DataUtilities::removeDummies(observed);
 
 
-    if (FLAGS_validation) (*expected, *observed);
+    if (FLAGS_validation) ASSERT_EQ(*expected, *observed);
 
 
     delete expected;
@@ -298,7 +298,7 @@ TEST_F(SecureSortMergeJoinTest, test_tpch_q3_customer_supplier_NLJ) {
     DataUtilities::removeDummies(observed);
 
 
-    if (FLAGS_validation) (*expected, *observed);
+    if (FLAGS_validation) ASSERT_EQ(*expected, *observed);
 
 
     delete expected;
