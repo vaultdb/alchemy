@@ -107,6 +107,24 @@ namespace vaultdb {
            }
         }
 
+        int getDestOrdinal(Operator<B> *src, const int & src_ordinal) const override {
+
+            auto pos = std::find(group_by_.begin(), group_by_.end(), src_ordinal);
+            if(pos != group_by_.end()) {
+                return std::distance(group_by_.begin(), pos);
+            }
+            else {
+              // return first aggregator that references src_ordinal
+              for(int i = 0; i < aggregate_definitions_.size(); ++i) {
+                  if(aggregate_definitions_[i].ordinal == src_ordinal) {
+                      return group_by_.size() + i;
+                  }
+              }
+            }
+            throw std::runtime_error("Source ordinal " + std::to_string(src_ordinal) + " has no 1:1 mapping in output relation!");
+        }
+
+
     protected:
         size_t cardinality_bound_  = 0; // stored in SMA for planning purposes, only used in NLA
 

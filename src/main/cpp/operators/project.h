@@ -89,6 +89,17 @@ namespace vaultdb {
             throw runtime_error("Output ordinal " + std::to_string(output_ordinal) + " has no 1:1 mapping in source relation!");
         }
 
+        int getDestOrdinal(Operator<B> *src, const int & src_ordinal) const override {
+
+            for (ProjectionMapping mapping: column_mappings_) {
+                if (mapping.first == src_ordinal) {
+                    return mapping.second;
+                }
+            }
+            throw runtime_error(
+                    "Source ordinal " + std::to_string(src_ordinal) + " has no 1:1 mapping in output relation!");
+        }
+
     private:
         void setup();
 

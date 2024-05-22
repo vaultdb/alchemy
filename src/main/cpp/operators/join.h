@@ -34,6 +34,14 @@ namespace  vaultdb {
             return this->rhs_child_;
         }
 
+        int getDestOrdinal(Operator<B> *src, const int & src_ordinal) const override {
+            if(*src == *this->lhs_child_)
+                return src_ordinal;
+            assert(*src == *this->rhs_child_);
+
+            return src_ordinal + this->lhs_child_->getOutputSchema().getFieldCount();
+        }
+
     protected:
 
 
