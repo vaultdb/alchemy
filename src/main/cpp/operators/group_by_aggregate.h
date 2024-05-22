@@ -97,7 +97,15 @@ namespace vaultdb {
             return this->operatorEquality(other);
         }
 
-
+        int getSourceOrdinal(const int & output_ordinal) const override {
+           if(output_ordinal < group_by_.size()) {
+               return group_by_[output_ordinal];
+           }
+           else {
+              // see what aggregator associated with this ordinal is computing over
+              return aggregate_definitions_[output_ordinal - group_by_.size()].ordinal;
+           }
+        }
 
     protected:
         size_t cardinality_bound_  = 0; // stored in SMA for planning purposes, only used in NLA

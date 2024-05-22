@@ -79,6 +79,16 @@ namespace vaultdb {
             return this->operatorEquality(other);
         }
 
+        int getSourceOrdinal(const int & output_ordinal) const override {
+
+            for (ProjectionMapping mapping: column_mappings_) {
+                if (mapping.second == output_ordinal) {
+                    return mapping.first;
+                }
+            }
+            throw runtime_error("Output ordinal " + std::to_string(output_ordinal) + " has no 1:1 mapping in source relation!");
+        }
+
     private:
         void setup();
 

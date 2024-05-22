@@ -21,6 +21,19 @@ namespace  vaultdb {
         Expression<B> *getPredicate() const { return predicate_; }
 
 
+        int getSourceOrdinal(const int & output_ordinal) const override {
+            auto lhs_field_cnt = this->lhs_child_->getOutputSchema().getFieldCount();
+            if(output_ordinal < lhs_field_cnt)
+                return output_ordinal;
+            return output_ordinal - lhs_field_cnt;
+        }
+
+        Operator<B> *getSourceOperator(const int & output_ordinal) const override {
+            if(output_ordinal < this->lhs_child_->getOutputSchema().getFieldCount())
+                return this->lhs_child_;
+            return this->rhs_child_;
+        }
+
     protected:
 
 

@@ -152,6 +152,21 @@ namespace vaultdb {
         }
 
         template<typename B>
+        static ExpressionNode<B> *getEqualityPredicateNode(const Operator<B> *lhs, const uint32_t &lhs_idx, const Operator<B> *rhs,
+                             const uint32_t &rhs_idx) {
+
+
+            auto lhs_input = new InputReference<B>(lhs_idx, lhs->getOutputSchema(),  rhs->getOutputSchema());
+            auto rhs_input = new InputReference<B>(rhs_idx, lhs->getOutputSchema(),  rhs->getOutputSchema());
+            auto equality_node = new EqualNode<B>(lhs_input, rhs_input);
+
+            ToPackedExpressionVisitor pack_it(equality_node);
+            return pack_it.getRoot();
+
+        }
+
+
+        template<typename B>
         static string revealAndPrintTuple(QueryTable<B> *table, const int & idx) {
             stringstream ss;
             ss << "(";

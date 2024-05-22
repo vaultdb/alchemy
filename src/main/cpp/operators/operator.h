@@ -106,6 +106,19 @@ namespace  vaultdb {
            return run();
         }
 
+        // returns the ordinal in the source table for the given output ordinal
+        // for mapping the path of a field through the operator tree
+        // for filter, sort, and union this is the same as the output ordinal
+        virtual int getSourceOrdinal(const int & output_ordinal) const {
+            return output_ordinal;
+        }
+
+        // returns source operator for a given ordinal, companion to getSourceOrdinal above
+                // defaults to lhs child, but can be overridden by operators that have multiple sources
+        virtual Operator<B> *getSourceOperator(const int & output_ordinal) const {
+            return lhs_child_;
+        }
+
         inline const QueryTable<B> *getImmutableOutput() const {
             return output_;
         }
