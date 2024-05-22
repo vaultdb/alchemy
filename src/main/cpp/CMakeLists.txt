@@ -137,6 +137,7 @@ set(sources
 		opt/operator_cost_model.cpp
 		opt/expression_cost_model.cpp
 		opt/plan_optimizer.cpp
+		opt/join_graph.h
 
 		enumerator/bushy_plan_enumerator.cpp
 )
