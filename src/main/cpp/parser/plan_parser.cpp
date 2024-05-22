@@ -542,7 +542,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
             log->write("Operator (" + std::to_string(operator_id) + "). " +
                        "sma cost : " + std::to_string(sma_cost) +
                        ", nla cost : " + std::to_string(nla_cost) +
-                       ", agg type : " + selected_agg, Level::INFO);
+                       ", agg type : " + selected_agg, Level::DEBUG);
 
             delete nla;
             delete sma;
@@ -746,7 +746,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
             log->write("Operator (" + std::to_string(operator_id) + "). " +
                        "smj cost : " + std::to_string(smj_cost) +
                        ", nlj cost : " + std::to_string(nlj_cost) +
-                       ", join type : " + selected_join, Level::INFO);
+                       ", join type : " + selected_join, Level::DEBUG);
 
             if (selected_join == "keyed-sort-merge-join") {
                 return new KeyedSortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
