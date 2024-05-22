@@ -311,6 +311,8 @@ TEST_F(OMPCEmpTest, ompc_secret_share_and_pack_tpch_data_from_query){
          if(run_test) {
              vector<std::string> table_names = {"customer", "lineitem", "nation", "orders", "part", "region",
                                                 "supplier", "partsupp"};
+             vector<std::string> primary_keys = {"c_custkey", "l_orderkey", "n_nationkey", "o_orderkey", "p_partkey",
+                                                 "r_regionkey", "s_suppkey", "ps_partkey"};
 
              SecretShareAndPackTpchDataFromQuery ssp(db_name_, "", "");
 
@@ -323,11 +325,12 @@ TEST_F(OMPCEmpTest, ompc_secret_share_and_pack_tpch_data_from_query){
                  Utilities::mkdir(packed_pages_path);
              }
 
+             int cursor = 0;
              for (auto table_name: table_names) {
                  cout << "Working on " + table_name + " table\n";
                  std::string table_path = packed_pages_path + table_name + "_tpch_unioned_150/";
                  Utilities::mkdir(table_path);
-                 std::string table_sql = "SELECT * FROM " + table_name;
+                 std::string table_sql = "SELECT * FROM " + table_name + " ORDER BY " + primary_keys[cursor++];
                  ssp.set_sql(table_sql);
                  ssp.set_table_name(table_name);
 

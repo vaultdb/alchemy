@@ -84,12 +84,16 @@ public:
         }
     }
 
+    QuerySchema load_schema_from_disk(std::string path) {
+        return QuerySchema(DataUtilities::readTextFileToString(path + this->table_name_ + ".schema"));
+    }
+
     PackedColumnTable *load_table_from_disk(std::string path, int party) {
         // load tuple cnt
         int tuple_cnt = std::stoi(DataUtilities::readTextFileToString(path + "tuple.cnt"));
 
         // load schema
-        QuerySchema schema(DataUtilities::readTextFileToString(path + this->table_name_ + ".schema"));
+        QuerySchema schema = load_schema_from_disk(path);
 
         // load packed buffer pool
         PackedColumnTable *loaded_table = (PackedColumnTable *) QueryTable<Bit>::getTable(tuple_cnt, schema);
