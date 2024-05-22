@@ -42,13 +42,22 @@ TEST_F(OMPCFilterTest, ompc_test_table_scan) {
     SortDefinition collation{ColumnSort(0, SortDirection::ASCENDING),
                             ColumnSort(3, SortDirection::ASCENDING)};
 
-    std::string src_path = Utilities::getCurrentWorkingDirectory();
-    std::string packed_pages_path = src_path + "/packed_pages/";
+    Operator<Bit> *input;
 
-    PackedTableScan *packed_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path, FLAGS_party, limit);
-    packed_table_scan->setOperatorId(-2);
+    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+        std::string src_path = Utilities::getCurrentWorkingDirectory();
+        std::string packed_pages_path = src_path + "/packed_pages/";
 
-    SecureTable *scanned = packed_table_scan->run();
+        input = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path,
+                                                                 FLAGS_party, limit);
+    }
+    else {
+        input = new SecureSqlInput(db_name_, limit_sql, false);
+    }
+
+    input->setOperatorId(-2);
+
+    SecureTable *scanned = input->run();
 
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
@@ -78,21 +87,28 @@ TEST_F(OMPCFilterTest, ompc_test_filter) {
     SortDefinition collation{ColumnSort(0, SortDirection::ASCENDING),
                              ColumnSort(3, SortDirection::ASCENDING)};
 
-    std::string src_path = Utilities::getCurrentWorkingDirectory();
-    std::string packed_pages_path = src_path + "/packed_pages/";
+    Operator<Bit> *input;
 
-    PackedTableScan *packed_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path, FLAGS_party, limit);
-    packed_table_scan->setOperatorId(-2);
-    QuerySchema packed_schema(DataUtilities::readTextFileToString(packed_pages_path + "lineitem_tpch_unioned_150/lineitem" + ".schema"));
+    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+        std::string src_path = Utilities::getCurrentWorkingDirectory();
+        std::string packed_pages_path = src_path + "/packed_pages/";
+
+        input = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path,
+                                                                 FLAGS_party, limit);
+    }
+    else {
+        input = new SecureSqlInput(db_name_, limit_sql, false);
+    }
+    input->setOperatorId(-2);
 
     // filtering for l_linenumber = 1
-    PackedInputReference<emp::Bit> read_linenumber_field(3, packed_schema);
+    PackedInputReference<emp::Bit> read_linenumber_field(3, input->getOutputSchema());
     Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(4, 0));
     LiteralNode<emp::Bit> constant_input(one);
     EqualNode<emp::Bit> equality_check((ExpressionNode<emp::Bit> *) &read_linenumber_field, (ExpressionNode<emp::Bit> *) &constant_input);
     Expression<emp::Bit> *expression = new GenericExpression<emp::Bit>(&equality_check, "predicate", FieldType::SECURE_BOOL);
 
-    Filter<emp::Bit> *filter = new Filter(packed_table_scan, expression);
+    Filter<emp::Bit> *filter = new Filter(input, expression);
     filter->setOperatorId(-2);
     auto fiiltered = filter->run();
 
