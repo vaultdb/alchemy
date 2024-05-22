@@ -298,7 +298,6 @@ namespace vaultdb {
 
             this->tuple_cnt_ = tuple_cnt;
 
-            // TODO: check if we need to add or remove pages at this point
             for(int i = 0; i < schema_.getFieldCount(); ++i) {
                 int fields_per_wire = fields_per_wire_.at(i);
 
@@ -312,16 +311,16 @@ namespace vaultdb {
                         bpm_->addConsecutivePages(table_id_, i, old_tuple_cnt + fields_per_wire - old_pos_in_last_page, pages_to_add, fields_per_wire);
                     }
                 }
-                else{
-                    int new_pos_in_last_page = this->tuple_cnt_ % fields_per_wire;
-
-                    if(old_tuple_cnt - this->tuple_cnt_ > fields_per_wire - new_pos_in_last_page - 1) {
-                        int rows_to_remove = (old_tuple_cnt - this->tuple_cnt_) - (fields_per_wire - new_pos_in_last_page - 1);
-
-                        int pages_to_remove = rows_to_remove / fields_per_wire + ((rows_to_remove % fields_per_wire) != 0);
-                        bpm_->removeConsecutivePages(table_id_, i, this->tuple_cnt_ + fields_per_wire - new_pos_in_last_page, pages_to_remove, fields_per_wire);
-                    }
-                }
+//                else{
+//                    int new_pos_in_last_page = this->tuple_cnt_ % fields_per_wire;
+//
+//                    if(old_tuple_cnt - this->tuple_cnt_ > fields_per_wire - new_pos_in_last_page - 1) {
+//                        int rows_to_remove = (old_tuple_cnt - this->tuple_cnt_) - (fields_per_wire - new_pos_in_last_page - 1);
+//
+//                        int pages_to_remove = rows_to_remove / fields_per_wire + ((rows_to_remove % fields_per_wire) != 0);
+//                        bpm_->removeConsecutivePages(table_id_, i, this->tuple_cnt_ + fields_per_wire - new_pos_in_last_page, pages_to_remove, fields_per_wire);
+//                    }
+//                }
             }
         }
 
