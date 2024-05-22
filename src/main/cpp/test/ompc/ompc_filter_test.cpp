@@ -36,28 +36,19 @@ class OMPCFilterTest : public EmpBaseTest {};
 
 TEST_F(OMPCFilterTest, ompc_test_table_scan) {
 
-    std::string limit_sql = "SELECT * FROM lineitem LIMIT 1000";
-    std::string sql = "WITH input AS (" + limit_sql + ") SELECT * FROM input WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + "  ORDER BY l_orderkey, l_linenumber";
+    int limit = 1000;
+    std::string limit_sql = "SELECT * FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(limit);
+    std::string sql = "WITH input AS (" + limit_sql + ") SELECT * FROM input ORDER BY l_orderkey, l_linenumber";
     SortDefinition collation{ColumnSort(0, SortDirection::ASCENDING),
                             ColumnSort(3, SortDirection::ASCENDING)};
 
     std::string src_path = Utilities::getCurrentWorkingDirectory();
     std::string packed_pages_path = src_path + "/packed_pages/";
 
-    PackedTableScan *packed_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path, FLAGS_party, 1000);
+    PackedTableScan *packed_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path, FLAGS_party, limit);
     packed_table_scan->setOperatorId(-2);
-    QuerySchema packed_schema(DataUtilities::readTextFileToString(packed_pages_path + "lineitem_tpch_unioned_150/lineitem" + ".schema"));
 
-    // Filter on l_orderkey <= FLAGS_cutoff
-    PackedInputReference<emp::Bit> read_field(0, packed_schema);
-    Field<emp::Bit> cutoff(FieldType::SECURE_INT, emp::Integer(packed_schema.getField(0).size() + 1, FLAGS_cutoff-1));
-    LiteralNode<emp::Bit> constant_input(cutoff);
-    LessThanEqNode<emp::Bit> less_than_eq_check((ExpressionNode<emp::Bit> *) &read_field, (ExpressionNode<emp::Bit> *) &constant_input);
-    Expression<emp::Bit> *expression = new GenericExpression<emp::Bit>(&less_than_eq_check, "predicate", FieldType::SECURE_BOOL);
-
-    Filter<Bit> *filter = new Filter(packed_table_scan, expression);
-    filter->setOperatorId(-2);
-    SecureTable *scanned = filter->run();
+    SecureTable *scanned = packed_table_scan->run();
 
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
@@ -81,28 +72,18 @@ TEST_F(OMPCFilterTest, ompc_test_table_scan) {
 
 TEST_F(OMPCFilterTest, ompc_test_filter) {
 
-    std::string limit_sql = "SELECT * FROM lineitem LIMIT 1000";
-    std::string sql = "WITH input AS (" + limit_sql + ") SELECT * FROM input WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " AND l_linenumber = 1  ORDER BY l_orderkey, l_linenumber";
+    int limit = 1000;
+    std::string limit_sql = "SELECT * FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(limit);
+    std::string sql = "WITH input AS (" + limit_sql + ") SELECT * FROM input WHERE l_linenumber = 1 ORDER BY l_orderkey, l_linenumber";
     SortDefinition collation{ColumnSort(0, SortDirection::ASCENDING),
                              ColumnSort(3, SortDirection::ASCENDING)};
 
     std::string src_path = Utilities::getCurrentWorkingDirectory();
     std::string packed_pages_path = src_path + "/packed_pages/";
 
-    PackedTableScan *packed_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path, FLAGS_party, 1000);
+    PackedTableScan *packed_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path, FLAGS_party, limit);
     packed_table_scan->setOperatorId(-2);
     QuerySchema packed_schema(DataUtilities::readTextFileToString(packed_pages_path + "lineitem_tpch_unioned_150/lineitem" + ".schema"));
-
-    // Filter on l_orderkey <= FLAGS_cutoff
-    PackedInputReference<emp::Bit> read_orderkey_field(0, packed_schema);
-    Field<emp::Bit> cutoff(FieldType::SECURE_INT, emp::Integer(packed_schema.getField(0).size() + 1, FLAGS_cutoff - 1));
-    LiteralNode<emp::Bit> cutoff_input(cutoff);
-    LessThanEqNode<emp::Bit> less_than_eq_check((ExpressionNode<emp::Bit> *) &read_orderkey_field, (ExpressionNode<emp::Bit> *) &cutoff_input);
-    Expression<emp::Bit> *cutoff_expression = new GenericExpression<emp::Bit>(&less_than_eq_check, "predicate", FieldType::SECURE_BOOL);
-
-
-    Filter<emp::Bit> *cutoff_filter = new Filter(packed_table_scan, cutoff_expression);
-    cutoff_filter->setOperatorId(-2);
 
     // filtering for l_linenumber = 1
     PackedInputReference<emp::Bit> read_linenumber_field(3, packed_schema);
@@ -111,7 +92,7 @@ TEST_F(OMPCFilterTest, ompc_test_filter) {
     EqualNode<emp::Bit> equality_check((ExpressionNode<emp::Bit> *) &read_linenumber_field, (ExpressionNode<emp::Bit> *) &constant_input);
     Expression<emp::Bit> *expression = new GenericExpression<emp::Bit>(&equality_check, "predicate", FieldType::SECURE_BOOL);
 
-    Filter<emp::Bit> *filter = new Filter(cutoff_filter, expression);
+    Filter<emp::Bit> *filter = new Filter(packed_table_scan, expression);
     filter->setOperatorId(-2);
     auto fiiltered = filter->run();
 

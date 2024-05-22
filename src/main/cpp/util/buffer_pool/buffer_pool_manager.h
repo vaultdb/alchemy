@@ -313,13 +313,7 @@ namespace vaultdb {
                 throw std::runtime_error("Source page not found for pid: " + src_pid.toString());
             }
 
-            if(hasPackedPage(src_pid)) {
-                emp::OMPCPackedWire *src_page_ptr = packed_buffer_pool_[src_pid.table_id_][src_pid.col_id_]->data() + src_pid.page_idx_;
-                emp::OMPCPackedWire *dst_page_ptr = packed_buffer_pool_[dst_pid.table_id_][dst_pid.col_id_]->data() + dst_pid.page_idx_;
-                *dst_page_ptr = *src_page_ptr;
-                (*wire_status_[dst_pid.table_id_][dst_pid.col_id_])[dst_pid.page_idx_] = true;
-            }
-            else {
+            if(hasUnpackedPage(src_pid)) {
                 emp::Bit *src_page_ptr = unpacked_buffer_pool_.data() + unpacked_page_slots_[src_pid] * unpacked_page_size_;
                 page_status_[src_pid][0] = true;
                 emp::Bit *dst_page_ptr = getUnpackedPagePtr(dst_pid);
@@ -334,6 +328,12 @@ namespace vaultdb {
                 page_status_[dst_pid][1] = true;
 
                 page_status_[src_pid][0] = false;
+            }
+            else {
+                emp::OMPCPackedWire *src_page_ptr = packed_buffer_pool_[src_pid.table_id_][src_pid.col_id_]->data() + src_pid.page_idx_;
+                emp::OMPCPackedWire *dst_page_ptr = packed_buffer_pool_[dst_pid.table_id_][dst_pid.col_id_]->data() + dst_pid.page_idx_;
+                *dst_page_ptr = *src_page_ptr;
+                (*wire_status_[dst_pid.table_id_][dst_pid.col_id_])[dst_pid.page_idx_] = true;
             }
         }
 
