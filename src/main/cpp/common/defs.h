@@ -106,6 +106,8 @@ namespace vaultdb {
         TABLE_INPUT,
         CSV_INPUT,
         MERGE_INPUT,
+        TABLE_SCAN,
+        PACKED_TABLE_SCAN,
         FILTER,
         PROJECT,
         NESTED_LOOP_JOIN,
@@ -120,10 +122,11 @@ namespace vaultdb {
         SCALAR_AGGREGATE,
         SORT_MERGE_AGGREGATE,
         NESTED_LOOP_AGGREGATE,
-        UNION,
-        TABLE_SCAN,
-        PACKED_TABLE_SCAN
+        UNION
     };
+
+
+
 
 }
 #endif // _COMMON_DEFS_H
