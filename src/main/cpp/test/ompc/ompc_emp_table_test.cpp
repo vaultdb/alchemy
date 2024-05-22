@@ -141,7 +141,7 @@ TEST_F(OMPCEmpTableTest, ompc_test_packed_table_scan) {
     PackedColumnTable *packed_table = (PackedColumnTable *) packed_table_scan.run();
 
     if(FLAGS_validation) {
-        std::string table_sql = "SELECT * FROM " + table_name;
+        std::string table_sql = "SELECT * FROM " + table_name + " ORDER BY c_custkey";
 
         SecretShareAndPackTpchDataFromQuery ssp(db_name, table_sql, table_name);
         PackedColumnTable *expected = ssp.getTable();
