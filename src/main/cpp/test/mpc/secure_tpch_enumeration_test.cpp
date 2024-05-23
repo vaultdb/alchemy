@@ -23,7 +23,7 @@ DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(ctrl_port, 65478, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(filter, "*.tpch_q03", "run only the tests passing this filter");
 DEFINE_string(storage, "column", "storage model for columns (column, wire_packed or compressed)");
 
 
@@ -59,7 +59,7 @@ void SecureTpcHEnumerationTest::runTest(const int &test_id, const SortDefinition
    // * Identify all leafs - subtrees that are below all joins
    // * Parse each join predicate and identify the leaf(s) associated with it.  Create one edge per distinct pair of leaf nodes.
    // * Take closure and add any edges that can be derived from transitivity over join predicates. TODO: implement this
-   JoinGraph<Bit> graph(root);
+   JoinGraph<Bit> graph(root, db_name_);
    cout << "Join graph: \n" << graph.toString() << endl;
 
 }
@@ -86,6 +86,7 @@ TEST_F(SecureTpcHEnumerationTest, tpch_q01) {
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
+
     runTest(3, expected_sort);
     /*
     string expected_sql = generateExpectedOutputQuery(3);
