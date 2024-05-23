@@ -48,6 +48,23 @@ namespace vaultdb {
     typedef std::pair<std::string, std::string> ColumnReference; // pair of <table_name, column_name>
 
 
+    struct ForeignKeyConstraint {
+        ColumnReference primary_key_;
+        ColumnReference foreign_key_;
+        ForeignKeyConstraint(ColumnReference primary_key, ColumnReference foreign_key) {
+            primary_key_ = primary_key;
+            foreign_key_ = foreign_key;
+        }
+
+        bool operator==(const ForeignKeyConstraint &other) const {
+            return primary_key_ == other.primary_key_ && foreign_key_ == other.foreign_key_;
+        }
+
+        string toString() const {
+            return primary_key_.first + "." + primary_key_.second + " <-- " + foreign_key_.first + "." + foreign_key_.second;
+        }
+    };
+
     typedef    std::vector<ColumnSort> SortDefinition;
 
 

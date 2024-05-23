@@ -1,11 +1,14 @@
 #ifndef _JOIN_GRAPH_
 #define _JOIN_GRAPH_
 
+#include <algorithm>
 #include <operators/operator.h>
 #include <expression/expression.h>
 #include "expression/visitor/join_equality_condition_visitor.h"
 #include "util/field_utilities.h"
 #include "operators/join.h"
+#include "common/defs.h"
+#include "data/psql_data_provider.h"
 
 // Generates join graph for a given query
 // nodes are leafs, aka inputs to joins
@@ -14,8 +17,6 @@
 // - i.e., no interspersed aggregation, but projections between joins are ok
 
 namespace vaultdb {
-//    typedef pair<int, int> EdgeReference; // edge operator ID, ordinal
-//    typedef pair<int, int> NodeReference; // node operator ID, ordinal
 
     // join graph setup
     template<typename B>
@@ -25,8 +26,8 @@ namespace vaultdb {
     struct JoinInput {
         // in most cases this will be SecureSqlInput, but sometimes it might be a MergeJoin or CTE
         Operator<B> *node_;
-
         vector<JoinEdge<B> *> edges_;
+
         bool operator==(const JoinInput<B> &other) const {
             return *node_ == *other.node_;
         }
@@ -41,6 +42,7 @@ namespace vaultdb {
         Expression<B> *join_condition_;
 
         int operator_id_; // temp, for debugging
+        int pkey_input_ = -1; // -1 - not keyed, 0 == lhs is primary key, 1 == rhs is primary key
 
         bool matchedInputs(const JoinEdge<B> &other) const {
             return (*lhs_->node_ == *other.lhs_->node_ && *rhs_->node_ == *other.rhs_->node_);
@@ -57,10 +59,12 @@ namespace vaultdb {
 
     public:
         // populate nodes and edges in graph
-        JoinGraph(Operator<B> *root) {
+        JoinGraph(Operator<B> *root, string db_name) {
             if(!hasJoin(root)) return; // no joins in this tree
-            joinInputCollector(root);
+            foreign_key_constraints_ = PsqlDataProvider::getForeignKeys(db_name);
 
+
+            joinInputCollector(root);
             joinHelper(root);
             //takeClosure();
 
@@ -112,7 +116,7 @@ namespace vaultdb {
                 for (auto edge: edges_) {
                     s << "  * Operator " << edge.operator_id_ << ": " << edge.join_condition_->toString()
                       << " schema: " << QuerySchema::concatenate(edge.lhs_->node_->getOutputSchema(),
-                                                                 edge.rhs_->node_->getOutputSchema()) << endl;
+                                                                 edge.rhs_->node_->getOutputSchema()) << ", PK side: " << edge.pkey_input_ <<  endl;
                     s << "           --> " << edge.lhs_->node_->toString() << endl;
                     s << "           --> " << edge.rhs_->node_->toString() << endl;
 
@@ -125,6 +129,8 @@ namespace vaultdb {
         vector<JoinEdge<B>> edges_;
 
     private:
+        vector<ForeignKeyConstraint> foreign_key_constraints_;
+
         // fill in implied edges in join graph
         void takeClosure() {
             // if two edges refer to the same ordinal in the same operator, they are already connected
@@ -246,6 +252,7 @@ namespace vaultdb {
                JoinEdge<B> e;
                e.lhs_ =  lhs.first;
                e.rhs_ =  rhs.first;
+               e.pkey_input_ = getKeyConstraint(lhs.first->node_->getOutputSchema(), lhs.second, rhs.first->node_->getOutputSchema(), rhs.second);
                 // set up join predicate
                ExpressionNode<B> *cond = getEqualityPredicate(e.lhs_->node_, e.rhs_->node_, lhs.second, rhs.second);
                bool found = false;
@@ -259,6 +266,10 @@ namespace vaultdb {
                        ExpressionNode<B> *conj = new AndNode<B>(existing, cond);
 
                        edges[i].join_condition_ = new GenericExpression<B>(conj, "predicate", FieldType::BOOL);
+                       if(edges[i].pkey_input_ == -1 && e.pkey_input_ != -1) {
+                           edges[i].pkey_input_ = e.pkey_input_;
+                       }
+
                        delete cond;
                        delete conj;
                        found = true;
@@ -276,6 +287,7 @@ namespace vaultdb {
                }
             } // end for-keys
 
+            // TODO: for each edge, determine PK-FK if applicable here
             
             // merge keys with existing edges
             for(auto edge : edges) {
@@ -322,6 +334,15 @@ namespace vaultdb {
                 if(seen.find(r) == seen.end()) {
                     lhs_join_keys.push_back(r);
                 }
+            }
+
+
+            if(lhs_edge.pkey_input_ == -1 && rhs_edge.pkey_input_ != -1) {
+                merged.pkey_input_ = rhs_edge.pkey_input_;
+            } else if(lhs_edge.pkey_input_ != -1 && rhs_edge.pkey_input_ == -1) {
+                merged.pkey_input_ = lhs_edge.pkey_input_;
+            } else {
+                merged.pkey_input_ = rhs_edge.pkey_input_;
             }
 
             merged.join_condition_ = getEqualityPredicateMultiExpression(merged.lhs_->node_, merged.rhs_->node_, lhs_join_keys);
@@ -372,6 +393,22 @@ namespace vaultdb {
             return false;
         }
 
+
+        // returns -1 if no key constraint exists, 0 if lhs is pkey and 1 if rhs is pkey
+        int getKeyConstraint(const QuerySchema & lhs_schema, const int & lhs_ordinal, const QuerySchema & rhs_schem, const int & rhs_ordinal) {
+            ColumnReference lhs(lhs_schema.getField(lhs_ordinal).getTableName(), lhs_schema.getField(lhs_ordinal).getName());
+            ColumnReference rhs(rhs_schem.getField(rhs_ordinal).getTableName(), rhs_schem.getField(rhs_ordinal).getName());
+            ForeignKeyConstraint fk(lhs, rhs);
+
+            if(std::find(foreign_key_constraints_.begin(), foreign_key_constraints_.end(), fk)  != foreign_key_constraints_.end()) {
+                return 0;
+            }
+            fk = ForeignKeyConstraint(rhs, lhs);
+            if(std::find(foreign_key_constraints_.begin(), foreign_key_constraints_.end(), fk)  != foreign_key_constraints_.end()) {
+                return 1;
+            }
+            return -1;
+        }
     };
 }
 

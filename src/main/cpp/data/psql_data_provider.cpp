@@ -80,6 +80,7 @@ QuerySchema PsqlDataProvider::getSchema(pqxx::result input, bool has_dummy_tag) 
     for(uint32_t i = 0; i < col_cnt; ++i) {
        string col_name =  input.column_name(i);
        FieldType type = getFieldTypeFromOid(input.column_type(i));
+
         int table_id = input.column_table(i);
 
         src_table_ = getTableName(table_id); // once per col in case of joins
@@ -237,7 +238,7 @@ PsqlDataProvider::getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_ta
 
     }
 
-pqxx::result PsqlDataProvider::query(const string &db_name, const string &sql) const {
+pqxx::result PsqlDataProvider::query(const string &db_name, const string &sql) const  {
     pqxx::result res;
     try {
         pqxx::connection c(db_name);
@@ -256,5 +257,39 @@ pqxx::result PsqlDataProvider::query(const string &db_name, const string &sql) c
     return res;
 }
 
+
+ vector<ForeignKeyConstraint> PsqlDataProvider::getForeignKeys(const string & db_name) {
+    // based on https://stackoverflow.com/questions/1152260/how-to-list-table-foreign-keys
+    string get_fks = "SELECT  tc.table_name fkey_table,   kcu.column_name fkey_column,  ccu.table_name AS pkey_table, ccu.column_name AS pkey_column \n"
+                     "FROM information_schema.table_constraints AS tc  JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name    AND tc.table_schema = kcu.table_schema \n"
+                     " JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name\n"
+                     "WHERE tc.constraint_type = 'FOREIGN KEY'";
+
+     pqxx::result res;
+     pqxx::connection conn("user=vaultdb dbname=" + db_name);
+
+     try {
+         pqxx::work txn(conn);
+         res = txn.exec(get_fks);
+         txn.commit();
+
+
+     } catch (const std::exception &e) {
+         std::cerr << e.what() << std::endl;
+
+         throw e;
+     }
+
+     vector<ForeignKeyConstraint> fks;
+
+     for(auto r : res) {
+         ColumnReference  fk = {r[0].as<string>(), r[1].as<string>()};
+         ColumnReference  pk = {r[2].as<string>(), r[3].as<string>()};
+         fks.push_back(ForeignKeyConstraint(pk, fk));
+     }
+
+
+    return fks;
+}
 
 

@@ -17,6 +17,8 @@ public:
     PlainTable *getQueryTable(std::string db_name, std::string sql, bool has_dummy_tag = false);
     void runQuery(std::string db_name, std::string sql);
 
+    static vector<ForeignKeyConstraint> getForeignKeys(const string & db_name);
+
 private:
     void getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_table, const size_t &idx);
      PlainField getField(pqxx::field src);
