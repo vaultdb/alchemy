@@ -24,6 +24,7 @@ public:
     }
 
     PackedColumnTable *getTable() {
+        // TODO: try a simpler way to pack the table without buffer pool.
         // secret share
         PlainTable *plain_input = DataUtilities::getQueryResults(db_name_, sql_, false);
         table_ = (PackedColumnTable *) plain_input->secretShare();

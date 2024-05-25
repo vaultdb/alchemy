@@ -398,11 +398,11 @@ namespace vaultdb {
 
         // setup for unpacked buffer pool
         std::vector<emp::Bit> unpacked_buffer_pool_;
-        std::vector<bool> occupied_status_; // 0 - free, 1 - occupied for each slot
+        std::vector<bool> occupied_status_; // 0 - free, 1 - occupied for each slot TODO: try to make it constant time
         std::queue<PageId> eviction_queue_; // LRU eviction by queue
 
         std::map<PageId, int> unpacked_page_slots_; // map<pid, slot id in unpacked buffer pool>
-        std::map<PageId, std::vector<bool>> page_status_; // map<pid, <pinned_status (0 - unpinned, 1 - pinned), dirty_status (0 - clean, 1 - dirty)>>
+        std::map<PageId, std::vector<bool>> page_status_; // map<pid, <pinned_status (0 - unpinned, 1 - pinned), dirty_status (0 - clean, 1 - dirty)>> // TODO: bool array instead of vector
 
         // setup for packed buffer pool
         std::map<int, std::map<int, std::vector<emp::OMPCPackedWire>*>> packed_buffer_pool_; // map<table_id, map<col_id, a pointer of a vector OMPCPackedWires>>
