@@ -6,7 +6,7 @@
 #include "query_table/query_table.h"
 #include "operators/support/normalize_fields.h"
 #include "query_table/column_table.h"
-#include "data/secret_shared_tpch_data/secret_share_and_pack_tpch_data_from_query.h"
+#include "data/secret_shared_data/secret_share_and_pack_data_from_query.h"
 #include "query_table/packed_column_table.h"
 
 
@@ -314,7 +314,7 @@ TEST_F(OMPCEmpTest, ompc_secret_share_and_pack_tpch_data_from_query){
              vector<std::string> primary_keys = {"c_custkey", "l_orderkey", "n_nationkey", "o_orderkey", "p_partkey",
                                                  "r_regionkey", "s_suppkey", "ps_partkey"};
 
-             SecretShareAndPackTpchDataFromQuery ssp(db_name_, "", "");
+             SecretShareAndPackDataFromQuery ssp(db_name_, "", "");
 
              bool is_write = false;
 

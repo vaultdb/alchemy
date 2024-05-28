@@ -2,7 +2,7 @@
 #include <util/data_utilities.h>
 #include <operators/sort.h>
 #include <operators/packed_table_scan.h>
-#include <data/secret_shared_tpch_data/secret_share_and_pack_tpch_data_from_query.h>
+#include <data/secret_shared_data/secret_share_and_pack_data_from_query.h>
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -143,7 +143,7 @@ TEST_F(OMPCEmpTableTest, ompc_test_packed_table_scan) {
     if(FLAGS_validation) {
         std::string table_sql = "SELECT * FROM " + table_name + " ORDER BY c_custkey";
 
-        SecretShareAndPackTpchDataFromQuery ssp(db_name, table_sql, table_name);
+        SecretShareAndPackDataFromQuery ssp(db_name, table_sql, table_name);
         PackedColumnTable *expected = ssp.getTable();
 
         PlainTable *expected_plain = expected->revealInsecure(emp::PUBLIC);

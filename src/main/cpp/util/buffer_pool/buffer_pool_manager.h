@@ -62,19 +62,7 @@ namespace vaultdb {
             return false;
         }
 
-        bool hasPackedPage(PageId &page_id) {
-            return false;
-        }
-
-        bool hasPage(PageId &page_id) {
-            return false;
-        }
-
         bool isUnpackedBufferPoolFull() {
-            return false;
-        }
-
-        bool isPackedBufferPoolFull() {
             return false;
         }
 
@@ -120,12 +108,10 @@ namespace vaultdb {
         std::queue<PageId> eviction_queue_; // LRU eviction by queue
 
         std::map<PageId, int> unpacked_page_slots_; // map<pid, slot id in unpacked buffer pool>
-        std::map<PageId, std::vector<bool>> page_status_; // map<pid, <pinned_status (0 - unpinned, 1 - pinned), dirty_status (0 - clean, 1 - dirty)>>
+        std::map<PageId, bool[2]> page_status_; // map<pid, <pinned_status (0 - unpinned, 1 - pinned), dirty_status (0 - clean, 1 - dirty)>>
 
         // setup for packed buffer pool
         std::map<int, std::map<int, std::vector<emp::OMPCPackedWire>*>> packed_buffer_pool_;
-        std::map<int, std::map<int, std::vector<bool>*>> wire_status_;
-
     };
 }
 #else
@@ -188,26 +174,8 @@ namespace vaultdb {
             return unpacked_page_slots_.find(page_id) != unpacked_page_slots_.end();
         }
 
-        bool hasPackedPage(PageId &page_id) {
-            if(wire_status_.find(page_id.table_id_) != wire_status_.end()) {
-                std::map<int, std::vector<bool>*> col_map = wire_status_[page_id.table_id_];
-                if(col_map.find(page_id.col_id_) != col_map.end()) {
-                    return col_map[page_id.col_id_]->at(page_id.page_idx_);
-                }
-            }
-            return false;
-        }
-
-        bool hasPage(PageId &page_id) {
-            return hasUnpackedPage(page_id) || hasPackedPage(page_id);
-        }
-
         bool isUnpackedBufferPoolFull() const {
             return unpacked_page_slots_.size() >= max_unpacked_pages_;
-        }
-
-        bool isPackedBufferPoolFull() const {
-            return false;
         }
 
         void removeUnpackedPage(PageId &pid) {
@@ -250,7 +218,6 @@ namespace vaultdb {
 
                     emp::OMPCPackedWire *packed_wires_ptr = packed_buffer_pool_[evicted_pid.table_id_][evicted_pid.col_id_]->data() + evicted_pid.page_idx_;
                     *packed_wires_ptr = evicted_pack_wire;
-                    (*wire_status_[evicted_pid.table_id_][evicted_pid.col_id_])[evicted_pid.page_idx_] = true;
                 }
 
                 eviction_queue_.pop();
@@ -277,18 +244,6 @@ namespace vaultdb {
         }
 
         emp::Bit *getUnpackedPagePtr(PageId &pid) {
-            if(!hasPage(pid)) {
-                int empty_slot_idx = getEmptySlot();
-
-                unpacked_page_slots_[pid] = empty_slot_idx;
-                page_status_[pid] = {false, false};
-                occupied_status_[empty_slot_idx] = true;
-
-                eviction_queue_.push(pid);
-
-                return unpacked_buffer_pool_.data() + empty_slot_idx * unpacked_page_size_;
-            }
-
             if(hasUnpackedPage(pid)) {
                 return unpacked_buffer_pool_.data() + unpacked_page_slots_[pid] * unpacked_page_size_;
             }
@@ -300,7 +255,8 @@ namespace vaultdb {
                 occupied_status_[empty_slot_idx] = true;
 
                 unpacked_page_slots_[pid] = empty_slot_idx;
-                page_status_[pid] = {false, false};
+                page_status_[pid][0] = false;
+                page_status_[pid][1] = false;
 
                 eviction_queue_.push(pid);
 
@@ -309,10 +265,6 @@ namespace vaultdb {
         }
 
         void clonePage(PageId &src_pid, PageId &dst_pid) {
-            if(!hasPage(src_pid)) {
-                throw std::runtime_error("Source page not found for pid: " + src_pid.toString());
-            }
-
             if(hasUnpackedPage(src_pid)) {
                 emp::Bit *src_page_ptr = unpacked_buffer_pool_.data() + unpacked_page_slots_[src_pid] * unpacked_page_size_;
                 page_status_[src_pid][0] = true;
@@ -333,7 +285,6 @@ namespace vaultdb {
                 emp::OMPCPackedWire *src_page_ptr = packed_buffer_pool_[src_pid.table_id_][src_pid.col_id_]->data() + src_pid.page_idx_;
                 emp::OMPCPackedWire *dst_page_ptr = packed_buffer_pool_[dst_pid.table_id_][dst_pid.col_id_]->data() + dst_pid.page_idx_;
                 *dst_page_ptr = *src_page_ptr;
-                (*wire_status_[dst_pid.table_id_][dst_pid.col_id_])[dst_pid.page_idx_] = true;
             }
         }
 
@@ -348,15 +299,8 @@ namespace vaultdb {
             int start_page_idx = start_row_idx / rows_per_page;
             PageId pid = {table_id, col_idx, start_page_idx};
             for(int i = 0; i < pages_to_remove; ++i) {
-                if(!hasPage(pid)) {
-                    throw std::runtime_error("Page not found for pid: " + pid.toString());
-                }
-
                 if(hasUnpackedPage(pid)) {
                     removeUnpackedPage(pid);
-                }
-                else {
-                    (*wire_status_[pid.table_id_][pid.col_id_])[pid.page_idx_] = false;
                 }
                 ++pid.page_idx_;
             }
@@ -402,11 +346,10 @@ namespace vaultdb {
         std::queue<PageId> eviction_queue_; // LRU eviction by queue
 
         std::map<PageId, int> unpacked_page_slots_; // map<pid, slot id in unpacked buffer pool>
-        std::map<PageId, std::vector<bool>> page_status_; // map<pid, <pinned_status (0 - unpinned, 1 - pinned), dirty_status (0 - clean, 1 - dirty)>> // TODO: bool array instead of vector
+        std::map<PageId, bool[2]> page_status_; // map<pid, <pinned_status (0 - unpinned, 1 - pinned), dirty_status (0 - clean, 1 - dirty)>>
 
         // setup for packed buffer pool
         std::map<int, std::map<int, std::vector<emp::OMPCPackedWire>*>> packed_buffer_pool_; // map<table_id, map<col_id, a pointer of a vector OMPCPackedWires>>
-        std::map<int, std::map<int, std::vector<bool>*>> wire_status_; // map<table_id, map<col_id, a pointer of a vector bool>> - 0 - free, 1 - occupied
     };
 }
 

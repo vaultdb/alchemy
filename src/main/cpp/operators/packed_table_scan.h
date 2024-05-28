@@ -83,7 +83,7 @@ namespace vaultdb {
 #else
 #include "operator.h"
 #include "util/table_manager.h"
-#include "data/secret_shared_tpch_data/secret_share_and_pack_tpch_data_from_query.h"
+#include "data/secret_shared_data/secret_share_and_pack_data_from_query.h"
 // class for pulling tables directly from TableManager
 // for use in pilot for reading in secret-shared data that has no DB equivalent
 
@@ -96,7 +96,7 @@ namespace vaultdb {
             this->data_path_ = data_path;
             this->input_party_ = input_party;
 
-            this->ssp_ = new SecretShareAndPackTpchDataFromQuery(this->db_name_, "", this->table_name_);
+            this->ssp_ = new SecretShareAndPackDataFromQuery(this->db_name_, "", this->table_name_);
             this->table_path_ = this->data_path_ + this->table_name_ + "_" + this->db_name_ + "/";
             this->output_schema_ = this->ssp_->load_schema_from_disk(table_path_);
         }
@@ -173,7 +173,7 @@ namespace vaultdb {
         int input_party_ = 0;
         int limit_ = -1;
 
-        SecretShareAndPackTpchDataFromQuery *ssp_;
+        SecretShareAndPackDataFromQuery *ssp_;
     };
 }
 

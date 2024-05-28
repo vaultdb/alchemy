@@ -1,14 +1,14 @@
-#ifndef VAULTDB_EMP_SECRET_SHARE_AND_PACK_TPCH_DATA_FROM_QUERY_H
-#define VAULTDB_EMP_SECRET_SHARE_AND_PACK_TPCH_DATA_FROM_QUERY_H
+#ifndef VAULTDB_EMP_SECRET_SHARE_AND_PACK_DATA_FROM_QUERY_H
+#define VAULTDB_EMP_SECRET_SHARE_AND_PACK_DATA_FROM_QUERY_H
 
 #include "query_table/packed_column_table.h"
 #include "util/buffer_pool/buffer_pool_manager.h"
 
 using namespace vaultdb;
 
-class SecretShareAndPackTpchDataFromQuery {
+class SecretShareAndPackDataFromQuery {
 public:
-    SecretShareAndPackTpchDataFromQuery(std::string db_name, std::string sql, std::string table_name) : db_name_(db_name), sql_(sql), table_(
+    SecretShareAndPackDataFromQuery(std::string db_name, std::string sql, std::string table_name) : db_name_(db_name), sql_(sql), table_(
             nullptr), table_name_(table_name) {}
 
     void set_db_name(std::string db_name) {
@@ -41,7 +41,6 @@ public:
             emp_manager_->pack(current_slot_ptr, (Bit*) &packed_wire, bpm_->unpacked_page_size_);
             emp::OMPCPackedWire *packed_wires_ptr = bpm_->packed_buffer_pool_[pid.table_id_][pid.col_id_]->data() + pid.page_idx_;
             *packed_wires_ptr = packed_wire;
-            (*(bpm_->wire_status_[pid.table_id_][pid.col_id_]))[pid.page_idx_] = true;
 
             bpm_->removeUnpackedPage(pid);
         }
@@ -107,9 +106,8 @@ public:
 
             for(int j = 0; j < loaded_table->packed_buffer_pool_[i].size(); ++j) {
                 std::vector<int8_t> serialized_wire = std::vector<int8_t>(serialized_wires_for_col.begin() + j * packed_page_size,
-                                                                         serialized_wires_for_col.begin() + (j + 1) * packed_page_size);
+                                                                          serialized_wires_for_col.begin() + (j + 1) * packed_page_size);
                 loaded_table->packed_buffer_pool_[i][j] = loaded_table->deserializePackedWire(serialized_wire);
-                loaded_table->wire_status_[i][j] = true;
             }
         }
 
@@ -136,4 +134,4 @@ private:
     OMPCBackend<N> *protocol_ = (OMPCBackend<N> *) emp::backend;
 };
 
-#endif //VAULTDB_EMP_SECRET_SHARE_AND_PACK_TPCH_DATA_FROM_QUERY_H
+#endif //VAULTDB_EMP_SECRET_SHARE_AND_PACK_DATA_FROM_QUERY_H

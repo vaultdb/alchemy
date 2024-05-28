@@ -6,8 +6,6 @@
 #include "query_table/query_table.h"
 #include "operators/support/normalize_fields.h"
 #include "query_table/column_table.h"
-//#include "data/secret_shared_tpch_data/secret_share_and_pack_tpch_data_from_query.h"
-//#include "query_table/packed_column_table.h"
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -303,51 +301,6 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
     delete expected;
     delete input_table;
 }
-
-//TEST_F(EmpTest, secret_share_and_pack_tpch_data_from_query){
-//     if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED) {
-//         bool run_test = false;
-//
-//         if(run_test) {
-//             vector<std::string> table_names = {"customer", "lineitem", "nation", "orders", "part", "region",
-//                                                "supplier", "partsupp"};
-//
-//             SecretShareAndPackTpchDataFromQuery ssp(db_name_, "", "");
-//
-//             bool is_write = false;
-//
-//             std::string src_path = Utilities::getCurrentWorkingDirectory();
-//             std::string packed_pages_path = src_path + "/packed_pages/";
-//             if(is_write) {
-//                 Utilities::runCommand("rm -rf " + packed_pages_path);
-//                 Utilities::mkdir(packed_pages_path);
-//             }
-//
-//             for (auto table_name: table_names) {
-//                 cout << "Working on " + table_name + " table\n";
-//                 std::string table_path = packed_pages_path + table_name + "_tpch_unioned_150/";
-//                 Utilities::mkdir(table_path);
-//                 std::string table_sql = "SELECT * FROM " + table_name;
-//                 ssp.set_sql(table_sql);
-//                 ssp.set_table_name(table_name);
-//
-//                 if(is_write) {
-//                     PackedColumnTable *table = ssp.getTable();
-//
-//                     ssp.save_table_to_disk(table_path, FLAGS_party);
-//
-//                     ssp.save_backend_parameters(packed_pages_path, FLAGS_party);
-//                 }
-//
-//                 ((OMPCBackend<N> *) emp::backend)->multi_pack_delta = ssp.load_backend_parameters(packed_pages_path, FLAGS_party);
-//
-//                 ssp.verify_loaded_table(table_path, FLAGS_party);
-//
-//                 cout << table_name + " table is secret shared, packed, saved to disk and verified\n";
-//             }
-//         }
-//     }
-// }
 
 
 
