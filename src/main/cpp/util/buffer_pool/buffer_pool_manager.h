@@ -265,7 +265,7 @@ namespace vaultdb {
         }
 
         void clonePage(PageId &src_pid, PageId &dst_pid) {
-            if(hasUnpackedPage(src_pid)) {
+            if(hasUnpackedPage(src_pid) && page_status_[src_pid][1]) {
                 emp::Bit *src_page_ptr = unpacked_buffer_pool_.data() + unpacked_page_slots_[src_pid] * unpacked_page_size_;
                 page_status_[src_pid][0] = true;
                 emp::Bit *dst_page_ptr = getUnpackedPagePtr(dst_pid);
