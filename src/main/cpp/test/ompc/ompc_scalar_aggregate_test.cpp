@@ -29,7 +29,6 @@ class OMPCScalarAggregateTest : public EmpBaseTest {
 
 protected:
     void runTest(const string & expectedResultsQuery, const vector<ScalarAggregateDefinition> & aggregators) const;
-    void runDummiesTest(const string & expected_sql, const vector<ScalarAggregateDefinition> & aggregators) const;
 
     std::string src_path_ = Utilities::getCurrentWorkingDirectory();
     std::string packed_pages_path_ = src_path_ + "/packed_pages/";
@@ -46,7 +45,7 @@ void OMPCScalarAggregateTest::runTest(const string &expected_sql,
                                         const vector<ScalarAggregateDefinition> & aggregators) const {
 
     // Table scan for lineitem
-    PackedTableScan *packed_lineitem_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table to l_orderkey, l_linenumber
@@ -59,9 +58,9 @@ void OMPCScalarAggregateTest::runTest(const string &expected_sql,
 
 
     // provide the aggregator with inputs:
-    ScalarAggregate aggregate(lineitem_project, aggregators);
-    aggregate.setOperatorId(-2);
-    auto aggregated = aggregate.run();
+    ScalarAggregate<Bit> *aggregate = new ScalarAggregate(lineitem_project, aggregators);
+    aggregate->setOperatorId(-2);
+    auto aggregated = aggregate->run();
 
     if(FLAGS_validation) {
         PlainTable *observed = aggregated->reveal();
@@ -124,7 +123,7 @@ TEST_F(OMPCScalarAggregateTest, test_tpch_q1_sums) {
                           "FROM (" + inputQuery + ") subquery";
 
     // Table scan for lineitem
-    PackedTableScan *packed_lineitem_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table
@@ -188,7 +187,7 @@ TEST_F(OMPCScalarAggregateTest, test_tpch_q1_avg_cnt) {
                            "from (" + sql + ") subq\n";
 
     // Table scan for lineitem
-    PackedTableScan *packed_lineitem_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table
@@ -257,7 +256,7 @@ TEST_F(OMPCScalarAggregateTest, tpch_q1) {
                            "from (" + inputQuery + ") input ";
 
     // Table scan for lineitem
-    PackedTableScan *packed_lineitem_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table

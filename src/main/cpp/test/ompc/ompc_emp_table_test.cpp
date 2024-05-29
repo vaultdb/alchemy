@@ -137,7 +137,7 @@ TEST_F(OMPCEmpTableTest, ompc_test_packed_table_scan) {
     std::string db_name = "tpch_unioned_150";
     std::string table_name = "customer";
 
-    PackedTableScan packed_table_scan(db_name, table_name, packed_pages_path, FLAGS_party);
+    PackedTableScan<Bit> packed_table_scan(db_name, table_name, packed_pages_path, FLAGS_party);
     PackedColumnTable *packed_table = (PackedColumnTable *) packed_table_scan.run();
 
     if(FLAGS_validation) {

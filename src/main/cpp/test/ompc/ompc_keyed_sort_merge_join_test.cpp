@@ -66,7 +66,7 @@ TEST_F(OMPCKeyedSortMergeJoinTest, test_tpch_q3_customer_orders) {
 
 
     // Table scan for orders
-    PackedTableScan *packed_orders_table_scan = new PackedTableScan("tpch_unioned_150", "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "orders", packed_pages_path_, FLAGS_party, orders_limit_);
     packed_orders_table_scan->setOperatorId(-2);
 
     // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy
@@ -80,7 +80,7 @@ TEST_F(OMPCKeyedSortMergeJoinTest, test_tpch_q3_customer_orders) {
     orders_project->setOperatorId(-2);
 
     // Table scan for customer
-    PackedTableScan *packed_customer_table_scan = new PackedTableScan("tpch_unioned_150", "customer", packed_pages_path_, FLAGS_party, customer_limit_);
+    PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "customer", packed_pages_path_, FLAGS_party, customer_limit_);
     packed_customer_table_scan->setOperatorId(-2);
 
     // Project customer table to c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy
@@ -127,7 +127,7 @@ TEST_F(OMPCKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
                    "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority"; // ignore NOT odummy AND NOT ldummy for now
 
     // Table scan for lineitem
-    PackedTableScan *packed_lineitem_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue
@@ -145,7 +145,7 @@ TEST_F(OMPCKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
     lineitem_project->setOperatorId(-2);
 
     // Table scan for orders
-    PackedTableScan *packed_orders_table_scan = new PackedTableScan("tpch_unioned_150", "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "orders", packed_pages_path_, FLAGS_party, orders_limit_);
     packed_orders_table_scan->setOperatorId(-2);
 
     // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -194,7 +194,7 @@ TEST_F(OMPCKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
                      "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
 
     // Table scan for orders
-    PackedTableScan *packed_orders_table_scan = new PackedTableScan("tpch_unioned_150", "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "orders", packed_pages_path_, FLAGS_party, orders_limit_);
     packed_orders_table_scan->setOperatorId(-2);
 
     // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -208,7 +208,7 @@ TEST_F(OMPCKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
     orders_project->setOperatorId(-2);
 
     // Table scan for customer
-    PackedTableScan *packed_customer_table_scan = new PackedTableScan("tpch_unioned_150", "customer", packed_pages_path_, FLAGS_party, customer_limit_);
+    PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "customer", packed_pages_path_, FLAGS_party, customer_limit_);
     packed_customer_table_scan->setOperatorId(-2);
 
     // Project customer table to c_custkey
@@ -225,7 +225,7 @@ TEST_F(OMPCKeyedSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
     co_join->setOperatorId(-2);
 
     // Table scan for lineitem
-    PackedTableScan *packed_lineitem_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue

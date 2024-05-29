@@ -29,6 +29,8 @@ namespace vaultdb {
 
         PlanParser(const string &db_name, const string &json_file, const int &limit = -1, const bool read_from_file=true);
 
+        PlanParser(const string &db_name, const string &json_file, const int &party = emp::PUBLIC, const int &limit = -1, const bool read_from_file=true);
+
 
         Operator<B> *getRoot() const { return root_; }
         map<int, Operator<B> * > getOperatorMap() const { return operators_; }
@@ -49,6 +51,7 @@ namespace vaultdb {
     private:
         std::string db_name_;
         StorageModel storage_model_ = SystemConfiguration::getInstance().storageModel();
+        int party_ = emp::PUBLIC;
 
         Operator<B> *root_;
         int input_limit_ = -1; // to add a limit clause to SQL statements for efficient testing
@@ -75,6 +78,7 @@ namespace vaultdb {
         Operator<B> *parseProjection(const int &operator_id, const boost::property_tree::ptree &project_tree);
         Operator<B> *parseSeqScan(const int &operator_id, const boost::property_tree::ptree &seq_scan_tree);
         Operator<B> *parseTableScan(const int &operator_id, const boost::property_tree::ptree &scan_tree);
+        Operator<B> *parsePackedTableScan(const int &operator_id, const boost::property_tree::ptree &packed_table_scan_tree);
         Operator<B> *parseShrinkwrap(const int &operator_id, const boost::property_tree::ptree &pt);
         Operator<B> *parseLocalScan(const int & operator_id, const boost::property_tree::ptree &local_scan_tree);
         Operator<B> *parseUnion(const int & operator_id, const boost::property_tree::ptree &union_tree);

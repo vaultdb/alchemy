@@ -48,7 +48,7 @@ TEST_F(OMPCFilterTest, ompc_test_table_scan) {
         std::string src_path = Utilities::getCurrentWorkingDirectory();
         std::string packed_pages_path = src_path + "/packed_pages/";
 
-        input = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path,
+        input = new PackedTableScan<Bit>("tpch_unioned_150", "lineitem", packed_pages_path,
                                                                  FLAGS_party, limit);
     }
     else {
@@ -93,7 +93,7 @@ TEST_F(OMPCFilterTest, ompc_test_filter) {
         std::string src_path = Utilities::getCurrentWorkingDirectory();
         std::string packed_pages_path = src_path + "/packed_pages/";
 
-        input = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path,
+        input = new PackedTableScan<Bit>("tpch_unioned_150", "lineitem", packed_pages_path,
                                                                  FLAGS_party, limit);
     }
     else {

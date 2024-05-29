@@ -24,6 +24,7 @@
 #include <operators/table_scan.h>
 #include <operators/union.h>
 #include <operators/left_keyed_join.h>
+#include <operators/packed_table_scan.h>
 
 #include <util/logger.h>
 #include <regex>
@@ -48,6 +49,14 @@ PlanParser<B>::PlanParser(const string &db_name, const string & json, const int 
     else
         parseSecurePlanString(json);
 
+}
+
+template<typename B>
+PlanParser<B>::PlanParser(const std::string &db_name, const std::string &json_file, const int &party, const int &limit, const bool read_from_file) : db_name_(db_name), party_(party), input_limit_(limit), zk_plan_(false), json_only_(true) {
+    if(read_from_file)
+        parseSecurePlan(json_file);
+    else
+        parseSecurePlanString(json_file);
 }
 
 template<typename B>
@@ -174,6 +183,7 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
     if(op_name == "LogicalFilter")  op = parseFilter(operator_id, tree);
     if(op_name == "JdbcTableScan")  op = parseSeqScan(operator_id, tree);
     if(op_name == "VaultDBTableScan")  op = parseTableScan(operator_id, tree);
+    if(op_name == "PackedTableScan") op = parsePackedTableScan(operator_id, tree);
     if(op_name == "LogicalUnion") op = parseUnion(operator_id, tree);
     if(op_name == "ShrinkWrap")  op = parseShrinkwrap(operator_id, tree);
     if(op_name == "LogicalValues") {
@@ -851,6 +861,24 @@ Operator<B> *PlanParser<B>::parseTableScan(const int & operator_id, const boost:
         local_tuple_limit = seq_scan_tree.get_child("input-limit").template get_value<int>();
 
     return new TableScan<B>(table_name, local_tuple_limit);
+}
+
+template<typename B>
+Operator<B> *PlanParser<B>::parsePackedTableScan(const int & operator_id, const boost::property_tree::ptree &packed_table_scan_tree) {
+    std::string db_name;
+    std::string table_name;
+    std::string src_path = Utilities::getCurrentWorkingDirectory();
+    std::string packed_pages_path = src_path + "/packed_pages/";
+
+    if(packed_table_scan_tree.count("db") == 1){
+        db_name = packed_table_scan_tree.get_child("db").begin()->second.data();
+    }
+
+    if(packed_table_scan_tree.count("table") == 1) {
+        table_name = packed_table_scan_tree.get_child("table").begin()->second.data();
+    }
+
+    return new PackedTableScan<B>(db_name, table_name, packed_pages_path, party_);
 }
 
 template<typename B>

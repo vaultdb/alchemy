@@ -35,7 +35,6 @@ class OMPCNestedLoopAggregateTest : public EmpBaseTest {
 
 protected:
     void runTest(const string & expectedResultsQuery, const vector<ScalarAggregateDefinition> & aggregators) const;
-    void runDummiesTest(const string & expected_sql, const vector<ScalarAggregateDefinition> & aggregators) const;
 
     std::string src_path_ = Utilities::getCurrentWorkingDirectory();
     std::string packed_pages_path_ = src_path_ + "/packed_pages/";
@@ -52,7 +51,7 @@ void OMPCNestedLoopAggregateTest::runTest(const string &expected_sql,
                                             const vector<ScalarAggregateDefinition> & aggregators) const {
 
     // Table scan for lineitem
-    PackedTableScan *packed_lineitem_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table to l_orderkey, l_linenumber
@@ -64,9 +63,9 @@ void OMPCNestedLoopAggregateTest::runTest(const string &expected_sql,
     lineitem_project->setOperatorId(-2);
 
     std::vector<int32_t> group_bys{0};
-    NestedLoopAggregate aggregate(lineitem_project, group_bys, aggregators, SortDefinition());
-    aggregate.setOperatorId(-2);
-    auto aggregated= aggregate.run();
+    NestedLoopAggregate<emp::Bit> *aggregate = new NestedLoopAggregate(lineitem_project, group_bys, aggregators, SortDefinition());
+    aggregate->setOperatorId(-2);
+    auto aggregated= aggregate->run();
 
     if(FLAGS_validation) {
         PlainTable *observed = aggregated->reveal();
@@ -132,7 +131,7 @@ TEST_F(OMPCNestedLoopAggregateTest, test_tpch_q1_sums) {
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
 
     // Table scan for lineitem
-    PackedTableScan *packed_lineitem_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table
@@ -208,7 +207,7 @@ TEST_F(OMPCNestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
 
     // Table scan for lineitem
-    PackedTableScan *packed_lineitem_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table
@@ -289,7 +288,7 @@ TEST_F(OMPCNestedLoopAggregateTest, tpch_q1) {
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
 
     // Table scan for lineitem
-    PackedTableScan *packed_lineitem_table_scan = new PackedTableScan("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table
