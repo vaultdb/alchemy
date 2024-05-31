@@ -103,7 +103,10 @@ namespace vaultdb {
             this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
             if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED) {
-                ((OMPCBackend<N> *) emp::backend)->multi_pack_delta = this->ssp_->load_backend_parameters(this->data_path_, this->input_party_);
+                if(this->input_party_) {
+                    ((OMPCBackend<N> *) emp::backend)->multi_pack_delta = this->ssp_->load_backend_parameters(
+                            this->data_path_, this->input_party_);
+                }
 
                 this->start_time_ = clock_start();
                 this->start_gate_cnt_ = this->system_conf_.andGateCount();
