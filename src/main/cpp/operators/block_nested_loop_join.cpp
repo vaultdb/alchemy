@@ -108,10 +108,12 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
         // join for each block
         for(int outer_block_idx = 0; outer_block_idx < outer_block_fields_size; ++outer_block_idx) {
             lhs_dummy_tag = ((QueryTable<B> *) lhs)->getDummyTag(i + outer_block_idx);
+            // copy the lhs |rhs| times
+            this->output_->cloneRowRange(cursor, 0, (QueryTable<B> *) lhs, i + outer_block_idx, rhs->tuple_cnt_);
+            // initialize the rhs output
+            this->output_->cloneTable(cursor, rhs_col_offset, (QueryTable<B> *) rhs);
 
             for(int j = 0; j < rhs->tuple_cnt_; ++j) {
-                this->output_->cloneRow(cursor, 0, (QueryTable<B> *) lhs, i + outer_block_idx);
-                this->output_->cloneRow(cursor, rhs_col_offset, (QueryTable<B> *) rhs, j);
                 selected = Join<B>::predicate_->call((QueryTable<B> *) lhs, i + outer_block_idx, (QueryTable<B> *) rhs, j).template getValue<B>();
                 dst_dummy_tag = (!selected) | lhs_dummy_tag | ((QueryTable<B> *) rhs)->getDummyTag(j);
                 Operator<B>::output_->setDummyTag(cursor, dst_dummy_tag);

@@ -1,12 +1,11 @@
 #include <gtest/gtest.h>
-#include <operators/basic_join.h>
+#include <operators/block_nested_loop_join.h>
 #include <gflags/gflags.h>
 #include <operators/secure_sql_input.h>
 #include <operators/project.h>
 #include <operators/sort.h>
 #include <test/mpc/emp_base_test.h>
 #include "util/field_utilities.h"
-#include <expression/comparator_expression_nodes.h>
 #include "expression/generic_expression.h"
 #include "expression/math_expression_nodes.h"
 #include <operators/packed_table_scan.h>
@@ -27,7 +26,7 @@ DEFINE_string(storage, "wire_packed", "storage model for columns (column, wire_p
 
 using namespace vaultdb;
 
-class OMPCBasicJoinTest : public EmpBaseTest {
+class OMPCBlockNestedLoopJoinTest : public EmpBaseTest {
 protected:
 
     std::string src_path_ = Utilities::getCurrentWorkingDirectory();
@@ -53,24 +52,20 @@ protected:
                                       "FROM lineitem \n"
                                       "ORDER BY l_orderkey \n"
                                       "LIMIT " + std::to_string(lineitem_limit_);
-
-
-
-
 };
 
 
 
 
-TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
+TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_customer_orders) {
 
 
     std::string sql = "WITH customer_cte AS (" + customer_sql_ + "), "
-                                    "orders_cte AS (" + orders_sql_ + ") "
-                      "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
-                      "FROM customer_cte, orders_cte "
-                      "WHERE c_custkey = o_custkey "
-                      "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT cdummy AND NOT odummy for now
+                                                                 "orders_cte AS (" + orders_sql_ + ") "
+                                                                                                   "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
+                                                                                                   "FROM customer_cte, orders_cte "
+                                                                                                   "WHERE c_custkey = o_custkey "
+                                                                                                   "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT cdummy AND NOT odummy for now
 
     // Table scan for orders
     PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "orders", packed_pages_path_, FLAGS_party, orders_limit_);
@@ -82,13 +77,6 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
     orders_builder.addMapping(1, 1);
     orders_builder.addMapping(4, 2);
     orders_builder.addMapping(7, 3);
-    //    InputReference<emp::Bit> *orderdate_field = new InputReference<emp::Bit>(4, packed_orders_table_scan->getOutputSchema());
-    //    Field<Bit> date_field(FieldType::SECURE_STRING, emp::Integer(32,0));
-    //    date_field.setString("1995-03-25");
-    //    LiteralNode<emp::Bit> *date_literal = new LiteralNode<emp::Bit>(date_field);
-    //    GreaterThanEqNode<emp::Bit> *date_node = new GreaterThanEqNode<emp::Bit>(orderdate_field, date_literal);
-    //    Expression<emp::Bit> *odummy_expr = new GenericExpression<emp::Bit>(date_node, "odummy", FieldType::SECURE_BOOL);
-    //    orders_builder.addExpression(odummy_expr, 4);
 
     Project<Bit> *orders_project = new Project(packed_orders_table_scan, orders_builder.getExprs());
     orders_project->setOperatorId(-2);
@@ -100,13 +88,6 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
     // Project customer table to c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy
     ExpressionMapBuilder<Bit> customer_builder(packed_customer_table_scan->getOutputSchema());
     customer_builder.addMapping(0, 0);
-//    InputReference<emp::Bit> *mktsegment_field = new InputReference<emp::Bit>(6, packed_customer_table_scan->getOutputSchema());
-//    Field<Bit> household_field(FieldType::SECURE_STRING, emp::Integer(32,0));
-//    household_field.setString("HOUSEHOLD");
-//    LiteralNode<emp::Bit> *household_literal = new LiteralNode<emp::Bit>(household_field);
-//    NotEqualNode<emp::Bit> *not_household_node = new NotEqualNode<emp::Bit>(mktsegment_field, household_literal);
-//    Expression<emp::Bit> *cdummy_expr = new GenericExpression<emp::Bit>(not_household_node, "cdummy", FieldType::SECURE_BOOL);
-//    customer_builder.addExpression(cdummy_expr, 1);
 
     Project<Bit> *customer_project = new Project(packed_customer_table_scan, customer_builder.getExprs());
     customer_project->setOperatorId(-2);
@@ -115,7 +96,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<emp::Bit> *predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_project, 1, customer_project, 4);
 
-    BasicJoin<emp::Bit> *join = new BasicJoin(orders_project, customer_project, predicate);
+    BlockNestedLoopJoin<emp::Bit> *join = new BlockNestedLoopJoin(orders_project, customer_project, predicate);
     join->setOperatorId(-2);
     SecureTable *join_res = join->run();
 
@@ -133,17 +114,17 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
 }
 
 
-TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
+TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders) {
 
 
     // get inputs from local oblivious ops
     // first 3 customers, propagate this constraint up the join tree for the test
     std::string sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
-                                    "lineitem_cte AS (" + lineitem_sql_ + ") "
-                      "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority "
-                      "FROM lineitem_cte, orders_cte "
-                      "WHERE l_orderkey = o_orderkey "
-                      "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority"; // ignore NOT odummy AND NOT ldummy for now
+                                                             "lineitem_cte AS (" + lineitem_sql_ + ") "
+                                                                                                   "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority "
+                                                                                                   "FROM lineitem_cte, orders_cte "
+                                                                                                   "WHERE l_orderkey = o_orderkey "
+                                                                                                   "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority"; // ignore NOT odummy AND NOT ldummy for now
 
 
     // Table scan for lineitem
@@ -183,7 +164,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
     Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(lineitem_project, 0,
                                                                                       orders_project, 2);
 
-    BasicJoin<emp::Bit> *join = new BasicJoin(lineitem_project, orders_project, predicate);
+    BlockNestedLoopJoin<emp::Bit> *join = new BlockNestedLoopJoin(lineitem_project, orders_project, predicate);
     join->setOperatorId(-2);
     SecureTable *join_res = join->run();
 
@@ -205,15 +186,15 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
 
 
 
-TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
+TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     std::string sql = "WITH orders_cte AS (" + orders_sql_ + "), "
-                           "lineitem_cte AS (" + lineitem_sql_ + "), "
-                           "customer_cte AS (" + customer_sql_ + ") "
-                      "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
-                      "FROM lineitem_cte, orders_cte, customer_cte "
-                      "WHERE l_orderkey = o_orderkey AND c_custkey = o_custkey "
-                      "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
+                                                             "lineitem_cte AS (" + lineitem_sql_ + "), "
+                                                                                                   "customer_cte AS (" + customer_sql_ + ") "
+                                                                                                                                         "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
+                                                                                                                                         "FROM lineitem_cte, orders_cte, customer_cte "
+                                                                                                                                         "WHERE l_orderkey = o_orderkey AND c_custkey = o_custkey "
+                                                                                                                                         "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
 
     // Table scan for orders
     PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "orders", packed_pages_path_, FLAGS_party, orders_limit_);
@@ -243,7 +224,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<emp::Bit> * customer_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_project, 1,customer_project,4);
-    BasicJoin<Bit> *customer_orders_join = new BasicJoin(orders_project, customer_project, customer_orders_predicate);
+    BlockNestedLoopJoin<Bit> *customer_orders_join = new BlockNestedLoopJoin(orders_project, customer_project, customer_orders_predicate);
     customer_orders_join->setOperatorId(-2);
 
     // Table scan for lineitem
@@ -267,7 +248,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     // join output schema:
     //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>( lineitem_project, 0, customer_orders_join, 2);
-    BasicJoin<Bit> *full_join = new BasicJoin(lineitem_project, customer_orders_join, lineitem_orders_predicate);
+    BlockNestedLoopJoin<Bit> *full_join = new BlockNestedLoopJoin(lineitem_project, customer_orders_join, lineitem_orders_predicate);
     full_join->setOperatorId(-2);
     SecureTable *join_res = full_join->run();
 
