@@ -252,9 +252,9 @@ namespace vaultdb {
         Field<Bit> getField(const int  & row, const int & col)  const override {
             PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
             emp::Bit *read_ptr = bpm_->getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
-
-            return Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
+            SecureField f  =  Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
             bpm_->unpinPage(pid);
+            return f;
         }
 
 
