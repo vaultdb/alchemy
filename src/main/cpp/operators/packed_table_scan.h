@@ -95,7 +95,7 @@ namespace vaultdb {
 
             this->ssp_ = new SecretShareAndPackDataFromQuery(this->db_name_, "", this->table_name_);
             this->table_path_ = this->data_path_ + this->table_name_ + "_" + this->db_name_ + "/";
-            this->output_schema_ = is_same_v<B, Bit> ? this->ssp_->load_schema_from_disk(table_path_) : QuerySchema();
+            this->output_schema_ = is_same_v<B, Bit> ? this->ssp_->loadSchemaFromDisk(table_path_) : QuerySchema();
         }
 
         QueryTable<B> *runSelf() override {
@@ -104,13 +104,14 @@ namespace vaultdb {
 
             if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED) {
                 if(this->input_party_) {
-                    ((OMPCBackend<N> *) emp::backend)->multi_pack_delta = this->ssp_->load_backend_parameters(
+                    ((OMPCBackend<N> *) emp::backend)->multi_pack_delta = this->ssp_->loadBackendParameters(
                             this->data_path_, this->input_party_);
                 }
 
                 this->start_time_ = clock_start();
                 this->start_gate_cnt_ = this->system_conf_.andGateCount();
-                this->output_ = is_same_v<B, Bit> ? (QueryTable<B> *) this->ssp_->load_table_from_disk(this->table_path_, this->input_party_) : (QueryTable<B> *) new ColumnTable<B>(0, this->output_schema_, this->sort_definition_);
+                this->output_ = is_same_v<B, Bit> ? (QueryTable<B> *) this->ssp_->loadTableFromDisk(this->table_path_,
+                                                                                                    this->input_party_) : (QueryTable<B> *) new ColumnTable<B>(0, this->output_schema_, this->sort_definition_);
             }
             else {
                 throw std::runtime_error("Load data from disk only supports outsourced mode.");
