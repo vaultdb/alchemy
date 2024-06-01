@@ -17,15 +17,15 @@ using namespace vaultdb;
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 54325, "port for EMP execution");
+DEFINE_int32(port, 54330, "port for EMP execution");
+DEFINE_int32(ctrl_port, 65450, "port for managing EMP control flow by passing public values");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
-DEFINE_int32(ctrl_port, 65454, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(filter, "*.ompc_test_table_scan", "run only the tests passing this filter");
 DEFINE_string(storage, "wire_packed", "storage model for columns (column, wire_packed or compressed)");
 
 
@@ -36,8 +36,7 @@ class OMPCFilterTest : public EmpBaseTest {};
 
 TEST_F(OMPCFilterTest, ompc_test_table_scan) {
 
-    int limit = 1000;
-    std::string limit_sql = "SELECT * FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(limit);
+    std::string limit_sql = "SELECT * FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(FLAGS_cutoff);
     std::string sql = "WITH input AS (" + limit_sql + ") SELECT * FROM input ORDER BY l_orderkey, l_linenumber";
     SortDefinition collation{ColumnSort(0, SortDirection::ASCENDING),
                             ColumnSort(3, SortDirection::ASCENDING)};
@@ -49,7 +48,7 @@ TEST_F(OMPCFilterTest, ompc_test_table_scan) {
         std::string packed_pages_path = src_path + "/packed_pages/";
 
         input = new PackedTableScan<Bit>("tpch_unioned_150", "lineitem", packed_pages_path,
-                                                                 FLAGS_party, limit);
+                                                                 FLAGS_party, FLAGS_cutoff);
     }
     else {
         input = new SecureSqlInput(db_name_, limit_sql, false);
@@ -81,8 +80,7 @@ TEST_F(OMPCFilterTest, ompc_test_table_scan) {
 
 TEST_F(OMPCFilterTest, ompc_test_filter) {
 
-    int limit = 1000;
-    std::string limit_sql = "SELECT * FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(limit);
+    std::string limit_sql = "SELECT * FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(FLAGS_cutoff);
     std::string sql = "WITH input AS (" + limit_sql + ") SELECT * FROM input WHERE l_linenumber = 1 ORDER BY l_orderkey, l_linenumber";
     SortDefinition collation{ColumnSort(0, SortDirection::ASCENDING),
                              ColumnSort(3, SortDirection::ASCENDING)};
@@ -94,7 +92,7 @@ TEST_F(OMPCFilterTest, ompc_test_filter) {
         std::string packed_pages_path = src_path + "/packed_pages/";
 
         input = new PackedTableScan<Bit>("tpch_unioned_150", "lineitem", packed_pages_path,
-                                                                 FLAGS_party, limit);
+                                                                 FLAGS_party, FLAGS_cutoff);
     }
     else {
         input = new SecureSqlInput(db_name_, limit_sql, false);
