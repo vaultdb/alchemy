@@ -254,6 +254,7 @@ namespace vaultdb {
             emp::Bit *read_ptr = bpm_->getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
 
             return Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
+            bpm_->unpinPage(pid);
         }
 
 
@@ -262,6 +263,8 @@ namespace vaultdb {
             emp::Bit *write_ptr = bpm_->getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
             f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
             bpm_->markDirty(pid);
+            bpm_->unpinPage(pid);
+
         }
 
         SecureTable *secretShare() override  {
@@ -578,6 +581,37 @@ namespace vaultdb {
             // Flush pages in buffer pools
             bpm_->removeUnpackedPagesByTable(this->table_id_);
             bpm_->packed_buffer_pool_.erase(this->table_id_);
+        }
+
+        PlainTable *revealInsecure(const int & party = emp::PUBLIC) override {
+            if(!isEncrypted()) {
+                return (QueryTable<bool> *) this;
+            }
+
+            QuerySchema dst_schema = QuerySchema::toPlain(schema_);
+
+            auto dst_table = PlainTable::getTable(tuple_cnt_, dst_schema, order_by_);
+
+            for(int i = -1; i < schema_.getFieldCount(); ++i) {
+                PageId pid = BufferPoolManager::getPageId(table_id_, i, 0, fields_per_wire_.at(i));
+                int cursor = 0;
+                QueryFieldDesc dst_field_desc = dst_schema.getField(i);
+
+                for(int j = 0; j < packed_buffer_pool_[i].size(); ++j) {
+                    bpm_->loadPage(pid);
+                    // loop over the page
+                    while(cursor < tuple_cnt_ && cursor < (j + 1) * fields_per_wire_.at(i)){
+                        SecureField f = getField(cursor, i);
+                        PlainField plain = f.reveal(dst_field_desc, party);
+                        dst_table->setField(cursor, i, plain);
+                        ++cursor;
+                    }
+                    bpm_->unpinPage(pid);
+                    ++pid.page_idx_;
+                }
+            }
+
+            return dst_table;
         }
     };
 }

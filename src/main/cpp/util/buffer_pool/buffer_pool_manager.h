@@ -132,7 +132,7 @@ namespace vaultdb {
 
 
 
-        inline PageId getPageId(int table_id, int col, int row, int rows_per_page) {
+        inline static PageId getPageId(int table_id, int col, int row, int rows_per_page) {
            return {table_id, col, row / rows_per_page};
         }
 
@@ -191,9 +191,7 @@ namespace vaultdb {
             PositionMapEntry p(target_slot);
             p.pinned_ = true;
             position_map_[pid] = p;
-            cout << "recording page " << pid.toString() << " in slot " << p.slot_id_ << '\n';
             reverse_position_map_[target_slot] = pid;
-            cout << "Reverse pos: " << target_slot << " --> " << reverse_position_map_[target_slot].toString() << '\n';
 
         }
 

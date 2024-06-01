@@ -182,7 +182,7 @@ namespace vaultdb {
     typedef struct position_map_entry_ {
 
         int slot_id_ = -1; // what slot is it in the unpacked buffer pool?
-        bool pinned_ = false;
+        bool pinned_ = false; // may need to make this a pin count in the long run
         bool dirty_ = false;
 
         position_map_entry_() {} // for map
