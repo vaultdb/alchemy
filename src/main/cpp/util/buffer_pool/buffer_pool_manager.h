@@ -84,10 +84,6 @@ namespace vaultdb {
 
 #include "emp-rescu/emp-rescu.h"
 #define __OMPC_BACKEND__ 1
-
-// TODO: this isn't a true LRU because if something is pinned and then unpinned, we would need to reinsert it into the eviction queue.
-// this is a linear pass over the list to find the old one and we can't do that in constant time.
-// rewriting this as the clock algo to save time
 namespace vaultdb {
     class BufferPoolManager {
     public:
@@ -104,9 +100,9 @@ namespace vaultdb {
 
         // setup for unpacked buffer pool
         std::vector<emp::Bit> unpacked_buffer_pool_;
-        std::queue<int> eviction_queue_;  // LRU eviction by queue
+        int clock_hand_position_ = 0;
 
-        // if a position_map entry is not pinned, then it is in the eviction_queue somewhere
+
         std::map<PageId, PositionMapEntry> position_map_; // map<pid, slot id in unpacked buffer pool>
         std::map<int, PageId> reverse_position_map_; // given an offset we want to access, what PID is it?  Needed to maintain constant time lookups
 
@@ -123,9 +119,6 @@ namespace vaultdb {
             // initialize unpacked page buffer
             unpacked_buffer_pool_ = std::vector<emp::Bit>(unpacked_page_size_bits_ * page_cnt_, emp::Bit(0));
 
-            for(int i = 0; i < page_cnt_; ++i) {
-                eviction_queue_.push(i);
-            }
         }
 
         ~BufferPoolManager() {};
@@ -145,22 +138,28 @@ namespace vaultdb {
         // greedily evict first unpinned page in the queue
         // returns the newly-opened slot in the buffer pool
         int evictPage() {
+
+
            PositionMapEntry pos;
            //  uninitialized slot
-           if(reverse_position_map_.find(eviction_queue_.front()) == reverse_position_map_.end())  {
-               int slot = eviction_queue_.front();
-               eviction_queue_.pop();
+           if(reverse_position_map_.find(clock_hand_position_) == reverse_position_map_.end())  {
+               int slot = clock_hand_position_;
+               clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
                return slot;
            };
 
-           PageId pid = reverse_position_map_[eviction_queue_.front()];
+            int clock_hand_starting_pos = clock_hand_position_;
+
+            PageId pid = reverse_position_map_[clock_hand_position_];
             // first unpinned page
-            // this is slow, but on expectation much faster than scanning the whole eviction queue every time a cached page is reused.
-            // just skip over it when we encounter it
-            // this is closer to the clock algorithm and likely lighter weight than full LRU
            while(position_map_.at(pid).pinned_) {
-               eviction_queue_.pop();
-               pid = reverse_position_map_[eviction_queue_.front()];
+               clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
+               pid = reverse_position_map_[clock_hand_position_];
+               if(clock_hand_position_ == clock_hand_starting_pos) {
+                   // if we have gone through the whole buffer pool and all pages are pinned, then we have a problem
+                   // we should never have all pages pinned
+                   throw std::runtime_error("Buffer pool has no unpinned pages!");
+               }
            }
 
 //           cout << "Evicting " << pid.toString() << " in slot " << position_map_[pid].slot_id_ <<  '\n';
@@ -180,6 +179,8 @@ namespace vaultdb {
                 reverse_position_map_.erase(pos.slot_id_);
             }
 
+            // increment clock hand one more time for next round
+            clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
             return pos.slot_id_;
         }
 
@@ -190,7 +191,6 @@ namespace vaultdb {
                 return;
             }
 
-            assert(eviction_queue_.size() > 0); // if we can't evict anything, then we are out of space!
 
             OMPCPackedWire *src_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
             int target_slot = evictPage();
@@ -243,8 +243,6 @@ namespace vaultdb {
             if(position_map_[pid].pinned_) {
                 position_map_.at(pid).pinned_ = false;
 
-                eviction_queue_.push(position_map_.at(pid).slot_id_);
-//                cout << "Adding page " << pid.toString() << " to eviction queue in unpinPage\n";
             }
         }
 
