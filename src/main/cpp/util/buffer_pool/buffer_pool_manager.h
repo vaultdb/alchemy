@@ -152,10 +152,9 @@ namespace vaultdb {
                 if (position_map_.at(pid).dirty_) {
                     pos = position_map_.at(pid);
                     assert(!pos.pinned_); // if it is pinned, we can't evict it
-                    emp::Bit *src_ptr =
-                            unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
+                    emp::Bit *src_ptr =  unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
                     emp::OMPCPackedWire *dst_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
-                    emp_manager_->pack(src_ptr, (Bit *) &dst_ptr, unpacked_page_size_bits_);
+                    emp_manager_->pack(src_ptr, (Bit *) dst_ptr, unpacked_page_size_bits_);
                 }
 
                 // still remove it from the position map even if it is not dirty
