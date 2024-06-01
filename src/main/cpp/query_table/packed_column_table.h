@@ -347,6 +347,7 @@ namespace vaultdb {
             emp::Bit *write_ptr = bpm_->getUnpackedPagePtr(pid) + (row % fields_per_wire_.at(-1));
             *write_ptr = val;
             bpm_->markDirty(pid);
+            bpm_->unpinPage(pid);
         }
 
 

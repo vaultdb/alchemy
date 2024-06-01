@@ -42,7 +42,7 @@ public:
             emp::OMPCPackedWire *packed_wires_ptr = bpm_->packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
             *packed_wires_ptr = packed_wire;
 
-            bpm_->evictPage(pid);
+            bpm_->unpinPage(pid);
         }
 
         return table_;

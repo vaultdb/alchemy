@@ -331,20 +331,20 @@ TEST_F(OMPCEmpTest, ompc_secret_share_and_pack_tpch_data_from_query){
                  std::string table_path = packed_pages_path + table_name + "_tpch_unioned_150/";
                  Utilities::mkdir(table_path);
                  std::string table_sql = "SELECT * FROM " + table_name + " ORDER BY " + primary_keys[cursor++];
-                 ssp.set_sql(table_sql);
-                 ssp.set_table_name(table_name);
+                 ssp.setSql(table_sql);
+                 ssp.setTableName(table_name);
 
                  if(is_write) {
                      PackedColumnTable *table = ssp.getTable();
 
-                     ssp.save_table_to_disk(table_path, FLAGS_party);
+                     ssp.saveTableToDisk(table_path, FLAGS_party);
 
-                     ssp.save_backend_parameters(packed_pages_path, FLAGS_party);
+                     ssp.saveBackendParameters(packed_pages_path, FLAGS_party);
                  }
 
-                 ((OMPCBackend<N> *) emp::backend)->multi_pack_delta = ssp.load_backend_parameters(packed_pages_path, FLAGS_party);
+                 ((OMPCBackend<N> *) emp::backend)->multi_pack_delta = ssp.loadBackendParameters(packed_pages_path, FLAGS_party);
 
-                 ssp.verify_loaded_table(table_path, FLAGS_party);
+                 ssp.verifyLoadedTable(table_path, FLAGS_party);
 
                  cout << table_name + " table is secret shared, packed, saved to disk and verified\n";
              }

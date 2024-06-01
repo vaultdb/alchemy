@@ -27,8 +27,9 @@ namespace vaultdb {
         bool hasUnpackedPage(PageId &page_id) {
             return false;
         }
-
-        void evictPage(PageId &pid) {
+        // greedily evict first unpinned page in the queue
+        // returns the newly-opened slot in the buffer pool
+        int evictPage() {
         }
 
         void loadPage(PageId &pid) {
@@ -106,9 +107,8 @@ namespace vaultdb {
         std::map<PageId, PositionMapEntry> position_map_; // map<pid, slot id in unpacked buffer pool>
         std::map<int, PageId> reverse_position_map_; // given an offset we want to access, what PID is it?  Needed to maintain constant time lookups
 
-        // setup for packed buffer pool
-        // map<table_id, map<col_id, a pointer of a vector OMPCPackedWires>>
-        // why do we need this here?  If we have a system catalog or what have you
+
+        // JMR: why do we need this here?  If we have a system catalog or what have you
         // then we can just maintain a map of <table_id, PackedColumnTable*> and look it up directly.
         std::map<int, std::map<int, OMPCPackedWire *> > packed_buffer_pool_;
 
@@ -117,15 +117,15 @@ namespace vaultdb {
         BufferPoolManager(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager) : unpacked_page_size_bits_(unpacked_page_size), page_cnt_(num_unpacked_pages), packed_page_size_wires_(packed_page_size), max_packed_page_cnt_(num_packed_pages), emp_manager_(manager) {
             // block size of each packed wire based on unpacked page size
             block_n_ = unpacked_page_size_bits_ / 128 + (unpacked_page_size_bits_ % 128 != 0);
-            cout << "Block_n initialized to " << block_n_ << endl;
+//            cout << "Block_n initialized to " << block_n_ << endl;
             // initialize unpacked page buffer
             unpacked_buffer_pool_ = std::vector<emp::Bit>(unpacked_page_size_bits_ * page_cnt_, emp::Bit(0));
-            cout << "Unpacked page count: " << page_cnt_ << endl;
+//            cout << "Unpacked page count: " << page_cnt_ << endl;
 
             for(int i = 0; i < page_cnt_; ++i) {
                 eviction_queue_.push(i);
             }
-            cout << "Eviction queue length: " << eviction_queue_.size() << endl;
+//            cout << "Eviction queue length: " << eviction_queue_.size() << endl;
         }
 
         ~BufferPoolManager() {};
@@ -142,15 +142,33 @@ namespace vaultdb {
         }
 
 
-
-        void evictPage(PageId &pid) {
+        // greedily evict first unpinned page in the queue
+        // returns the newly-opened slot in the buffer pool
+        int evictPage() {
            PositionMapEntry pos;
-           cout << "Evicting " << pid.toString() << " in slot " << position_map_[pid].slot_id_ <<  '\n';
+           //  uninitialized slot
+           if(reverse_position_map_.find(eviction_queue_.front()) == reverse_position_map_.end())  {
+               int slot = eviction_queue_.front();
+               eviction_queue_.pop();
+               return slot;
+           };
+
+           PageId pid = reverse_position_map_[eviction_queue_.front()];
+            // first unpinned page
+            // this is slow, but on expectation much faster than scanning the whole eviction queue every time a cached page is reused.
+            // just skip over it when we encounter it
+            // this is closer to the clock algorithm and likely lighter weight than full LRU
+           while(position_map_.at(pid).pinned_) {
+               eviction_queue_.pop();
+               pid = reverse_position_map_[eviction_queue_.front()];
+           }
+
+//           cout << "Evicting " << pid.toString() << " in slot " << position_map_[pid].slot_id_ <<  '\n';
 
            // checking because at init time some BP pages might be empty
             if(position_map_.find(pid) != position_map_.end()) {
+                pos = position_map_.at(pid);
                 if (position_map_.at(pid).dirty_) {
-                    pos = position_map_.at(pid);
                     assert(!pos.pinned_); // if it is pinned, we can't evict it
                     emp::Bit *src_ptr =  unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
                     emp::OMPCPackedWire *dst_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
@@ -162,28 +180,23 @@ namespace vaultdb {
                 reverse_position_map_.erase(pos.slot_id_);
             }
 
+            return pos.slot_id_;
         }
 
 
         void loadPage(PageId &pid) {
-            cout << "Loading page " << pid.toString() << '\n';
-            cout << "Eviction queue length: " << eviction_queue_.size() << '\n';
-            cout << "First element: " << eviction_queue_.front() << '\n';
-            assert(eviction_queue_.size() > 0); // if we can't evict anything, then we are out of space!
+//            cout << "Loading page " << pid.toString() << '\n';
+//            cout << "Eviction queue length: " << eviction_queue_.size() << '\n';
+//            cout << "First element: " << eviction_queue_.front() << '\n';
 
             if(position_map_.find(pid) != position_map_.end()) {
                 return;
             }
-            OMPCPackedWire *src_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
-            int target_slot = eviction_queue_.front();
-            cout << "Have target slot: " << target_slot << '\n';
-            assert(target_slot >= 0 && target_slot < page_cnt_);
 
-            eviction_queue_.pop();
-            if(reverse_position_map_.find(target_slot) != reverse_position_map_.end()) {
-                PageId target_pid = reverse_position_map_[target_slot];
-                evictPage(target_pid);
-            }
+            assert(eviction_queue_.size() > 0); // if we can't evict anything, then we are out of space!
+
+            OMPCPackedWire *src_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
+            int target_slot = evictPage();
 
             Bit *dst_ptr = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
             emp_manager_->unpack((Bit *) src_ptr, dst_ptr, unpacked_page_size_bits_);
@@ -225,6 +238,7 @@ namespace vaultdb {
 
         inline void pinPage(PageId &pid) {
             position_map_.at(pid).pinned_ = true;
+            // if it is in the buffer pool queue, we need to skip it
         }
 
         inline void unpinPage(PageId &pid) {
@@ -233,7 +247,7 @@ namespace vaultdb {
                 position_map_.at(pid).pinned_ = false;
 
                 eviction_queue_.push(position_map_.at(pid).slot_id_);
-                cout << "Adding page " << pid.toString() << " to eviction queue in unpinPage\n";
+//                cout << "Adding page " << pid.toString() << " to eviction queue in unpinPage\n";
             }
         }
 
