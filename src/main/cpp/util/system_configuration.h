@@ -47,9 +47,6 @@ namespace vaultdb{
             }
             else {
                 bp_enabled_ = true;
-            }
-
-            if(bp_enabled_) {
                 bpm_ = new BufferPoolManager(2048, 50, 5, 1000, emp_manager_);
             }
         }
