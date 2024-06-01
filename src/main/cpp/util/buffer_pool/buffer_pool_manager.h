@@ -147,20 +147,21 @@ namespace vaultdb {
            PositionMapEntry pos;
            cout << "Evicting " << pid.toString() << " in slot " << position_map_[pid].slot_id_ <<  '\n';
 
+           // checking because at init time some BP pages might be empty
+            if(position_map_.find(pid) != position_map_.end()) {
+                if (position_map_.at(pid).dirty_) {
+                    pos = position_map_.at(pid);
+                    assert(!pos.pinned_); // if it is pinned, we can't evict it
+                    emp::Bit *src_ptr =
+                            unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
+                    emp::OMPCPackedWire *dst_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
+                    emp_manager_->pack(src_ptr, (Bit *) &dst_ptr, unpacked_page_size_bits_);
+                }
 
-            if(position_map_.find(pid) != position_map_.end() && position_map_.at(pid).dirty_) {
-                pos = position_map_.at(pid);
-                assert(!pos.pinned_); // if it is pinned, we can't evict it
-                emp::Bit *src_ptr = unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
-                emp::OMPCPackedWire *dst_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
-                emp_manager_->pack(src_ptr, (Bit *) &dst_ptr, unpacked_page_size_bits_);
+                // still remove it from the position map even if it is not dirty
+                position_map_.erase(pid);
+                reverse_position_map_.erase(pos.slot_id_);
             }
-
-            // still remove it from the queue even if it is not dirty
-            position_map_.erase(pid);
-            reverse_position_map_.erase(pos.slot_id_);
-            cout << "Pushing slot " << pos.slot_id_ << " to eviction queue\n";
-            eviction_queue_.push(pos.slot_id_);
 
         }
 
@@ -180,8 +181,10 @@ namespace vaultdb {
             assert(target_slot >= 0 && target_slot < page_cnt_);
 
             eviction_queue_.pop();
-            PageId target_pid = reverse_position_map_[target_slot];
-            evictPage(target_pid);
+            if(reverse_position_map_.find(target_slot) != reverse_position_map_.end()) {
+                PageId target_pid = reverse_position_map_[target_slot];
+                evictPage(target_pid);
+            }
 
             Bit *dst_ptr = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
             emp_manager_->unpack((Bit *) src_ptr, dst_ptr, unpacked_page_size_bits_);
@@ -252,7 +255,7 @@ namespace vaultdb {
             int start_page_idx = start_row_idx / rows_per_page;
             PageId pid = {table_id, col_idx, start_page_idx};
             for(int i = 0; i < pages_to_remove; ++i) {
-                evictPage(pid);
+                unpinPage(pid);
                 ++pid.page_idx_;
             }
         }
@@ -267,19 +270,15 @@ namespace vaultdb {
         }
 
         void removeUnpackedPagesByTable(int target_table_id) {
-            std::vector<PageId> to_delete;
-
             for (auto pos = position_map_.begin(); pos != position_map_.end(); ++pos) {
                 if(pos->first.table_id_ == target_table_id) {
-                    to_delete.push_back(pos->first);
-                    pos->second.pinned_ = false;
+                    PageId p = pos->first;
+                    // enqueue the slot for eviction
+                    unpinPage(p);
                 }
 
             }
 
-            for(auto pid : to_delete) {
-                evictPage(pid);
-            }
 
         }
 
