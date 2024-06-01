@@ -168,7 +168,7 @@ namespace vaultdb {
             for(int i = -1; i < schema_.getFieldCount(); ++i) {
                 int max_packed_wires = tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0);
                 packed_buffer_pool_[i] = std::vector<emp::OMPCPackedWire>(max_packed_wires, emp::OMPCPackedWire(bpm_->block_n_));
-                bpm_->packed_buffer_pool_[table_id_][i] = &packed_buffer_pool_[i];
+                bpm_->packed_buffer_pool_[table_id_][i] = (OMPCPackedWire *) packed_buffer_pool_[i].data();
             }
         }
 
@@ -183,7 +183,7 @@ namespace vaultdb {
             for(int i = -1; i < schema_.getFieldCount(); ++i) {
                 int max_packed_wires = tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0);
                 packed_buffer_pool_[i] = std::vector<emp::OMPCPackedWire>(max_packed_wires, emp::OMPCPackedWire(bpm_->block_n_));
-                bpm_->packed_buffer_pool_[table_id_][i] = &packed_buffer_pool_[i];
+                bpm_->packed_buffer_pool_[table_id_][i] = packed_buffer_pool_[i].data();
             }
 
             PackedColumnTable *src_table = (PackedColumnTable *) &src;
@@ -214,6 +214,21 @@ namespace vaultdb {
             memcpy(write_ptr, (int8_t *) wire_ptr->packed_lambdas.data(), bpm_->block_n_ * sizeof(block));
 
             return dst;
+        }
+        emp::OMPCPackedWire deserializePackedWire(int8_t *serialized_packed_wire) {
+            int8_t *read_ptr = serialized_packed_wire;
+
+            emp::OMPCPackedWire deserialized_wire(bpm_->block_n_);
+
+            memcpy((int8_t *) &deserialized_wire.spdz_tag, read_ptr, sizeof(block));
+            read_ptr += sizeof(block);
+
+            memcpy((int8_t *) deserialized_wire.packed_masked_values.data(), read_ptr, bpm_->block_n_ * sizeof(block));
+            read_ptr += bpm_->block_n_ * sizeof(block);
+
+            memcpy((int8_t *) deserialized_wire.packed_lambdas.data(), read_ptr, bpm_->block_n_ * sizeof(block));
+
+            return deserialized_wire;
         }
 
         emp::OMPCPackedWire deserializePackedWire(vector<int8_t> serialized_packed_wire) {

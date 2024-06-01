@@ -30,19 +30,19 @@ public:
         table_ = (PackedColumnTable *) plain_input->secretShare();
 
         // pack everything in unpacked buffer pool to packed buffer pool
-        std::map<BufferPoolManager::PageId, int> unpacked_page_slots = bpm_->unpacked_page_slots_;
-        for(auto &unpacked_page : unpacked_page_slots) {
-            BufferPoolManager::PageId pid = unpacked_page.first;
-            int slot = unpacked_page.second;
+        // TODO: omit buffer pool from secret sharing process - we don't need it here
+        for(auto pos = bpm_->position_map_.begin(); pos != bpm_->position_map_.end(); ++pos) {
+            PageId pid = pos->first;
+            int slot = pos->second.slot_id_;
 
-            emp::Bit *current_slot_ptr = bpm_->unpacked_buffer_pool_.data() + slot * bpm_->unpacked_page_size_;
+            emp::Bit *current_slot_ptr = bpm_->unpacked_buffer_pool_.data() + slot * bpm_->unpacked_page_size_bits_;
 
             emp::OMPCPackedWire packed_wire(bpm_->block_n_);
-            emp_manager_->pack(current_slot_ptr, (Bit*) &packed_wire, bpm_->unpacked_page_size_);
-            emp::OMPCPackedWire *packed_wires_ptr = bpm_->packed_buffer_pool_[pid.table_id_][pid.col_id_]->data() + pid.page_idx_;
+            emp_manager_->pack(current_slot_ptr, (Bit*) &packed_wire, bpm_->unpacked_page_size_bits_);
+            emp::OMPCPackedWire *packed_wires_ptr = bpm_->packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
             *packed_wires_ptr = packed_wire;
 
-            bpm_->removeUnpackedPage(pid);
+            bpm_->evictPage(pid);
         }
 
         return table_;
@@ -63,6 +63,7 @@ public:
             memcpy((int8_t *) &multi_pack_delta, serialized_parameters.data(), sizeof(block));
             return multi_pack_delta;
         }
+        return block();
     }
 
     void save_table_to_disk(std::string path, int party) {
@@ -98,16 +99,27 @@ public:
         // load packed buffer pool
         PackedColumnTable *loaded_table = (PackedColumnTable *) QueryTable<Bit>::getTable(tuple_cnt, schema);
 
-        int packed_page_size = (2 * bpm_->block_n_ + 1) * sizeof(block);
+        int packed_page_size_bytes = (2 * bpm_->block_n_ + 1) * sizeof(block);
 
         for(int i = -1; i < schema.getFieldCount(); ++i) {
+            int fields_per_wire = loaded_table->fields_per_wire_[i];
             std::string file_name = path + "packed_" + this->table_name_ + "_col_" + std::to_string(i) + "_" + std::to_string(party) + ".page";
+            cout << "Reading file: " << file_name << endl;
+            int expected_pages =  ((tuple_cnt / fields_per_wire)  + (tuple_cnt % fields_per_wire > 0));
+            cout << "Tuple count: " << tuple_cnt << " tuples per page: " << fields_per_wire << " expected pages: " << expected_pages << " expected bytes based on schema: " << expected_pages * packed_page_size_bytes << endl;
             vector<int8_t> serialized_wires_for_col = DataUtilities::readFile(file_name);
+            cout << "Read in " << serialized_wires_for_col.size() << " bytes" << endl;
+            cout << "Expecting " << loaded_table->packed_buffer_pool_[i].size() * packed_page_size_bytes << " bytes" << endl;
+            int8_t *cursor =  serialized_wires_for_col.data();
+
+            assert(loaded_table->packed_buffer_pool_[i].size() == (serialized_wires_for_col.size() / packed_page_size_bytes));
 
             for(int j = 0; j < loaded_table->packed_buffer_pool_[i].size(); ++j) {
-                std::vector<int8_t> serialized_wire = std::vector<int8_t>(serialized_wires_for_col.begin() + j * packed_page_size,
-                                                                          serialized_wires_for_col.begin() + (j + 1) * packed_page_size);
-                loaded_table->packed_buffer_pool_[i][j] = loaded_table->deserializePackedWire(serialized_wire);
+
+                //std::vector<int8_t> serialized_wire = std::vector<int8_t>(serialized_wires_for_col.begin() + j * packed_page_size_bytes,
+//                                                                          serialized_wires_for_col.begin() + (j + 1) * packed_page_size_bytes);
+                loaded_table->packed_buffer_pool_[i][j] = loaded_table->deserializePackedWire(cursor);
+                cursor += packed_page_size_bytes;
             }
         }
 

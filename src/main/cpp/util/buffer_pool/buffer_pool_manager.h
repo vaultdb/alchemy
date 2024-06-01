@@ -76,13 +76,14 @@ namespace vaultdb {
 
         // setup for packed buffer pool
         // map<table_id, map<col_id, a pointer of a vector OMPCPackedWires>>
-        std::map<int, std::map<int, std::vector<emp::OMPCPackedWire>*>> packed_buffer_pool_;
+        std::map<int, std::map<int, OMPCPackedWire*>> packed_buffer_pool_;
     };
 }
 #else
 
 #include "emp-rescu/emp-rescu.h"
 #define __OMPC_BACKEND__ 1
+
 namespace vaultdb {
     class BufferPoolManager {
     public:
@@ -108,7 +109,7 @@ namespace vaultdb {
         // map<table_id, map<col_id, a pointer of a vector OMPCPackedWires>>
         // why do we need this here?  If we have a system catalog or what have you
         // then we can just maintain a map of <table_id, PackedColumnTable*> and look it up directly.
-        std::map<int, std::map<int, std::vector<emp::OMPCPackedWire>*>> packed_buffer_pool_;
+        std::map<int, std::map<int, OMPCPackedWire *> > packed_buffer_pool_;
 
         BufferPoolManager() {}
 
@@ -140,13 +141,14 @@ namespace vaultdb {
 
 
         void evictPage(PageId &pid) {
-            auto pos = position_map_.at(pid);
+           PositionMapEntry pos;
+
 
             if(position_map_.find(pid) != position_map_.end() && position_map_.at(pid).dirty_) {
-
+                pos = position_map_.at(pid);
                 assert(!pos.pinned_); // if it is pinned, we can't evict it
                 emp::Bit *src_ptr = unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
-                emp::OMPCPackedWire *dst_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_]->data() + pid.page_idx_;
+                emp::OMPCPackedWire *dst_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
                 emp_manager_->pack(src_ptr, (Bit *) &dst_ptr, unpacked_page_size_bits_);
             }
 
@@ -161,14 +163,14 @@ namespace vaultdb {
             if(position_map_.find(pid) != position_map_.end()) {
                 return;
             }
-            OMPCPackedWire *src_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_]->data() + pid.page_idx_;
+            OMPCPackedWire *src_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
             int target_slot = eviction_queue_.front();
             eviction_queue_.pop();
             PageId target_pid = reverse_position_map_[target_slot];
             evictPage(target_pid);
 
             Bit *dst_ptr = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
-            emp_manager_->unpack(dst_ptr, (Bit *) src_ptr, unpacked_page_size_bits_);
+            emp_manager_->unpack((Bit *) src_ptr, dst_ptr, unpacked_page_size_bits_);
             PositionMapEntry p(target_slot);
             position_map_[pid] = p;
             reverse_position_map_[target_slot] = pid;
@@ -193,8 +195,8 @@ namespace vaultdb {
 
            }
            else {
-                emp::OMPCPackedWire *src_page_ptr = packed_buffer_pool_[src_pid.table_id_][src_pid.col_id_]->data() + src_pid.page_idx_;
-                emp::OMPCPackedWire *dst_page_ptr = packed_buffer_pool_[dst_pid.table_id_][dst_pid.col_id_]->data() + dst_pid.page_idx_;
+                emp::OMPCPackedWire *src_page_ptr = packed_buffer_pool_[src_pid.table_id_][src_pid.col_id_] + src_pid.page_idx_;
+                emp::OMPCPackedWire *dst_page_ptr = packed_buffer_pool_[dst_pid.table_id_][dst_pid.col_id_] + dst_pid.page_idx_;
                 *dst_page_ptr = *src_page_ptr;
            }
 
@@ -212,10 +214,14 @@ namespace vaultdb {
             position_map_.at(pid).pinned_ = false;
         }
 
-        void loadColumn(const int & table_id, const int & col_idx, const int & tuple_cnt,const  int & rows_per_page) {
-            for(int i = 0; i < tuple_cnt; i += rows_per_page) {
-                PageId pid = getPageId(table_id, col_idx, i, rows_per_page);
+        void loadColumn(const int & table_id, const int & col_idx, const int & tuple_cnt, const  int & rows_per_page) {
+            int page_cnt = tuple_cnt / rows_per_page + (tuple_cnt % rows_per_page != 0);
+
+            PageId pid = {table_id, col_idx, 0};
+
+            for(int i = 0; i < page_cnt; ++i) {
                 loadPage(pid);
+                ++pid.page_idx_;
             }
         }
 

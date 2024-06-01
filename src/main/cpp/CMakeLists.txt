@@ -72,6 +72,7 @@ set(sources
 		util/table_manager.cpp
 		util/logger.cpp
 		util/system_configuration.cpp
+		util/buffer_pool/buffer_pool_manager.cpp
 		util/emp_manager/emp_manager.h
 		util/emp_manager/sh2pc_manager.cpp
 		util/emp_manager/zk_manager.cpp
