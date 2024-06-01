@@ -595,14 +595,14 @@ namespace vaultdb {
             for(int i = -1; i < schema_.getFieldCount(); ++i) {
                 PageId pid = BufferPoolManager::getPageId(table_id_, i, 0, fields_per_wire_.at(i));
                 int cursor = 0;
-                QueryFieldDesc dst_field_desc = dst_schema.getField(i);
+                QueryFieldDesc field_desc = schema_.getField(i);
 
                 for(int j = 0; j < packed_buffer_pool_[i].size(); ++j) {
                     bpm_->loadPage(pid);
                     // loop over the page
                     while(cursor < tuple_cnt_ && cursor < (j + 1) * fields_per_wire_.at(i)){
                         SecureField f = getField(cursor, i);
-                        PlainField plain = f.reveal(dst_field_desc, party);
+                        PlainField plain = f.reveal(field_desc, party);
                         dst_table->setField(cursor, i, plain);
                         ++cursor;
                     }
