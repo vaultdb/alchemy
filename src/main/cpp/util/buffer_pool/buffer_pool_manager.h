@@ -145,7 +145,7 @@ namespace vaultdb {
 
         void evictPage(PageId &pid) {
            PositionMapEntry pos;
-           cout << "Evicting " << pid.toString() << '\n';
+           cout << "Evicting " << pid.toString() << " in slot " << position_map_[pid].slot_id_ <<  '\n';
 
 
             if(position_map_.find(pid) != position_map_.end() && position_map_.at(pid).dirty_) {
@@ -156,6 +156,7 @@ namespace vaultdb {
                 emp_manager_->pack(src_ptr, (Bit *) &dst_ptr, unpacked_page_size_bits_);
             }
 
+            // still remove it from the queue even if it is not dirty
             position_map_.erase(pid);
             reverse_position_map_.erase(pos.slot_id_);
             cout << "Pushing slot " << pos.slot_id_ << " to eviction queue\n";
@@ -187,7 +188,9 @@ namespace vaultdb {
             PositionMapEntry p(target_slot);
             p.pinned_ = true;
             position_map_[pid] = p;
+            cout << "recording page " << pid.toString() << " in slot " << p.slot_id_ << '\n';
             reverse_position_map_[target_slot] = pid;
+            cout << "Reverse pos: " << target_slot << " --> " << reverse_position_map_[target_slot].toString() << '\n';
 
         }
 
