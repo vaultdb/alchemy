@@ -102,6 +102,7 @@ namespace vaultdb {
         std::vector<emp::Bit> unpacked_buffer_pool_;
         std::queue<int> eviction_queue_;  // LRU eviction by queue
 
+        // if a position_map entry is not pinned, then it is in the eviction_queue somewhere
         std::map<PageId, PositionMapEntry> position_map_; // map<pid, slot id in unpacked buffer pool>
         std::map<int, PageId> reverse_position_map_; // given an offset we want to access, what PID is it?  Needed to maintain constant time lookups
 
@@ -178,13 +179,13 @@ namespace vaultdb {
             assert(target_slot >= 0 && target_slot < page_cnt_);
 
             eviction_queue_.pop();
-            cout << "After pop, have queue length of " << eviction_queue_.size() << '\n';
             PageId target_pid = reverse_position_map_[target_slot];
             evictPage(target_pid);
 
             Bit *dst_ptr = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
             emp_manager_->unpack((Bit *) src_ptr, dst_ptr, unpacked_page_size_bits_);
             PositionMapEntry p(target_slot);
+            p.pinned_ = true;
             position_map_[pid] = p;
             reverse_position_map_[target_slot] = pid;
 
@@ -224,9 +225,13 @@ namespace vaultdb {
         }
 
         inline void unpinPage(PageId &pid) {
-            position_map_.at(pid).pinned_ = false;
-            eviction_queue_.push(position_map_.at(pid).slot_id_);
-            cout << "Adding page " << pid.toString() << " to eviction queue in unpinPage\n";
+            // if we are toggling it from pinned to unpinned, then we need to add it to the eviction queue
+            if(position_map_[pid].pinned_) {
+                position_map_.at(pid).pinned_ = false;
+
+                eviction_queue_.push(position_map_.at(pid).slot_id_);
+                cout << "Adding page " << pid.toString() << " to eviction queue in unpinPage\n";
+            }
         }
 
         void loadColumn(const int & table_id, const int & col_idx, const int & tuple_cnt, const  int & rows_per_page) {
