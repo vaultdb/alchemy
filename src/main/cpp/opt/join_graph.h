@@ -26,7 +26,8 @@ namespace vaultdb {
     struct JoinInput {
         // in most cases this will be SecureSqlInput, but sometimes it might be a MergeJoin or CTE
         Operator<B> *node_;
-        vector<JoinEdge<B> *> edges_;
+            // TODO: fill these in later
+        //        vector<JoinEdge<B> *> edges_;
 
         bool operator==(const JoinInput<B> &other) const {
             return *node_ == *other.node_;
@@ -37,15 +38,17 @@ namespace vaultdb {
     template<typename B>
     // inputs are ordered by operator ID for now
     struct JoinEdge {
-        JoinInput<B> *lhs_;
-        JoinInput<B> *rhs_;
+        int lhs_input_ = -1;
+        int rhs_input_ = -1;
+//        JoinInput<B> *lhs_;
+//        JoinInput<B> *rhs_;
         Expression<B> *join_condition_;
 
         int operator_id_; // temp, for debugging
-        int pkey_input_ = -1; // -1 - not keyed, 0 == lhs is primary key, 1 == rhs is primary key
+        int foreign_key_input_ = -1; // -1 - not keyed, 0 == lhs is foreign key, 1 == rhs is foreign key
 
         bool matchedInputs(const JoinEdge<B> &other) const {
-            return (*lhs_->node_ == *other.lhs_->node_ && *rhs_->node_ == *other.rhs_->node_);
+            return (lhs_input_ == other.lhs_input_ && rhs_input_ == other.rhs_input_);
         }
 
         bool operator==(const JoinEdge<B> &other) const {
@@ -58,11 +61,22 @@ namespace vaultdb {
     class JoinGraph {
 
     public:
+        map<int, JoinInput<B>> nodes_; // operator ID, JoinInput *
+        vector<JoinEdge<B>> edges_;
+
+    private:
+        vector<ForeignKeyConstraint> foreign_key_constraints_;
+
+    public:
         // populate nodes and edges in graph
         JoinGraph(Operator<B> *root, string db_name) {
             if(!hasJoin(root)) return; // no joins in this tree
             foreign_key_constraints_ = PsqlDataProvider::getForeignKeys(db_name);
 
+            cout << "Key constraints: " << endl;
+            for(auto f : foreign_key_constraints_) {
+                cout << f.toString() << endl;
+            }
 
             joinInputCollector(root);
             joinHelper(root);
@@ -71,35 +85,110 @@ namespace vaultdb {
         }
 
 
+        void joinInEdge(JoinEdge<B> & edge) {
+            // join its two JoinInputs
+            // for each edge that references these JoinInputs, update the join condition
 
-/*
-        void replaceEdge(JoinEdge<B> & edge, Join<B> *join) {
-            auto lhs = edge.lhs_;
-            auto rhs = edge.rhs_;
+        }
+        // two steps:
+        // first: need new JoinInput<B> for the join
+        // second: rewire the ordinals on join expression for new child
+        void replaceEdge(JoinEdge<B> & to_update, bool update_lhs, JoinEdge<B> & prev_edge, Join<B> *child_join) {
+            vector<pair<int, int> > new_keys;
+            int field_cnt_delta;
+            // update lhs child
+            if (update_lhs) {
+                field_cnt_delta = child_join->getOutputSchema().getFieldCount() - prev_edge.lhs_->node_->getOutputSchema().getFieldCount();
+                auto keys = extractJoinKeyOrdinals(to_update.join_condition_, to_update.lhs_->node_->getOutputSchema().getFieldCount());
 
-            for(auto e : edges_) {
-                if(edge != e) {
-                    // replace lhs on this edge with new join
-                    // JMR return here
-                    if(e.lhs_ == lhs) {
-                        auto keys = extractJoinKeyOrdinals(e.join_condition_, e.lhs_->node_->getOutputSchema().getFieldCount());
+                if (to_update.lhs_ == prev_edge.lhs_) {
+                    to_update.lhs_ = &this->nodes_[child_join->getOperatorId()];
 
-                        e.lhs_->node_ = join;
+                    for (auto k: keys) {
+                        int l_key = child_join->getDestOrdinal(prev_edge.lhs_->node_, k.first);
+                        int r_key = k.second + field_cnt_delta;
+                        new_keys.push_back(make_pair(l_key, r_key));
                     }
-                    if(e.lhs_ == lhs || e.lhs_ == rhs) {
-                        e.lhs_->node_ = join;
-                        auto keys = extractJoinKeyOrdinals(e.join_condition_, e.lhs_->node_->getOutputSchema().getFieldCount());
-                        // TODO: map from lhs keys to new join
-                        // know this will be one of the children of the new join because otherwise it wouldn't be a node
-                        //  figure out which join input it is and map backwards from this
+                    to_update.join_condition_ = getEqualityPredicateMultiExpression(to_update.lhs_->node_, to_update.rhs_->node_, new_keys);
+                    to_update.lhs_ = &this->nodes_[child_join->getOperatorId()];
+                } else if (to_update.lhs_ == prev_edge.rhs_) {
+                    to_update.lhs_ = &this->nodes_[child_join->getOperatorId()];
+
+                    for (auto k: keys) {
+                        int l_key = child_join->getDestOrdinal(prev_edge.rhs_->node_, k.first);
+                        int r_key = k.second + field_cnt_delta;
+                        new_keys.push_back(make_pair(l_key, r_key));
                     }
-                    // TODO: update ordinals in edge's join condition
-                    if(e.rhs_ == lhs || e.rhs_ == rhs) e.rhs_->node_ = join;
+                    to_update.join_condition_ = getEqualityPredicateMultiExpression(to_update.lhs_->node_,  to_update.rhs_->node_, new_keys);
+                }
+
+            }
+            // update rhs child
+            else {
+                field_cnt_delta = child_join->getOutputSchema().getFieldCount() - prev_edge.rhs_->node_->getOutputSchema().getFieldCount();
+                auto keys = extractJoinKeyOrdinals(to_update.join_condition_,  to_update.lhs_->node_->getOutputSchema().getFieldCount());
+                if(to_update.rhs_ == prev_edge.lhs_) {
+                    to_update.rhs_ = &this->nodes_[child_join->getOperatorId()];
+
+                    for (auto k: keys) {
+                        int l_key = k.first;
+                        int r_key = child_join->getDestOrdinal(prev_edge.lhs_->node_, k.second);
+                        new_keys.push_back(make_pair(l_key, r_key));
+                    }
+                    to_update.join_condition_ = getEqualityPredicateMultiExpression(to_update.lhs_->node_, to_update.rhs_->node_, new_keys);
+                } else if(to_update.rhs_ == prev_edge.rhs_) {
+                    to_update.rhs_ = &this->nodes_[child_join->getOperatorId()];
+
+                    for (auto k: keys) {
+                        int l_key = k.first;
+                        int r_key = child_join->getDestOrdinal(prev_edge.rhs_->node_, k.second);
+                        new_keys.push_back(make_pair(l_key, r_key));
+                    }
+                    to_update.join_condition_ = getEqualityPredicateMultiExpression(to_update.lhs_->node_, to_update.rhs_->node_, new_keys);
+                }
+
+            }
+            // TODO: might need to update PK-FK status?
+        }
+
+        void replaceEdge(JoinEdge<B> & prev_edge, Join<B> *join) {
+            auto prev_lhs_input = prev_edge.lhs_;
+            auto prev_rhs_input = prev_edge.rhs_;
+
+            join->setOperatorId(prev_edge.operator_id_); // give it a unique operator ID
+            JoinInput<B> new_node;
+            new_node.node_ = join;
+            this->nodes_[join->getOperatorId()] = new_node;
+
+            // delete old edge
+            for (int i = 0; i < this->edges_.size(); ++i) {
+                if (this->edges_[i] == prev_edge) {
+                    this->edges_.erase(this->edges_.begin() + i);
+                    break;
                 }
             }
-            // TODO: dedupe edges
+
+            // for each edge, if it has a leaf that's LHS, then replace with join
+            // edges are all unique
+            for (auto e: this->edges_) {
+                // what about self-joins? This is why we call replaceEdge twice.
+                replaceEdge(e, true, prev_edge, join);
+                replaceEdge(e, false, prev_edge, join);
+            }
+
+            // dedupe edges
+            for (auto &e_outer: this->edges_) {
+                // can have > 1 dupe if we have self-joins
+                for (auto &e_inner: this->edges_) {
+                    if (e_outer.matchedInputs(e_inner)) {
+                        e_outer = mergeEdges(e_outer, e_inner);
+                        break;
+                    }
+                }
+
+            }
         }
-*/
+
         string toString() const {
             if(edges_.empty() && nodes_.empty()) return "";
             stringstream s;
@@ -114,22 +203,21 @@ namespace vaultdb {
             if(!edges_.empty()) {
                 s << " Edges: " << endl;
                 for (auto edge: edges_) {
+                    auto lhs_op = nodes_.at(edge.lhs_input_).node_;
+                    auto rhs_op = nodes_.at(edge.rhs_input_).node_;
                     s << "  * Operator " << edge.operator_id_ << ": " << edge.join_condition_->toString()
-                      << " schema: " << QuerySchema::concatenate(edge.lhs_->node_->getOutputSchema(),
-                                                                 edge.rhs_->node_->getOutputSchema()) << ", PK side: " << edge.pkey_input_ <<  endl;
-                    s << "           --> " << edge.lhs_->node_->toString() << endl;
-                    s << "           --> " << edge.rhs_->node_->toString() << endl;
+                      << " schema: " << QuerySchema::concatenate(lhs_op->getOutputSchema(),
+                                                                 rhs_op->getOutputSchema()) << ", FK side: " << edge.foreign_key_input_ <<  endl;
+                    s << "           --> " << lhs_op->toString() << endl;
+                    s << "           --> " << rhs_op->toString() << endl;
 
                 }
             }
             return s.str();
         }
 
-        map<int, JoinInput<B>> nodes_; // operator ID, JoinInput *
-        vector<JoinEdge<B>> edges_;
 
     private:
-        vector<ForeignKeyConstraint> foreign_key_constraints_;
 
         // fill in implied edges in join graph
         void takeClosure() {
@@ -250,11 +338,12 @@ namespace vaultdb {
                pair<JoinInput<B> *, int> rhs = findInputNode(join, k.second);
 
                JoinEdge<B> e;
-               e.lhs_ =  lhs.first;
-               e.rhs_ =  rhs.first;
-               e.pkey_input_ = getKeyConstraint(lhs.first->node_->getOutputSchema(), lhs.second, rhs.first->node_->getOutputSchema(), rhs.second);
+               e.lhs_input_ =  lhs.first->node_->getOperatorId();
+               e.rhs_input_ =  rhs.first->node_->getOperatorId();
+               e.foreign_key_input_ = getKeyConstraint(lhs.first->node_->getOutputSchema(), lhs.second, rhs.first->node_->getOutputSchema(), rhs.second);
                 // set up join predicate
-               ExpressionNode<B> *cond = getEqualityPredicate(e.lhs_->node_, e.rhs_->node_, lhs.second, rhs.second);
+               ExpressionNode<B> *cond = getEqualityPredicate(lhs.first->node_, rhs.first->node_, lhs.second, rhs.second);
+//                       e.lhs_->node_, e.rhs_->node_, lhs.second, rhs.second);
                bool found = false;
                
                // if we have this edge, append to its predicate
@@ -266,8 +355,8 @@ namespace vaultdb {
                        ExpressionNode<B> *conj = new AndNode<B>(existing, cond);
 
                        edges[i].join_condition_ = new GenericExpression<B>(conj, "predicate", FieldType::BOOL);
-                       if(edges[i].pkey_input_ == -1 && e.pkey_input_ != -1) {
-                           edges[i].pkey_input_ = e.pkey_input_;
+                       if(edges[i].foreign_key_input_ == -1 && e.foreign_key_input_ != -1) {
+                           edges[i].foreign_key_input_ = e.foreign_key_input_;
                        }
 
                        delete cond;
@@ -301,8 +390,8 @@ namespace vaultdb {
                 }
                 if(!found) {
                     edges_.push_back(edge);
-                    edge.lhs_->edges_.push_back(&edges_.back());
-                    edge.rhs_->edges_.push_back(&edges_.back());
+//                    edge.lhs_->edges_.push_back(&edges_.back());
+//                    edge.rhs_->edges_.push_back(&edges_.back());
                 }
             }
 
@@ -316,14 +405,15 @@ namespace vaultdb {
         JoinEdge<B> mergeEdges(const JoinEdge<B> &lhs_edge, const JoinEdge<B> &rhs_edge) {
             // merge lhs and rhs edges
            // don't attempt to merge incompatible inputs
-            assert(*lhs_edge.lhs_->node_ == *rhs_edge.lhs_->node_ && *lhs_edge.rhs_->node_ == *rhs_edge.rhs_->node_); 
+           assert(*nodes_.at(lhs_edge.lhs_input_).node_ == *nodes_.at(rhs_edge.lhs_input_).node_  && *nodes_.at(lhs_edge.rhs_input_).node_ == *nodes_.at(rhs_edge.rhs_input_).node_);
+//            assert(*lhs_edge.lhs_->node_ == *rhs_edge.lhs_->node_ && *lhs_edge.rhs_->node_ == *rhs_edge.rhs_->node_);
             JoinEdge<B> merged;
-            merged.lhs_ = lhs_edge.lhs_;
-            merged.rhs_ = lhs_edge.rhs_;
+            merged.lhs_input_ = lhs_edge.lhs_input_;
+            merged.rhs_input_ = lhs_edge.rhs_input_;
             
 
             // take conjunction of predicates
-            int lhs_field_cnt = lhs_edge.lhs_->node_->getOutputSchema().getFieldCount();
+            int lhs_field_cnt = nodes_.at(lhs_edge.lhs_input_).node_->getOutputSchema().getFieldCount();
             vector<pair<int, int> > lhs_join_keys = extractJoinKeyOrdinals(lhs_edge.join_condition_, lhs_field_cnt);
             vector<pair<int, int> > rhs_join_keys = extractJoinKeyOrdinals(rhs_edge.join_condition_, lhs_field_cnt);
             map<pair<int, int>, bool> seen;
@@ -337,19 +427,21 @@ namespace vaultdb {
             }
 
 
-            if(lhs_edge.pkey_input_ == -1 && rhs_edge.pkey_input_ != -1) {
-                merged.pkey_input_ = rhs_edge.pkey_input_;
-            } else if(lhs_edge.pkey_input_ != -1 && rhs_edge.pkey_input_ == -1) {
-                merged.pkey_input_ = lhs_edge.pkey_input_;
+            if(lhs_edge.foreign_key_input_ == -1 && rhs_edge.foreign_key_input_ != -1) {
+                merged.foreign_key_input_ = rhs_edge.foreign_key_input_;
+            } else if(lhs_edge.foreign_key_input_ != -1 && rhs_edge.foreign_key_input_ == -1) {
+                merged.foreign_key_input_ = lhs_edge.foreign_key_input_;
             } else {
-                merged.pkey_input_ = rhs_edge.pkey_input_;
+                merged.foreign_key_input_ = rhs_edge.foreign_key_input_;
             }
 
-            merged.join_condition_ = getEqualityPredicateMultiExpression(merged.lhs_->node_, merged.rhs_->node_, lhs_join_keys);
+            merged.join_condition_ = getEqualityPredicateMultiExpression(nodes_.at(merged.lhs_input_).node_, nodes_.at(merged.rhs_input_).node_, lhs_join_keys);
+//                    merged.lhs_->node_, merged.rhs_->node_, lhs_join_keys);
             return merged;
 
         }
-        
+
+
         ExpressionNode<B> *getEqualityPredicate(Operator<B> *lhs, Operator<B> *rhs, int lhs_ordinal, int rhs_ordinal) {
             auto lhs_schema = lhs->getOutputSchema();
             auto rhs_schema = rhs->getOutputSchema();
@@ -394,18 +486,18 @@ namespace vaultdb {
         }
 
 
-        // returns -1 if no key constraint exists, 0 if lhs is pkey and 1 if rhs is pkey
+        // returns -1 if no key constraint exists, 0 if lhs is fkey and 1 if rhs is fkey
         int getKeyConstraint(const QuerySchema & lhs_schema, const int & lhs_ordinal, const QuerySchema & rhs_schem, const int & rhs_ordinal) {
             ColumnReference lhs(lhs_schema.getField(lhs_ordinal).getTableName(), lhs_schema.getField(lhs_ordinal).getName());
             ColumnReference rhs(rhs_schem.getField(rhs_ordinal).getTableName(), rhs_schem.getField(rhs_ordinal).getName());
             ForeignKeyConstraint fk(lhs, rhs);
 
             if(std::find(foreign_key_constraints_.begin(), foreign_key_constraints_.end(), fk)  != foreign_key_constraints_.end()) {
-                return 0;
+                return 1;
             }
             fk = ForeignKeyConstraint(rhs, lhs);
             if(std::find(foreign_key_constraints_.begin(), foreign_key_constraints_.end(), fk)  != foreign_key_constraints_.end()) {
-                return 1;
+                return 0;
             }
             return -1;
         }
