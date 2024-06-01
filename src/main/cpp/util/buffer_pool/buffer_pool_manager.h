@@ -144,6 +144,7 @@ namespace vaultdb {
 
         void evictPage(PageId &pid) {
            PositionMapEntry pos;
+           cout << "Evicting " << pid.toString() << '\n';
 
 
             if(position_map_.find(pid) != position_map_.end() && position_map_.at(pid).dirty_) {
@@ -156,12 +157,14 @@ namespace vaultdb {
 
             position_map_.erase(pid);
             reverse_position_map_.erase(pos.slot_id_);
+            cout << "Pushing slot " << pos.slot_id_ << " to eviction queue\n";
             eviction_queue_.push(pos.slot_id_);
 
         }
 
 
         void loadPage(PageId &pid) {
+            cout << "Loading page " << pid.toString() << '\n';
             cout << "Eviction queue length: " << eviction_queue_.size() << '\n';
             cout << "First element: " << eviction_queue_.front() << '\n';
             assert(eviction_queue_.size() > 0); // if we can't evict anything, then we are out of space!
@@ -172,6 +175,7 @@ namespace vaultdb {
             OMPCPackedWire *src_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
             int target_slot = eviction_queue_.front();
             cout << "Have target slot: " << target_slot << '\n';
+            assert(target_slot >= 0 && target_slot < page_cnt_);
 
             eviction_queue_.pop();
             cout << "After pop, have queue length of " << eviction_queue_.size() << '\n';
@@ -222,6 +226,7 @@ namespace vaultdb {
         inline void unpinPage(PageId &pid) {
             position_map_.at(pid).pinned_ = false;
             eviction_queue_.push(position_map_.at(pid).slot_id_);
+            cout << "Adding page " << pid.toString() << " to eviction queue in unpinPage\n";
         }
 
         void loadColumn(const int & table_id, const int & col_idx, const int & tuple_cnt, const  int & rows_per_page) {
