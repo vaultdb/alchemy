@@ -115,7 +115,6 @@ TEST_F(OMPCFilterTest, ompc_test_filter) {
         expected->order_by_ = collation;
 
         PlainTable *revealed = fiiltered->revealInsecure();
-        cout << "Revealed: " << *revealed << endl;
         DataUtilities::removeDummies(revealed);
 
         // Order by l_orderkey, l_linenumber

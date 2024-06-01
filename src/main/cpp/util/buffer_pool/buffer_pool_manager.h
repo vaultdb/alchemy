@@ -85,6 +85,9 @@ namespace vaultdb {
 #include "emp-rescu/emp-rescu.h"
 #define __OMPC_BACKEND__ 1
 
+// TODO: this isn't a true LRU because if something is pinned and then unpinned, we would need to reinsert it into the eviction queue.
+// this is a linear pass over the list to find the old one and we can't do that in constant time.
+// rewriting this as the clock algo to save time
 namespace vaultdb {
     class BufferPoolManager {
     public:
@@ -117,15 +120,12 @@ namespace vaultdb {
         BufferPoolManager(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager) : unpacked_page_size_bits_(unpacked_page_size), page_cnt_(num_unpacked_pages), packed_page_size_wires_(packed_page_size), max_packed_page_cnt_(num_packed_pages), emp_manager_(manager) {
             // block size of each packed wire based on unpacked page size
             block_n_ = unpacked_page_size_bits_ / 128 + (unpacked_page_size_bits_ % 128 != 0);
-//            cout << "Block_n initialized to " << block_n_ << endl;
             // initialize unpacked page buffer
             unpacked_buffer_pool_ = std::vector<emp::Bit>(unpacked_page_size_bits_ * page_cnt_, emp::Bit(0));
-//            cout << "Unpacked page count: " << page_cnt_ << endl;
 
             for(int i = 0; i < page_cnt_; ++i) {
                 eviction_queue_.push(i);
             }
-//            cout << "Eviction queue length: " << eviction_queue_.size() << endl;
         }
 
         ~BufferPoolManager() {};
@@ -185,9 +185,6 @@ namespace vaultdb {
 
 
         void loadPage(PageId &pid) {
-//            cout << "Loading page " << pid.toString() << '\n';
-//            cout << "Eviction queue length: " << eviction_queue_.size() << '\n';
-//            cout << "First element: " << eviction_queue_.front() << '\n';
 
             if(position_map_.find(pid) != position_map_.end()) {
                 return;
