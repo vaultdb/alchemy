@@ -13,7 +13,7 @@ namespace vaultdb {
     public:
         BufferPoolManager() {};
 
-        BufferPoolManager(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager) : unpacked_page_size_bits_(unpacked_page_size), max_unpacked_page_cnt_(num_unpacked_pages), packed_page_size_wires_(packed_page_size), max_packed_page_cnt_(num_packed_pages), emp_manager_(manager) {
+        BufferPoolManager(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager) : unpacked_page_size_bits_(unpacked_page_size), page_cnt_(num_unpacked_pages), packed_page_size_wires_(packed_page_size), max_packed_page_cnt_(num_packed_pages), emp_manager_(manager) {
             
         }
 
@@ -60,7 +60,7 @@ namespace vaultdb {
         EmpManager *emp_manager_ = nullptr;
 
         int unpacked_page_size_bits_; // in emp::Bits
-        int max_unpacked_page_cnt_;
+        int page_cnt_;
         int packed_page_size_wires_; // in emp::OMPCPackedWires
         int max_packed_page_cnt_;
 
@@ -92,7 +92,7 @@ namespace vaultdb {
         EmpManager *emp_manager_ = nullptr;
 
         int unpacked_page_size_bits_; // in emp::Bits
-        int max_unpacked_page_cnt_;
+        int page_cnt_;
         int packed_page_size_wires_; // in emp::OMPCPackedWires
         int max_packed_page_cnt_;
 
@@ -113,16 +113,18 @@ namespace vaultdb {
 
         BufferPoolManager() {}
 
-        BufferPoolManager(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager) : unpacked_page_size_bits_(unpacked_page_size), max_unpacked_page_cnt_(num_unpacked_pages), packed_page_size_wires_(packed_page_size), max_packed_page_cnt_(num_packed_pages), emp_manager_(manager) {
+        BufferPoolManager(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager) : unpacked_page_size_bits_(unpacked_page_size), page_cnt_(num_unpacked_pages), packed_page_size_wires_(packed_page_size), max_packed_page_cnt_(num_packed_pages), emp_manager_(manager) {
             // block size of each packed wire based on unpacked page size
             block_n_ = unpacked_page_size_bits_ / 128 + (unpacked_page_size_bits_ % 128 != 0);
-
+            cout << "Block_n initialized to " << block_n_ << endl;
             // initialize unpacked page buffer
-            unpacked_buffer_pool_ = std::vector<emp::Bit>(unpacked_page_size_bits_ * max_unpacked_page_cnt_, emp::Bit(0));
+            unpacked_buffer_pool_ = std::vector<emp::Bit>(unpacked_page_size_bits_ * page_cnt_, emp::Bit(0));
+            cout << "Unpacked page count: " << page_cnt_ << endl;
 
-            for(int i = 0; i < max_unpacked_page_cnt_; ++i) {
+            for(int i = 0; i < page_cnt_; ++i) {
                 eviction_queue_.push(i);
             }
+            cout << "Eviction queue length: " << eviction_queue_.size() << endl;
         }
 
         ~BufferPoolManager() {};
@@ -160,12 +162,19 @@ namespace vaultdb {
 
 
         void loadPage(PageId &pid) {
+            cout << "Eviction queue length: " << eviction_queue_.size() << '\n';
+            cout << "First element: " << eviction_queue_.front() << '\n';
+            assert(eviction_queue_.size() > 0); // if we can't evict anything, then we are out of space!
+
             if(position_map_.find(pid) != position_map_.end()) {
                 return;
             }
             OMPCPackedWire *src_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
             int target_slot = eviction_queue_.front();
+            cout << "Have target slot: " << target_slot << '\n';
+
             eviction_queue_.pop();
+            cout << "After pop, have queue length of " << eviction_queue_.size() << '\n';
             PageId target_pid = reverse_position_map_[target_slot];
             evictPage(target_pid);
 
@@ -212,6 +221,7 @@ namespace vaultdb {
 
         inline void unpinPage(PageId &pid) {
             position_map_.at(pid).pinned_ = false;
+            eviction_queue_.push(position_map_.at(pid).slot_id_);
         }
 
         void loadColumn(const int & table_id, const int & col_idx, const int & tuple_cnt, const  int & rows_per_page) {

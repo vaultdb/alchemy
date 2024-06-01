@@ -189,6 +189,13 @@ namespace vaultdb {
         position_map_entry_(int & slot) : slot_id_(slot) , pinned_(false), dirty_(false) {}
         position_map_entry_(position_map_entry_ & other) : slot_id_(other.slot_id_) , pinned_(other.pinned_), dirty_(other.dirty_) {}
 
+        position_map_entry_ &operator=(const position_map_entry_ &src) {
+            slot_id_ = src.slot_id_;
+            pinned_ = src.pinned_;
+            dirty_ = src.dirty_;
+            return *this;
+        }
+
         // just check slot_id for now for easier searching.  lift PageId comparator if need more logic
         bool operator==(const position_map_entry_ &other) const {
             return slot_id_ == other.slot_id_;
