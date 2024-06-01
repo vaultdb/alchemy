@@ -162,27 +162,21 @@ namespace vaultdb {
                }
            }
 
-//           cout << "Evicting " << pid.toString() << " in slot " << position_map_[pid].slot_id_ <<  '\n';
-
-           // checking because at init time some BP pages might be empty
-            if(position_map_.find(pid) != position_map_.end()) {
-                pos = position_map_.at(pid);
-                if (position_map_.at(pid).dirty_) {
-                    assert(!pos.pinned_); // if it is pinned, we can't evict it
-                    emp::Bit *src_ptr =  unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
-                    emp::OMPCPackedWire *dst_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
-                    emp_manager_->pack(src_ptr, (Bit *) dst_ptr, unpacked_page_size_bits_);
-                }
-
-                // still remove it from the position map even if it is not dirty
-                position_map_.erase(pid);
-                reverse_position_map_.erase(pos.slot_id_);
-            }
-
-            // increment clock hand one more time for next round
-            clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
-            return pos.slot_id_;
+        pos = position_map_.at(pid);
+        if (position_map_.at(pid).dirty_) {
+            emp::Bit *src_ptr =  unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
+            emp::OMPCPackedWire *dst_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
+            emp_manager_->pack(src_ptr, (Bit *) dst_ptr, unpacked_page_size_bits_);
         }
+
+        // remove it from the position map even if it is not dirty
+        position_map_.erase(pid);
+        reverse_position_map_.erase(pos.slot_id_);
+
+        // increment clock hand one more time for next round
+        clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
+        return pos.slot_id_;
+     }
 
 
         void loadPage(PageId &pid) {
