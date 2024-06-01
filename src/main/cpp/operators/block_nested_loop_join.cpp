@@ -30,7 +30,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
     assert(sys_conf.storageModel() == StorageModel::PACKED_COLUMN_STORE);
     assert(sys_conf.bp_enabled_);
 
-    BufferPoolManager *bpm = sys_conf.bpm_;
+    BufferPoolManager *bpm_ = sys_conf.bpm_;
 
     PackedColumnTable *lhs = (PackedColumnTable *) Operator<B>::getChild(0)->getOutput();
     lhs->pinned_ = true;
@@ -40,8 +40,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
     B selected, dst_dummy_tag, lhs_dummy_tag;
-    this->output_ = QueryTable<B>::getTable(lhs->tuple_cnt_ * rhs->tuple_cnt_, this->output_schema_,
-                                           this->sort_definition_);
+    this->output_ = QueryTable<B>::getTable(lhs->tuple_cnt_ * rhs->tuple_cnt_, this->output_schema_,  this->sort_definition_);
 
     int cursor = 0;
     int rhs_col_offset = this->output_->getSchema().getFieldCount() - rhs->getSchema().getFieldCount();
@@ -78,7 +77,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
     vector<int> outer_col_page_offsets(outer_block_pages.size(), 0);
 
     for(int i = 0; i < lhs->tuple_cnt_; i += outer_block_fields_size) {
-        std::vector<BufferPoolManager::PageId> pinned_pages;
+        std::vector<PageId> pinned_pages;
         // get unpacked pages for each col and pin those pages
         for(int outer_col_idx = 0; outer_col_idx < lhs->getSchema().getFieldCount(); ++outer_col_idx) {
             int outer_page_cnts = outer_block_pages[outer_col_idx];
@@ -87,13 +86,13 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
             for(int page_offset = 0; page_offset < outer_page_cnts; ++page_offset) {
                 // check if the page is valid (up to maximum number of pages)
                 if(outer_col_page_offsets[outer_col_idx] + page_offset < max_page) {
-                    BufferPoolManager::PageId pid = bpm->getPageId(lhs->table_id_, outer_col_idx,
+                    PageId pid = bpm_->getPageId(lhs->table_id_, outer_col_idx,
                                                                    (outer_col_page_offsets[outer_col_idx] + page_offset) *
                                                                    lhs->fields_per_wire_[outer_col_idx],
-                                                                   lhs->fields_per_wire_[outer_col_idx]);
+                                                 lhs->fields_per_wire_[outer_col_idx]);
 
-                    emp::Bit *unpacked_page_ptr = bpm->getUnpackedPagePtr(pid);
-                    bpm->page_status_[pid][0] = true;
+                    emp::Bit *unpacked_page_ptr = bpm_->getUnpackedPagePtr(pid);
+                    bpm_->pinPage(pid);
                     pinned_pages.push_back(pid);
                 }
             }
@@ -123,7 +122,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
 
         // unpin page
         for(int i = 0; i < pinned_pages.size(); ++i) {
-            bpm->page_status_[pinned_pages[i]][0] = false;
+            bpm_->unpinPage(pinned_pages[i]);
         }
     }
 

@@ -143,6 +143,77 @@ namespace vaultdb {
     };
 
 
+    // data from same column can be same page - easy to get offset.
+    typedef struct page_id_ {
+        int table_id_;
+        int col_id_;
+        int page_idx_;
+
+        bool operator==(const page_id_ &other) const {
+            return table_id_ == other.table_id_ && col_id_ == other.col_id_ && page_idx_ == other.page_idx_;
+        }
+
+        bool operator!=(const page_id_ &other) const {
+            return table_id_ != other.table_id_ && col_id_ != other.col_id_ && page_idx_ != other.page_idx_;
+        }
+        bool operator<(const page_id_ &o)  const {
+            if(table_id_ < o.table_id_) {
+                return true;
+            }
+            else if(table_id_ == o.table_id_) {
+                if(col_id_ < o.col_id_) {
+                    return true;
+                }
+                else if(col_id_ == o.col_id_) {
+                    return page_idx_ < o.page_idx_;
+                }
+            }
+            return false;
+        }
+
+        string toString() const {
+            return "(" + std::to_string(table_id_) + ", " + std::to_string(col_id_) + ", " + std::to_string(page_idx_) + ")";
+        }
+
+    } PageId;
+
+
+// for use in the buffer pool
+    typedef struct position_map_entry_ {
+
+        int slot_id_ = -1; // what slot is it in the unpacked buffer pool?
+        bool pinned_ = false;
+        bool dirty_ = false;
+
+        position_map_entry_() {} // for map
+        position_map_entry_(int & slot) : slot_id_(slot) , pinned_(false), dirty_(false) {}
+        position_map_entry_(position_map_entry_ & other) : slot_id_(other.slot_id_) , pinned_(other.pinned_), dirty_(other.dirty_) {}
+
+        // just check slot_id for now for easier searching.  lift PageId comparator if need more logic
+        bool operator==(const position_map_entry_ &other) const {
+            return slot_id_ == other.slot_id_;
+        }
+
+        bool operator!=(const position_map_entry_ &other) const {
+            return slot_id_ != other.slot_id_;
+        }
+
+        // made up logic to make this sortable
+        bool operator<(const position_map_entry_ &o)  const {
+            if(this->slot_id_ < o.slot_id_) {
+                return true;
+            }
+            return false;
+        }
+
+        string toString() const {
+            return "(" + std::to_string(slot_id_) + ", "
+                   + (dirty_ ? "dirty" : "clean") + ", "
+                   + (pinned_ ? "pinned" : "unpinned") + ")";
+        }
+
+    } PositionMapEntry;
+
 
 
 }

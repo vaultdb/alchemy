@@ -190,8 +190,8 @@ namespace vaultdb {
 
             for(int i = -1; i < src_table->getSchema().getFieldCount(); ++i) {
                 for(int j = 0; j < src_table->tuple_cnt_; j = j + src_table->fields_per_wire_.at(i)) {
-                    BufferPoolManager::PageId src_pid = bpm_->getPageId(src_table->table_id_, i, j, src_table->fields_per_wire_.at(i));
-                    BufferPoolManager::PageId dst_pid = bpm_->getPageId(table_id_, i, j, fields_per_wire_.at(i));
+                    PageId src_pid = bpm_->getPageId(src_table->table_id_, i, j, src_table->fields_per_wire_.at(i));
+                    PageId dst_pid = bpm_->getPageId(table_id_, i, j, fields_per_wire_.at(i));
                     bpm_->clonePage(src_pid, dst_pid);
                 }
             }
@@ -235,7 +235,7 @@ namespace vaultdb {
         }
 
         Field<Bit> getField(const int  & row, const int & col)  const override {
-            BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
+            PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
             emp::Bit *read_ptr = bpm_->getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
 
             return Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
@@ -243,10 +243,10 @@ namespace vaultdb {
 
 
         inline void setField(const int  & row, const int & col, const Field<Bit> & f)  override {
-            BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
+            PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
             emp::Bit *write_ptr = bpm_->getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
             f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
-            bpm_->page_status_[pid][1] = true;
+            bpm_->markDirty(pid);
         }
 
         SecureTable *secretShare() override  {
@@ -265,7 +265,7 @@ namespace vaultdb {
             tuple_size_bytes_ += field_size_bytes;
             field_sizes_bytes_[ordinal] = field_size_bytes;
 
-            int size_threshold = bpm_->unpacked_page_size_;
+            int size_threshold = bpm_->unpacked_page_size_bits_;
             int packed_blocks = desc.size() / size_threshold + (desc.size() % size_threshold != 0);
 
             if(desc.size() / size_threshold > 0) {
@@ -302,7 +302,7 @@ namespace vaultdb {
                         int rows_to_add = (this->tuple_cnt_ - old_tuple_cnt) - (fields_per_wire - old_pos_in_last_page - 1);
 
                         int pages_to_add = rows_to_add / fields_per_wire + ((rows_to_add % fields_per_wire) != 0);
-                        bpm_->addConsecutivePages(table_id_, i, old_tuple_cnt + fields_per_wire - old_pos_in_last_page, pages_to_add, fields_per_wire);
+                        bpm_->addPageSequence(table_id_, i, old_tuple_cnt + fields_per_wire - old_pos_in_last_page, pages_to_add, fields_per_wire);
                     }
                 }
 //                else{
@@ -312,23 +312,23 @@ namespace vaultdb {
 //                        int rows_to_remove = (old_tuple_cnt - this->tuple_cnt_) - (fields_per_wire - new_pos_in_last_page - 1);
 //
 //                        int pages_to_remove = rows_to_remove / fields_per_wire + ((rows_to_remove % fields_per_wire) != 0);
-//                        bpm_->removeConsecutivePages(table_id_, i, this->tuple_cnt_ + fields_per_wire - new_pos_in_last_page, pages_to_remove, fields_per_wire);
+//                        bpm_->removePageSequence(table_id_, i, this->tuple_cnt_ + fields_per_wire - new_pos_in_last_page, pages_to_remove, fields_per_wire);
 //                    }
 //                }
             }
         }
 
         Bit getDummyTag(const int & row)  const override {
-            BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
+            auto pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
             emp::Bit *read_ptr = bpm_->getUnpackedPagePtr(pid) + (row % fields_per_wire_.at(-1));
             return *read_ptr;
         }
 
         void setDummyTag(const int & row, const Bit & val) override {
-            BufferPoolManager::PageId pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
+            auto pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
             emp::Bit *write_ptr = bpm_->getUnpackedPagePtr(pid) + (row % fields_per_wire_.at(-1));
             *write_ptr = val;
-            bpm_->page_status_[pid][1] = true;
+            bpm_->markDirty(pid);
         }
 
 
@@ -345,7 +345,7 @@ namespace vaultdb {
             for(int i = 0; i < schema_.getFieldCount(); ++i) {
                 QueryFieldDesc desc = schema_.fields_.at(i);
 
-                int size_threshold = bpm_->unpacked_page_size_;
+                int size_threshold = bpm_->unpacked_page_size_bits_;
                 int packed_blocks = desc.size() / size_threshold + (desc.size() % size_threshold != 0);
 
                 if(desc.size() / size_threshold > 0) {
@@ -367,7 +367,7 @@ namespace vaultdb {
             }
 
             blocks_per_field_[-1] = 1;
-            fields_per_wire_[-1] = bpm_->unpacked_page_size_;
+            fields_per_wire_[-1] = bpm_->unpacked_page_size_bits_;
 
             tuple_size_bytes_ += sizeof(emp::Bit);
             field_sizes_bytes_[-1] = sizeof(emp::Bit);
@@ -472,9 +472,9 @@ namespace vaultdb {
             int write_idx = dst_col;
             for(int i = 0; i < src_table->getSchema().getFieldCount(); ++i) {
                 // Get src unpacked page and pin it.
-                BufferPoolManager::PageId src_pid = bpm_->getPageId(src_table->table_id_, i, src_row, src_table->fields_per_wire_.at(i));
+                PageId src_pid = bpm_->getPageId(src_table->table_id_, i, src_row, src_table->fields_per_wire_.at(i));
                 emp::Bit *src_ptr = bpm_->getUnpackedPagePtr(src_pid);
-                bpm_->page_status_[src_pid][0] = true;
+                bpm_->pinPage(src_pid);
 
                 Field<Bit> src_field = src_table->getField(src_row, i);
 
@@ -487,8 +487,7 @@ namespace vaultdb {
                 }
 
                 ++write_idx;
-
-                bpm_->page_status_[src_pid][0] = false;
+                bpm_->unpinPage(src_pid);
             }
 
             // Copy dummy tag
@@ -507,7 +506,7 @@ namespace vaultdb {
             // if dst_row == -1, we initialize the column with zero based on src schema.
             if(dst_row == -1) {
                 PackedColumnTable *src_table = (PackedColumnTable *) src;
-                bpm_->initializeColumnPages(table_id_, dst_col, src_table->tuple_cnt_, src_table->fields_per_wire_.at(src_col));
+                bpm_->loadColumn(table_id_, dst_col, src_table->tuple_cnt_, src_table->fields_per_wire_.at(src_col));
                 return;
             }
 
@@ -522,10 +521,10 @@ namespace vaultdb {
             PackedColumnTable *src_table = (PackedColumnTable *) src;
 
             for (int i = 0; i < rows_to_cp; i = i + src_table->fields_per_wire_.at(src_col)) {
-                BufferPoolManager::PageId src_pid = bpm_->getPageId(src_table->table_id_, src_col,
+                PageId src_pid = bpm_->getPageId(src_table->table_id_, src_col,
                                                                     read_cursor,
                                                                     src_table->fields_per_wire_.at(src_col));
-                BufferPoolManager::PageId dst_pid = bpm_->getPageId(table_id_, dst_col, write_cursor,
+                PageId dst_pid = bpm_->getPageId(table_id_, dst_col, write_cursor,
                                                                     fields_per_wire_.at(dst_col));
                 bpm_->clonePage(src_pid, dst_pid);
                 read_cursor += src_table->fields_per_wire_.at(src_col);
