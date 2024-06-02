@@ -197,6 +197,7 @@ namespace vaultdb {
         bool dirty_ = false;
 
         position_map_entry_() {} // for map
+        position_map_entry_(const int & slot, const bool & pinned, const bool & dirty) : slot_id_(slot) , pinned_(pinned), dirty_(dirty) {}
         position_map_entry_(const int & slot) : slot_id_(slot) , pinned_(false), dirty_(false) {}
         position_map_entry_(const position_map_entry_ & other) : slot_id_(other.slot_id_) , pinned_(other.pinned_), dirty_(other.dirty_) {}
 

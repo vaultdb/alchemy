@@ -154,20 +154,24 @@ namespace vaultdb {
 
 
            PositionMapEntry pos;
-           //  uninitialized slot
+           //  uninitialized slot, this should only happen when we are warming up the buffer pool
            if(reverse_position_map_.find(clock_hand_position_) == reverse_position_map_.end())  {
                int slot = clock_hand_position_;
                clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
+               cout << "Evict page setting us to initalize slot " << slot << '\n';
                return slot;
            };
 
             int clock_hand_starting_pos = clock_hand_position_;
 
             PageId pid = reverse_position_map_[clock_hand_position_];
+            pos = position_map_.at(pid);
+
             // first unpinned page
-           while(position_map_.at(pid).pinned_) {
+           while(pos.pinned_) {
                clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
                pid = reverse_position_map_[clock_hand_position_];
+               pos = position_map_.at(pid);
                if(clock_hand_position_ == clock_hand_starting_pos) {
                    // if we have gone through the whole buffer pool and all pages are pinned, then we have a problem
                    // we should never have all pages pinned
@@ -175,8 +179,9 @@ namespace vaultdb {
                }
            }
 
-        pos = position_map_.at(pid);
-        if (position_map_.at(pid).dirty_) {
+           cout << "Evicting page at slot " << pos.toString() << ", pid " << pid.toString() << '\n';
+
+        if (pos.dirty_) {
             emp::Bit *src_ptr =  unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
             emp::OMPCPackedWire *dst_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
             emp_manager_->pack(src_ptr, (Bit *) dst_ptr, unpacked_page_size_bits_);
@@ -198,14 +203,14 @@ namespace vaultdb {
                 return;
             }
 
-
             OMPCPackedWire *src_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
             int target_slot = evictPage();
+            cout << "loading page: " << pid.toString() <<  " to slot " << target_slot << '\n';
 
             Bit *dst_ptr = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
             emp_manager_->unpack((Bit *) src_ptr, dst_ptr, unpacked_page_size_bits_);
-            PositionMapEntry p(target_slot);
-            p.pinned_ = true;
+
+            PositionMapEntry p(target_slot, true, false);
             position_map_[pid] = p;
             reverse_position_map_[target_slot] = pid;
 
@@ -256,7 +261,7 @@ namespace vaultdb {
         void loadColumn(const int & table_id, const int & col_idx, const int & tuple_cnt, const  int & rows_per_page) {
             int page_cnt = tuple_cnt / rows_per_page + (tuple_cnt % rows_per_page != 0);
 
-            PageId pid = {table_id, col_idx, 0};
+            PageId pid(table_id, col_idx, 0);
 
             for(int i = 0; i < page_cnt; ++i) {
                 loadPage(pid);
@@ -289,10 +294,7 @@ namespace vaultdb {
                     // enqueue the slot for eviction
                     unpinPage(p);
                 }
-
             }
-
-
         }
 
         // needed for singleton setup
