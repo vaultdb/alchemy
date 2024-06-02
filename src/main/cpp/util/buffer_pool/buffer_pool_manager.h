@@ -288,21 +288,17 @@ namespace vaultdb {
         }
 
         void removeUnpackedPagesByTable(int target_table_id) {
-            for (auto pos = position_map_.begin(); pos != position_map_.end(); ) {
-                if(pos->first.table_id_ == target_table_id) {
+            for (auto pos = position_map_.begin(); pos != position_map_.end(); ++pos) {
+                if (pos->first.table_id_ == target_table_id) {
                     PageId p = pos->first;
                     // enqueue the slot for eviction
                     unpinPage(p);
-                    reverse_position_map_.erase(pos->second.slot_id_);
-                    pos = position_map_.erase(pos);
                 }
-                else {
-                    ++pos;
-                }
+
             }
         }
 
-        // needed for singleton setup
+    // needed for singleton setup
     private:
         BufferPoolManager() {}
 
