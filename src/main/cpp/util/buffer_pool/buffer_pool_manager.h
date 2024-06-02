@@ -11,13 +11,14 @@ using namespace std;
 namespace vaultdb {
     class BufferPoolManager {
     public:
-        BufferPoolManager() {};
 
-        BufferPoolManager(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager) : unpacked_page_size_bits_(unpacked_page_size), page_cnt_(num_unpacked_pages), packed_page_size_wires_(packed_page_size), max_packed_page_cnt_(num_packed_pages), emp_manager_(manager) {
-            
-        }
 
+        void initialize(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager);
         ~BufferPoolManager() {};
+        static BufferPoolManager& getInstance() {
+            static BufferPoolManager  instance;
+            return instance;
+        }
 
         PageId getPageId(int table_id, int col, int row, int rows_per_page) {
             return {0, 0, 0};
@@ -78,6 +79,10 @@ namespace vaultdb {
         // setup for packed buffer pool
         // map<table_id, map<col_id, a pointer of a vector OMPCPackedWires>>
         std::map<int, std::map<int, OMPCPackedWire*>> packed_buffer_pool_;
+
+    private:
+         BufferPoolManager() {};
+
     };
 }
 #else
@@ -111,18 +116,26 @@ namespace vaultdb {
         // then we can just maintain a map of <table_id, PackedColumnTable*> and look it up directly.
         std::map<int, std::map<int, OMPCPackedWire *> > packed_buffer_pool_;
 
-        BufferPoolManager() {}
+        static BufferPoolManager& getInstance() {
+            static BufferPoolManager  instance;
+            return instance;
+        }
 
-        BufferPoolManager(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager) : unpacked_page_size_bits_(unpacked_page_size), page_cnt_(num_unpacked_pages), packed_page_size_wires_(packed_page_size), max_packed_page_cnt_(num_packed_pages), emp_manager_(manager) {
+        ~BufferPoolManager() {};
+
+        void initialize(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager)  {
+
+            unpacked_page_size_bits_ = unpacked_page_size;
+            page_cnt_ = num_unpacked_pages;
+            packed_page_size_wires_ = packed_page_size;
+            max_packed_page_cnt_ = num_packed_pages;
+            emp_manager_ = manager;
             // block size of each packed wire based on unpacked page size
             block_n_ = unpacked_page_size_bits_ / 128 + (unpacked_page_size_bits_ % 128 != 0);
             // initialize unpacked page buffer
             unpacked_buffer_pool_ = std::vector<emp::Bit>(unpacked_page_size_bits_ * page_cnt_, emp::Bit(0));
 
         }
-
-        ~BufferPoolManager() {};
-
 
 
         inline static PageId getPageId(int table_id, int col, int row, int rows_per_page) {
@@ -281,6 +294,13 @@ namespace vaultdb {
 
 
         }
+
+        // needed for singleton setup
+    private:
+        BufferPoolManager() {}
+
+
+
 
 
 

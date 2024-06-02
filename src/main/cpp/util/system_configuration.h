@@ -22,7 +22,7 @@ namespace vaultdb{
         int party_;
 
         bool bp_enabled_ = false;
-        BufferPoolManager *bpm_ = nullptr;
+        BufferPoolManager & bpm_ = BufferPoolManager::getInstance();
 
         int num_tables_;
 
@@ -47,7 +47,7 @@ namespace vaultdb{
             }
             else {
                 bp_enabled_ = true;
-                bpm_ = new BufferPoolManager(2048, 50, 5, 1000, emp_manager_);
+                bpm_.initialize(2048, 50, 5, 1000, emp_manager_);
             }
         }
 
@@ -81,7 +81,7 @@ namespace vaultdb{
 
         ~SystemConfiguration() {
             if(emp_manager_ != nullptr) delete emp_manager_;
-            if(bpm_ != nullptr) delete bpm_;
+
         }
 
 
