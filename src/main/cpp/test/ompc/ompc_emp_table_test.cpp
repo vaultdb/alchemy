@@ -55,7 +55,7 @@ TEST_F(OMPCEmpTableTest, ompc_secret_share_table_varchar) {
 
 
 // test more column types
-TEST_F(OMPCEmpTableTest, omc_secret_share_table) {
+TEST_F(OMPCEmpTableTest, ompc_secret_share_table) {
 
     std::string sql =  "SELECT l_orderkey, l_linenumber, l_comment, l_returnflag, l_discount, "
                        "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate "  // handle timestamps by converting them to longs using SQL
