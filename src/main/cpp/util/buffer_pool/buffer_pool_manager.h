@@ -159,7 +159,6 @@ namespace vaultdb {
            if(reverse_position_map_.find(clock_hand_position_) == reverse_position_map_.end())  {
                int slot = clock_hand_position_;
                clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
-               cout << "Evict page setting us to initalize slot " << slot << '\n';
                return slot;
            };
 
@@ -180,13 +179,11 @@ namespace vaultdb {
                }
            }
 
-           cout << "Evicting page at slot " << pos.toString() << ", pid " << pid.toString() << '\n';
 
         if (pos.dirty_) {
             emp::Bit *src_ptr =  unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
             emp::OMPCPackedWire *dst_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
             assert(dst_ptr != nullptr);
-            cout << "Evict dirty page: " << pid.toString() << " dst pointer: " << (size_t) dst_ptr << " block_n: " << dst_ptr->block_n << '\n';
             emp_manager_->pack(src_ptr, (Bit *) dst_ptr, unpacked_page_size_bits_);
         }
 
@@ -208,7 +205,6 @@ namespace vaultdb {
 
             OMPCPackedWire *src_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
             int target_slot = evictPage();
-            cout << "loading page: " << pid.toString() <<  " to slot " << target_slot << '\n';
 
             Bit *dst_ptr = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
             emp_manager_->unpack((Bit *) src_ptr, dst_ptr, unpacked_page_size_bits_);

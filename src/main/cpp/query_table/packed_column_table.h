@@ -168,7 +168,6 @@ namespace vaultdb {
             for(int i = -1; i < schema_.getFieldCount(); ++i) {
                 int col_packed_wires = tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0);
                 packed_buffer_pool_[i] = std::vector<emp::OMPCPackedWire>(col_packed_wires, emp::OMPCPackedWire(bpm_.block_n_));
-                cout << "Initalizing buffer pool for table " << table_id_ << ",  col " << i << " with " << packed_buffer_pool_[i][0].block_n << " block_n at " << (size_t ) packed_buffer_pool_[i].data() << endl;
                 bpm_.packed_buffer_pool_[table_id_][i] = (OMPCPackedWire *) packed_buffer_pool_[i].data();
             }
         }
