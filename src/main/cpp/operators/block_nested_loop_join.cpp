@@ -30,7 +30,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
     assert(sys_conf.storageModel() == StorageModel::PACKED_COLUMN_STORE);
     assert(sys_conf.bp_enabled_);
 
-    BufferPoolManager *bpm_ = sys_conf.bpm_;
+    BufferPoolManager &bpm_ = sys_conf.bpm_;
 
     PackedColumnTable *lhs = (PackedColumnTable *) Operator<B>::getChild(0)->getOutput();
     lhs->pinned_ = true;
@@ -86,13 +86,13 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
             for(int page_offset = 0; page_offset < outer_page_cnts; ++page_offset) {
                 // check if the page is valid (up to maximum number of pages)
                 if(outer_col_page_offsets[outer_col_idx] + page_offset < max_page) {
-                    PageId pid = bpm_->getPageId(lhs->table_id_, outer_col_idx,
+                    PageId pid = bpm_.getPageId(lhs->table_id_, outer_col_idx,
                                                                    (outer_col_page_offsets[outer_col_idx] + page_offset) *
                                                                    lhs->fields_per_wire_[outer_col_idx],
                                                  lhs->fields_per_wire_[outer_col_idx]);
 
-                    emp::Bit *unpacked_page_ptr = bpm_->getUnpackedPagePtr(pid);
-                    bpm_->pinPage(pid);
+                    emp::Bit *unpacked_page_ptr = bpm_.getUnpackedPagePtr(pid);
+                    bpm_.pinPage(pid);
                     pinned_pages.push_back(pid);
                 }
             }
@@ -115,14 +115,14 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
             for(int j = 0; j < rhs->tuple_cnt_; ++j) {
                 selected = Join<B>::predicate_->call((QueryTable<B> *) lhs, i + outer_block_idx, (QueryTable<B> *) rhs, j).template getValue<B>();
                 dst_dummy_tag = (!selected) | lhs_dummy_tag | ((QueryTable<B> *) rhs)->getDummyTag(j);
-                Operator<B>::output_->setDummyTag(cursor, dst_dummy_tag);
+                this->output_->setDummyTag(cursor, dst_dummy_tag);
                 ++cursor;
             }
         }
 
         // unpin page
         for(int i = 0; i < pinned_pages.size(); ++i) {
-            bpm_->unpinPage(pinned_pages[i]);
+            bpm_.unpinPage(pinned_pages[i]);
         }
     }
 
