@@ -149,6 +149,17 @@ namespace vaultdb {
         int col_id_;
         int page_idx_;
 
+        page_id_(const int & table_id, const int & col_id, const int & page_idx) : table_id_(table_id), col_id_(col_id), page_idx_(page_idx) {}
+        page_id_(const page_id_ & other) : table_id_(other.table_id_) , col_id_(other.col_id_), page_idx_(other.page_idx_) {}
+        page_id_() {} // for map
+
+        page_id_ & operator=(const page_id_ & other) {
+            table_id_ = other.table_id_;
+            col_id_ = other.col_id_;
+            page_idx_ = other.page_idx_;
+            return *this;
+        }
+
         bool operator==(const page_id_ &other) const {
             return table_id_ == other.table_id_ && col_id_ == other.col_id_ && page_idx_ == other.page_idx_;
         }
@@ -186,8 +197,8 @@ namespace vaultdb {
         bool dirty_ = false;
 
         position_map_entry_() {} // for map
-        position_map_entry_(int & slot) : slot_id_(slot) , pinned_(false), dirty_(false) {}
-        position_map_entry_(position_map_entry_ & other) : slot_id_(other.slot_id_) , pinned_(other.pinned_), dirty_(other.dirty_) {}
+        position_map_entry_(const int & slot) : slot_id_(slot) , pinned_(false), dirty_(false) {}
+        position_map_entry_(const position_map_entry_ & other) : slot_id_(other.slot_id_) , pinned_(other.pinned_), dirty_(other.dirty_) {}
 
         position_map_entry_ &operator=(const position_map_entry_ &src) {
             slot_id_ = src.slot_id_;
