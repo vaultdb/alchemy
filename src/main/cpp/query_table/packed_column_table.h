@@ -140,7 +140,7 @@ namespace vaultdb {
 
         // setup for buffer pool
         int table_id_ = SystemConfiguration::getInstance().num_tables_++;
-        BufferPoolManager *bpm_ = SystemConfiguration::getInstance().bpm_;
+        BufferPoolManager  & bpm_ = SystemConfiguration::getInstance().bpm_;
         mutable std::map<int, std::vector<emp::OMPCPackedWire>> packed_buffer_pool_; // map<col id, vector of OMPCPackedWires>
 
         // choosing to branch instead of storing this in a float for now, need to analyze trade-off on this one
@@ -167,8 +167,8 @@ namespace vaultdb {
             // initialize packed buffer pool including dummy tags
             for(int i = -1; i < schema_.getFieldCount(); ++i) {
                 int max_packed_wires = tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0);
-                packed_buffer_pool_[i] = std::vector<emp::OMPCPackedWire>(max_packed_wires, emp::OMPCPackedWire(bpm_->block_n_));
-                bpm_->packed_buffer_pool_[table_id_][i] = (OMPCPackedWire *) packed_buffer_pool_[i].data();
+                packed_buffer_pool_[i] = std::vector<emp::OMPCPackedWire>(max_packed_wires, emp::OMPCPackedWire(bpm_.block_n_));
+                bpm_.packed_buffer_pool_[table_id_][i] = (OMPCPackedWire *) packed_buffer_pool_[i].data();
             }
         }
 
@@ -182,24 +182,24 @@ namespace vaultdb {
             // initialize packed buffer pool including dummy tags
             for(int i = -1; i < schema_.getFieldCount(); ++i) {
                 int max_packed_wires = tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0);
-                packed_buffer_pool_[i] = std::vector<emp::OMPCPackedWire>(max_packed_wires, emp::OMPCPackedWire(bpm_->block_n_));
-                bpm_->packed_buffer_pool_[table_id_][i] = packed_buffer_pool_[i].data();
+                packed_buffer_pool_[i] = std::vector<emp::OMPCPackedWire>(max_packed_wires, emp::OMPCPackedWire(bpm_.block_n_));
+                bpm_.packed_buffer_pool_[table_id_][i] = packed_buffer_pool_[i].data();
             }
 
             PackedColumnTable *src_table = (PackedColumnTable *) &src;
 
             for(int i = -1; i < src_table->getSchema().getFieldCount(); ++i) {
                 for(int j = 0; j < src_table->tuple_cnt_; j = j + src_table->fields_per_wire_.at(i)) {
-                    PageId src_pid = bpm_->getPageId(src_table->table_id_, i, j, src_table->fields_per_wire_.at(i));
-                    PageId dst_pid = bpm_->getPageId(table_id_, i, j, fields_per_wire_.at(i));
-                    bpm_->clonePage(src_pid, dst_pid);
+                    PageId src_pid = bpm_.getPageId(src_table->table_id_, i, j, src_table->fields_per_wire_.at(i));
+                    PageId dst_pid = bpm_.getPageId(table_id_, i, j, fields_per_wire_.at(i));
+                    bpm_.clonePage(src_pid, dst_pid);
                 }
             }
         }
 
         vector<int8_t> serializePackedWire(int col_id, int page_idx) {
             emp::OMPCPackedWire *wire_ptr = packed_buffer_pool_[col_id].data() + page_idx;
-            vector<int8_t> dst((2 * bpm_->block_n_ + 1) * sizeof(block), 0);
+            vector<int8_t> dst((2 * bpm_.block_n_ + 1) * sizeof(block), 0);
 
             int8_t * write_ptr = dst.data();
 
@@ -207,26 +207,26 @@ namespace vaultdb {
 
             write_ptr += sizeof(block);
 
-            memcpy(write_ptr, (int8_t *) wire_ptr->packed_masked_values.data(), bpm_->block_n_ * sizeof(block));
+            memcpy(write_ptr, (int8_t *) wire_ptr->packed_masked_values.data(), bpm_.block_n_ * sizeof(block));
 
-            write_ptr += bpm_->block_n_ * sizeof(block);
+            write_ptr += bpm_.block_n_ * sizeof(block);
 
-            memcpy(write_ptr, (int8_t *) wire_ptr->packed_lambdas.data(), bpm_->block_n_ * sizeof(block));
+            memcpy(write_ptr, (int8_t *) wire_ptr->packed_lambdas.data(), bpm_.block_n_ * sizeof(block));
 
             return dst;
         }
         emp::OMPCPackedWire deserializePackedWire(int8_t *serialized_packed_wire) {
             int8_t *read_ptr = serialized_packed_wire;
 
-            emp::OMPCPackedWire deserialized_wire(bpm_->block_n_);
+            emp::OMPCPackedWire deserialized_wire(bpm_.block_n_);
 
             memcpy((int8_t *) &deserialized_wire.spdz_tag, read_ptr, sizeof(block));
             read_ptr += sizeof(block);
 
-            memcpy((int8_t *) deserialized_wire.packed_masked_values.data(), read_ptr, bpm_->block_n_ * sizeof(block));
-            read_ptr += bpm_->block_n_ * sizeof(block);
+            memcpy((int8_t *) deserialized_wire.packed_masked_values.data(), read_ptr, bpm_.block_n_ * sizeof(block));
+            read_ptr += bpm_.block_n_ * sizeof(block);
 
-            memcpy((int8_t *) deserialized_wire.packed_lambdas.data(), read_ptr, bpm_->block_n_ * sizeof(block));
+            memcpy((int8_t *) deserialized_wire.packed_lambdas.data(), read_ptr, bpm_.block_n_ * sizeof(block));
 
             return deserialized_wire;
         }
@@ -234,36 +234,36 @@ namespace vaultdb {
         emp::OMPCPackedWire deserializePackedWire(vector<int8_t> serialized_packed_wire) {
             int8_t *read_ptr = serialized_packed_wire.data();
 
-            emp::OMPCPackedWire deserialized_wire(bpm_->block_n_);
+            emp::OMPCPackedWire deserialized_wire(bpm_.block_n_);
 
             memcpy((int8_t *) &deserialized_wire.spdz_tag, read_ptr, sizeof(block));
 
             read_ptr += sizeof(block);
 
-            memcpy((int8_t *) deserialized_wire.packed_masked_values.data(), read_ptr, bpm_->block_n_ * sizeof(block));
+            memcpy((int8_t *) deserialized_wire.packed_masked_values.data(), read_ptr, bpm_.block_n_ * sizeof(block));
 
-            read_ptr += bpm_->block_n_ * sizeof(block);
+            read_ptr += bpm_.block_n_ * sizeof(block);
 
-            memcpy((int8_t *) deserialized_wire.packed_lambdas.data(), read_ptr, bpm_->block_n_ * sizeof(block));
+            memcpy((int8_t *) deserialized_wire.packed_lambdas.data(), read_ptr, bpm_.block_n_ * sizeof(block));
 
             return deserialized_wire;
         }
 
         Field<Bit> getField(const int  & row, const int & col)  const override {
-            PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
-            emp::Bit *read_ptr = bpm_->getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
+            PageId pid = bpm_.getPageId(table_id_, col, row, fields_per_wire_.at(col));
+            emp::Bit *read_ptr = bpm_.getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
             SecureField f  =  Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
-            bpm_->unpinPage(pid);
+            bpm_.unpinPage(pid);
             return f;
         }
 
 
         inline void setField(const int  & row, const int & col, const Field<Bit> & f)  override {
-            PageId pid = bpm_->getPageId(table_id_, col, row, fields_per_wire_.at(col));
-            emp::Bit *write_ptr = bpm_->getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
+            PageId pid = bpm_.getPageId(table_id_, col, row, fields_per_wire_.at(col));
+            emp::Bit *write_ptr = bpm_.getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
             f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
-            bpm_->markDirty(pid);
-            bpm_->unpinPage(pid);
+            bpm_.markDirty(pid);
+            bpm_.unpinPage(pid);
 
         }
 
@@ -283,7 +283,7 @@ namespace vaultdb {
             tuple_size_bytes_ += field_size_bytes;
             field_sizes_bytes_[ordinal] = field_size_bytes;
 
-            int size_threshold = bpm_->unpacked_page_size_bits_;
+            int size_threshold = bpm_.unpacked_page_size_bits_;
             int packed_blocks = desc.size() / size_threshold + (desc.size() % size_threshold != 0);
 
             if(desc.size() / size_threshold > 0) {
@@ -320,7 +320,7 @@ namespace vaultdb {
                         int rows_to_add = (this->tuple_cnt_ - old_tuple_cnt) - (fields_per_wire - old_pos_in_last_page - 1);
 
                         int pages_to_add = rows_to_add / fields_per_wire + ((rows_to_add % fields_per_wire) != 0);
-                        bpm_->addPageSequence(table_id_, i, old_tuple_cnt + fields_per_wire - old_pos_in_last_page, pages_to_add, fields_per_wire);
+                        bpm_.addPageSequence(table_id_, i, old_tuple_cnt + fields_per_wire - old_pos_in_last_page, pages_to_add, fields_per_wire);
                     }
                 }
 //                else{
@@ -330,24 +330,24 @@ namespace vaultdb {
 //                        int rows_to_remove = (old_tuple_cnt - this->tuple_cnt_) - (fields_per_wire - new_pos_in_last_page - 1);
 //
 //                        int pages_to_remove = rows_to_remove / fields_per_wire + ((rows_to_remove % fields_per_wire) != 0);
-//                        bpm_->removePageSequence(table_id_, i, this->tuple_cnt_ + fields_per_wire - new_pos_in_last_page, pages_to_remove, fields_per_wire);
+//                        bpm_.removePageSequence(table_id_, i, this->tuple_cnt_ + fields_per_wire - new_pos_in_last_page, pages_to_remove, fields_per_wire);
 //                    }
 //                }
             }
         }
 
         Bit getDummyTag(const int & row)  const override {
-            auto pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
-            emp::Bit *read_ptr = bpm_->getUnpackedPagePtr(pid) + (row % fields_per_wire_.at(-1));
+            auto pid = bpm_.getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
+            emp::Bit *read_ptr = bpm_.getUnpackedPagePtr(pid) + (row % fields_per_wire_.at(-1));
             return *read_ptr;
         }
 
         void setDummyTag(const int & row, const Bit & val) override {
-            auto pid = bpm_->getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
-            emp::Bit *write_ptr = bpm_->getUnpackedPagePtr(pid) + (row % fields_per_wire_.at(-1));
+            auto pid = bpm_.getPageId(table_id_, -1, row, fields_per_wire_.at(-1));
+            emp::Bit *write_ptr = bpm_.getUnpackedPagePtr(pid) + (row % fields_per_wire_.at(-1));
             *write_ptr = val;
-            bpm_->markDirty(pid);
-            bpm_->unpinPage(pid);
+            bpm_.markDirty(pid);
+            bpm_.unpinPage(pid);
         }
 
 
@@ -364,7 +364,7 @@ namespace vaultdb {
             for(int i = 0; i < schema_.getFieldCount(); ++i) {
                 QueryFieldDesc desc = schema_.fields_.at(i);
 
-                int size_threshold = bpm_->unpacked_page_size_bits_;
+                int size_threshold = bpm_.unpacked_page_size_bits_;
                 int packed_blocks = desc.size() / size_threshold + (desc.size() % size_threshold != 0);
 
                 if(desc.size() / size_threshold > 0) {
@@ -386,7 +386,7 @@ namespace vaultdb {
             }
 
             blocks_per_field_[-1] = 1;
-            fields_per_wire_[-1] = bpm_->unpacked_page_size_bits_;
+            fields_per_wire_[-1] = bpm_.unpacked_page_size_bits_;
 
             tuple_size_bytes_ += sizeof(emp::Bit);
             field_sizes_bytes_[-1] = sizeof(emp::Bit);
@@ -491,8 +491,8 @@ namespace vaultdb {
             int write_idx = dst_col;
             for(int i = 0; i < src_table->getSchema().getFieldCount(); ++i) {
                 // Get src unpacked page and pin it.
-                PageId src_pid = bpm_->getPageId(src_table->table_id_, i, src_row, src_table->fields_per_wire_.at(i));
-                bpm_->pinPage(src_pid);
+                PageId src_pid = bpm_.getPageId(src_table->table_id_, i, src_row, src_table->fields_per_wire_.at(i));
+                bpm_.pinPage(src_pid);
 
                 Field<Bit> src_field = src_table->getField(src_row, i);
 
@@ -505,7 +505,7 @@ namespace vaultdb {
                 }
 
                 ++write_idx;
-                bpm_->unpinPage(src_pid);
+                bpm_.unpinPage(src_pid);
             }
 
             // Copy dummy tag
@@ -524,7 +524,7 @@ namespace vaultdb {
             // if dst_row == -1, we initialize the column with zero based on src schema.
             if(dst_row == -1) {
                 PackedColumnTable *src_table = (PackedColumnTable *) src;
-                bpm_->loadColumn(table_id_, dst_col, src_table->tuple_cnt_, src_table->fields_per_wire_.at(src_col));
+                bpm_.loadColumn(table_id_, dst_col, src_table->tuple_cnt_, src_table->fields_per_wire_.at(src_col));
                 return;
             }
 
@@ -539,14 +539,14 @@ namespace vaultdb {
             PackedColumnTable *src_table = (PackedColumnTable *) src;
 
             for (int i = 0; i < rows_to_cp; i = i + src_table->fields_per_wire_.at(src_col)) {
-                PageId src_pid = bpm_->getPageId(src_table->table_id_, src_col,
+                PageId src_pid = bpm_.getPageId(src_table->table_id_, src_col,
                                                                     read_cursor,
                                                                     src_table->fields_per_wire_.at(src_col));
-                PageId dst_pid = bpm_->getPageId(table_id_, dst_col, write_cursor,
+                PageId dst_pid = bpm_.getPageId(table_id_, dst_col, write_cursor,
                                                                     fields_per_wire_.at(dst_col));
-                bpm_->clonePage(src_pid, dst_pid);
-                bpm_->unpinPage(src_pid);
-                bpm_->unpinPage(dst_pid);
+                bpm_.clonePage(src_pid, dst_pid);
+                bpm_.unpinPage(src_pid);
+                bpm_.unpinPage(dst_pid);
                 read_cursor += src_table->fields_per_wire_.at(src_col);
                 write_cursor += fields_per_wire_.at(dst_col);
             }
@@ -581,8 +581,8 @@ namespace vaultdb {
 
         ~PackedColumnTable() {
             // Flush pages in buffer pools
-            bpm_->removeUnpackedPagesByTable(this->table_id_);
-            bpm_->packed_buffer_pool_.erase(this->table_id_);
+            bpm_.removeUnpackedPagesByTable(this->table_id_);
+            bpm_.packed_buffer_pool_.erase(this->table_id_);
         }
 
         PlainTable *revealInsecure(const int & party = emp::PUBLIC) override {
@@ -600,7 +600,7 @@ namespace vaultdb {
                 QueryFieldDesc field_desc = schema_.getField(i);
 
                 for(int j = 0; j < packed_buffer_pool_[i].size(); ++j) {
-                    bpm_->loadPage(pid);
+                    bpm_.loadPage(pid);
                     // loop over the page
                     while(cursor < tuple_cnt_ && cursor < (j + 1) * fields_per_wire_.at(i)){
                         SecureField f = getField(cursor, i);
@@ -608,7 +608,7 @@ namespace vaultdb {
                         dst_table->setField(cursor, i, plain);
                         ++cursor;
                     }
-                    bpm_->unpinPage(pid);
+                    bpm_.unpinPage(pid);
                     ++pid.page_idx_;
                 }
             }
