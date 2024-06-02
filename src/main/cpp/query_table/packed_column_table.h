@@ -518,6 +518,10 @@ namespace vaultdb {
             }
         }
 
+        void cloneColumn(const int & dst_col, const QueryTable<Bit> *src, const int & src_col) override {
+            this->cloneColumn(dst_col, 0, src, src_col, 0);
+        }
+
         void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<Bit> *src, const int & src_col, const int & src_row = 0) override {
             assert(src->getSchema().getField(src_col) == this->getSchema().getField(dst_col));
 

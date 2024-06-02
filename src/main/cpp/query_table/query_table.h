@@ -149,16 +149,11 @@ namespace  vaultdb {
         // copy row src_row from src to self at dst_row and fill the next copies rows with the same data
         virtual void cloneRowRange(const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row, const int & copies) = 0;
 
-        void cloneColumn(const int & dst_col, const QueryTable<B> *src, const int & src_col) {
+        virtual void cloneColumn(const int & dst_col, const QueryTable<B> *src, const int & src_col) {
             assert(src->tuple_cnt_ == this->tuple_cnt_);
             assert(src->getSchema().getField(src_col).size() == getSchema().getField(dst_col).size());
 
-            if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-                cloneColumn(dst_col, 0, src, src_col, 0);
-            }
-            else {
-                column_data_[dst_col] = src->column_data_.at(src_col);
-            }
+            column_data_[dst_col] = src->column_data_.at(src_col);
         }
 
         // copy all src_col entries from src_row until end (or until we run out of slots)
