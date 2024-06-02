@@ -80,6 +80,7 @@ namespace vaultdb {
         // map<table_id, map<col_id, a pointer of a vector OMPCPackedWires>>
         std::map<int, std::map<int, OMPCPackedWire*>> packed_buffer_pool_;
 
+        void reset();
     private:
          BufferPoolManager() {};
 
@@ -184,6 +185,8 @@ namespace vaultdb {
         if (pos.dirty_) {
             emp::Bit *src_ptr =  unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
             emp::OMPCPackedWire *dst_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
+            assert(dst_ptr != nullptr);
+            cout << "Evict dirty page: " << pid.toString() << " dst pointer: " << (size_t) dst_ptr << " block_n: " << dst_ptr->block_n << '\n';
             emp_manager_->pack(src_ptr, (Bit *) dst_ptr, unpacked_page_size_bits_);
         }
 
@@ -298,6 +301,16 @@ namespace vaultdb {
             }
         }
 
+        // for use at the end of each unit test to clear out any references to tables that we are deleting
+        void reset() {
+            // TODO: flush dirty pages.  this will eventually push these to non-volatile storage as needed
+            // right now we are calling this too late to do this (after the parent objects (PackedColumnTables) are deleted)
+            // This should probably be part of PackedColumnTable's constructor
+            position_map_.clear();
+            reverse_position_map_.clear();
+            packed_buffer_pool_.clear();
+            clock_hand_position_ = 0;
+        }
     // needed for singleton setup
     private:
         BufferPoolManager() {}

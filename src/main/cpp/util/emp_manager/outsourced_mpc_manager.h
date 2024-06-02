@@ -136,6 +136,9 @@ namespace  vaultdb {
             for(NetIO *io : ios_ctrl_) {
                 if(io != nullptr) io->flush();
             }
+
+            // flush buffer pool
+            system_conf_.bpm_.reset();
         }
 
         ~OutsourcedMpcManager() {
