@@ -492,7 +492,6 @@ namespace vaultdb {
             for(int i = 0; i < src_table->getSchema().getFieldCount(); ++i) {
                 // Get src unpacked page and pin it.
                 PageId src_pid = bpm_->getPageId(src_table->table_id_, i, src_row, src_table->fields_per_wire_.at(i));
-                emp::Bit *src_ptr = bpm_->getUnpackedPagePtr(src_pid);
                 bpm_->pinPage(src_pid);
 
                 Field<Bit> src_field = src_table->getField(src_row, i);
@@ -546,6 +545,8 @@ namespace vaultdb {
                 PageId dst_pid = bpm_->getPageId(table_id_, dst_col, write_cursor,
                                                                     fields_per_wire_.at(dst_col));
                 bpm_->clonePage(src_pid, dst_pid);
+                bpm_->unpinPage(src_pid);
+                bpm_->unpinPage(dst_pid);
                 read_cursor += src_table->fields_per_wire_.at(src_col);
                 write_cursor += fields_per_wire_.at(dst_col);
             }
