@@ -188,6 +188,10 @@ namespace vaultdb {
 
     } PageId;
 
+    static std::ostream &operator<<(std::ostream &os, const PageId &pid)   {
+        os << pid.toString();
+        return os;
+    }
 
 // for use in the buffer pool
     typedef struct position_map_entry_ {
@@ -233,6 +237,10 @@ namespace vaultdb {
 
     } PositionMapEntry;
 
+    static std::ostream &operator<<(std::ostream &os, const PositionMapEntry &entry)   {
+        os << entry.toString();
+        return os;
+    }
 
 
 }
