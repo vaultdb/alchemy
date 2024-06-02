@@ -31,18 +31,18 @@ public:
 
         // pack everything in unpacked buffer pool to packed buffer pool
         // TODO: omit buffer pool from secret sharing process - we don't need it here
-        for(auto pos = bpm_->position_map_.begin(); pos != bpm_->position_map_.end(); ++pos) {
+        for(auto pos = bpm_.position_map_.begin(); pos != bpm_.position_map_.end(); ++pos) {
             PageId pid = pos->first;
             int slot = pos->second.slot_id_;
 
-            emp::Bit *current_slot_ptr = bpm_->unpacked_buffer_pool_.data() + slot * bpm_->unpacked_page_size_bits_;
+            emp::Bit *current_slot_ptr = bpm_.unpacked_buffer_pool_.data() + slot * bpm_.unpacked_page_size_bits_;
 
-            emp::OMPCPackedWire packed_wire(bpm_->block_n_);
-            emp_manager_->pack(current_slot_ptr, (Bit*) &packed_wire, bpm_->unpacked_page_size_bits_);
-            emp::OMPCPackedWire *packed_wires_ptr = bpm_->packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
+            emp::OMPCPackedWire packed_wire(bpm_.block_n_);
+            emp_manager_->pack(current_slot_ptr, (Bit*) &packed_wire, bpm_.unpacked_page_size_bits_);
+            emp::OMPCPackedWire *packed_wires_ptr = bpm_.packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
             *packed_wires_ptr = packed_wire;
 
-            bpm_->unpinPage(pid);
+            bpm_.unpinPage(pid);
         }
 
         return table_;
@@ -99,7 +99,7 @@ public:
         // load packed buffer pool
         PackedColumnTable *loaded_table = (PackedColumnTable *) QueryTable<Bit>::getTable(tuple_cnt, schema);
 
-        int packed_page_size_bytes = (2 * bpm_->block_n_ + 1) * sizeof(block);
+        int packed_page_size_bytes = (2 * bpm_.block_n_ + 1) * sizeof(block);
 
         for(int i = -1; i < schema.getFieldCount(); ++i) {
             std::string file_name = path + "packed_" + this->table_name_ + "_col_" + std::to_string(i) + "_" + std::to_string(party) + ".page";
@@ -132,7 +132,7 @@ private:
     PackedColumnTable *table_;
     std::string table_name_;
 
-    BufferPoolManager *bpm_ = SystemConfiguration::getInstance().bpm_;
+    BufferPoolManager bpm_ = SystemConfiguration::getInstance().bpm_;
     EmpManager *emp_manager_ = SystemConfiguration::getInstance().emp_manager_;
     OMPCBackend<N> *protocol_ = (OMPCBackend<N> *) emp::backend;
 };
