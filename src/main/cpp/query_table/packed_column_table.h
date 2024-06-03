@@ -12,7 +12,7 @@ namespace vaultdb {
 
         // setup for buffer pool
         int table_id_ = SystemConfiguration::getInstance().num_tables_++;
-        BufferPoolManager *bpm_ = SystemConfiguration::getInstance().bpm_;
+        BufferPoolManager & bpm_ = SystemConfiguration::getInstance().bpm_;
         mutable std::map<int, std::vector<emp::OMPCPackedWire>> packed_buffer_pool_; // map<col id, vector of OMPCPackedWires>
 
         // choosing to branch instead of storing this in a float for now, need to analyze trade-off on this one
