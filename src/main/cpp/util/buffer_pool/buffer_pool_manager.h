@@ -13,7 +13,7 @@ namespace vaultdb {
     public:
 
 
-        void initialize(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager);
+        void initialize(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager) {}
         ~BufferPoolManager() {};
         static BufferPoolManager& getInstance() {
             static BufferPoolManager  instance;
