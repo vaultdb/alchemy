@@ -41,7 +41,7 @@ void SecurePlanDeparserTest::runTest(const int &test_id) {
     string test_name = "q" + std::to_string(test_id);
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
 
-    PlanParser<Bit> plan_reader(db_name_, plan_file, limit_);
+    PlanParser<Bit> plan_reader(db_name_, plan_file, limit_, true);
     SecureOperator *expected_root = plan_reader.getRoot();
 
     string json_plan = PlanDeparser<Bit>::deparse(expected_root);
@@ -60,7 +60,7 @@ void SecurePlanDeparserTest::runTest(const int &test_id) {
 // expression: ($2 == $6) AND ($1 == $5)
 TEST_F(SecurePlanDeparserTest, conjunction_expression) {
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q9.json";
-    PlanParser<Bit> plan_reader(db_name_, plan_file);
+    PlanParser<Bit> plan_reader(db_name_, plan_file, -1, true);
 
     auto join =  (Join<Bit> *) plan_reader.getOperator(5);
     auto predicate = join->getPredicate();
@@ -82,7 +82,7 @@ TEST_F(SecurePlanDeparserTest, conjunction_expression) {
 // expression: ($8 * (1.000000 - $9)) - ($3 * $7)
 TEST_F(SecurePlanDeparserTest, math_expression) {
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q9.json";
-    PlanParser<Bit> plan_reader(db_name_, plan_file);
+    PlanParser<Bit> plan_reader(db_name_, plan_file, -1, true);
 
     auto project = (Project<Bit> *) plan_reader.getOperator(6);
     auto expression_map = project->getExpressions();

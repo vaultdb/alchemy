@@ -1,4 +1,5 @@
 #include "operators/basic_join.h"
+#include "operators/keyed_join.h"
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <stdexcept>
@@ -23,7 +24,7 @@ DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(ctrl_port, 65478, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*.tpch_q03", "run only the tests passing this filter");
+DEFINE_string(filter, "*.tpch_q05", "run only the tests passing this filter");
 DEFINE_string(storage, "column", "storage model for columns (column, wire_packed or compressed)");
 
 
@@ -50,7 +51,7 @@ void SecureTpcHEnumerationTest::runTest(const int &test_id, const SortDefinition
 
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q" + std::to_string(test_id) + ".json";
 
-    PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
+    PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_, true);
    SecureOperator *root = parser.getRoot();
 
    cout << "Query tree: " << root->printTree() << endl;
@@ -61,6 +62,20 @@ void SecureTpcHEnumerationTest::runTest(const int &test_id, const SortDefinition
    // * Take closure and add any edges that can be derived from transitivity over join predicates. TODO: implement this
    JoinGraph<Bit> graph(root, db_name_);
    cout << "Join graph: \n" << graph.toString() << endl;
+
+   // Q5 bug:   * Operator 8: $1 == $3 bool schema: (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float revenue, #3 shared-int32(4) supplier.s_suppkey, #4 shared-int32(5) supplier.s_nationkey, #5 shared-varchar(25) nation.n_name), FK side: -1
+   // FK should be 1
+   // key missing because of how we're partitioning the data.
+   // need to add a table like:
+   // nation.n_nationkey <-- supplier.s_nationkey
+    //nation.n_nationkey <-- customer.c_nationkey
+    //orders.o_orderkey <-- lineitem.l_orderkey
+    //region.r_regionkey <-- nation.n_regionkey
+    //customer.c_custkey <-- orders.o_custkey
+    //part.p_partkey <-- partsupp.ps_partkey
+    //supplier.s_suppkey <-- partsupp.ps_suppkey
+    // supplier.s_suppkey <-- lineitem.ps_suppkey
+    // (ps_partkey, ps_suppkey) <-- (lineitem.l_partkey, lineitem.l_suppkey)
 
 }
 
@@ -87,8 +102,8 @@ TEST_F(SecureTpcHEnumerationTest, tpch_q01) {
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
 
-    runTest(3, expected_sort);
-    /*
+//    runTest(3, expected_sort);
+
     string expected_sql = generateExpectedOutputQuery(3);
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_sql, false, 0);
     expected->order_by_ = expected_sort;
@@ -96,21 +111,26 @@ TEST_F(SecureTpcHEnumerationTest, tpch_q01) {
     ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q" + std::to_string(3) + ".json";
-    PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
+    PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_, true);
     SecureOperator *root = parser.getRoot();
     // 3 phases:
     // * Identify all leafs - subtrees that are below all joins
     // * Parse each join predicate and identify the leaf(s) associated with it.  Create one edge per distinct pair of leaf nodes.
     // * Take closure and add any edges that can be derived from transitivity over join predicates. TODO: implement this
-    JoinGraph<Bit> graph(root);
+    JoinGraph<Bit> graph(root, db_name_);
     cout << "Join graph: \n" << graph.toString() << endl;
 
     // compose first join, just using BasicJoin until we store PK-FK relationships in the graph or use the schema to infer these relationships
     JoinEdge<Bit> &e = graph.edges_.back();
-    BasicJoin<Bit> j1(e.lhs_, e.rhs_, e.join_condition_, SortDefinition(), false);
+    // // fkey = 0 --> lhs, fkey = 1 --> rhs
+    //        KeyedJoin(Operator<B> *lhs, Operator<B> *rhs,  const int & fkey, Expression<B> *predicate,const SortDefinition & sort = SortDefinition());
 
-    // substitute new join into graph by replacing reference to its children with the new join
-    graph.replaceEdge(e, j1);*/
+    graph.joinInEdge(e);
+//    int pk_flag = !e.pkey_input_;
+//    KeyedJoin<Bit> j1(e.lhs_->node_, e.rhs_->node_, pk_flag, e.join_condition_);
+//
+//    // substitute new join into graph by replacing reference to its children with the new join
+//    graph.replaceEdge(e, (Join<Bit> *) &j1);
 
 }
 
