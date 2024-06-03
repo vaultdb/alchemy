@@ -31,6 +31,7 @@ namespace vaultdb {
         // greedily evict first unpinned page in the queue
         // returns the newly-opened slot in the buffer pool
         int evictPage() {
+            return 0;
         }
 
         void loadPage(PageId &pid) {
@@ -159,6 +160,7 @@ namespace vaultdb {
            if(reverse_position_map_.find(clock_hand_position_) == reverse_position_map_.end())  {
                int slot = clock_hand_position_;
                clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
+//               cout << "EvictPage initializing slot " << slot << endl;
                return slot;
            };
 
@@ -167,6 +169,7 @@ namespace vaultdb {
             PageId pid = reverse_position_map_[clock_hand_position_];
             pos = position_map_.at(pid);
 
+//            cout << "Evicting page " << pid << " at slot " << pos.slot_id_ << endl;
             // first unpinned page
            while(pos.pinned_) {
                clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
@@ -205,7 +208,7 @@ namespace vaultdb {
 
             OMPCPackedWire *src_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
             int target_slot = evictPage();
-
+//            cout << "Loading page " << pid << " into " << target_slot << endl;
             Bit *dst_ptr = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
             emp_manager_->unpack((Bit *) src_ptr, dst_ptr, unpacked_page_size_bits_);
 
