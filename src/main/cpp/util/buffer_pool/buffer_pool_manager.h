@@ -160,7 +160,7 @@ namespace vaultdb {
            if(reverse_position_map_.find(clock_hand_position_) == reverse_position_map_.end())  {
                int slot = clock_hand_position_;
                clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
-//               cout << "EvictPage initializing slot " << slot << endl;
+               cout << "EvictPage initializing slot " << slot << endl;
                return slot;
            };
 
@@ -169,7 +169,7 @@ namespace vaultdb {
             PageId pid = reverse_position_map_[clock_hand_position_];
             pos = position_map_.at(pid);
 
-//            cout << "Evicting page " << pid << " at slot " << pos.slot_id_ << endl;
+            cout << "Evicting page " << pid << " at slot " << pos.slot_id_ << endl;
             // first unpinned page
            while(pos.pinned_) {
                clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
@@ -208,7 +208,7 @@ namespace vaultdb {
 
             OMPCPackedWire *src_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
             int target_slot = evictPage();
-//            cout << "Loading page " << pid << " into " << target_slot << endl;
+            cout << "Loading page " << pid << " into " << target_slot << endl;
             Bit *dst_ptr = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
             emp_manager_->unpack((Bit *) src_ptr, dst_ptr, unpacked_page_size_bits_);
 
@@ -226,14 +226,16 @@ namespace vaultdb {
            // mark dst_page as dirty
            if(position_map_.find(src_pid) != position_map_.end()
               && position_map_.at(src_pid).dirty_) {
-               emp::Bit *src_page_ptr = unpacked_buffer_pool_.data() + position_map_.at(src_pid).slot_id_ * unpacked_page_size_bits_;
+               pinPage(src_pid);
+               emp::Bit *src_page = unpacked_buffer_pool_.data() + position_map_.at(src_pid).slot_id_ * unpacked_page_size_bits_;
                loadPage(dst_pid); // make sure dst page is loaded (if not already in buffer pool
-               emp::Bit *dst_page_ptr = unpacked_buffer_pool_.data() + position_map_.at(dst_pid).slot_id_ * unpacked_page_size_bits_;
+               emp::Bit *dst_page = unpacked_buffer_pool_.data() + position_map_.at(dst_pid).slot_id_ * unpacked_page_size_bits_;
 
-               memcpy(dst_page_ptr, src_page_ptr, unpacked_page_size_bits_);
+               memcpy(dst_page, src_page, unpacked_page_size_bits_);
 
                position_map_.at(dst_pid).dirty_ = true;
-
+               unpinPage(src_pid);
+               unpinPage(dst_pid);
            }
            else {
                 emp::OMPCPackedWire *src_page_ptr = packed_buffer_pool_[src_pid.table_id_][src_pid.col_id_] + src_pid.page_idx_;
