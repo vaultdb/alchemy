@@ -51,7 +51,7 @@ void OMPCNestedLoopAggregateTest::runTest(const string &expected_sql,
                                             const vector<ScalarAggregateDefinition> & aggregators) const {
 
     // Table scan for lineitem
-    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>(db_name_, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table to l_orderkey, l_linenumber
@@ -131,7 +131,7 @@ TEST_F(OMPCNestedLoopAggregateTest, test_tpch_q1_sums) {
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
 
     // Table scan for lineitem
-    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>(db_name_, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table
@@ -207,7 +207,7 @@ TEST_F(OMPCNestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
 
     // Table scan for lineitem
-    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>(db_name_, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table
@@ -288,7 +288,7 @@ TEST_F(OMPCNestedLoopAggregateTest, tpch_q1) {
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
 
     // Table scan for lineitem
-    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>(db_name_, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table

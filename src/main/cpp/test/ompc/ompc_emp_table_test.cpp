@@ -134,16 +134,15 @@ TEST_F(OMPCEmpTableTest, ompc_test_packed_table_scan) {
     std::string src_path = Utilities::getCurrentWorkingDirectory();
     std::string packed_pages_path = src_path + "/packed_pages/";
 
-    std::string db_name = "tpch_unioned_150";
     std::string table_name = "customer";
 
-    PackedTableScan<Bit> packed_table_scan(db_name, table_name, packed_pages_path, FLAGS_party);
+    PackedTableScan<Bit> packed_table_scan(db_name_, table_name, packed_pages_path, FLAGS_party);
     PackedColumnTable *packed_table = (PackedColumnTable *) packed_table_scan.run();
 
     if(FLAGS_validation) {
         std::string table_sql = "SELECT * FROM " + table_name + " ORDER BY c_custkey";
 
-        SecretShareAndPackDataFromQuery ssp(db_name, table_sql, table_name);
+        SecretShareAndPackDataFromQuery ssp(db_name_, table_sql, table_name);
         PackedColumnTable *expected = ssp.getTable();
 
         PlainTable *expected_plain = expected->revealInsecure(emp::PUBLIC);

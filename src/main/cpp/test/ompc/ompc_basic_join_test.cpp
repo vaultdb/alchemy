@@ -73,8 +73,13 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
                       "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT cdummy AND NOT odummy for now
 
     // Table scan for orders
-    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "orders", packed_pages_path_, FLAGS_party, orders_limit_);
-    packed_orders_table_scan->setOperatorId(-2);
+    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<emp::Bit>(db_name_, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    packed_orders_table_scan->setOperatorId(0);
+
+    SecureTable *orders_table = packed_orders_table_scan->run();
+    cout << "Orders table ID: " << ((PackedColumnTable *) orders_table)->table_id_ << '\n';
+    cout << "Orders first row: " << orders_table->revealRow(0).toString(true) << '\n';
+
 
     // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy
     ExpressionMapBuilder<Bit> orders_builder(packed_orders_table_scan->getOutputSchema());
@@ -82,41 +87,41 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
     orders_builder.addMapping(1, 1);
     orders_builder.addMapping(4, 2);
     orders_builder.addMapping(7, 3);
-    //    InputReference<emp::Bit> *orderdate_field = new InputReference<emp::Bit>(4, packed_orders_table_scan->getOutputSchema());
-    //    Field<Bit> date_field(FieldType::SECURE_STRING, emp::Integer(32,0));
-    //    date_field.setString("1995-03-25");
-    //    LiteralNode<emp::Bit> *date_literal = new LiteralNode<emp::Bit>(date_field);
-    //    GreaterThanEqNode<emp::Bit> *date_node = new GreaterThanEqNode<emp::Bit>(orderdate_field, date_literal);
-    //    Expression<emp::Bit> *odummy_expr = new GenericExpression<emp::Bit>(date_node, "odummy", FieldType::SECURE_BOOL);
-    //    orders_builder.addExpression(odummy_expr, 4);
 
     Project<Bit> *orders_project = new Project(packed_orders_table_scan, orders_builder.getExprs());
-    orders_project->setOperatorId(-2);
+    orders_project->setOperatorId(1);
+
 
     // Table scan for customer
-    PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "customer", packed_pages_path_, FLAGS_party, customer_limit_);
-    packed_customer_table_scan->setOperatorId(-2);
+    PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<emp::Bit>(db_name_, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
+    packed_customer_table_scan->setOperatorId(2);
+
+    SecureTable *customer_table = packed_customer_table_scan->run();
+    cout << "Customer table ID: " << ((PackedColumnTable *) customer_table)->table_id_ << '\n';
+    cout << "Customer first row: " << customer_table->revealRow(0).toString(true) << '\n';
+
 
     // Project customer table to c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy
     ExpressionMapBuilder<Bit> customer_builder(packed_customer_table_scan->getOutputSchema());
     customer_builder.addMapping(0, 0);
-//    InputReference<emp::Bit> *mktsegment_field = new InputReference<emp::Bit>(6, packed_customer_table_scan->getOutputSchema());
-//    Field<Bit> household_field(FieldType::SECURE_STRING, emp::Integer(32,0));
-//    household_field.setString("HOUSEHOLD");
-//    LiteralNode<emp::Bit> *household_literal = new LiteralNode<emp::Bit>(household_field);
-//    NotEqualNode<emp::Bit> *not_household_node = new NotEqualNode<emp::Bit>(mktsegment_field, household_literal);
-//    Expression<emp::Bit> *cdummy_expr = new GenericExpression<emp::Bit>(not_household_node, "cdummy", FieldType::SECURE_BOOL);
-//    customer_builder.addExpression(cdummy_expr, 1);
 
     Project<Bit> *customer_project = new Project(packed_customer_table_scan, customer_builder.getExprs());
-    customer_project->setOperatorId(-2);
+    customer_project->setOperatorId(3);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<emp::Bit> *predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_project, 1, customer_project, 4);
 
+    SecureTable *op_table = orders_project->getOutput();
+    SecureTable *cp_table = customer_project->getOutput();
+    cout << "op table id: " << ((PackedColumnTable *) op_table)->table_id_ << '\n';
+    cout << "cp table id: " << ((PackedColumnTable *) cp_table)->table_id_ << '\n';
+
+    cout << "Orders projected first row: " << op_table->revealRow(0).toString(true) << '\n';
+    cout << "Customer projected first row: " << cp_table->revealRow(0).toString(true) << '\n';
+
     BasicJoin<emp::Bit> *join = new BasicJoin(orders_project, customer_project, predicate);
-    join->setOperatorId(-2);
+    join->setOperatorId(4);
     SecureTable *join_res = join->run();
 
     if(FLAGS_validation) {
@@ -147,7 +152,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
 
 
     // Table scan for lineitem
-    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>(db_name_, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue
@@ -165,7 +170,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
     lineitem_project->setOperatorId(-2);
 
     // Table scan for orders
-    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<emp::Bit>(db_name_, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
     packed_orders_table_scan->setOperatorId(-2);
 
     // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -216,7 +221,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
                       "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
 
     // Table scan for orders
-    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<emp::Bit>(db_name_, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
     packed_orders_table_scan->setOperatorId(-2);
 
     // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -230,7 +235,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     orders_project->setOperatorId(-2);
 
     // Table scan for customer
-    PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "customer", packed_pages_path_, FLAGS_party, customer_limit_);
+    PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<emp::Bit>(db_name_, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
     packed_customer_table_scan->setOperatorId(-2);
 
     // Project customer table to c_custkey
@@ -247,7 +252,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     customer_orders_join->setOperatorId(-2);
 
     // Table scan for lineitem
-    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>("tpch_unioned_150", "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>(db_name_, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue
