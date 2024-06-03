@@ -518,8 +518,24 @@ namespace vaultdb {
             }
         }
 
-        void cloneColumn(const int & dst_col, const QueryTable<Bit> *src, const int & src_col) override {
-            this->cloneColumn(dst_col, 0, src, src_col, 0);
+        void cloneColumn(const int & dst_col, const QueryTable<Bit> *src_table, const int & src_col) override {
+
+            assert(src_table->getSchema().getField(src_col) == this->getSchema().getField(dst_col));
+            // 1:1 copy
+            if(this->tuple_cnt_ == src_table->tuple_cnt_ && src_table->storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+                int pages_to_clone = this->packed_buffer_pool_[dst_col].size();
+                PackedColumnTable *src = (PackedColumnTable *) src_table;
+                PageId src_pid = bpm_.getPageId(src->table_id_, src_col, 0, src->fields_per_wire_.at(src_col));
+                PageId  dst_pid = bpm_.getPageId(table_id_, dst_col, 0, fields_per_wire_.at(dst_col));
+                for(int i = 0; i < pages_to_clone; ++i) {
+                    bpm_.clonePage(src_pid, dst_pid);
+                    ++src_pid.page_idx_;
+                    ++dst_pid.page_idx_;
+                }
+                return;
+            }
+            // else
+            this->cloneColumn(dst_col, 0, src_table, src_col, 0);
         }
 
         void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<Bit> *src, const int & src_col, const int & src_row = 0) override {
@@ -541,6 +557,7 @@ namespace vaultdb {
             int write_cursor = dst_row;
 
             PackedColumnTable *src_table = (PackedColumnTable *) src;
+
 
             for (int i = 0; i < rows_to_cp; i = i + src_table->fields_per_wire_.at(src_col)) {
                 PageId src_pid = bpm_.getPageId(src_table->table_id_, src_col,

@@ -52,7 +52,7 @@ protected:
 
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue \n" // ignore l_shipdate <= date '1995-03-25' ldummy for now
                                       "FROM lineitem \n"
-                                      "ORDER BY l_orderkey, l_linenumber \n"
+                                      "ORDER BY l_orderkey, revenue \n"
                                       "LIMIT " + std::to_string(lineitem_limit_);
 
 
@@ -77,13 +77,15 @@ GenericExpression<Bit> *getRevenueExpression(const QuerySchema &input) {
 
 
 // variant of Q3 expressions
-TEST_F(OMPCProjectTest, q3Lineitem) {
-    std::string sql = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(FLAGS_cutoff);
-    std::string expected_sql = "SELECT l_orderkey, " + DataUtilities::queryDatetime("l_shipdate") + ",  l_extendedprice * (1 - l_discount) revenue FROM (" + sql + ") src ";
+TEST_F(OMPCProjectTest, q3_lineitem) {
+    std::string sql = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(FLAGS_cutoff); // to mirror the table loader
+    std::string expected_sql = "SELECT l_orderkey, " + DataUtilities::queryDatetime("l_shipdate") + ",  l_extendedprice * (1 - l_discount) revenue FROM (" + sql + ") src ORDER BY l_orderkey, l_shipdate, revenue";
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
+    auto collation = DataUtilities::getDefaultSortDefinition(3);
+    expected->order_by_ = collation;
 
-    PackedTableScan<emp::Bit> *input = new PackedTableScan<emp::Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *input = new PackedTableScan<emp::Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, FLAGS_cutoff);
     input->setOperatorId(-2);
 
 
@@ -97,6 +99,9 @@ TEST_F(OMPCProjectTest, q3Lineitem) {
     Project project(input, builder.getExprs());
 
     PlainTable *observed = project.run()->revealInsecure(PUBLIC);
+    // fix the collation in plaintext
+    Sort<bool> observed_sorter(observed, collation);
+    observed = observed_sorter.run();
 
     ASSERT_EQ(*expected, *observed);
 
@@ -113,10 +118,6 @@ TEST_F(OMPCProjectTest, project_customer) {
     PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<emp::Bit>(FLAGS_unioned_db, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
     packed_customer_table_scan->setOperatorId(-2);
 
-//    SecureTable *customer_table = packed_customer_table_scan->run();
-//    cout << "Customer table ID: " << ((PackedColumnTable *) customer_table)->table_id_ << '\n';
-//    cout << "Customer first row: " << customer_table->revealRow(0).toString(true) << '\n';
-
 
     // Project customer table to c_custkey
     ExpressionMapBuilder<Bit> customer_builder(packed_customer_table_scan->getOutputSchema());
@@ -126,11 +127,10 @@ TEST_F(OMPCProjectTest, project_customer) {
     customer_project->setOperatorId(-2);
 
     if(FLAGS_validation) {
-        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
-        PlainTable *observed = customer_project->getOutput()->revealInsecure(PUBLIC);
+        SecureTable  *projected = customer_project->run();
+        PlainTable *observed = projected->revealInsecure(PUBLIC);
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, customer_sql_,false);
-        expected->order_by_ = sort_def;
         expected->resize(customer_limit_);
 
         ASSERT_EQ(*expected, *observed);
@@ -161,11 +161,8 @@ TEST_F(OMPCProjectTest, project_orders) {
 
     if(FLAGS_validation) {
 
-        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
         PlainTable *observed = orders_project->getOutput()->revealInsecure(PUBLIC);
-
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, orders_sql_,false);
-        expected->order_by_ = sort_def;
         expected->resize(orders_limit_);
 
         ASSERT_EQ(*expected, *observed);
@@ -196,12 +193,9 @@ TEST_F(OMPCProjectTest, project_lineitem) {
     lineitem_project->setOperatorId(-2);
 
     if(FLAGS_validation) {
-        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
         PlainTable *observed = lineitem_project->getOutput()->revealInsecure(PUBLIC);
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, lineitem_sql_,false);
-        expected->order_by_ = sort_def;
-        expected->resize(lineitem_limit_);
 
         ASSERT_EQ(*expected, *observed);
 
