@@ -21,7 +21,7 @@ DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(cutoff, 5, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65450, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*.test_tpch_q3_customer_orders", "run only the tests passing this filter");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "wire_packed", "storage model for columns (column, wire_packed or compressed)");
 
 
@@ -65,7 +65,7 @@ protected:
 GenericExpression<Bit> *getRevenueExpression(const QuerySchema &input) {
     InputReference<Bit>  extended_price(5, input);
     InputReference<Bit> discount(6, input);
-    LiteralNode<Bit> one(Field<Bit>(FieldType::FLOAT, emp::Float(1.0)));
+    LiteralNode<Bit> one(Field<Bit>(FieldType::SECURE_FLOAT, emp::Float(1.0)));
 
     MinusNode<Bit> minus(&one, &discount);
     TimesNode<Bit> times(&extended_price, &minus);
@@ -83,7 +83,7 @@ TEST_F(OMPCProjectTest, q3Lineitem) {
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
-    PackedTableScan<emp::Bit> *input = new PackedTableScan<emp::Bit>(db_name_, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *input = new PackedTableScan<emp::Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     input->setOperatorId(-2);
 
 
@@ -110,7 +110,7 @@ TEST_F(OMPCProjectTest, q3Lineitem) {
 TEST_F(OMPCProjectTest, project_customer) {
 
     // Table scan for customer
-    PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<emp::Bit>(db_name_, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
+    PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<emp::Bit>(FLAGS_unioned_db, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
     packed_customer_table_scan->setOperatorId(-2);
 
 //    SecureTable *customer_table = packed_customer_table_scan->run();
@@ -137,11 +137,11 @@ TEST_F(OMPCProjectTest, project_customer) {
     }
 }
 
-TEST_F(OMPCProjectTest, test_tpch_q3_orders) {
+TEST_F(OMPCProjectTest, project_orders) {
 
 
     // Table scan for orders
-    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<emp::Bit>(db_name_, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<emp::Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
     packed_orders_table_scan->setOperatorId(-2);
 
     SecureTable *orders_table = packed_orders_table_scan->run();
@@ -173,12 +173,12 @@ TEST_F(OMPCProjectTest, test_tpch_q3_orders) {
     }
 }
 
-TEST_F(OMPCProjectTest, test_tpch_q3_lineitem) {
+TEST_F(OMPCProjectTest, project_lineitem) {
 
 
 
     // Table scan for lineitem
-    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>(db_name_, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<emp::Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue
