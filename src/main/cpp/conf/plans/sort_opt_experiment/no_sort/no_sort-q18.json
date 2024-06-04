@@ -154,6 +154,12 @@
           "name": "o_orderdate"
         }
       ],
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },

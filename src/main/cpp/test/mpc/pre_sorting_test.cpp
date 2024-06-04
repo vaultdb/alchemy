@@ -209,63 +209,63 @@ PreSortingTest::generateExpectedOutputQuery(const int &test_id, const SortDefini
 
 
 
-//TEST_F(PreSortingTest, no_sort_q1) {
-//
-//SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-//runTest(1, "q1", expected_sort, FLAGS_unioned_db);
-//
-//}
+TEST_F(PreSortingTest, no_sort_q1) {
+
+SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+runTest(1, "q1", expected_sort, FLAGS_unioned_db);
+
+}
 
 
-//TEST_F(PreSortingTest, no_sort_q3) {
-//
-//SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-//                             ColumnSort(1, SortDirection::DESCENDING),
-//                             ColumnSort(2, SortDirection::ASCENDING)};
-//runTest(3, "q3", expected_sort, FLAGS_unioned_db);
-//}
+TEST_F(PreSortingTest, no_sort_q3) {
 
-//
-//TEST_F(PreSortingTest, no_sort_q5) {
-////input_tuple_limit_ = 1000;
-//
-//SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-//runTest(5, "q5", expected_sort, FLAGS_unioned_db);
-//}
-//
-//
-//TEST_F(PreSortingTest, no_sort_q8) {
-//
-//SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-//runTest(8, "q8", expected_sort, FLAGS_unioned_db);
-//}
-//
-//
-//
-//TEST_F(PreSortingTest, no_sort_q9) {
-//// $0 ASC, $1 DESC
-//SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-//runTest(9, "q9", expected_sort, FLAGS_unioned_db);
-//
-//}
-//
-//
-//
-//
-//TEST_F(PreSortingTest, no_sort_q18) {
-//// -1 ASC, $4 DESC, $3 ASC
-//SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-//                             ColumnSort(4, SortDirection::DESCENDING),
-//                             ColumnSort(3, SortDirection::ASCENDING)};
-//runTest(18, "q18", expected_sort, FLAGS_unioned_db);
-//}
+SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                             ColumnSort(1, SortDirection::DESCENDING),
+                             ColumnSort(2, SortDirection::ASCENDING)};
+runTest(3, "q3", expected_sort, FLAGS_unioned_db);
+}
 
-//TEST_F(PreSortingTest, pre_sort_q1) {
-//
-//SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-//runPreSortTest(1, "q1", expected_sort, FLAGS_unioned_db);
-//
-//}
+
+TEST_F(PreSortingTest, no_sort_q5) {
+//input_tuple_limit_ = 1000;
+
+SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+runTest(5, "q5", expected_sort, FLAGS_unioned_db);
+}
+
+
+TEST_F(PreSortingTest, no_sort_q8) {
+
+SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+runTest(8, "q8", expected_sort, FLAGS_unioned_db);
+}
+
+
+
+TEST_F(PreSortingTest, no_sort_q9) {
+// $0 ASC, $1 DESC
+SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+runTest(9, "q9", expected_sort, FLAGS_unioned_db);
+
+}
+
+
+
+
+TEST_F(PreSortingTest, no_sort_q18) {
+// -1 ASC, $4 DESC, $3 ASC
+SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                             ColumnSort(4, SortDirection::DESCENDING),
+                             ColumnSort(3, SortDirection::ASCENDING)};
+runTest(18, "q18", expected_sort, FLAGS_unioned_db);
+}
+
+TEST_F(PreSortingTest, pre_sort_q1) {
+
+SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+runPreSortTest(1, "q1", expected_sort, FLAGS_unioned_db);
+
+}
 
 
 TEST_F(PreSortingTest, pre_sort_q3) {
