@@ -237,7 +237,7 @@
       "id": "9",
       "relOp": "LogicalJoin",
       "joinOn": "o_custkey = c_custkey",
-      "operator-algorithm" : "auto",
+      "operator-algorithm" : "keyed-sort-merge-join",
       "outputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), sum_qty (#4), c_custkey (#5), c_name (#6)",
       "condition": {
         "op": {

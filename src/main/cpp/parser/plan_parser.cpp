@@ -634,8 +634,6 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
         int foreign_key = (join_tree.count("foreignKey") > 0) ? join_tree.get_child("foreignKey").template get_value<int>()
                 : join_tree.get_child("foreign-key").template get_value<int>();
 
-
-
         if (join_algo == "auto") {
 
             auto smj = new KeyedSortMergeJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());

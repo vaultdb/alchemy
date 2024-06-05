@@ -53,7 +53,7 @@
       "relOp": "LogicalJoin",
       "joinOn" : "c_custkey = o_custkey",
       "outputFields": "n_name (#0), c_custkey (#1), c_nationkey (#2), o_orderkey (#3), o_custkey (#4)",
-      "operator-algorithm" : "auto",
+      "operator-algorithm" : "keyed-sort-merge-join",
       "condition": {
         "op": {
           "name": "=",
@@ -135,7 +135,7 @@
       "relOp": "LogicalJoin",
       "joinOn" : "l_orderkey = o_orderkey",
       "outputFields": "n_name (#0), c_nationkey (#1), o_orderkey (#2), l_orderkey (#3), l_suppkey (#4), revenue (#5)",
-      "operator-algorithm" : "auto",
+      "operator-algorithm" : "keyed-sort-merge-join",
       "condition": {
         "op": {
           "name": "=",
@@ -215,7 +215,7 @@
       "relOp": "LogicalJoin",
       "outputFields": "n_name (#0), c_nationkey (#1), l_suppkey (#2), revenue (#3), s_suppkey (#4), s_nationkey (#5)",
       "joinOn" : "c_nationkey = s_nationkey AND l_suppkey = s_suppkey",
-      "operator-algorithm" : "auto",
+      "operator-algorithm" : "keyed-sort-merge-join",
       "condition": {
         "op": {
           "name": "AND",

@@ -51,7 +51,7 @@
     {
       "id": "2",
       "outputFields": "c_custkey (#0), o_orderkey (#1), o_custkey (#2), o_year (#3)",
-      "operator-algorithm" : "auto",
+      "operator-algorithm" : "keyed-sort-merge-join",
       "joinOn" : "c_custkey = o_custkey",
       "relOp": "LogicalJoin",
       "condition": {
@@ -203,7 +203,7 @@
       "id": "8",
       "joinOn" : "s_suppkey = l_suppkey",
       "outputFields": "o_year (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check (#4)",
-      "operator-algorithm" : "auto",
+      "operator-algorithm" : "keyed-sort-merge-join",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
