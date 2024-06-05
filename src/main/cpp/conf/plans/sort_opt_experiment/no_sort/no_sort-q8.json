@@ -128,7 +128,7 @@
       "id": "5",
       "joinOn" : "o_orderkey = l_orderkey",
       "outputFields": "o_year (#0), o_orderkey (#1), l_orderkey (#2), l_suppkey (#3), volume (#4)",
-      "operator-algorithm" : "auto",
+      "operator-algorithm" : "keyed-sort-merge-join",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
