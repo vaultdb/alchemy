@@ -26,7 +26,7 @@
       "id": "1",
       "relOp": "LogicalValues",
       "outputFields": "o_orderkey (#0), o_custkey (#1), o_year (#2)",
-      "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_custkey, o_orderkey",
+      "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_custkey",
       "dummy-tag": true,
       "type": [
         {
@@ -49,10 +49,6 @@
         {
           "field": 1,
           "direction": "ASCENDING"
-        },
-        {
-          "field": 0,
-          "direction": "ASCENDING"
         }
       ],
       "tuples": [],
@@ -61,7 +57,7 @@
     {
       "id": "2",
       "outputFields": "c_custkey (#0), o_orderkey (#1), o_custkey (#2), o_year (#3)",
-      "operator-algorithm" : "auto",
+      "operator-algorithm" : "keyed-sort-merge-join",
       "joinOn" : "c_custkey = o_custkey",
       "relOp": "LogicalJoin",
       "condition": {
@@ -144,7 +140,7 @@
       "id": "5",
       "joinOn" : "o_orderkey = l_orderkey",
       "outputFields": "o_year (#0), o_orderkey (#1), l_orderkey (#2), l_suppkey (#3), volume (#4)",
-      "operator-algorithm" : "auto",
+      "operator-algorithm" : "keyed-sort-merge-join",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
@@ -225,7 +221,7 @@
       "id": "8",
       "joinOn" : "s_suppkey = l_suppkey",
       "outputFields": "o_year (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check (#4)",
-      "operator-algorithm" : "auto",
+      "operator-algorithm" : "keyed-sort-merge-join",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
