@@ -30,9 +30,9 @@ QueryTable<B> *Project<B>::runSelf() {
         this->output_->cloneColumn(pos.second, src_table, pos.first);
     }
 
-    for(uint32_t i = 0; i < tuple_cnt; ++i) {
 
-        for(uint32_t j : exprs_to_exec_) {
+    for(uint32_t j : exprs_to_exec_) {
+        for(uint32_t i = 0; i < tuple_cnt; ++i) {
             Expression<B> *expression = expressions_.at(j);
             Field<B> v = expression->call(src_table, i);
             this->output_->setField(i, j, v);

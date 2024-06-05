@@ -522,16 +522,30 @@ namespace vaultdb {
 
             assert(src_table->getSchema().getField(src_col) == this->getSchema().getField(dst_col));
             // 1:1 copy
+            // if we're just copying whole pages, there are one of two paths if the source data are in memory and dirty:
+            // 1) Unpack dst page, copy src page to dst page, mark dst page dirty
+            // 2) Pack src page, mark src page as "not dirty", cp src page to dst page
+            // for #1, both will likely need re-packing in the long run and this will create churn in the cache.
+            // sidestep this by flushing and memcpying
             if(this->tuple_cnt_ == src_table->tuple_cnt_ && src_table->storageModel() == StorageModel::PACKED_COLUMN_STORE) {
                 int pages_to_clone = this->packed_buffer_pool_[dst_col].size();
                 PackedColumnTable *src = (PackedColumnTable *) src_table;
-                PageId src_pid = bpm_.getPageId(src->table_id_, src_col, 0, src->fields_per_wire_.at(src_col));
-                PageId  dst_pid = bpm_.getPageId(table_id_, dst_col, 0, fields_per_wire_.at(dst_col));
-                for(int i = 0; i < pages_to_clone; ++i) {
-                    bpm_.clonePage(src_pid, dst_pid);
-                    ++src_pid.page_idx_;
-                    ++dst_pid.page_idx_;
-                }
+                bpm_.flushColumn(src->table_id_, src_col);
+                packed_buffer_pool_[dst_col].resize(pages_to_clone, emp::OMPCPackedWire(bpm_.block_n_));
+                memcpy(packed_buffer_pool_[dst_col].data(), src->packed_buffer_pool_[src_col].data(), pages_to_clone * sizeof(OMPCPackedWire));
+//                packed_buffer_pool_[dst_col] = src->packed_buffer_pool_.at(src_col);
+
+//                OMPCPackedWire *src_wire = src->packed_buffer_pool_[src_col].data();
+//                OMPCPackedWire *dst_wire = packed_buffer_pool_[dst_col].data();
+//                memcpy(dst_wire, src_wire, pages_to_clone * sizeof(OMPCPackedWire));
+
+//                PageId src_pid = bpm_.getPageId(src->table_id_, src_col, 0, src->fields_per_wire_.at(src_col));
+//                PageId  dst_pid = bpm_.getPageId(table_id_, dst_col, 0, fields_per_wire_.at(dst_col));
+//                for(int i = 0; i < pages_to_clone; ++i) {
+//                    bpm_.clonePage(src_pid, dst_pid);
+//                    ++src_pid.page_idx_;
+//                    ++dst_pid.page_idx_;
+//                }
                 return;
             }
             // else
@@ -601,9 +615,8 @@ namespace vaultdb {
         }
 
         ~PackedColumnTable() {
-            // Flush pages in buffer pools
-            bpm_.removeUnpackedPagesByTable(this->table_id_);
-            bpm_.packed_buffer_pool_.erase(this->table_id_);
+            // Flush pages in buffer pool
+            bpm_.removeTable(this->table_id_);
         }
 
         PlainTable *revealInsecure(const int & party = emp::PUBLIC) override {

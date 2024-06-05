@@ -45,11 +45,14 @@ namespace vaultdb {
 
         void loadColumn(const int & table_id, const int & col_idx, const int & tuple_cnt,const  int & rows_per_page)  {}
 
+        void flushPage(PageId &pid) { }
+        void flushColumn(const int & table_id, const int & col_id) {}
+
         void removePageSequence(int table_id, int col_idx, int start_row_idx, int pages_to_remove, int rows_per_page) {}
 
         void addPageSequence(int table_id, int col_idx, int start_row_idx, int pages_to_add, int rows_per_page) {}
 
-        void removeUnpackedPagesByTable(int table_id) {}
+        void removeTable(int table_id) {}
 
         void markDirty(PageId &pid) {
         }
@@ -160,7 +163,7 @@ namespace vaultdb {
            if(reverse_position_map_.find(clock_hand_position_) == reverse_position_map_.end())  {
                int slot = clock_hand_position_;
                clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
-//               cout << "EvictPage initializing slot " << slot << endl;
+               //cout << "EvictPage initializing slot " << slot << endl;
                return slot;
            };
 
@@ -169,7 +172,7 @@ namespace vaultdb {
             PageId pid = reverse_position_map_[clock_hand_position_];
             pos = position_map_.at(pid);
 
-//            cout << "Evicting page " << pid << " at slot " << pos.slot_id_ << endl;
+            //cout << "Evicting page " << pid << " at slot " << pos.slot_id_ << endl;
             // first unpinned page
            while(pos.pinned_) {
                clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
@@ -200,17 +203,30 @@ namespace vaultdb {
      }
 
 
+     // TEMP
+     string printByteArray(const int8_t *bytes, const size_t &byte_cnt) {
+         stringstream  ss;
+         ss << "(";
+         for(int i = 0; i < byte_cnt; ++i) {
+             ss << (int) bytes[i];
+             if(i < (byte_cnt - 1)) ss << ", ";
+         }
+         ss << ")";
+         return ss.str();
+     }
+
         void loadPage(PageId &pid) {
 
             if(position_map_.find(pid) != position_map_.end()) {
                 return;
             }
 
-            OMPCPackedWire *src_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
+            OMPCPackedWire *src = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
+            //cout << "Load page reading from " <<  printByteArray((int8_t *) src, sizeof(OMPCPackedWire)) << '\n' << endl;
             int target_slot = evictPage();
-//            cout << "Loading page " << pid << " into " << target_slot << endl;
-            Bit *dst_ptr = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
-            emp_manager_->unpack((Bit *) src_ptr, dst_ptr, unpacked_page_size_bits_);
+            //cout << "Loading page " << pid << " into slot " << target_slot << endl;
+            Bit *dst = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
+            emp_manager_->unpack((Bit *) src, dst, unpacked_page_size_bits_);
 
             PositionMapEntry p(target_slot, true, false);
             position_map_[pid] = p;
@@ -226,14 +242,17 @@ namespace vaultdb {
            // mark dst_page as dirty
            if(position_map_.find(src_pid) != position_map_.end()
               && position_map_.at(src_pid).dirty_) {
-               emp::Bit *src_page_ptr = unpacked_buffer_pool_.data() + position_map_.at(src_pid).slot_id_ * unpacked_page_size_bits_;
+               //cout << "**Cloning in-memory page from slot " << position_map_[src_pid].slot_id_ << " for " << src_pid <<  '\n';
+               pinPage(src_pid);
+               emp::Bit *src_page = unpacked_buffer_pool_.data() + position_map_.at(src_pid).slot_id_ * unpacked_page_size_bits_;
                loadPage(dst_pid); // make sure dst page is loaded (if not already in buffer pool
-               emp::Bit *dst_page_ptr = unpacked_buffer_pool_.data() + position_map_.at(dst_pid).slot_id_ * unpacked_page_size_bits_;
-
-               memcpy(dst_page_ptr, src_page_ptr, unpacked_page_size_bits_);
+               emp::Bit *dst_page = unpacked_buffer_pool_.data() + position_map_.at(dst_pid).slot_id_ * unpacked_page_size_bits_;
+               //cout << "Cloning to slot " << position_map_[dst_pid].slot_id_ << " for " << dst_pid <<  '\n';
+               memcpy(dst_page, src_page, unpacked_page_size_bits_);
 
                position_map_.at(dst_pid).dirty_ = true;
-
+               unpinPage(src_pid);
+               unpinPage(dst_pid);
            }
            else {
                 emp::OMPCPackedWire *src_page_ptr = packed_buffer_pool_[src_pid.table_id_][src_pid.col_id_] + src_pid.page_idx_;
@@ -249,15 +268,10 @@ namespace vaultdb {
 
         inline void pinPage(PageId &pid) {
             position_map_.at(pid).pinned_ = true;
-            // if it is in the buffer pool queue, we need to skip it
         }
 
         inline void unpinPage(PageId &pid) {
-            // if we are toggling it from pinned to unpinned, then we need to add it to the eviction queue
-            if(position_map_[pid].pinned_) {
-                position_map_.at(pid).pinned_ = false;
-
-            }
+            position_map_.at(pid).pinned_ = false;
         }
 
         void loadColumn(const int & table_id, const int & col_idx, const int & tuple_cnt, const  int & rows_per_page) {
@@ -268,6 +282,27 @@ namespace vaultdb {
             for(int i = 0; i < page_cnt; ++i) {
                 loadPage(pid);
                 ++pid.page_idx_;
+            }
+        }
+
+        void flushPage(const PageId &pid) {
+            if(position_map_.find(pid) != position_map_.end() && position_map_.at(pid).dirty_) {
+
+                emp::Bit *src_ptr =  unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
+                emp::OMPCPackedWire *dst_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
+                assert(dst_ptr != nullptr);
+                emp_manager_->pack(src_ptr, (Bit *) dst_ptr, unpacked_page_size_bits_);
+                position_map_.at(pid).dirty_ = false;
+            }
+        }
+
+        // for use in cloneColumn
+        // flushes column to packed pages and marks them as not dirty
+        void flushColumn(const int & table_id, const int & col_id) {
+            for(auto pos = position_map_.begin(); pos != position_map_.end(); ++pos) {
+                if(pos->first.table_id_ == table_id && pos->first.col_id_ == col_id) { // flush it to packed pages
+                    flushPage(pos->first);
+                }
             }
         }
 
@@ -289,15 +324,21 @@ namespace vaultdb {
             }
         }
 
-        void removeUnpackedPagesByTable(int target_table_id) {
+        void removeTable(int target_table_id) {
             for (auto pos = position_map_.begin(); pos != position_map_.end(); ++pos) {
                 if (pos->first.table_id_ == target_table_id) {
                     PageId p = pos->first;
-                    // enqueue the slot for eviction
+                    // mark the slot for eviction
                     unpinPage(p);
+                    // this is only necessary when we have a table backed up by persistent storage
+                    // otherwise we have no way of accessing this temp table again
+                    // need a way to differentiate between these 2 cases
+                    //flushPage(p);
                 }
-
             }
+            // signal that the PackedColumnTable is no longer memory-resident
+            packed_buffer_pool_.erase(target_table_id);
+
         }
 
         // for use at the end of each unit test to clear out any references to tables that we are deleting

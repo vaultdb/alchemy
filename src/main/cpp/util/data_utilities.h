@@ -68,7 +68,7 @@ namespace vaultdb {
         static string printFirstBytes(vector<int8_t> &bytes, const int &byteCount);
 
         static string revealAndPrintFirstBits(Bit *bits, const int & bit_cnt) {
-            stringstream s;
+            std::stringstream s;
             for(int i = 0; i < bit_cnt; ++i) {
                 s << (bits[i].reveal() ? "1" : "0");
             }
