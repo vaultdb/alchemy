@@ -644,9 +644,88 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
             size_t nlj_cost = OperatorCostModel::operatorCost((SecureOperator *) nlj);
 
             auto join_key_idxs = smj->joinKeyIdxs();
+
+            bool lhs_sort_compatible = smj->sortCompatible(lhs);
+            bool rhs_sort_compatible = smj->sortCompatible(rhs);
+
             delete nlj;
             delete smj;
 
+            Operator<B> *lhs_sorter, *rhs_sorter;
+            SortDefinition lhs_sort, rhs_sort;
+
+            if(!rhs_sort_compatible){
+                int lhs_col_cnt = lhs->getOutputSchema().getFieldCount();
+                lhs_sort = lhs->getSortOrder();
+
+                for (int i = 0; i < join_key_idxs.size(); ++i) {
+                    int idx = join_key_idxs[i].second;
+                    // if lhs_sort is blank
+                    if(!lhs_sort.empty())
+                        rhs_sort.emplace_back(ColumnSort(idx - lhs_col_cnt, lhs_sort[i].second));
+                    else
+                        rhs_sort.emplace_back(ColumnSort(idx - lhs_col_cnt, SortDirection::ASCENDING));
+                }
+
+                rhs_sorter = new Sort<B>(rhs->clone(), rhs_sort);
+            }
+            if(!lhs_sort_compatible){
+                rhs_sort = rhs->getSortOrder();
+
+                for (int i = 0; i < join_key_idxs.size(); ++i) {
+                    int idx = join_key_idxs[i].first;
+                    if(!rhs_sort.empty())
+                        lhs_sort.emplace_back(ColumnSort(idx, rhs_sort[i].second));
+                    else
+                        lhs_sort.emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
+                }
+
+                lhs_sorter = new Sort<B>(lhs->clone(), lhs_sort);
+            }
+
+            if(!(lhs_sort_compatible && rhs_sort_compatible)){
+                Operator<B>* smj_presorted;
+
+                if(!lhs_sort_compatible && rhs_sort_compatible)
+                    smj_presorted = new KeyedSortMergeJoin<B>(lhs_sorter, rhs->clone(), foreign_key,
+                                                                   join_condition->clone());
+                else if(lhs_sort_compatible && !rhs_sort_compatible)
+                    smj_presorted = new KeyedSortMergeJoin<B>(lhs->clone(), rhs_sorter, foreign_key,
+                                                                   join_condition->clone());
+                else if(!lhs_sort_compatible && !rhs_sort_compatible)
+                    smj_presorted = new KeyedSortMergeJoin<B>(lhs_sorter, rhs_sorter, foreign_key,
+                                                                   join_condition->clone());
+
+                smj_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
+
+                string selected_join = (smj_cost < nlj_cost) ? "keyed-sort-merge-join" : "nested-loop-join";
+
+                log->write("Operator (" + std::to_string(operator_id) + "). " +
+                           "smj cost : " + std::to_string(smj_cost) +
+                           ", nlj cost : " + std::to_string(nlj_cost) +
+                           ", join type : " + selected_join, Level::DEBUG);
+
+                if (selected_join == "keyed-sort-merge-join") {
+                    if(!lhs_sort_compatible && rhs_sort_compatible) {
+                        lhs_sorter = new Sort<B>(lhs, lhs_sort);
+                        return new KeyedSortMergeJoin<B>(lhs_sorter, rhs, foreign_key,
+                                                                  join_condition->clone());
+                    }
+                    else if(lhs_sort_compatible && !rhs_sort_compatible) {
+                        rhs_sorter = new Sort<B>(rhs, rhs_sort);
+                        return new KeyedSortMergeJoin<B>(lhs, rhs_sorter, foreign_key,
+                                                                  join_condition->clone());
+                    }
+                    else if(!lhs_sort_compatible && !rhs_sort_compatible)
+                        lhs_sorter = new Sort<B>(lhs, lhs_sort);
+                        rhs_sorter = new Sort<B>(rhs, rhs_sort);
+                        return new KeyedSortMergeJoin<B>(lhs_sorter, rhs_sorter, foreign_key,
+                                                                  join_condition->clone());
+                }
+                else {
+                    return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition);
+                }
+            }
 
             string selected_join = (smj_cost < nlj_cost) ? "keyed-sort-merge-join" : "nested-loop-join";
 
