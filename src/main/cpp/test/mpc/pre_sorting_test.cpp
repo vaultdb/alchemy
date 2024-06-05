@@ -33,6 +33,7 @@ protected:
 
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
     void runPreSortTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
+    void runFullySortOptTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
     void runStubTest(string & sql_plan, string & json_plan, string & expected_query, SortDefinition & expected_sort, const string & unioned_db);
     int input_tuple_limit_ = -1;
@@ -187,6 +188,83 @@ PreSortingTest::runPreSortTest(const int &test_id, const string & test_name, con
     }
 }
 
+void
+PreSortingTest::runFullySortOptTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
+
+
+    this->initializeBitPacking(FLAGS_unioned_db);
+
+    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_unioned_db);
+    string local_db = db_name_;
+
+    // Gate count measurement
+    auto start_gates = manager_->andGateCount();
+
+    // Comm Cost measurement
+    auto start_comm_cost = manager_->getCommCost();
+
+    PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_unioned_db, expected_query, false, 0);
+    expected->order_by_ = expected_sort;
+
+    //ASSERT_TRUE(!expected->empty()); // want all tests to produce output
+
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/sort_opt_experiment/fully_sort_opt/fully_sort_opt-"  + test_name + ".json";
+
+    // Initialize memory measurement
+//    size_t initial_memory = Utilities::checkMemoryUtilization(true);
+
+    // Start measuring time
+    time_point<high_resolution_clock> startTime = clock_start();
+    clock_t secureStartClock = clock();
+
+    PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_, true);
+    SecureOperator *root = parser.getRoot();
+
+//    PlanOptimizer<Bit> optimizer(root, parser.getOperatorMap(), parser.getSupportOps(), parser.getInterestingSortOrders());
+//    root = optimizer.optimizeTree();
+
+//    BushyPlanEnumerator<Bit> enumerator(root, parser.getOperatorMap(), parser.getSupportOps(), parser.getInterestingSortOrders());
+//    enumerator.createBushyBalancedTree();
+    std::cout << root->printTree() << endl;
+
+    SecureTable *result = root->run();
+
+
+    // Measure CPU Time
+    double secureClockTicks = (double) (clock() - secureStartClock);
+    double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
+
+    // Measure Runtime
+    double duration = time_from(startTime) / 1e6;
+
+    cout << "Runtime: " << duration << " sec, CPU Time: " << secureClockTicksPerSecond << " sec, CPU clock ticks: " << secureClockTicks << ", CPU clock ticks per second: " << CLOCKS_PER_SEC << "\n";
+
+    auto end_gates = manager_->andGateCount();
+    float e2e_gates = (float) (end_gates - start_gates);
+    float cost_estimate = (float) root->planCost();
+    float relative_error = (fabs(e2e_gates - cost_estimate) / e2e_gates) * 100.0f;
+    cout << "End-to-end estimated gates: " << cost_estimate <<  ". observed gates: " << end_gates - start_gates << " gates, relative error (%)=" << relative_error << endl;
+
+    // Measure and print memory after execution
+//    size_t peak_memory = Utilities::checkMemoryUtilization(true);
+//    size_t memory_usage = peak_memory - initial_memory;
+//    cout << "Initial Memory: " << initial_memory << " bytes, Peak Memory After Execution: " << peak_memory << " bytes" << ", Memory Usage: " << memory_usage << " bytes" << endl;
+
+    // Comm Cost measurement
+    auto end_comm_cost = manager_->getCommCost();
+    double bandwidth = (end_comm_cost - start_comm_cost) / duration;  // Assuming 'duration' is the time taken for this communication in seconds
+    cout << "Bandwidth: " << bandwidth << " Bps" << endl;
+
+    if(FLAGS_validation) {
+        PlainTable *observed = result->reveal();
+
+        ASSERT_EQ(*expected, *observed);
+
+        delete observed;
+        delete expected;
+    }
+}
+
 
 string
 PreSortingTest::generateExpectedOutputQuery(const int &test_id, const SortDefinition &expected_sort, const string &db_name) {
@@ -216,6 +294,22 @@ runTest(1, "q1", expected_sort, FLAGS_unioned_db);
 
 }
 
+TEST_F(PreSortingTest, pre_sort_q1) {
+
+SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+runPreSortTest(1, "q1", expected_sort, FLAGS_unioned_db);
+
+}
+
+
+
+TEST_F(PreSortingTest, fully_sort_opt_q1) {
+
+SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+runFullySortOptTest(1, "q1", expected_sort, FLAGS_unioned_db);
+
+}
+
 
 TEST_F(PreSortingTest, no_sort_q3) {
 
@@ -225,6 +319,26 @@ SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
 runTest(3, "q3", expected_sort, FLAGS_unioned_db);
 }
 
+TEST_F(PreSortingTest, pre_sort_q3) {
+
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(1, SortDirection::DESCENDING),
+                                 ColumnSort(2, SortDirection::ASCENDING)};
+    runPreSortTest(3, "q3", expected_sort, FLAGS_unioned_db);
+}
+
+
+
+
+TEST_F(PreSortingTest, fully_sort_opt_q3) {
+
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(1, SortDirection::DESCENDING),
+                                 ColumnSort(2, SortDirection::ASCENDING)};
+    runFullySortOptTest(3, "q3", expected_sort, FLAGS_unioned_db);
+}
+
+
 
 TEST_F(PreSortingTest, no_sort_q5) {
 //input_tuple_limit_ = 1000;
@@ -233,12 +347,41 @@ SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
 runTest(5, "q5", expected_sort, FLAGS_unioned_db);
 }
 
+TEST_F(PreSortingTest, pre_sort_q5) {
+//input_tuple_limit_ = 1000;
+
+    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+    runPreSortTest(5, "q5", expected_sort, FLAGS_unioned_db);
+}
+
+
+TEST_F(PreSortingTest, fully_sort_opt_q5) {
+//input_tuple_limit_ = 1000;
+
+    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+    runFullySortOptTest(5, "q5", expected_sort, FLAGS_unioned_db);
+}
+
 
 TEST_F(PreSortingTest, no_sort_q8) {
 
 SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
 runTest(8, "q8", expected_sort, FLAGS_unioned_db);
 }
+
+TEST_F(PreSortingTest, pre_sort_q8) {
+
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+    runPreSortTest(8, "q8", expected_sort, FLAGS_unioned_db);
+}
+
+
+TEST_F(PreSortingTest, fully_sort_opt_q8) {
+
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+    runFullySortOptTest(8, "q8", expected_sort, FLAGS_unioned_db);
+}
+
 
 
 
@@ -249,6 +392,20 @@ runTest(9, "q9", expected_sort, FLAGS_unioned_db);
 
 }
 
+TEST_F(PreSortingTest, pre_sort_q9) {
+// $0 ASC, $1 DESC
+    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+    runPreSortTest(9, "q9", expected_sort, FLAGS_unioned_db);
+
+}
+
+
+TEST_F(PreSortingTest, fully_sort_opt_q9) {
+// $0 ASC, $1 DESC
+    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+    runFullySortOptTest(9, "q9", expected_sort, FLAGS_unioned_db);
+
+}
 
 
 
@@ -260,46 +417,6 @@ SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
 runTest(18, "q18", expected_sort, FLAGS_unioned_db);
 }
 
-TEST_F(PreSortingTest, pre_sort_q1) {
-
-SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-runPreSortTest(1, "q1", expected_sort, FLAGS_unioned_db);
-
-}
-
-
-TEST_F(PreSortingTest, pre_sort_q3) {
-
-    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                                 ColumnSort(1, SortDirection::DESCENDING),
-                                 ColumnSort(2, SortDirection::ASCENDING)};
-    runPreSortTest(3, "q3", expected_sort, FLAGS_unioned_db);
-}
-
-
-TEST_F(PreSortingTest, pre_sort_q5) {
-//input_tuple_limit_ = 1000;
-
-    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runPreSortTest(5, "q5", expected_sort, FLAGS_unioned_db);
-}
-
-
-TEST_F(PreSortingTest, pre_sort_q8) {
-
-    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runPreSortTest(8, "q8", expected_sort, FLAGS_unioned_db);
-}
-
-
-
-TEST_F(PreSortingTest, pre_sort_q9) {
-// $0 ASC, $1 DESC
-    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runPreSortTest(9, "q9", expected_sort, FLAGS_unioned_db);
-
-}
-
 
 
 
@@ -309,6 +426,16 @@ TEST_F(PreSortingTest, pre_sort_q18) {
                                  ColumnSort(4, SortDirection::DESCENDING),
                                  ColumnSort(3, SortDirection::ASCENDING)};
     runPreSortTest(18, "q18", expected_sort, FLAGS_unioned_db);
+}
+
+
+
+TEST_F(PreSortingTest, fully_sort_opt_q18) {
+// -1 ASC, $4 DESC, $3 ASC
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(4, SortDirection::DESCENDING),
+                                 ColumnSort(3, SortDirection::ASCENDING)};
+    runFullySortOptTest(18, "q18", expected_sort, FLAGS_unioned_db);
 }
 
 
