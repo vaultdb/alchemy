@@ -11,7 +11,7 @@
 
 namespace  vaultdb {
     template<typename B>
-    class KeyedSortMergeJoin : 
+    class KeyedSortMergeJoin :
 		public Join<B> {
 	public:
 
@@ -59,7 +59,7 @@ namespace  vaultdb {
         QuerySchema deriveAugmentedSchema() const;
         const vector<pair<uint32_t, uint32_t>> joinKeyIdxs() const { return join_idxs_; }
 
-		inline bool sortCompatible() {
+		inline bool sortCompatible() const{
             auto lhs_sort = this->lhs_child_->getSortOrder();
             auto rhs_sort = this->rhs_child_->getSortOrder();
 			auto lhs_schema = this->lhs_child_->getOutputSchema();
@@ -94,6 +94,20 @@ namespace  vaultdb {
                 }
             }
             return true;
+        }
+
+        // Override the getParameters method
+        string getParameters() const override {
+            string parameters = Join<B>::getParameters(); // Call the base class method
+
+            // Check the sortCompatible condition and append the relevant message
+            if (sortCompatible()) {
+                parameters += " - sortCompatible";
+            } else {
+                parameters += " - not sort compatible, need sort in smj";
+            }
+
+            return parameters;
         }
 
         bool operator==(const Operator<B> &other) const override {
