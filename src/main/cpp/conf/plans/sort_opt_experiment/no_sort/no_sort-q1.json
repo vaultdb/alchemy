@@ -3,7 +3,8 @@
     {
       "id": "0",
       "relOp": "LogicalValues",
-      "outputFields": "l_returnflag (#0), l_linestatus (#1),sum_qty (#2), sum_base_price (#3), sum_disc_price (#4), sum_charge (#5), avg_qty_sum (#6), avg_qty_cnt (#7), avg_price_sum (#8), avg_price_cnt(#9) avg_discount_sum (#10),avg_discount_cnt (#11), cnt (#12)",
+      "sql": "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice, l_extendedprice * (1 - l_discount) AS discount, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, l_discount, NOT l_shipdate <= DATE '1998-08-03' AS dummy_tag FROM lineitem",
+      "outputFields": "l_returnflag (#0), l_linestatus (#1), l_quantity (#2), l_extendedprice (#3), discount (#4), charge (#5), l_discount (#6)",
       "type": [
         {
           "type": "CHAR",
@@ -22,83 +23,35 @@
           "nullable": true,
           "precision": 19,
           "scale": 0,
-          "name": "sum_qty"
+          "name": "l_quantity"
         },
         {
           "type": "DECIMAL",
           "nullable": true,
           "precision": 19,
           "scale": 0,
-          "name": "sum_base_price"
+          "name": "l_extendedprice"
         },
         {
           "type": "DECIMAL",
           "nullable": true,
           "precision": 19,
           "scale": 0,
-          "name": "sum_disc_price"
+          "name": "$f4"
         },
         {
           "type": "DECIMAL",
           "nullable": true,
           "precision": 19,
           "scale": 0,
-          "name": "sum_charge"
+          "name": "$f5"
         },
         {
           "type": "DECIMAL",
           "nullable": true,
           "precision": 19,
           "scale": 0,
-          "name": "avg_qty_sum"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "avg_qty_cnt"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "avg_price_sum"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "avg_discount_sum"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "avg_discount_cnt"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "cnt"
-        }
-      ],
-      "sql" : "WITH output_domain AS (\n    SELECT  *\n    FROM (VALUES('R'::char(1), 'F'::char(1)), ('A', 'F'), ('N', 'F'), ('R', 'O'), ('A', 'O'), ('N', 'O')) AS li(l_returnflag, l_linestatus)\n    ORDER BY l_returnflag, l_linestatus),\n     partial_aggs AS (\n         SELECT l_returnflag, l_linestatus, SUM(l_quantity) sum_qty, SUM(l_extendedprice) sum_base_price,\n                SUM(l_extendedprice*(1-l_discount)) sum_disc_price, SUM(l_extendedprice*(1-l_discount)*(1+l_tax)) sum_charge,\n                SUM(l_quantity) avg_qty_sum, COUNT(l_quantity)::FLOAT4 avg_qty_cnt,\n                 SUM(l_extendedprice) avg_price_sum, COUNT(l_extendedprice)::FLOAT4 avg_price_cnt,\n                 SUM(l_discount) avg_discount_sum, COUNT(l_discount)::FLOAT4 avg_discount_cnt, COUNT(*) cnt\n         FROM lineitem\n         WHERE l_shipdate  <= date '1998-08-03'\n         GROUP BY l_returnflag, l_linestatus\n         ORDER BY l_returnflag, l_linestatus)\nSELECT o.l_returnflag, o.l_linestatus, COALESCE(sum_qty, 0) sum_qty, COALESCE(sum_base_price, 0) sum_base_price, COALESCE(sum_disc_price, 0) sum_disc_price, COALESCE(sum_charge, 0) sum_charge, COALESCE(avg_qty_sum, 0) avg_qty_sum, COALESCE(avg_qty_cnt, 0) avg_qty_cnt,  COALESCE(avg_price_sum, 0) avg_price_sum, COALESCE(avg_price_cnt, 0) avg_price_cnt,  COALESCE(avg_discount_sum, 0) avg_discount_sum, COALESCE(avg_discount_cnt, 0) avg_discount_cnt,  COALESCE(cnt, 0)::BIGINT cnt, CASE WHEN p.l_returnflag IS NULL THEN true ELSE false END AS dummy_tag\nFROM output_domain o LEFT JOIN partial_aggs p ON o.l_returnflag = p.l_returnflag AND o.l_linestatus = p.l_linestatus\nORDER BY o.l_returnflag, o.l_linestatus",
-      "dummy_tag": true,
-      "party" : 1,
-      "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING"
-        },
-        {
-          "field": 1,
-          "direction": "ASCENDING"
+          "name": "l_discount"
         }
       ],
       "tuples": [],
@@ -106,398 +59,155 @@
     },
     {
       "id": "1",
-      "relOp": "LogicalValues",
-      "outputFields": "l_returnflag (#0), l_linestatus (#1),sum_qty (#2), sum_base_price (#3), sum_disc_price (#4), sum_charge (#5), avg_qty_sum (#6), avg_qty_cnt (#7), avg_price_sum (#8), avg_price_cnt(#9) avg_discount_sum (#10),avg_discount_cnt (#11), cnt (#12)",
-      "type": [
+      "relOp": "LogicalAggregate",
+      "outputFields": "l_returnflag (#0),  l_linestatus (#1),  sum_qty (#2), sum_base_price (#3), sum_disc_price (#4),  sum_charge (#5), avg_qty (#6), avg_price (#7), avg_disc (#8), count_order (#9)",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "group": [
+        0,
+        1
+      ],
+      "aggs": [
         {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 1,
-          "name": "l_returnflag"
-        },
-        {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 1,
-          "name": "l_linestatus"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            2
+          ],
           "name": "sum_qty"
         },
         {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            3
+          ],
           "name": "sum_base_price"
         },
         {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            4
+          ],
           "name": "sum_disc_price"
         },
         {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            5
+          ],
           "name": "sum_charge"
         },
         {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "avg_qty_sum"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "avg_qty_cnt"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "avg_price_sum"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "avg_discount_sum"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "avg_discount_cnt"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "cnt"
-        }
-      ],
-      "sql" : "WITH output_domain AS (\n    SELECT  *\n    FROM (VALUES('R'::char(1), 'F'::char(1)), ('A', 'F'), ('N', 'F'), ('R', 'O'), ('A', 'O'), ('N', 'O')) AS li(l_returnflag, l_linestatus)\n    ORDER BY l_returnflag, l_linestatus),\n     partial_aggs AS (\n         SELECT l_returnflag, l_linestatus, SUM(l_quantity) sum_qty, SUM(l_extendedprice) sum_base_price,\n                SUM(l_extendedprice*(1-l_discount)) sum_disc_price, SUM(l_extendedprice*(1-l_discount)*(1+l_tax)) sum_charge,\n                SUM(l_quantity) avg_qty_sum, COUNT(l_quantity)::FLOAT4 avg_qty_cnt,\n                 SUM(l_extendedprice) avg_price_sum, COUNT(l_extendedprice)::FLOAT4 avg_price_cnt,\n                 SUM(l_discount) avg_discount_sum, COUNT(l_discount)::FLOAT4 avg_discount_cnt, COUNT(*) cnt\n         FROM lineitem\n         WHERE l_shipdate  <= date '1998-08-03'\n         GROUP BY l_returnflag, l_linestatus\n         ORDER BY l_returnflag, l_linestatus)\nSELECT o.l_returnflag, o.l_linestatus, COALESCE(sum_qty, 0) sum_qty, COALESCE(sum_base_price, 0) sum_base_price, COALESCE(sum_disc_price, 0) sum_disc_price, COALESCE(sum_charge, 0) sum_charge, COALESCE(avg_qty_sum, 0) avg_qty_sum, COALESCE(avg_qty_cnt, 0) avg_qty_cnt,  COALESCE(avg_price_sum, 0) avg_price_sum, COALESCE(avg_price_cnt, 0) avg_price_cnt,  COALESCE(avg_discount_sum, 0) avg_discount_sum, COALESCE(avg_discount_cnt, 0) avg_discount_cnt,  COALESCE(cnt, 0)::BIGINT cnt, CASE WHEN p.l_returnflag IS NULL THEN true ELSE false END AS dummy_tag\nFROM output_domain o LEFT JOIN partial_aggs p ON o.l_returnflag = p.l_returnflag AND o.l_linestatus = p.l_linestatus\nORDER BY o.l_returnflag, o.l_linestatus",
-      "dummy_tag": false,
-      "party" : 2,
-      "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING"
-        },
-        {
-          "field": 1,
-          "direction": "ASCENDING"
-        }
-      ],
-      "tuples": [],
-      "inputs": []
-    },
-    {
-      "id": "2",
-      "relOp": "LogicalJoin",
-      "joinOn": "No-op, keys aligned in SQL setup",
-      "operator-algorithm" : "merge-join",
-      "outputFields":  "l_returnflag (#0), l_linestatus (#1),sum_qty (#2), sum_base_price (#3), sum_disc_price (#4), sum_charge (#5), avg_qty_sum (#6), avg_qty_cnt (#7), avg_price_sum (#8), avg_price_cnt(#9) avg_discount_sum (#10),avg_discount_cnt (#11), cnt (#12), l_returnflag (#13), l_linestatus (#14),sum_qty (#15), sum_base_price (#16), sum_disc_price (#17), sum_charge (#18), avg_qty_sum (#19), avg_qty_cnt (#20), avg_price_sum (#21), avg_price_cnt(#22) avg_discount_sum (#23),avg_discount_cnt (#24), cnt (#25)",
-      "condition": {
-        "no-op": true
-      },
-      "joinType": "inner",
-      "dummy-handling" : "OR",
-      "inputs": [
-        "0",
-        "1"
-      ]
-    },
-    {
-      "id": "3",
-      "relOp": "LogicalProject",
-      "outputFields": "l_returnflag (#0),  l_linestatus (#1),  sum_qty (#2), sum_base_price (#3), sum_disc_price (#4),  sum_charge (#5), avg_qty (#6), avg_price (#7), avg_disc (#8), count_order (#9)",
-      "inputFields":  "l_returnflag (#0),  l_linestatus (#1), sum_qty (#2), sum_base_price (#3), sum_disc_price (#4), sum_charge (#5), avg_qty_sum (#6), avg_qty_cnt (#7), avg_price_sum (#8), avg_price_cnt (#9) avg_discount_sum (#10),avg_discount_cnt (#11), cnt (#12), l_returnflag (#13), l_linestatus (#14),sum_qty (#15), sum_base_price (#16), sum_disc_price (#17), sum_charge (#18), avg_qty_sum (#19), avg_qty_cnt (#20), avg_price_sum (#21), avg_price_cnt(#22) avg_discount_sum (#23),avg_discount_cnt (#24), cnt (#25)",
-      "fields": [
-        "l_returnflag",
-        "l_linestatus",
-        "sum_qty",
-        "sum_base_price",
-        "sum_disc_price",
-        "sum_charge",
-        "avg_qty",
-        "avg_price",
-        "avg_disc",
-        "count_order"
-      ],
-      "exprs": [
-        {
-          "input": 0,
-          "name": "$0"
-        },
-        {
-          "input": 1,
-          "name": "$1"
-        },
-        {
-          "op": {
-            "name": "+",
-            "kind": "PLUS",
-            "syntax": "BINARY"
+          "agg": {
+            "name": "AVG",
+            "kind": "AVG",
+            "syntax": "FUNCTION"
           },
-          "operands": [
-            {
-              "input": 2,
-              "name": "$2"
-            },
-            {
-              "input": 15,
-              "name": "$15"
-            }
-          ]
-        },
-        {
-          "op": {
-            "name": "+",
-            "kind": "PLUS",
-            "syntax": "BINARY"
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
           },
+          "distinct": false,
           "operands": [
-            {
-              "input": 3,
-              "name": "$3"
-            },
-            {
-              "input": 16,
-              "name": "$16"
-            }
-          ]
+            2
+          ],
+          "name": "avg_qty"
         },
         {
-          "op": {
-            "name": "+",
-            "kind": "PLUS",
-            "syntax": "BINARY"
+          "agg": {
+            "name": "AVG",
+            "kind": "AVG",
+            "syntax": "FUNCTION"
           },
-          "operands": [
-            {
-              "input": 4,
-              "name": "$4"
-            },
-            {
-              "input": 17,
-              "name": "$17"
-            }
-          ]
-        },
-        {
-          "op": {
-            "name": "+",
-            "kind": "PLUS",
-            "syntax": "BINARY"
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
           },
+          "distinct": false,
           "operands": [
-            {
-              "input": 5,
-              "name": "$5"
-            },
-            {
-              "input": 18,
-              "name": "$18"
-            }
-          ]
+            3
+          ],
+          "name": "avg_price"
         },
         {
-          "op": {
-            "name": "/",
-            "kind": "DIVIDE",
-            "syntax": "BINARY"
+          "agg": {
+            "name": "AVG",
+            "kind": "AVG",
+            "syntax": "FUNCTION"
           },
-          "operands": [
-            {
-              "op": {
-                "name": "+",
-                "kind": "PLUS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 6,
-                  "name": "$6",
-                  "input_name": "avg_qty_sum"
-                },
-                {
-                  "input": 19,
-                  "name": "$19",
-                  "input_name": "avg_qty_sum"
-                }
-              ]
-            },
-            {
-              "op": {
-                "name": "+",
-                "kind": "PLUS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 7,
-                  "name": "$7",
-                  "input_name": "avg_qty_cnt"
-                },
-                {
-                  "input": 20,
-                  "name": "20",
-                  "input_name": "avg_qty_cnt"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "op": {
-            "name": "/",
-            "kind": "DIVIDE",
-            "syntax": "BINARY"
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
           },
+          "distinct": false,
           "operands": [
-            {
-              "op": {
-                "name": "+",
-                "kind": "PLUS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 8,
-                  "name": "$8",
-                  "input_name": "avg_price_sum"
-                },
-                {
-                  "input": 21,
-                  "name": "21",
-                  "input_name": "avg_price_sum"
-                }
-              ]
-            },
-            {
-              "op": {
-                "name": "+",
-                "kind": "PLUS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 9,
-                  "name": "$9",
-                  "input_name": "avg_price_cnt"
-                },
-                {
-                  "input": 22,
-                  "name": "22",
-                  "input_name": "avg_price_cnt"
-                }
-              ]
-            }
-          ]
+            6
+          ],
+          "name": "avg_disc"
         },
         {
-          "op": {
-            "name": "/",
-            "kind": "DIVIDE",
-            "syntax": "BINARY"
+          "agg": {
+            "name": "COUNT",
+            "kind": "COUNT",
+            "syntax": "FUNCTION_STAR"
           },
-          "operands": [
-            {
-              "op": {
-                "name": "+",
-                "kind": "PLUS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 10,
-                  "name": "$10",
-                  "input_name": "avg_discount_sum"
-                },
-                {
-                  "input": 23,
-                  "name": "$23",
-                  "input_name": "avg_discount_sum"
-                }
-              ]
-            },
-            {
-              "op": {
-                "name": "+",
-                "kind": "PLUS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 11,
-                  "name": "$11",
-                  "input_name": "avg_discount_cnt"
-                },
-                {
-                  "input": 24,
-                  "name": "$24",
-                  "input_name": "avg_discount_cnt"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "op": {
-            "name": "+",
-            "kind": "PLUS",
-            "syntax": "BINARY"
+          "type": {
+            "type": "BIGINT",
+            "nullable": false
           },
-          "operands": [
-            {
-              "input": 12,
-              "name": "$12",
-              "input_name": "cnt"
-            },
-            {
-              "input": 25,
-              "name": "$25",
-              "input_name": "cnt"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "4",
-      "relOp": "LogicalSort",
-      "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        },
-        {
-          "field": 1,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
+          "distinct": false,
+          "operands": [],
+          "name": "count_order"
         }
       ]
     }
   ]
 }
-
-
-
