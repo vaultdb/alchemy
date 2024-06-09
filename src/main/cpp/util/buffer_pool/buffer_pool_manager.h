@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/zk.h")
+#if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/emp-zk.h")
 namespace vaultdb {
     class BufferPoolManager {
     public:
