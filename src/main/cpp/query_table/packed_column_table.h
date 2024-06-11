@@ -3,7 +3,7 @@
 #include "query_table.h"
 #include "query_table/secure_tuple.h"
 
-#if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/zk.h")
+#if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/emp-zk.h")
 // only supports Bit for now
 namespace vaultdb {
     class PackedColumnTable : public QueryTable<Bit> {
