@@ -94,7 +94,7 @@
       "id": "4",
       "relOp": "LogicalValues",
       "outputFields" : "L2.l_orderkey (#0), L2.l_quantity (#1)",
-      "sql": "SELECT L2.l_orderkey, L2.l_quantity FROM lineitem L2",
+      "sql": "SELECT L2.l_orderkey, L2.l_quantity FROM lineitem L2 ORDER BY L2.l_orderkey",
       "type": [
         {
           "type": "INTEGER",
@@ -107,6 +107,12 @@
           "precision": 19,
           "scale": 0,
           "name": "L2.l_quantity"
+        }
+      ],
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
         }
       ],
       "tuples": [],
