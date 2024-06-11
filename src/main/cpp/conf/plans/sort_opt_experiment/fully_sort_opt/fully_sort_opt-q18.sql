@@ -1,26 +1,16 @@
--- 0, collation: (0 ASC), party: 1
-WITH all_keys AS (SELECT o_orderkey AS ak FROM order_keys),
-     sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag
-                  FROM lineitem
-                  GROUP BY l_orderkey
-                  ORDER BY l_orderkey)
-SELECT ak, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag
-FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = ak
-ORDER BY ak;
--- 1, collation: (0 ASC), party: 2
-WITH all_keys AS (SELECT o_orderkey AS ak FROM order_keys),
-     sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag
-                  FROM lineitem
-                  GROUP BY l_orderkey
-                  ORDER BY l_orderkey)
-SELECT ak, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag
-FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = ak
-ORDER BY ak;
--- 5, collation: (0 ASC)
+-- 0, collation: (0 ASC)
+SELECT l_orderkey, l_quantity
+FROM lineitem
+ORDER BY l_orderkey
+-- 4, collation: (0 ASC)
+SELECT L2.l_orderkey, L2.l_quantity
+FROM lineitem L2
+ORDER BY L2.l_orderkey
+-- 8, collation: (0 ASC)
 SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate
 FROM orders
 ORDER BY o_orderkey
--- 8
+-- 12, collation: (0 ASC)
 SELECT c_custkey, c_name
 FROM customer
 ORDER BY c_custkey
