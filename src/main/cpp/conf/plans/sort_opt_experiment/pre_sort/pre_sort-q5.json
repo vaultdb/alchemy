@@ -316,14 +316,7 @@
     {
       "id": "10",
       "relOp": "LogicalAggregate",
-      "operator-algorithm" : "auto",
-      "effective-collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
-      ],
+      "operator-algorithm" : "sort-merge-aggregate",
       "cardBound" : 5,
       "group": [
         0

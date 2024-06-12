@@ -205,14 +205,7 @@
       "id": "7",
       "relOp": "LogicalAggregate",
       "cardinality-bound" : 24000,
-      "operator-algorithm" : "auto",
-      "effective-collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
-      ],
+      "operator-algorithm" : "sort-merge-aggregate",
       "group": [
         0,
         1,
