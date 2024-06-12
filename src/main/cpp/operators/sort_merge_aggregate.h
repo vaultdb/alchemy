@@ -33,12 +33,23 @@ namespace vaultdb {
             this->getChild(0)->updateCollation();
 
             SortDefinition  child_sort = this->getChild(0)->getSortOrder();
-            assert(this->sortCompatible(child_sort));
 
-            if(!this->effective_sort_.empty()) {
-                this->sort_definition_ = this->effective_sort_;
-                return;
+            if (!child_sort.empty()) {
+                if (child_sort[0].first == -1) {
+                    // Check if child_sort.size() == effective_sort.size() + 1 and compare the second entry onwards of child_sort with effective_sort
+                    assert(child_sort.size() == this->effective_sort_.size() + 1 &&
+                        std::equal(child_sort.begin() + 1, child_sort.end(), this->effective_sort_.begin()));
+                }
+                else if (child_sort.size() == this->effective_sort_.size())
+                    assert(std::equal(child_sort.begin(), child_sort.end(), this->effective_sort_.begin()));
+                else
+                    assert(this->sortCompatible(child_sort));
             }
+
+//            if(!this->effective_sort_.empty()) {
+//                this->sort_definition_ = this->effective_sort_;
+//                return;
+//            }
 
             SortDefinition  output_sort_def;
             // map sort order to that of child

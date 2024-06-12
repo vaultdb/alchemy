@@ -513,25 +513,50 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
 
             bool sortNeededFlag = false;
 
-            // if sort is needed, and current order is not the same with group by orders
-            if (!SortMergeAggregate<B>::sortCompatible(child_sort, group_by_ordinals)) {
-                sortNeededFlag = true;
-                // insert sort
-                for (uint32_t idx: group_by_ordinals) {
-                    group_by_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
+            bool condition_met = false;
+            if (!child_sort.empty()) {
+                if (child_sort[0].first == -1) {
+                    // Check if child_sort.size() == effective_sort.size() + 1 and compare the second entry onwards of child_sort with effective_sort
+                    if (child_sort.size() == effective_sort.size() + 1 &&
+                        std::equal(child_sort.begin() + 1, child_sort.end(), effective_sort.begin())) {
+                        condition_met = true;
+                    }
                 }
-                Sort<B> *sort_before_sma = new Sort<B>(child->clone(), group_by_sort);
-                sma = new SortMergeAggregate<B>(sort_before_sma->clone(), group_by_ordinals, aggregators,
-                                                effective_sort, cardinality_bound);
-                sort_vector_.push_back(sort_before_sma);
-                sma->effective_sort_ = effective_sort;
+                else if (child_sort.size() == effective_sort.size() &&
+                         std::equal(child_sort.begin(), child_sort.end(), effective_sort.begin())) {
+                    condition_met = true;
+                }
             }
-            // if sort is not needed
-            else {
+
+            // if child sort is equal with effective_sort, we don't need to sort before SMA
+            if(condition_met){
                 sma = new SortMergeAggregate<B>(child->clone(), group_by_ordinals, aggregators, effective_sort,
                                                 cardinality_bound);
                 sort_vector_.push_back(nullptr);
                 sma->effective_sort_ = effective_sort;
+            }
+            // Else, needs to check if this is the same with group by orders
+            else {
+                // if sort is needed, and current order is not the same with group by orders
+                if (!SortMergeAggregate<B>::sortCompatible(child_sort, group_by_ordinals)) {
+                    sortNeededFlag = true;
+                    // insert sort
+                    for (uint32_t idx: group_by_ordinals) {
+                        group_by_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
+                    }
+                    Sort<B> *sort_before_sma = new Sort<B>(child->clone(), group_by_sort);
+                    sma = new SortMergeAggregate<B>(sort_before_sma->clone(), group_by_ordinals, aggregators,
+                                                    effective_sort, cardinality_bound);
+                    sort_vector_.push_back(sort_before_sma);
+                    sma->effective_sort_ = effective_sort;
+                }
+                // if sort is not needed
+                else {
+                    sma = new SortMergeAggregate<B>(child->clone(), group_by_ordinals, aggregators, effective_sort,
+                                                    cardinality_bound);
+                    sort_vector_.push_back(nullptr);
+                    sma->effective_sort_ = effective_sort;
+                }
             }
 
             // create cloned nla
