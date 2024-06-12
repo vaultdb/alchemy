@@ -138,6 +138,7 @@ namespace vaultdb {
             if(src_ordinal == -1) {
                 found = true; // dummy tag automatically carries over
                 dst_sort.push_back(sort);
+                continue;
             }
             for(ProjectionMapping mapping : column_mappings_) {
                 if(mapping.first == src_ordinal) {
@@ -146,9 +147,9 @@ namespace vaultdb {
                     break;
                 }
             } // end search for mapping
-            if(!found) {
-                break;
-            } // broke the sequence of mappings
+//            if(!found) {
+//                break;
+//            } // broke the sequence of mappings
         }
 
         this->sort_definition_ = dst_sort;
