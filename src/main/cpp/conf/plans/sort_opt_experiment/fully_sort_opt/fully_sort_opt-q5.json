@@ -116,17 +116,6 @@
     },
     {
       "id": "4",
-      "relOp": "LogicalSort",
-      "collation": [
-        {
-          "field": 2,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
-      ]
-    },
-    {
-      "id": "5",
       "relOp": "LogicalValues",
       "outputFields": "l_orderkey (#0), l_suppkey (#1), revenue (#2)",
       "sql": "SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem ORDER BY l_orderkey",
@@ -160,11 +149,11 @@
       "inputs": []
     },
     {
-      "id": "6",
+      "id": "5",
       "relOp": "LogicalJoin",
       "joinOn" : "l_orderkey = o_orderkey",
       "outputFields": "n_name (#0), c_nationkey (#1), o_orderkey (#2), l_orderkey (#3), l_suppkey (#4), revenue (#5)",
-      "operator-algorithm" : "keyed-sort-merge-join",
+      "operator-algorithm" : "cost-keyed-sort-merge-join",
       "condition": {
         "op": {
           "name": "=",
@@ -185,12 +174,12 @@
       "joinType": "inner",
       "foreignKey": 1,
       "inputs": [
-        "4",
-        "5"
+        "3",
+        "4"
       ]
     },
     {
-      "id": "7",
+      "id": "6",
       "relOp": "LogicalProject",
       "outputFields": "n_name (#0), c_nationkey (#1), l_suppkey (#2), revenue (#3)",
       "fields": [
@@ -219,23 +208,7 @@
       ]
     },
     {
-      "id": "8",
-      "relOp": "LogicalSort",
-      "collation": [
-        {
-          "field": 1,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        },
-        {
-          "field": 2,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
-      ]
-    },
-    {
-      "id": "9",
+      "id": "7",
       "outputFields": "s_suppkey (#0), s_nationkey (#1)",
       "relOp": "LogicalValues",
       "sql": "SELECT t2.s_suppkey, t2.s_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT s_suppkey, s_nationkey FROM supplier) AS t2 ON t1.n_nationkey = t2.s_nationkey ORDER BY t2.s_nationkey, t2.s_suppkey",
@@ -266,11 +239,11 @@
       "inputs": []
     },
     {
-      "id": "10",
+      "id": "8",
       "relOp": "LogicalJoin",
       "outputFields": "n_name (#0), c_nationkey (#1), l_suppkey (#2), revenue (#3), s_suppkey (#4), s_nationkey (#5)",
       "joinOn" : "c_nationkey = s_nationkey AND l_suppkey = s_suppkey",
-      "operator-algorithm" : "keyed-sort-merge-join",
+      "operator-algorithm" : "cost-keyed-sort-merge-join",
       "condition": {
         "op": {
           "name": "AND",
@@ -317,12 +290,12 @@
       "joinType": "inner",
       "foreignKey": 0,
       "inputs": [
-        "8",
-        "9"
+        "6",
+        "7"
       ]
     },
     {
-      "id": "11",
+      "id": "9",
       "relOp": "LogicalProject",
       "outputFields": "n_name (#0), revenue (#1)",
       "fields": [
@@ -341,7 +314,7 @@
       ]
     },
     {
-      "id": "12",
+      "id": "10",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "auto",
       "effective-collation": [
@@ -377,7 +350,7 @@
       ]
     },
     {
-      "id": "13",
+      "id": "11",
       "relOp": "LogicalSort",
       "collation": [
         {

@@ -105,17 +105,6 @@
     },
     {
       "id": "4",
-      "relOp": "LogicalSort",
-      "collation": [
-        {
-          "field": 1,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
-      ]
-    },
-    {
-      "id": "5",
       "relOp": "LogicalValues",
       "sql": "SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume, CASE WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE ELSE TRUE END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_orderkey",
       "dummy-tag": true,
@@ -148,10 +137,10 @@
       "inputs": []
     },
     {
-      "id": "6",
+      "id": "5",
       "joinOn" : "o_orderkey = l_orderkey",
       "outputFields": "o_year (#0), o_orderkey (#1), l_orderkey (#2), l_suppkey (#3), volume (#4)",
-      "operator-algorithm" : "keyed-sort-merge-join",
+      "operator-algorithm" : "cost-keyed-sort-merge-join",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
@@ -173,12 +162,12 @@
       "joinType": "inner",
       "foreignKey": 1,
       "inputs": [
-        "4",
-        "5"
+        "3",
+        "4"
       ]
     },
     {
-      "id": "7",
+      "id": "6",
       "relOp": "LogicalProject",
       "outputFields": "o_year (#0), l_suppkey (#1), volume (#2)",
       "fields": [
@@ -202,18 +191,7 @@
       ]
     },
     {
-      "id": "8",
-      "relOp": "LogicalSort",
-      "collation": [
-        {
-          "field": 1,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
-      ]
-    },
-    {
-      "id": "9",
+      "id": "7",
       "relOp": "LogicalValues",
       "outputFields": "s_suppkey (#0), nation_check (#1)",
       "sql": "SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey ORDER BY s_suppkey",
@@ -240,10 +218,10 @@
       "inputs": []
     },
     {
-      "id": "10",
+      "id": "8",
       "joinOn" : "s_suppkey = l_suppkey",
       "outputFields": "o_year (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check (#4)",
-      "operator-algorithm" : "keyed-sort-merge-join",
+      "operator-algorithm" : "cost-keyed-sort-merge-join",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
@@ -265,12 +243,12 @@
       "joinType": "inner",
       "foreignKey": 0,
       "inputs": [
-        "8",
-        "9"
+        "6",
+        "7"
       ]
     },
     {
-      "id": "11",
+      "id": "9",
       "inputFields": "o_year (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check (#4)",
       "outputFields" : "o_year, nation_volume, volume",
       "relOp": "LogicalProject",
@@ -315,7 +293,7 @@
       ]
     },
     {
-      "id": "12",
+      "id": "10",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "auto",
       "cardinality-bound" : 2,
@@ -369,7 +347,7 @@
       ]
     },
     {
-      "id": "13",
+      "id": "11",
       "relOp": "LogicalProject",
       "fields": [
         "o_year",
@@ -400,7 +378,7 @@
       ]
     },
     {
-      "id": "14",
+      "id": "12",
       "relOp": "LogicalSort",
       "collation": [
         {
