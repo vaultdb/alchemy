@@ -8,15 +8,15 @@ ORDER BY c_custkey
 SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag
 FROM orders
 ORDER BY o_custkey, o_orderkey
--- 4, collation: (0 ASC)
+-- 4, collation: (1 ASC)
 SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume,
        CASE
            WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE
            ELSE TRUE
            END AS dummy_tag
 FROM lineitem LEFT JOIN part ON p_partkey = l_partkey
-ORDER BY l_orderkey
--- 7, collation: (0 ASC)
+ORDER BY l_suppkey
+-- 5, collation: (0 ASC)
 SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check
 FROM supplier JOIN nation ON n_nationkey = s_nationkey
 ORDER BY s_suppkey

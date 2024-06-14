@@ -126,8 +126,83 @@
     },
     {
       "id": "5",
+      "relOp": "LogicalValues",
+      "outputFields": "s_suppkey (#0), nation_check (#1)",
+      "sql": "SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey",
+      "dummy-tag": false,
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "s_suppkey"
+        },
+        {
+          "type": "FLOAT",
+          "nullable": false,
+          "name": "nation_check"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "6",
+      "joinOn" : "l_suppkey = s_suppkey",
+      "outputFields": "l_orderkey (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check (#4)",
+      "operator-algorithm" : "keyed-sort-merge-join",
+      "relOp": "LogicalJoin",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 0,
+      "inputs": [
+        "4",
+        "5"
+      ]
+    },
+    {
+      "id": "7",
+      "relOp": "LogicalProject",
+      "outputFields": "l_orderkey (#0), volume (#1), nation_check (#2)",
+      "fields": [
+        "l_orderkey",
+        "volume",
+        "nation_check"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        }
+      ]
+    },
+    {
+      "id": "8",
       "joinOn" : "o_orderkey = l_orderkey",
-      "outputFields": "o_year (#0), o_orderkey (#1), l_orderkey (#2), l_suppkey (#3), volume (#4)",
+      "outputFields": "o_year (#0), o_orderkey (#1), l_orderkey (#2), volume (#3), nation_check (#4)",
       "operator-algorithm" : "keyed-sort-merge-join",
       "relOp": "LogicalJoin",
       "condition": {
@@ -151,87 +226,12 @@
       "foreignKey": 1,
       "inputs": [
         "3",
-        "4"
-      ]
-    },
-    {
-      "id": "6",
-      "relOp": "LogicalProject",
-      "outputFields": "o_year (#0), l_suppkey (#1), volume (#2)",
-      "fields": [
-        "o_year",
-        "l_suppkey",
-        "volume"
-      ],
-      "exprs": [
-        {
-          "input": 0,
-          "name": "$0"
-        },
-        {
-          "input": 3,
-          "name": "$3"
-        },
-        {
-          "input": 4,
-          "name": "$4"
-        }
-      ]
-    },
-    {
-      "id": "7",
-      "relOp": "LogicalValues",
-      "outputFields": "s_suppkey (#0), nation_check (#1)",
-      "sql": "SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey",
-      "dummy-tag": false,
-      "type": [
-        {
-          "type": "INTEGER",
-          "nullable": false,
-          "name": "s_suppkey"
-        },
-        {
-          "type": "FLOAT",
-          "nullable": false,
-          "name": "nation_check"
-        }
-      ],
-      "tuples": [],
-      "inputs": []
-    },
-    {
-      "id": "8",
-      "joinOn" : "s_suppkey = l_suppkey",
-      "outputFields": "o_year (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check (#4)",
-      "operator-algorithm" : "keyed-sort-merge-join",
-      "relOp": "LogicalJoin",
-      "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 1,
-            "name": "$1"
-          },
-          {
-            "input": 3,
-            "name": "$3"
-          }
-        ]
-      },
-      "joinType": "inner",
-      "foreignKey": 0,
-      "inputs": [
-        "6",
         "7"
       ]
     },
     {
       "id": "9",
-      "inputFields": "o_year (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check (#4)",
+      "inputFields": "o_year (#0), o_orderkey (#1), l_orderkey (#2), volume (#3), nation_check (#4)",
       "outputFields" : "o_year, nation_volume, volume",
       "relOp": "LogicalProject",
       "fields": [
@@ -256,8 +256,8 @@
               "name": "$4"
             },
             {
-              "input":  2,
-              "name": "$2"
+              "input":  3,
+              "name": "$3"
             },
             {
               "literal": 0.0,
@@ -269,8 +269,8 @@
           ]
         },
         {
-          "input": 2,
-          "name": "$2"
+          "input": 3,
+          "name": "$3"
         }
       ]
     },

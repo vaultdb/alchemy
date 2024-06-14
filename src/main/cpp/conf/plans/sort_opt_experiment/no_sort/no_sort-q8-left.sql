@@ -13,6 +13,6 @@ SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume,
            ELSE TRUE
            END AS dummy_tag
 FROM lineitem LEFT JOIN part ON p_partkey = l_partkey
--- 5
+-- 7
 SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check
 FROM supplier JOIN nation ON n_nationkey = s_nationkey

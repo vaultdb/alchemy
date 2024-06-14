@@ -132,6 +132,65 @@
     },
     {
       "id": "5",
+      "relOp": "LogicalJoin",
+      "joinOn" : "l_orderkey = o_orderkey",
+      "outputFields": "n_name (#0), c_nationkey (#1), o_orderkey (#2), l_orderkey (#3), l_suppkey (#4), revenue (#5)",
+      "operator-algorithm" : "keyed-sort-merge-join",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 1,
+      "inputs": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalProject",
+      "outputFields": "n_name (#0), c_nationkey (#1), l_suppkey (#2), revenue (#3)",
+      "fields": [
+        "n_name",
+        "c_nationkey",
+        "l_suppkey",
+        "revenue"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        }
+      ]
+    },
+    {
+      "id": "7",
       "outputFields": "s_suppkey (#0), s_nationkey (#1)",
       "relOp": "LogicalValues",
       "sql": "SELECT t2.s_suppkey, t2.s_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT s_suppkey, s_nationkey FROM supplier) AS t2 ON t1.n_nationkey = t2.s_nationkey",
@@ -152,64 +211,10 @@
       "inputs": []
     },
     {
-      "id": "6",
-      "relOp": "LogicalJoin",
-      "joinOn" : "l_suppkey = s_suppkey",
-      "outputFields": "l_orderkey (#0), l_suppkey (#1), revenue (#2), s_suppkey (#3), s_nationkey (#4)",
-      "operator-algorithm" : "keyed-sort-merge-join",
-      "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 1,
-            "name": "$1"
-          },
-          {
-            "input": 3,
-            "name": "$3"
-          }
-        ]
-      },
-      "joinType": "inner",
-      "foreignKey": 0,
-      "inputs": [
-        "4",
-        "5"
-      ]
-    },
-    {
-      "id": "7",
-      "relOp": "LogicalProject",
-      "outputFields": "l_orderkey (#0), revenue (#1), s_nationkey (#2)",
-      "fields": [
-        "l_orderkey",
-        "revenue",
-        "s_nationkey"
-      ],
-      "exprs": [
-        {
-          "input": 0,
-          "name": "$0"
-        },
-        {
-          "input": 2,
-          "name": "$2"
-        },
-        {
-          "input": 4,
-          "name": "$4"
-        }
-      ]
-    },
-    {
       "id": "8",
       "relOp": "LogicalJoin",
-      "outputFields": "n_name (#0), c_nationkey (#1), o_orderkey (#2), l_orderkey (#3), revenue (#4), s_nationkey (#5)",
-      "joinOn" : "c_nationkey = s_nationkey AND o_orderkey = l_orderkey",
+      "outputFields": "n_name (#0), c_nationkey (#1), l_suppkey (#2), revenue (#3), s_suppkey (#4), s_nationkey (#5)",
+      "joinOn" : "c_nationkey = s_nationkey AND l_suppkey = s_suppkey",
       "operator-algorithm" : "keyed-sort-merge-join",
       "condition": {
         "op": {
@@ -247,17 +252,17 @@
                 "name": "$2"
               },
               {
-                "input": 3,
-                "name": "$3"
+                "input": 4,
+                "name": "$4"
               }
             ]
           }
         ]
       },
       "joinType": "inner",
-      "foreignKey": 1,
+      "foreignKey": 0,
       "inputs": [
-        "3",
+        "6",
         "7"
       ]
     },
@@ -275,8 +280,8 @@
           "name": "$0"
         },
         {
-          "input": 4,
-          "name": "$4"
+          "input": 3,
+          "name": "$3"
         }
       ]
     },
