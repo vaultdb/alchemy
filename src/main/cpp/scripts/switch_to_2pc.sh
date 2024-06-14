@@ -21,3 +21,6 @@ unlink cmake-build-debug-local/libemp-tool.dylib
 unlink cmake-build-debug-local/libemp-zk.dylib
 ln -s /usr/local/lib/libemp-zk.dylib cmake-build-debug-local/
 ln -s /usr/local/lib/libemp-tool.dylib cmake-build-debug-local/
+
+ln -s /usr/local/lib/libemp-zk.dylib cmake-build-debug/bin/
+ln -s /usr/local/lib/libemp-tool.dylib cmake-build-debug/bin/
