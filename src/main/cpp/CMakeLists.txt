@@ -159,3 +159,7 @@ add_executable(generate_enrich_data test/support/generate_enrich_data.cpp)
 target_link_libraries(${NAME} ${OPENSSL_LIBRARIES}  ${EMP_LIBRARIES}  ${EMP_ZK_LIBRARY}  ${PQXX_LIBRARY}  ${GFLAGS_LIBRARY}   ${Boost_LIBRARIES} Boost::date_time )
 
 install(TARGETS ${NAME} DESTINATION ${CMAKE_SOURCE_DIR}/lib)
+
+
+add_executable(run_query util/run_query.cpp)
+target_link_libraries(run_query vaultdb-emp)
