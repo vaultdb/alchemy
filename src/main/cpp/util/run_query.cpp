@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     cout << "Parsing query plan from " << plan_file << endl;
     PlanParser<Bit> plan_reader(db_name, plan_file, 0, true);
     SecureOperator *root = plan_reader.getRoot();
-    cout << "Running plan: " << root->printTree() << endl;
+    cout << "Running plan: \n" << root->printTree() << endl;
 
     auto start = std::chrono::high_resolution_clock::now();
     SecureTable *res = root->run();
