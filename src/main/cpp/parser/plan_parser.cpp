@@ -439,6 +439,15 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     std::vector<int32_t> group_by_ordinals;
     vector<ScalarAggregateDefinition> aggregators;
     int cardinality_bound = -1;
+    bool check_sort = true;
+
+    if(aggregate_json.count("checkSort") > 0) {
+        check_sort= aggregate_json.get_child("checkSort").template get_value<bool>();
+    }
+    else if(aggregate_json.count("check-sort") > 0) {
+        check_sort= aggregate_json.get_child("check-sort").template get_value<bool>();
+    }
+
 
     if(aggregate_json.count("group") > 0) {
         ptree group_by = aggregate_json.get_child("group.");
@@ -511,7 +520,8 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
             SortDefinition child_sort = child->getSortOrder();
             SortDefinition group_by_sort;
 
-            bool sortNeededFlag = false;
+            bool sort_needed = false;
+
 
             bool condition_met = false;
             if (!child_sort.empty()) {
@@ -538,8 +548,8 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
             // Else, needs to check if this is the same with group by orders
             else {
                 // if sort is needed, and current order is not the same with group by orders
-                if (!SortMergeAggregate<B>::sortCompatible(child_sort, group_by_ordinals)) {
-                    sortNeededFlag = true;
+                if (!SortMergeAggregate<B>::sortCompatible(child_sort, group_by_ordinals) && check_sort) {
+                    sort_needed = true;
                     // insert sort
                     for (uint32_t idx: group_by_ordinals) {
                         group_by_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
@@ -583,7 +593,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
             delete sma;
 
             if (selected_agg == "sort-merge-aggregate") {
-                if(sortNeededFlag){
+                if(sort_needed){
                     Sort<B> *sort_before_sma = new Sort<B>(child, group_by_sort);
                     return new SortMergeAggregate<B>(sort_before_sma, group_by_ordinals, aggregators,
                                                 effective_sort, cardinality_bound);
@@ -602,12 +612,13 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
             return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, effective_sort, cardinality_bound);
 
         // default to SMA
-        if (!GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals, effective_sort)) {
+        if (check_sort && !GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals, effective_sort)) {
             // insert sort
             SortDefinition sma_sort;
             for (uint32_t idx: group_by_ordinals) {
                 sma_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
             }
+
             child = new Sort<B>(child, sma_sort);
             support_ops_.template emplace_back(child);
         }
