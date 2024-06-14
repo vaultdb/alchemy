@@ -85,13 +85,23 @@ namespace  vaultdb {
             if(child_sort.size() < join_idxs_.size())
                 return false;
 
+            int j = 0;
             for(int i = 0; i < join_idxs_.size(); ++i) {
-                if(lhs_child && child_sort[i].first != join_idxs_[i].first)  {
+                if(lhs_child && child_sort[j].first == -1){
+                    j++;
+                    continue;
+                }
+                else if(!lhs_child && (child_sort[j].first + lhs_schema_cols == -1)){
+                    j++;
+                    continue;
+                }
+                if(lhs_child && child_sort[j].first != join_idxs_[i].first)  {
                     return false;
                 }
-                if(!lhs_child && (child_sort[i].first + lhs_schema_cols != join_idxs_[i].second)) {
+                if(!lhs_child && (child_sort[j].first + lhs_schema_cols != join_idxs_[i].second)) {
                     return false;
                 }
+                j++;
             }
             return true;
         }
