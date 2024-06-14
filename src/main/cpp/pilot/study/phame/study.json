@@ -11,7 +11,7 @@
   "tables": [
      {
        "name": "phame_cohort_counts",
-       "schema": "(description:varchar(42), count:int64, site_id:int32)",
+       "schema": "(description:varchar(42), count:int64)",
        "input_parties": [0, 1, 2, 3]
     },
     {
