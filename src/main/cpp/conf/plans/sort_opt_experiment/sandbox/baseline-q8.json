@@ -13,12 +13,6 @@
           "name": "c_custkey"
         }
       ],
-      "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING"
-        }
-      ],
       "tuples": [],
       "inputs": []
     },

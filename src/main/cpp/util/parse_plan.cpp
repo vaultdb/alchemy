@@ -26,11 +26,11 @@ int main(int argc, char **argv) {
     string plan_json = Utilities::getCurrentWorkingDirectory() + "/" + argv[2];
 
 
-    cout << "Parsing \n" << plan_json << endl;
+    cout << "Parsing " << plan_json << endl;
 
     PlanParser<bool> plan_reader(db_name, plan_json, -1, true);
     PlainOperator *root = plan_reader.getRoot();
 
-    cout << "Parsed plan: " << root->printTree() << endl;
+    cout << "Parsed plan: \n" << root->printTree() << endl;
 
 }
