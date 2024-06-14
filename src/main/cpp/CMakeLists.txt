@@ -163,3 +163,6 @@ install(TARGETS ${NAME} DESTINATION ${CMAKE_SOURCE_DIR}/lib)
 
 add_executable(run_query util/run_query.cpp)
 target_link_libraries(run_query vaultdb-emp)
+
+add_executable(parse_plan util/parse_plan.cpp)
+target_link_libraries(parse_plan vaultdb-emp)
