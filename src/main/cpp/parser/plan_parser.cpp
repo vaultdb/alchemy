@@ -824,54 +824,73 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                 lhs_sorter = new Sort<B>(lhs->clone(), lhs_sort);
             }
 
+            std::cout << "Operator (" + std::to_string(operator_id) + "). " +
+                         "smj cost : " + std::to_string(smj_cost) +
+                         ", smj presorted cost : ";
+
             if(!(lhs_sort_compatible && rhs_sort_compatible)) {
                 Operator<B> *smj_presorted;
 
                 if (!lhs_sort_compatible && rhs_sort_compatible) {
+                    // TODO : HERE THERE ARE SOME ISSUE, BECAUSE FOR THE SORT OPT BLOCK
+                    // NEED TO CONSIDER THAT LHS/RHS IS INPUT AND SORTED, THEN IT HAS MORE COST THAN INPUT WITH NO SORTED.
+                    // BUT ITS HARD TO COMPARE WITH NO SORTED ONE
                     smj_presorted = new KeyedSortMergeJoin<B>(lhs_sorter, rhs->clone(), foreign_key,
                                                               join_condition->clone());
                     smj_presorted_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
-                    smj_presorted_cost += OperatorCostModel::operatorCost((SecureOperator *) lhs_sorter);
+                    std::cout << std::to_string(smj_presorted_cost) + "(smj cost) + " ;
+                    size_t lhs_sort_cost = OperatorCostModel::operatorCost((SecureOperator *) lhs_sorter);
+                    smj_presorted_cost += lhs_sort_cost;
+                    std::cout << std::to_string(lhs_sort_cost) + "(lhs sort cost) = ";
                 } else if (lhs_sort_compatible && !rhs_sort_compatible) {
                     smj_presorted = new KeyedSortMergeJoin<B>(lhs->clone(), rhs_sorter, foreign_key,
                                                               join_condition->clone());
                     smj_presorted_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
-                    smj_presorted_cost += OperatorCostModel::operatorCost((SecureOperator *) rhs_sorter);
+                    std::cout << std::to_string(smj_presorted_cost) + "(smj cost) + " ;
+                    size_t rhs_sort_cost = OperatorCostModel::operatorCost((SecureOperator *) rhs_sorter);
+                    smj_presorted_cost += rhs_sort_cost;
+                    std::cout << std::to_string(rhs_sort_cost) + "(rhs sort cost) = ";
                 } else if (!lhs_sort_compatible && !rhs_sort_compatible) {
                     smj_presorted = new KeyedSortMergeJoin<B>(lhs_sorter, rhs_sorter, foreign_key,
                                                           join_condition->clone());
                     smj_presorted_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
-                    smj_presorted_cost += OperatorCostModel::operatorCost((SecureOperator *) rhs_sorter);
-                    smj_presorted_cost += OperatorCostModel::operatorCost((SecureOperator *) lhs_sorter);
+                    std::cout << std::to_string(smj_presorted_cost) + "(smj cost) + " ;
+                    size_t lhs_sort_cost = OperatorCostModel::operatorCost((SecureOperator *) lhs_sorter);
+                    size_t rhs_sort_cost = OperatorCostModel::operatorCost((SecureOperator *) rhs_sorter);
+                    smj_presorted_cost += lhs_sort_cost;
+                    smj_presorted_cost += rhs_sort_cost;
+                    std::cout << std::to_string(lhs_sort_cost) + "(lhs sort cost) + "
+                    + std::to_string(rhs_sort_cost) + "(rhs sort cost) = ";
                 }
-
-
 
                 string selected_join = (smj_cost < smj_presorted_cost) ? "keyed-sort-merge-join" : "cost-keyed-sort-merge-join";
 
-                std::cout << "Operator (" + std::to_string(operator_id) + "). " +
-                           "smj cost : " + std::to_string(smj_cost) +
-                           ", smj presorted cost : " + std::to_string(smj_presorted_cost) +
-                           ", join type : " + selected_join << endl;
+                std::cout << std::to_string(smj_presorted_cost) +
+                           ", join type : " + selected_join;
 
                 if (selected_join == "cost-keyed-sort-merge-join") {
                     if(!lhs_sort_compatible && rhs_sort_compatible) {
+                        std::cout << ", lhs not sort compatible, add sort to lhs, rhs sort compatible\n";
                         lhs_sorter = new Sort<B>(lhs, lhs_sort);
                         return new KeyedSortMergeJoin<B>(lhs_sorter, rhs, foreign_key,
                                                          join_condition->clone());
                     }
                     else if(lhs_sort_compatible && !rhs_sort_compatible) {
+                        std::cout << ", rhs not sort compatible, add sort to rhs, lhs sort compatible\n";
                         rhs_sorter = new Sort<B>(rhs, rhs_sort);
                         return new KeyedSortMergeJoin<B>(lhs, rhs_sorter, foreign_key,
                                                          join_condition->clone());
                     }
-                    else if(!lhs_sort_compatible && !rhs_sort_compatible)
+                    else if(!lhs_sort_compatible && !rhs_sort_compatible) {
+                        std::cout << ", lhs, rhs both not sort compatible, add sort to lhs, rhs\n";
                         lhs_sorter = new Sort<B>(lhs, lhs_sort);
-                    rhs_sorter = new Sort<B>(rhs, rhs_sort);
-                    return new KeyedSortMergeJoin<B>(lhs_sorter, rhs_sorter, foreign_key,
-                                                     join_condition->clone());
+                        rhs_sorter = new Sort<B>(rhs, rhs_sort);
+                        return new KeyedSortMergeJoin<B>(lhs_sorter, rhs_sorter, foreign_key,
+                                                         join_condition->clone());
+                    }
                 }
                 else {
+                    std::cout << endl;
                     return new KeyedSortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
                 }
             }

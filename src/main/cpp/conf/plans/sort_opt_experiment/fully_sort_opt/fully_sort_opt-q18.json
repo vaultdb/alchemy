@@ -224,9 +224,20 @@
     },
     {
       "id": "8",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 2,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        }
+      ]
+    },
+    {
+      "id": "9",
       "relOp": "LogicalJoin",
       "joinOn": "l_orderkey = o_orderkey",
-      "operator-algorithm" : "cost-keyed-sort-merge-join",
+      "operator-algorithm" : "keyed-sort-merge-join",
       "outputFields": "l_orderkey (#0), c_name (#1), c_custkey (#2), o_orderkey (#3), o_orderdate (#4), o_totalprice (#5)",
       "condition": {
         "op": {
@@ -249,11 +260,11 @@
       "foreignKey": 0,
       "inputs": [
         "3",
-        "7"
+        "8"
       ]
     },
     {
-      "id": "9",
+      "id": "10",
       "relOp": "LogicalProject",
       "inputFields": "c_name (#0), c_custkey (#1), o_orderkey (#2), o_orderdate (#3), o_totalprice (#4)",
       "fields": [
@@ -287,7 +298,18 @@
       ]
     },
     {
-      "id": "10",
+      "id": "11",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 2,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        }
+      ]
+    },
+    {
+      "id": "12",
       "relOp": "LogicalValues",
       "outputFields" : "L2.l_orderkey (#0), L2.l_quantity (#1)",
       "sql": "SELECT L2.l_orderkey, L2.l_quantity FROM lineitem L2 ORDER BY L2.l_orderkey",
@@ -315,10 +337,10 @@
       "inputs": []
     },
     {
-      "id": "11",
+      "id": "13",
       "relOp": "LogicalJoin",
       "joinOn": "o_orderkey = L2.l_orderkey",
-      "operator-algorithm" : "cost-keyed-sort-merge-join",
+      "operator-algorithm" : "keyed-sort-merge-join",
       "outputFields": "c_name (#0), c_custkey (#1), o_orderkey (#2), o_orderdate (#3), o_totalprice (#4), L2.l_orderkey (#5), L2.l_quantity (#6), ",
       "condition": {
         "op": {
@@ -340,12 +362,12 @@
       "joinType": "inner",
       "foreignKey": 1,
       "inputs": [
-        "9",
-        "10"
+        "11",
+        "12"
       ]
     },
     {
-      "id": "12",
+      "id": "14",
       "relOp": "LogicalProject",
       "fields": [
         "c_name",
@@ -383,9 +405,18 @@
       ]
     },
     {
-      "id": "13",
+      "id": "15",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "sort-merge-aggregate",
+      "check-sort": false,
+      "note": "Sort is all functionally dependent on o_orderkey, sort on (dummy_tag, o_orderkey) is ok",
+      "effective-collation": [
+        {
+          "field": 2,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        }
+      ],
       "group": [
         0,
         1,
@@ -415,7 +446,7 @@
       ]
     },
     {
-      "id": "14",
+      "id": "16",
       "relOp": "LogicalSort",
       "collation": [
         {

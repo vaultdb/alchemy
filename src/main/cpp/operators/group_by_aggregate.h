@@ -54,6 +54,11 @@ namespace vaultdb {
                 return false;
 
             if(!effective_sort.empty()) {
+                // Case that child sort has -1 dummy tag sorted on
+                size_t input_idx = 0;
+                if(input_sort[input_idx].first == -1)
+                    input_idx++;
+
                 for(size_t idx = 0; idx < col_cnt; ++idx) {
                     // ASC || DESC does not matter here
                     // effective_sort is output sort
@@ -68,9 +73,10 @@ namespace vaultdb {
 
                     if(in_col_idx == -1) return false; // sort col must be in group_by
 
-                    if(in_col_idx != input_sort[idx].first) {
+                    if(in_col_idx != input_sort[input_idx].first) {
                         return false;
                     }
+                    input_idx++;
                 }
                 return true;
             } // end effective sort case
