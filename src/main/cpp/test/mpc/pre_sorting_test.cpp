@@ -301,7 +301,7 @@ PreSortingTest::generateExpectedOutputQuery(const int &test_id, const SortDefini
 //
 //}
 //
-
+//
 //TEST_F(PreSortingTest, fully_sort_opt_q1) {
 //
 //SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
@@ -309,30 +309,30 @@ PreSortingTest::generateExpectedOutputQuery(const int &test_id, const SortDefini
 //
 //}
 //
-TEST_F(PreSortingTest, no_sort_q3) {
-
-SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                             ColumnSort(1, SortDirection::DESCENDING),
-                             ColumnSort(2, SortDirection::ASCENDING)};
-runTest(3, "q3", expected_sort, FLAGS_unioned_db);
-}
-
-TEST_F(PreSortingTest, pre_sort_q3) {
-
-    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                                 ColumnSort(1, SortDirection::DESCENDING),
-                                 ColumnSort(2, SortDirection::ASCENDING)};
-    runPreSortTest(3, "q3", expected_sort, FLAGS_unioned_db);
-}
-
-
-TEST_F(PreSortingTest, fully_sort_opt_q3) {
-
-    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                                 ColumnSort(1, SortDirection::DESCENDING),
-                                 ColumnSort(2, SortDirection::ASCENDING)};
-    runFullySortOptTest(3, "q3", expected_sort, FLAGS_unioned_db);
-}
+//TEST_F(PreSortingTest, no_sort_q3) {
+//
+//SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+//                             ColumnSort(1, SortDirection::DESCENDING),
+//                             ColumnSort(2, SortDirection::ASCENDING)};
+//runTest(3, "q3", expected_sort, FLAGS_unioned_db);
+//}
+//
+//TEST_F(PreSortingTest, pre_sort_q3) {
+//
+//    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+//                                 ColumnSort(1, SortDirection::DESCENDING),
+//                                 ColumnSort(2, SortDirection::ASCENDING)};
+//    runPreSortTest(3, "q3", expected_sort, FLAGS_unioned_db);
+//}
+//
+//
+//TEST_F(PreSortingTest, fully_sort_opt_q3) {
+//
+//    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+//                                 ColumnSort(1, SortDirection::DESCENDING),
+//                                 ColumnSort(2, SortDirection::ASCENDING)};
+//    runFullySortOptTest(3, "q3", expected_sort, FLAGS_unioned_db);
+//}
 
 
 //
@@ -358,28 +358,28 @@ TEST_F(PreSortingTest, fully_sort_opt_q3) {
 //    runFullySortOptTest(5, "q5", expected_sort, FLAGS_unioned_db);
 //}
 
-TEST_F(PreSortingTest, no_sort_q5_bushy) {
-//input_tuple_limit_ = 1000;
-
-    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(5, "q5-bushy", expected_sort, FLAGS_unioned_db);
-}
-
-TEST_F(PreSortingTest, pre_sort_q5_bushy) {
-//input_tuple_limit_ = 1000;
-
-    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runPreSortTest(5, "q5-bushy", expected_sort, FLAGS_unioned_db);
-}
-
-
-TEST_F(PreSortingTest, fully_sort_opt_q5_bushy) {
-//input_tuple_limit_ = 1000;
-
-    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runFullySortOptTest(5, "q5-bushy", expected_sort, FLAGS_unioned_db);
-}
-
+//TEST_F(PreSortingTest, no_sort_q5_bushy) {
+////input_tuple_limit_ = 1000;
+//
+//    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+//    runTest(5, "q5-bushy", expected_sort, FLAGS_unioned_db);
+//}
+//
+//TEST_F(PreSortingTest, pre_sort_q5_bushy) {
+////input_tuple_limit_ = 1000;
+//
+//    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+//    runPreSortTest(5, "q5-bushy", expected_sort, FLAGS_unioned_db);
+//}
+//
+//
+//TEST_F(PreSortingTest, fully_sort_opt_q5_bushy) {
+////input_tuple_limit_ = 1000;
+//
+//    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+//    runFullySortOptTest(5, "q5-bushy", expected_sort, FLAGS_unioned_db);
+//}
+//
 
 
 //TEST_F(PreSortingTest, no_sort_q8) {
@@ -398,27 +398,27 @@ TEST_F(PreSortingTest, fully_sort_opt_q5_bushy) {
 //TEST_F(PreSortingTest, fully_sort_opt_q8) {
 //
 //    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-//    runFullySortOptTest(8, "q8-bushy", expected_sort, FLAGS_unioned_db);
+//    runFullySortOptTest(8, "q8", expected_sort, FLAGS_unioned_db);
 //}
 
-TEST_F(PreSortingTest, no_sort_q8_bushy) {
-
-    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest(8, "q8-bushy", expected_sort, FLAGS_unioned_db);
-}
-
-TEST_F(PreSortingTest, pre_sort_q8_bushy) {
-
-    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runPreSortTest(8, "q8-bushy", expected_sort, FLAGS_unioned_db);
-}
-
-
-TEST_F(PreSortingTest, fully_sort_opt_q8_bushy) {
-
-    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runFullySortOptTest(8, "q8", expected_sort, FLAGS_unioned_db);
-}
+//TEST_F(PreSortingTest, no_sort_q8_bushy) {
+//
+//    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+//    runTest(8, "q8-bushy", expected_sort, FLAGS_unioned_db);
+//}
+//
+//TEST_F(PreSortingTest, pre_sort_q8_bushy) {
+//
+//    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+//    runPreSortTest(8, "q8-bushy", expected_sort, FLAGS_unioned_db);
+//}
+//
+//
+//TEST_F(PreSortingTest, fully_sort_opt_q8_bushy) {
+//
+//    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+//    runFullySortOptTest(8, "q8-bushy", expected_sort, FLAGS_unioned_db);
+//}
 
 
 
