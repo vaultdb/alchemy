@@ -47,16 +47,6 @@
           "name": "ps_supplycost"
         }
       ],
-      "collation": [
-        {
-          "field": 1,
-          "direction": "ASCENDING"
-        },
-        {
-          "field": 0,
-          "direction": "ASCENDING"
-        }
-      ],
       "tuples": [],
       "inputs": []
     },
