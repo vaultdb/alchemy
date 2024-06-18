@@ -58,9 +58,10 @@ int main(int argc, char **argv) {
         std::ofstream pat_file, dx_file;
         string pat_filename = party_path + "/phame_demographic.csv";
         string dx_filename = party_path + "/phame_diagnosis.csv";
-        cout << "Writing to " << pat_filename << "\n   and " << dx_filename << "\n";
         pat_file.open(pat_filename, ios::out);
         dx_file.open(dx_filename, ios::out);
+
+        cout << "Writing to " << pat_filename << "\n   and " << dx_filename << "\n";
 
         if(!pat_file.is_open() ) {
             std::cout << "Failed to open patient file: " << pat_filename << std::endl;
@@ -68,12 +69,12 @@ int main(int argc, char **argv) {
         }
 
         for(int j = 0; j < tuple_cnt; ++j) {
-              PatientTuple p = GeneratePhameDataNParties::generatePatientTuple(j);
-              pat_file << p.toString() << std::endl;
-              if(rand() % 100 >= DX_RATE) {
-                    DxTuple dx = GeneratePhameDataNParties::generateDxTuple(p);
-                    dx_file << dx.toString() << std::endl;
-              }
+            PatientTuple p = GeneratePhameDataNParties::generatePatientTuple(j, i);
+            pat_file << p.toString() << std::endl;
+            if(rand() % 100 >= DX_RATE) {
+                DxTuple dx = GeneratePhameDataNParties::generateDxTuple(p);
+                dx_file << dx.toString() << std::endl;
+            }
         }
         pat_file.close();
         dx_file.close();
@@ -87,12 +88,11 @@ void GeneratePhameDataNParties::writeSchemaFile(const string &dst_filename, cons
     schema_file.close();
 }
 
-vector<PatientTuple> GeneratePhameDataNParties::generatePatientTuples(const int &patient_cnt) {
+vector<PatientTuple> GeneratePhameDataNParties::generatePatientTuples(const int &site_id, const int &patient_cnt) {
     vector<PatientTuple> output;
     for(int i = 0; i < patient_cnt; ++i) {
-        PatientTuple patient = generatePatientTuple(i);
+        PatientTuple patient = generatePatientTuple(i, site_id);
         output.push_back(patient);
     }
     return output;
 }
-

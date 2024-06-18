@@ -55,15 +55,15 @@ namespace vaultdb {
 
         void insertTable(const string & table_name, SecureTable *src) {
 
-            if(secure_tables_.find(table_name) == secure_tables_.end()
-            && schemas_.find(table_name) == schemas_.end()) {
+            if(secure_tables_.find(table_name) == secure_tables_.end() && schemas_.find(table_name) == schemas_.end()) {
                 putSecureTable(table_name, src);
                 return;
             }
 
             SecureTable *dst = getSecureTable(table_name);
-
+            // confirm we are inserting a table that matches the expected schema
             assert(dst->getSchema() == src->getSchema());
+
             if(dst->empty()) {
                 putSecureTable(table_name, src);
             }
