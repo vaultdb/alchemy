@@ -1,6 +1,6 @@
 #!/bin/bash
 
-bash pilot/test/generate-and-load-phame-data.sh 4 100
+bash  pilot/test/generate-and-load-phame-test-data.sh 4 100
 
 make -j4 catalyst
 

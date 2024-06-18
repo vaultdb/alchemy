@@ -69,10 +69,10 @@ FROM (            ------------<------------      Specify Site Name
     SELECT 'Male - Age betwn >70' as Attribute, COUNT(DISTINCT patid) n, site_id  FROM phame_demographic WHERE gender = 'M' AND AGE_CAT = '6'  GROUP BY site_id
     ) a;
 
-\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 0) TO 'pilot/secret_shares/input/0/phame_cohort_counts.csv' WITH DELIMITER ',';
-\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 1) TO 'pilot/secret_shares/input/1/phame_cohort_counts.csv' WITH DELIMITER ',';
-\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 2) TO 'pilot/secret_shares/input/2/phame_cohort_counts.csv' WITH DELIMITER ',';
-\copy (SELECT * FROM phame_cohort_counts WHERE site_id = 3) TO 'pilot/secret_shares/input/3/phame_cohort_counts.csv' WITH DELIMITER ',';
+\copy (SELECT Attribute, n FROM phame_cohort_counts WHERE site_id = 0) TO 'pilot/secret_shares/input/0/phame_cohort_counts.csv' WITH DELIMITER ',';
+\copy (SELECT Attribute, n FROM phame_cohort_counts WHERE site_id = 1) TO 'pilot/secret_shares/input/1/phame_cohort_counts.csv' WITH DELIMITER ',';
+\copy (SELECT Attribute, n FROM phame_cohort_counts WHERE site_id = 2) TO 'pilot/secret_shares/input/2/phame_cohort_counts.csv' WITH DELIMITER ',';
+\copy (SELECT Attribute, n FROM phame_cohort_counts WHERE site_id = 3) TO 'pilot/secret_shares/input/3/phame_cohort_counts.csv' WITH DELIMITER ',';
 
 -- generate expected results
 \copy (SELECT attribute, SUM(n) FROM phame_cohort_counts GROUP BY attribute ORDER BY attribute) TO 'pilot/study/phame/expected/phame_cohort_counts.csv' WITH DELIMITER ',';
