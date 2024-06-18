@@ -46,16 +46,17 @@ struct PatientTuple {
     std::string zip;
     char payer_primary;
     char payer_secondary;
-   int site_id;
+    // JMR removing site_id to match protocol distributed to sites
+    //   int site_id;
 
     string toString() const {
         std::stringstream s;
-        s << patid << "," << age_cat << "," << gender << "," << race << "," << ethnicity << "," << zip << "," << payer_primary << "," << payer_secondary << "," << site_id;
+        s << patid << "," << age_cat << "," << gender << "," << race << "," << ethnicity << "," << zip << "," << payer_primary << "," << payer_secondary;
         return s.str();
     }
 
     static string getSchema()  {
-       return "(pat_id:int32, age_cat:char(1), gender:char(2),  race:char(1), ethnicity:char(1),  zip_code:char(5), payer_primary char(1), payer_secondary char(1), site_id:int32)";
+       return "(pat_id:int32, age_cat:char(1), gender:char(2),  race:char(1), ethnicity:char(1),  zip_code:char(5), payer_primary char(1), payer_secondary char(1))";
     }
 };
 
@@ -70,17 +71,17 @@ struct DxTuple {
     bool dx_lung_cancer;
     bool dx_colorectal_cancer;
     bool dx_cervical_cancer;
-    int site_id = -1;
+    // JMR removing site_id to match protocol distributed to sites
+    //    int site_id = -1;
 
     string toString() const {
         std::stringstream s;
-        s << patid << "," << dx_diabetes << "," << dx_hypertension << "," << dx_breast_cancer << "," << dx_lung_cancer << "," << dx_colorectal_cancer << "," << dx_cervical_cancer
-<< ","        << site_id;
+        s << patid << "," << dx_diabetes << "," << dx_hypertension << "," << dx_breast_cancer << "," << dx_lung_cancer << "," << dx_colorectal_cancer << "," << dx_cervical_cancer;
         return s.str();
     }
 
     static string getSchema()  {
-        return "(patid:int32, dx_diabetes:bool, dx_hypertension:bool, dx_cervical_cancer:bool, dx_breast_cancer:bool, dx_lung_cancer:bool, dx_colorectal_cancer:bool, site_id:int32)";
+        return "(patid:int32, dx_diabetes:bool, dx_hypertension:bool, dx_cervical_cancer:bool, dx_breast_cancer:bool, dx_lung_cancer:bool, dx_colorectal_cancer:bool)";
     }
 
 };
@@ -95,10 +96,9 @@ public:
     static float generateRandomFloat(float min, float max) {
         return min +  drand48() * (max - min); /* [0, 1.0] */
     }
-    static PatientTuple generatePatientTuple(const int & a_patid, const int & site_id) {
+    static PatientTuple generatePatientTuple(const int & a_patid) {
         PatientTuple result;
         result.patid = a_patid;
-        result.site_id = site_id;
         result.age_cat = generateRandomValue<char>(domains::age_cat_);
         result.gender =  generateRandomValue<char>(domains::gender_);
         result.ethnicity = generateRandomValue<char>(domains::ethnicity_);
@@ -117,7 +117,6 @@ public:
     static DxTuple generateDxTuple(const PatientTuple & patient) {
         DxTuple dxTuple;
         dxTuple.patid = patient.patid;
-        dxTuple.site_id = patient.site_id;
         dxTuple.dx_diabetes = generateDxValue();
         dxTuple.dx_hypertension = generateDxValue();
         dxTuple.dx_breast_cancer = generateDxValue();
@@ -127,7 +126,7 @@ public:
         return dxTuple;
     }
 
-    static vector<PatientTuple> generatePatientTuples(const int & site_id, const int & patient_cnt);
+    static vector<PatientTuple> generatePatientTuples(const int & patient_cnt);
 
     static void writeSchemaFile(const string & dst_filename, const string & schema);
 
