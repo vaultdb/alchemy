@@ -273,7 +273,9 @@ namespace vaultdb {
             PageId pid = bpm_.getPageId(table_id_, col, row, fields_per_wire_.at(col));
             emp::Bit *read_ptr = bpm_.getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
             SecureField f  =  Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
-            bpm_.unpinPage(pid);
+            //this may not be correct in the long run, what if we pin a page outside setField (e.g., to write to an output slot in NestedLoopAggregate) and repeatedly set fields in the output buffer?  Only use pin/unpin explicitly.
+            // since we're not writing code for concurrent queries against the same table (BPM not accessible outside of this program/query's address space) we don't have to worry about a page we request getting evicted between getUnpackedPagePtr and our read/write
+//            bpm_.unpinPage(pid);
             return f;
         }
 
@@ -283,7 +285,8 @@ namespace vaultdb {
             emp::Bit *write_ptr = bpm_.getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
             f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
             bpm_.markDirty(pid);
-            bpm_.unpinPage(pid);
+            // see note above
+            // bpm_.unpinPage(pid);
 
         }
 
@@ -625,36 +628,7 @@ namespace vaultdb {
             bpm_.removeTable(this->table_id_);
         }
 
-        PlainTable *revealInsecure(const int & party = emp::PUBLIC) override {
-            if(!isEncrypted()) {
-                return (QueryTable<bool> *) this;
-            }
 
-            QuerySchema dst_schema = QuerySchema::toPlain(schema_);
-
-            auto dst_table = PlainTable::getTable(tuple_cnt_, dst_schema, order_by_);
-
-            for(int i = -1; i < schema_.getFieldCount(); ++i) {
-                PageId pid = BufferPoolManager::getPageId(table_id_, i, 0, fields_per_wire_.at(i));
-                int cursor = 0;
-                QueryFieldDesc field_desc = schema_.getField(i);
-
-                for(int j = 0; j < packed_pages_[i].size(); ++j) {
-                    bpm_.loadPage(pid);
-                    // loop over the page
-                    while(cursor < tuple_cnt_ && cursor < (j + 1) * fields_per_wire_.at(i)){
-                        SecureField f = getField(cursor, i);
-                        PlainField plain = f.reveal(field_desc, party);
-                        dst_table->setField(cursor, i, plain);
-                        ++cursor;
-                    }
-                    bpm_.unpinPage(pid);
-                    ++pid.page_idx_;
-                }
-            }
-
-            return dst_table;
-        }
     };
 }
 #endif

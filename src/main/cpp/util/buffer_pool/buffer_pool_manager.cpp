@@ -15,7 +15,7 @@ void BufferPoolManager::loadPage(PageId &pid) {
     OMPCPackedWire src = packed_table_catalog_[pid.table_id_]->readPackedWire(pid);
 
     int target_slot = evictPage();
-    //cout << "Loading page " << pid << " into slot " << target_slot << endl;
+    cout << "Loading page " << pid << " into slot " << target_slot << endl;
     Bit *dst = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
     emp_manager_->unpack((Bit *) &src, dst, unpacked_page_size_bits_);
 
@@ -82,7 +82,7 @@ void BufferPoolManager::clonePage(PageId &src_pid, PageId &dst_pid) {
     if(position_map_.find(src_pid) != position_map_.end()
        && position_map_.at(src_pid).dirty_) {
         //cout << "**Cloning in-memory page from slot " << position_map_[src_pid].slot_id_ << " for " << src_pid <<  '\n';
-        pinPage(src_pid);
+        //pinPage(src_pid);
         emp::Bit *src_page = unpacked_buffer_pool_.data() + position_map_.at(src_pid).slot_id_ * unpacked_page_size_bits_;
         loadPage(dst_pid); // make sure dst page is loaded (if not already in buffer pool
         emp::Bit *dst_page = unpacked_buffer_pool_.data() + position_map_.at(dst_pid).slot_id_ * unpacked_page_size_bits_;
@@ -90,8 +90,8 @@ void BufferPoolManager::clonePage(PageId &src_pid, PageId &dst_pid) {
         memcpy(dst_page, src_page, unpacked_page_size_bits_);
 
         position_map_.at(dst_pid).dirty_ = true;
-        unpinPage(src_pid);
-        unpinPage(dst_pid);
+//        unpinPage(src_pid);
+//        unpinPage(dst_pid);
     }
     else {
         PackedColumnTable *src_table = packed_table_catalog_[src_pid.table_id_];

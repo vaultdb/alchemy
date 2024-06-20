@@ -317,6 +317,8 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
 }
 
 
+
+
 template<typename B>
 PlainTable *QueryTable<B>::revealInsecure(const int &party)  {
 
@@ -328,10 +330,16 @@ PlainTable *QueryTable<B>::revealInsecure(const int &party)  {
 
     auto dst_table = PlainTable::getTable(tuple_cnt_, dst_schema, order_by_);
 
-    for(uint32_t i = 0; i < tuple_cnt_; ++i)  {
-        PlainTuple t = revealRow(i, party);
-        dst_table->putTuple(i, t);
+    for(int i = -1; i < schema_.getFieldCount(); ++i) {
+        QueryFieldDesc field_desc = schema_.getField(i);
+
+        for(int j = 0; j < tuple_cnt_; ++j) {
+            auto f = getField(j, i);
+            PlainField plain = f.reveal(field_desc, party);
+            dst_table->setField(j, i, plain);
+        }
     }
+
     return dst_table;
 
 }

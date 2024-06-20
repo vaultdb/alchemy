@@ -40,7 +40,7 @@ public:
             emp::OMPCPackedWire packed_wire(bpm_.block_n_);
             emp_manager_->pack(current_slot_ptr, (Bit*) &packed_wire, bpm_.unpacked_page_size_bits_);
             bpm_.packed_table_catalog_[pid.table_id_]->writePackedWire(pid, packed_wire);
-            bpm_.unpinPage(pid);
+//            bpm_.unpinPage(pid);
         }
 
         return table_;
