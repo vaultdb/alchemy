@@ -40,7 +40,7 @@ void encodeTable(string table_name) {
 
     auto serialized = packed_table->serialize();
 
-    string secret_shares_file = dst_root_ + "." + std::to_string(party_);
+    string secret_shares_file = dst_root_ + "/" + table_name + "." + std::to_string(party_);
     DataUtilities::writeFile(secret_shares_file, serialized);
 
     if(party_ == conf_.input_party_) {
