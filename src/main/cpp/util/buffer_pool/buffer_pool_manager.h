@@ -107,6 +107,9 @@ namespace vaultdb {
         int page_cnt_;
         int packed_page_size_wires_; // in emp::OMPCPackedWires
         int max_packed_page_cnt_;
+        // record stats for the buffer pool
+        size_t hits_ = 0L;
+        size_t misses_ = 0L;
 
         int block_n_; // Bits per wire?
 
@@ -124,7 +127,9 @@ namespace vaultdb {
             return instance;
         }
 
-        ~BufferPoolManager() {};
+        ~BufferPoolManager() {
+            cout << "Buffer pool requests: " << hits_ + misses_ << " hit rate: " << hits_ << "/(" << hits_ + misses_ << "): " << (float) hits_ / ((float) (hits_ + misses_) ) << endl;
+        };
 
         void initialize(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager)  {
 

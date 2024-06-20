@@ -9,13 +9,13 @@ using namespace  vaultdb;
 void BufferPoolManager::loadPage(PageId &pid) {
 
     if(position_map_.find(pid) != position_map_.end()) {
+        ++hits_;
         return;
     }
 
     OMPCPackedWire src = packed_table_catalog_[pid.table_id_]->readPackedWire(pid);
-
     int target_slot = evictPage();
-//    cout << "Loading page " << pid << " into slot " << target_slot << endl;
+    ++misses_;
     Bit *dst = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
     emp_manager_->unpack((Bit *) &src, dst, unpacked_page_size_bits_);
 
