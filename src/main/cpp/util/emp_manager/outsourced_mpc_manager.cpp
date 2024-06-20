@@ -44,15 +44,25 @@ QueryTable<Bit> *OutsourcedMpcManager::secretShare(const QueryTable<bool> *src) 
     QueryTable<Bit> *dst = QueryTable<Bit>::getTable(tuple_cnt, dst_schema, src->order_by_);
     if(tuple_cnt == 0) return dst;
 
-    if(party_ == emp::TP) {
-        for(int i = 0; i < tuple_cnt; ++i) {
-            FieldUtilities::secret_share_send(src, i, dst,  i, TP);
+    if(party_ == system_conf_.input_party_) {
+        for(int j = -1; j < dst_schema.getFieldCount(); ++j) {
+            QueryFieldDesc dst_field_desc = dst_schema.getField(j);
+            for (int i = 0; i < tuple_cnt; ++i) {
+
+                PlainField src_field = src->getField(i, j);
+                SecureField dst_field = SecureField::secret_share_send(src_field, dst_field_desc,
+                                                                       system_conf_.input_party_);
+                dst->setField(i, j, dst_field);
+            }
         }
     }
     else { // computing parties
-        for(int i = 0; i < tuple_cnt; ++i) {
-            FieldUtilities::secret_share_recv(dst, i, TP);
-
+        for(int j = -1; j < dst_schema.getFieldCount(); ++j) {
+            QueryFieldDesc dst_field_desc = dst_schema.getField(j);
+            for(int i = 0; i < tuple_cnt; ++i) {
+                SecureField dst_field = SecureField::secret_share_recv(dst_field_desc, system_conf_.input_party_);
+                dst->setField(i, j, dst_field);
+            }
         }
     }
 
