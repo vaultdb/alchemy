@@ -50,6 +50,8 @@ void encodeTable(string table_name) {
         DataUtilities::writeFile(metadata_filename, metadata);
     }
 
+    conf_.flush();
+
     delete table;
     delete packed_table;
 
@@ -110,3 +112,4 @@ int main(int argc, char **argv) {
     }
 
 }
+
