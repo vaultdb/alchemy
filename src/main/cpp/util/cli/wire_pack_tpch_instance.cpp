@@ -1,0 +1,112 @@
+#include "util/data_utilities.h"
+#include "query_table/query_table.h"
+#include "util/emp_manager/outsourced_mpc_manager.h"
+#include "util/field_utilities.h"
+#include "query_table/packed_column_table.h"
+
+using namespace std;
+using namespace vaultdb;
+
+// customize this as needed
+const string empty_db_ = "tpch_empty";
+const int port_ = 55370;
+const int ctrl_port_ = 55380;
+string dst_root_ = "";
+string db_name_ = "";
+int party_ = -1;
+SystemConfiguration & conf_ = SystemConfiguration::getInstance();
+
+// encode whole db at once to preserve same delta for all of them
+
+map<string, string> table_to_query = {
+        {"lineitem", "select * from lineitem ORDER BY l_orderkey, l_linenumber"},
+        {"orders", "select * from orders ORDER BY o_orderkey"},
+        {"customer", "select * from customer ORDER BY c_custkey"},
+        {"part", "select * from part ORDER BY p_partkey"},
+        {"partsupp", "select * from partsupp ORDER BY ps_partkey, ps_suppkey"},
+        {"supplier", "select * from supplier ORDER BY s_suppkey"},
+        {"nation", "select * from nation ORDER BY n_nationkey"},
+        {"region", "select * from region ORDER BY r_regionkey"}
+};
+
+
+void encodeTable(string table_name) {
+    // metadata consists of schema and tuple count
+    PlainTable *table = DataUtilities::getQueryResults(db_name_, table_to_query.at(table_name), false);
+
+    // pack the table
+    // this still uses BPM under the hood, but it's less onerous than serializing one wire at a time as before
+    PackedColumnTable *packed_table = (PackedColumnTable *) table->secretShare();
+
+    auto serialized = packed_table->serialize();
+
+    string secret_shares_file = dst_root_ + "." + std::to_string(party_);
+    DataUtilities::writeFile(secret_shares_file, serialized);
+
+    if(party_ == conf_.input_party_) {
+        // metadata file (schema and tuple count
+        string metadata_filename = dst_root_ + "/" + table_name + ".metadata";
+        string metadata = packed_table->getSchema().prettyPrint() + "\n" + std::to_string(packed_table->tuple_cnt_);
+        DataUtilities::writeFile(metadata_filename, metadata);
+    }
+
+    delete table;
+    delete packed_table;
+
+    cout << "Wrote secret shares to " << secret_shares_file << endl;
+}
+
+int main(int argc, char **argv) {
+
+    // paths are relative to local $VAULTDB_ROOT, the src/main/cpp within your vaultdb directory
+    // usage: ./wire_pack_table_from_query <db name> <destination root> <party>
+    // e.g., ./wire_pack_table_from_query tpch_unioned_600 wires/tpch_unioned_600 10086
+    if (argc < 4) {
+        std::cout << "usage: ./wire_pack_table_from_query <db name> <destination root> <party>" << std::endl;
+        exit(-1);
+    }
+
+
+     party_ = atoi(argv[3]);
+     db_name_ = (party_ == emp::TP) ? argv[1] : empty_db_;
+     dst_root_ = Utilities::getCurrentWorkingDirectory() + "/" + argv[2];
+
+    cout << "Party: " << party_ << endl;
+    cout << "DB Name: " << db_name_ << endl;
+    cout << "Destination Root: " << dst_root_ << endl;
+    cout << "Ports: " << port_ << ", " << ctrl_port_ << endl;
+
+    // attempt to create target dir
+    string dst_dir = dst_root_.substr(0, dst_root_.find_last_of("/"));
+    Utilities::mkdir(dst_dir);
+
+    // set up OMPC
+    string hosts[] = {"127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1"};
+    // to enable wire packing set storage model to StorageModel::PACKED_COLUMN_STORE
+    EmpManager *manager = new OutsourcedMpcManager(hosts, party_, port_, ctrl_port_);
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
+
+    conf.emp_manager_ = manager;
+    conf.setEmptyDbName(empty_db_);
+    BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(argv[1]);
+    conf.initialize(db_name_, md, StorageModel::PACKED_COLUMN_STORE);
+
+    cout << "Test settings " << Utilities::getTestParameters() << endl;
+
+    for(auto const &entry : table_to_query) {
+        encodeTable(entry.first);
+    }
+
+    // TP instance responsible for writing metadata
+    // everything is localhost so it does not matter which one does this
+    if(party_ == conf.input_party_) {
+
+        OMPCBackend<N> *protocol = (OMPCBackend<N> *) emp::backend;
+        string delta_file = dst_root_ + "delta";
+        string delta;
+        delta.resize(sizeof(block));
+        memcpy(delta.data(), &protocol->multi_pack_delta, sizeof(block));
+        DataUtilities::writeFile(delta_file, delta);
+    }
+
+}
