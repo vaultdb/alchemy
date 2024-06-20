@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
     // usage: ./wire_pack_table_from_query <db name> <destination root> <party>
     // e.g., ./wire_pack_table_from_query tpch_unioned_600 wires/tpch_unioned_600 10086
     if (argc < 4) {
-        std::cout << "usage: ./wire_pack_table_from_query <db name> <destination root> <party>" << std::endl;
+        std::cout << "usage: ./wire_pack_tpch_instance <db name> <destination root> <party>" << std::endl;
         exit(-1);
     }
 
