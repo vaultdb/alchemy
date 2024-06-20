@@ -4,6 +4,8 @@
 #include "util/field_utilities.h"
 #include "query_table/packed_column_table.h"
 
+#if __has_include("emp-rescu/emp-rescu.h")
+
 using namespace std;
 using namespace vaultdb;
 
@@ -85,3 +87,5 @@ int main(int argc, char **argv) {
 
     cout << "Wrote secret shares to " << secret_shares_file << endl;
 }
+
+#endif
