@@ -95,6 +95,33 @@ SecretShares QueryTable<B>::generateSecretShares() const {
 }
 
 
+template<typename B>
+vector<vector<int8_t> > QueryTable<B>::generateSecretShares(const int & party_count) const {
+    assert(!isEncrypted());
+    emp::PRG prg; // initializes with a random seed
+    vector<int8_t> serialized = serialize();
+    int8_t *to_xor = serialized.data();
+    size_t share_size = serialized.size();
+
+
+    vector<vector<int8_t> > shares;
+    shares.resize(party_count);
+
+    for(int i = 1; i < party_count; ++i) {
+        shares[i].resize(share_size);
+
+        prg.random_data(shares[i].data(), share_size);
+
+        for(int j = 0; j < share_size; ++j) {
+            to_xor[j] ^= shares[i][j];
+        }
+    }
+
+    shares[0] = serialized;
+    return shares;
+}
+
+
 
 
 template <typename B>

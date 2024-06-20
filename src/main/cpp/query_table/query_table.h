@@ -84,6 +84,8 @@ namespace  vaultdb {
 
 
         SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
+        vector<vector<int8_t> > generateSecretShares(const int & party_count) const; // generate shares for all parties
+
 
         QueryTable<B> &operator=(const QueryTable<B> &src);
 
