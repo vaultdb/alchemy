@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
 
     cout << "Party: " << party_ << endl;
     cout << "DB Name: " << db_name_ << endl;
-    cout << "Destination Root: " << dst_root_ << endl;
+    cout << "Destination dir: " << dst_root_ << endl;
     cout << "Ports: " << port_ << ", " << ctrl_port_ << endl;
 
     // attempt to create target dir
