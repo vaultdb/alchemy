@@ -20,6 +20,7 @@ namespace vaultdb{
         EmpManager *emp_manager_ = nullptr;
         EmpMode emp_mode_ = EmpMode::PLAIN;
         int party_;
+        int input_party_ = 10086;
 
         bool bp_enabled_ = false;
         BufferPoolManager & bpm_ = BufferPoolManager::getInstance();
