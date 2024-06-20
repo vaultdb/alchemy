@@ -87,5 +87,9 @@ int main(int argc, char **argv) {
 
     cout << "Wrote secret shares to " << secret_shares_file << endl;
 }
+#else
+int main(int argc, char **argv) {
+    std::cout << "emp-rescu backend not found!" << std::endl;
+}
 
 #endif

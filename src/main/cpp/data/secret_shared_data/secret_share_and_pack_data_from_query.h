@@ -128,6 +128,10 @@ private:
     EmpManager *emp_manager_ = SystemConfiguration::getInstance().emp_manager_;
     OMPCBackend<N> *protocol_ = (OMPCBackend<N> *) emp::backend;
 };
+#else
+int main(int argc, char **argv) {
+    std::cout << "emp-rescu backend not found!" << std::endl;
+}
 
 #endif
 #endif //VAULTDB_EMP_SECRET_SHARE_AND_PACK_DATA_FROM_QUERY_H
