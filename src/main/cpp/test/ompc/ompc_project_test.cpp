@@ -219,5 +219,9 @@ int main(int argc, char **argv) {
 
 }
 
+#else
+int main(int argc, char **argv) {
+    std::cout << "emp-rescu backend not found!" << std::endl;
+}
 
 #endif
