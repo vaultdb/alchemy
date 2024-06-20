@@ -1,6 +1,8 @@
 #ifndef VAULTDB_EMP_SECRET_SHARE_AND_PACK_DATA_FROM_QUERY_H
 #define VAULTDB_EMP_SECRET_SHARE_AND_PACK_DATA_FROM_QUERY_H
 
+#if __has_include("emp-rescu/emp-rescu.h")
+
 #include "query_table/packed_column_table.h"
 #include "util/buffer_pool/buffer_pool_manager.h"
 
@@ -127,4 +129,5 @@ private:
     OMPCBackend<N> *protocol_ = (OMPCBackend<N> *) emp::backend;
 };
 
+#endif
 #endif //VAULTDB_EMP_SECRET_SHARE_AND_PACK_DATA_FROM_QUERY_H
