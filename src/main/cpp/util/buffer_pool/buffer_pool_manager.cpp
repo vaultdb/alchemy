@@ -15,11 +15,11 @@ void BufferPoolManager::loadPage(PageId &pid) {
     OMPCPackedWire src = packed_table_catalog_[pid.table_id_]->readPackedWire(pid);
 
     int target_slot = evictPage();
-    cout << "Loading page " << pid << " into slot " << target_slot << endl;
+//    cout << "Loading page " << pid << " into slot " << target_slot << endl;
     Bit *dst = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
     emp_manager_->unpack((Bit *) &src, dst, unpacked_page_size_bits_);
 
-    PositionMapEntry p(target_slot, true, false);
+    PositionMapEntry p(target_slot, false, false);
     position_map_[pid] = p;
     reverse_position_map_[target_slot] = pid;
 
@@ -36,7 +36,7 @@ int BufferPoolManager::evictPage() {
     if(reverse_position_map_.find(clock_hand_position_) == reverse_position_map_.end())  {
         int slot = clock_hand_position_;
         clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
-        //cout << "EvictPage initializing slot " << slot << endl;
+//        cout << "EvictPage initializing slot " << slot << endl;
         return slot;
     };
 
@@ -45,7 +45,7 @@ int BufferPoolManager::evictPage() {
     PageId pid = reverse_position_map_[clock_hand_position_];
     pos = position_map_.at(pid);
 
-    //cout << "Evicting page " << pid << " at slot " << pos.slot_id_ << endl;
+//    cout << "Evicting page " << pid << " at slot " << pos.slot_id_ << endl;
     // first unpinned page
     while(pos.pinned_) {
         clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
@@ -82,16 +82,12 @@ void BufferPoolManager::clonePage(PageId &src_pid, PageId &dst_pid) {
     if(position_map_.find(src_pid) != position_map_.end()
        && position_map_.at(src_pid).dirty_) {
         //cout << "**Cloning in-memory page from slot " << position_map_[src_pid].slot_id_ << " for " << src_pid <<  '\n';
-        //pinPage(src_pid);
         emp::Bit *src_page = unpacked_buffer_pool_.data() + position_map_.at(src_pid).slot_id_ * unpacked_page_size_bits_;
         loadPage(dst_pid); // make sure dst page is loaded (if not already in buffer pool
         emp::Bit *dst_page = unpacked_buffer_pool_.data() + position_map_.at(dst_pid).slot_id_ * unpacked_page_size_bits_;
         //cout << "Cloning to slot " << position_map_[dst_pid].slot_id_ << " for " << dst_pid <<  '\n';
         memcpy(dst_page, src_page, unpacked_page_size_bits_);
-
         position_map_.at(dst_pid).dirty_ = true;
-//        unpinPage(src_pid);
-//        unpinPage(dst_pid);
     }
     else {
         PackedColumnTable *src_table = packed_table_catalog_[src_pid.table_id_];

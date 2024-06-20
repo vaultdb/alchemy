@@ -117,7 +117,7 @@ namespace vaultdb {
 
 
         std::map<PageId, PositionMapEntry> position_map_; // map<pid, slot id in unpacked buffer pool>
-        std::map<int, PageId> reverse_position_map_; // given an offset we want to access, what PID is it?  Needed to maintain constant time lookups
+        std::map<int, PageId> reverse_position_map_; // given an offset we want to access, what PID is it?
 
         static BufferPoolManager& getInstance() {
             static BufferPoolManager  instance;
@@ -153,17 +153,6 @@ namespace vaultdb {
 
       int evictPage();
 
-     // TEMP
-     string printByteArray(const int8_t *bytes, const size_t &byte_cnt) {
-         stringstream  ss;
-         ss << "(";
-         for(int i = 0; i < byte_cnt; ++i) {
-             ss << (int) bytes[i];
-             if(i < (byte_cnt - 1)) ss << ", ";
-         }
-         ss << ")";
-         return ss.str();
-     }
 
 
         void clonePage(PageId &src_pid, PageId &dst_pid);
@@ -173,6 +162,9 @@ namespace vaultdb {
             position_map_.at(pid).dirty_ = true;
         }
 
+        // page pinning and unpinning only needed when we need a page to persist beyond the current scope / calling function
+        // since we are not writing this for concurrent queries at this time, we don't need to set/unset this for every getField/setField call
+        // Examples of when we need to pin pages: BlockNestedLoopJoin, NestedLoopAggregate output buffer
         inline void pinPage(PageId &pid) {
             position_map_.at(pid).pinned_ = true;
         }

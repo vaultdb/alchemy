@@ -285,8 +285,6 @@ namespace vaultdb {
             emp::Bit *write_ptr = bpm_.getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
             f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
             bpm_.markDirty(pid);
-            // see note above
-            // bpm_.unpinPage(pid);
 
         }
 
@@ -370,7 +368,6 @@ namespace vaultdb {
             emp::Bit *write_ptr = bpm_.getUnpackedPagePtr(pid) + (row % fields_per_wire_.at(-1));
             *write_ptr = val;
             bpm_.markDirty(pid);
-            bpm_.unpinPage(pid);
         }
 
 
@@ -515,8 +512,6 @@ namespace vaultdb {
             for(int i = 0; i < src_table->getSchema().getFieldCount(); ++i) {
                 // Get src unpacked page and pin it.
                 PageId src_pid = bpm_.getPageId(src_table->table_id_, i, src_row, src_table->fields_per_wire_.at(i));
-                bpm_.pinPage(src_pid);
-
                 Field<Bit> src_field = src_table->getField(src_row, i);
 
                 int write_row_idx = dst_row;
@@ -528,7 +523,6 @@ namespace vaultdb {
                 }
 
                 ++write_idx;
-                bpm_.unpinPage(src_pid);
             }
 
             // Copy dummy tag
@@ -589,8 +583,6 @@ namespace vaultdb {
                 PageId dst_pid = bpm_.getPageId(table_id_, dst_col, write_cursor,
                                                                     fields_per_wire_.at(dst_col));
                 bpm_.clonePage(src_pid, dst_pid);
-                bpm_.unpinPage(src_pid);
-                bpm_.unpinPage(dst_pid);
                 read_cursor += src_table->fields_per_wire_.at(src_col);
                 write_cursor += fields_per_wire_.at(dst_col);
             }
