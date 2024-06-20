@@ -82,7 +82,7 @@ namespace vaultdb {
 
         // setup for packed buffer pool
         // map<table_id, map<col_id, a pointer of a vector OMPCPackedWires>>
-        std::map<int, std::map<int, OMPCPackedWire*>> packed_buffer_pool_;
+        std::map<int, std::map<int, OMPCPackedWire*>> packed_pages_;
 
         void reset();
     private:
@@ -95,6 +95,8 @@ namespace vaultdb {
 #include "emp-rescu/emp-rescu.h"
 #define __OMPC_BACKEND__ 1
 namespace vaultdb {
+    class PackedColumnTable;
+
     class BufferPoolManager {
     public:
 
@@ -111,15 +113,11 @@ namespace vaultdb {
         // setup for unpacked buffer pool
         std::vector<emp::Bit> unpacked_buffer_pool_;
         int clock_hand_position_ = 0;
+        std::map<int, PackedColumnTable *> packed_table_catalog_;
 
 
         std::map<PageId, PositionMapEntry> position_map_; // map<pid, slot id in unpacked buffer pool>
         std::map<int, PageId> reverse_position_map_; // given an offset we want to access, what PID is it?  Needed to maintain constant time lookups
-
-
-        // JMR: why do we need this here?  If we have a system catalog or what have you
-        // then we can just maintain a map of <table_id, PackedColumnTable*> and look it up directly.
-        std::map<int, std::map<int, OMPCPackedWire *> > packed_buffer_pool_;
 
         static BufferPoolManager& getInstance() {
             static BufferPoolManager  instance;
@@ -153,55 +151,7 @@ namespace vaultdb {
         }
 
 
-        // greedily evict first unpinned page in the queue
-        // returns the newly-opened slot in the buffer pool
-        int evictPage() {
-
-
-           PositionMapEntry pos;
-           //  uninitialized slot, this should only happen when we are warming up the buffer pool
-           if(reverse_position_map_.find(clock_hand_position_) == reverse_position_map_.end())  {
-               int slot = clock_hand_position_;
-               clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
-               //cout << "EvictPage initializing slot " << slot << endl;
-               return slot;
-           };
-
-            int clock_hand_starting_pos = clock_hand_position_;
-
-            PageId pid = reverse_position_map_[clock_hand_position_];
-            pos = position_map_.at(pid);
-
-            //cout << "Evicting page " << pid << " at slot " << pos.slot_id_ << endl;
-            // first unpinned page
-           while(pos.pinned_) {
-               clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
-               pid = reverse_position_map_[clock_hand_position_];
-               pos = position_map_.at(pid);
-               if(clock_hand_position_ == clock_hand_starting_pos) {
-                   // if we have gone through the whole buffer pool and all pages are pinned, then we have a problem
-                   // we should never have all pages pinned
-                   throw std::runtime_error("Buffer pool has no unpinned pages!");
-               }
-           }
-
-
-        if (pos.dirty_) {
-            emp::Bit *src_ptr =  unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
-            emp::OMPCPackedWire *dst_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
-            assert(dst_ptr != nullptr);
-            emp_manager_->pack(src_ptr, (Bit *) dst_ptr, unpacked_page_size_bits_);
-        }
-
-        // remove it from the position map even if it is not dirty
-        position_map_.erase(pid);
-        reverse_position_map_.erase(pos.slot_id_);
-
-        // increment clock hand one more time for next round
-        clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
-        return pos.slot_id_;
-     }
-
+      int evictPage();
 
      // TEMP
      string printByteArray(const int8_t *bytes, const size_t &byte_cnt) {
@@ -215,52 +165,9 @@ namespace vaultdb {
          return ss.str();
      }
 
-        void loadPage(PageId &pid) {
 
-            if(position_map_.find(pid) != position_map_.end()) {
-                return;
-            }
+        void clonePage(PageId &src_pid, PageId &dst_pid);
 
-            OMPCPackedWire *src = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
-            //cout << "Load page reading from " <<  printByteArray((int8_t *) src, sizeof(OMPCPackedWire)) << '\n' << endl;
-            int target_slot = evictPage();
-            //cout << "Loading page " << pid << " into slot " << target_slot << endl;
-            Bit *dst = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
-            emp_manager_->unpack((Bit *) src, dst, unpacked_page_size_bits_);
-
-            PositionMapEntry p(target_slot, true, false);
-            position_map_[pid] = p;
-            reverse_position_map_[target_slot] = pid;
-
-        }
-
-
-
-        // makes a deep copy of src_pid at dst_pid
-        void clonePage(PageId &src_pid, PageId &dst_pid) {
-           // if src page is unpacked, copy it to dst page in buffer pool
-           // mark dst_page as dirty
-           if(position_map_.find(src_pid) != position_map_.end()
-              && position_map_.at(src_pid).dirty_) {
-               //cout << "**Cloning in-memory page from slot " << position_map_[src_pid].slot_id_ << " for " << src_pid <<  '\n';
-               pinPage(src_pid);
-               emp::Bit *src_page = unpacked_buffer_pool_.data() + position_map_.at(src_pid).slot_id_ * unpacked_page_size_bits_;
-               loadPage(dst_pid); // make sure dst page is loaded (if not already in buffer pool
-               emp::Bit *dst_page = unpacked_buffer_pool_.data() + position_map_.at(dst_pid).slot_id_ * unpacked_page_size_bits_;
-               //cout << "Cloning to slot " << position_map_[dst_pid].slot_id_ << " for " << dst_pid <<  '\n';
-               memcpy(dst_page, src_page, unpacked_page_size_bits_);
-
-               position_map_.at(dst_pid).dirty_ = true;
-               unpinPage(src_pid);
-               unpinPage(dst_pid);
-           }
-           else {
-                emp::OMPCPackedWire *src_page_ptr = packed_buffer_pool_[src_pid.table_id_][src_pid.col_id_] + src_pid.page_idx_;
-                emp::OMPCPackedWire *dst_page_ptr = packed_buffer_pool_[dst_pid.table_id_][dst_pid.col_id_] + dst_pid.page_idx_;
-                *dst_page_ptr = *src_page_ptr;
-           }
-
-        }
 
         inline void markDirty(PageId &pid) {
             position_map_.at(pid).dirty_ = true;
@@ -274,6 +181,8 @@ namespace vaultdb {
             position_map_.at(pid).pinned_ = false;
         }
 
+        void loadPage(PageId &pid);
+
         void loadColumn(const int & table_id, const int & col_idx, const int & tuple_cnt, const  int & rows_per_page) {
             int page_cnt = tuple_cnt / rows_per_page + (tuple_cnt % rows_per_page != 0);
 
@@ -285,14 +194,13 @@ namespace vaultdb {
             }
         }
 
-        void flushPage(const PageId &pid) {
-            if(position_map_.find(pid) != position_map_.end() && position_map_.at(pid).dirty_) {
+        void flushPage(const PageId &pid);
 
-                emp::Bit *src_ptr =  unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
-                emp::OMPCPackedWire *dst_ptr = packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
-                assert(dst_ptr != nullptr);
-                emp_manager_->pack(src_ptr, (Bit *) dst_ptr, unpacked_page_size_bits_);
-                position_map_.at(pid).dirty_ = false;
+        void flushTable(const int & table_id) {
+            for(auto pos = position_map_.begin(); pos != position_map_.end(); ++pos) {
+                if(pos->first.table_id_ == table_id) {
+                    flushPage(pos->first);
+                }
             }
         }
 
@@ -337,7 +245,7 @@ namespace vaultdb {
                 }
             }
             // signal that the PackedColumnTable is no longer memory-resident
-            packed_buffer_pool_.erase(target_table_id);
+            packed_table_catalog_.erase(target_table_id);
 
         }
 
@@ -348,7 +256,7 @@ namespace vaultdb {
             // This should probably be part of PackedColumnTable's constructor
             position_map_.clear();
             reverse_position_map_.clear();
-            packed_buffer_pool_.clear();
+            packed_table_catalog_.clear();
             clock_hand_position_ = 0;
         }
     // needed for singleton setup

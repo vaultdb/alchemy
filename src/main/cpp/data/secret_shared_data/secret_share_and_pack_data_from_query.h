@@ -39,9 +39,7 @@ public:
 
             emp::OMPCPackedWire packed_wire(bpm_.block_n_);
             emp_manager_->pack(current_slot_ptr, (Bit*) &packed_wire, bpm_.unpacked_page_size_bits_);
-            emp::OMPCPackedWire *packed_wires_ptr = bpm_.packed_buffer_pool_[pid.table_id_][pid.col_id_] + pid.page_idx_;
-            *packed_wires_ptr = packed_wire;
-
+            bpm_.packed_table_catalog_[pid.table_id_]->writePackedWire(pid, packed_wire);
             bpm_.unpinPage(pid);
         }
 
@@ -77,7 +75,7 @@ public:
             std::string file_name = path + "packed_" + this->table_name_ + "_col_" + std::to_string(i) + "_" + std::to_string(party) + ".page";
             vector<int8_t> serialized_wires_for_col;
 
-            for(int j = 0; j < this->table_->packed_buffer_pool_[i].size(); ++j) {
+            for(int j = 0; j < this->table_->packed_pages_[i].size(); ++j) {
                 vector<int8_t> serialized_wire = this->table_->serializePackedWire(i, j);
                 serialized_wires_for_col.insert(serialized_wires_for_col.end(), serialized_wire.begin(), serialized_wire.end());
             }
@@ -99,19 +97,11 @@ public:
         // load packed buffer pool
         PackedColumnTable *loaded_table = (PackedColumnTable *) QueryTable<Bit>::getTable(tuple_cnt, schema);
 
-        int packed_page_size_bytes = (2 * bpm_.block_n_ + 1) * sizeof(block);
-
         for(int i = -1; i < schema.getFieldCount(); ++i) {
             std::string file_name = path + "packed_" + this->table_name_ + "_col_" + std::to_string(i) + "_" + std::to_string(party) + ".page";
             vector<int8_t> serialized_wires_for_col = DataUtilities::readFile(file_name);
-            int8_t *cursor =  serialized_wires_for_col.data();
-
-            assert(loaded_table->packed_buffer_pool_[i].size() == (serialized_wires_for_col.size() / packed_page_size_bytes));
-
-            for(int j = 0; j < loaded_table->packed_buffer_pool_[i].size(); ++j) {
-                loaded_table->packed_buffer_pool_[i][j] = loaded_table->deserializePackedWire(cursor);
-                cursor += packed_page_size_bytes;
-            }
+            assert(loaded_table->packed_pages_[i].size() == serialized_wires_for_col.size());
+            memcpy(loaded_table->packed_pages_[i].data(), serialized_wires_for_col.data(), serialized_wires_for_col.size());
         }
 
         return loaded_table;
