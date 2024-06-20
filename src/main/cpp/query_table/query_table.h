@@ -77,7 +77,7 @@ namespace  vaultdb {
         virtual void setDummyTag(const int & row, const B & val) = 0;
         virtual void appendColumn(const QueryFieldDesc & desc) = 0;
 
-        vector<int8_t> serialize() const;
+        virtual vector<int8_t> serialize() const;
 
 
         virtual SecureTable *secretShare() = 0;

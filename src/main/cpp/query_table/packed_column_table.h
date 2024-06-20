@@ -187,13 +187,6 @@ namespace vaultdb {
             if(src.tuple_cnt_ == 0)
                 return;
 
-            // initialize packed buffer pool including dummy tags
-//            for(int i = -1; i < schema_.getFieldCount(); ++i) {
-//                //int col_packed_wires = tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0);
-////                packed_pages_[i] = src.packed_pages_[i];
-////                packed_pages_[i] = std::vector<emp::OMPCPackedWire>(col_packed_wires, emp::OMPCPackedWire(bpm_.block_n_));
-//
-//            }
             bpm_.packed_table_catalog_[table_id_] = this;
 
             PackedColumnTable *src_table = (PackedColumnTable *) &src;
@@ -202,13 +195,6 @@ namespace vaultdb {
             for(auto col_entry : src.packed_pages_) {
                 packed_pages_[col_entry.first] = col_entry.second;
             }
-//            for(int i = -1; i < src_table->getSchema().getFieldCount(); ++i) {
-//                for(int j = 0; j < src_table->tuple_cnt_; j = j + src_table->fields_per_wire_.at(i)) {
-//                    PageId src_pid = bpm_.getPageId(src_table->table_id_, i, j, src_table->fields_per_wire_.at(i));
-//                    PageId dst_pid = bpm_.getPageId(table_id_, i, j, fields_per_wire_.at(i));
-//                    bpm_.clonePage(src_pid, dst_pid);
-//                }
-//            }
         }
 
         vector<int8_t> serializePackedWire(OMPCPackedWire & wire) {
@@ -268,6 +254,21 @@ namespace vaultdb {
         }
 
 
+         vector<int8_t> serialize() const override {
+            size_t output_buffer_len = 0L;
+            for(auto col_entry : packed_pages_) {
+                output_buffer_len += col_entry.second.size();
+            }
+
+            vector<int8_t> output_buffer(output_buffer_len);
+            int8_t *write_ptr = output_buffer.data();
+            for(auto col_entry : packed_pages_) {
+                memcpy(write_ptr, col_entry.second.data(), col_entry.second.size());
+                write_ptr += col_entry.second.size();
+            }
+            return output_buffer;
+
+        }
 
         Field<Bit> getField(const int  & row, const int & col)  const override {
             PageId pid = bpm_.getPageId(table_id_, col, row, fields_per_wire_.at(col));
