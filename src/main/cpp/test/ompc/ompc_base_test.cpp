@@ -23,12 +23,15 @@ void OmpcBaseTest::SetUp()  {
     if(FLAGS_storage == "wire_packed") {
         storage_model_ = StorageModel::PACKED_COLUMN_STORE;
     }
+    else {
+        storage_model_ = StorageModel::COLUMN_STORE;
+    }
 
     s.setStorageModel(storage_model_);
-
+    s.input_party_ = FLAGS_input_party;
 	Logger* log = get_log();
 
-    log->write("Connecting to " + FLAGS_alice_host + " on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party), Level::INFO);
+    log->write("Connecting on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party), Level::INFO);
 
 
 
@@ -38,7 +41,7 @@ void OmpcBaseTest::SetUp()  {
 //                          "129.105.61.186", // codd12 (Carol)
 //                          "129.105.61.176" // codd2 (TP)
 //                           };
-        string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
+        string hosts[] = {"127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1"};
         // to enable wire packing set storage model to StorageModel::PACKED_COLUMN_STORE
         manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
         db_name_ = (FLAGS_party == emp::TP) ? FLAGS_unioned_db : empty_db_;

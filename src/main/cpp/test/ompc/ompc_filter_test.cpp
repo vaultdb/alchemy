@@ -5,12 +5,14 @@
 #include <operators/sql_input.h>
 #include <operators/filter.h>
 #include <operators/secure_sql_input.h>
-#include <test/mpc/emp_base_test.h>
+#include <test/ompc/ompc_base_test.h>
 #include <query_table/secure_tuple.h>
 #include <expression/comparator_expression_nodes.h>
 #include "expression/generic_expression.h"
 #include "opt/operator_cost_model.h"
 #include "operators/packed_table_scan.h"
+
+#if __has_include("emp-rescu/emp-rescu.h")
 
 using namespace emp;
 using namespace vaultdb;
@@ -19,17 +21,17 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54335, "port for EMP execution");
 DEFINE_int32(ctrl_port, 65455, "port for managing EMP control flow by passing public values");
-DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
-DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
-DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(cutoff, 1000, "limit clause for queries");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
-DEFINE_string(storage, "wire_packed", "storage model for columns (column, wire_packed or compressed)");
+DEFINE_string(storage, "wire_packed", "storage model for columns (column or wire_packed)");
+DEFINE_string(empty_db, "tpch_empty", "empty db name for schemas");
+DEFINE_string(wires, "wires", "local path to wire files");
+DEFINE_int32(input_party, 10086, "party for input data");
 
 
-class OMPCFilterTest : public EmpBaseTest {};
+class OMPCFilterTest : public OmpcBaseTest {};
 
 
 
@@ -139,3 +141,4 @@ int main(int argc, char **argv) {
 }
 
 
+#endif

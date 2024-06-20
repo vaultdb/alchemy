@@ -9,14 +9,13 @@
 DECLARE_int32(party);
 DECLARE_int32(port);
 DECLARE_int32(ctrl_port);
-DECLARE_string(alice_host);
 DECLARE_string(unioned_db);
-DECLARE_string(alice_db);
-DECLARE_string(bob_db);
+DECLARE_string(empty_db);
 DECLARE_int32(cutoff);
 DECLARE_string(filter); //run only the tests with names matching this regex.
 DECLARE_string(storage);
 DECLARE_string(wires); // local path to wire files
+DECLARE_int32(input_party);
 						//run ./{binary_name} --gtest_list_tests to get all unit test names
 
 
