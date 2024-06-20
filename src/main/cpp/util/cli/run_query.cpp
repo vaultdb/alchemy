@@ -5,9 +5,9 @@
 #include <map>
 #include <unistd.h>
 #include <iostream>
-#include "emp_manager/sh2pc_manager.h"
-#include "utilities.h"
 #include "parser/plan_parser.h"
+#include "util/emp_manager/sh2pc_manager.h"
+#include "util/utilities.h"
 
 
 using namespace std;
