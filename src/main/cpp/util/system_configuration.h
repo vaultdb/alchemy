@@ -34,7 +34,7 @@ namespace vaultdb{
         }
 
         void initialize(const string &db_name, const std::map<ColumnReference, BitPackingDefinition> &bp,
-                        const StorageModel &model) {
+                        const StorageModel &model, const vector<int> &bp_parameters) {
             unioned_db_name_ = db_name;
             bit_packing_ = bp;
             storage_model_ = model;
@@ -48,7 +48,7 @@ namespace vaultdb{
             }
             else {
                 bp_enabled_ = true;
-                bpm_.initialize(2048, 50, 5, 1000, emp_manager_);
+                bpm_.initialize(bp_parameters[0], bp_parameters[1], bp_parameters[2], bp_parameters[3], emp_manager_);
             }
         }
 

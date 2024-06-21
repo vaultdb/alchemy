@@ -15,8 +15,9 @@ DECLARE_int32(cutoff);
 DECLARE_string(filter); //run only the tests with names matching this regex.
 DECLARE_string(storage);
 DECLARE_string(wires); // local path to wire files
-DECLARE_int32(input_party);
-						//run ./{binary_name} --gtest_list_tests to get all unit test names
+DECLARE_int32(input_party); //run ./{binary_name} --gtest_list_tests to get all unit test names
+DECLARE_int32(unpacked_page_size_bits);
+DECLARE_int32(page_cnt);
 
 
 using namespace vaultdb;
@@ -33,11 +34,19 @@ protected:
     std::string db_name_; // set in setUp()
     StorageModel storage_model_ = StorageModel::COLUMN_STORE;
     EmpManager *manager_ = nullptr;
+    vector<int> bp_parameters_ = {2048, 50, 5, 1000};
+    std::string alice_host_ = "127.0.0.1";
+    std::string bob_host_ = "127.0.0.1";
+    std::string carol_host_ = "127.0.0.1";
+    std::string trusted_party_host_ = "127.0.0.1";
+    int port_ = 54345;
+    int ctrl_port_ = 65455;
 
     void SetUp() override;
     void TearDown() override;
     void disableBitPacking();
     void initializeBitPacking(const string & unioned_db);
+    void parseIPsFromJson(const string &config_json_path);
 
 };
 
