@@ -32,6 +32,7 @@ namespace vaultdb {
 
         std::string db_name_ = unioned_db_; // default, set in setUp()
         ZKManager *manager_ = nullptr;
+        vector<int> bp_parameters_ = {2048, 50, 5, 1000};
 
     private:
 
