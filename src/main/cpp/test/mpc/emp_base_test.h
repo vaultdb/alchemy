@@ -31,7 +31,6 @@ protected:
     std::string db_name_; // set in setUp()
     StorageModel storage_model_ = StorageModel::COLUMN_STORE;
     EmpManager *manager_ = nullptr;
-    vector<int> bp_parameters_ = {2048, 50, 5, 1000};
 
     void SetUp() override;
     void TearDown() override;
