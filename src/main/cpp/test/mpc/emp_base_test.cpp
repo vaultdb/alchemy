@@ -162,7 +162,7 @@ void EmpBaseTest::SetUp()  {
     s.setEmptyDbName(empty_db_);
     s.emp_manager_ = manager_;
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(FLAGS_unioned_db);
-    s.initialize(db_name_, md, storage_model_);
+    s.initialize(db_name_, md, storage_model_, bp_parameters_);
     string settings = Utilities::getTestParameters();
     log->write(settings, Level::INFO);
 
@@ -193,7 +193,7 @@ void EmpBaseTest::disableBitPacking() {
 void EmpBaseTest::initializeBitPacking(const string &unioned_db) {
     SystemConfiguration & s = SystemConfiguration::getInstance();
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(unioned_db);
-    s.initialize(unioned_db, md, storage_model_);
+    s.initialize(unioned_db, md, storage_model_, bp_parameters_);
 }
 
 
