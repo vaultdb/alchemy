@@ -18,6 +18,8 @@ DEFINE_string(storage, "wire_packed", "storage model for columns (column or wire
 DEFINE_string(empty_db, "tpch_empty", "empty db name for schemas");
 DEFINE_string(wires, "wires", "local path to wire files");
 DEFINE_int32(input_party, 10086, "party for input data");
+DEFINE_int32(unpacked_page_size_bits, 2048, "unpacked page size in bits");
+DEFINE_int32(page_cnt, 50, "number of pages in unpacked buffer pool");
 
 using namespace vaultdb;
 
@@ -187,9 +189,11 @@ int main(int argc, char **argv) {
     return i;
 
 }
-#else
-int main(int argc, char **argv) {
-    std::cout << "emp-rescu backend not found!" << std::endl;
-}
+
+//#else
+
+//int main(int argc, char **argv) {
+//   std::cout << "emp-rescu backend not found!" << std::endl;
+//}
 
 #endif

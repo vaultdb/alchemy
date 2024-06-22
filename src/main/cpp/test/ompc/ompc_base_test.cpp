@@ -5,8 +5,7 @@
 #include "util/emp_manager/outsourced_mpc_manager.h"
 #include <util/logger.h>
 
-#include "query_table/secure_tuple.h" // for use in child classes
-#include "query_table/plain_tuple.h"
+#include <boost/property_tree/json_parser.hpp>
 
 #if __has_include("emp-rescu/emp-rescu.h")
 
@@ -31,31 +30,27 @@ void OmpcBaseTest::SetUp()  {
     s.input_party_ = FLAGS_input_party;
 	Logger* log = get_log();
 
-    log->write("Connecting on ports " + std::to_string(FLAGS_port) + ", " + std::to_string(FLAGS_ctrl_port) + " as " + std::to_string(FLAGS_party), Level::INFO);
+    // parse IPs and ports from config.json
+    parseIPsFromJson(Utilities::getCurrentWorkingDirectory() + "/config.json");
 
+    log->write("Connecting on ports " + std::to_string(port_) + ", " + std::to_string(ctrl_port_) + " as " + std::to_string(FLAGS_party), Level::INFO);
 
+    string hosts[] = {alice_host_, bob_host_, carol_host_, trusted_party_host_};
+    // to enable wire packing set storage model to StorageModel::PACKED_COLUMN_STORE
+    manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, port_, ctrl_port_);
+    db_name_ = (FLAGS_party == emp::TP) ? FLAGS_unioned_db : empty_db_;
 
-//        string hosts[] = { // codd2
-//                          "129.105.61.179", // codd5 (Alice)
-//                          "129.105.61.184", // codd10 (Bob)
-//                          "129.105.61.186", // codd12 (Carol)
-//                          "129.105.61.176" // codd2 (TP)
-//                           };
-        string hosts[] = {"127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1"};
-        // to enable wire packing set storage model to StorageModel::PACKED_COLUMN_STORE
-        manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
-        db_name_ = (FLAGS_party == emp::TP) ? FLAGS_unioned_db : empty_db_;
-        
-        FLAGS_port += N;
-        FLAGS_ctrl_port += N;
+    port_ += N;
+    ctrl_port_ += N;
 
-
-
+    // set bp parameters with gflags
+    bp_parameters_[0] = FLAGS_unpacked_page_size_bits;
+    bp_parameters_[1] = FLAGS_page_cnt;
 
     s.setEmptyDbName(empty_db_);
     s.emp_manager_ = manager_;
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(FLAGS_unioned_db);
-    s.initialize(db_name_, md, storage_model_);
+    s.initialize(db_name_, md, storage_model_, bp_parameters_);
     string settings = Utilities::getTestParameters();
     log->write(settings, Level::INFO);
 
@@ -79,7 +74,57 @@ void OmpcBaseTest::disableBitPacking() {
 void OmpcBaseTest::initializeBitPacking(const string &unioned_db) {
     SystemConfiguration & s = SystemConfiguration::getInstance();
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(unioned_db);
-    s.initialize(unioned_db, md, storage_model_);
+    s.initialize(unioned_db, md, storage_model_, bp_parameters_);
+}
+
+void OmpcBaseTest::parseIPsFromJson(const std::string &config_json_path) {
+    stringstream ss;
+    std::vector<std::string> json_lines = DataUtilities::readTextFile(config_json_path);
+    for(vector<string>::iterator pos = json_lines.begin(); pos != json_lines.end(); ++pos)
+        ss << *pos << endl;
+
+    boost::property_tree::ptree pt;
+    boost::property_tree::read_json(ss, pt);
+
+    if(pt.count("hosts") > 0) {
+        boost::property_tree::ptree hosts = pt.get_child("hosts");
+
+        for(ptree::const_iterator it = hosts.begin(); it != hosts.end(); ++it) {
+            if(it->second.count("1") > 0) {
+                alice_host_ = it->second.get_child("1").get_value<std::string>();
+            }
+            else {
+                throw std::runtime_error("No alice host found in config.json");
+            }
+
+            if(it->second.count("2") > 0) {
+                bob_host_ = it->second.get_child("2").get_value<std::string>();
+            }
+            else {
+                throw std::runtime_error("No bob host found in config.json");
+            }
+
+            if(it->second.count("3") > 0) {
+                carol_host_ = it->second.get_child("3").get_value<std::string>();
+            }
+            else {
+                throw std::runtime_error("No carol host found in config.json");
+            }
+
+            if(it->second.count("10086") > 0) {
+                trusted_party_host_ = it->second.get_child("10086").get_value<std::string>();
+            }
+            else {
+                throw std::runtime_error("No tp host found in config.json");
+            }
+        }
+
+        port_ = pt.get_child("port").get_value<int32_t>();
+        ctrl_port_ = pt.get_child("ctrl_port").get_value<int32_t>();
+    }
+    else {
+        throw std::runtime_error("No hosts found in config.json");
+    }
 }
 
 

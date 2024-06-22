@@ -28,6 +28,8 @@ DEFINE_string(storage, "wire_packed", "storage model for columns (column or wire
 DEFINE_string(empty_db, "tpch_empty", "empty db name for schemas");
 DEFINE_string(wires, "wires", "local path to wire files");
 DEFINE_int32(input_party, 10086, "party for input data");
+DEFINE_int32(unpacked_page_size_bits, 2048, "unpacked page size in bits");
+DEFINE_int32(page_cnt, 50, "number of pages in unpacked buffer pool");
 
 
 
@@ -38,9 +40,6 @@ protected:
 
     const std::string src_path_ = Utilities::getCurrentWorkingDirectory();
     const std::string packed_pages_path_ = src_path_ + "/packed_pages/";
-    int lineitem_limit_ = 30;
-
-    int orders_limit_ = 10;
 
 };
 
@@ -48,7 +47,7 @@ protected:
 
 TEST_F(OMPCSortTest, tpchQ01Sort) {
 
-    std::string limit_sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(FLAGS_cutoff);
+    std::string limit_sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(FLAGS_cutoff);
     string sql = "WITH input AS (" + limit_sql + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
 
     SortDefinition sort_def{ColumnSort(0, SortDirection::ASCENDING),
@@ -85,15 +84,18 @@ TEST_F(OMPCSortTest, tpchQ01Sort) {
 
 TEST_F(OMPCSortTest, tpchQ03Sort) {
 
+    int lineitem_limit = 30;
+    int orders_limit = 10;
+
     std::string lineitem_sql_ = "SELECT  l_orderkey, l_linenumber, l_extendedprice * (1 - l_discount) revenue \n"
                                 "FROM lineitem \n"
-                                "ORDER BY l_orderkey \n"
-                                "LIMIT " + std::to_string(lineitem_limit_);
+                                "ORDER BY l_orderkey, l_linenumber \n"
+                                "LIMIT " + std::to_string(lineitem_limit);
 
     std::string orders_sql_ = "SELECT o_orderkey, o_shippriority \n"
                               "FROM orders \n"
                               "ORDER BY o_orderkey \n"
-                              "LIMIT " + std::to_string(orders_limit_);
+                              "LIMIT " + std::to_string(orders_limit);
 
     std::string sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
                            "lineitem_cte AS (" + lineitem_sql_ + ") "
@@ -106,7 +108,7 @@ TEST_F(OMPCSortTest, tpchQ03Sort) {
                             ColumnSort (4, SortDirection::ASCENDING)}; // o_shippriority
 
     // Table scan for lineitem
-    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table to l_orderkey, l_linenumber, l_extendedprice * (1 - l_discount) revenue
@@ -125,7 +127,7 @@ TEST_F(OMPCSortTest, tpchQ03Sort) {
     lineitem_project->setOperatorId(-2);
 
     // Table scan for orders
-    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit);
     packed_orders_table_scan->setOperatorId(-2);
 
     // Project orders table to o_orderkey, o_shippriority
@@ -166,13 +168,12 @@ TEST_F(OMPCSortTest, tpchQ03Sort) {
 
 TEST_F(OMPCSortTest, tpchQ05Sort) {
 
-    int limit = 100;
-    std::string limit_sql = "SELECT l_orderkey, l_linenumber, l_extendedprice * (1 - l_discount) revenue FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(limit);
+    std::string limit_sql = "SELECT l_orderkey, l_linenumber, l_extendedprice * (1 - l_discount) revenue FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(FLAGS_cutoff);
     string sql = "WITH input AS (" + limit_sql + ") SELECT * FROM input ORDER BY revenue DESC";
 
     SortDefinition sort_def{ColumnSort (2, SortDirection::DESCENDING)};
 
-    PackedTableScan<emp::Bit> *packed_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, limit);
+    PackedTableScan<emp::Bit> *packed_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, FLAGS_cutoff);
     packed_table_scan->setOperatorId(-2);
 
     ExpressionMapBuilder<Bit> builder(packed_table_scan->getOutputSchema());
@@ -211,13 +212,12 @@ TEST_F(OMPCSortTest, tpchQ05Sort) {
 
 TEST_F(OMPCSortTest, tpchQ08Sort) {
 
-    int limit = 100;
-    std::string limit_sql = "SELECT o_orderyear, o_orderkey FROM orders ORDER BY o_orderkey LIMIT " + std::to_string(limit);
+    std::string limit_sql = "SELECT o_orderyear, o_orderkey FROM orders ORDER BY o_orderkey LIMIT " + std::to_string(FLAGS_cutoff);
     string sql = "WITH input AS (" + limit_sql + ") SELECT * FROM input ORDER BY o_orderyear, o_orderkey DESC";
 
     SortDefinition sort_def {ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
 
-    PackedTableScan<emp::Bit> *packed_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, limit);
+    PackedTableScan<emp::Bit> *packed_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, FLAGS_cutoff);
     packed_table_scan->setOperatorId(-2);
 
     ExpressionMapBuilder<Bit> builder(packed_table_scan->getOutputSchema());
@@ -256,7 +256,7 @@ TEST_F(OMPCSortTest, tpchQ09Sort) {
     int nation_limit = 2;
 
 
-    std::string lineitem_sql = "SELECT l_orderkey, l_suppkey FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(lineitem_limit);
+    std::string lineitem_sql = "SELECT l_orderkey, l_suppkey FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(lineitem_limit);
 
     std::string orders_sql = "SELECT o_orderkey, o_orderyear FROM orders ORDER BY o_orderkey LIMIT " + std::to_string(orders_limit);
 
@@ -368,13 +368,13 @@ TEST_F(OMPCSortTest, tpchQ09Sort) {
 
 // 18
 TEST_F(OMPCSortTest, tpchQ18Sort) {
-    int limit = 100;
-    std::string limit_sql = "SELECT o_orderkey, o_orderdate, o_totalprice, o_custkey FROM orders ORDER BY o_orderkey LIMIT " + std::to_string(limit);
+
+    std::string limit_sql = "SELECT o_orderkey, o_orderdate, o_totalprice, o_custkey FROM orders ORDER BY o_orderkey LIMIT " + std::to_string(FLAGS_cutoff);
     string sql = "WITH input AS (" + limit_sql + ") SELECT * FROM input ORDER BY o_custkey, o_orderkey";
 
     SortDefinition sort_def {ColumnSort(3, SortDirection::ASCENDING), ColumnSort(0, SortDirection::ASCENDING)};
 
-    PackedTableScan<emp::Bit> *packed_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, limit);
+    PackedTableScan<emp::Bit> *packed_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, FLAGS_cutoff);
     packed_table_scan->setOperatorId(-2);
 
     ExpressionMapBuilder<Bit> builder(packed_table_scan->getOutputSchema());
