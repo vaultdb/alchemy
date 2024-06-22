@@ -41,8 +41,7 @@ public:
 
             emp::OMPCPackedWire packed_wire(bpm_.block_n_);
             emp_manager_->pack(current_slot_ptr, (Bit*) &packed_wire, bpm_.unpacked_page_size_bits_);
-            bpm_.packed_table_catalog_[pid.table_id_]->writePackedWire(pid, packed_wire);
-//            bpm_.unpinPage(pid);
+            table_->writePackedWire(pid, packed_wire);
         }
 
         return table_;
@@ -132,6 +131,5 @@ private:
 int main(int argc, char **argv) {
     std::cout << "emp-rescu backend not found!" << std::endl;
 }
-
 #endif
 #endif //VAULTDB_EMP_SECRET_SHARE_AND_PACK_DATA_FROM_QUERY_H

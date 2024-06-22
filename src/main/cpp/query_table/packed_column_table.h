@@ -168,6 +168,7 @@ namespace vaultdb {
 
             OMPCPackedWire zero(bpm_.block_n_);
             vector<int8_t> zero_block = serializePackedWire(zero);
+            assert(zero_block.size() == packed_wire_size_bytes_);
 
             // initialize packed buffer pool including dummy tags
             for(int i = -1; i < schema_.getFieldCount(); ++i) {
@@ -177,7 +178,7 @@ namespace vaultdb {
                     memcpy(packed_pages_[i].data() + j * packed_wire_size_bytes_, zero_block.data(), packed_wire_size_bytes_);
                 }
             }
-            bpm_.packed_table_catalog_[table_id_] = this;
+            bpm_.registerTable(table_id_, this);
         }
 
         PackedColumnTable(const PackedColumnTable &src) : QueryTable<Bit>(src), manager_(SystemConfiguration::getInstance().emp_manager_) {
@@ -187,7 +188,8 @@ namespace vaultdb {
             if(src.tuple_cnt_ == 0)
                 return;
 
-            bpm_.packed_table_catalog_[table_id_] = this;
+            bpm_.registerTable(table_id_, this);
+
 
             PackedColumnTable *src_table = (PackedColumnTable *) &src;
             bpm_.flushTable(src_table->table_id_);
@@ -619,6 +621,7 @@ namespace vaultdb {
         ~PackedColumnTable() {
             // Flush pages in buffer pool
             bpm_.removeTable(this->table_id_);
+
         }
 
 

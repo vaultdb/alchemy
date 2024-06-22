@@ -16,8 +16,8 @@ using namespace Logging;
 
 void OmpcBaseTest::SetUp()  {
     SystemConfiguration & s = SystemConfiguration::getInstance();
-    s.emp_mode_ =  EmpMode::OUTSOURCED;
-    emp_mode_ =  s.emp_mode_;
+    emp_mode_ = s.emp_mode_ =  EmpMode::OUTSOURCED;
+
     // defaults to column store
     assert(FLAGS_storage == "column" || FLAGS_storage == "wire_packed");
     if(FLAGS_storage == "wire_packed") {

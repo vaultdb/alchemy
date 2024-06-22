@@ -1,11 +1,15 @@
 #include "buffer_pool_manager.h"
 #include <query_table/packed_column_table.h>
+#include "util/utilities.h"
 
 using namespace  vaultdb;
 
 #if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/emp-zk.h")
 #include "emp-sh2pc/emp-sh2pc.h"
 #else
+
+
+
 void BufferPoolManager::loadPage(PageId &pid) {
 
     if(position_map_.find(pid) != position_map_.end()) {
@@ -13,7 +17,9 @@ void BufferPoolManager::loadPage(PageId &pid) {
         return;
     }
 
-    OMPCPackedWire src = packed_table_catalog_[pid.table_id_]->readPackedWire(pid);
+    auto tbl = packed_table_catalog_[pid.table_id_];
+    assert(tbl != nullptr);
+    OMPCPackedWire src = tbl->readPackedWire(pid);
     int target_slot = evictPage();
     ++misses_;
     Bit *dst = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;

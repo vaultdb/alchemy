@@ -116,7 +116,6 @@ namespace vaultdb {
         // setup for unpacked buffer pool
         std::vector<emp::Bit> unpacked_buffer_pool_;
         int clock_hand_position_ = 0;
-        std::map<int, PackedColumnTable *> packed_table_catalog_;
 
 
         std::map<PageId, PositionMapEntry> position_map_; // map<pid, slot id in unpacked buffer pool>
@@ -132,6 +131,7 @@ namespace vaultdb {
         };
 
         void initialize(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager)  {
+            cout << "Initializing buffer pool!" << endl;
 
             unpacked_page_size_bits_ = unpacked_page_size;
             page_cnt_ = num_unpacked_pages;
@@ -256,11 +256,18 @@ namespace vaultdb {
             packed_table_catalog_.clear();
             clock_hand_position_ = 0;
         }
+
+        inline void registerTable(int table_id, PackedColumnTable *table) {
+            packed_table_catalog_[table_id] = table;
+        }
+
+
     // needed for singleton setup
     private:
-        BufferPoolManager() {}
+        BufferPoolManager() { }
 
 
+        std::map<int, PackedColumnTable *> packed_table_catalog_;
 
 
 

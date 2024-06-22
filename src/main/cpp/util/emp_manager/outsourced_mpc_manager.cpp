@@ -50,8 +50,7 @@ QueryTable<Bit> *OutsourcedMpcManager::secretShare(const QueryTable<bool> *src) 
             for (int i = 0; i < tuple_cnt; ++i) {
 
                 PlainField src_field = src->getField(i, j);
-                SecureField dst_field = SecureField::secret_share_send(src_field, dst_field_desc,
-                                                                       system_conf_.input_party_);
+                SecureField dst_field = SecureField::secret_share_send(src_field, dst_field_desc,  system_conf_.input_party_);
                 dst->setField(i, j, dst_field);
             }
         }
