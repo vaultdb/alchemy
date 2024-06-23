@@ -35,9 +35,7 @@ void OmpcBaseTest::SetUp()  {
 
     log->write("Connecting on ports " + std::to_string(port_) + ", " + std::to_string(ctrl_port_) + " as " + std::to_string(FLAGS_party), Level::INFO);
 
-    string hosts[] = {alice_host_, bob_host_, carol_host_, trusted_party_host_};
-    // to enable wire packing set storage model to StorageModel::PACKED_COLUMN_STORE
-    manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, port_, ctrl_port_);
+    manager_ = new OutsourcedMpcManager(hosts_.data(), FLAGS_party, port_, ctrl_port_);
     db_name_ = (FLAGS_party == emp::TP) ? FLAGS_unioned_db : empty_db_;
 
     port_ += N;
@@ -90,29 +88,17 @@ void OmpcBaseTest::parseIPsFromJson(const std::string &config_json_path) {
         boost::property_tree::ptree hosts = pt.get_child("hosts");
 
         for(ptree::const_iterator it = hosts.begin(); it != hosts.end(); ++it) {
-            if(it->second.count("1") > 0) {
-                alice_host_ = it->second.get_child("1").get_value<std::string>();
-            }
-            else {
-                throw std::runtime_error("No alice host found in config.json");
-            }
-
-            if(it->second.count("2") > 0) {
-                bob_host_ = it->second.get_child("2").get_value<std::string>();
-            }
-            else {
-                throw std::runtime_error("No bob host found in config.json");
+            for(int host_idx = 1; host_idx <= emp::N; ++host_idx) {
+                if(it->second.count(std::to_string(host_idx)) > 0) {
+                    hosts_[host_idx-1] = it->second.get_child(std::to_string(host_idx)).get_value<string>();
+                }
+                else {
+                    throw std::runtime_error("Host " + std::to_string(host_idx) + " is not found in config.json");
+                }
             }
 
-            if(it->second.count("3") > 0) {
-                carol_host_ = it->second.get_child("3").get_value<std::string>();
-            }
-            else {
-                throw std::runtime_error("No carol host found in config.json");
-            }
-
-            if(it->second.count("10086") > 0) {
-                trusted_party_host_ = it->second.get_child("10086").get_value<std::string>();
+            if(it->second.count(std::to_string(emp::TP)) > 0) {
+                hosts_[N] = it->second.get_child(std::to_string(emp::TP)).get_value<std::string>();
             }
             else {
                 throw std::runtime_error("No tp host found in config.json");
