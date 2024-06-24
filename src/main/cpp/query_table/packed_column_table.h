@@ -121,6 +121,8 @@ namespace vaultdb {
 
         StorageModel storageModel() const override { return StorageModel::COLUMN_STORE; }
 
+         static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, vector<int8_t> &packed_wires) { retur nullptr; }
+
         void deserializeRow(const int & row, vector<int8_t> & src) override {
 
         }
@@ -257,6 +259,7 @@ namespace vaultdb {
         }
 
 
+        // writes all packed wires out to disk
          vector<int8_t> serialize() const override {
             size_t output_buffer_len = 0L;
             for(auto col_entry : packed_pages_) {
@@ -266,12 +269,30 @@ namespace vaultdb {
             vector<int8_t> output_buffer(output_buffer_len);
             int8_t *write_ptr = output_buffer.data();
             for(auto col_entry : packed_pages_) {
+                cout << "Serializing column "<< col_entry.first << " with " << col_entry.second.size() << " bytes" << endl;
+
                 memcpy(write_ptr, col_entry.second.data(), col_entry.second.size());
                 write_ptr += col_entry.second.size();
             }
             return output_buffer;
 
         }
+
+
+
+        static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, vector<int8_t> &packed_wires) {
+            PackedColumnTable *table = new PackedColumnTable(tuple_cnt, schema, collation);
+            int8_t *read_cursor = packed_wires.data();
+            for(auto col_entry : table->packed_pages_) {
+                cout << "Deserializing column "<< col_entry.first << " with " << col_entry.second.size() << " bytes" << endl;
+
+                memcpy(col_entry.second.data(), read_cursor, col_entry.second.size());
+                read_cursor += col_entry.second.size();
+            }
+
+            return table;
+        }
+
 
         Field<Bit> getField(const int  & row, const int & col)  const override {
             int field_blocks = blocks_per_field_.at(col);

@@ -22,9 +22,6 @@ void OmpcBaseTest::SetUp()  {
     assert(FLAGS_storage == "column" || FLAGS_storage == "wire_packed");
     if(FLAGS_storage == "wire_packed") {
         storage_model_ = StorageModel::PACKED_COLUMN_STORE;
-        string packed_wires_path = Utilities::getCurrentWorkingDirectory() + "/" + FLAGS_wire_path + "/" + db_name_;
-        // read in files for packed wires
-        TableManager::getInstance().initializePackedWires(packed_wires_path, FLAGS_party);
     }
     else {
         storage_model_ = StorageModel::COLUMN_STORE;
@@ -55,6 +52,12 @@ void OmpcBaseTest::SetUp()  {
     s.initialize(db_name_, md, storage_model_, bp_unpacked_page_size_bits_, bp_page_cnt_);
     string settings = Utilities::getTestParameters();
     log->write(settings, Level::INFO);
+
+    if(storage_model_ == StorageModel::PACKED_COLUMN_STORE){
+        string packed_wires_path = Utilities::getCurrentWorkingDirectory() + "/" + FLAGS_wire_path + "/" + FLAGS_unioned_db;
+        // read in files for packed wires
+        TableManager::getInstance().initializePackedWires(packed_wires_path, FLAGS_party);
+    }
 
 }
 
