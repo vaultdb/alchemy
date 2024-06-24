@@ -68,11 +68,11 @@ namespace vaultdb {
                 putSecureTable(table_name, src);
             }
 
+            // if a table already exists, append to it
             auto dst_tuple_cnt = dst->tuple_cnt_;
             int new_table_len = dst_tuple_cnt + src->tuple_cnt_;
             dst->resize(new_table_len);
 
-            // append to the existing cols
             for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
                 dst->cloneColumn(i, dst_tuple_cnt, src, i);
             }
