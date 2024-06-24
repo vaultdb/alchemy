@@ -128,6 +128,24 @@ namespace vaultdb {
     static string printTable(SecureTable *table, int tuple_limit = -1, bool show_dummies = false);
     static string printTable(const PlainTable *table, int tuple_limit = -1, bool show_dummies = false);
 
+        // src is produced by DataUtilities::printSortDefinition
+        // e.g., {<1, ASC>, <2, DESC>}
+        static SortDefinition parseCollation(const string & src) {
+            int cursor = 1;
+            SortDefinition dst;
+
+            while(src.find('<', cursor) != -1) {
+                int start_entry = src.find('<', cursor);
+                int end_entry = src.find('>', cursor);
+                int delimiter = src.find(',', cursor);
+                int col = std::stoi(src.substr(start_entry + 1, delimiter - start_entry - 1));
+                SortDirection dir = (src.substr(delimiter + 1, end_entry - delimiter - 1) == "ASC") ? SortDirection::ASCENDING : SortDirection::DESCENDING;
+                dst.emplace_back(std::make_pair(col, dir));
+                cursor = end_entry + 1;
+            }
+
+            return dst;
+        }
     };
 }
 

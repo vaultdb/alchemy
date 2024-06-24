@@ -14,8 +14,8 @@ using namespace vaultdb;
 const string empty_db_ = "tpch_empty";
 const int port_ = 55370;
 const int ctrl_port_ = 55380;
-string dst_root_ = "";
-string db_name_ = "";
+string dst_root_;
+string db_name_;
 int party_ = -1;
 SystemConfiguration & conf_ = SystemConfiguration::getInstance();
 
@@ -32,6 +32,20 @@ map<string, string> table_to_query = {
         {"region", "SELECT r_regionkey, r_name, r_comment  FROM region ORDER BY r_regionkey"}
 };
 
+// initialized below
+map<string, string> table_to_collation_;
+
+void initializeCollations() {
+    table_to_collation_["lineitem"] = DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING), ColumnSort(4, SortDirection::ASCENDING)}),
+        table_to_collation_["orders"] = DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING)});
+        table_to_collation_["customer"] = DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING)});
+        table_to_collation_["part"]= DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING)});
+        table_to_collation_["partsupp"] = DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::ASCENDING)});
+        table_to_collation_["supplier"] = DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING)});
+        table_to_collation_["nation"] = DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING)});
+        table_to_collation_["region"] = DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING)});
+
+}
 
 void encodeTable(string table_name) {
     // metadata consists of schema and tuple count
@@ -47,9 +61,11 @@ void encodeTable(string table_name) {
     DataUtilities::writeFile(secret_shares_file, serialized);
 
     if(party_ == conf_.input_party_) {
-        // metadata file (schema and tuple count
+        // metadata file schema, collation, and tuple count
         string metadata_filename = dst_root_ + "/" + table_name + ".metadata";
-        string metadata = packed_table->getSchema().prettyPrint() + "\n" + std::to_string(packed_table->tuple_cnt_);
+        string metadata = packed_table->getSchema().prettyPrint() + "\n"
+                + table_to_collation_.at(table_name) + "\n"
+               + std::to_string(packed_table->tuple_cnt_);
         DataUtilities::writeFile(metadata_filename, metadata);
     }
 
@@ -84,6 +100,8 @@ int main(int argc, char **argv) {
     // attempt to create target dir
     string dst_dir = dst_root_.substr(0, dst_root_.find_last_of("/"));
     Utilities::mkdir(dst_dir);
+
+    initializeCollations();
 
     // set up OMPC
     string hosts[] = {"127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1"};

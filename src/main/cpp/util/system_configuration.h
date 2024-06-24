@@ -24,8 +24,6 @@ namespace vaultdb{
 
         bool bp_enabled_ = false;
         BufferPoolManager & bpm_ = BufferPoolManager::getInstance();
-        // fully qualified directory name for packed wire files
-        string packed_wires_dir_ = "";
         int num_tables_ = 0;
         int bp_page_size_bits_ = 2048;
         int bp_page_cnt_ = 50;

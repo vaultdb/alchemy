@@ -3,6 +3,7 @@
 
 #include <string>
 #include <query_table/query_table.h>
+#include <query_table/packed_column_table.h>
 
 // a simple container to store materialized tables that are globally accessible to query operators
 // analogous to a system catalog in a traditional DBMS
@@ -101,6 +102,46 @@ namespace vaultdb {
                 dst->cloneColumn(i, dst_tuple_cnt, src, i);
             }
             dst->cloneColumn(-1, dst_tuple_cnt, src, -1);
+        }
+
+        // e.g., wires/tpch_unioned_150, 1
+        void initializePackedWires(const string & path, const int & party) {
+            SystemConfiguration & config = SystemConfiguration::getInstance();
+            assert(config.storageModel() == StorageModel::PACKED_COLUMN_STORE);
+
+            // if input party, initialize delta first from file
+            if(party == SystemConfiguration::getInstance().input_party_) {
+                cout << "Reading delta from " << path << "/delta" << endl;
+
+                auto delta = DataUtilities::readFile(path + "/delta");
+                assert(delta.size() == sizeof(block));
+
+                block dst;
+                memcpy((int8_t *) &dst, delta.data(), sizeof(block));
+                config.emp_manager_->setDelta(dst);
+            }
+
+            string all_tables = Utilities::runCommand("ls *.metadata", path);
+            vector<string> tables = Utilities::splitStringByNewline(all_tables);
+
+            for(auto & metadata_file : tables) {
+                string table_name = metadata_file.substr(0, metadata_file.size() - 9);
+
+
+                auto metadata = DataUtilities::readTextFile(path + "/" + metadata_file);
+                // drop ".metadata" suffix
+
+                auto schema = QuerySchema(metadata.at(0));
+                SortDefinition  collation = DataUtilities::parseCollation(metadata.at(1));
+                int tuple_cnt = atoi(metadata.at(2).c_str());
+
+//                cout << "Parsed table " << table_name << " with schema " << schema << " collation: " << DataUtilities::printSortDefinition(collation) << " tuple count: " << tuple_cnt << endl;
+
+                vector<int8_t> packed_wires = DataUtilities::readFile(path + "/" + table_name + "." + std::to_string(party));
+                SecureTable *table = PackedColumnTable::deserialize(schema, tuple_cnt, collation, packed_wires);
+                putSecureTable(table_name, table);
+            }
+
         }
 
     private:
