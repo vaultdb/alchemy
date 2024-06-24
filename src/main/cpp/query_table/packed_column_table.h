@@ -172,7 +172,8 @@ namespace vaultdb {
 
             // initialize packed buffer pool including dummy tags
             for(int i = -1; i < schema_.getFieldCount(); ++i) {
-                int col_packed_wires = tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0);
+                int col_packed_wires = (blocks_per_field_.at(i) == 1) ? (tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0)) : (tuple_cnt_ * blocks_per_field_.at(i));
+
                 packed_pages_[i] = std::vector<int8_t>(col_packed_wires * packed_wire_size_bytes_);
                 for(int j = 0; j < col_packed_wires; ++j) {
                     memcpy(packed_pages_[i].data() + j * packed_wire_size_bytes_, zero_block.data(), packed_wire_size_bytes_);
@@ -234,7 +235,7 @@ namespace vaultdb {
         }
 
 
-        emp::OMPCPackedWire deserializePackedWire(int8_t *serialized_packed_wire) {
+        emp::OMPCPackedWire deserializePackedWire(int8_t *serialized_packed_wire) const {
             int8_t *read_ptr = serialized_packed_wire;
             int read_stride = bpm_.block_n_ * sizeof(block);
 
@@ -251,7 +252,7 @@ namespace vaultdb {
             return dst;
         }
 
-        OMPCPackedWire readPackedWire(const PageId & pid) {
+        OMPCPackedWire readPackedWire(const PageId & pid) const {
             return deserializePackedWire(packed_pages_[pid.col_id_].data() + pid.page_idx_ * packed_wire_size_bytes_);
         }
 
@@ -273,21 +274,50 @@ namespace vaultdb {
         }
 
         Field<Bit> getField(const int  & row, const int & col)  const override {
-            PageId pid = bpm_.getPageId(table_id_, col, row, fields_per_wire_.at(col));
-            emp::Bit *read_ptr = bpm_.getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
-            SecureField f  =  Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
-            //this may not be correct in the long run, what if we pin a page outside setField (e.g., to write to an output slot in NestedLoopAggregate) and repeatedly set fields in the output buffer?  Only use pin/unpin explicitly.
-            // since we're not writing code for concurrent queries against the same table (BPM not accessible outside of this program/query's address space) we don't have to worry about a page we request getting evicted between getUnpackedPagePtr and our read/write
-//            bpm_.unpinPage(pid);
-            return f;
+            int field_blocks = blocks_per_field_.at(col);
+
+            if(field_blocks == 1) {
+                PageId pid(table_id_, col, row / fields_per_wire_.at(col));
+                emp::Bit *read_ptr = bpm_.getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
+                return  Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
+            }
+
+            vector<Bit> bits(field_blocks * bpm_.unpacked_page_size_bits_);
+            Bit *write_ptr = bits.data();
+            PageId pid(table_id_, col, row * field_blocks);
+            for(int i = 0; i < field_blocks; ++i) {
+               OMPCPackedWire wire = readPackedWire(pid);
+               manager_->unpack((Bit *) &wire, write_ptr, bpm_.block_n_);
+               ++pid.page_idx_;
+               write_ptr += bpm_.packed_page_size_wires_;
+            }
+            return  Field<Bit>::deserialize(schema_.getField(col), (int8_t *) bits.data());
         }
 
 
         inline void setField(const int  & row, const int & col, const Field<Bit> & f)  override {
-            PageId pid = bpm_.getPageId(table_id_, col, row, fields_per_wire_.at(col));
-            emp::Bit *write_ptr = bpm_.getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
-            f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
-            bpm_.markDirty(pid);
+            int field_blocks = blocks_per_field_.at(col);
+
+            if(field_blocks == 1) {
+                PageId pid = bpm_.getPageId(table_id_, col, row, fields_per_wire_.at(col));
+                emp::Bit *write_ptr = bpm_.getUnpackedPagePtr(pid) +   ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
+                f.serialize((int8_t *) write_ptr, f, schema_.getField(col));
+                bpm_.markDirty(pid);
+                return;
+            }
+
+            vector<Bit> bits(field_blocks * bpm_.unpacked_page_size_bits_);
+            f.serialize((int8_t *) bits.data(), f, schema_.getField(col));
+            PageId pid(table_id_, col, row * field_blocks);
+            Bit *read_ptr = bits.data();
+
+            for(int i = 0; i < field_blocks; ++i) {
+                Bit *write_ptr = bpm_.getUnpackedPagePtr(pid);
+                memcpy(write_ptr, read_ptr, bpm_.unpacked_page_size_bits_ * sizeof(Bit));
+                bpm_.markDirty(pid);
+                ++pid.page_idx_;
+                read_ptr += bpm_.unpacked_page_size_bits_;
+            }
 
         }
 
@@ -323,7 +353,6 @@ namespace vaultdb {
             tuple_packed_size_bytes_ += field_packed_size_bytes;
             field_packed_sizes_bytes_[ordinal] = field_packed_size_bytes;
 
-            // TODO: check if we need to create empty pages for the new column
             cloneColumn(ordinal, -1, this, ordinal);
         }
 
@@ -347,16 +376,6 @@ namespace vaultdb {
                         bpm_.addPageSequence(table_id_, i, old_tuple_cnt + fields_per_wire - old_pos_in_last_page, pages_to_add, fields_per_wire);
                     }
                 }
-//                else{
-//                    int new_pos_in_last_page = this->tuple_cnt_ % fields_per_wire;
-//
-//                    if(old_tuple_cnt - this->tuple_cnt_ > fields_per_wire - new_pos_in_last_page - 1) {
-//                        int rows_to_remove = (old_tuple_cnt - this->tuple_cnt_) - (fields_per_wire - new_pos_in_last_page - 1);
-//
-//                        int pages_to_remove = rows_to_remove / fields_per_wire + ((rows_to_remove % fields_per_wire) != 0);
-//                        bpm_.removePageSequence(table_id_, i, this->tuple_cnt_ + fields_per_wire - new_pos_in_last_page, pages_to_remove, fields_per_wire);
-//                    }
-//                }
             }
         }
 
@@ -398,6 +417,7 @@ namespace vaultdb {
                     fields_per_wire_[i] = size_threshold / desc.size();
                     blocks_per_field_[i] = 1;
                 }
+                cout << "Field " << desc.getName() << ": fields / wire: " << fields_per_wire_[i] << " blocks per field: " << blocks_per_field_[i] << endl;
 
                 int field_size_bytes = desc.size() * sizeof(emp::Bit);
                 tuple_size_bytes_ += field_size_bytes;
