@@ -20,7 +20,7 @@ DEFINE_int32(ctrl_port, 65450, "port for managing EMP control flow by passing pu
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "wire_packed", "storage model for columns (column or wire_packed)");
-DEFINE_string(wires, "wires", "local path to wire files");
+DEFINE_string(wire_path, "wire_path", "relative path to wire files");
 DEFINE_int32(input_party, 10086, "party for input data");
 DEFINE_int32(unpacked_page_size_bits, 2048, "unpacked page size in bits");
 DEFINE_int32(page_cnt, 50, "number of pages in unpacked buffer pool");

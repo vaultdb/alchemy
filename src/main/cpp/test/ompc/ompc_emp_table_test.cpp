@@ -13,10 +13,10 @@ DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65428, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(filter, "*.ompc_secret_share_customer", "run only the tests passing this filter");
 DEFINE_string(storage, "wire_packed", "storage model for columns (column or wire_packed)");
 DEFINE_string(empty_db, "tpch_empty", "empty db name for schemas");
-DEFINE_string(wires, "wires", "local path to wire files");
+DEFINE_string(wire_path, "wire_path", "local path to wire files");
 DEFINE_int32(input_party, 10086, "party for input data");
 DEFINE_int32(unpacked_page_size_bits, 2048, "unpacked page size in bits");
 DEFINE_int32(page_cnt, 50, "number of pages in unpacked buffer pool");
@@ -57,6 +57,16 @@ TEST_F(OMPCEmpTableTest, ompc_secret_share_table_varchar) {
 }
 
 
+
+// test secret a query table with a single string in EMP
+TEST_F(OMPCEmpTableTest, ompc_secret_share_customer) {
+
+    string sql = "SELECT c_custkey, c_name, c_address, c_nationkey, c_phone, c_acctbal, c_mktsegment, c_comment FROM customer ORDER BY c_custkey";
+    SortDefinition  collation = DataUtilities::getDefaultSortDefinition(2);
+
+    secretShareAndValidate(sql, collation);
+
+}
 
 // test more column types
 TEST_F(OMPCEmpTableTest, ompc_secret_share_table) {

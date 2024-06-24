@@ -289,7 +289,7 @@ namespace vaultdb {
                OMPCPackedWire wire = readPackedWire(pid);
                manager_->unpack((Bit *) &wire, write_ptr, bpm_.block_n_);
                ++pid.page_idx_;
-               write_ptr += bpm_.packed_page_size_wires_;
+               write_ptr += bpm_.unpacked_page_size_bits_;
             }
             return  Field<Bit>::deserialize(schema_.getField(col), (int8_t *) bits.data());
         }
@@ -417,7 +417,6 @@ namespace vaultdb {
                     fields_per_wire_[i] = size_threshold / desc.size();
                     blocks_per_field_[i] = 1;
                 }
-                cout << "Field " << desc.getName() << ": fields / wire: " << fields_per_wire_[i] << " blocks per field: " << blocks_per_field_[i] << endl;
 
                 int field_size_bytes = desc.size() * sizeof(emp::Bit);
                 tuple_size_bytes_ += field_size_bytes;

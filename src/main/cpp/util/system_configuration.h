@@ -24,8 +24,11 @@ namespace vaultdb{
 
         bool bp_enabled_ = false;
         BufferPoolManager & bpm_ = BufferPoolManager::getInstance();
-
-        int num_tables_;
+        // fully qualified directory name for packed wire files
+        string packed_wires_dir_ = "";
+        int num_tables_ = 0;
+        int bp_page_size_bits_ = 2048;
+        int bp_page_cnt_ = 50;
 
 
         static SystemConfiguration& getInstance() {
@@ -33,17 +36,32 @@ namespace vaultdb{
             return instance;
         }
 
-        void initialize(const string &db_name, const std::map<ColumnReference, BitPackingDefinition> &bp,
-                        const StorageModel &model, const vector<int> &bp_parameters = {2048, 50, 5, 1000}) {
+        // for sh2pc and ZK mostly
+        void initialize(const string &db_name, const std::map<ColumnReference, BitPackingDefinition> &bp, const StorageModel &model) {
             unioned_db_name_ = db_name;
             bit_packing_ = bp;
             storage_model_ = model;
 
             if(storage_model_ == StorageModel::PACKED_COLUMN_STORE) {
                 bp_enabled_ = true;
-                bpm_.initialize(bp_parameters[0], bp_parameters[1], bp_parameters[2], bp_parameters[3], emp_manager_);
+                bpm_.initialize(bp_page_size_bits_, bp_page_cnt_, emp_manager_);
             }
         }
+
+        void initialize(const string &db_name, const std::map<ColumnReference, BitPackingDefinition> &bp,
+                        const StorageModel &model, const int & bp_page_size_bits, const int & bp_page_cnt) {
+            unioned_db_name_ = db_name;
+            bit_packing_ = bp;
+            storage_model_ = model;
+            bp_page_size_bits_ = bp_page_size_bits;
+            bp_page_cnt_ = bp_page_cnt;
+
+            if(storage_model_ == StorageModel::PACKED_COLUMN_STORE) {
+                bp_enabled_ = true;
+                bpm_.initialize(bp_page_size_bits_, bp_page_cnt_, emp_manager_);
+            }
+        }
+
 
         string getUnionedDbName() const { return unioned_db_name_; }
         string getEmptyDbName() const { return empty_db_name_; }

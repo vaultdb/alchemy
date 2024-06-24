@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
     if(party_ == conf.input_party_) {
 
         OMPCBackend<N> *protocol = (OMPCBackend<N> *) emp::backend;
-        string delta_file = dst_root_ + "delta";
+        string delta_file = dst_root_ + "/" + "delta";
         string delta;
         delta.resize(sizeof(block));
         memcpy(delta.data(), &protocol->multi_pack_delta, sizeof(block));

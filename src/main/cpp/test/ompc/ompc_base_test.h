@@ -14,7 +14,7 @@ DECLARE_string(empty_db);
 DECLARE_int32(cutoff);
 DECLARE_string(filter); //run only the tests with names matching this regex.
 DECLARE_string(storage);
-DECLARE_string(wires); // local path to wire files
+DECLARE_string(wire_path); // local path to wire files
 DECLARE_int32(input_party);
 //run ./{binary_name} --gtest_list_tests to get all unit test names
 DECLARE_int32(unpacked_page_size_bits);
@@ -35,7 +35,9 @@ protected:
     std::string db_name_; // set in setUp()
     StorageModel storage_model_ = StorageModel::COLUMN_STORE;
     EmpManager *manager_ = nullptr;
-    vector<int> bp_parameters_ = {2048, 50, 5, 1000};
+    int bp_unpacked_page_size_bits_ = 2048;
+    int bp_page_cnt_ = 50;
+
     vector<string> hosts_ = vector<string>(emp::N + 1, "127.0.0.1");
     int port_ = 54345;
     int ctrl_port_ = 65455;

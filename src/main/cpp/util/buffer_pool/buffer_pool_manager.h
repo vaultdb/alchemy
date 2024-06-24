@@ -13,7 +13,7 @@ namespace vaultdb {
     public:
 
 
-        void initialize(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager) {}
+        void initialize(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, EmpManager *manager) {}
         ~BufferPoolManager() {};
         static BufferPoolManager& getInstance() {
             static BufferPoolManager  instance;
@@ -67,8 +67,6 @@ namespace vaultdb {
 
         int unpacked_page_size_bits_; // in emp::Bits
         int page_cnt_;
-        int packed_page_size_wires_; // in emp::OMPCPackedWires
-        int max_packed_page_cnt_;
 
         int block_n_;
 
@@ -105,8 +103,7 @@ namespace vaultdb {
 
         int unpacked_page_size_bits_; // in emp::Bits
         int page_cnt_;
-        int packed_page_size_wires_; // in emp::OMPCPackedWires
-        int max_packed_page_cnt_;
+
         // record stats for the buffer pool
         size_t hits_ = 0L;
         size_t misses_ = 0L;
@@ -130,13 +127,9 @@ namespace vaultdb {
             cout << "Buffer pool requests: " << hits_ + misses_ << " hit rate: " << hits_ << "/(" << hits_ + misses_ << "): " << (float) hits_ / ((float) (hits_ + misses_) ) << endl;
         };
 
-        void initialize(int unpacked_page_size, int num_unpacked_pages, int packed_page_size, int num_packed_pages, EmpManager *manager)  {
-            cout << "Initializing buffer pool!" << endl;
-
-            unpacked_page_size_bits_ = unpacked_page_size;
-            page_cnt_ = num_unpacked_pages;
-            packed_page_size_wires_ = packed_page_size;
-            max_packed_page_cnt_ = num_packed_pages;
+        void initialize(int unpacked_page_bits, int unpacked_page_cnt, EmpManager *manager)  {
+            unpacked_page_size_bits_ = unpacked_page_bits;
+            page_cnt_ = unpacked_page_cnt;
             emp_manager_ = manager;
             // block size of each packed wire based on unpacked page size
             block_n_ = unpacked_page_size_bits_ / 128 + (unpacked_page_size_bits_ % 128 != 0);

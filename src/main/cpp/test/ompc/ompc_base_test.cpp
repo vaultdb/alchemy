@@ -21,6 +21,7 @@ void OmpcBaseTest::SetUp()  {
     assert(FLAGS_storage == "column" || FLAGS_storage == "wire_packed");
     if(FLAGS_storage == "wire_packed") {
         storage_model_ = StorageModel::PACKED_COLUMN_STORE;
+        s.packed_wires_dir_ = FLAGS_wire_path;
     }
     else {
         storage_model_ = StorageModel::COLUMN_STORE;
