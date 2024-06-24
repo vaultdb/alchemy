@@ -6,6 +6,11 @@
 #include <util/logger.h>
 #include <util/emp_manager/emp_manager.h>
 
+// depends on stored packed wires
+// set up packed wires for a given DB with:
+// bash scripts/wire_pack_tpch_instance.sh <DB name>
+// e.g., bash scripts/wire_pack_tpch_instance.sh tpch_unioned_150
+
 DECLARE_int32(party);
 DECLARE_int32(port);
 DECLARE_int32(ctrl_port);
@@ -19,6 +24,7 @@ DECLARE_int32(input_party);
 //run ./{binary_name} --gtest_list_tests to get all unit test names
 DECLARE_int32(unpacked_page_size_bits);
 DECLARE_int32(page_cnt);
+
 
 
 using namespace vaultdb;

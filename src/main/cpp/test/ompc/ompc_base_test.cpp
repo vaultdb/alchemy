@@ -4,6 +4,7 @@
 #include "util/field_utilities.h"
 #include "util/emp_manager/outsourced_mpc_manager.h"
 #include <util/logger.h>
+#include <util/table_manager.h>
 
 #include <boost/property_tree/json_parser.hpp>
 
@@ -21,7 +22,9 @@ void OmpcBaseTest::SetUp()  {
     assert(FLAGS_storage == "column" || FLAGS_storage == "wire_packed");
     if(FLAGS_storage == "wire_packed") {
         storage_model_ = StorageModel::PACKED_COLUMN_STORE;
-        s.packed_wires_dir_ = FLAGS_wire_path;
+        string packed_wires_path = Utilities::getCurrentWorkingDirectory() + "/" + FLAGS_wire_path + "/" + db_name_;
+        // read in files for packed wires
+        TableManager::getInstance().initializePackedWires(packed_wires_path, FLAGS_party);
     }
     else {
         storage_model_ = StorageModel::COLUMN_STORE;
