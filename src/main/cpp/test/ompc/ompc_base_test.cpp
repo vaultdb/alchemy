@@ -43,13 +43,13 @@ void OmpcBaseTest::SetUp()  {
     ctrl_port_ += N;
 
     // set bp parameters with gflags
-    bp_parameters_[0] = FLAGS_unpacked_page_size_bits;
-    bp_parameters_[1] = FLAGS_page_cnt;
+    bp_unpacked_page_size_bits_  = FLAGS_unpacked_page_size_bits;
+    bp_page_cnt_ = FLAGS_page_cnt;
 
     s.setEmptyDbName(empty_db_);
     s.emp_manager_ = manager_;
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(FLAGS_unioned_db);
-    s.initialize(db_name_, md, storage_model_, bp_parameters_);
+    s.initialize(db_name_, md, storage_model_, bp_unpacked_page_size_bits_, bp_page_cnt_);
     string settings = Utilities::getTestParameters();
     log->write(settings, Level::INFO);
 
