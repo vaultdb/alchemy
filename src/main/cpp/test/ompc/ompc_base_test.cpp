@@ -73,7 +73,7 @@ void OmpcBaseTest::disableBitPacking() {
 void OmpcBaseTest::initializeBitPacking(const string &unioned_db) {
     SystemConfiguration & s = SystemConfiguration::getInstance();
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(unioned_db);
-    s.initialize(unioned_db, md, storage_model_, bp_parameters_);
+    s.initialize(unioned_db, md, storage_model_, bp_unpacked_page_size_bits_, bp_page_cnt_);
 }
 
 void OmpcBaseTest::parseIPsFromJson(const std::string &config_json_path) {
