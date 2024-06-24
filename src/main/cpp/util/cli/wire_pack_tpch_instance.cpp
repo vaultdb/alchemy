@@ -22,14 +22,14 @@ SystemConfiguration & conf_ = SystemConfiguration::getInstance();
 // encode whole db at once to preserve same delta for all of them
 
 map<string, string> table_to_query = {
-        {"lineitem", "select * from lineitem ORDER BY l_orderkey, l_linenumber"},
-        {"orders", "select * from orders ORDER BY o_orderkey"},
-        {"customer", "select * from customer ORDER BY c_custkey"},
-        {"part", "select * from part ORDER BY p_partkey"},
-        {"partsupp", "select * from partsupp ORDER BY ps_partkey, ps_suppkey"},
-        {"supplier", "select * from supplier ORDER BY s_suppkey"},
-        {"nation", "select * from nation ORDER BY n_nationkey"},
-        {"region", "select * from region ORDER BY r_regionkey"}
+        {"lineitem", "SELECT l_orderkey, l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment FROM lineitem ORDER BY l_orderkey, l_linenumber"},
+        {"orders", "SELECT o_orderkey, o_orderkey, o_custkey, o_orderstatus, o_totalprice, o_orderdate, o_orderpriority, o_clerk, o_shippriority, o_comment, o_orderyear FROM orders ORDER BY o_orderkey"},
+        {"customer", "SELECT c_custkey, c_name, c_address, c_nationkey, c_phone, c_acctbal, c_mktsegment, c_comment FROM customer ORDER BY c_custkey"},
+        {"part", "SELECT p_partkey, p_name, p_mfgr, p_brand, p_type, p_size, p_container, p_retailprice, p_comment FROM part ORDER BY p_partkey"},
+        {"partsupp", "SELECT ps_partkey, ps_suppkey, ps_availqty, ps_supplycost, ps_comment FROM partsupp ORDER BY ps_partkey, ps_suppkey"},
+        {"supplier", "SELECT  s_suppkey, s_name, s_address, s_nationkey, s_phone, s_acctbal, s_comment FROM supplier ORDER BY s_suppkey"},
+        {"nation", "SELECT n_nationkey, n_name, n_regionkey, n_comment FROM nation ORDER BY n_nationkey"},
+        {"region", "SELECT r_regionkey, r_name, r_comment  FROM region ORDER BY r_regionkey"}
 };
 
 
