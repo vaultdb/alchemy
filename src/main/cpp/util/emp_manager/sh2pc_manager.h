@@ -95,6 +95,9 @@ namespace  vaultdb {
             return to_recv;
         }
 
+         void setDelta(const block & delta) override {
+            throw;
+        }
 
 
     private:
@@ -157,6 +160,10 @@ namespace  vaultdb {
         }
 
         int recvPublic() override {
+            throw;
+        }
+
+        void setDelta(const block & delta) override {
             throw;
         }
 

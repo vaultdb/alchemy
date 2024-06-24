@@ -35,6 +35,10 @@ namespace  vaultdb {
             return TP;
         }
 
+        void setDelta(const block & delta) override {
+            throw;
+        }
+
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override {
             throw;
         }
@@ -140,6 +144,11 @@ namespace  vaultdb {
             // flush buffer pool
             system_conf_.bpm_.reset();
         }
+
+        void setDelta(const block & delta) override {
+            ((OMPCBackend<N> *) emp::backend)->multi_pack_delta = delta;
+        }
+
 
         ~OutsourcedMpcManager() {
             delete emp::backend;
