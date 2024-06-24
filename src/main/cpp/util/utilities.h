@@ -118,6 +118,7 @@ namespace vaultdb {
                 --r;
             }
         }
+
         // https://stackoverflow.com/questions/52164723/how-to-execute-a-command-and-get-return-code-stdout-and-stderr-of-command-in-c
         static string runCommand(const string & cmd, const string & cwd = "") {
             string dir = (cwd == "") ?  Utilities::getCurrentWorkingDirectory() : cwd;
@@ -144,6 +145,18 @@ namespace vaultdb {
 
 
 
+        }
+
+        // from https://stackoverflow.com/questions/13172158/c-split-string-by-line
+        static vector<string> splitStringByNewline(const std::string& str)
+        {
+            auto result = std::vector<std::string>{};
+            auto ss = std::stringstream{str};
+
+            for (std::string line; std::getline(ss, line, '\n');)
+                result.push_back(line);
+
+            return result;
         }
 
         // erases first instance of to_search
