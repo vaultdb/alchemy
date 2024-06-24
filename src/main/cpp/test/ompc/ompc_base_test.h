@@ -35,10 +35,7 @@ protected:
     StorageModel storage_model_ = StorageModel::COLUMN_STORE;
     EmpManager *manager_ = nullptr;
     vector<int> bp_parameters_ = {2048, 50, 5, 1000};
-    std::string alice_host_ = "127.0.0.1";
-    std::string bob_host_ = "127.0.0.1";
-    std::string carol_host_ = "127.0.0.1";
-    std::string trusted_party_host_ = "127.0.0.1";
+    vector<string> hosts_ = vector<string>(emp::N + 1, "127.0.0.1");
     int port_ = 54345;
     int ctrl_port_ = 65455;
 
