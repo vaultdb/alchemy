@@ -15,7 +15,8 @@ DECLARE_int32(cutoff);
 DECLARE_string(filter); //run only the tests with names matching this regex.
 DECLARE_string(storage);
 DECLARE_string(wires); // local path to wire files
-DECLARE_int32(input_party); //run ./{binary_name} --gtest_list_tests to get all unit test names
+DECLARE_int32(input_party);
+//run ./{binary_name} --gtest_list_tests to get all unit test names
 DECLARE_int32(unpacked_page_size_bits);
 DECLARE_int32(page_cnt);
 
