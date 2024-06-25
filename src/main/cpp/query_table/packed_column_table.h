@@ -216,14 +216,21 @@ namespace vaultdb {
         }
 
         void writePackedWire(const PageId & pid, OMPCPackedWire & wire) {
+            cout << "Writing to wire at " << pid.toString() << '\n';
             int8_t *write_ptr = packed_pages_[pid.col_id_].data() + pid.page_idx_ * packed_wire_size_bytes_;
-            memcpy(write_ptr, (int8_t *) &wire.spdz_tag, sizeof(block));
+            cout << "Before: " << DataUtilities::printByteArray(write_ptr, packed_wire_size_bytes_) << '\n';
 
-            write_ptr += sizeof(block);
-            memcpy(write_ptr, (int8_t *) wire.packed_masked_values.data(), bpm_.block_n_ * sizeof(block));
+            memcpy(write_ptr, (int8_t *) &wire.spdz_tag, block_size_bytes_);
+            write_ptr += block_size_bytes_;
 
+            memcpy(write_ptr, (int8_t *) wire.packed_masked_values.data(), bpm_.block_n_ * block_size_bytes_);
             write_ptr += bpm_.block_n_ * sizeof(block);
-            memcpy(write_ptr, (int8_t *) wire.packed_lambdas.data(), bpm_.block_n_ * sizeof(block));
+
+            memcpy(write_ptr, (int8_t *) wire.packed_lambdas.data(), bpm_.block_n_ * block_size_bytes_);
+
+            int8_t *tmp = packed_pages_[pid.col_id_].data() + pid.page_idx_ * packed_wire_size_bytes_;
+            cout << "After: " << DataUtilities::printByteArray(tmp, packed_wire_size_bytes_) << '\n';
+
 
         }
 
@@ -260,7 +267,7 @@ namespace vaultdb {
         // writes all packed wires out to disk
          vector<int8_t> serialize() override {
             size_t output_buffer_len = 0L;
-            bpm_.flushTable(table_id_); // flush all pages to packed wires (if dirty)
+            bpm_.flushTable(table_id_); // flush all dirty pages to packed wires
             for(auto col_entry : packed_pages_) {
                 output_buffer_len += col_entry.second.size();
             }
@@ -269,8 +276,8 @@ namespace vaultdb {
 
             int8_t *write_ptr = output_buffer.data();
             for(auto col_entry : packed_pages_) {
-//                cout << "Serializing column "<< col_entry.first << " with " << col_entry.second.size() << " bytes" << endl;
-
+                cout << "Serializing column "<< col_entry.first << " with " << col_entry.second.size() << " bytes" << endl;
+                cout << "First bytes: " << (int) col_entry.second[0] << ", " <<  (int) col_entry.second[1] << ", " <<  (int) col_entry.second[2] << '\n';
                 memcpy(write_ptr, col_entry.second.data(), col_entry.second.size());
                 write_ptr += col_entry.second.size();
             }
@@ -283,16 +290,18 @@ namespace vaultdb {
 
         static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, vector<int8_t> &packed_wires) {
             PackedColumnTable *table = new PackedColumnTable(tuple_cnt, schema, collation);
-//            cout << "Before row 0: " << table->revealRow(0).toString(true) << endl;
+            cout << "Before row 0: " << table->revealRow(0).toString(true) << endl;
             int8_t *read_cursor = packed_wires.data();
             for(auto col_entry : table->packed_pages_) {
-//                cout << "Deserializing column "<< col_entry.first << " with " << col_entry.second.size() << " bytes" << endl;
-
+                cout << "Deserializing column "<< col_entry.first << " with " << col_entry.second.size() << " bytes" << endl;
+                cout << "src: " << (int) read_cursor[0] << ", " << (int) read_cursor[1] << ", " << (int) read_cursor[2] << '\n';
                 memcpy(col_entry.second.data(), read_cursor, col_entry.second.size());
+                cout << "First bytes: " << (int) col_entry.second[0] << ", " <<  (int) col_entry.second[1] << ", " <<  (int) col_entry.second[2] << '\n';
+
                 read_cursor += col_entry.second.size();
             }
 
-//            cout << "After row 0: " << table->revealRow(0).toString(true) << endl;
+            cout << "After row 0: " << table->revealRow(0).toString(true) << endl;
 
             return table;
         }

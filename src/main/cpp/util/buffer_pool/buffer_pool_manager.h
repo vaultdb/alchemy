@@ -188,7 +188,7 @@ namespace vaultdb {
 
         void flushTable(const int & table_id) {
             for(auto pos = position_map_.begin(); pos != position_map_.end(); ++pos) {
-                if(pos->first.table_id_ == table_id) {
+                if(pos->first.table_id_ == table_id && pos->second.dirty_) {
                     flushPage(pos->first);
                 }
             }
