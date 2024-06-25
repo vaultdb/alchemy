@@ -66,10 +66,12 @@ int BufferPoolManager::evictPage() {
 
 
     if (pos.dirty_) {
-        emp::Bit *src_ptr =  unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
-        OMPCPackedWire dst(block_n_);
-        emp_manager_->pack(src_ptr, (Bit *) &dst, unpacked_page_size_bits_);
-        packed_table_catalog_[pid.table_id_]->writePackedWire(pid, dst);
+        if(packed_table_catalog_.find(pid.table_id_) != packed_table_catalog_.end()) {
+            emp::Bit *src_ptr = unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
+            OMPCPackedWire dst(block_n_);
+            emp_manager_->pack(src_ptr, (Bit *) &dst, unpacked_page_size_bits_);
+            packed_table_catalog_[pid.table_id_]->writePackedWire(pid, dst);
+        }
     }
 
     // remove it from the position map even if it is not dirty
