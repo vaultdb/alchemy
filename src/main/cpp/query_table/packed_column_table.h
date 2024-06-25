@@ -26,7 +26,7 @@ namespace vaultdb {
 
         EmpManager *manager_;
 
-        int block_byte_size_ = 16; // 16 bytes per block = 128 bits
+        int block_size_bytes_ = 16; // 16 bytes per block = 128 bits
 
 
         PackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<Bit>(tuple_cnt, schema, sort_def), manager_(SystemConfiguration::getInstance().emp_manager_) {
@@ -143,27 +143,25 @@ namespace vaultdb {
         // setup for buffer pool
         int table_id_ = SystemConfiguration::getInstance().num_tables_++;
         BufferPoolManager  & bpm_ = SystemConfiguration::getInstance().bpm_;
-        mutable std::map<int, std::vector<int8_t>> packed_pages_; // map<col id, vector of OMPCPackedWires>
+        mutable std::map<int, std::vector<int8_t>> packed_pages_; // map<col id, vector of serialized OMPCPackedWires>
 
         // choosing to branch instead of storing this in a float for now, need to analyze trade-off on this one
         // maps ordinal to wire count.  floor(128/field_size_bits)
         map<int, int> fields_per_wire_;
-        // if a field spans more than one block per instance (e.g., a string with length > 16 chars) then we need to map the field to multiple blocks
+        // if a field spans more than one block per instance (e.g., a string with length > 16 chars) then we need to map the field to multiple wires
         map<int, int> blocks_per_field_;
-
-        int tuple_packed_size_bytes_ = 0;
-        std::map<int, int> field_packed_sizes_bytes_;
 
         EmpManager *manager_;
 
-        int block_byte_size_ = sizeof(block); // 16 bytes per block = 128 bits
-        int packed_wire_size_bytes_ = (2 * bpm_.block_n_ + 1) * block_byte_size_;
+        int block_size_bytes_ = sizeof(block); // 16 bytes per block = 128 bits
+        int packed_wire_size_bytes_ = (2 * bpm_.block_n_ + 1) * block_size_bytes_;
 
 
         PackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<Bit>(tuple_cnt, schema, sort_def), manager_(SystemConfiguration::getInstance().emp_manager_) {
             assert(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE);
             setSchema(schema);
 
+            bpm_.registerTable(table_id_, this);
             if(tuple_cnt == 0)
                 return;
 
@@ -181,7 +179,7 @@ namespace vaultdb {
                     memcpy(packed_pages_[i].data() + j * packed_wire_size_bytes_, zero_block.data(), packed_wire_size_bytes_);
                 }
             }
-            bpm_.registerTable(table_id_, this);
+
         }
 
         PackedColumnTable(const PackedColumnTable &src) : QueryTable<Bit>(src), manager_(SystemConfiguration::getInstance().emp_manager_) {
@@ -260,20 +258,23 @@ namespace vaultdb {
 
 
         // writes all packed wires out to disk
-         vector<int8_t> serialize() const override {
+         vector<int8_t> serialize() override {
             size_t output_buffer_len = 0L;
+            bpm_.flushTable(table_id_); // flush all pages to packed wires (if dirty)
             for(auto col_entry : packed_pages_) {
                 output_buffer_len += col_entry.second.size();
             }
 
             vector<int8_t> output_buffer(output_buffer_len);
+
             int8_t *write_ptr = output_buffer.data();
             for(auto col_entry : packed_pages_) {
-                cout << "Serializing column "<< col_entry.first << " with " << col_entry.second.size() << " bytes" << endl;
+//                cout << "Serializing column "<< col_entry.first << " with " << col_entry.second.size() << " bytes" << endl;
 
                 memcpy(write_ptr, col_entry.second.data(), col_entry.second.size());
                 write_ptr += col_entry.second.size();
             }
+
             return output_buffer;
 
         }
@@ -282,13 +283,16 @@ namespace vaultdb {
 
         static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, vector<int8_t> &packed_wires) {
             PackedColumnTable *table = new PackedColumnTable(tuple_cnt, schema, collation);
+//            cout << "Before row 0: " << table->revealRow(0).toString(true) << endl;
             int8_t *read_cursor = packed_wires.data();
             for(auto col_entry : table->packed_pages_) {
-                cout << "Deserializing column "<< col_entry.first << " with " << col_entry.second.size() << " bytes" << endl;
+//                cout << "Deserializing column "<< col_entry.first << " with " << col_entry.second.size() << " bytes" << endl;
 
                 memcpy(col_entry.second.data(), read_cursor, col_entry.second.size());
                 read_cursor += col_entry.second.size();
             }
+
+//            cout << "After row 0: " << table->revealRow(0).toString(true) << endl;
 
             return table;
         }
@@ -370,9 +374,7 @@ namespace vaultdb {
                 blocks_per_field_[ordinal] = 1;
             }
 
-            int field_packed_size_bytes = (1 + 2 * packed_blocks) * block_byte_size_;
-            tuple_packed_size_bytes_ += field_packed_size_bytes;
-            field_packed_sizes_bytes_[ordinal] = field_packed_size_bytes;
+            int field_packed_size_bytes = (1 + 2 * packed_blocks) * block_size_bytes_;
 
             cloneColumn(ordinal, -1, this, ordinal);
         }
@@ -443,9 +445,7 @@ namespace vaultdb {
                 tuple_size_bytes_ += field_size_bytes;
                 field_sizes_bytes_[i] = field_size_bytes;
 
-                int field_packed_size_bytes = (1 + 2 * packed_blocks) * block_byte_size_;
-                tuple_packed_size_bytes_ += field_packed_size_bytes;
-                field_packed_sizes_bytes_[i] = field_packed_size_bytes;
+                int field_packed_size_bytes = (1 + 2 * packed_blocks) * block_size_bytes_;
             }
 
             blocks_per_field_[-1] = 1;
@@ -454,9 +454,7 @@ namespace vaultdb {
             tuple_size_bytes_ += sizeof(emp::Bit);
             field_sizes_bytes_[-1] = sizeof(emp::Bit);
 
-            int dummy_packed_size_bytes = (1 + 2 * blocks_per_field_[-1]) * block_byte_size_;
-            tuple_packed_size_bytes_ += dummy_packed_size_bytes;
-            field_packed_sizes_bytes_[-1] = dummy_packed_size_bytes;
+            int dummy_packed_size_bytes = (1 + 2 * blocks_per_field_[-1]) * block_size_bytes_;
         }
 
         QueryTuple<Bit> getRow(const int & idx) override {

@@ -77,14 +77,14 @@ namespace  vaultdb {
         virtual void setDummyTag(const int & row, const B & val) = 0;
         virtual void appendColumn(const QueryFieldDesc & desc) = 0;
 
-        virtual vector<int8_t> serialize() const;
+        virtual vector<int8_t> serialize();
 
 
         virtual SecureTable *secretShare() = 0;
 
 
-        SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
-        vector<vector<int8_t> > generateSecretShares(const int & party_count) const; // generate shares for all parties
+        SecretShares generateSecretShares(); // generate shares for alice and bob - for data sharing (non-computing) node
+        vector<vector<int8_t> > generateSecretShares(const int & party_count); // generate shares for all parties
 
 
         QueryTable<B> &operator=(const QueryTable<B> &src);
@@ -112,13 +112,14 @@ namespace  vaultdb {
         PlainTable *reveal(const int & party = emp::PUBLIC);
 
         // holds onto dummy rows
-        virtual PlainTable *revealInsecure(const int & party = emp::PUBLIC);
+        virtual PlainTable *revealInsecure(const int & party = emp::PUBLIC) const;
 
-        inline PlainTuple revealRow(const int &row, const int &party = PUBLIC)   {
+        inline PlainTuple revealRow(const int &row, const int &party = PUBLIC)    {
             if(std::is_same_v<B, bool>) {
                 return getPlainTuple(row);
             }
 
+            // this needs to be plain_schema_ or some other object that will exist beyond this method in order to work.
             PlainTuple plain(&plain_schema_);
             int field_cnt = schema_.getFieldCount();
 

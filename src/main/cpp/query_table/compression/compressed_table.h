@@ -125,7 +125,7 @@ namespace vaultdb {
             return dst_table;
         }
 
-        PlainTable *revealInsecure(const int & party = emp::PUBLIC) override {
+        PlainTable *revealInsecure(const int & party = emp::PUBLIC) const override {
 
              if(!this->isEncrypted()) {
                     return (QueryTable<bool> *) this;

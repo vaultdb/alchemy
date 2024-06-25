@@ -17,7 +17,7 @@ using namespace vaultdb;
 // iterate over all tuples and produce one long bit array for encrypting/decrypting in emp
 // only tested in PUBLIC or XOR mode
 template <typename B>
-vector<int8_t> QueryTable<B>::serialize() const {
+vector<int8_t> QueryTable<B>::serialize() {
 
     int dst_size = tuple_size_bytes_ * tuple_cnt_;
     vector<int8_t> dst(dst_size);
@@ -71,7 +71,7 @@ QueryTable<B> & QueryTable<B>::operator=(const QueryTable<B> & s) {
 // use this for acting as a data sharing party in the PDF
 // generates alice and bob's shares and returns the pair
 template<typename B>
-SecretShares QueryTable<B>::generateSecretShares() const {
+SecretShares QueryTable<B>::generateSecretShares()  {
     assert(!isEncrypted());
 
     vector<int8_t> serialized = serialize();
@@ -96,7 +96,7 @@ SecretShares QueryTable<B>::generateSecretShares() const {
 
 
 template<typename B>
-vector<vector<int8_t> > QueryTable<B>::generateSecretShares(const int & party_count) const {
+vector<vector<int8_t> > QueryTable<B>::generateSecretShares(const int & party_count)  {
     assert(!isEncrypted());
     emp::PRG prg; // initializes with a random seed
     vector<int8_t> serialized = serialize();
@@ -347,7 +347,7 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
 
 
 template<typename B>
-PlainTable *QueryTable<B>::revealInsecure(const int &party)  {
+PlainTable *QueryTable<B>::revealInsecure(const int &party)  const {
 
     if(!isEncrypted()) {
         return (QueryTable<bool> *) this;
