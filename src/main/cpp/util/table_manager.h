@@ -109,17 +109,18 @@ namespace vaultdb {
             SystemConfiguration & config = SystemConfiguration::getInstance();
             assert(config.storageModel() == StorageModel::PACKED_COLUMN_STORE);
 
+            block delta;
             // if input party, initialize delta first from file
             if(party == SystemConfiguration::getInstance().input_party_) {
                 cout << "Reading delta from " << path << "/delta" << endl;
 
-                auto delta = DataUtilities::readFile(path + "/delta");
-                assert(delta.size() == sizeof(block));
+                auto d = DataUtilities::readFile(path + "/delta");
+                assert(d.size() == sizeof(block));
 
-                block dst;
-                memcpy((int8_t *) &dst, delta.data(), sizeof(block));
-                config.emp_manager_->setDelta(dst);
+                memcpy((int8_t *) &delta, d.data(), sizeof(block));
             }
+
+            config.emp_manager_->setDelta(delta);
 
             string all_tables = Utilities::runCommand("ls *.metadata", path);
             vector<string> tables = Utilities::splitStringByNewline(all_tables);
@@ -135,7 +136,7 @@ namespace vaultdb {
                 SortDefinition  collation = DataUtilities::parseCollation(metadata.at(1));
                 int tuple_cnt = atoi(metadata.at(2).c_str());
 
-//                cout << "Parsed table " << table_name << " with schema " << schema << " collation: " << DataUtilities::printSortDefinition(collation) << " tuple count: " << tuple_cnt << endl;
+                cout << "Parsed table " << table_name << " with schema " << schema << " collation: " << DataUtilities::printSortDefinition(collation) << " tuple count: " << tuple_cnt << endl;
 
                 vector<int8_t> packed_wires = DataUtilities::readFile(path + "/" + table_name + "." + std::to_string(party));
                 SecureTable *table = PackedColumnTable::deserialize(schema, tuple_cnt, collation, packed_wires);
