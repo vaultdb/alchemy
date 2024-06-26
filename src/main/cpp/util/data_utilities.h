@@ -12,6 +12,7 @@
 #endif
 
 #include <cstdint>
+#include <regex>
 #include "utilities.h"
 #include "util/system_configuration.h"
 
@@ -133,13 +134,25 @@ namespace vaultdb {
         static SortDefinition parseCollation(const string & src) {
             int cursor = 1;
             SortDefinition dst;
-
+            cout << "Src collation: " << src << '\n';
             while(src.find('<', cursor) != -1) {
                 int start_entry = src.find('<', cursor);
                 int end_entry = src.find('>', cursor);
-                int delimiter = src.find(',', cursor);
-                int col = std::stoi(src.substr(start_entry + 1, delimiter - start_entry - 1));
-                SortDirection dir = (src.substr(delimiter + 1, end_entry - delimiter - 1) == "ASC") ? SortDirection::ASCENDING : SortDirection::DESCENDING;
+                string entry = src.substr(start_entry + 1, end_entry - start_entry - 1); // omit the < and >
+                cout << "parsing entry: " << entry << '\n';
+                int delimiter = entry.find(',', 0);
+                string col_str = entry.substr(0, delimiter);
+                // delete leading and trailing whitespaces
+                // https://stackoverflow.com/questions/1798112/removing-leading-and-trailing-spaces-from-a-string
+                col_str = std::regex_replace(col_str, std::regex("^ +| +$|( ) +"), "$1");
+
+                cout << "Col str: " << col_str << '\n';
+                int col = std::stoi(col_str);
+                string sort_dir_str = entry.substr(delimiter + 1, entry.length() - delimiter - 1);
+                // delete leading and trailing whitespaces
+                sort_dir_str = std::regex_replace(sort_dir_str, std::regex("^ +| +$|( ) +"), "$1");
+                cout << "Col: " << col << ", srt dr str: " << sort_dir_str << '\n';
+                SortDirection dir =  (sort_dir_str  == "ASC") ? SortDirection::ASCENDING : SortDirection::DESCENDING;
                 dst.emplace_back(std::make_pair(col, dir));
                 cursor = end_entry + 1;
             }
