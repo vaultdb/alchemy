@@ -78,7 +78,7 @@ TEST_F(OMPCStoredTableTest, customer) {
 
 TEST_F(OMPCStoredTableTest, orders) {
 
-    std::string sql =  "SELECT o_orderkey, o_orderkey, o_custkey, o_orderstatus, o_totalprice, o_orderdate, o_orderpriority, o_clerk, o_shippriority, o_comment, o_orderyear FROM orders ORDER BY o_orderkey";
+    std::string sql =  "SELECT o_orderkey, o_custkey, o_orderstatus, o_totalprice, o_orderdate, o_orderpriority, o_clerk, o_shippriority, o_comment, o_orderyear FROM orders ORDER BY o_orderkey";
     SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING)};
     scanAndValidate("orders", sql, collation);
 
@@ -112,7 +112,7 @@ TEST_F(OMPCStoredTableTest, supplier) {
 
 TEST_F(OMPCStoredTableTest, lineitem) {
 
-    std::string sql =  "SELECT l_orderkey, l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment FROM lineitem ORDER BY l_orderkey, l_linenumber";
+    std::string sql =  "SELECT l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment FROM lineitem ORDER BY l_orderkey, l_linenumber";
 
     SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING), ColumnSort(4, SortDirection::ASCENDING)};
     scanAndValidate("lineitem", sql, collation);
