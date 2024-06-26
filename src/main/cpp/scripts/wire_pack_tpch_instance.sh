@@ -14,6 +14,7 @@ DB_NAME=$1
 
 make wire_pack_tpch_instance
 
+[ -d wires/$DB_NAME ] || mkdir -p wires/$DB_NAME
 ./bin/wire_pack_tpch_instance $DB_NAME wires/$DB_NAME 1 > log/wire_pack_tpch_instance_p1.log &
 ./bin/wire_pack_tpch_instance $DB_NAME wires/$DB_NAME 2 > log/wire_pack_tpch_instance_p2.log &
 ./bin/wire_pack_tpch_instance $DB_NAME wires/$DB_NAME 3 > log/wire_pack_tpch_instance_p3.log &
