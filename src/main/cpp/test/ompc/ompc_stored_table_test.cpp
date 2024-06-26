@@ -97,7 +97,7 @@ TEST_F(OMPCStoredTableTest, partsupp) {
 
     std::string sql =  "SELECT ps_partkey, ps_suppkey, ps_availqty, ps_supplycost, ps_comment FROM partsupp ORDER BY ps_partkey, ps_suppkey";
     SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::ASCENDING)};
-    scanAndValidate("part", sql, collation);
+    scanAndValidate("partsupp", sql, collation);
 
 }
 
