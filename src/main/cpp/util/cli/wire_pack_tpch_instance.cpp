@@ -5,44 +5,150 @@
 #include "query_table/packed_column_table.h"
 #include "util/table_manager.h"
 
+#include <boost/property_tree/json_parser.hpp>
+
 #if __has_include("emp-rescu/emp-rescu.h")
 
-#define VALIDATE 0
+#define VALIDATE 1
 using namespace std;
 using namespace vaultdb;
 // customize this as needed
 const string empty_db_ = "tpch_empty";
-const int port_ = 55370;
-const int ctrl_port_ = 55380;
+vector<string> hosts_ = vector<string>(N + 1, "127.0.0.1");
+int port_ = 55370;
+int ctrl_port_ = 55380;
 string dst_root_;
 string db_name_;
 int party_ = -1;
 SystemConfiguration & conf_ = SystemConfiguration::getInstance();
 
 // encode whole db at once to preserve same delta for all of them
-map<string, string> table_to_query = {
-        {"lineitem", "SELECT l_orderkey, l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment FROM lineitem ORDER BY l_orderkey, l_linenumber"},
-        {"orders", "SELECT o_orderkey, o_orderkey, o_custkey, o_orderstatus, o_totalprice, o_orderdate, o_orderpriority, o_clerk, o_shippriority, o_comment, o_orderyear FROM orders ORDER BY o_orderkey"},
-        {"customer", "SELECT c_custkey, c_name, c_address, c_nationkey, c_phone, c_acctbal, c_mktsegment, c_comment FROM customer ORDER BY c_custkey"},
-        {"part", "SELECT p_partkey, p_name, p_mfgr, p_brand, p_type, p_size, p_container, p_retailprice, p_comment FROM part ORDER BY p_partkey"},
-        {"partsupp", "SELECT ps_partkey, ps_suppkey, ps_availqty, ps_supplycost, ps_comment FROM partsupp ORDER BY ps_partkey, ps_suppkey"},
-        {"supplier", "SELECT  s_suppkey, s_name, s_address, s_nationkey, s_phone, s_acctbal, s_comment FROM supplier ORDER BY s_suppkey"},
-        {"nation", "SELECT n_nationkey, n_name, n_regionkey, n_comment FROM nation ORDER BY n_nationkey"},
-        {"region", "SELECT r_regionkey, r_name, r_comment  FROM region ORDER BY r_regionkey"}
-};
-
-// initialized below
+map<string, string> table_to_query;
+map<string, string> table_to_schema;
+map<string, int> table_to_tuple_count;
 map<string, string> table_to_collation_;
 
-void initializeCollations() {
-    table_to_collation_["lineitem"] = DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING), ColumnSort(4, SortDirection::ASCENDING)}),
-        table_to_collation_["orders"] = DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING)});
-        table_to_collation_["customer"] = DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING)});
-        table_to_collation_["part"]= DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING)});
-        table_to_collation_["partsupp"] = DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::ASCENDING)});
-        table_to_collation_["supplier"] = DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING)});
-        table_to_collation_["nation"] = DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING)});
-        table_to_collation_["region"] = DataUtilities::printSortDefinition({ColumnSort(0, SortDirection::ASCENDING)});
+void parseIPsFromJson(const std::string &config_json_path) {
+    stringstream ss;
+    std::vector<std::string> json_lines = DataUtilities::readTextFile(config_json_path);
+    for(vector<string>::iterator pos = json_lines.begin(); pos != json_lines.end(); ++pos)
+        ss << *pos << endl;
+
+    boost::property_tree::ptree pt;
+    boost::property_tree::read_json(ss, pt);
+
+    if(pt.count("hosts") > 0) {
+        boost::property_tree::ptree hosts = pt.get_child("hosts");
+
+        for(ptree::const_iterator it = hosts.begin(); it != hosts.end(); ++it) {
+            for(int host_idx = 1; host_idx <= emp::N; ++host_idx) {
+                if(it->second.count(std::to_string(host_idx)) > 0) {
+                    hosts_[host_idx-1] = it->second.get_child(std::to_string(host_idx)).get_value<string>();
+                }
+                else {
+                    throw std::runtime_error("Host " + std::to_string(host_idx) + " is not found in config.json");
+                }
+            }
+
+            if(it->second.count(std::to_string(emp::TP)) > 0) {
+                hosts_[N] = it->second.get_child(std::to_string(emp::TP)).get_value<std::string>();
+            }
+            else {
+                throw std::runtime_error("No tp host found in config.json");
+            }
+        }
+
+        port_ = pt.get_child("port").get_value<int32_t>();
+        ctrl_port_ = pt.get_child("ctrl_port").get_value<int32_t>();
+    }
+    else {
+        throw std::runtime_error("No hosts found in config.json");
+    }
+}
+
+void loadTableInfoFromJson(string json_path) {
+    stringstream ss;
+    std::vector<std::string> json_lines = DataUtilities::readTextFile(json_path);
+    for(vector<string>::iterator pos = json_lines.begin(); pos != json_lines.end(); ++pos)
+        ss << *pos << endl;
+
+    boost::property_tree::ptree pt;
+    boost::property_tree::read_json(ss, pt);
+
+    if(pt.count("tables") > 0) {
+        boost::property_tree::ptree tables = pt.get_child("tables");
+
+        for(ptree::const_iterator it = tables.begin(); it != tables.end(); ++it) {
+            string table_name = "";
+
+            if(it->second.count("table_name") > 0) {
+                table_name = it->second.get_child("table_name").get_value<string>();
+            }
+            else {
+                throw std::runtime_error("No table_name found in table_config.json");
+            }
+
+            if(it->second.count("query") > 0) {
+                table_to_query[table_name] = it->second.get_child("query").get_value<string>();
+            }
+            else {
+                throw std::runtime_error("No query found in table_config.json");
+            }
+
+            if(it->second.count("schema") > 0) {
+                table_to_schema[table_name] = it->second.get_child("schema").get_value<string>();
+            }
+            else {
+                throw std::runtime_error("No schema found in table_config.json");
+            }
+
+            if(it->second.count("tuple_count") > 0) {
+                table_to_tuple_count[table_name] = it->second.get_child("tuple_count").get_value<int>();
+            }
+            else {
+                throw std::runtime_error("No tuple_count found in table_config.json");
+            }
+
+            vector<ColumnSort> sort_def;
+
+            if(it->second.count("collations") > 0) {
+                boost::property_tree::ptree collations = it->second.get_child("collations");
+
+                for(ptree::const_iterator collation_it = collations.begin(); collation_it != collations.end(); ++collation_it) {
+                    int column = -1;
+                    if(collation_it->second.count("column") > 0) {
+                        column = collation_it->second.get_child("column").get_value<int>();
+                    }
+                    else {
+                        throw std::runtime_error("No column found in table_config.json");
+                    }
+
+                    SortDirection direction = SortDirection::INVALID;
+                    if(collation_it->second.count("direction") > 0) {
+                        if(collation_it->second.get_child("direction").get_value<string>() == "ASCENDING") {
+                            direction = SortDirection::ASCENDING;
+                        }
+                        else if(collation_it->second.get_child("direction").get_value<string>() == "DESCENDING") {
+                            direction = SortDirection::DESCENDING;
+                        }
+                        else {
+                            throw std::runtime_error("Invalid direction found in table_config.json");
+                        }
+                    }
+                    else {
+                        throw std::runtime_error("No direction found in table_config.json");
+                    }
+
+                    sort_def.push_back(ColumnSort(column, direction));
+                }
+
+                table_to_collation_[table_name] = DataUtilities::printSortDefinition(sort_def);
+            }
+            else {
+                throw std::runtime_error("No collation found in table_config.json");
+            }
+        }
+    }
 }
 
 void encodeTable(string table_name) {
@@ -61,9 +167,9 @@ void encodeTable(string table_name) {
     if(party_ == conf_.input_party_) {
         // metadata file schema, collation, and tuple count
         string metadata_filename = dst_root_ + "/" + table_name + ".metadata";
-        string metadata = packed_table->getSchema().prettyPrint() + "\n"
+        string metadata = table_to_schema.at(table_name) + "\n"
                 + table_to_collation_.at(table_name) + "\n"
-               + std::to_string(packed_table->tuple_cnt_);
+               + std::to_string(table_to_tuple_count.at(table_name));
         DataUtilities::writeFile(metadata_filename, metadata);
         cout << "Wrote metadata for " << table_name << " to " << metadata_filename << '\n';
     }
@@ -90,7 +196,8 @@ int main(int argc, char **argv) {
 
      party_ = atoi(argv[3]);
      db_name_ = (party_ == emp::TP) ? argv[1] : empty_db_;
-     dst_root_ = Utilities::getCurrentWorkingDirectory() + "/" + argv[2];
+     string current_dir = Utilities::getCurrentWorkingDirectory();
+     dst_root_ = current_dir + "/" + argv[2];
 
     cout << "Party: " << party_ << endl;
     cout << "DB Name: " << db_name_ << endl;
@@ -100,19 +207,19 @@ int main(int argc, char **argv) {
     // attempt to create target dir
     string dst_dir = dst_root_.substr(0, dst_root_.find_last_of("/"));
     Utilities::mkdir(dst_dir);
+    Utilities::mkdir(dst_root_);
 
-    initializeCollations();
+    loadTableInfoFromJson(current_dir + "/table_config.json");
 
     // set up OMPC
-    string hosts[] = {"127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1"};
     // to enable wire packing set storage model to StorageModel::PACKED_COLUMN_STORE
-    EmpManager *manager = new OutsourcedMpcManager(hosts, party_, port_, ctrl_port_);
-    SystemConfiguration & conf = SystemConfiguration::getInstance();
+    parseIPsFromJson(current_dir + "/config.json");
+    EmpManager *manager = new OutsourcedMpcManager(hosts_.data(), party_, port_, ctrl_port_);
 
-    conf.emp_manager_ = manager;
-    conf.setEmptyDbName(empty_db_);
+    conf_.emp_manager_ = manager;
+    conf_.setEmptyDbName(empty_db_);
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(argv[1]);
-    conf.initialize(db_name_, md, StorageModel::PACKED_COLUMN_STORE);
+    conf_.initialize(db_name_, md, StorageModel::PACKED_COLUMN_STORE);
 
 
     for(auto const &entry : table_to_query) {
@@ -122,7 +229,7 @@ int main(int argc, char **argv) {
 
     // TP instance responsible for writing metadata
     // everything is localhost so it does not matter which one does this
-    if(party_ == conf.input_party_) {
+    if(party_ == conf_.input_party_) {
 
         OMPCBackend<N> *protocol = (OMPCBackend<N> *) emp::backend;
         string delta_file = dst_root_ + "/" + "delta";
