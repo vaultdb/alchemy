@@ -2,8 +2,8 @@
   "tables": [
     {
       "table_name": "lineitem",
-      "query": "SELECT l_orderkey, l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment FROM lineitem ORDER BY l_orderkey, l_linenumber",
-      "schema": "(lineitem.l_orderkey:shared-int32, lineitem.l_orderkey:shared-int32, lineitem.l_partkey:shared-int32, lineitem.l_suppkey:shared-int32, lineitem.l_linenumber:shared-int32, lineitem.l_quantity:shared-float, lineitem.l_extendedprice:shared-float, lineitem.l_discount:shared-float, lineitem.l_tax:shared-float, lineitem.l_returnflag:shared-varchar(1), lineitem.l_linestatus:shared-varchar(1), lineitem.l_shipdate:shared-int64, lineitem.l_commitdate:shared-int64, lineitem.l_receiptdate:shared-int64, lineitem.l_shipinstruct:shared-varchar(25), lineitem.l_shipmode:shared-varchar(10), lineitem.l_comment:shared-varchar(44))",
+      "query": "SELECT  l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment FROM lineitem ORDER BY l_orderkey, l_linenumber",
+      "schema": "(lineitem.l_orderkey:shared-int32, lineitem.l_partkey:shared-int32, lineitem.l_suppkey:shared-int32, lineitem.l_linenumber:shared-int32, lineitem.l_quantity:shared-float, lineitem.l_extendedprice:shared-float, lineitem.l_discount:shared-float, lineitem.l_tax:shared-float, lineitem.l_returnflag:shared-varchar(1), lineitem.l_linestatus:shared-varchar(1), lineitem.l_shipdate:shared-int64, lineitem.l_commitdate:shared-int64, lineitem.l_receiptdate:shared-int64, lineitem.l_shipinstruct:shared-varchar(25), lineitem.l_shipmode:shared-varchar(10), lineitem.l_comment:shared-varchar(44))",
       "tuple_count": 6005,
       "collations": [
         {
@@ -18,8 +18,8 @@
     },
     {
       "table_name": "orders",
-      "query": "SELECT o_orderkey, o_orderkey, o_custkey, o_orderstatus, o_totalprice, o_orderdate, o_orderpriority, o_clerk, o_shippriority, o_comment, o_orderyear FROM orders ORDER BY o_orderkey",
-      "schema": "(orders.o_orderkey:shared-int32, orders.o_orderkey:shared-int32, orders.o_custkey:shared-int32, orders.o_orderstatus:shared-varchar(1), orders.o_totalprice:shared-float, orders.o_orderdate:shared-int64, orders.o_orderpriority:shared-varchar(15), orders.o_clerk:shared-varchar(15), orders.o_shippriority:shared-int32, orders.o_comment:shared-varchar(79), orders.o_orderyear:shared-int32)",
+      "query": "SELECT o_orderkey, o_custkey, o_orderstatus, o_totalprice, o_orderdate, o_orderpriority, o_clerk, o_shippriority, o_comment, o_orderyear FROM orders ORDER BY o_orderkey",
+      "schema": "(orders.o_orderkey:shared-int32, orders.o_custkey:shared-int32, orders.o_orderstatus:shared-varchar(1), orders.o_totalprice:shared-float, orders.o_orderdate:shared-int64, orders.o_orderpriority:shared-varchar(15), orders.o_clerk:shared-varchar(15), orders.o_shippriority:shared-int32, orders.o_comment:shared-varchar(79), orders.o_orderyear:shared-int32)",
       "tuple_count": 1500,
       "collations": [
         {
