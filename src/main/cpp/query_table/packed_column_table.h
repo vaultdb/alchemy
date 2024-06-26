@@ -291,8 +291,6 @@ namespace vaultdb {
                 int write_size_bytes =  table->packed_pages_[i].size();
                 memcpy(dst, read_cursor, write_size_bytes);
                 read_cursor += write_size_bytes;
-                cout << "Copying out " << write_size_bytes << " bytes from array for col " << i << ", ";
-                cout << "packed wires serialized starts with: " << DataUtilities::printByteArray(dst, 32) << '\n';
 
             }
 
@@ -306,20 +304,7 @@ namespace vaultdb {
 
             if(field_blocks == 1) {
                 PageId pid(table_id_, col, row / fields_per_wire_.at(col));
-//                OMPCPackedWire tmp = readPackedWire(pid);
-//                int8_t *packed_wire_bytes = (int8_t *) &tmp;
-//                cout << "Unpacking from bytes: ";
-//                for(int i = 0; i < 32; ++i) {
-//                    cout << (int) packed_wire_bytes[i] << " ";
-//                }
-//                cout << "\n";
                 emp::Bit *read_ptr = bpm_.getUnpackedPagePtr(pid) + ((row % fields_per_wire_.at(col)) * schema_.getField(col).size());
-//                cout << "Deserializing " << pid.toString() << " from ";
-//                for(int i = 0; i < 32; ++i) {
-//                    bool test = read_ptr[i].reveal(PUBLIC);
-//                    cout << test << " ";
-//                }
-//                cout << '\n';
                 return  Field<Bit>::deserialize(schema_.getField(col), (int8_t *) read_ptr);
             }
 
