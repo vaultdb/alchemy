@@ -272,7 +272,6 @@ namespace vaultdb {
 
             int8_t *write_ptr = output_buffer.data();
             for(auto col_entry : packed_pages_) {
-                cout << "Serializing column "<< col_entry.first << " with " << col_entry.second.size() << " bytes, " << "first bytes: " << DataUtilities::printByteArray(col_entry.second.data(), 32) << endl;
                 memcpy(write_ptr, col_entry.second.data(), col_entry.second.size());
                 write_ptr += col_entry.second.size();
             }
