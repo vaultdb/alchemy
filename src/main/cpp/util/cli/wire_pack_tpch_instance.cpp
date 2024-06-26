@@ -78,7 +78,6 @@ void encodeTable(string table_name) {
         cout << "Wrote secret shares to " << secret_shares_file << endl;
 
 
-
     delete table;
     //delete packed_table;
     save_me_ = packed_table;
@@ -145,14 +144,24 @@ int main(int argc, char **argv) {
         string table_name = table_entry.first;
         string query = table_entry.second;
         PlainTable *expected = DataUtilities::getQueryResults(argv[1], query, false);
+        cout << "Expected: " << *expected << endl;
         auto tmp = save_me_->revealInsecure();
         assert(*tmp == *expected);
+        cout << "Confirmed that save_me_ is valid!" << endl;
         delete tmp;
+        cout << "***save_me_wires for col 1 starts with: " <<   DataUtilities::printByteArray(save_me_->packed_pages_[1].data(), 32) << endl;
+
+
         cout << "Reading file: " << dst_root_ + "/" + table_name + "." + std::to_string(party_) << endl;
         vector<int8_t> packed_wires = DataUtilities::readFile(dst_root_ + "/" + table_name + "." + std::to_string(party_));
-        SecureTable *recvd = PackedColumnTable::deserialize(QuerySchema::toSecure(expected->getSchema()), expected->tuple_cnt_, DataUtilities::parseCollation(table_to_collation_.at(table_name)), packed_wires);
+        PackedColumnTable *recvd = PackedColumnTable::deserialize(QuerySchema::toSecure(expected->getSchema()), expected->tuple_cnt_,
+                                                            DataUtilities::parseCollation(table_to_collation_.at(table_name)), packed_wires);
+
+        cout << "***recv_wires for col 1 starts with: " <<   DataUtilities::printByteArray(recvd->packed_pages_[1].data(), 32) << endl;
+
+
 //        SecureTable *recvd = TableManager::getInstance().getSecureTable(table_name);
-        PlainTable *recvd_plain = recvd->revealInsecure();
+ PlainTable *recvd_plain = recvd->revealInsecure();
         expected->order_by_ = recvd_plain->order_by_;
         assert(*expected == *recvd_plain);
 
