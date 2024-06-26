@@ -40,7 +40,7 @@ class OMPCFilterTest : public OmpcBaseTest {};
 
 TEST_F(OMPCFilterTest, ompc_test_table_scan) {
 
-    std::string limit_sql = "SELECT * FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(FLAGS_cutoff);
+    std::string limit_sql = "SELECT l_orderkey, l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(FLAGS_cutoff);
     std::string sql = "WITH input AS (" + limit_sql + ") SELECT * FROM input ORDER BY l_orderkey, l_linenumber";
     SortDefinition collation{ColumnSort(0, SortDirection::ASCENDING),
                             ColumnSort(3, SortDirection::ASCENDING)};
@@ -80,7 +80,7 @@ TEST_F(OMPCFilterTest, ompc_test_table_scan) {
 
 TEST_F(OMPCFilterTest, ompc_test_filter) {
 
-    std::string limit_sql = "SELECT * FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(FLAGS_cutoff);
+    std::string limit_sql = "SELECT l_orderkey, l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(FLAGS_cutoff);
     std::string sql = "WITH input AS (" + limit_sql + ") SELECT * FROM input WHERE l_linenumber = 1 ORDER BY l_orderkey, l_linenumber";
     SortDefinition collation{ColumnSort(0, SortDirection::ASCENDING),
                              ColumnSort(3, SortDirection::ASCENDING)};
