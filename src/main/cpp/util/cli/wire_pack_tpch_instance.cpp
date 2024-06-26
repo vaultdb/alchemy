@@ -138,19 +138,6 @@ int main(int argc, char **argv) {
         string table_name = table_entry.first;
         string query = table_entry.second;
         PlainTable *expected = DataUtilities::getQueryResults(argv[1], query, false);
-//        PackedColumnTable *recvd;
-//        SortDefinition  collation = DataUtilities::parseCollation(table_to_collation_.at(table_name));
-//        auto dst_schema = QuerySchema::toSecure(expected->getSchema());
-//        if(party_ != conf_.input_party_) {
-//            cout << "Reading file: " << dst_root_ + "/" + table_name + "." + std::to_string(party_) << endl;
-//            vector<int8_t> packed_wires = DataUtilities::readFile(
-//                    dst_root_ + "/" + table_name + "." + std::to_string(party_));
-//            recvd = PackedColumnTable::deserialize(dst_schema, expected->tuple_cnt_, collation, packed_wires);
-//        }
-//        else {
-//            // no shares for TP
-//            recvd = new PackedColumnTable(expected->tuple_cnt_, dst_schema, collation);
-//        }
         SecureTable *recvd = TableManager::getInstance().getSecureTable(table_name);
         PlainTable *recvd_plain = recvd->revealInsecure();
         expected->order_by_ = recvd_plain->order_by_;
@@ -160,6 +147,7 @@ int main(int argc, char **argv) {
         delete expected;
 
     }
+
 
 }
 #else
