@@ -2,8 +2,8 @@
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
 #include <stdexcept>
-#include <operators/sql_input.h>
 #include <operators/filter.h>
+#include <operators/table_scan.h>
 #include <operators/secure_sql_input.h>
 #include <test/ompc/ompc_base_test.h>
 #include <query_table/secure_tuple.h>
@@ -48,11 +48,7 @@ TEST_F(OMPCFilterTest, ompc_test_table_scan) {
     Operator<Bit> *input;
 
     if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-        std::string src_path = Utilities::getCurrentWorkingDirectory();
-        std::string packed_pages_path = src_path + "/packed_pages/";
-
-        input = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path,
-                                                                 FLAGS_party, FLAGS_cutoff);
+        input =  new  TableScan<Bit>("lineitem", FLAGS_cutoff);
     }
     else {
         input = new SecureSqlInput(db_name_, limit_sql, false);
@@ -92,11 +88,7 @@ TEST_F(OMPCFilterTest, ompc_test_filter) {
     Operator<Bit> *input;
 
     if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-        std::string src_path = Utilities::getCurrentWorkingDirectory();
-        std::string packed_pages_path = src_path + "/packed_pages/";
-
-        input = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path,
-                                                                 FLAGS_party, FLAGS_cutoff);
+        input =  new  TableScan<Bit>("lineitem", FLAGS_cutoff);
     }
     else {
         input = new SecureSqlInput(db_name_, limit_sql, false);
