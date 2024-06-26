@@ -137,9 +137,15 @@ namespace vaultdb {
                 int tuple_cnt = atoi(metadata.at(2).c_str());
 
                 cout << "Parsed table " << table_name << " with schema " << schema << " collation: " << DataUtilities::printSortDefinition(collation) << " tuple count: " << tuple_cnt << endl;
-
-                vector<int8_t> packed_wires = DataUtilities::readFile(path + "/" + table_name + "." + std::to_string(party));
-                SecureTable *table = PackedColumnTable::deserialize(schema, tuple_cnt, collation, packed_wires);
+                SecureTable *table;
+                if(party == SystemConfiguration::getInstance().input_party_) {
+                    // if input party, no secret shares
+                    table = new PackedColumnTable(tuple_cnt, schema, collation);
+                }
+                else {
+                    vector<int8_t> packed_wires = DataUtilities::readFile(path + "/" + table_name + "." + std::to_string(party));
+                    table = PackedColumnTable::deserialize(schema, tuple_cnt, collation, packed_wires);
+                }
                 putSecureTable(table_name, table);
             }
 
