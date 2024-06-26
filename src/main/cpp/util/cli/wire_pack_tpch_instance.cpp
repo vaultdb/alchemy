@@ -9,7 +9,7 @@
 
 #if __has_include("emp-rescu/emp-rescu.h")
 
-#define VALIDATE 1
+#define VALIDATE 0
 using namespace std;
 using namespace vaultdb;
 // customize this as needed
