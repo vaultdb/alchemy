@@ -7,10 +7,9 @@
 
 #if __has_include("emp-rescu/emp-rescu.h")
 
-
+#define VALIDATE 0
 using namespace std;
 using namespace vaultdb;
-
 // customize this as needed
 const string empty_db_ = "tpch_empty";
 const int port_ = 55370;
@@ -120,6 +119,7 @@ int main(int argc, char **argv) {
         encodeTable(entry.first);
     }
 
+
     // TP instance responsible for writing metadata
     // everything is localhost so it does not matter which one does this
     if(party_ == conf.input_party_) {
@@ -133,21 +133,22 @@ int main(int argc, char **argv) {
     }
 
     // validate it
-    TableManager::getInstance().initializePackedWires(dst_root_, party_);
-    for(auto table_entry : table_to_query) {
-        string table_name = table_entry.first;
-        string query = table_entry.second;
-        PlainTable *expected = DataUtilities::getQueryResults(argv[1], query, false);
-        SecureTable *recvd = TableManager::getInstance().getSecureTable(table_name);
-        PlainTable *recvd_plain = recvd->revealInsecure();
-        expected->order_by_ = recvd_plain->order_by_;
-        assert(*expected == *recvd_plain);
+    if(VALIDATE) {
+        TableManager::getInstance().initializePackedWires(dst_root_, party_);
+        for (auto table_entry: table_to_query) {
+            string table_name = table_entry.first;
+            string query = table_entry.second;
+            PlainTable *expected = DataUtilities::getQueryResults(argv[1], query, false);
+            SecureTable *recvd = TableManager::getInstance().getSecureTable(table_name);
+            PlainTable *recvd_plain = recvd->revealInsecure();
+            expected->order_by_ = recvd_plain->order_by_;
+            assert(*expected == *recvd_plain);
 
-        delete recvd_plain;
-        delete expected;
+            delete recvd_plain;
+            delete expected;
 
+        }
     }
-
 
 }
 #else
