@@ -67,6 +67,5 @@ namespace vaultdb {
     };
 }
 #endif
-
+*/
 #endif //_INPUT_PARTY_PACKED_COLUMN_TABLE_
- */
