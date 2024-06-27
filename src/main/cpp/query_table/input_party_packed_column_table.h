@@ -10,7 +10,7 @@
 // this is just a placeholder for now.
 // really need an abstract PackedColumnTable with purely virtual methods for readPackedWire and writePackedWire
 // this will force it to "use the right one" for the buffer pool while keeping them interchangeable in the code
-#if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/emp-zk.h")
+/*#if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/emp-zk.h")
 
 namespace vaultdb {
     class InputPartyPackedColumnTable : public PackedColumnTable {
