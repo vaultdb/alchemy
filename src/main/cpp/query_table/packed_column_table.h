@@ -215,7 +215,7 @@ namespace vaultdb {
             return dst;
         }
 
-        void writePackedWire(const PageId & pid, OMPCPackedWire & wire) {
+         void writePackedWire(const PageId & pid, OMPCPackedWire & wire) {
             int8_t *write_ptr = packed_pages_[pid.col_id_].data() + pid.page_idx_ * packed_wire_size_bytes_;
 
             memcpy(write_ptr, (int8_t *) &wire.spdz_tag, block_size_bytes_);
@@ -255,7 +255,7 @@ namespace vaultdb {
             return dst;
         }
 
-        OMPCPackedWire readPackedWire(const PageId & pid) const {
+        virtual OMPCPackedWire readPackedWire(const PageId & pid)  {
             return deserializePackedWire(packed_pages_[pid.col_id_].data() + pid.page_idx_ * packed_wire_size_bytes_);
         }
 
@@ -310,6 +310,7 @@ namespace vaultdb {
             vector<Bit> bits(field_blocks * bpm_.unpacked_page_size_bits_);
             Bit *write_ptr = bits.data();
             PageId pid(table_id_, col, row * field_blocks);
+            // this sidesteps the buffer pool.  Need to think more about how to make this data collocated in one buffer where that page size is of varying lengths (but > 1 OMPCPackedWire)
             for(int i = 0; i < field_blocks; ++i) {
                OMPCPackedWire wire = readPackedWire(pid);
                manager_->unpack((Bit *) &wire, write_ptr, bpm_.block_n_);
@@ -659,6 +660,14 @@ namespace vaultdb {
         ~PackedColumnTable() {
             // Flush pages in buffer pool
             bpm_.removeTable(this->table_id_);
+
+        }
+
+    protected:
+        // for use by InputPartyPackedColumnTable
+        PackedColumnTable(const QuerySchema &schema,
+                          const SortDefinition &sort_def = SortDefinition()) :  QueryTable<Bit>(0, schema, sort_def) {
+            setSchema(schema);
 
         }
 

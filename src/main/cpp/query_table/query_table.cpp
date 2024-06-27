@@ -10,6 +10,7 @@
 #include "column_table.h"
 #include "packed_column_table.h"
 #include "compression/compressed_table.h"
+#include "input_party_packed_column_table.h"
 
 
 using namespace vaultdb;
@@ -375,11 +376,14 @@ PlainTable *QueryTable<B>::revealInsecure(const int &party)  const {
 
 template<typename B>
 QueryTable<B> *QueryTable<B>::getTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def) {
-
-    StorageModel s = SystemConfiguration::getInstance().storageModel();
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
+    StorageModel s = conf.storageModel();
     // SystemConfiguration::initialize mirrors this logic for determining whether to allocate the buffer pool
     // if we change this, we need to change that too
     if(s == StorageModel::PACKED_COLUMN_STORE && std::is_same_v<B, emp::Bit>) {
+       /* if(conf.party_ == conf.input_party_)
+            return (QueryTable<B> *) new InputPartyPackedColumnTable(tuple_cnt, schema, sort_def);
+        else*/
             return (QueryTable<B> *)  new PackedColumnTable(tuple_cnt, schema, sort_def);
     }
     if(s == StorageModel::COMPRESSED_STORE) {

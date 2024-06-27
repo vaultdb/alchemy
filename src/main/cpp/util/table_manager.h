@@ -4,6 +4,7 @@
 #include <string>
 #include <query_table/query_table.h>
 #include <query_table/packed_column_table.h>
+#include <query_table/input_party_packed_column_table.h>
 
 // a simple container to store materialized tables that are globally accessible to query operators
 // analogous to a system catalog in a traditional DBMS
@@ -105,6 +106,7 @@ namespace vaultdb {
         }
 
         // e.g., wires/tpch_unioned_150, 1
+        // eager initialization
         void initializePackedWires(const string & path, const int & party) {
             SystemConfiguration & config = SystemConfiguration::getInstance();
             assert(config.storageModel() == StorageModel::PACKED_COLUMN_STORE);
@@ -112,7 +114,7 @@ namespace vaultdb {
             block delta;
             // if input party, initialize delta first from file
             if(party == SystemConfiguration::getInstance().input_party_) {
-                cout << "Reading delta from " << path << "/delta" << endl;
+//                cout << "Reading delta from " << path << "/delta" << endl;
 
                 auto d = DataUtilities::readFile(path + "/delta");
                 assert(d.size() == sizeof(block));
@@ -139,6 +141,7 @@ namespace vaultdb {
                     SecureTable *table;
                     if (party == SystemConfiguration::getInstance().input_party_) {
                         // if input party, no secret shares
+                        // TODO: switch to InputPackedColumnTable - just a dummy table that inputs OmpcPackedWire of zero for everything
                         table = new PackedColumnTable(tuple_cnt, schema, collation);
                     } else {
                         vector<int8_t> packed_wires = DataUtilities::readFile(
