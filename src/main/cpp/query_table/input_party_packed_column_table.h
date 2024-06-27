@@ -65,7 +65,8 @@ namespace vaultdb {
     private:
         OMPCPackedWire zero_block_;
     };
-}*/
+}
 #endif
 
 #endif //_INPUT_PARTY_PACKED_COLUMN_TABLE_
+ */
