@@ -121,7 +121,7 @@ namespace vaultdb {
 
         StorageModel storageModel() const override { return StorageModel::COLUMN_STORE; }
 
-         static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, vector<int8_t> &packed_wires) { retur nullptr; }
+         static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, vector<int8_t> &packed_wires) { return nullptr; }
 
         void deserializeRow(const int & row, vector<int8_t> & src) override {
 
