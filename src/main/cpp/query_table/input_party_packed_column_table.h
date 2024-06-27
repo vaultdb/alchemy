@@ -7,8 +7,9 @@
 
 // substitute for PackedColumnTable if SystemConfiguration::party_ == SystemConfiguration::input_party_
 // input party / TP (trusted party) does not need to hold secret shares, instead it produces zero block for every pack/unpack operation
-// this is just a placeholer for now.  Not ready to deploy yet.
-
+// this is just a placeholder for now.
+// really need an abstract PackedColumnTable with purely virtual methods for readPackedWire and writePackedWire
+// this will force it to "use the right one" for the buffer pool while keeping them interchangeable in the code
 #if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/emp-zk.h")
 
 namespace vaultdb {
