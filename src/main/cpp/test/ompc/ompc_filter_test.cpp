@@ -32,6 +32,8 @@ DEFINE_int32(input_party, 10086, "party for input data");
 DEFINE_int32(unpacked_page_size_bits, 2048, "unpacked page size in bits");
 DEFINE_int32(page_cnt, 50, "number of pages in buffer pool");
 
+// depends on:
+// bash wire_pack_tpch_instance.sh tpch_unioned_150
 
 class OMPCFilterTest : public OmpcBaseTest {};
 
@@ -105,13 +107,13 @@ TEST_F(OMPCFilterTest, ompc_test_filter) {
 
     Filter<emp::Bit> *filter = new Filter(input, expression);
     filter->setOperatorId(-2);
-    auto fiiltered = filter->run();
+    auto filtered = filter->run();
 
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
         expected->order_by_ = collation;
 
-        PlainTable *revealed = fiiltered->revealInsecure();
+        PlainTable *revealed = filtered->revealInsecure();
         DataUtilities::removeDummies(revealed);
 
         // Order by l_orderkey, l_linenumber
