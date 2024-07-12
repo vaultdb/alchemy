@@ -97,6 +97,8 @@ public:
 
         // load packed buffer pool
         PackedColumnTable *loaded_table = (PackedColumnTable *) QueryTable<Bit>::getTable(tuple_cnt, schema);
+        // no shares to load for TP
+        if(party == SystemConfiguration::getInstance().input_party_)  return loaded_table;
 
         for(int i = -1; i < schema.getFieldCount(); ++i) {
             std::string file_name = path + "packed_" + this->table_name_ + "_col_" + std::to_string(i) + "_" + std::to_string(party) + ".page";
