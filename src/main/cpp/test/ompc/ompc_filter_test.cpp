@@ -32,7 +32,7 @@ DEFINE_int32(input_party, 10086, "party for input data");
 DEFINE_int32(unpacked_page_size_bits, 2048, "unpacked page size in bits");
 DEFINE_int32(page_cnt, 50, "number of pages in buffer pool");
 
-// depends on:
+// depends on
 // bash wire_pack_tpch_instance.sh tpch_unioned_150
 
 class OMPCFilterTest : public OmpcBaseTest {};
