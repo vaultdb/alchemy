@@ -141,8 +141,7 @@ namespace vaultdb {
                     SecureTable *table;
                     if (party == SystemConfiguration::getInstance().input_party_) {
                         // if input party, no secret shares
-                        // TODO: switch to InputPackedColumnTable - just a dummy table that inputs OmpcPackedWire of zero for everything
-                        table = new PackedColumnTable(tuple_cnt, schema, collation);
+                        table = new InputPartyPackedColumnTable(tuple_cnt, schema, collation);
                     } else {
                         vector<int8_t> packed_wires = DataUtilities::readFile(
                                 path + "/" + table_name + "." + std::to_string(party));

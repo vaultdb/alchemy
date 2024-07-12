@@ -4,30 +4,12 @@
 #include "query_table/secure_tuple.h"
 
 #if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/emp-zk.h")
-// only supports Bit for now
+
+
 namespace vaultdb {
     class PackedColumnTable : public QueryTable<Bit> {
 
     public:
-
-        // setup for buffer pool
-        int table_id_ = SystemConfiguration::getInstance().num_tables_++;
-        BufferPoolManager & bpm_ = SystemConfiguration::getInstance().bpm_;
-        mutable std::map<int, std::vector<emp::OMPCPackedWire>> packed_pages_; // map<col id, vector of OMPCPackedWires>
-
-        // choosing to branch instead of storing this in a float for now, need to analyze trade-off on this one
-        // maps ordinal to wire count.  floor(128/field_size_bits)
-        map<int, int> fields_per_wire_;
-        // if a field spans more than one block per instance (e.g., a string with length > 16 chars) then we need to map the field to multiple blocks
-        map<int, int> blocks_per_field_;
-
-        int tuple_packed_size_bytes_ = 0;
-        std::map<int, int> field_packed_sizes_bytes_;
-
-        EmpManager *manager_;
-
-        int block_size_bytes_ = 16; // 16 bytes per block = 128 bits
-
 
         PackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<Bit>(tuple_cnt, schema, sort_def), manager_(SystemConfiguration::getInstance().emp_manager_) {
 
@@ -162,24 +144,6 @@ namespace vaultdb {
             setSchema(schema);
 
             bpm_.registerTable(table_id_, this);
-            if(tuple_cnt == 0)
-                return;
-
-
-            OMPCPackedWire zero(bpm_.block_n_);
-            vector<int8_t> zero_block = serializePackedWire(zero);
-            assert(zero_block.size() == packed_wire_size_bytes_);
-
-            // initialize packed buffer pool including dummy tags
-            for(int i = -1; i < schema_.getFieldCount(); ++i) {
-                int col_packed_wires = (blocks_per_field_.at(i) == 1) ? (tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0)) : (tuple_cnt_ * blocks_per_field_.at(i));
-
-                packed_pages_[i] = std::vector<int8_t>(col_packed_wires * packed_wire_size_bytes_);
-                for(int j = 0; j < col_packed_wires; ++j) {
-                    memcpy(packed_pages_[i].data() + j * packed_wire_size_bytes_, zero_block.data(), packed_wire_size_bytes_);
-                }
-            }
-
         }
 
         PackedColumnTable(const PackedColumnTable &src) : QueryTable<Bit>(src), manager_(SystemConfiguration::getInstance().emp_manager_) {
@@ -191,13 +155,6 @@ namespace vaultdb {
 
             bpm_.registerTable(table_id_, this);
 
-
-            PackedColumnTable *src_table = (PackedColumnTable *) &src;
-            bpm_.flushTable(src_table->table_id_);
-
-            for(auto col_entry : src.packed_pages_) {
-                packed_pages_[col_entry.first] = col_entry.second;
-            }
         }
 
         vector<int8_t> serializePackedWire(OMPCPackedWire & wire) {
@@ -215,20 +172,9 @@ namespace vaultdb {
             return dst;
         }
 
-         void writePackedWire(const PageId & pid, OMPCPackedWire & wire) {
-            int8_t *write_ptr = packed_pages_[pid.col_id_].data() + pid.page_idx_ * packed_wire_size_bytes_;
+        virtual void writePackedWire(const PageId & pid, OMPCPackedWire & wire) = 0;
+        virtual OMPCPackedWire readPackedWire(const PageId & pid)  const  = 0;
 
-            memcpy(write_ptr, (int8_t *) &wire.spdz_tag, block_size_bytes_);
-            write_ptr += block_size_bytes_;
-
-            memcpy(write_ptr, (int8_t *) wire.packed_masked_values.data(), bpm_.block_n_ * block_size_bytes_);
-            write_ptr += bpm_.block_n_ * sizeof(block);
-
-            memcpy(write_ptr, (int8_t *) wire.packed_lambdas.data(), bpm_.block_n_ * block_size_bytes_);
-
-
-
-        }
 
         vector<int8_t> serializePackedWire(int col_id, int page_idx) {
             vector<int8_t> dst(packed_wire_size_bytes_);
@@ -255,9 +201,6 @@ namespace vaultdb {
             return dst;
         }
 
-        virtual OMPCPackedWire readPackedWire(const PageId & pid)  {
-            return deserializePackedWire(packed_pages_[pid.col_id_].data() + pid.page_idx_ * packed_wire_size_bytes_);
-        }
 
 
         // writes all packed wires out to disk
@@ -282,20 +225,7 @@ namespace vaultdb {
 
 
 
-        static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, vector<int8_t> &packed_wires) {
-            PackedColumnTable *table = new PackedColumnTable(tuple_cnt, schema, collation);
-            int8_t *read_cursor = packed_wires.data();
-            for(int i = -1; i < schema.getFieldCount(); ++i) {
-                int8_t *dst = table->packed_pages_[i].data();
-                int write_size_bytes =  table->packed_pages_[i].size();
-                memcpy(dst, read_cursor, write_size_bytes);
-                read_cursor += write_size_bytes;
-
-            }
-
-
-            return table;
-        }
+        static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, vector<int8_t> &packed_wires);
 
 
         Field<Bit> getField(const int  & row, const int & col)  const override {
@@ -417,9 +347,7 @@ namespace vaultdb {
         }
 
 
-        QueryTable<Bit> *clone()  override {
-            return new PackedColumnTable(*this);
-        }
+
 
         void setSchema(const QuerySchema &schema) override {
             schema_ = schema;
