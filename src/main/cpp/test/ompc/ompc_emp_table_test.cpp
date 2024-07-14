@@ -1,8 +1,10 @@
 #include <test/ompc/ompc_base_test.h>
 #include <util/data_utilities.h>
 #include <operators/sort.h>
-#include <operators/packed_table_scan.h>
-#include <data/secret_shared_data/secret_share_and_pack_data_from_query.h>
+#include <operators/table_scan.h>
+//#include <operators/packed_table_scan.h>
+//#include <data/secret_shared_data/secret_share_and_pack_data_from_query.h>
+#include <boost/property_tree/json_parser.hpp>
 
 #if __has_include("emp-rescu/emp-rescu.h")
 
@@ -144,23 +146,79 @@ TEST_F(OMPCEmpTableTest, ompc_bit_packing_test) {
 
 }
 
-TEST_F(OMPCEmpTableTest, ompc_test_packed_table_scan) {
-    std::string src_path = Utilities::getCurrentWorkingDirectory();
-    std::string packed_pages_path = src_path + "/packed_pages/";
+//TEST_F(OMPCEmpTableTest, ompc_test_packed_table_scan) {
+//    std::string src_path = Utilities::getCurrentWorkingDirectory();
+//    std::string packed_pages_path = src_path + "/packed_pages/";
+//
+//    std::string table_name = "customer";
+//
+//    PackedTableScan<Bit> packed_table_scan(FLAGS_unioned_db, table_name, packed_pages_path, FLAGS_party);
+//    PackedColumnTable *packed_table = (PackedColumnTable *) packed_table_scan.run();
+//
+//    if(FLAGS_validation) {
+//        std::string table_sql = "SELECT * FROM " + table_name + " ORDER BY c_custkey";
+//
+//        PlainTable *plain_input = DataUtilities::getQueryResults(db_name_, table_sql, false);
+//        PackedColumnTable *expected = (PackedColumnTable *) plain_input->secretShare();
+//
+//        PlainTable *expected_plain = expected->revealInsecure(emp::PUBLIC);
+//        PlainTable *observed_plain = packed_table->revealInsecure(emp::PUBLIC);
+//
+//        ASSERT_EQ(*expected_plain, *observed_plain);
+//    }
+//}
 
-    std::string table_name = "customer";
+TEST_F(OMPCEmpTableTest, ompc_test_table_scan) {
+    stringstream ss;
+    std::vector<std::string> json_lines = DataUtilities::readTextFile(Utilities::getCurrentWorkingDirectory() + "/table_config.json");
+    for(vector<string>::iterator pos = json_lines.begin(); pos != json_lines.end(); ++pos)
+        ss << *pos << endl;
 
-    PackedTableScan<Bit> packed_table_scan(FLAGS_unioned_db, table_name, packed_pages_path, FLAGS_party);
-    PackedColumnTable *packed_table = (PackedColumnTable *) packed_table_scan.run();
+    boost::property_tree::ptree pt;
+    boost::property_tree::read_json(ss, pt);
+
+    std::string table_name = "orders";
+    int limit = -1;
+
+    std::string table_sql;
+
+    if(pt.count("tables") > 0) {
+        boost::property_tree::ptree tables = pt.get_child("tables");
+
+        for(ptree::const_iterator it = tables.begin(); it != tables.end(); ++it) {
+            string current_table_name = "";
+
+            if (it->second.count("table_name") > 0) {
+                current_table_name = it->second.get_child("table_name").get_value<string>();
+            } else {
+                throw std::runtime_error("No table_name found in table_config.json");
+            }
+
+            if (current_table_name == table_name) {
+                if(it->second.count("query") > 0) {
+                    table_sql = it->second.get_child("query").get_value<string>();
+                }
+                else {
+                    throw std::runtime_error("No query found in table_config.json");
+                }
+            }
+        }
+    }
+
+    if(limit > 0) {
+        table_sql += " LIMIT " + std::to_string(limit);
+    }
+
+    TableScan<emp::Bit> *table_scan = new TableScan<emp::Bit>(table_name, limit);
+    PackedColumnTable *observed_table = (PackedColumnTable *) table_scan->run();
 
     if(FLAGS_validation) {
-        std::string table_sql = "SELECT * FROM " + table_name + " ORDER BY c_custkey";
-
-        SecretShareAndPackDataFromQuery ssp(FLAGS_unioned_db, table_sql, table_name);
-        PackedColumnTable *expected = ssp.getTable();
+        PlainTable *plain_input = DataUtilities::getQueryResults(db_name_, table_sql, false);
+        PackedColumnTable *expected = (PackedColumnTable *) plain_input->secretShare();
+        expected->order_by_ = observed_table->order_by_;
 
         PlainTable *expected_plain = expected->revealInsecure(emp::PUBLIC);
-        PlainTable *observed_plain = packed_table->revealInsecure(emp::PUBLIC);
+        PlainTable *observed_plain = observed_table->revealInsecure(emp::PUBLIC);
 
         ASSERT_EQ(*expected_plain, *observed_plain);
     }
