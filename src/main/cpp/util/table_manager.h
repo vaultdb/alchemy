@@ -44,16 +44,17 @@ namespace vaultdb {
         }
 
         PlainTable *getPlainTable(const string & table_name);
-        // optional ordinals to read only some of the cols
-        SecureTable *getSecureTable(const string & table_name, const vector<int> & ordinals = vector<int>());
-        SecureTable *getSecureTable(const string & table_name, const string & col_names_csv);
+        SecureTable *getSecureTable(const string & table_name) {
+            if(secure_tables_.find(table_name) != secure_tables_.end()) return secure_tables_[table_name];
+            if(schemas_.find(table_name) != schemas_.end())  return QueryTable<Bit>::getTable(0, QuerySchema::toSecure(schemas_[table_name]));
+            return nullptr;
+        }
 
 
         // simply overwrite any pre-existing table
         // use this with caution
         // recommend insertTable below when possible
         // it appends to any pre-existing secret shares
-
         void putSecureTable(const string & table_name, QueryTable<Bit> *table);
         void putPlainTable(const string & table_name, QueryTable<bool> *table);
 

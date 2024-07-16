@@ -123,6 +123,7 @@ namespace vaultdb {
         CSV_INPUT,
         MERGE_INPUT,
         TABLE_SCAN,
+        STORED_TABLE_SCAN,
         PACKED_TABLE_SCAN,
         FILTER,
         PROJECT,

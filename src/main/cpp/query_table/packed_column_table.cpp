@@ -10,7 +10,7 @@ PackedColumnTable *PackedColumnTable::deserialize(const QuerySchema & schema, co
 
     int tuple_cnt = (limit == -1 || limit > src_tuple_cnt) ? src_tuple_cnt : limit;
 
-    if(SystemConfiguration::getInstance().sendingParty()) {
+    if(SystemConfiguration::getInstance().inputParty()) {
         return new InputPartyPackedColumnTable(tuple_cnt, schema, collation);
     }
 
@@ -58,7 +58,7 @@ PackedColumnTable *PackedColumnTable::deserialize(const QuerySchema & schema, co
     }
     long array_byte_cnt = cursor;
     // that's all we need!
-    if(SystemConfiguration::getInstance().sendingParty()) return new InputPartyPackedColumnTable(tuple_cnt, dst_schema, dst_collation);
+    if(SystemConfiguration::getInstance().inputParty()) return new InputPartyPackedColumnTable(tuple_cnt, dst_schema, dst_collation);
 
     // else
     ComputingPartyPackedColumnTable *dst = (ComputingPartyPackedColumnTable *) QueryTable<Bit>::getTable(tuple_cnt, dst_schema, dst_collation);

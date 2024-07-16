@@ -42,10 +42,10 @@ namespace vaultdb {
 
         }
 
-        ~TableScan() = default;
+        ~StoredTableScan() = default;
 
         Operator<B> *clone() const override {
-            return new TableScan<B>(*this);
+            return new StoredTableScan<B>(*this);
         }
 
         void updateCollation() override {}
@@ -55,7 +55,7 @@ namespace vaultdb {
                 return false;
             }
 
-            auto other_node = dynamic_cast<const TableScan &>(other);
+            auto other_node = dynamic_cast<const StoredTableScan &>(other);
 
             if(this->table_name_ != other_node.table_name_) return false;
             return this->operatorEquality(other);
@@ -77,7 +77,7 @@ namespace vaultdb {
         }
 
         OperatorType getType() const override {
-            return OperatorType::TABLE_SCAN;
+            return OperatorType::STORED_TABLE_SCAN;
         }
 
 

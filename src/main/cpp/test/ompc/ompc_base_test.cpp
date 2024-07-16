@@ -56,7 +56,7 @@ void OmpcBaseTest::SetUp()  {
     if(storage_model_ == StorageModel::PACKED_COLUMN_STORE){
         string packed_wires_path = Utilities::getCurrentWorkingDirectory() + "/" + FLAGS_wire_path + "/" + FLAGS_unioned_db;
         // read in files for packed wires
-        TableManager::getInstance().initializePackedWires(packed_wires_path, FLAGS_party);
+        s.initializeWirePackedDb(packed_wires_path);
     }
     else {
 //        // TODO: disable bit packing for secret sharing loading
