@@ -64,7 +64,8 @@ namespace vaultdb{
         string getUnionedDbName() const { return unioned_db_name_; }
         string getEmptyDbName() const { return empty_db_name_; }
         void setEmptyDbName(const string & db_name) { empty_db_name_ = db_name; }
-        
+        inline bool sendingParty() { return party_ == input_party_; }
+
         BitPackingDefinition getBitPackingSpec(const string & table_name, const string & col_name);
         SystemConfiguration(const SystemConfiguration&) = delete;
         SystemConfiguration& operator=(const SystemConfiguration &) = delete;

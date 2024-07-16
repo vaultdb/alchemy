@@ -4,13 +4,19 @@
 #include <operators/secure_sql_input.h>
 #include <operators/project.h>
 #include <operators/sort.h>
+#include "operators/table_scan.h"
 #include "util/field_utilities.h"
 #include <expression/comparator_expression_nodes.h>
 #include "expression/generic_expression.h"
 #include "expression/math_expression_nodes.h"
+<<<<<<< Updated upstream
 #include <operators/table_scan.h>
 #include <operators/packed_table_scan.h>
+=======
+#include "util/operator_utilities.h"
+>>>>>>> Stashed changes
 #include <test/ompc/ompc_base_test.h>
+#include <operators/filter.h>
 
 #if __has_include("emp-rescu/emp-rescu.h")
 
@@ -43,28 +49,79 @@ protected:
 
     const int lineitem_limit_ = 100; // smaller: 90, large: 100
 
-    const std::string customer_sql_ = "SELECT c_custkey \n" // ignore c_mktsegment <> 'HOUSEHOLD' cdummy for now
+
+    const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy"
                                       "FROM customer \n"
                                       "ORDER BY c_custkey \n"
                                       "LIMIT " + std::to_string(customer_limit_);
 
-    const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority \n" // ignore o_orderdate >= date '1995-03-25' odummy for now
+    const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy \n"
                                     "FROM orders \n"
                                     "ORDER BY o_orderkey \n"
                                     "LIMIT " + std::to_string(orders_limit_);
 
-    const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue \n" // ignore l_shipdate <= date '1995-03-25' ldummy for now
+    const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy \n"
                                       "FROM lineitem \n"
                                       "ORDER BY l_orderkey, l_linenumber \n"
                                       "LIMIT " + std::to_string(lineitem_limit_);
 
-
-
+    Operator<Bit> *getCustomers();
+    Operator<Bit> *getOrders();
+    Operator<Bit> *getLineitem();
 
 };
 
 
+Operator<Bit> *OMPCBasicJoinTest::getCustomers() {
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
 
+    if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+
+        //  not really needed, but it makes the setup easier!
+        auto scan =  new  TableScan<Bit>("customer", customer_limit_);
+        auto proj = OperatorUtilities::buildProjectionFromColNames<Bit>(scan, "c_custkey, c_mktsegment");
+        // filter
+        Integer s = Field<Bit>::secretShareString("HOUSEHOLD", conf.sendingParty(), conf.input_party_, 10);
+        Field<Bit> sf(FieldType::SECURE_STRING, s);
+        auto schema = proj->getOutputSchema();
+        auto *predicate = FieldUtilities::getEqualityWithLiteral(schema, sf, 1);
+
+        auto filter = new Filter<Bit>(proj, predicate);
+
+        // project it down to the c_custkey
+        auto proj2 = OperatorUtilities::buildProjectionFromColNames(filter, "c_custkey");
+        return proj2;
+    }
+
+    // else
+    Operator<Bit> *input  = new SecureSqlInput(db_name_, customer_sql_, true, SortDefinition(), customer_limit_);
+    return input;
+}
+
+
+// TODO: finish writing this
+Operator<Bit> *OMPCBasicJoinTest::getOrders() {
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
+
+    if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+        //  not really needed, but it makes the setup easier!
+        auto scan = new TableScan<Bit>("orders", orders_limit_);
+        auto proj = OperatorUtilities::buildProjectionFromColNames<Bit>(scan, "o_orderkey, o_custkey, o_orderdate, o_shippriority");
+
+        // $4 < 796089600
+
+
+    }
+    // tmp for now
+    return nullptr;
+}
+
+
+
+Operator<Bit> *OMPCBasicJoinTest::getLineitem() {
+    // TODO: finish writing this
+    return nullptr;
+}
 
 TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
 
@@ -79,6 +136,12 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
     // Table scan for orders
     //PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
     TableScan<emp::Bit> *packed_orders_table_scan = new TableScan<Bit>("orders", orders_limit_);
+    // read orders
+    auto orders = getOrders();
+    auto customers = getCustomers();
+
+    /*
+    PackedTableScan *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
     packed_orders_table_scan->setOperatorId(0);
 
     SecureTable *orders_table = packed_orders_table_scan->run();
@@ -108,26 +171,30 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
 
 
     // Project customer table to c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy
+    auto customers = getCustomers();
+
+
+
     ExpressionMapBuilder<Bit> customer_builder(packed_customer_table_scan->getOutputSchema());
     customer_builder.addMapping(0, 0);
 
     Project<Bit> *customer_project = new Project(packed_customer_table_scan, customer_builder.getExprs());
     customer_project->setOperatorId(3);
 
-    // join output schema: (orders, customer)
-    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> *predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_project, 1, customer_project, 4);
+
 
     SecureTable *op_table = orders_project->getOutput();
     SecureTable *cp_table = customer_project->getOutput();
-//    cout << "op table id: " << ((PackedColumnTable *) op_table)->table_id_ << '\n';
-//    cout << "cp table id: " << ((PackedColumnTable *) cp_table)->table_id_ << '\n';
-//
-//    cout << "Orders projected first row: " << op_table->revealRow(0).toString(true) << '\n';
-//    cout << "Customer projected first row: " << cp_table->revealRow(0).toString(true) << '\n';
+    cout << "op table id: " << ((PackedColumnTable *) op_table)->table_id_ << '\n';
+    cout << "cp table id: " << ((PackedColumnTable *) cp_table)->table_id_ << '\n';
 
-    BasicJoin<emp::Bit> *join = new BasicJoin(orders_project, customer_project, predicate);
-    join->setOperatorId(4);
+    cout << "Orders projected first row: " << op_table->revealRow(0).toString(true) << '\n';
+    cout << "Customer projected first row: " << cp_table->revealRow(0).toString(true) << '\n';
+*/
+    // join output schema: (orders, customer)
+    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    Expression<emp::Bit> *predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders, 1, customers, 4);
+    BasicJoin<emp::Bit> *join = new BasicJoin(orders, customers, predicate);
     SecureTable *join_res = join->run();
 
     if(FLAGS_validation) {
@@ -157,6 +224,9 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
                       "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority"; // ignore NOT odummy AND NOT ldummy for now
 
 
+    auto lineitems = getLineitem();
+    auto orders = getOrders();
+    /*
     // Table scan for lineitem
     //PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
     TableScan<emp::Bit> *packed_lineitem_table_scan = new TableScan<Bit>("lineitem", lineitem_limit_);
@@ -190,20 +260,17 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
 
     Project<Bit> *orders_project = new Project(packed_orders_table_scan, orders_builder.getExprs());
     orders_project->setOperatorId(-2);
-
+*/
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(lineitem_project, 0,
-                                                                                      orders_project, 2);
+    Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(lineitems, 0, orders, 2);
 
-    BasicJoin<emp::Bit> *join = new BasicJoin(lineitem_project, orders_project, predicate);
-    join->setOperatorId(-2);
+    BasicJoin<emp::Bit> *join = new BasicJoin(lineitems, orders, predicate);
     SecureTable *join_res = join->run();
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
         join_res->order_by_ = sort_def;
-        // sort too slow with n^2 secret shared rows
         PlainTable  *observed = join_res->revealInsecure();
         DataUtilities::removeDummies(observed);
         Sort<bool> sorter(observed, sort_def);
@@ -231,6 +298,23 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     // Table scan for orders
     //PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
     TableScan<emp::Bit> *packed_orders_table_scan = new TableScan<Bit>("orders", orders_limit_);
+    auto orders = getOrders();
+    auto customers = getCustomers();
+    auto lineitems = getLineitem();
+    // join output schema: (orders, customer)
+    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    Expression<emp::Bit> * customer_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders, 1, customers, 4);
+    BasicJoin<Bit> *customer_orders_join = new BasicJoin(orders, customers, customer_orders_predicate);
+
+    // join output schema:
+    //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>( lineitems, 0, customer_orders_join, 2);
+    BasicJoin<Bit> *full_join = new BasicJoin(lineitems, customer_orders_join, lineitem_orders_predicate);
+    full_join->setOperatorId(-2);
+    SecureTable *join_res = full_join->run();
+
+/*    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+>>>>>>> Stashed changes
     packed_orders_table_scan->setOperatorId(-2);
 
     // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -279,13 +363,8 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     Project<Bit> *lineitem_project = new Project(packed_lineitem_table_scan, lineitem_builder.getExprs());
     lineitem_project->setOperatorId(-2);
+    */
 
-    // join output schema:
-    //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>( lineitem_project, 0, customer_orders_join, 2);
-    BasicJoin<Bit> *full_join = new BasicJoin(lineitem_project, customer_orders_join, lineitem_orders_predicate);
-    full_join->setOperatorId(-2);
-    SecureTable *join_res = full_join->run();
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(full_join->getOutputSchema().getFieldCount());

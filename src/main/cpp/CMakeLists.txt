@@ -71,6 +71,7 @@ set(sources
 		util/type_utilities.cpp
 		util/data_utilities.cpp
 		util/field_utilities.cpp
+		util/operator_utilities.h
 		util/table_manager.cpp
 		util/logger.cpp
 		util/system_configuration.cpp

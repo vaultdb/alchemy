@@ -64,6 +64,8 @@ namespace  vaultdb {
 
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override;
 
+        void setDelta(const block & delta) override {}
+
         void reveal(bool *dst, const int & party, Bit *src, const int & bit_cnt) override {
             ProtocolExecution::prot_exec->reveal(dst, party, (block *) src, bit_cnt);
         }
@@ -134,6 +136,8 @@ namespace  vaultdb {
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override {
             throw;
         }
+
+        void setDelta(const block & delta) override {}
 
         void reveal(bool *dst, const int & party, Bit *src, const int & bit_cnt) override { throw; }
 

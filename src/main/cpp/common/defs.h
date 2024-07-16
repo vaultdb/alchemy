@@ -10,7 +10,6 @@
 #include <sstream>
 #include <emp-tool/emp-tool.h>
 
-
 #if  __has_include("emp-sh2pc/emp-sh2pc.h")
 #include <emp-sh2pc/emp-sh2pc.h>
 namespace emp {
@@ -241,6 +240,7 @@ namespace vaultdb {
         os << entry.toString();
         return os;
     }
+
 
 
 }

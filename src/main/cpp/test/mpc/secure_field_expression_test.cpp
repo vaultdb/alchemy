@@ -49,7 +49,7 @@ TEST_F(SecureFieldExpressionTest, test_string_compare) {
     PlainField rhs(FieldType::STRING, rhs_str);
 
     int sending_party = manager_->sendingParty();
-    if(sending_party == 0) sending_party = 1; // SH2PC has zero to mean "both send"
+    if(sending_party == 0) sending_party = 1; // SH2PC has zero to mean "both send"/public
 
     SecureField  lhs_shared, rhs_shared;
     if(FLAGS_party == sending_party) {

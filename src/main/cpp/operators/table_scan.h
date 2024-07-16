@@ -23,6 +23,19 @@ namespace vaultdb {
 
         }
 
+        // if no limit set, return whole table
+        TableScan(const string & table_name, const std::string & projected_cols, const int & limit = -1) : Operator<B>(SortDefinition()), table_name_(table_name), limit_(limit) {
+
+            updateTable();
+
+            this->setSortOrder(this->output_->order_by_);
+            this->output_schema_ = this->output_->getSchema();
+            this->output_cardinality_ = this->output_->tuple_cnt_;
+
+
+
+        }
+
         QueryTable<B> *runSelf() override {
             this->start_time_ = clock_start();
             this->start_gate_cnt_ = this->system_conf_.andGateCount();

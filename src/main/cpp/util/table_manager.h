@@ -11,6 +11,14 @@
 // manage this as a singleton
 
 namespace vaultdb {
+    typedef struct table_metadata_ {
+        string name_;
+        QuerySchema schema_;
+        SortDefinition collation_;
+        size_t tuple_cnt_;
+    } TableMetadata;
+
+
     class TableManager {
     public:
         // for instance
@@ -19,6 +27,9 @@ namespace vaultdb {
             return instance;
         }
 
+        // for lazy initialization of tables
+        map<string, TableMetadata> table_metadata_;
+        string db_path_;
         map<string, SecureTable *> secure_tables_;
         map<string, PlainTable *>  plain_tables_;
         // TableManager may accept two tables with the same name as long as they have equivalent schemas.
@@ -40,7 +51,9 @@ namespace vaultdb {
         }
 
         PlainTable *getPlainTable(const string & table_name);
-        SecureTable *getSecureTable(const string & table_name);
+        // optional ordinals to read only some of the cols
+        SecureTable *getSecureTable(const string & table_name, const vector<int> & ordinals = vector<int>());
+        SecureTable *getSecureTable(const string & table_name, const string & col_names);
 
 
         // simply overwrite any pre-existing table
@@ -55,6 +68,7 @@ namespace vaultdb {
             return schemas_[table_name];
         }
 
+        // used by catalyst pilot
         void insertTable(const string & table_name, SecureTable *src) {
 
             if(secure_tables_.find(table_name) == secure_tables_.end() && schemas_.find(table_name) == schemas_.end()) {
@@ -82,6 +96,7 @@ namespace vaultdb {
 
         }
 
+        // used by catalyst pilot
         void insertTable(const string & table_name, PlainTable *src) {
             if(plain_tables_.find(table_name) == plain_tables_.end()
                && schemas_.find(table_name) == schemas_.end()) {
@@ -106,10 +121,10 @@ namespace vaultdb {
         }
 
         // e.g., wires/tpch_unioned_150, 1
-        // eager initialization
         void initializePackedWires(const string & path, const int & party) {
             SystemConfiguration & config = SystemConfiguration::getInstance();
             assert(config.storageModel() == StorageModel::PACKED_COLUMN_STORE);
+            db_path_ = path;
 
             block delta;
             // if input party, initialize delta first from file
@@ -118,7 +133,6 @@ namespace vaultdb {
 
                 auto d = DataUtilities::readFile(path + "/delta");
                 assert(d.size() == sizeof(block));
-
                 memcpy((int8_t *) &delta, d.data(), sizeof(block));
             }
 
@@ -128,26 +142,15 @@ namespace vaultdb {
             vector<string> tables = Utilities::splitStringByNewline(all_tables);
 
             for(auto & metadata_file : tables) {
-                string table_name = metadata_file.substr(0, metadata_file.size() - 9);
-
+                    TableMetadata md;
+                    md.name_ = metadata_file.substr(0, metadata_file.size() - 9);
                     auto metadata = DataUtilities::readTextFile(path + "/" + metadata_file);
                     // drop ".metadata" suffix
-                    auto schema = QuerySchema(metadata.at(0));
-                    SortDefinition collation = DataUtilities::parseCollation(metadata.at(1));
-                    int tuple_cnt = atoi(metadata.at(2).c_str());
+                     md.schema_ = QuerySchema(metadata.at(0));
+                    md.collation_ = DataUtilities::parseCollation(metadata.at(1));
+                    md.tuple_cnt_ = atoi(metadata.at(2).c_str());
+                    table_metadata_[md.name_] = md;
 
-//                    cout << "Parsed table " << table_name << " with schema " << schema << " collation: "
-//                         << DataUtilities::printSortDefinition(collation) << " tuple count: " << tuple_cnt << endl;
-                    SecureTable *table;
-                    if (party == SystemConfiguration::getInstance().input_party_) {
-                        // if input party, no secret shares
-                        table = new InputPartyPackedColumnTable(tuple_cnt, schema, collation);
-                    } else {
-                        vector<int8_t> packed_wires = DataUtilities::readFile(
-                                path + "/" + table_name + "." + std::to_string(party));
-                        table = PackedColumnTable::deserialize(schema, tuple_cnt, collation, packed_wires);
-                    }
-                    putSecureTable(table_name, table);
             }
 
         }

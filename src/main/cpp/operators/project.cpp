@@ -113,7 +113,7 @@ void Project<B>::setup() {
 
 
 
-    Operator<B>::output_schema_ = dst_schema;
+    this->output_schema_ = dst_schema;
     updateCollation();
 }
 

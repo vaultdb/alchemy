@@ -226,6 +226,7 @@ namespace vaultdb {
 
 
         static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, vector<int8_t> &packed_wires);
+        static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, const string & filename, const vector<int> & ordinals = vector<int>());
 
 
         Field<Bit> getField(const int  & row, const int & col)  const override {

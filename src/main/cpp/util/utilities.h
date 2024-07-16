@@ -227,6 +227,7 @@ namespace vaultdb {
 
     };
 
+
 }
 
 #endif //_UTILITIES_H

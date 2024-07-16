@@ -147,13 +147,15 @@ namespace vaultdb {
                     break;
                 }
             } // end search for mapping
-//            if(!found) {
+            // TODO: JMR figure out why this is commented out
+            //            if(!found) {
 //                break;
 //            } // broke the sequence of mappings
         }
 
         this->sort_definition_ = dst_sort;
     }
+
 
     // to create projections with simple 1:1 mappings
     template<typename B>

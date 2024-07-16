@@ -26,6 +26,8 @@ DEFINE_int32(input_party, 10086, "party for input data");
 DEFINE_int32(unpacked_page_size_bits, 2048, "unpacked page size in bits");
 DEFINE_int32(page_cnt, 50, "number of pages in buffer pool");
 
+// TODO: Xiling, please port test_string_compare, test_emp_int_math from secure_field_expression_test
+
 
 class OMPCFieldExpressionTest : public OmpcBaseTest {
 
