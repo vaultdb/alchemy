@@ -104,6 +104,7 @@ set(sources
 		operators/support/scalar_aggregate_impl.cpp
 		operators/scalar_aggregate.cpp
 		operators/union.cpp
+		operators/stored_table_scan.cpp
 		operators/sort_merge_aggregate.cpp
 		operators/support/group_by_aggregate_impl.h
 		operators/csv_input.cpp

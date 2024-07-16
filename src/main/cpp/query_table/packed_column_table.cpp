@@ -6,23 +6,29 @@
 using namespace vaultdb;
 
 // TODO: deserialize from file for better throughput
-PackedColumnTable *PackedColumnTable::deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, vector<int8_t> &packed_wires) {
+PackedColumnTable *PackedColumnTable::deserialize(const QuerySchema & schema, const int & src_tuple_cnt, const SortDefinition & collation, vector<int8_t> &packed_wires, const int & limit) {
+
+    int tuple_cnt = (limit == -1 || limit > src_tuple_cnt) ? src_tuple_cnt : limit;
+
     if(SystemConfiguration::getInstance().sendingParty()) {
         return new InputPartyPackedColumnTable(tuple_cnt, schema, collation);
     }
-        ComputingPartyPackedColumnTable *table = new ComputingPartyPackedColumnTable(tuple_cnt, schema, collation);
-        int8_t *read_cursor = packed_wires.data();
-        for (int i = -1; i < schema.getFieldCount(); ++i) {
+
+    ComputingPartyPackedColumnTable *table = new ComputingPartyPackedColumnTable(tuple_cnt, schema, collation);
+    int8_t *read_cursor = packed_wires.data();
+    for (int i = -1; i < schema.getFieldCount(); ++i) {
             int8_t *dst = table->packed_pages_[i].data();
             int write_size_bytes = table->packed_pages_[i].size();
             memcpy(dst, read_cursor, write_size_bytes);
-            read_cursor += write_size_bytes;
-
+            read_cursor += PackedColumnTable::bytesPerColumn(schema.getField(i), src_tuple_cnt);
         }
         return table;
     }
 
-PackedColumnTable *PackedColumnTable::deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & src_collation, const string & filename, const vector<int> & ordinals) {
+PackedColumnTable *PackedColumnTable::deserialize(const QuerySchema & schema, const int & src_tuple_cnt, const SortDefinition & src_collation, const string & filename, const vector<int> & ordinals, const int & limit) {
+    int tuple_cnt = (limit == -1 || limit > src_tuple_cnt) ? src_tuple_cnt : limit;
+
+
     // else, first construct dst schema
     QuerySchema dst_schema;
     int cnt = 0;
@@ -41,22 +47,20 @@ PackedColumnTable *PackedColumnTable::deserialize(const QuerySchema & schema, co
     map<int, long> ordinal_offsets;
     ordinal_offsets[-1] = 0L;
     long cursor = 0;
-    auto tmp = new InputPartyPackedColumnTable(tuple_cnt, dst_schema, dst_collation);
+
     cout << "Mapping offsets of " << schema.getFieldCount() << " fields (+ dummy tag)\n";
     for(int i = -1; i < schema.getFieldCount();) {
-        int col_packed_wires = (tmp->blocks_per_field_.at(i) == 1) ? (tuple_cnt / tmp->fields_per_wire_.at(i) + (tuple_cnt % tmp->fields_per_wire_.at(i) != 0)) : (tuple_cnt * tmp->blocks_per_field_.at(i));
-        cursor += col_packed_wires;
+        int bytes_per_col = PackedColumnTable::bytesPerColumn(schema.getField(i), src_tuple_cnt);
+        cursor += bytes_per_col;
         ++i;
         ordinal_offsets[i] = cursor;
         cout << "   " << i << ": " << cursor << '\n';
     }
     long array_byte_cnt = cursor;
     // that's all we need!
-    if(SystemConfiguration::getInstance().sendingParty()) return tmp;
+    if(SystemConfiguration::getInstance().sendingParty()) return new InputPartyPackedColumnTable(tuple_cnt, dst_schema, dst_collation);
+
     // else
-    delete tmp;
-
-
     ComputingPartyPackedColumnTable *dst = (ComputingPartyPackedColumnTable *) QueryTable<Bit>::getTable(tuple_cnt, dst_schema, dst_collation);
 
     FILE*  fp = fopen(filename.c_str(), "rb");

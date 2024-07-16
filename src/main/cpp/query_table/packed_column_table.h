@@ -138,6 +138,24 @@ namespace vaultdb {
         int block_size_bytes_ = sizeof(block); // 16 bytes per block = 128 bits
         int packed_wire_size_bytes_ = (2 * bpm_.block_n_ + 1) * block_size_bytes_;
 
+        // how many bytes to allocate for a given column definition with a given tuple count?
+        // for use in deserializing DB
+        // may need to create this for ColumnTable and others or merge into a single util based on DB type
+        // this specialization is needed because of mapping from `Bit` to wire.
+        static long bytesPerColumn(const QueryFieldDesc & desc, const int & tuple_cnt)  {
+
+                int bits_per_packed_wire = BufferPoolManager::getInstance().unpacked_page_size_bits_;
+
+                // multi-wire case
+                if(desc.size() / bits_per_packed_wire > 0) {
+                    int wires_per_field =  desc.size() / bits_per_packed_wire + (desc.size() % bits_per_packed_wire != 0);
+                    return wires_per_field * tuple_cnt * sizeof(OMPCPackedWire);
+                }
+
+                int packed_wires = desc.size() / bits_per_packed_wire + (desc.size() % bits_per_packed_wire != 0);
+                return packed_wires * sizeof(OMPCPackedWire);
+            }
+
 
         PackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<Bit>(tuple_cnt, schema, sort_def), manager_(SystemConfiguration::getInstance().emp_manager_) {
             assert(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE);
@@ -225,8 +243,8 @@ namespace vaultdb {
 
 
 
-        static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, vector<int8_t> &packed_wires);
-        static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, const string & filename, const vector<int> & ordinals = vector<int>());
+        static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, vector<int8_t> &packed_wires, const int & limit = -1);
+        static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, const string & filename, const vector<int> & ordinals = vector<int>(), const int & limit = -1);
 
 
         Field<Bit> getField(const int  & row, const int & col)  const override {

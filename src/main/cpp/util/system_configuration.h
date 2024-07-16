@@ -6,6 +6,7 @@
 #include <iostream>
 #include <util/emp_manager/emp_manager.h>
 #include "util/buffer_pool/buffer_pool_manager.h"
+#include <query_table/query_schema.h>
 
 using namespace std;
 
@@ -13,6 +14,15 @@ using namespace std;
 // creates mysterious compile-time bugs
 
 namespace vaultdb{
+
+    typedef struct table_metadata_ {
+        string name_;
+        QuerySchema schema_;
+        SortDefinition collation_;
+        size_t tuple_cnt_;
+    } TableMetadata;
+
+
     class SystemConfiguration {
 
     public:
@@ -27,6 +37,8 @@ namespace vaultdb{
         int num_tables_ = 0;
         int bp_page_size_bits_ = 2048;
         int bp_page_cnt_ = 50;
+        string stored_db_path_;
+        map<string, TableMetadata> table_metadata_;
 
 
         static SystemConfiguration& getInstance() {
@@ -60,11 +72,12 @@ namespace vaultdb{
             }
         }
 
+        void initializeWirePackedDb(const string & db_path);
 
         string getUnionedDbName() const { return unioned_db_name_; }
         string getEmptyDbName() const { return empty_db_name_; }
         void setEmptyDbName(const string & db_name) { empty_db_name_ = db_name; }
-        inline bool sendingParty() { return party_ == input_party_; }
+        inline bool inputParty() { return party_ == input_party_; }
 
         BitPackingDefinition getBitPackingSpec(const string & table_name, const string & col_name);
         SystemConfiguration(const SystemConfiguration&) = delete;

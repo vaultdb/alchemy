@@ -32,6 +32,7 @@ SecureTable *TableManager::getSecureTable(const string & table_name, const strin
     return getSecureTable(table_name, ordinals);
 }
 
+
 void TableManager::putPlainTable(const string &table_name, QueryTable<bool> *table) {
     if(plain_tables_.find(table_name) != plain_tables_.end()) {
         delete plain_tables_[table_name];

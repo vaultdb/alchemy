@@ -9,14 +9,10 @@
 // a simple container to store materialized tables that are globally accessible to query operators
 // analogous to a system catalog in a traditional DBMS
 // manage this as a singleton
+// this is mainly for use with pilot instances where we need to reconstruct a set of tables outside of a DB for one-off use
+// use `StoredDbManager` to work with an existing DB
 
 namespace vaultdb {
-    typedef struct table_metadata_ {
-        string name_;
-        QuerySchema schema_;
-        SortDefinition collation_;
-        size_t tuple_cnt_;
-    } TableMetadata;
 
 
     class TableManager {
@@ -27,9 +23,6 @@ namespace vaultdb {
             return instance;
         }
 
-        // for lazy initialization of tables
-        map<string, TableMetadata> table_metadata_;
-        string db_path_;
         map<string, SecureTable *> secure_tables_;
         map<string, PlainTable *>  plain_tables_;
         // TableManager may accept two tables with the same name as long as they have equivalent schemas.
@@ -53,7 +46,7 @@ namespace vaultdb {
         PlainTable *getPlainTable(const string & table_name);
         // optional ordinals to read only some of the cols
         SecureTable *getSecureTable(const string & table_name, const vector<int> & ordinals = vector<int>());
-        SecureTable *getSecureTable(const string & table_name, const string & col_names);
+        SecureTable *getSecureTable(const string & table_name, const string & col_names_csv);
 
 
         // simply overwrite any pre-existing table
@@ -120,41 +113,11 @@ namespace vaultdb {
             dst->cloneColumn(-1, dst_tuple_cnt, src, -1);
         }
 
-        // e.g., wires/tpch_unioned_150, 1
-        void initializePackedWires(const string & path, const int & party) {
-            SystemConfiguration & config = SystemConfiguration::getInstance();
-            assert(config.storageModel() == StorageModel::PACKED_COLUMN_STORE);
-            db_path_ = path;
 
-            block delta;
-            // if input party, initialize delta first from file
-            if(party == SystemConfiguration::getInstance().input_party_) {
-//                cout << "Reading delta from " << path << "/delta" << endl;
-
-                auto d = DataUtilities::readFile(path + "/delta");
-                assert(d.size() == sizeof(block));
-                memcpy((int8_t *) &delta, d.data(), sizeof(block));
-            }
-
-            config.emp_manager_->setDelta(delta);
-
-            string all_tables = Utilities::runCommand("ls *.metadata", path);
-            vector<string> tables = Utilities::splitStringByNewline(all_tables);
-
-            for(auto & metadata_file : tables) {
-                    TableMetadata md;
-                    md.name_ = metadata_file.substr(0, metadata_file.size() - 9);
-                    auto metadata = DataUtilities::readTextFile(path + "/" + metadata_file);
-                    // drop ".metadata" suffix
-                     md.schema_ = QuerySchema(metadata.at(0));
-                    md.collation_ = DataUtilities::parseCollation(metadata.at(1));
-                    md.tuple_cnt_ = atoi(metadata.at(2).c_str());
-                    table_metadata_[md.name_] = md;
-
-            }
-
-        }
-
+       /* TODO: replace this with lazy table reading
+        * Need baseline to be able to only read the columns that we need
+        * See StoredDbManager for an example of this.  Note that it both truncates the reads to "limit" rows and it only accesses the columns that we need.
+        * If we add a parameterized ColumnTable::deserialize, then it will address this need.  */
         void initializeSecretShares(const string & path, const int & party) {
             SystemConfiguration & config = SystemConfiguration::getInstance();
             assert(config.storageModel() == StorageModel::COLUMN_STORE);
