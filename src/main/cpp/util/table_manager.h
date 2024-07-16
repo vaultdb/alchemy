@@ -193,7 +193,7 @@ namespace vaultdb {
                         src_cursor += write_size/8;
                     }
                     else {
-                        assert(plain_field.size() == (secure_field.size() + 7));
+                        // assert(plain_field.size() == (secure_field.size() + 7)); // not true with bit packing
                         for(int j = 0; j < tuple_cnt; ++j) {
                             *dst_cursor = ((*src_cursor & 1) != 0);
                             ++dst_cursor;

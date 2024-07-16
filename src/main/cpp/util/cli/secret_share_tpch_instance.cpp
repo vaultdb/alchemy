@@ -212,8 +212,8 @@ int main(int argc, char **argv) {
     conf_.setEmptyDbName(empty_db_);
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(argv[1]);
     conf_.initialize(db_name_, md, StorageModel::COLUMN_STORE);
-    // TODO: disable bit packing for secret sharing loading
-    conf_.clearBitPacking();
+//    // TODO: disable bit packing for secret sharing loading
+//    conf_.clearBitPacking();
 
     for(auto const& entry : table_to_query) {
         secret_share_table(entry.first);
