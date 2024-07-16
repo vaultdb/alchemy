@@ -8,6 +8,7 @@
 #include <expression/comparator_expression_nodes.h>
 #include "expression/generic_expression.h"
 #include "expression/math_expression_nodes.h"
+#include <operators/table_scan.h>
 #include <operators/packed_table_scan.h>
 #include <test/ompc/ompc_base_test.h>
 
@@ -23,7 +24,7 @@ DEFINE_bool(validation, true, "run reveal for validation, turn this off for benc
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "wire_packed", "storage model for columns (column or wire_packed)");
 DEFINE_string(empty_db, "tpch_empty", "empty db name for schemas");
-DEFINE_string(wire_path, "wires/tpch_unioned_150", "local path to wire files, relative to VAULTDB_HOME");
+DEFINE_string(wire_path, "wires", "local path to wire files, relative to VAULTDB_HOME");
 DEFINE_int32(input_party, 10086, "party for input data");
 DEFINE_int32(unpacked_page_size_bits, 2048, "unpacked page size in bits");
 DEFINE_int32(page_cnt, 50, "number of pages in unpacked buffer pool");
@@ -36,11 +37,11 @@ protected:
     std::string src_path_ = Utilities::getCurrentWorkingDirectory();
     std::string packed_pages_path_ = src_path_ + "/packed_pages/";
 
-    const int customer_limit_ = 10; // smaller: 5
+    const int customer_limit_ = 10; // smaller: 5, large: 50
 
-    const int orders_limit_ = 50; // smaller: 30
+    const int orders_limit_ = 50; // smaller: 30, large: 100
 
-    const int lineitem_limit_ = 100; // smaller: 90
+    const int lineitem_limit_ = 100; // smaller: 90, large: 100
 
     const std::string customer_sql_ = "SELECT c_custkey \n" // ignore c_mktsegment <> 'HOUSEHOLD' cdummy for now
                                       "FROM customer \n"
@@ -54,7 +55,7 @@ protected:
 
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue \n" // ignore l_shipdate <= date '1995-03-25' ldummy for now
                                       "FROM lineitem \n"
-                                      "ORDER BY l_orderkey \n"
+                                      "ORDER BY l_orderkey, l_linenumber \n"
                                       "LIMIT " + std::to_string(lineitem_limit_);
 
 
@@ -76,12 +77,13 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
                       "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT cdummy AND NOT odummy for now
 
     // Table scan for orders
-    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    //PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    TableScan<emp::Bit> *packed_orders_table_scan = new TableScan<Bit>("orders", orders_limit_);
     packed_orders_table_scan->setOperatorId(0);
 
     SecureTable *orders_table = packed_orders_table_scan->run();
-    cout << "Orders table ID: " << ((PackedColumnTable *) orders_table)->table_id_ << '\n';
-    cout << "Orders first row: " << orders_table->revealRow(0).toString(true) << '\n';
+//    cout << "Orders table ID: " << ((PackedColumnTable *) orders_table)->table_id_ << '\n';
+//    cout << "Orders first row: " << orders_table->revealRow(0).toString(true) << '\n';
 
 
     // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy
@@ -96,12 +98,13 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
 
 
     // Table scan for customer
-    PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
+    //PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
+    TableScan<emp::Bit> *packed_customer_table_scan = new TableScan<Bit>("customer", customer_limit_);
     packed_customer_table_scan->setOperatorId(2);
 
     SecureTable *customer_table = packed_customer_table_scan->run();
-    cout << "Customer table ID: " << ((PackedColumnTable *) customer_table)->table_id_ << '\n';
-    cout << "Customer first row: " << customer_table->revealRow(0).toString(true) << '\n';
+//    cout << "Customer table ID: " << ((PackedColumnTable *) customer_table)->table_id_ << '\n';
+//    cout << "Customer first row: " << customer_table->revealRow(0).toString(true) << '\n';
 
 
     // Project customer table to c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy
@@ -117,11 +120,11 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
 
     SecureTable *op_table = orders_project->getOutput();
     SecureTable *cp_table = customer_project->getOutput();
-    cout << "op table id: " << ((PackedColumnTable *) op_table)->table_id_ << '\n';
-    cout << "cp table id: " << ((PackedColumnTable *) cp_table)->table_id_ << '\n';
-
-    cout << "Orders projected first row: " << op_table->revealRow(0).toString(true) << '\n';
-    cout << "Customer projected first row: " << cp_table->revealRow(0).toString(true) << '\n';
+//    cout << "op table id: " << ((PackedColumnTable *) op_table)->table_id_ << '\n';
+//    cout << "cp table id: " << ((PackedColumnTable *) cp_table)->table_id_ << '\n';
+//
+//    cout << "Orders projected first row: " << op_table->revealRow(0).toString(true) << '\n';
+//    cout << "Customer projected first row: " << cp_table->revealRow(0).toString(true) << '\n';
 
     BasicJoin<emp::Bit> *join = new BasicJoin(orders_project, customer_project, predicate);
     join->setOperatorId(4);
@@ -155,7 +158,8 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
 
 
     // Table scan for lineitem
-    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    //PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    TableScan<emp::Bit> *packed_lineitem_table_scan = new TableScan<Bit>("lineitem", lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue
@@ -173,7 +177,8 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
     lineitem_project->setOperatorId(-2);
 
     // Table scan for orders
-    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    //PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    TableScan<emp::Bit> *packed_orders_table_scan = new TableScan<Bit>("orders", orders_limit_);
     packed_orders_table_scan->setOperatorId(-2);
 
     // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -224,7 +229,8 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
                       "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
 
     // Table scan for orders
-    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    //PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    TableScan<emp::Bit> *packed_orders_table_scan = new TableScan<Bit>("orders", orders_limit_);
     packed_orders_table_scan->setOperatorId(-2);
 
     // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -238,7 +244,8 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     orders_project->setOperatorId(-2);
 
     // Table scan for customer
-    PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
+    //PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
+    TableScan<emp::Bit> *packed_customer_table_scan = new TableScan<Bit>("customer", customer_limit_);
     packed_customer_table_scan->setOperatorId(-2);
 
     // Project customer table to c_custkey
@@ -255,7 +262,8 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     customer_orders_join->setOperatorId(-2);
 
     // Table scan for lineitem
-    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    //PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    TableScan<emp::Bit> *packed_lineitem_table_scan = new TableScan<Bit>("lineitem", lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue
