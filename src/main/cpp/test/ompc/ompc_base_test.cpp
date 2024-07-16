@@ -58,6 +58,13 @@ void OmpcBaseTest::SetUp()  {
         // read in files for packed wires
         TableManager::getInstance().initializePackedWires(packed_wires_path, FLAGS_party);
     }
+    else {
+        // TODO: disable bit packing for secret sharing loading
+        disableBitPacking();
+
+        string shares_path = Utilities::getCurrentWorkingDirectory() + "/shares/" + FLAGS_unioned_db;
+        TableManager::getInstance().initializeSecretShares(shares_path, FLAGS_party);
+    }
 
 }
 

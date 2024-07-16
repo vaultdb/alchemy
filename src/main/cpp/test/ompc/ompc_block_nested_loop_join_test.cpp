@@ -7,6 +7,7 @@
 #include "util/field_utilities.h"
 #include "expression/generic_expression.h"
 #include "expression/math_expression_nodes.h"
+#include <operators/table_scan.h>
 #include <operators/packed_table_scan.h>
 
 #if __has_include("emp-rescu/emp-rescu.h")
@@ -52,7 +53,7 @@ protected:
 
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue \n" // ignore l_shipdate <= date '1995-03-25' ldummy for now
                                       "FROM lineitem \n"
-                                      "ORDER BY l_orderkey \n"
+                                      "ORDER BY l_orderkey, l_linenumber \n"
                                       "LIMIT " + std::to_string(lineitem_limit_);
 };
 
@@ -70,7 +71,8 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_customer_orders) {
                                                                                                    "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT cdummy AND NOT odummy for now
 
     // Table scan for orders
-    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    //PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    TableScan<emp::Bit> *packed_orders_table_scan = new TableScan<emp::Bit>("orders", orders_limit_);
     packed_orders_table_scan->setOperatorId(-2);
 
     // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy
@@ -84,7 +86,8 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_customer_orders) {
     orders_project->setOperatorId(-2);
 
     // Table scan for customer
-    PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
+    //PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
+    TableScan<emp::Bit> *packed_customer_table_scan = new TableScan<emp::Bit>("customer", customer_limit_);
     packed_customer_table_scan->setOperatorId(-2);
 
     // Project customer table to c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy
@@ -130,7 +133,8 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders) {
 
 
     // Table scan for lineitem
-    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    //PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    TableScan<emp::Bit> *packed_lineitem_table_scan = new TableScan<emp::Bit>("lineitem", lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue
@@ -148,7 +152,8 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders) {
     lineitem_project->setOperatorId(-2);
 
     // Table scan for orders
-    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    //PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    TableScan<emp::Bit> *packed_orders_table_scan = new TableScan<emp::Bit>("orders", orders_limit_);
     packed_orders_table_scan->setOperatorId(-2);
 
     // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -199,7 +204,8 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                                                                                                                          "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
 
     // Table scan for orders
-    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    //PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
+    TableScan<emp::Bit> *packed_orders_table_scan = new TableScan<emp::Bit>("orders", orders_limit_);
     packed_orders_table_scan->setOperatorId(-2);
 
     // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -213,7 +219,8 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders_customer) {
     orders_project->setOperatorId(-2);
 
     // Table scan for customer
-    PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
+    //PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
+    TableScan<emp::Bit> *packed_customer_table_scan = new TableScan<emp::Bit>("customer", customer_limit_);
     packed_customer_table_scan->setOperatorId(-2);
 
     // Project customer table to c_custkey
@@ -230,7 +237,8 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders_customer) {
     customer_orders_join->setOperatorId(-2);
 
     // Table scan for lineitem
-    PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    //PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
+    TableScan<emp::Bit> *packed_lineitem_table_scan = new TableScan<emp::Bit>("lineitem", lineitem_limit_);
     packed_lineitem_table_scan->setOperatorId(-2);
 
     // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue

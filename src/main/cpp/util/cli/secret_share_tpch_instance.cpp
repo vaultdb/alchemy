@@ -169,7 +169,7 @@ void secret_share_table(string table_name) {
     cout << "Wrote " << party_count_ << " shares to " << dst_root_ << "/" << table_name << ".[0-" << party_count_ - 1 << "]" << endl;
 
     string metadata_filename = dst_root_ + "/" + table_name + ".metadata";
-    string metadata = table_to_schema.at(table_name) + "\n"
+    string metadata = QuerySchema::toPlain(table_to_schema.at(table_name)).prettyPrint() + "\n"
                       + table_to_collation_.at(table_name) + "\n"
                       + std::to_string(table_to_tuple_count.at(table_name));
     DataUtilities::writeFile(metadata_filename, metadata);
@@ -212,6 +212,8 @@ int main(int argc, char **argv) {
     conf_.setEmptyDbName(empty_db_);
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(argv[1]);
     conf_.initialize(db_name_, md, StorageModel::COLUMN_STORE);
+    // TODO: disable bit packing for secret sharing loading
+    conf_.clearBitPacking();
 
     for(auto const& entry : table_to_query) {
         secret_share_table(entry.first);
