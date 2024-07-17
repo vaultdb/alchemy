@@ -68,6 +68,8 @@ protected:
 
 TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
 
+    time_point<high_resolution_clock> start_time = high_resolution_clock::now();
+    clock_t secureStartClock = clock();
 
     std::string sql = "WITH customer_cte AS (" + customer_sql_ + "), "
                                     "orders_cte AS (" + orders_sql_ + ") "
@@ -130,6 +132,14 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
     join->setOperatorId(4);
     SecureTable *join_res = join->run();
 
+    double secureClockTicks = (double) (clock() - secureStartClock);
+    double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
+    cout << "CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
+    double runtime = time_from(start_time)/1e6;
+    cout << "runtime: " << runtime << " s" << endl;  
+    size_t peak_memory = Utilities::checkMemoryUtilization(true);
+    cout << "peak memory footprint: " << peak_memory << " bytes\n";
+
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
         join_res->order_by_ = sort_def; // reveal() will sort for this
@@ -146,6 +156,8 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
 
 TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
 
+    time_point<high_resolution_clock> start_time = high_resolution_clock::now();
+    clock_t secureStartClock = clock();
 
     // get inputs from local oblivious ops
     // first 3 customers, propagate this constraint up the join tree for the test
@@ -200,6 +212,14 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
     join->setOperatorId(-2);
     SecureTable *join_res = join->run();
 
+    double secureClockTicks = (double) (clock() - secureStartClock);
+    double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
+    cout << "CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
+    double runtime = time_from(start_time)/1e6;
+    cout << "runtime: " << runtime << " s" << endl;  
+    size_t peak_memory = Utilities::checkMemoryUtilization(true);
+    cout << "peak memory footprint: " << peak_memory << " bytes\n";
+
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
         join_res->order_by_ = sort_def;
@@ -219,6 +239,9 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
 
 
 TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
+
+    time_point<high_resolution_clock> start_time = high_resolution_clock::now();
+    clock_t secureStartClock = clock();
 
     std::string sql = "WITH orders_cte AS (" + orders_sql_ + "), "
                            "lineitem_cte AS (" + lineitem_sql_ + "), "
@@ -286,6 +309,14 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     BasicJoin<Bit> *full_join = new BasicJoin(lineitem_project, customer_orders_join, lineitem_orders_predicate);
     full_join->setOperatorId(-2);
     SecureTable *join_res = full_join->run();
+
+    double secureClockTicks = (double) (clock() - secureStartClock);
+    double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
+    cout << "CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
+    double runtime = time_from(start_time)/1e6;
+    cout << "runtime: " << runtime << " s" << endl;  
+    size_t peak_memory = Utilities::checkMemoryUtilization(true);
+    cout << "peak memory footprint: " << peak_memory << " bytes\n";
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(full_join->getOutputSchema().getFieldCount());
