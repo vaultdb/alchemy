@@ -278,7 +278,7 @@ Bit Field<Bit>::operator==(const Field<Bit> &r) const {
     }
 }
 
-
+// dst field desc, src_party
 template<typename B>
 SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDesc &desc, const int &party, const bool &send) {
 

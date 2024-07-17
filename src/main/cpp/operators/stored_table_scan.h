@@ -28,6 +28,7 @@ namespace vaultdb {
         }
 
         static QueryTable<B> *readStoredTable(string table_name, const vector<int> & col_ordinals, const int & limit = -1);
+
         QueryTable<B> *runSelf() override {
             this->start_time_ = clock_start();
             this->start_gate_cnt_ = this->system_conf_.andGateCount();
@@ -52,14 +53,17 @@ namespace vaultdb {
         void updateCollation() override {}
 
         bool operator==(const Operator<B> &other) const override {
-            if (other.getType() != OperatorType::TABLE_SCAN) {
+            if (other.getType() != OperatorType::STORED_TABLE_SCAN) {
                 return false;
             }
 
             auto other_node = dynamic_cast<const StoredTableScan &>(other);
 
-            if(this->table_name_ != other_node.table_name_) return false;
-            return this->operatorEquality(other);
+            if(Utilities::vectorEquality(ordinals_, other_node.ordinals_) && md_ == other_node.md_ && limit_ == other_node.limit_) {
+                return this->operatorEquality(other);
+            }
+
+            return false;
         }
 
 

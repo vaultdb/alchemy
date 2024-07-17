@@ -20,6 +20,14 @@ namespace vaultdb{
         QuerySchema schema_;
         SortDefinition collation_;
         size_t tuple_cnt_;
+
+        bool operator==(const table_metadata_ &other) const {
+            // need to do vectorEquality here without Utilities because of circular dependency
+            if(collation_.size() != other.collation_.size()) return false;
+            for(int i = 0; i < collation_.size(); ++i) if(collation_[i] != other.collation_[i]) return false;
+            return name_ == other.name_ && schema_ == other.schema_  && tuple_cnt_ == other.tuple_cnt_;
+        }
+
     } TableMetadata;
 
 

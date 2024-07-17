@@ -4,7 +4,6 @@
 #include <operators/secure_sql_input.h>
 #include <operators/project.h>
 #include <operators/sort.h>
-#include "operators/table_scan.h"
 #include "util/field_utilities.h"
 #include <expression/comparator_expression_nodes.h>
 #include "expression/generic_expression.h"
@@ -72,21 +71,18 @@ Operator<Bit> *OMPCBasicJoinTest::getCustomers() {
     SystemConfiguration & conf = SystemConfiguration::getInstance();
 
     if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-        auto scan = new StoredTableScan("customer", )
-        //  not really needed, but it makes the setup easier!
-        auto scan =  new  TableScan<Bit>("customer", customer_limit_);
-        auto proj = OperatorUtilities::buildProjectionFromColNames<Bit>(scan, "c_custkey, c_mktsegment");
+        auto scan = new StoredTableScan("customer", "c_custkey, c_mktsegment", customer_limit_);
         // filter
-        Integer s = Field<Bit>::secretShareString("HOUSEHOLD", conf.sendingParty(), conf.input_party_, 10);
+        Integer s = Field<Bit>::secretShareString("HOUSEHOLD", conf.inputParty(), conf.input_party_, 10);
         Field<Bit> sf(FieldType::SECURE_STRING, s);
-        auto schema = proj->getOutputSchema();
+        auto schema = scan->getOutputSchema();
         auto *predicate = FieldUtilities::getEqualityWithLiteral(schema, sf, 1);
 
-        auto filter = new Filter<Bit>(proj, predicate);
+        auto filter = new Filter<Bit>(scan, predicate);
 
         // project it down to the c_custkey
-        auto proj2 = OperatorUtilities::buildProjectionFromColNames(filter, "c_custkey");
-        return proj2;
+        auto proj = OperatorUtilities::buildProjectionFromColNames(filter, "c_custkey");
+        return proj;
     }
 
     // else
