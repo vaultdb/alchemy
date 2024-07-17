@@ -122,16 +122,16 @@ Operator<Bit> *OMPCBasicJoinTest::getLineitem() {
         // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate
         ExpressionMapBuilder<Bit> lineitem_builder(schema);
         lineitem_builder.addMapping(0, 0);
-        InputReference<emp::Bit> *extendedprice_field = new InputReference<emp::Bit>(1, schema);
-        InputReference<emp::Bit> *discount_field = new InputReference<emp::Bit>(2, schema);
-        LiteralNode<emp::Bit> *one_literal = new LiteralNode(Field<Bit>(FieldType::SECURE_FLOAT, emp::Float(1.0)));
-        MinusNode<emp::Bit> *one_minus_discount = new MinusNode<emp::Bit>(one_literal, discount_field);
-        TimesNode<emp::Bit> *extended_price_times_discount = new TimesNode<emp::Bit>(extendedprice_field, one_minus_discount);
+        auto extendedprice_field = new InputReference<emp::Bit>(1, schema);
+        auto discount_field = new InputReference<emp::Bit>(2, schema);
+        auto one_literal = new LiteralNode(Field<Bit>(FieldType::SECURE_FLOAT, emp::Float(1.0)));
+        auto one_minus_discount = new MinusNode<emp::Bit>(one_literal, discount_field);
+        auto extended_price_times_discount = new TimesNode<emp::Bit>(extendedprice_field, one_minus_discount);
         Expression<emp::Bit> *revenue_expr = new GenericExpression<emp::Bit>(extended_price_times_discount, "revenue", FieldType::SECURE_FLOAT);
         lineitem_builder.addExpression(revenue_expr, 1);
         lineitem_builder.addMapping(3, 2); // l_shipdate
 
-        Project<Bit> *proj = new Project(scan, lineitem_builder.getExprs());
+        auto proj = new Project(scan, lineitem_builder.getExprs());
 
         // filter: l_shipdate <= date '1995-03-25'
         schema = proj->getOutputSchema();

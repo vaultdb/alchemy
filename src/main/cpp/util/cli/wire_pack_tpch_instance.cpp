@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
             string table_name = table_entry.first;
             string query = table_entry.second;
             PlainTable *expected = DataUtilities::getQueryResults(argv[1], query, false);
-            SecureTable *recvd = StoredTableScan<Bit>::readTable(table_name);
+            SecureTable *recvd = StoredTableScan<Bit>::readStoredTable(table_name, vector<int>());
             PlainTable *recvd_plain = recvd->revealInsecure();
             expected->order_by_ = recvd_plain->order_by_;
             assert(*expected == *recvd_plain);
