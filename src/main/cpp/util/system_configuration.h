@@ -87,6 +87,7 @@ namespace vaultdb{
             bit_packing_.clear();
         }
 
+
         inline StorageModel storageModel() const {
             return storage_model_;
         }

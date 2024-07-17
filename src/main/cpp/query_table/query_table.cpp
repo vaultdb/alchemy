@@ -12,6 +12,7 @@
 #include "compression/compressed_table.h"
 #include "input_party_packed_column_table.h"
 #include "computing_party_packed_column_table.h"
+#include "util/operator_utilities.h"
 
 
 using namespace vaultdb;
@@ -59,16 +60,6 @@ QueryTable<B> & QueryTable<B>::operator=(const QueryTable<B> & s) {
 
     return *this;
 }
-
-
-
-
-
-
-
-
-
-
 
 // use this for acting as a data sharing party in the PDF
 // generates alice and bob's shares and returns the pair
@@ -125,26 +116,31 @@ vector<vector<int8_t> > QueryTable<B>::generateSecretShares(const int & party_co
 
 
 
-
+// plaintext version
 template <typename B>
-QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vector<int8_t> & table_bytes) {
+QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vector<int8_t> & table_bytes, const int & limit) {
     const int8_t *read_ptr = table_bytes.data();
+    bool is_plain = std::is_same_v<B, bool>;
+    assert(is_plain);
 
-    uint32_t row_size = (std::is_same_v<B, bool>) ? schema.size() / 8 : schema.size() * sizeof(emp::Bit);
-    uint32_t tuple_cnt =  table_bytes.size() /  row_size;
+
+    uint32_t row_size =  schema.size() / 8;
+    uint32_t src_tuple_cnt =  table_bytes.size() /  row_size;
+    int tuple_cnt = (limit < src_tuple_cnt || limit == -1) ? limit : src_tuple_cnt;
+
     auto result = QueryTable<B>::getTable(tuple_cnt, schema);
     int write_size;
 
     for(int i = 0; i < schema.getFieldCount(); ++i) {
         write_size = result->field_sizes_bytes_[i] * tuple_cnt;
-        result->column_data_[i].resize(write_size);
+//        result->column_data_[i].resize(write_size);
         memcpy(result->column_data_[i].data(), read_ptr, write_size);
-        read_ptr += write_size;
+        read_ptr += result->field_sizes_bytes_[i] * src_tuple_cnt;
     }
 
     // dummy tag
     write_size = result->field_sizes_bytes_[-1] * tuple_cnt;
-    result->column_data_.at(-1).resize(write_size);
+//    result->column_data_.at(-1).resize(write_size);
     memcpy(result->column_data_.at(-1).data(), read_ptr, write_size);
 
     return result;
@@ -153,20 +149,21 @@ QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vecto
 
 // only works with no wire packing
 template <typename B>
-QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vector<Bit> & table_bits) {
+QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vector<Bit> & table_bits, const int & limit) {
     const Bit *read_ptr = table_bits.data();
-    assert(!(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE));
+    assert(SystemConfiguration::getInstance().storageModel() != StorageModel::PACKED_COLUMN_STORE);
     bool is_plain = std::is_same_v<B, bool>;
     assert(!is_plain);
 
-    uint32_t tuple_cnt =  table_bits.size() /  schema.size();
+    uint32_t src_tuple_cnt =  table_bits.size() /  schema.size();
+    int tuple_cnt = (limit < src_tuple_cnt || limit == -1) ? limit : src_tuple_cnt;
     auto result = QueryTable<B>::getTable(tuple_cnt, schema);
     int write_size;
 
     for(int i = 0; i < schema.getFieldCount(); ++i) {
         write_size = result->field_sizes_bytes_[i] * tuple_cnt;
         memcpy(result->column_data_[i].data(), read_ptr, write_size);
-        read_ptr += (write_size / sizeof(emp::Bit));
+        read_ptr += ((result->field_sizes_bytes_[i] * src_tuple_cnt) / sizeof(emp::Bit));
     }
 
     // dummy tag
@@ -176,8 +173,90 @@ QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vecto
 }
 
 
+// read all cols
+// designed to only read bytes from file that are within limit
+template<typename B>
+QueryTable<B> *QueryTable<B>::deserialize(const TableMetadata  & md, const int &limit) {
+    int src_tuple_cnt = md.tuple_cnt_;
+    int tuple_cnt = (limit < md.tuple_cnt_ || limit == -1) ? limit : src_tuple_cnt;
+    auto filename = Utilities::getFilenameForTable(md.name_);
+    auto dst = QueryTable<B>::getTable(tuple_cnt, md.schema_, md.collation_);
+
+    FILE*  fp = fopen(filename.c_str(), "rb");
+    for(int i = 0; i < md.schema_.getFieldCount(); ++i) {
+        fread(dst->column_data_[i].data(), 1, dst->column_data_[i].size(), fp);
+        fseek(fp, dst->field_sizes_bytes_[i] * src_tuple_cnt, SEEK_CUR);
+    }
+
+    // dummy tag
+    fread(dst->column_data_[-1].data(), 1, dst->column_data_[-1].size(), fp);
+    fclose(fp);
+
+    return dst;
+}
 
 
+
+// only read columns listed in ordinals
+template<typename B>
+QueryTable<B> *QueryTable<B>::deserialize(const TableMetadata & md, const vector<int> & ordinals, const int & limit) {
+    int src_tuple_cnt = md.tuple_cnt_;
+    int tuple_cnt = (limit == -1 || limit > src_tuple_cnt) ? src_tuple_cnt : limit;
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
+
+    // if no projection
+    if(ordinals.empty()) {
+       return deserialize(md, limit);
+    }
+
+
+    // else, first construct dst schema from projection
+    auto dst_schema = OperatorUtilities::deriveSchema(md.schema_, ordinals);
+    auto dst_collation = OperatorUtilities::deriveCollation(md.collation_, ordinals);
+
+    auto dst = QueryTable<B>::getTable(tuple_cnt, dst_schema, dst_collation);
+    // baseline for RESCU-SQL
+    if(conf.emp_mode_ == EmpMode::OUTSOURCED && conf.inputParty()) {
+        return dst;
+    }
+
+    // else
+    // find the offsets to read in serialized file for each column
+    map<int, long> ordinal_offsets;
+    long array_byte_cnt = 0L;
+    ordinal_offsets[0] = 0;
+    for(int i = 1; i < md.schema_.getFieldCount(); ++i) {
+        array_byte_cnt += dst->field_sizes_bytes_[i-1] * src_tuple_cnt;
+        ordinal_offsets[i] = array_byte_cnt;
+    }
+    array_byte_cnt += dst->field_sizes_bytes_[md.schema_.getFieldCount()-1] * src_tuple_cnt;
+    ordinal_offsets[-1] = array_byte_cnt;
+    array_byte_cnt += dst->field_sizes_bytes_[-1] * src_tuple_cnt;
+
+    auto filename = Utilities::getFilenameForTable(md.name_);
+    FILE*  fp = fopen(filename.c_str(), "rb");
+
+    int dst_ordinal = 0;
+
+    for(auto src_ordinal : ordinals) {
+        fseek(fp, ordinal_offsets[src_ordinal], SEEK_SET); // read read_offset bytes from beginning of file
+        fread(dst->column_data_[dst_ordinal].data(), 1, dst->column_data_[dst_ordinal].size(), fp);
+        ++dst_ordinal;
+    }
+
+    // read dummy tag unconditionally
+    fseek(fp, ordinal_offsets[-1], SEEK_SET);
+    fread(dst->column_data_[-1].data(),  1, dst->column_data_[-1].size(), fp);
+
+    return dst;
+}
+
+template<typename B>
+QueryTable<B> *QueryTable<B>::deserialize(const TableMetadata & md, const string & col_names_csv, const int & limit) {
+    if(col_names_csv.empty()) return deserialize(md, limit);
+    auto ordinals = OperatorUtilities::getOrdinalsFromColNames(md.schema_, col_names_csv);
+    return QueryTable<B>::deserialize(md, ordinals, limit);
+}
 
 
 

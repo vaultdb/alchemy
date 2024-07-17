@@ -2,7 +2,6 @@
 #include <boost/algorithm/string.hpp>
 #include <query_table/field/field.h>
 #include <query_table/field/field_factory.h>
-#include <query_table/query_table.h>
 #include <util/data_utilities.h>
 
 using namespace vaultdb;

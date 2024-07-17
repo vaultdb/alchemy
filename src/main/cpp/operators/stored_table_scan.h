@@ -10,10 +10,10 @@ namespace vaultdb {
     template<typename B>
     class StoredTableScan : public Operator<B> {
     public:
-        // if no limit set, return whole table
+        // if no limit set (+ no projection) return whole table
         StoredTableScan(const string & table_name, const int & limit = -1) : Operator<B>(SortDefinition()), table_name_(table_name), limit_(limit) {
 
-            updateTable();
+            readTable();
 
             this->setSortOrder(this->output_->order_by_);
             this->output_schema_ = this->output_->getSchema();
@@ -24,16 +24,16 @@ namespace vaultdb {
         }
 
         StoredTableScan(const string & table_name, const vector<int> & ordinals, const int & limit = -1) {
-
+        // TODO: fill this in
 
         }
 
-
+        static QueryTable<B> *readStoredTable(string table_name, const vector<int> & col_ordinals = vector<int>(), const int & limit = -1);
         QueryTable<B> *runSelf() override {
             this->start_time_ = clock_start();
             this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-            updateTable();
+            readTable();
 
             // update output card based on current table size
             this->output_cardinality_ = this->output_->tuple_cnt_;
@@ -85,7 +85,7 @@ namespace vaultdb {
         std::string table_name_;
         int limit_ = -1;
 
-        void updateTable() {
+        void readTable() {
             QueryTable<B> *table;
             if(std::is_same_v<B, bool>) {
                 // casting to address compile-time syntax errors

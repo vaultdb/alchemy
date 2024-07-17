@@ -9,12 +9,9 @@
 #include <expression/comparator_expression_nodes.h>
 #include "expression/generic_expression.h"
 #include "expression/math_expression_nodes.h"
-<<<<<<< Updated upstream
 #include <operators/table_scan.h>
 #include <operators/packed_table_scan.h>
-=======
 #include "util/operator_utilities.h"
->>>>>>> Stashed changes
 #include <test/ompc/ompc_base_test.h>
 #include <operators/filter.h>
 

@@ -4,6 +4,7 @@
 #include "util/field_utilities.h"
 #include "query_table/packed_column_table.h"
 #include "util/table_manager.h"
+#include "operators/stored_table_scan.h"
 
 #include <boost/property_tree/json_parser.hpp>
 
@@ -164,7 +165,7 @@ void encodeTable(string table_name) {
 
 
 
-    if(party_ == conf_.input_party_) {
+    if(conf_.inputParty()) {
         // metadata file schema, collation, and tuple count
         string metadata_filename = dst_root_ + "/" + table_name + ".metadata";
         string metadata = table_to_schema.at(table_name) + "\n"
@@ -229,7 +230,7 @@ int main(int argc, char **argv) {
 
     // TP instance responsible for writing metadata
     // everything is localhost so it does not matter which one does this
-    if(party_ == conf_.input_party_) {
+    if(conf_.inputParty()) {
 
         OMPCBackend<N> *protocol = (OMPCBackend<N> *) emp::backend;
         string delta_file = dst_root_ + "/" + "delta";
@@ -241,12 +242,12 @@ int main(int argc, char **argv) {
 
     // validate it
     if(VALIDATE) {
-        TableManager::getInstance().initializePackedWires(dst_root_, party_);
+        conf_.initializeWirePackedDb(dst_root_);
         for (auto table_entry: table_to_query) {
             string table_name = table_entry.first;
             string query = table_entry.second;
             PlainTable *expected = DataUtilities::getQueryResults(argv[1], query, false);
-            SecureTable *recvd = TableManager::getInstance().getSecureTable(table_name);
+            SecureTable *recvd = StoredTableScan<Bit>::readTable(table_name);
             PlainTable *recvd_plain = recvd->revealInsecure();
             expected->order_by_ = recvd_plain->order_by_;
             assert(*expected == *recvd_plain);

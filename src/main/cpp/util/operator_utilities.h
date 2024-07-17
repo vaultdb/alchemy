@@ -12,24 +12,7 @@ namespace vaultdb {
 
         // e.g., given lineitem scan as `input` and spec of "l_orderkey, l_linenumber"
         // project to $0, $2
-        static vector<int> getOrdinalsFromColNames(const QuerySchema & src_schema, const string & spec) {
-            vector<string> col_names = CsvReader::split(spec);
-
-            vector<int> ordinals;
-            for(int i = 0; i < col_names.size(); ++i) {
-                auto col = col_names.at(i);
-
-                // chop leading and trailing whitespace
-                auto col_begin = col.find_first_not_of(' ');
-                auto col_end = col.find_last_not_of(' ');
-                col = col.substr(col_begin, col_end - col_begin + 1);
-
-                int ordinal = src_schema.getField(col).getOrdinal();
-                ordinals.emplace_back(ordinal);
-            }
-
-            return ordinals;
-        }
+        static vector<int> getOrdinalsFromColNames(const QuerySchema & src_schema, const string & spec);
 
         template<typename B>
         static Project<B> *getProjectionFromColNames(Operator<B> *input, const string & spec) {
@@ -52,6 +35,20 @@ namespace vaultdb {
 
             return new Project<B>(input, builder.getExprs());
         }
+    static QuerySchema deriveSchema(const QuerySchema & src_schema, const vector<int> & ordinals) {
+        QuerySchema dst_schema;
+        int cnt = 0;
+        for(auto ord : ordinals) {
+            auto desc = src_schema.getField(ord);
+            desc.setOrdinal(cnt);
+            dst_schema.putField(desc);
+            ++cnt;
+        }
+
+        dst_schema.initializeFieldOffsets();
+        return dst_schema;
+
+    }
 
     static SortDefinition deriveCollation(const SortDefinition & src_collation, const vector<int> & ordinals) {
         SortDefinition  dst_collation;

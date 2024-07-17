@@ -225,6 +225,10 @@ namespace vaultdb {
             return cwd + "/" + relative_path;
         }
 
+        static inline string getFilenameForTable(const string & table_name) {
+            return SystemConfiguration::getInstance().stored_db_path_ + "/" + table_name + "." + std::to_string(SystemConfiguration::getInstance().party_);
+        }
+
     };
 
 

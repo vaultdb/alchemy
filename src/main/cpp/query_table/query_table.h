@@ -11,6 +11,7 @@
 #include "util/data_utilities.h"
 #include "util/system_configuration.h"
 
+
 namespace  vaultdb {
 
 
@@ -89,9 +90,14 @@ namespace  vaultdb {
 
         QueryTable<B> &operator=(const QueryTable<B> &src);
 
+        // needs to be here (not virtual) because it is a static function
+        static QueryTable<B> *deserialize(const QuerySchema &schema, const vector<int8_t> &table_bytes, const int & limit = -1);
+        static QueryTable<B> *deserialize(const QuerySchema &schema, const vector<Bit> &table_bits, const int & limit = -1);
+        static QueryTable<B> *deserialize(const TableMetadata & md, const int & limit = -1);
+        static QueryTable<B> *deserialize(const TableMetadata & md, const vector<int> & col_ordinals, const int & limit = -1);
 
-        static QueryTable<B> *deserialize(const QuerySchema &schema, const vector<int8_t> &table_bytes);
-        static QueryTable<B> *deserialize(const QuerySchema &schema, const vector<Bit> &table_bits);
+        static QueryTable<B> *deserialize(const TableMetadata & md, const string & col_names_csv = "", const int & limit = -1);
+
 
         int getTrueTupleCount() const {
             assert(!isEncrypted());

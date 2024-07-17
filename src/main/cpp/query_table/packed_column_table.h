@@ -221,7 +221,7 @@ namespace vaultdb {
 
 
 
-        // writes all packed wires out to disk
+        // writes all packed wires out to buffer
          vector<int8_t> serialize() override {
             size_t output_buffer_len = 0L;
             bpm_.flushTable(table_id_); // flush all dirty pages to packed wires
@@ -232,10 +232,15 @@ namespace vaultdb {
             vector<int8_t> output_buffer(output_buffer_len);
 
             int8_t *write_ptr = output_buffer.data();
-            for(auto col_entry : packed_pages_) {
-                memcpy(write_ptr, col_entry.second.data(), col_entry.second.size());
-                write_ptr += col_entry.second.size();
+            // write cols followed by dummy tag
+            // this is to match QueryTable<B> and others
+            for(int i = 0; i < schema_.getFieldCount(); ++i) {
+                memcpy(write_ptr, packed_pages_.at(i).data(), packed_pages_.at(i).size());
+                write_ptr += packed_pages_.at(i).size();
             }
+
+            // write dummy tag
+            memcpy(write_ptr, packed_pages_.at(-1).data(), packed_pages_.at(-1).size());
 
             return output_buffer;
 
@@ -243,8 +248,9 @@ namespace vaultdb {
 
 
 
-        static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, vector<int8_t> &packed_wires, const int & limit = -1);
-        static PackedColumnTable *deserialize(const QuerySchema & schema, const int & tuple_cnt, const SortDefinition & collation, const string & filename, const vector<int> & ordinals = vector<int>(), const int & limit = -1);
+        static PackedColumnTable *deserialize(const TableMetadata & md, const int & limit = -1);
+        static PackedColumnTable *deserialize(const TableMetadata & md, const vector<int> & ordinals, const int & limit = -1);
+
 
 
         Field<Bit> getField(const int  & row, const int & col)  const override {
