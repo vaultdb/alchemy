@@ -51,6 +51,7 @@ namespace  vaultdb {
         // https://cloud.google.com/bigquery/docs/external-table-definition#use-inline-schema
         // example:
         // (id:INT64,name:STRING,age:INT64,weight:FLOAT64,is_active:BOOL,last_updated:TIMESTAMP)
+        // output is parse-able with constructor QuerySchema(const string & schema_spec)
         inline string prettyPrint() const {
             std::stringstream s;
 
