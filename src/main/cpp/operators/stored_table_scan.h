@@ -2,45 +2,46 @@
 #define _STORED_TABLE_SCAN_
 
 #include "operator.h"
-#include "util/table_manager.h"
-// class for pulling tables directly from TableManager
-// for use in pilot for reading in secret-shared data that has no DB equivalent
+#include "util/operator_utilities.h"
 
 namespace vaultdb {
     template<typename B>
     class StoredTableScan : public Operator<B> {
     public:
         // if no limit set (+ no projection) return whole table
-        StoredTableScan(const string & table_name, const int & limit = -1) : Operator<B>(SortDefinition()), table_name_(table_name), limit_(limit) {
+        StoredTableScan(const string & table_name, const int & limit = -1) : Operator<B>(SortDefinition()), limit_(limit) {
+            setup(table_name);
+        }
 
-            readTable();
+        StoredTableScan(const string & table_name, const string & col_names_csv, const int & limit = -1) : Operator<B>(SortDefinition()),  limit_(limit) {
 
-            this->setSortOrder(this->output_->order_by_);
-            this->output_schema_ = this->output_->getSchema();
-            this->output_cardinality_ = this->output_->tuple_cnt_;
+            setup(table_name);
+            if(col_names_csv.empty()) return;
 
-
+            ordinals_ = OperatorUtilities::getOrdinalsFromColNames(SystemConfiguration::getInstance().table_metadata_.at(table_name).schema_, col_names_csv);
 
         }
 
-        StoredTableScan(const string & table_name, const vector<int> & ordinals, const int & limit = -1) {
-        // TODO: fill this in
+        StoredTableScan(const string & table_name, const vector<int> & ordinals, const int & limit = -1) : Operator<B>(SortDefinition()), limit_(limit), ordinals_(ordinals) {
+            setup(table_name);
 
         }
 
-        static QueryTable<B> *readStoredTable(string table_name, const vector<int> & col_ordinals = vector<int>(), const int & limit = -1);
+        static QueryTable<B> *readStoredTable(string table_name, const vector<int> & col_ordinals, const int & limit = -1);
         QueryTable<B> *runSelf() override {
             this->start_time_ = clock_start();
             this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-            readTable();
+            this->output_ = StoredTableScan<B>::readStoredTable(md_.name_, ordinals_, limit_);
 
-            // update output card based on current table size
+            // update output card based on current table size - just in case the one on disk is smaller
             this->output_cardinality_ = this->output_->tuple_cnt_;
 
             return this->output_;
 
         }
+
+        StoredTableScan(const StoredTableScan<B> & src) : Operator<B>(src), limit_(src.limit_), md_(src.md_), ordinals_(src.ordinals_){ }
 
         ~StoredTableScan() = default;
 
@@ -63,7 +64,7 @@ namespace vaultdb {
 
 
         string getTableName() const {
-            return table_name_;
+            return md_.name_;
         }
 
         int getLimit() const {
@@ -73,7 +74,7 @@ namespace vaultdb {
     protected:
 
         string getParameters() const override {
-            return "table_name=" + table_name_;
+            return "table_name=" + md_.name_;
         }
 
         OperatorType getType() const override {
@@ -82,28 +83,19 @@ namespace vaultdb {
 
 
     private:
-        std::string table_name_;
         int limit_ = -1;
+        TableMetadata  md_;
+        vector<int> ordinals_;
 
-        void readTable() {
-            QueryTable<B> *table;
-            if(std::is_same_v<B, bool>) {
-                // casting to address compile-time syntax errors
-                table = (QueryTable<B> *) TableManager::getInstance().getPlainTable(table_name_);
-            }
-            else {
-                table = (QueryTable<B> *) TableManager::getInstance().getSecureTable(table_name_);
 
-            }
-            if(table == nullptr) {
-                throw std::runtime_error("Table " + table_name_ + " not found in TableManager!");
-            }
-
-            this->output_ = table->clone();
-            if(limit_ > -1) this->output_->resize(limit_);
+        void setup(const string & table_name) {
+            // lazy table scan
+            md_ = SystemConfiguration::getInstance().table_metadata_.at(table_name);
+            this->setSortOrder(md_.collation_);
+            this->output_schema_ = md_.schema_;
+            this->output_cardinality_ = (limit_ < md_.tuple_cnt_ && limit_ > -1) ? limit_ : md_.tuple_cnt_;
 
         }
-
     };
 }
 

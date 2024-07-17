@@ -9,8 +9,7 @@
 #include <expression/comparator_expression_nodes.h>
 #include "expression/generic_expression.h"
 #include "expression/math_expression_nodes.h"
-#include <operators/table_scan.h>
-#include <operators/packed_table_scan.h>
+#include "operators/stored_table_scan.h"
 #include "util/operator_utilities.h"
 #include <test/ompc/ompc_base_test.h>
 #include <operators/filter.h>
@@ -73,7 +72,7 @@ Operator<Bit> *OMPCBasicJoinTest::getCustomers() {
     SystemConfiguration & conf = SystemConfiguration::getInstance();
 
     if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-
+        auto scan = new StoredTableScan("customer", )
         //  not really needed, but it makes the setup easier!
         auto scan =  new  TableScan<Bit>("customer", customer_limit_);
         auto proj = OperatorUtilities::buildProjectionFromColNames<Bit>(scan, "c_custkey, c_mktsegment");
