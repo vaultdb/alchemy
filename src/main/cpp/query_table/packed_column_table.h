@@ -230,6 +230,8 @@ namespace vaultdb {
             }
 
             vector<int8_t> output_buffer(output_buffer_len);
+            // for input party case -  no secret shares!
+            if(output_buffer_len == 0) return output_buffer;
 
             int8_t *write_ptr = output_buffer.data();
             // write cols followed by dummy tag
