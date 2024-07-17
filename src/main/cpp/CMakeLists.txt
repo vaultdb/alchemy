@@ -169,6 +169,9 @@ target_link_libraries(run_query vaultdb-emp)
 add_executable(parse_plan util/cli/parse_plan.cpp)
 target_link_libraries(parse_plan vaultdb-emp)
 
+add_executable(secret_share_tpch_instance util/cli/secret_share_tpch_instance.cpp)
+target_link_libraries(secret_share_tpch_instance vaultdb-emp)
+
 add_executable(secret_share_mpc_table_from_query util/cli/secret_share_mpc_table_from_query.cpp)
 target_link_libraries(secret_share_mpc_table_from_query vaultdb-emp)
 
