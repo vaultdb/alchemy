@@ -10,7 +10,7 @@
 
 #if __has_include("emp-rescu/emp-rescu.h")
 
-#define VALIDATE 0
+#define VALIDATE 1
 using namespace std;
 using namespace vaultdb;
 // customize this as needed
@@ -156,15 +156,6 @@ void encodeTable(string table_name) {
     // metadata consists of schema and tuple count
     PlainTable *table = DataUtilities::getQueryResults(db_name_, table_to_query.at(table_name), false);
 
-
-    // pack the table
-    // this still uses BPM under the hood, but it's less onerous than serializing one wire at a time as before
-    PackedColumnTable *packed_table = (PackedColumnTable *) table->secretShare();
-    auto serialized = packed_table->serialize();
-
-
-
-
     if(conf_.inputParty()) {
         // metadata file schema, collation, and tuple count
         string metadata_filename = dst_root_ + "/" + table_name + ".metadata";
@@ -174,14 +165,18 @@ void encodeTable(string table_name) {
         DataUtilities::writeFile(metadata_filename, metadata);
         cout << "Wrote metadata for " << table_name << " to " << metadata_filename << '\n';
     }
-    else {    // write out shares
+    else {
+        // write out shares
+        // this still uses BPM under the hood, but it's less onerous than serializing one wire at a time as before
+        PackedColumnTable *packed_table = (PackedColumnTable *) table->secretShare();
+        auto serialized = packed_table->serialize();
         string secret_shares_file = dst_root_ + "/" + table_name + "." + std::to_string(party_);
         DataUtilities::writeFile(secret_shares_file, serialized);
         cout << "Wrote secret shares to " << secret_shares_file << endl;
+        delete packed_table;
 
     }
     delete table;
-    delete packed_table;
 }
 
 int main(int argc, char **argv) {
