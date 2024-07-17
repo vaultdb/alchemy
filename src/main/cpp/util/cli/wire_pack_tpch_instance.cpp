@@ -24,10 +24,8 @@ int party_ = -1;
 SystemConfiguration & conf_ = SystemConfiguration::getInstance();
 
 // encode whole db at once to preserve same delta for all of them
-map<string, string> table_to_query;
-map<string, string> table_to_schema;
-map<string, int> table_to_tuple_count;
-map<string, string> table_to_collation_;
+map<string, string> table_to_query_;
+map<string, TableMetadata> table_to_metadata_;
 
 void parseIPsFromJson(const std::string &config_json_path) {
     stringstream ss;
@@ -90,21 +88,22 @@ void loadTableInfoFromJson(string json_path) {
             }
 
             if(it->second.count("query") > 0) {
-                table_to_query[table_name] = it->second.get_child("query").get_value<string>();
+                table_to_query_[table_name] = it->second.get_child("query").get_value<string>();
             }
             else {
                 throw std::runtime_error("No query found in table_config.json");
             }
 
             if(it->second.count("schema") > 0) {
-                table_to_schema[table_name] = it->second.get_child("schema").get_value<string>();
+                QuerySchema schema(it->second.get_child("schema").get_value<string>());
+                table_to_metadata_[table_name].schema_ = schema;
             }
             else {
                 throw std::runtime_error("No schema found in table_config.json");
             }
 
             if(it->second.count("tuple_count") > 0) {
-                table_to_tuple_count[table_name] = it->second.get_child("tuple_count").get_value<int>();
+                table_to_metadata_[table_name].tuple_cnt_ = it->second.get_child("tuple_count").get_value<int>();
             }
             else {
                 throw std::runtime_error("No tuple_count found in table_config.json");
@@ -142,8 +141,7 @@ void loadTableInfoFromJson(string json_path) {
 
                     sort_def.push_back(ColumnSort(column, direction));
                 }
-
-                table_to_collation_[table_name] = DataUtilities::printSortDefinition(sort_def);
+                table_to_metadata_[table_name].collation_ = sort_def;
             }
             else {
                 throw std::runtime_error("No collation found in table_config.json");
@@ -154,14 +152,15 @@ void loadTableInfoFromJson(string json_path) {
 
 void encodeTable(string table_name) {
     // metadata consists of schema and tuple count
-    PlainTable *table = DataUtilities::getQueryResults(db_name_, table_to_query.at(table_name), false);
+    PlainTable *table = DataUtilities::getQueryResults(db_name_, table_to_query_.at(table_name), false);
 
     if(conf_.inputParty()) {
         // metadata file schema, collation, and tuple count
         string metadata_filename = dst_root_ + "/" + table_name + ".metadata";
-        string metadata = table_to_schema.at(table_name) + "\n"
-                + table_to_collation_.at(table_name) + "\n"
-               + std::to_string(table_to_tuple_count.at(table_name));
+        auto md = table_to_metadata_.at(table_name);
+        string metadata = md.schema_.prettyPrint() + "\n"
+                + DataUtilities::printSortDefinition(md.collation_) + "\n"
+               + std::to_string(md.tuple_cnt_);
         DataUtilities::writeFile(metadata_filename, metadata);
         cout << "Wrote metadata for " << table_name << " to " << metadata_filename << '\n';
     }
@@ -170,7 +169,7 @@ void encodeTable(string table_name) {
         // this still uses BPM under the hood, but it's less onerous than serializing one wire at a time as before
         PackedColumnTable *packed_table = (PackedColumnTable *) table->secretShare();
         auto serialized = packed_table->serialize();
-        string secret_shares_file = dst_root_ + "/" + table_name + "." + std::to_string(party_);
+        string secret_shares_file = Utilities::getFilenameForTable(table_name);
         DataUtilities::writeFile(secret_shares_file, serialized);
         cout << "Wrote secret shares to " << secret_shares_file << endl;
         delete packed_table;
@@ -216,9 +215,9 @@ int main(int argc, char **argv) {
     conf_.setEmptyDbName(empty_db_);
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(argv[1]);
     conf_.initialize(db_name_, md, StorageModel::PACKED_COLUMN_STORE);
+    conf_.stored_db_path_ = dst_root_;
 
-
-    for(auto const &entry : table_to_query) {
+    for(auto const &entry : table_to_query_) {
         encodeTable(entry.first);
     }
 
@@ -238,7 +237,7 @@ int main(int argc, char **argv) {
     // validate it
     if(VALIDATE) {
         conf_.initializeWirePackedDb(dst_root_);
-        for (auto table_entry: table_to_query) {
+        for (auto table_entry: table_to_query_) {
             string table_name = table_entry.first;
             string query = table_entry.second;
             PlainTable *expected = DataUtilities::getQueryResults(argv[1], query, false);
