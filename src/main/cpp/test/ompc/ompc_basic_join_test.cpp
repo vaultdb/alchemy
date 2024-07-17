@@ -36,12 +36,9 @@ class OMPCBasicJoinTest : public OmpcBaseTest {
 protected:
 
     std::string src_path_ = Utilities::getCurrentWorkingDirectory();
-    std::string packed_pages_path_ = src_path_ + "/packed_pages/";
 
     const int customer_limit_ = 10; // smaller: 5, large: 50
-
     const int orders_limit_ = 50; // smaller: 30, large: 100
-
     const int lineitem_limit_ = 100; // smaller: 90, large: 100
 
 
@@ -71,48 +68,91 @@ Operator<Bit> *OMPCBasicJoinTest::getCustomers() {
     SystemConfiguration & conf = SystemConfiguration::getInstance();
 
     if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-        auto scan = new StoredTableScan("customer", "c_custkey, c_mktsegment", customer_limit_);
+        auto scan = new StoredTableScan<Bit>("customer", "c_custkey, c_mktsegment", customer_limit_);
         // filter
         Integer s = Field<Bit>::secretShareString("HOUSEHOLD", conf.inputParty(), conf.input_party_, 10);
         Field<Bit> sf(FieldType::SECURE_STRING, s);
         auto schema = scan->getOutputSchema();
-        auto *predicate = FieldUtilities::getEqualityWithLiteral(schema, sf, 1);
-
+        auto predicate = FieldUtilities::getComparisonWithLiteral(schema, sf,1, ExpressionKind::EQ);
         auto filter = new Filter<Bit>(scan, predicate);
 
         // project it down to the c_custkey
-        auto proj = OperatorUtilities::buildProjectionFromColNames(filter, "c_custkey");
+        auto proj = OperatorUtilities::getProjectionFromColNames(filter, "c_custkey");
         return proj;
     }
 
     // else
-    Operator<Bit> *input  = new SecureSqlInput(db_name_, customer_sql_, true, SortDefinition(), customer_limit_);
+    Operator<Bit> *input  = new SecureSqlInput(db_name_, customer_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, customer_limit_);
     return input;
 }
 
 
-// TODO: finish writing this
 Operator<Bit> *OMPCBasicJoinTest::getOrders() {
-    SystemConfiguration & conf = SystemConfiguration::getInstance();
+    SystemConfiguration &conf = SystemConfiguration::getInstance();
 
     if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-        //  not really needed, but it makes the setup easier!
-        auto scan = new TableScan<Bit>("orders", orders_limit_);
-        auto proj = OperatorUtilities::buildProjectionFromColNames<Bit>(scan, "o_orderkey, o_custkey, o_orderdate, o_shippriority");
+        // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
+        vector<int> ordinals = {0, 1, 4, 7};
+        auto scan = new StoredTableScan<Bit>("orders", ordinals, orders_limit_);
 
-        // $4 < 796089600
-
-
+        // filter: o_orderdate < date '1995-03-25'
+        // $4 < 796089600 ($2 after projection)
+        auto schema = scan->getOutputSchema();
+        PlainField p(FieldType::LONG, 796089600);
+        SecureField s = Field<Bit>::secretShareHelper(p, schema.getField(2), conf.input_party_, conf.inputParty());
+        auto predicate = FieldUtilities::getComparisonWithLiteral(schema, s, 2, ExpressionKind::LT);
+        auto filter = new Filter<Bit>(scan, predicate);
+        return filter;
     }
-    // tmp for now
-    return nullptr;
+
+    // else
+    Operator<Bit> *input  = new SecureSqlInput(db_name_, orders_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, orders_limit_);
+    return input;
+
 }
 
 
 
 Operator<Bit> *OMPCBasicJoinTest::getLineitem() {
-    // TODO: finish writing this
-    return nullptr;
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
+    if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+        auto scan = new StoredTableScan<Bit>("lineitem", "l_orderkey, l_extendedprice, l_discount, l_shipdate", lineitem_limit_);
+        auto schema = scan->getOutputSchema();
+
+        // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate
+        ExpressionMapBuilder<Bit> lineitem_builder(schema);
+        lineitem_builder.addMapping(0, 0);
+        InputReference<emp::Bit> *extendedprice_field = new InputReference<emp::Bit>(1, schema);
+        InputReference<emp::Bit> *discount_field = new InputReference<emp::Bit>(2, schema);
+        LiteralNode<emp::Bit> *one_literal = new LiteralNode(Field<Bit>(FieldType::SECURE_FLOAT, emp::Float(1.0)));
+        MinusNode<emp::Bit> *one_minus_discount = new MinusNode<emp::Bit>(one_literal, discount_field);
+        TimesNode<emp::Bit> *extended_price_times_discount = new TimesNode<emp::Bit>(extendedprice_field, one_minus_discount);
+        Expression<emp::Bit> *revenue_expr = new GenericExpression<emp::Bit>(extended_price_times_discount, "revenue", FieldType::SECURE_FLOAT);
+        lineitem_builder.addExpression(revenue_expr, 1);
+        lineitem_builder.addMapping(3, 2); // l_shipdate
+
+        Project<Bit> *proj = new Project(scan, lineitem_builder.getExprs());
+
+        // filter: l_shipdate <= date '1995-03-25'
+        schema = proj->getOutputSchema();
+        PlainField p(FieldType::LONG, 796089600);
+        SecureField s = Field<Bit>::secretShareHelper(p, schema.getField(2), conf.input_party_, conf.inputParty());
+        auto predicate = FieldUtilities::getComparisonWithLiteral(schema, s, 2, ExpressionKind::GT);
+        auto filter = new Filter<Bit>(proj, predicate);
+
+        // chop off l_shipdate
+        ExpressionMapBuilder<Bit> builder(schema);
+        builder.addMapping(0, 0);
+        builder.addMapping(1, 1);
+        Project<Bit> *proj2 = new Project(filter, builder.getExprs());
+        return proj2;
+
+    }
+
+    // else
+    Operator<Bit> *input  = new SecureSqlInput(db_name_, lineitem_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, lineitem_limit_);
+    return input;
+
 }
 
 TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
@@ -125,64 +165,8 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
                       "WHERE c_custkey = o_custkey "
                       "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT cdummy AND NOT odummy for now
 
-    // Table scan for orders
-    //PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
-    TableScan<emp::Bit> *packed_orders_table_scan = new TableScan<Bit>("orders", orders_limit_);
-    // read orders
     auto orders = getOrders();
     auto customers = getCustomers();
-
-    /*
-    PackedTableScan *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
-    packed_orders_table_scan->setOperatorId(0);
-
-    SecureTable *orders_table = packed_orders_table_scan->run();
-//    cout << "Orders table ID: " << ((PackedColumnTable *) orders_table)->table_id_ << '\n';
-//    cout << "Orders first row: " << orders_table->revealRow(0).toString(true) << '\n';
-
-
-    // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy
-    ExpressionMapBuilder<Bit> orders_builder(packed_orders_table_scan->getOutputSchema());
-    orders_builder.addMapping(0, 0);
-    orders_builder.addMapping(1, 1);
-    orders_builder.addMapping(4, 2);
-    orders_builder.addMapping(7, 3);
-
-    Project<Bit> *orders_project = new Project(packed_orders_table_scan, orders_builder.getExprs());
-    orders_project->setOperatorId(1);
-
-
-    // Table scan for customer
-    //PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
-    TableScan<emp::Bit> *packed_customer_table_scan = new TableScan<Bit>("customer", customer_limit_);
-    packed_customer_table_scan->setOperatorId(2);
-
-    SecureTable *customer_table = packed_customer_table_scan->run();
-//    cout << "Customer table ID: " << ((PackedColumnTable *) customer_table)->table_id_ << '\n';
-//    cout << "Customer first row: " << customer_table->revealRow(0).toString(true) << '\n';
-
-
-    // Project customer table to c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy
-    auto customers = getCustomers();
-
-
-
-    ExpressionMapBuilder<Bit> customer_builder(packed_customer_table_scan->getOutputSchema());
-    customer_builder.addMapping(0, 0);
-
-    Project<Bit> *customer_project = new Project(packed_customer_table_scan, customer_builder.getExprs());
-    customer_project->setOperatorId(3);
-
-
-
-    SecureTable *op_table = orders_project->getOutput();
-    SecureTable *cp_table = customer_project->getOutput();
-    cout << "op table id: " << ((PackedColumnTable *) op_table)->table_id_ << '\n';
-    cout << "cp table id: " << ((PackedColumnTable *) cp_table)->table_id_ << '\n';
-
-    cout << "Orders projected first row: " << op_table->revealRow(0).toString(true) << '\n';
-    cout << "Customer projected first row: " << cp_table->revealRow(0).toString(true) << '\n';
-*/
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<emp::Bit> *predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders, 1, customers, 4);
@@ -191,9 +175,10 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
-        join_res->order_by_ = sort_def; // reveal() will sort for this
-        PlainTable *observed = join_res->reveal();
+        PlainTable  *observed = join_res->revealInsecure();
         DataUtilities::removeDummies(observed);
+        Sort<bool> sorter(observed, sort_def);
+        observed = sorter.run();
 
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql,false);
         expected->order_by_ = sort_def;
@@ -218,41 +203,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
 
     auto lineitems = getLineitem();
     auto orders = getOrders();
-    /*
-    // Table scan for lineitem
-    //PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
-    TableScan<emp::Bit> *packed_lineitem_table_scan = new TableScan<Bit>("lineitem", lineitem_limit_);
-    packed_lineitem_table_scan->setOperatorId(-2);
 
-    // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue
-    ExpressionMapBuilder<Bit> lineitem_builder(packed_lineitem_table_scan->getOutputSchema());
-    lineitem_builder.addMapping(0, 0);
-    InputReference<emp::Bit> *extendedprice_field = new InputReference<emp::Bit>(5, packed_lineitem_table_scan->getOutputSchema());
-    InputReference<emp::Bit> *discount_field = new InputReference<emp::Bit>(6, packed_lineitem_table_scan->getOutputSchema());
-    LiteralNode<emp::Bit> *one_literal = new LiteralNode(Field<Bit>(FieldType::SECURE_FLOAT, emp::Float(1.0)));
-    MinusNode<emp::Bit> *one_minus_discount = new MinusNode<emp::Bit>(one_literal, discount_field);
-    TimesNode<emp::Bit> *extended_price_times_discount = new TimesNode<emp::Bit>(extendedprice_field, one_minus_discount);
-    Expression<emp::Bit> *revenue_expr = new GenericExpression<emp::Bit>(extended_price_times_discount, "revenue", FieldType::SECURE_FLOAT);
-    lineitem_builder.addExpression(revenue_expr, 1);
-
-    Project<Bit> *lineitem_project = new Project(packed_lineitem_table_scan, lineitem_builder.getExprs());
-    lineitem_project->setOperatorId(-2);
-
-    // Table scan for orders
-    //PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
-    TableScan<emp::Bit> *packed_orders_table_scan = new TableScan<Bit>("orders", orders_limit_);
-    packed_orders_table_scan->setOperatorId(-2);
-
-    // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
-    ExpressionMapBuilder<Bit> orders_builder(packed_orders_table_scan->getOutputSchema());
-    orders_builder.addMapping(0, 0);
-    orders_builder.addMapping(1, 1);
-    orders_builder.addMapping(4, 2);
-    orders_builder.addMapping(7, 3);
-
-    Project<Bit> *orders_project = new Project(packed_orders_table_scan, orders_builder.getExprs());
-    orders_project->setOperatorId(-2);
-*/
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(lineitems, 0, orders, 2);
@@ -262,7 +213,6 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
-        join_res->order_by_ = sort_def;
         PlainTable  *observed = join_res->revealInsecure();
         DataUtilities::removeDummies(observed);
         Sort<bool> sorter(observed, sort_def);
@@ -288,8 +238,6 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
                       "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
 
     // Table scan for orders
-    //PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
-    TableScan<emp::Bit> *packed_orders_table_scan = new TableScan<Bit>("orders", orders_limit_);
     auto orders = getOrders();
     auto customers = getCustomers();
     auto lineitems = getLineitem();
@@ -302,66 +250,11 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>( lineitems, 0, customer_orders_join, 2);
     BasicJoin<Bit> *full_join = new BasicJoin(lineitems, customer_orders_join, lineitem_orders_predicate);
-    full_join->setOperatorId(-2);
     SecureTable *join_res = full_join->run();
-
-/*    PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit_);
->>>>>>> Stashed changes
-    packed_orders_table_scan->setOperatorId(-2);
-
-    // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
-    ExpressionMapBuilder<Bit> orders_builder(packed_orders_table_scan->getOutputSchema());
-    orders_builder.addMapping(0, 0);
-    orders_builder.addMapping(1, 1);
-    orders_builder.addMapping(4, 2);
-    orders_builder.addMapping(7, 3);
-
-    Project<Bit> *orders_project = new Project(packed_orders_table_scan, orders_builder.getExprs());
-    orders_project->setOperatorId(-2);
-
-    // Table scan for customer
-    //PackedTableScan<emp::Bit> *packed_customer_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "customer", packed_pages_path_, FLAGS_party, customer_limit_);
-    TableScan<emp::Bit> *packed_customer_table_scan = new TableScan<Bit>("customer", customer_limit_);
-    packed_customer_table_scan->setOperatorId(-2);
-
-    // Project customer table to c_custkey
-    ExpressionMapBuilder<Bit> customer_builder(packed_customer_table_scan->getOutputSchema());
-    customer_builder.addMapping(0, 0);
-
-    Project<Bit> *customer_project = new Project(packed_customer_table_scan, customer_builder.getExprs());
-    customer_project->setOperatorId(-2);
-
-    // join output schema: (orders, customer)
-    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> * customer_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_project, 1,customer_project,4);
-    BasicJoin<Bit> *customer_orders_join = new BasicJoin(orders_project, customer_project, customer_orders_predicate);
-    customer_orders_join->setOperatorId(-2);
-
-    // Table scan for lineitem
-    //PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit_);
-    TableScan<emp::Bit> *packed_lineitem_table_scan = new TableScan<Bit>("lineitem", lineitem_limit_);
-    packed_lineitem_table_scan->setOperatorId(-2);
-
-    // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue
-    ExpressionMapBuilder<Bit> lineitem_builder(packed_lineitem_table_scan->getOutputSchema());
-    lineitem_builder.addMapping(0, 0);
-    InputReference<emp::Bit> *extendedprice_field = new InputReference<emp::Bit>(5, packed_lineitem_table_scan->getOutputSchema());
-    InputReference<emp::Bit> *discount_field = new InputReference<emp::Bit>(6, packed_lineitem_table_scan->getOutputSchema());
-    LiteralNode<emp::Bit> *one_literal = new LiteralNode(Field<Bit>(FieldType::SECURE_FLOAT, emp::Float(1.0)));
-    MinusNode<emp::Bit> *one_minus_discount = new MinusNode<emp::Bit>(one_literal, discount_field);
-    TimesNode<emp::Bit> *extended_price_times_discount = new TimesNode<emp::Bit>(extendedprice_field, one_minus_discount);
-    Expression<emp::Bit> *revenue_expr = new GenericExpression<emp::Bit>(extended_price_times_discount, "revenue", FieldType::SECURE_FLOAT);
-    lineitem_builder.addExpression(revenue_expr, 1);
-
-    Project<Bit> *lineitem_project = new Project(packed_lineitem_table_scan, lineitem_builder.getExprs());
-    lineitem_project->setOperatorId(-2);
-    */
 
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(full_join->getOutputSchema().getFieldCount());
-        join_res->order_by_ = sort_def;
-        // sort too slow with n^2 secret shared rows
         PlainTable *observed = join_res->revealInsecure();
         DataUtilities::removeDummies(observed);
         Sort<bool> sorter(observed, sort_def);

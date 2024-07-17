@@ -13,6 +13,7 @@
 #include "expression/comparator_expression_nodes.h"
 #include "expression/generic_expression.h"
 #include <expression/visitor/to_packed_expression_visitor.h>
+#include <expression/expression_factory.h>
 
 
 namespace vaultdb {
@@ -166,17 +167,19 @@ namespace vaultdb {
         }
 
 
+
         template<typename B>
-        static Expression<B> *getEqualityWithLiteral(QuerySchema & schema, Field<B> & to_compare, const int & ordinal) {
-            auto lit = new LiteralNode<B>(to_compare);
-            auto cmp = new InputReference<B>(ordinal, schema);
-            auto eq = new EqualNode<B>(lit, cmp);
-            ToPackedExpressionVisitor pack_it(eq);
+        static Expression<B> *getComparisonWithLiteral(QuerySchema & schema, Field<B> & literal, const int & ordinal, const ExpressionKind & comparator) {
+            auto lit = new LiteralNode<B>(literal);
+            auto in = new InputReference<B>(ordinal, schema);
+            auto cmp = ExpressionFactory<B>::getExpressionNode(comparator, lit, in);
+
+            ToPackedExpressionVisitor pack_it(cmp);
             ExpressionNode<B> *packed_predicate = pack_it.getRoot();
 
             GenericExpression<B> *g =  new GenericExpression<B>(packed_predicate, "predicate",
                                                                 std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
-            delete eq;
+            delete cmp;
             delete lit;
             delete cmp;
 

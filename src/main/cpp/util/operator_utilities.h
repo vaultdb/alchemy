@@ -15,9 +15,9 @@ namespace vaultdb {
         static vector<int> getOrdinalsFromColNames(const QuerySchema & src_schema, const string & spec);
 
         template<typename B>
-        static Project<B> *getProjectionFromColNames(Operator<B> *input, const string & spec) {
+        static Project<B> *getProjectionFromColNames(Operator<B> *input, const string & col_names_csv) {
             auto schema = input->getOutputSchema();
-            auto ordinals  = getOrdinalsFromColNames(schema, spec);
+            auto ordinals  = getOrdinalsFromColNames(schema, col_names_csv);
             return getProjectionFromOrdinals(input, ordinals);
         }
 
