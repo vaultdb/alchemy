@@ -153,6 +153,10 @@ void loadTableInfoFromJson(string json_path) {
 void encodeTable(string table_name) {
     // metadata consists of schema and tuple count
     PlainTable *table = DataUtilities::getQueryResults(db_name_, table_to_query_.at(table_name), false);
+    // all parties need packed table (even TP) to complete protocol, same for serialize because it flushes table from BP
+    PackedColumnTable *packed_table = (PackedColumnTable *) table->secretShare();
+    // this still uses BPM under the hood, but it's less onerous than serializing one wire at a time as before
+    auto serialized = packed_table->serialize();
 
     if(conf_.inputParty()) {
         // metadata file schema, collation, and tuple count
@@ -166,15 +170,12 @@ void encodeTable(string table_name) {
     }
     else {
         // write out shares
-        // this still uses BPM under the hood, but it's less onerous than serializing one wire at a time as before
-        PackedColumnTable *packed_table = (PackedColumnTable *) table->secretShare();
-        auto serialized = packed_table->serialize();
         string secret_shares_file = Utilities::getFilenameForTable(table_name);
         DataUtilities::writeFile(secret_shares_file, serialized);
         cout << "Wrote secret shares to " << secret_shares_file << endl;
-        delete packed_table;
-
     }
+
+    delete packed_table;
     delete table;
 }
 
