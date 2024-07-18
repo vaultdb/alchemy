@@ -1,7 +1,7 @@
 #include <test/ompc/ompc_base_test.h>
 #include <util/data_utilities.h>
 #include <operators/sort.h>
-#include <operators/table_scan.h>
+#include <operators/stored_table_scan.h>
 
 #if __has_include("emp-rescu/emp-rescu.h")
 
@@ -35,7 +35,7 @@ protected:
 
 void OMPCStoredTableTest::scanAndValidate(const string & table_name, const std::string & sql, const SortDefinition & sort) {
 
-    TableScan<Bit> scan(table_name);
+    StoredTableScan<Bit> scan(table_name);
     auto observed = scan.run();
 
     if(FLAGS_validation) {

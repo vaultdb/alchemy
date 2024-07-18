@@ -250,6 +250,8 @@ namespace  vaultdb {
                     return "NestedLoopAggregate";
                 case OperatorType::UNION:
                     return "Union";
+                case OperatorType::STORED_TABLE_SCAN:
+                    return "StoredTableScan";
                 default:
                     throw;
             }
