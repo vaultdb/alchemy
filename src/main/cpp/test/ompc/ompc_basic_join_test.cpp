@@ -5,7 +5,6 @@
 #include <operators/project.h>
 #include <operators/sort.h>
 #include "util/field_utilities.h"
-#include <expression/comparator_expression_nodes.h>
 #include "expression/generic_expression.h"
 #include "expression/math_expression_nodes.h"
 #include "operators/stored_table_scan.h"
@@ -42,7 +41,7 @@ protected:
     const int lineitem_limit_ = 100; // smaller: 90, large: 100
 
 
-    const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy"
+    const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy \n"
                                       "FROM customer \n"
                                       "ORDER BY c_custkey \n"
                                       "LIMIT " + std::to_string(customer_limit_);
@@ -69,6 +68,7 @@ Operator<Bit> *OMPCBasicJoinTest::getCustomers() {
 
     if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
         auto scan = new StoredTableScan<Bit>("customer", "c_custkey, c_mktsegment", customer_limit_);
+
         // filter
         Integer s = Field<Bit>::secretShareString("HOUSEHOLD", conf.inputParty(), conf.input_party_, 10);
         Field<Bit> sf(FieldType::SECURE_STRING, s);
@@ -98,9 +98,11 @@ Operator<Bit> *OMPCBasicJoinTest::getOrders() {
         // filter: o_orderdate < date '1995-03-25'
         // $4 < 796089600 ($2 after projection)
         auto schema = scan->getOutputSchema();
-        PlainField p(FieldType::LONG, 796089600);
+        int64_t date =  796089600L;
+        PlainField p(FieldType::LONG, date);
         SecureField s = Field<Bit>::secretShareHelper(p, schema.getField(2), conf.input_party_, conf.inputParty());
-        auto predicate = FieldUtilities::getComparisonWithLiteral(schema, s, 2, ExpressionKind::LT);
+        auto predicate = FieldUtilities::getComparisonWithLiteral(schema, 2, s, ExpressionKind::LT);
+
         auto filter = new Filter<Bit>(scan, predicate);
         return filter;
     }
@@ -133,11 +135,12 @@ Operator<Bit> *OMPCBasicJoinTest::getLineitem() {
 
         auto proj = new Project(scan, lineitem_builder.getExprs());
 
-        // filter: l_shipdate <= date '1995-03-25'
+        // filter: l_shipdate > date '1995-03-25'
         schema = proj->getOutputSchema();
-        PlainField p(FieldType::LONG, 796089600);
+        int64_t date =  796089600L;
+        PlainField p(FieldType::LONG, date);
         SecureField s = Field<Bit>::secretShareHelper(p, schema.getField(2), conf.input_party_, conf.inputParty());
-        auto predicate = FieldUtilities::getComparisonWithLiteral(schema, s, 2, ExpressionKind::GT);
+        auto predicate = FieldUtilities::getComparisonWithLiteral(schema, 2, s, ExpressionKind::GT);
         auto filter = new Filter<Bit>(proj, predicate);
 
         // chop off l_shipdate
@@ -170,7 +173,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<emp::Bit> *predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders, 1, customers, 4);
-    BasicJoin<emp::Bit> *join = new BasicJoin(orders, customers, predicate);
+    auto join = new BasicJoin(orders, customers, predicate);
     SecureTable *join_res = join->run();
 
     if(FLAGS_validation) {
