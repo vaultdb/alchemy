@@ -53,6 +53,7 @@ void OmpcBaseTest::SetUp()  {
     string settings = Utilities::getTestParameters();
     log->write(settings, Level::INFO);
 
+    time_point<high_resolution_clock> start_time = high_resolution_clock::now();
     if(storage_model_ == StorageModel::PACKED_COLUMN_STORE){
         string packed_wires_path = Utilities::getCurrentWorkingDirectory() + "/" + FLAGS_wire_path + "/" + FLAGS_unioned_db;
         // read in files for packed wires
@@ -65,6 +66,8 @@ void OmpcBaseTest::SetUp()  {
         string shares_path = Utilities::getCurrentWorkingDirectory() + "/shares/" + FLAGS_unioned_db;
         TableManager::getInstance().initializeSecretShares(shares_path, FLAGS_party);
     }
+    double runtime = time_from(start_time)/1e6;
+    cout << "data loading time: " << runtime << " s" << endl;  
 
 }
 

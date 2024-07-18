@@ -76,7 +76,7 @@ Operator<Bit> *OMPCBasicJoinTest::getCustomers() {
 
     if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
         auto scan = new StoredTableScan<Bit>("customer", "c_custkey, c_mktsegment", customer_limit_);
-        printOperatorOutput(scan, "**Customers scan: ");
+
         // filter
         Integer s = Field<Bit>::secretShareString("HOUSEHOLD ", conf.inputParty(), conf.input_party_, 10);
         Field<Bit> sf(FieldType::SECURE_STRING, s);
@@ -84,15 +84,8 @@ Operator<Bit> *OMPCBasicJoinTest::getCustomers() {
         auto predicate = FieldUtilities::getComparisonWithLiteral(schema, sf,1, ExpressionKind::EQ);
         auto filter = new Filter<Bit>(scan, predicate);
 
-        printOperatorOutput(filter, "**Customers filtered: ");
         // project it down to the c_custkey
         auto proj = OperatorUtilities::getProjectionFromColNames(filter, "c_custkey");
-
-        SecureSqlInput test(FLAGS_unioned_db, customer_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, customer_limit_);
-        auto test_res = test.run()->revealInsecure();
-        DataUtilities::removeDummies(test_res);
-        cout << "Expected customers: " << *test_res << '\n';
-
 
         return proj;
     }
@@ -110,7 +103,6 @@ Operator<Bit> *OMPCBasicJoinTest::getOrders() {
         // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
         vector<int> ordinals = {0, 1, 4, 7};
         auto scan = new StoredTableScan<Bit>("orders", ordinals, orders_limit_);
-        printOperatorOutput(scan, "**Orders scan: ");
 
         // filter: o_orderdate < date '1995-03-25'
         // $4 < 796089600 ($2 after projection)
@@ -121,12 +113,11 @@ Operator<Bit> *OMPCBasicJoinTest::getOrders() {
         auto predicate = FieldUtilities::getComparisonWithLiteral(schema, 2, s, ExpressionKind::LT);
 
         auto filter = new Filter<Bit>(scan, predicate);
-        printOperatorOutput(filter, "**Orders filter: ");
 
         SecureSqlInput test(FLAGS_unioned_db, orders_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, orders_limit_);
         auto test_res = test.run()->revealInsecure();
         DataUtilities::removeDummies(test_res);
-        cout << "Expected orders: " << *test_res << '\n';
+
 
 
         return filter;
@@ -172,7 +163,7 @@ Operator<Bit> *OMPCBasicJoinTest::getLineitem() {
         ExpressionMapBuilder<Bit> builder(schema);
         builder.addMapping(0, 0);
         builder.addMapping(1, 1);
-        Project<Bit> *proj2 = new Project(filter, builder.getExprs());
+        auto proj2 = new Project(filter, builder.getExprs());
         return proj2;
 
     }
@@ -194,11 +185,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
                       "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
     auto orders = getOrders();
-    printOperatorOutput(orders, "**Orders: ");
-
-
     auto customers = getCustomers();
-    printOperatorOutput(customers, "**Customers: ");
 
 
     // join output schema: (orders, customer)
