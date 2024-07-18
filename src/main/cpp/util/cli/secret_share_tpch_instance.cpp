@@ -4,28 +4,28 @@
 #include "util/field_utilities.h"
 #include "query_table/column_table.h"
 #include "util/table_manager.h"
+#include "operators/stored_table_scan.h"
+
 #include <boost/property_tree/json_parser.hpp>
 
+#if __has_include("emp-rescu/emp-rescu.h")
 
-
+#define VALIDATE 1
 using namespace std;
 using namespace vaultdb;
-
 // customize this as needed
 const string empty_db_ = "tpch_empty";
 vector<string> hosts_ = vector<string>(N + 1, "127.0.0.1");
 int port_ = 55370;
 int ctrl_port_ = 55380;
-string db_name_;
 string dst_root_;
-int party_count_ = -1;
+string db_name_;
 int party_ = -1;
 SystemConfiguration & conf_ = SystemConfiguration::getInstance();
 
-map<string, string> table_to_query;
-map<string, string> table_to_schema;
-map<string, int> table_to_tuple_count;
-map<string, string> table_to_collation_;
+// encode whole db at once to preserve same delta for all of them
+map<string, string> table_to_query_;
+map<string, TableMetadata> table_to_metadata_;
 
 void parseIPsFromJson(const std::string &config_json_path) {
     stringstream ss;
@@ -65,9 +65,9 @@ void parseIPsFromJson(const std::string &config_json_path) {
     }
 }
 
-void loadTableInfoFromJson(string table_json_path) {
+void loadTableInfoFromJson(string json_path) {
     stringstream ss;
-    std::vector<std::string> json_lines = DataUtilities::readTextFile(table_json_path);
+    std::vector<std::string> json_lines = DataUtilities::readTextFile(json_path);
     for(vector<string>::iterator pos = json_lines.begin(); pos != json_lines.end(); ++pos)
         ss << *pos << endl;
 
@@ -79,6 +79,7 @@ void loadTableInfoFromJson(string table_json_path) {
 
         for(ptree::const_iterator it = tables.begin(); it != tables.end(); ++it) {
             string table_name = "";
+            TableMetadata  md;
 
             if(it->second.count("table_name") > 0) {
                 table_name = it->second.get_child("table_name").get_value<string>();
@@ -88,27 +89,27 @@ void loadTableInfoFromJson(string table_json_path) {
             }
 
             if(it->second.count("query") > 0) {
-                table_to_query[table_name] = it->second.get_child("query").get_value<string>();
+                table_to_query_[table_name] = it->second.get_child("query").get_value<string>();
             }
             else {
                 throw std::runtime_error("No query found in table_config.json");
             }
 
             if(it->second.count("schema") > 0) {
-                table_to_schema[table_name] = it->second.get_child("schema").get_value<string>();
+                md.schema_ = QuerySchema(it->second.get_child("schema").get_value<string>());
+
             }
             else {
                 throw std::runtime_error("No schema found in table_config.json");
             }
 
             if(it->second.count("tuple_count") > 0) {
-                table_to_tuple_count[table_name] = it->second.get_child("tuple_count").get_value<int>();
+                md.tuple_cnt_ = it->second.get_child("tuple_count").get_value<int>();
             }
             else {
                 throw std::runtime_error("No tuple_count found in table_config.json");
             }
 
-            vector<ColumnSort> sort_def;
 
             if(it->second.count("collations") > 0) {
                 boost::property_tree::ptree collations = it->second.get_child("collations");
@@ -138,68 +139,74 @@ void loadTableInfoFromJson(string table_json_path) {
                         throw std::runtime_error("No direction found in table_config.json");
                     }
 
-                    sort_def.push_back(ColumnSort(column, direction));
+                    md.collation_.push_back(ColumnSort(column, direction));
                 }
-
-                table_to_collation_[table_name] = DataUtilities::printSortDefinition(sort_def);
             }
             else {
                 throw std::runtime_error("No collation found in table_config.json");
             }
+            table_to_metadata_[table_name] = md;
         }
+
     }
+
+
 }
 
-void secret_share_table(string table_name) {
-    PlainTable *table = DataUtilities::getQueryResults(db_name_, table_to_query[table_name], false);
+void encodeTable(string table_name) {
+    // metadata consists of schema and tuple count
+    PlainTable *table = DataUtilities::getQueryResults(db_name_, table_to_query_.at(table_name), false);
+    // all parties need packed table (even TP) to complete protocol, same for serialize because it flushes table from BP
+    auto shared_table =  table->secretShare();
+    // this still uses BPM under the hood, but it's less onerous than serializing one wire at a time as before
+    auto serialized = shared_table->serialize();
 
-    vector<vector<int8_t> > shares = table->generateSecretShares(party_count_);
-
-    for(int i = 0; i < party_count_; i++) {
-        string postfix;
-        if(i == 0) {
-            postfix = "10086";
-        }
-        else {
-            postfix = to_string(i);
-        }
-        string share_filename = table_name + "."  + postfix;
-        DataUtilities::writeFile(dst_root_ + "/" + share_filename, shares[i]);
+    if(conf_.inputParty()) {
+        // metadata file schema, collation, and tuple count
+        string metadata_filename = dst_root_ + "/" + table_name + ".metadata";
+        auto md = table_to_metadata_.at(table_name);
+        string metadata = md.schema_.prettyPrint() + "\n"
+                + DataUtilities::printSortDefinition(md.collation_) + "\n"
+               + std::to_string(md.tuple_cnt_);
+        DataUtilities::writeFile(metadata_filename, metadata);
+        cout << "Wrote metadata for " << table_name << " to " << metadata_filename << '\n';
     }
-    cout << "Wrote " << party_count_ << " shares to " << dst_root_ << "/" << table_name << ".[0-" << party_count_ - 1 << "]" << endl;
+ //   else {
+        // write out shares
+        string secret_shares_file = Utilities::getFilenameForTable(table_name);
+        DataUtilities::writeFile(secret_shares_file, serialized);
+        cout << "Wrote secret shares to " << secret_shares_file << endl;
+//    }
 
-    string metadata_filename = dst_root_ + "/" + table_name + ".metadata";
-    string metadata = QuerySchema::toPlain(table_to_schema.at(table_name)).prettyPrint() + "\n"
-                      + table_to_collation_.at(table_name) + "\n"
-                      + std::to_string(table_to_tuple_count.at(table_name));
-    DataUtilities::writeFile(metadata_filename, metadata);
-    cout << "Wrote metadata for " << table_name << " to " << metadata_filename << '\n';
-
+    delete shared_table;
     delete table;
 }
 
 int main(int argc, char **argv) {
 
     // paths are relative to local $VAULTDB_ROOT, the src/main/cpp within your vaultdb directory
-    // usage: ./secret_share_tpch_instance <db name> <destination root> <party count> <party>
-    // e.g., ./secret_share_tpch_instance tpch_unioned_150 shares 4 1
-    if (argc < 5) {
-        std::cout << "usage: ./secret_share_tpch_instance <db name> <destination root> <party count> <party>" << std::endl;
+    // usage: ./wire_pack_table_from_query <db name> <destination root> <party>
+    // e.g., ./wire_pack_table_from_query tpch_unioned_600 wires/tpch_unioned_600 10086
+    if (argc < 4) {
+        std::cout << "usage: ./secret_share_tpch_instance <db name> <destination root> <party>" << std::endl;
         exit(-1);
     }
 
-    string current_dir = Utilities::getCurrentWorkingDirectory();
 
-    db_name_ = argv[1];
+     party_ = atoi(argv[3]);
+     db_name_ = (party_ == emp::TP) ? argv[1] : empty_db_;
+     string current_dir = Utilities::getCurrentWorkingDirectory();
+     dst_root_ = current_dir + "/" + argv[2];
 
-    dst_root_ = current_dir + "/" + argv[2] + "/" + argv[1];
+    cout << "Party: " << party_ << endl;
+    cout << "DB Name: " << db_name_ << endl;
+    cout << "Destination dir: " << dst_root_ << endl;
+    cout << "Ports: " << port_ << ", " << ctrl_port_ << endl;
+
+    // attempt to create target dir
     string dst_dir = dst_root_.substr(0, dst_root_.find_last_of("/"));
     Utilities::mkdir(dst_dir);
     Utilities::mkdir(dst_root_);
-
-    party_count_ = atoi(argv[3]);
-
-    party_ = atoi(argv[4]);
 
     loadTableInfoFromJson(current_dir + "/table_config.json");
 
@@ -212,10 +219,49 @@ int main(int argc, char **argv) {
     conf_.setEmptyDbName(empty_db_);
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(argv[1]);
     conf_.initialize(db_name_, md, StorageModel::COLUMN_STORE);
-//    // TODO: disable bit packing for secret sharing loading
-//    conf_.clearBitPacking();
+    conf_.stored_db_path_ = dst_root_;
 
-    for(auto const& entry : table_to_query) {
-        secret_share_table(entry.first);
+    // just encode the first table
+    for(auto const &entry : table_to_query_) {
+        encodeTable(entry.first);
     }
+
+
+    // TP instance responsible for writing metadata
+    // everything is localhost so it does not matter which one does this
+    if(conf_.inputParty()) {
+
+        OMPCBackend<N> *protocol = (OMPCBackend<N> *) emp::backend;
+        string delta_file = dst_root_ + "/" + "delta";
+        vector<int8_t> delta;
+        delta.resize(sizeof(block));
+        memcpy(delta.data(), &protocol->multi_pack_delta, sizeof(block));
+        DataUtilities::writeFile(delta_file, delta);
+    }
+
+    // validate it
+    if(VALIDATE) {
+        conf_.initializeSecretSharedDb(dst_root_);
+        for (auto table_entry: table_to_query_) {
+            string table_name = table_entry.first;
+                string query = table_entry.second;
+                PlainTable *expected = DataUtilities::getQueryResults(argv[1], query, false);
+                SecureTable *recvd = StoredTableScan<Bit>::readStoredTable(table_name, vector<int>());
+                PlainTable *recvd_plain = recvd->revealInsecure();
+
+                expected->order_by_ = recvd_plain->order_by_;
+                assert(*expected == *recvd_plain);
+
+                delete recvd_plain;
+                delete expected;
+
+        }
+    }
+
 }
+#else
+int main(int argc, char **argv) {
+    std::cout << "emp-rescu backend not found!" << std::endl;
+}
+
+#endif

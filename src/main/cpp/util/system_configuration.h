@@ -102,6 +102,7 @@ namespace vaultdb{
         }
 
         void initializeWirePackedDb(const string & db_path);
+        void initializeSecretSharedDb(const string & db_path);
 
         string getUnionedDbName() const { return unioned_db_name_; }
         string getEmptyDbName() const { return empty_db_name_; }

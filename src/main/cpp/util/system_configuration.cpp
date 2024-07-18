@@ -37,7 +37,7 @@ void SystemConfiguration::initializeWirePackedDb(const std::string &db_path) {
 
         block delta;
         // if input party, initialize delta first from file
-        if(inputParty()) {
+        if (inputParty()) {
             auto d = DataUtilities::readFile(stored_db_path_ + "/delta");
             assert(d.size() == sizeof(block));
             memcpy((int8_t *) &delta, d.data(), sizeof(block));
@@ -48,7 +48,7 @@ void SystemConfiguration::initializeWirePackedDb(const std::string &db_path) {
         string all_tables = Utilities::runCommand("ls *.metadata", stored_db_path_);
         vector<string> tables = Utilities::splitStringByNewline(all_tables);
 
-        for(auto & metadata_file : tables) {
+        for (auto &metadata_file: tables) {
             TableMetadata md;
             md.name_ = metadata_file.substr(0, metadata_file.size() - 9);
             auto metadata = DataUtilities::readTextFile(stored_db_path_ + "/" + metadata_file);
@@ -61,6 +61,37 @@ void SystemConfiguration::initializeWirePackedDb(const std::string &db_path) {
 
 
     }
+}
+
+
+void SystemConfiguration::initializeSecretSharedDb(const string & db_path) {
+    stored_db_path_ = db_path;
+    assert(storageModel() == StorageModel::COLUMN_STORE);
+
+    block delta;
+    // if input party, initialize delta first from file
+    if(inputParty()) {
+        auto d = DataUtilities::readFile(stored_db_path_ + "/delta");
+        assert(d.size() == sizeof(block));
+        memcpy((int8_t *) &delta, d.data(), sizeof(block));
+    }
+
+    emp_manager_->setDelta(delta);
+
+    string all_tables = Utilities::runCommand("ls *.metadata", stored_db_path_);
+    vector<string> tables = Utilities::splitStringByNewline(all_tables);
+
+    for(auto & metadata_file : tables) {
+        TableMetadata md;
+        md.name_ = metadata_file.substr(0, metadata_file.size() - 9);
+        auto metadata = DataUtilities::readTextFile(stored_db_path_ + "/" + metadata_file);
+        // drop ".metadata" suffix
+        md.schema_ = QuerySchema(metadata.at(0));
+        md.collation_ = DataUtilities::parseCollation(metadata.at(1));
+        md.tuple_cnt_ = atoi(metadata.at(2).c_str());
+        table_metadata_[md.name_] = md;
+    }
 
 
 }
+
