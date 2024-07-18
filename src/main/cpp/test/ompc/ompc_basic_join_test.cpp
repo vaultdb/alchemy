@@ -60,7 +60,6 @@ protected:
     Operator<Bit> *getOrders();
     Operator<Bit> *getLineitem();
 
-
 };
 
 
@@ -68,8 +67,9 @@ Operator<Bit> *OMPCBasicJoinTest::getCustomers() {
     SystemConfiguration & conf = SystemConfiguration::getInstance();
 
     if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-        auto scan = new StoredTableScan<Bit>("customer", "c_custkey, c_mktsegment", customer_limit_);
-
+        return new StoredTableScan<Bit>("customer", "c_custkey", customer_limit_);
+        //auto scan = new StoredTableScan<Bit>("customer", "c_custkey, c_mktsegment", customer_limit_);
+/*
         // filter
         Integer s = Field<Bit>::secretShareString("HOUSEHOLD ", conf.inputParty(), conf.input_party_, 10);
         Field<Bit> sf(FieldType::SECURE_STRING, s);
@@ -80,7 +80,7 @@ Operator<Bit> *OMPCBasicJoinTest::getCustomers() {
         // project it down to the c_custkey
         auto proj = OperatorUtilities::getProjectionFromColNames(filter, "c_custkey");
 
-        return proj;
+        return proj;*/
     }
 
     // else
@@ -96,7 +96,8 @@ Operator<Bit> *OMPCBasicJoinTest::getOrders() {
         // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
         vector<int> ordinals = {0, 1, 4, 7};
         auto scan = new StoredTableScan<Bit>("orders", ordinals, orders_limit_);
-
+        return scan;
+        /*
         // filter: o_orderdate < date '1995-03-25'
         // $4 < 796089600 ($2 after projection)
         auto schema = scan->getOutputSchema();
@@ -113,7 +114,7 @@ Operator<Bit> *OMPCBasicJoinTest::getOrders() {
 
 
 
-        return filter;
+        return filter; */
     }
 
     // else
@@ -127,7 +128,9 @@ Operator<Bit> *OMPCBasicJoinTest::getOrders() {
 Operator<Bit> *OMPCBasicJoinTest::getLineitem() {
     SystemConfiguration & conf = SystemConfiguration::getInstance();
     if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-        auto scan = new StoredTableScan<Bit>("lineitem", "l_orderkey, l_extendedprice, l_discount, l_shipdate", lineitem_limit_);
+        auto scan = new StoredTableScan<Bit>("lineitem", "l_orderkey, l_extendedprice, l_discount", lineitem_limit_);
+
+        //auto scan = new StoredTableScan<Bit>("lineitem", "l_orderkey, l_extendedprice, l_discount, l_shipdate", lineitem_limit_);
         auto schema = scan->getOutputSchema();
 
         // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate
@@ -140,11 +143,12 @@ Operator<Bit> *OMPCBasicJoinTest::getLineitem() {
         auto extended_price_times_discount = new TimesNode<emp::Bit>(extendedprice_field, one_minus_discount);
         Expression<emp::Bit> *revenue_expr = new GenericExpression<emp::Bit>(extended_price_times_discount, "revenue", FieldType::SECURE_FLOAT);
         lineitem_builder.addExpression(revenue_expr, 1);
-        lineitem_builder.addMapping(3, 2); // l_shipdate
+//        lineitem_builder.addMapping(3, 2); // l_shipdate
 
         auto proj = new Project(scan, lineitem_builder.getExprs());
+        return proj;
 
-        // filter: l_shipdate > date '1995-03-25'
+/*        // filter: l_shipdate > date '1995-03-25'
         schema = proj->getOutputSchema();
         int64_t date =  796089600L;
         PlainField p(FieldType::LONG, date);
@@ -158,7 +162,7 @@ Operator<Bit> *OMPCBasicJoinTest::getLineitem() {
         builder.addMapping(1, 1);
         auto proj2 = new Project(filter, builder.getExprs());
         return proj2;
-
+*/
     }
 
     // else
@@ -174,7 +178,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
                                     "orders_cte AS (" + orders_sql_ + ") "
                       "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
                       "FROM customer_cte, orders_cte "
-                      "WHERE c_custkey = o_custkey  AND NOT cdummy AND NOT odummy "
+                      "WHERE c_custkey = o_custkey " // AND NOT odummy  AND NOT cdummy
                       "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
     auto orders = getOrders();
@@ -211,7 +215,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
                                     "lineitem_cte AS (" + lineitem_sql_ + ") "
                       "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority "
                       "FROM lineitem_cte, orders_cte "
-                      "WHERE l_orderkey = o_orderkey  AND NOT ldummy AND NOT odummy "
+                      "WHERE l_orderkey = o_orderkey " //  AND NOT ldummy AND NOT odummy "
                       "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
 
@@ -248,7 +252,7 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
                            "customer_cte AS (" + customer_sql_ + ") "
                       "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
                       "FROM lineitem_cte, orders_cte, customer_cte "
-                      "WHERE l_orderkey = o_orderkey AND c_custkey = o_custkey AND NOT odummy AND NOT ldummy AND NOT cdummy"
+                      "WHERE l_orderkey = o_orderkey AND c_custkey = o_custkey " //  AND NOT odummy AND NOT ldummy AND NOT cdummy"
                       "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
     // Table scan for orders
