@@ -25,8 +25,7 @@ ExpressionNode<B> *ExpressionFactory<B>::getExpressionNode(const string &express
 
 
 template<typename B>
-ExpressionNode<B> *ExpressionFactory<B>::getExpressionNode(const ExpressionKind &kind, ExpressionNode<B> *lhs,
-ExpressionNode<B> *rhs) {
+ExpressionNode<B> *ExpressionFactory<B>::getExpressionNode(const ExpressionKind &kind, ExpressionNode<B> *lhs, ExpressionNode<B> *rhs) {
     switch(kind) {
         case ExpressionKind::PLUS:
             return new PlusNode<B>(lhs, rhs);
