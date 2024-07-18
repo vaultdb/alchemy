@@ -177,14 +177,22 @@ namespace vaultdb {
             ToPackedExpressionVisitor pack_it(cmp);
             ExpressionNode<B> *packed_predicate = pack_it.getRoot();
 
-            GenericExpression<B> *g =  new GenericExpression<B>(packed_predicate, "predicate",
-                                                                std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
-            delete cmp;
-            delete lit;
-            delete cmp;
-
-            return g;
+            return  new GenericExpression<B>(packed_predicate, "predicate",  std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
         }
+
+        template<typename B>
+        static Expression<B> *getComparisonWithLiteral(QuerySchema & schema,  const int & ordinal, Field<B> & literal, const ExpressionKind & comparator) {
+            auto lit = new LiteralNode<B>(literal);
+
+            auto in = new InputReference<B>(ordinal, schema);
+            auto cmp = ExpressionFactory<B>::getExpressionNode(comparator, in, lit);
+
+            ToPackedExpressionVisitor pack_it(cmp);
+            ExpressionNode<B> *packed_predicate = pack_it.getRoot();
+
+            return  new GenericExpression<B>(packed_predicate, "predicate",  std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
+        }
+
 
         template<typename B>
         static string revealAndPrintTuple(QueryTable<B> *table, const int & idx) {
