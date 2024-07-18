@@ -15,10 +15,8 @@ namespace vaultdb {
 
         StoredTableScan(const string & table_name, const string & col_names_csv, const int & limit = -1) : Operator<B>(SortDefinition()),  limit_(limit) {
 
-            setup(table_name);
-            if(col_names_csv.empty()) return;
-
             ordinals_ = OperatorUtilities::getOrdinalsFromColNames(SystemConfiguration::getInstance().table_metadata_.at(table_name).schema_, col_names_csv);
+            setup(table_name);
 
         }
 
@@ -95,8 +93,15 @@ namespace vaultdb {
         void setup(const string & table_name) {
             // lazy table scan
             md_ = SystemConfiguration::getInstance().table_metadata_.at(table_name);
-            this->setSortOrder(md_.collation_);
-            this->output_schema_ = md_.schema_;
+            if(ordinals_.empty()) {
+                this->output_schema_ = md_.schema_;
+                this->setSortOrder(md_.collation_);
+            }
+            else {
+                this->output_schema_ = OperatorUtilities::deriveSchema(md_.schema_, ordinals_);
+                this->setSortOrder(OperatorUtilities::deriveCollation(md_.collation_, ordinals_));
+            }
+
             this->output_cardinality_ = (limit_ < md_.tuple_cnt_ && limit_ > -1) ? limit_ : md_.tuple_cnt_;
 
         }
