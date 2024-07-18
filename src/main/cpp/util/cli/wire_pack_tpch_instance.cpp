@@ -79,6 +79,7 @@ void loadTableInfoFromJson(string json_path) {
 
         for(ptree::const_iterator it = tables.begin(); it != tables.end(); ++it) {
             string table_name = "";
+            TableMetadata  md;
 
             if(it->second.count("table_name") > 0) {
                 table_name = it->second.get_child("table_name").get_value<string>();
@@ -95,21 +96,20 @@ void loadTableInfoFromJson(string json_path) {
             }
 
             if(it->second.count("schema") > 0) {
-                QuerySchema schema(it->second.get_child("schema").get_value<string>());
-                table_to_metadata_[table_name].schema_ = schema;
+                md.schema_ = QuerySchema(it->second.get_child("schema").get_value<string>());
+
             }
             else {
                 throw std::runtime_error("No schema found in table_config.json");
             }
 
             if(it->second.count("tuple_count") > 0) {
-                table_to_metadata_[table_name].tuple_cnt_ = it->second.get_child("tuple_count").get_value<int>();
+                md.tuple_cnt_ = it->second.get_child("tuple_count").get_value<int>();
             }
             else {
                 throw std::runtime_error("No tuple_count found in table_config.json");
             }
 
-            vector<ColumnSort> sort_def;
 
             if(it->second.count("collations") > 0) {
                 boost::property_tree::ptree collations = it->second.get_child("collations");
@@ -139,15 +139,18 @@ void loadTableInfoFromJson(string json_path) {
                         throw std::runtime_error("No direction found in table_config.json");
                     }
 
-                    sort_def.push_back(ColumnSort(column, direction));
+                    md.collation_.push_back(ColumnSort(column, direction));
                 }
-                table_to_metadata_[table_name].collation_ = sort_def;
             }
             else {
                 throw std::runtime_error("No collation found in table_config.json");
             }
+            table_to_metadata_[table_name] = md;
         }
+
     }
+
+
 }
 
 void encodeTable(string table_name) {
@@ -168,12 +171,12 @@ void encodeTable(string table_name) {
         DataUtilities::writeFile(metadata_filename, metadata);
         cout << "Wrote metadata for " << table_name << " to " << metadata_filename << '\n';
     }
-    else {
+//    else {
         // write out shares
         string secret_shares_file = Utilities::getFilenameForTable(table_name);
         DataUtilities::writeFile(secret_shares_file, serialized);
         cout << "Wrote secret shares to " << secret_shares_file << endl;
-    }
+//    }
 
     delete packed_table;
     delete table;
@@ -218,6 +221,7 @@ int main(int argc, char **argv) {
     conf_.initialize(db_name_, md, StorageModel::PACKED_COLUMN_STORE);
     conf_.stored_db_path_ = dst_root_;
 
+    // just encode the first table
     for(auto const &entry : table_to_query_) {
         encodeTable(entry.first);
     }
@@ -240,15 +244,15 @@ int main(int argc, char **argv) {
         conf_.initializeWirePackedDb(dst_root_);
         for (auto table_entry: table_to_query_) {
             string table_name = table_entry.first;
-            string query = table_entry.second;
-            PlainTable *expected = DataUtilities::getQueryResults(argv[1], query, false);
-            SecureTable *recvd = StoredTableScan<Bit>::readStoredTable(table_name, vector<int>());
-            PlainTable *recvd_plain = recvd->revealInsecure();
-            expected->order_by_ = recvd_plain->order_by_;
-            assert(*expected == *recvd_plain);
+                string query = table_entry.second;
+                PlainTable *expected = DataUtilities::getQueryResults(argv[1], query, false);
+                SecureTable *recvd = StoredTableScan<Bit>::readStoredTable(table_name, vector<int>());
+                PlainTable *recvd_plain = recvd->revealInsecure();
+                expected->order_by_ = recvd_plain->order_by_;
+                assert(*expected == *recvd_plain);
 
-            delete recvd_plain;
-            delete expected;
+                delete recvd_plain;
+                delete expected;
 
         }
     }

@@ -142,7 +142,7 @@ namespace vaultdb {
         // for use in deserializing DB
         // may need to create this for ColumnTable and others or merge into a single util based on DB type
         // this specialization is needed because of mapping from `Bit` to wire.
-        static long bytesPerColumn(const QueryFieldDesc & desc, const int & tuple_cnt)  {
+        static inline long bytesPerColumn(const QueryFieldDesc & desc, const int & tuple_cnt)  {
 
             int bits_per_wire = BufferPoolManager::getInstance().unpacked_page_size_bits_;
 
@@ -244,11 +244,14 @@ namespace vaultdb {
             // write cols followed by dummy tag
             // this is to match QueryTable<B> and others
             for(int i = 0; i < schema_.getFieldCount(); ++i) {
+                cout << "For col " << i << " writing " << packed_pages_.at(i).size() << " bytes\n";
+                cout << "writing to offset " << (write_ptr - output_buffer.data()) << "\n";
                 memcpy(write_ptr, packed_pages_.at(i).data(), packed_pages_.at(i).size());
                 write_ptr += packed_pages_.at(i).size();
             }
 
             // write dummy tag
+            cout << "For dummy tag writing " << packed_pages_.at(-1).size() << " bytes\n";
             memcpy(write_ptr, packed_pages_.at(-1).data(), packed_pages_.at(-1).size());
 
             return output_buffer;

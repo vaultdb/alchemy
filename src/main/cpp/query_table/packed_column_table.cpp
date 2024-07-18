@@ -10,17 +10,25 @@ PackedColumnTable *PackedColumnTable::deserialize(const TableMetadata  & md, con
     int src_tuple_cnt = md.tuple_cnt_;
     int tuple_cnt = (limit == -1 || limit > src_tuple_cnt) ? src_tuple_cnt : limit;
 
+    bool truncating = (src_tuple_cnt != tuple_cnt);
+
     /*if(SystemConfiguration::getInstance().inputParty()) {
         return new InputPartyPackedColumnTable(tuple_cnt, md.schema_, md.collation_);
     }*/
 
-    ComputingPartyPackedColumnTable *dst = new ComputingPartyPackedColumnTable(tuple_cnt, md.schema_, md.collation_);
+    auto dst = new ComputingPartyPackedColumnTable(tuple_cnt, md.schema_, md.collation_);
     string filename = Utilities::getFilenameForTable(md.name_);
 
     FILE*  fp = fopen(filename.c_str(), "rb");
     for(int i = 0; i < md.schema_.getFieldCount(); ++i) {
+        cout << "For col " << i << " reading " << dst->packed_pages_[i].size() << " bytes, skipping " <<  PackedColumnTable::bytesPerColumn(md.schema_.getField(i), src_tuple_cnt) << " bytes\n";
+        cout << "reading from offset " << ftell(fp) << endl;
         fread(dst->packed_pages_[i].data(), 1, dst->packed_pages_[i].size(), fp);
-        fseek(fp, PackedColumnTable::bytesPerColumn(md.schema_.getField(i), src_tuple_cnt), SEEK_CUR);
+        if(truncating) {
+            int bytes_to_seek = PackedColumnTable::bytesPerColumn(md.schema_.getField(i), src_tuple_cnt) - dst->packed_pages_[i].size();
+            cout << "Seeking ahead " << bytes_to_seek << " bytes.\n";
+            fseek(fp, bytes_to_seek, SEEK_CUR);
+        }
     }
 
     // dummy tag
