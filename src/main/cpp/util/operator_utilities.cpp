@@ -4,6 +4,8 @@
 using namespace vaultdb;
 
 vector<int> OperatorUtilities::getOrdinalsFromColNames(const QuerySchema & src_schema, const string & spec) {
+    if(spec.empty()) return vector<int>();
+
     vector<string> col_names = CsvReader::split(spec);
 
     vector<int> ordinals;
