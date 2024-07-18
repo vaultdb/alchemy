@@ -21,12 +21,9 @@ PackedColumnTable *PackedColumnTable::deserialize(const TableMetadata  & md, con
 
     FILE*  fp = fopen(filename.c_str(), "rb");
     for(int i = 0; i < md.schema_.getFieldCount(); ++i) {
-        cout << "For col " << i << " reading " << dst->packed_pages_[i].size() << " bytes, skipping " <<  PackedColumnTable::bytesPerColumn(md.schema_.getField(i), src_tuple_cnt) << " bytes\n";
-        cout << "reading from offset " << ftell(fp) << endl;
         fread(dst->packed_pages_[i].data(), 1, dst->packed_pages_[i].size(), fp);
         if(truncating) {
             int bytes_to_seek = PackedColumnTable::bytesPerColumn(md.schema_.getField(i), src_tuple_cnt) - dst->packed_pages_[i].size();
-            cout << "Seeking ahead " << bytes_to_seek << " bytes.\n";
             fseek(fp, bytes_to_seek, SEEK_CUR);
         }
     }

@@ -244,14 +244,11 @@ namespace vaultdb {
             // write cols followed by dummy tag
             // this is to match QueryTable<B> and others
             for(int i = 0; i < schema_.getFieldCount(); ++i) {
-                cout << "For col " << i << " writing " << packed_pages_.at(i).size() << " bytes\n";
-                cout << "writing to offset " << (write_ptr - output_buffer.data()) << "\n";
                 memcpy(write_ptr, packed_pages_.at(i).data(), packed_pages_.at(i).size());
                 write_ptr += packed_pages_.at(i).size();
             }
 
             // write dummy tag
-            cout << "For dummy tag writing " << packed_pages_.at(-1).size() << " bytes\n";
             memcpy(write_ptr, packed_pages_.at(-1).data(), packed_pages_.at(-1).size());
 
             return output_buffer;
