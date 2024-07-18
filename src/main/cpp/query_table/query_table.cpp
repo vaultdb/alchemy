@@ -178,7 +178,7 @@ QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vecto
 template<typename B>
 QueryTable<B> *QueryTable<B>::deserialize(const TableMetadata  & md, const int &limit) {
     int src_tuple_cnt = md.tuple_cnt_;
-    int tuple_cnt = (limit < md.tuple_cnt_ || limit == -1) ? limit : src_tuple_cnt;
+    int tuple_cnt = (limit < md.tuple_cnt_ && limit > -1) ? limit : src_tuple_cnt;
     auto filename = Utilities::getFilenameForTable(md.name_);
     auto dst = QueryTable<B>::getTable(tuple_cnt, md.schema_, md.collation_);
     bool truncating = (src_tuple_cnt != tuple_cnt);
@@ -241,7 +241,6 @@ QueryTable<B> *QueryTable<B>::deserialize(const TableMetadata & md, const vector
     FILE*  fp = fopen(filename.c_str(), "rb");
 
     int dst_ordinal = 0;
-
     for(auto src_ordinal : ordinals) {
         fseek(fp, ordinal_offsets[src_ordinal], SEEK_SET); // read read_offset bytes from beginning of file
         fread(dst->column_data_[dst_ordinal].data(), 1, dst->column_data_[dst_ordinal].size(), fp);
