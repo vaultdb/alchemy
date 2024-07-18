@@ -78,10 +78,10 @@ TEST_F(SecureFilterTest, test_filter) {
 
 
     Filter<emp::Bit> filter(input, expression);
-    auto fiiltered = filter.run();
+    auto filtered = filter.run();
 
     if(FLAGS_validation) {
-        PlainTable *revealed = fiiltered->revealInsecure(emp::PUBLIC);
+        PlainTable *revealed = filtered->revealInsecure(emp::PUBLIC);
         DataUtilities::removeDummies(revealed);
         ASSERT_EQ(*expected, *revealed);
         delete expected;
