@@ -60,13 +60,6 @@ protected:
     Operator<Bit> *getOrders();
     Operator<Bit> *getLineitem();
 
-    void printOperatorOutput(Operator<Bit> *op, string message) {
-        auto out = op->run()->revealInsecure();
-        DataUtilities::removeDummies(out);
-        cout << message << *out << '\n';
-        delete out;
-
-    }
 
 };
 
