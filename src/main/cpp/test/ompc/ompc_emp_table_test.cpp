@@ -1,7 +1,7 @@
 #include <test/ompc/ompc_base_test.h>
 #include <util/data_utilities.h>
 #include <operators/sort.h>
-#include <operators/table_scan.h>
+#include <operators/stored_table_scan.h>
 //#include <operators/packed_table_scan.h>
 //#include <data/secret_shared_data/secret_share_and_pack_data_from_query.h>
 #include <boost/property_tree/json_parser.hpp>
@@ -209,16 +209,16 @@ TEST_F(OMPCEmpTableTest, ompc_test_table_scan) {
         table_sql += " LIMIT " + std::to_string(limit);
     }
 
-    TableScan<emp::Bit> *table_scan = new TableScan<emp::Bit>(table_name, limit);
-    PackedColumnTable *observed_table = (PackedColumnTable *) table_scan->run();
+    StoredTableScan<emp::Bit> *table_scan = new StoredTableScan<emp::Bit>(table_name, limit);
+    auto observed = table_scan->run();
 
     if(FLAGS_validation) {
         PlainTable *plain_input = DataUtilities::getQueryResults(db_name_, table_sql, false);
-        PackedColumnTable *expected = (PackedColumnTable *) plain_input->secretShare();
-        expected->order_by_ = observed_table->order_by_;
+        auto expected = plain_input->secretShare();
+        expected->order_by_ = observed->order_by_;
 
         PlainTable *expected_plain = expected->revealInsecure(emp::PUBLIC);
-        PlainTable *observed_plain = observed_table->revealInsecure(emp::PUBLIC);
+        PlainTable *observed_plain = observed->revealInsecure(emp::PUBLIC);
 
         ASSERT_EQ(*expected_plain, *observed_plain);
     }
