@@ -12,9 +12,9 @@ PackedColumnTable *PackedColumnTable::deserialize(const TableMetadata  & md, con
 
     bool truncating = (src_tuple_cnt != tuple_cnt);
 
-    /*if(SystemConfiguration::getInstance().inputParty()) {
+    if(SystemConfiguration::getInstance().inputParty()) {
         return new InputPartyPackedColumnTable(tuple_cnt, md.schema_, md.collation_);
-    }*/
+    }
 
     auto dst = new ComputingPartyPackedColumnTable(tuple_cnt, md.schema_, md.collation_);
     string filename = Utilities::getFilenameForTable(md.name_);
@@ -49,9 +49,9 @@ PackedColumnTable *PackedColumnTable::deserialize(const TableMetadata  & md, con
     auto dst_schema = OperatorUtilities::deriveSchema(md.schema_, ordinals);
     auto dst_collation = OperatorUtilities::deriveCollation(md.collation_, ordinals);
 
-    /*if(SystemConfiguration::getInstance().inputParty()) {
+    if(SystemConfiguration::getInstance().inputParty()) {
         return new InputPartyPackedColumnTable(tuple_cnt, dst_schema, dst_collation);
-    }*/
+    }
 
     // else
     // find the offsets to read in serialized file for each column

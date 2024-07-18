@@ -171,12 +171,12 @@ void encodeTable(string table_name) {
         DataUtilities::writeFile(metadata_filename, metadata);
         cout << "Wrote metadata for " << table_name << " to " << metadata_filename << '\n';
     }
-//    else {
+    else {
         // write out shares
         string secret_shares_file = Utilities::getFilenameForTable(table_name);
         DataUtilities::writeFile(secret_shares_file, serialized);
         cout << "Wrote secret shares to " << secret_shares_file << endl;
-//    }
+    }
 
     delete packed_table;
     delete table;

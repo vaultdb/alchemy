@@ -461,9 +461,9 @@ QueryTable<B> *QueryTable<B>::getTable(const size_t &tuple_cnt, const QuerySchem
     // SystemConfiguration::initialize mirrors this logic for determining whether to allocate the buffer pool
     // if we change this, we need to change that too
     if(s == StorageModel::PACKED_COLUMN_STORE && std::is_same_v<B, emp::Bit>) {
-       /*if(conf.party_ == conf.input_party_)
+       if(conf.party_ == conf.input_party_)
             return (QueryTable<B> *) new InputPartyPackedColumnTable(tuple_cnt, schema, sort_def);
-        else*/
+        else
             return (QueryTable<B> *)  new ComputingPartyPackedColumnTable(tuple_cnt, schema, sort_def);
     }
     if(s == StorageModel::COMPRESSED_STORE) {
