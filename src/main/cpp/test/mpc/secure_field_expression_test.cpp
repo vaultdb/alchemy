@@ -57,10 +57,8 @@ TEST_F(SecureFieldExpressionTest, test_string_compare) {
         rhs_shared = PlainField::secret_share_send(rhs, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhs_str.size()), sending_party);
     }
     else {
-        lhs_shared = PlainField::secret_share_recv(
-                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, lhs_str.size()), sending_party);
-        rhs_shared = PlainField::secret_share_recv(
-                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhs_str.size()), sending_party);
+        lhs_shared = PlainField::secret_share_recv(QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, lhs_str.size()), sending_party);
+        rhs_shared = PlainField::secret_share_recv(QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhs_str.size()), sending_party);
     }
 
     emp::Bit gt_shared = (lhs_shared > rhs_shared);
