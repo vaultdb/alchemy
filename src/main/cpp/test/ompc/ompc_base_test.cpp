@@ -62,9 +62,10 @@ void OmpcBaseTest::SetUp()  {
     else {
 //        // TODO: disable bit packing for secret sharing loading
 //        disableBitPacking();
-
         string shares_path = Utilities::getCurrentWorkingDirectory() + "/shares/" + FLAGS_unioned_db;
-        TableManager::getInstance().initializeSecretShares(shares_path, FLAGS_party);
+        s.initializeSecretSharedDb(shares_path);
+
+//        TableManager::getInstance().initializeSecretShares(shares_path, FLAGS_party);
     }
     double runtime = time_from(start_time)/1e6;
     cout << "data loading time: " << runtime << " s" << endl;  

@@ -21,22 +21,20 @@ using namespace vaultdb;
 // only tested in PUBLIC or XOR mode
 template <typename B>
 vector<int8_t> QueryTable<B>::serialize() {
-
+    cout << "Serializing ColumnTable \n";
     int dst_size = tuple_size_bytes_ * tuple_cnt_;
     vector<int8_t> dst(dst_size);
     if(dst_size == 0) return dst;
 
     int8_t *write_ptr = dst.data();
-    int write_size;
     for(int i = 0; i < schema_.getFieldCount(); ++i) {
-        write_size = field_sizes_bytes_.at(i) * tuple_cnt_;
-        memcpy(write_ptr, column_data_.at(i).data(), write_size);
-        write_ptr += write_size;
+        memcpy(write_ptr, column_data_.at(i).data(), column_data_.at(i).size());
+        cout << "Writing " << column_data_.at(i).size() << " bytes for column " << i << " at offset " << (write_ptr - dst.data()) << endl;
+        write_ptr += column_data_.at(i).size();
     }
-
     // dummy tag
-    write_size =  field_sizes_bytes_.at(-1) * tuple_cnt_;
-    memcpy(write_ptr, column_data_.at(-1).data(), write_size);
+    cout << "Writing dummy tag with " <<  column_data_.at(-1).size() << " bytes at offset " << (write_ptr - dst.data()) << endl;
+    memcpy(write_ptr, column_data_.at(-1).data(), column_data_.at(-1).size());
     return dst;
 }
 
@@ -182,12 +180,15 @@ QueryTable<B> *QueryTable<B>::deserialize(const TableMetadata  & md, const int &
     auto filename = Utilities::getFilenameForTable(md.name_);
     auto dst = QueryTable<B>::getTable(tuple_cnt, md.schema_, md.collation_);
 
-    if(SystemConfiguration::getInstance().inputParty()) return dst;
+    cout << "Deserializing ColumnTable!\n";
+
+//    if(SystemConfiguration::getInstance().inputParty()) return dst;
 
     bool truncating = (src_tuple_cnt != tuple_cnt);
 
     FILE*  fp = fopen(filename.c_str(), "rb");
     for(int i = 0; i < md.schema_.getFieldCount(); ++i) {
+        cout << "reading column " << i << " with " << dst->column_data_[i].size() << " bytes at offset " << ftell(fp) << endl;
         fread(dst->column_data_[i].data(), 1, dst->column_data_[i].size(), fp);
         if(truncating) {
             int to_seek =  dst->field_sizes_bytes_[i] * src_tuple_cnt - dst->column_data_[i].size();
@@ -196,6 +197,8 @@ QueryTable<B> *QueryTable<B>::deserialize(const TableMetadata  & md, const int &
     }
 
     // dummy tag
+    cout << "Reading dummy tag with " << dst->column_data_[-1].size() << " bytes at offset " << ftell(fp) << endl;
+
     fread(dst->column_data_[-1].data(), 1, dst->column_data_[-1].size(), fp);
     fclose(fp);
 
