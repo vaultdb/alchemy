@@ -60,6 +60,14 @@ protected:
     Operator<Bit> *getOrders();
     Operator<Bit> *getLineitem();
 
+    void printOperatorOutput(Operator<Bit> *op, string message) {
+        auto out = op->run()->revealInsecure();
+        DataUtilities::removeDummies(out);
+        cout << message << *out << '\n';
+        delete out;
+
+    }
+
 };
 
 
@@ -68,16 +76,24 @@ Operator<Bit> *OMPCBasicJoinTest::getCustomers() {
 
     if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
         auto scan = new StoredTableScan<Bit>("customer", "c_custkey, c_mktsegment", customer_limit_);
-
+        printOperatorOutput(scan, "**Customers scan: ");
         // filter
-        Integer s = Field<Bit>::secretShareString("HOUSEHOLD", conf.inputParty(), conf.input_party_, 10);
+        Integer s = Field<Bit>::secretShareString("HOUSEHOLD ", conf.inputParty(), conf.input_party_, 10);
         Field<Bit> sf(FieldType::SECURE_STRING, s);
         auto schema = scan->getOutputSchema();
         auto predicate = FieldUtilities::getComparisonWithLiteral(schema, sf,1, ExpressionKind::EQ);
         auto filter = new Filter<Bit>(scan, predicate);
 
+        printOperatorOutput(filter, "**Customers filtered: ");
         // project it down to the c_custkey
         auto proj = OperatorUtilities::getProjectionFromColNames(filter, "c_custkey");
+
+        SecureSqlInput test(FLAGS_unioned_db, customer_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, customer_limit_);
+        auto test_res = test.run()->revealInsecure();
+        DataUtilities::removeDummies(test_res);
+        cout << "Expected customers: " << *test_res << '\n';
+
+
         return proj;
     }
 
@@ -94,6 +110,7 @@ Operator<Bit> *OMPCBasicJoinTest::getOrders() {
         // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
         vector<int> ordinals = {0, 1, 4, 7};
         auto scan = new StoredTableScan<Bit>("orders", ordinals, orders_limit_);
+        printOperatorOutput(scan, "**Orders scan: ");
 
         // filter: o_orderdate < date '1995-03-25'
         // $4 < 796089600 ($2 after projection)
@@ -104,6 +121,14 @@ Operator<Bit> *OMPCBasicJoinTest::getOrders() {
         auto predicate = FieldUtilities::getComparisonWithLiteral(schema, 2, s, ExpressionKind::LT);
 
         auto filter = new Filter<Bit>(scan, predicate);
+        printOperatorOutput(filter, "**Orders filter: ");
+
+        SecureSqlInput test(FLAGS_unioned_db, orders_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, orders_limit_);
+        auto test_res = test.run()->revealInsecure();
+        DataUtilities::removeDummies(test_res);
+        cout << "Expected orders: " << *test_res << '\n';
+
+
         return filter;
     }
 
@@ -165,11 +190,17 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_customer_orders) {
                                     "orders_cte AS (" + orders_sql_ + ") "
                       "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
                       "FROM customer_cte, orders_cte "
-                      "WHERE c_custkey = o_custkey "
-                      "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT cdummy AND NOT odummy for now
+                      "WHERE c_custkey = o_custkey  AND NOT cdummy AND NOT odummy "
+                      "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
     auto orders = getOrders();
+    printOperatorOutput(orders, "**Orders: ");
+
+
     auto customers = getCustomers();
+    printOperatorOutput(customers, "**Customers: ");
+
+
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<emp::Bit> *predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders, 1, customers, 4);
@@ -200,8 +231,8 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders) {
                                     "lineitem_cte AS (" + lineitem_sql_ + ") "
                       "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority "
                       "FROM lineitem_cte, orders_cte "
-                      "WHERE l_orderkey = o_orderkey "
-                      "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority"; // ignore NOT odummy AND NOT ldummy for now
+                      "WHERE l_orderkey = o_orderkey  AND NOT ldummy AND NOT odummy "
+                      "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
 
     auto lineitems = getLineitem();
@@ -237,8 +268,8 @@ TEST_F(OMPCBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
                            "customer_cte AS (" + customer_sql_ + ") "
                       "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
                       "FROM lineitem_cte, orders_cte, customer_cte "
-                      "WHERE l_orderkey = o_orderkey AND c_custkey = o_custkey "
-                      "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
+                      "WHERE l_orderkey = o_orderkey AND c_custkey = o_custkey AND NOT odummy AND NOT ldummy AND NOT cdummy"
+                      "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
     // Table scan for orders
     auto orders = getOrders();
