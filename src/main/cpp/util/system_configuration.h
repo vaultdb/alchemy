@@ -28,6 +28,27 @@ namespace vaultdb{
             return name_ == other.name_ && schema_ == other.schema_  && tuple_cnt_ == other.tuple_cnt_;
         }
 
+        string toString() const {
+            std::stringstream s;
+            s << name_ << ": " << schema_.prettyPrint() << ", cardinality: " << tuple_cnt_ << ", collation: ";
+            // copy and paste of DataUtilities::printSortDefinition to avoid dependency
+            s << "{";
+            bool init = false;
+            for(ColumnSort c : collation_) {
+                if(init)
+                    s << ", ";
+                string direction = (c.second == SortDirection::ASCENDING) ? "ASC" : (c.second == SortDirection::DESCENDING) ? "DESC" : "INVALID";
+                s << "<" << c.first << ", "
+                       << direction << "> ";
+
+                init = true;
+            }
+
+            s << "}";
+            return s.str();
+
+        }
+
     } TableMetadata;
 
 
