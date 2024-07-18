@@ -181,6 +181,9 @@ QueryTable<B> *QueryTable<B>::deserialize(const TableMetadata  & md, const int &
     int tuple_cnt = (limit < md.tuple_cnt_ && limit > -1) ? limit : src_tuple_cnt;
     auto filename = Utilities::getFilenameForTable(md.name_);
     auto dst = QueryTable<B>::getTable(tuple_cnt, md.schema_, md.collation_);
+
+    if(SystemConfiguration::getInstance().inputParty()) return dst;
+
     bool truncating = (src_tuple_cnt != tuple_cnt);
 
     FILE*  fp = fopen(filename.c_str(), "rb");

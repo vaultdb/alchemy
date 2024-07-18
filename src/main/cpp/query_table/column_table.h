@@ -16,6 +16,7 @@ namespace vaultdb {
                 return;
 
             int write_size;
+
             for(auto col_entry : this->field_sizes_bytes_) {
                 vector<int8_t> fields;
                 write_size = tuple_cnt * col_entry.second;
@@ -24,12 +25,24 @@ namespace vaultdb {
                 this->column_data_[col_entry.first] = fields;
             }
 
+
             // initialize dummy tags to true
             B d(true);
             B *dummy_col = (B *) this->column_data_[-1].data();
 
             for(int i = 0; i < tuple_cnt; ++i) {
                 dummy_col[i] = d;
+            }
+
+            if(std::is_same_v<B, Bit>) {
+                B zero_block(0);
+                for(auto col : this->column_data_) {
+                    int bit_cnt = col.second.size() / (this->schema_.getField(col.first).size() * sizeof(emp::Bit));
+                    Bit *col_data = (Bit *) col.second.data();
+                    for(int i = 0; i < bit_cnt; ++i) {
+                        col_data[i] = zero_block;
+                    }
+                }
             }
         }
 

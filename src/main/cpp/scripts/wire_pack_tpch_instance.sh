@@ -12,7 +12,12 @@ fi
 
 DB_NAME=$1
 
-make wire_pack_tpch_instance
+make -j4 wire_pack_tpch_instance
+
+
+if [[ $? -ne 0 ]]; then #abort if build fails
+    exit 1
+fi
 
 [ -d wires/$DB_NAME ] || mkdir -p wires/$DB_NAME
 ./bin/wire_pack_tpch_instance $DB_NAME wires/$DB_NAME 1 > log/wire_pack_tpch_instance_p1.log &
