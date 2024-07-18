@@ -181,11 +181,15 @@ QueryTable<B> *QueryTable<B>::deserialize(const TableMetadata  & md, const int &
     int tuple_cnt = (limit < md.tuple_cnt_ || limit == -1) ? limit : src_tuple_cnt;
     auto filename = Utilities::getFilenameForTable(md.name_);
     auto dst = QueryTable<B>::getTable(tuple_cnt, md.schema_, md.collation_);
+    bool truncating = (src_tuple_cnt != tuple_cnt);
 
     FILE*  fp = fopen(filename.c_str(), "rb");
     for(int i = 0; i < md.schema_.getFieldCount(); ++i) {
         fread(dst->column_data_[i].data(), 1, dst->column_data_[i].size(), fp);
-        fseek(fp, dst->field_sizes_bytes_[i] * src_tuple_cnt, SEEK_CUR);
+        if(truncating) {
+            int to_seek =  dst->field_sizes_bytes_[i] * src_tuple_cnt - dst->column_data_[i].size();
+            fseek(fp, to_seek, SEEK_CUR);
+        }
     }
 
     // dummy tag
