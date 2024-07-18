@@ -60,8 +60,6 @@ PackedColumnTable *PackedColumnTable::deserialize(const TableMetadata  & md, con
 
     ComputingPartyPackedColumnTable *dst = (ComputingPartyPackedColumnTable *) QueryTable<Bit>::getTable(tuple_cnt, dst_schema, dst_collation);
 
-    cout << "Mapping offsets of " << md.schema_.getFieldCount() << " fields (+ dummy tag)\n";
-
     ordinal_offsets[0] = 0;
     int field_cnt = md.schema_.getFieldCount();
     for(int i = 1; i < field_cnt; ++i) {
