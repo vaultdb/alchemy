@@ -35,7 +35,7 @@ namespace vaultdb {
 
             // initialize packed wires for table including dummy tags
             for(int i = -1; i < schema_.getFieldCount(); ++i) {
-                int col_packed_wires = (blocks_per_field_.at(i) == 1) ? (tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0)) : (tuple_cnt_ * blocks_per_field_.at(i));
+                int col_packed_wires = (wires_per_field_.at(i) == 1) ? (tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0)) : (tuple_cnt_ * wires_per_field_.at(i));
 
                 packed_pages_[i] = std::vector<int8_t>(col_packed_wires * packed_wire_size_bytes_);
                 for(int j = 0; j < col_packed_wires; ++j) {

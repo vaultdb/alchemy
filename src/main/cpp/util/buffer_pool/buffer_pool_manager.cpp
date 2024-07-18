@@ -35,8 +35,6 @@ void BufferPoolManager::loadPage(PageId &pid) {
 // greedily evict first unpinned page in the queue
 // returns the newly-opened slot in the buffer pool
 int BufferPoolManager::evictPage() {
-
-
     PositionMapEntry pos;
     //  uninitialized slot, this should only happen when we are warming up the buffer pool
     if(reverse_position_map_.find(clock_hand_position_) == reverse_position_map_.end())  {

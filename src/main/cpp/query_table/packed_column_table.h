@@ -131,7 +131,7 @@ namespace vaultdb {
         // maps ordinal to wire count.  floor(128/field_size_bits)
         map<int, int> fields_per_wire_;
         // if a field spans more than one block per instance (e.g., a string with length > 16 chars) then we need to map the field to multiple wires
-        map<int, int> blocks_per_field_;
+        map<int, int> wires_per_field_;
 
         EmpManager *manager_;
 
@@ -144,17 +144,23 @@ namespace vaultdb {
         // this specialization is needed because of mapping from `Bit` to wire.
         static long bytesPerColumn(const QueryFieldDesc & desc, const int & tuple_cnt)  {
 
-                int bits_per_packed_wire = BufferPoolManager::getInstance().unpacked_page_size_bits_;
+            int bits_per_wire = BufferPoolManager::getInstance().unpacked_page_size_bits_;
 
-                // multi-wire case
-                if(desc.size() / bits_per_packed_wire > 0) {
-                    int wires_per_field =  desc.size() / bits_per_packed_wire + (desc.size() % bits_per_packed_wire != 0);
-                    return wires_per_field * tuple_cnt * sizeof(OMPCPackedWire);
-                }
-
-                int packed_wires = desc.size() / bits_per_packed_wire + (desc.size() % bits_per_packed_wire != 0);
-                return packed_wires * sizeof(OMPCPackedWire);
+            int fields_per_wire, wires_per_field;
+            // multiple wires per field
+            if(desc.size() / bits_per_wire > 0) {
+                fields_per_wire  = 1;
+                wires_per_field =  desc.size() / bits_per_wire + (desc.size() % bits_per_wire != 0);;
             }
+            else {
+                fields_per_wire = bits_per_wire / desc.size();
+                wires_per_field = 1;
+            }
+
+            int packed_wires = (wires_per_field == 1) ? (tuple_cnt / fields_per_wire + (tuple_cnt % fields_per_wire != 0)) : (tuple_cnt * wires_per_field);
+            int packed_wire_size_bytes =  (2 * BufferPoolManager::getInstance().block_n_ + 1) * sizeof(block);
+            return packed_wires * packed_wire_size_bytes;
+        }
 
 
         PackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<Bit>(tuple_cnt, schema, sort_def), manager_(SystemConfiguration::getInstance().emp_manager_) {
@@ -225,6 +231,7 @@ namespace vaultdb {
          vector<int8_t> serialize() override {
             size_t output_buffer_len = 0L;
             bpm_.flushTable(table_id_); // flush all dirty pages to packed wires
+
             for(auto col_entry : packed_pages_) {
                 output_buffer_len += col_entry.second.size();
             }
@@ -256,7 +263,7 @@ namespace vaultdb {
 
 
         Field<Bit> getField(const int  & row, const int & col)  const override {
-            int field_blocks = blocks_per_field_.at(col);
+            int field_blocks = wires_per_field_.at(col);
 
             if(field_blocks == 1) {
                 PageId pid(table_id_, col, row / fields_per_wire_.at(col));
@@ -279,7 +286,7 @@ namespace vaultdb {
 
 
         inline void setField(const int  & row, const int & col, const Field<Bit> & f)  override {
-            int field_blocks = blocks_per_field_.at(col);
+            int field_blocks = wires_per_field_.at(col);
 
             if(field_blocks == 1) {
                 PageId pid = bpm_.getPageId(table_id_, col, row, fields_per_wire_.at(col));
@@ -325,11 +332,11 @@ namespace vaultdb {
 
             if(desc.size() / size_threshold > 0) {
                 fields_per_wire_[ordinal] = 1;
-                blocks_per_field_[ordinal] = packed_blocks;
+                wires_per_field_[ordinal] = packed_blocks;
             }
             else {
                 fields_per_wire_[ordinal] = size_threshold / desc.size();
-                blocks_per_field_[ordinal] = 1;
+                wires_per_field_[ordinal] = 1;
             }
 
             int field_packed_size_bytes = (1 + 2 * packed_blocks) * block_size_bytes_;
@@ -385,32 +392,27 @@ namespace vaultdb {
             for(int i = 0; i < schema_.getFieldCount(); ++i) {
                 QueryFieldDesc desc = schema_.fields_.at(i);
 
-                int size_threshold = bpm_.unpacked_page_size_bits_;
-                int packed_blocks = desc.size() / size_threshold + (desc.size() % size_threshold != 0);
+                int bits_per_page = bpm_.unpacked_page_size_bits_;
 
-                if(desc.size() / size_threshold > 0) {
+                if(desc.size() / bits_per_page > 0) {
                     fields_per_wire_[i] = 1;
-                    blocks_per_field_[i] = packed_blocks;
+                    wires_per_field_[i] = desc.size() / bits_per_page + (desc.size() % bits_per_page != 0);;
                 }
                 else {
-                    fields_per_wire_[i] = size_threshold / desc.size();
-                    blocks_per_field_[i] = 1;
+                    fields_per_wire_[i] = bits_per_page / desc.size();
+                    wires_per_field_[i] = 1;
                 }
 
                 int field_size_bytes = desc.size() * sizeof(emp::Bit);
                 tuple_size_bytes_ += field_size_bytes;
                 field_sizes_bytes_[i] = field_size_bytes;
-
-                int field_packed_size_bytes = (1 + 2 * packed_blocks) * block_size_bytes_;
             }
 
-            blocks_per_field_[-1] = 1;
+            wires_per_field_[-1] = 1;
             fields_per_wire_[-1] = bpm_.unpacked_page_size_bits_;
 
             tuple_size_bytes_ += sizeof(emp::Bit);
             field_sizes_bytes_[-1] = sizeof(emp::Bit);
-
-            int dummy_packed_size_bytes = (1 + 2 * blocks_per_field_[-1]) * block_size_bytes_;
         }
 
         QueryTuple<Bit> getRow(const int & idx) override {

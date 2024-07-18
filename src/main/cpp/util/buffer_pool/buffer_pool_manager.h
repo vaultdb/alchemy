@@ -65,6 +65,7 @@ namespace vaultdb {
 
         EmpManager *emp_manager_ = nullptr;
 
+        // this is the same as SystemConfiguration::bp_page_size_bits_
         int unpacked_page_size_bits_; // in emp::Bits
         int page_cnt_;
 
