@@ -12,6 +12,7 @@ namespace vaultdb {
 
 
     class InputPartyPackedColumnTable : public PackedColumnTable {
+    public:
          InputPartyPackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : PackedColumnTable(tuple_cnt, schema, sort_def) {}
 
          InputPartyPackedColumnTable(const InputPartyPackedColumnTable & src) : PackedColumnTable(src) {}
