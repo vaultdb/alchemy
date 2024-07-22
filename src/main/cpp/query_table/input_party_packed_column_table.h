@@ -12,7 +12,7 @@ namespace vaultdb {
 
 
     class InputPartyPackedColumnTable : public PackedColumnTable {
-         InputPartyPackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) {}
+         InputPartyPackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : PackedColumnTable(tuple_cnt, schema, sort_def) {}
 
          InputPartyPackedColumnTable(const InputPartyPackedColumnTable & src) : PackedColumnTable(src) {}
 
