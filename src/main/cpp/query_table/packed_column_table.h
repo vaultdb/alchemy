@@ -11,6 +11,11 @@ namespace vaultdb {
 
     public:
 
+        // maps ordinal to wire count.
+        map<int, int> fields_per_wire_;
+        // if a field spans more than one block per instance (e.g., a string with length > 16 chars) then we need to map the field to multiple wires
+        map<int, int> wires_per_field_;
+
         PackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition())  : QueryTable<Bit>(tuple_cnt, schema, sort_def) {
 
         }
