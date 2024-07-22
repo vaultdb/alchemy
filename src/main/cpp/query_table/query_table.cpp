@@ -121,7 +121,6 @@ QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vecto
 
     uint32_t row_size =  schema.size() / 8;
     uint32_t src_tuple_cnt =  table_bytes.size() /  row_size;
-     uint32_t src_tuple_cnt =  table_bits.size() /  schema.size();
     int tuple_cnt = (limit < src_tuple_cnt && limit > -1) ? limit : src_tuple_cnt;
 
     auto result = QueryTable<B>::getTable(tuple_cnt, schema);
