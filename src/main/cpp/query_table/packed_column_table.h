@@ -10,7 +10,8 @@ namespace vaultdb {
     class PackedColumnTable : public QueryTable<Bit> {
 
     public:
-
+        // setup for buffer pool
+        int table_id_ = SystemConfiguration::getInstance().num_tables_++;
         // maps ordinal to wire count.
         map<int, int> fields_per_wire_;
         // if a field spans more than one block per instance (e.g., a string with length > 16 chars) then we need to map the field to multiple wires
