@@ -25,7 +25,9 @@ namespace vaultdb {
 
         }
 
-        vector<int8_t> serializePackedWire(int col_id, int page_idx) {
+      static PackedColumnTable *deserialize(const TableMetadata & md, const int & limit = -1)  { return nullptr; }
+      static PackedColumnTable *deserialize(const TableMetadata & md, const vector<int> & ordinals, const int & limit = -1) { return nullptr; }
+      vector<int8_t> serializePackedWire(int col_id, int page_idx) {
             vector<int8_t> dst(1, 0);
             return dst;
         }
