@@ -11,11 +11,11 @@ namespace vaultdb {
 
     public:
 
-        PackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition())  {
+        PackedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition())  : QueryTable<Bit>(tuple_cnt, schema, sort_def) {
 
         }
 
-        PackedColumnTable(const PackedColumnTable &src)  {
+        PackedColumnTable(const PackedColumnTable &src)  : QueryTable<Bit>(src) {
 
         }
 
