@@ -5,6 +5,8 @@
 
 using namespace vaultdb;
 
+
+#if  __has_include("emp-rescu/emp-rescu.h")
 // no ordinals, so read all cols, but only the first limit rows
 PackedColumnTable *PackedColumnTable::deserialize(const TableMetadata  & md, const int & limit) {
     int src_tuple_cnt = md.tuple_cnt_;
@@ -89,3 +91,5 @@ PackedColumnTable *PackedColumnTable::deserialize(const TableMetadata  & md, con
     return dst;
 
 }
+
+#endif
