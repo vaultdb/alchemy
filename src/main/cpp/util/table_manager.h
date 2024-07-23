@@ -3,18 +3,12 @@
 
 #include <string>
 #include <query_table/query_table.h>
-#include <query_table/packed_column_table.h>
-#include <query_table/input_party_packed_column_table.h>
 
 // a simple container to store materialized tables that are globally accessible to query operators
 // analogous to a system catalog in a traditional DBMS
 // manage this as a singleton
-// this is mainly for use with pilot instances where we need to reconstruct a set of tables outside of a DB for one-off use
-// use `StoredDbManager` to work with an existing DB
 
 namespace vaultdb {
-
-
     class TableManager {
     public:
         // for instance
@@ -44,17 +38,14 @@ namespace vaultdb {
         }
 
         PlainTable *getPlainTable(const string & table_name);
-        SecureTable *getSecureTable(const string & table_name) {
-            if(secure_tables_.find(table_name) != secure_tables_.end()) return secure_tables_[table_name];
-            if(schemas_.find(table_name) != schemas_.end())  return QueryTable<Bit>::getTable(0, QuerySchema::toSecure(schemas_[table_name]));
-            return nullptr;
-        }
+        SecureTable *getSecureTable(const string & table_name);
 
 
         // simply overwrite any pre-existing table
         // use this with caution
         // recommend insertTable below when possible
         // it appends to any pre-existing secret shares
+
         void putSecureTable(const string & table_name, QueryTable<Bit> *table);
         void putPlainTable(const string & table_name, QueryTable<bool> *table);
 
@@ -62,7 +53,6 @@ namespace vaultdb {
             return schemas_[table_name];
         }
 
-        // used by catalyst pilot
         void insertTable(const string & table_name, SecureTable *src) {
 
             if(secure_tables_.find(table_name) == secure_tables_.end() && schemas_.find(table_name) == schemas_.end()) {
@@ -78,11 +68,11 @@ namespace vaultdb {
                 putSecureTable(table_name, src);
             }
 
-            // if a table already exists, append to it
             auto dst_tuple_cnt = dst->tuple_cnt_;
             int new_table_len = dst_tuple_cnt + src->tuple_cnt_;
             dst->resize(new_table_len);
 
+            // append to the existing cols
             for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
                 dst->cloneColumn(i, dst_tuple_cnt, src, i);
             }
@@ -90,7 +80,6 @@ namespace vaultdb {
 
         }
 
-        // used by catalyst pilot
         void insertTable(const string & table_name, PlainTable *src) {
             if(plain_tables_.find(table_name) == plain_tables_.end()
                && schemas_.find(table_name) == schemas_.end()) {
@@ -112,113 +101,6 @@ namespace vaultdb {
                 dst->cloneColumn(i, dst_tuple_cnt, src, i);
             }
             dst->cloneColumn(-1, dst_tuple_cnt, src, -1);
-        }
-
-
-       /* TODO: replace this with lazy table reading
-        * Need baseline to be able to only read the columns that we need
-        * See StoredDbManager for an example of this.  Note that it both truncates the reads to "limit" rows and it only accesses the columns that we need.
-        * If we add a parameterized ColumnTable::deserialize, then it will address this need.  */
-        void initializeSecretShares(const string & path, const int & party) {
-            SystemConfiguration & config = SystemConfiguration::getInstance();
-            assert(config.storageModel() == StorageModel::COLUMN_STORE);
-
-            string all_tables = Utilities::runCommand("ls *.metadata", path);
-            vector<string> tables = Utilities::splitStringByNewline(all_tables);
-
-            for(auto & metadata_file : tables) {
-                cout << "current metadata file: " << metadata_file << endl;
-                string table_name = metadata_file.substr(0, metadata_file.size() - 9);
-                vector<string> metadata = DataUtilities::readTextFile(path + "/" + metadata_file);
-                QuerySchema plain_schema = QuerySchema(metadata.at(0));
-                QuerySchema secure_schema = QuerySchema::toSecure(plain_schema);
-                SortDefinition collation = DataUtilities::parseCollation(metadata.at(1));
-                //int tuple_cnt_from_file = atoi(metadata.at(2).c_str());
-
-                // reconstruct secret shares back to query table
-                string share_file = path + "/" + table_name + "." + std::to_string(party);
-
-                vector<int8_t> src_data = DataUtilities::readFile(share_file);
-                size_t src_byte_cnt = src_data.size();
-                size_t src_bit_cnt = src_byte_cnt * 8;
-                size_t tuple_cnt = src_bit_cnt / plain_schema.size();
-
-                size_t dst_bit_cnt = tuple_cnt * secure_schema.size();
-                bool *dst_bools = new bool[dst_bit_cnt];
-                bool *dst_cursor = dst_bools;
-                int8_t *src_cursor = src_data.data();
-
-                assert(src_bit_cnt % plain_schema.size() == 0);
-                for(int i = 0; i < plain_schema.getFieldCount(); ++i) {
-                    QueryFieldDesc plain_field = plain_schema.getField(i);
-                    QueryFieldDesc secure_field = secure_schema.getField(i);
-
-                    if(plain_field.size() == secure_field.size()) {
-                        int write_size = secure_schema.getField(i).size() * tuple_cnt;
-                        emp::to_bool<int8_t>(dst_cursor, src_cursor, write_size, false);
-                        dst_cursor += write_size;
-                        src_cursor += write_size/8;
-                    }
-                    else {
-                        // assert(plain_field.size() == (secure_field.size() + 7)); // not true with bit packing
-                        for(int j = 0; j < tuple_cnt; ++j) {
-                            *dst_cursor = ((*src_cursor & 1) != 0);
-                            ++dst_cursor;
-                            ++src_cursor;
-                        }
-                    }
-                }
-
-                for(int i = 0; i < tuple_cnt; ++i) {
-                    *dst_cursor = ((*src_cursor & 1) != 0);
-                    ++dst_cursor;
-                    ++src_cursor;
-                }
-
-                // TODO: currently use for TP + 3 parties
-                Integer alice(dst_bit_cnt, 0L, emp::PUBLIC);
-                Integer bob(dst_bit_cnt, 0L, emp::PUBLIC);
-                Integer carol(dst_bit_cnt, 0L, emp::PUBLIC);
-                Integer TP(dst_bit_cnt, 0L, emp::PUBLIC);
-
-                EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
-
-                int CAROL = 3;
-
-                if(party == ALICE) {
-                    manager->feed(alice.bits.data(), ALICE, dst_bools, dst_bit_cnt);
-                    manager->feed(bob.bits.data(), BOB, nullptr, dst_bit_cnt);
-                    manager->feed(carol.bits.data(), CAROL, nullptr, dst_bit_cnt);
-                    manager->feed(TP.bits.data(), emp::TP, nullptr, dst_bit_cnt);
-                }
-                else if(party == BOB) {
-                    manager->feed(alice.bits.data(), ALICE, nullptr, dst_bit_cnt);
-                    manager->feed(bob.bits.data(), BOB, dst_bools, dst_bit_cnt);
-                    manager->feed(carol.bits.data(), CAROL, nullptr, dst_bit_cnt);
-                    manager->feed(TP.bits.data(), emp::TP, nullptr, dst_bit_cnt);
-                }
-                else if(party == CAROL) {
-                    manager->feed(alice.bits.data(), ALICE, nullptr, dst_bit_cnt);
-                    manager->feed(bob.bits.data(), BOB, nullptr, dst_bit_cnt);
-                    manager->feed(carol.bits.data(), CAROL, dst_bools, dst_bit_cnt);
-                    manager->feed(TP.bits.data(), emp::TP, nullptr, dst_bit_cnt);
-                }
-                else if(party == emp::TP) {
-                    manager->feed(alice.bits.data(), ALICE, nullptr, dst_bit_cnt);
-                    manager->feed(bob.bits.data(), BOB, nullptr, dst_bit_cnt);
-                    manager->feed(carol.bits.data(), CAROL, nullptr, dst_bit_cnt);
-                    manager->feed(TP.bits.data(), emp::TP, dst_bools, dst_bit_cnt);
-                }
-
-                Integer shared_data = alice ^ bob ^ carol ^ TP;
-
-                SecureTable *shared_table = QueryTable<Bit>::deserialize(secure_schema, shared_data.bits);
-
-                delete [] dst_bools;
-                insertTable(table_name, shared_table);
-
-                cout << "current table " << table_name << " finished!\n";
-            }
         }
 
     private:
