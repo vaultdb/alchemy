@@ -11,6 +11,7 @@
 #include "expression/generic_expression.h"
 #include "expression/math_expression_nodes.h"
 #include <operators/table_scan.h>
+#include <operators/stored_table_scan.h>
 #include <operators/packed_table_scan.h>
 #include <query_table/packed_column_table.h>
 #include <test/ompc/ompc_base_test.h>
@@ -54,19 +55,15 @@ TEST_F(OMPCSortTest, tpchQ01Sort) {
     SortDefinition sort_def{ColumnSort(0, SortDirection::ASCENDING),
                             ColumnSort(1, SortDirection::ASCENDING)};
 
-    //PackedTableScan<emp::Bit> *packed_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, FLAGS_cutoff);
-    TableScan<Bit> *packed_table_scan = new TableScan<Bit>("lineitem", FLAGS_cutoff);
-    packed_table_scan->setOperatorId(-2);
+    StoredTableScan<Bit> *packed_table_scan = new StoredTableScan<Bit>("lineitem", FLAGS_cutoff);
 
     ExpressionMapBuilder<Bit> builder(packed_table_scan->getOutputSchema());
     builder.addMapping(8, 0);
     builder.addMapping(9, 1);
 
     Project<Bit> *project = new Project(packed_table_scan, builder.getExprs());
-    project->setOperatorId(-2);
 
     Sort<emp::Bit> *sort = new Sort(project, sort_def);
-    sort->setOperatorId(-2);
 
     SecureTable *sorted = sort->run();
 
@@ -110,9 +107,7 @@ TEST_F(OMPCSortTest, tpchQ03Sort) {
                             ColumnSort (4, SortDirection::ASCENDING)}; // o_shippriority
 
     // Table scan for lineitem
-    //PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit);
-    TableScan<Bit> *packed_lineitem_table_scan = new TableScan<Bit>("lineitem", lineitem_limit);
-    packed_lineitem_table_scan->setOperatorId(-2);
+    StoredTableScan<Bit> *packed_lineitem_table_scan = new StoredTableScan<Bit>("lineitem", lineitem_limit);
 
     // Project lineitem table to l_orderkey, l_linenumber, l_extendedprice * (1 - l_discount) revenue
     ExpressionMapBuilder<Bit> lineitem_builder(packed_lineitem_table_scan->getOutputSchema());
@@ -127,12 +122,9 @@ TEST_F(OMPCSortTest, tpchQ03Sort) {
     lineitem_builder.addExpression(revenue_expr, 2);
 
     Project<Bit> *lineitem_project = new Project(packed_lineitem_table_scan, lineitem_builder.getExprs());
-    lineitem_project->setOperatorId(-2);
 
     // Table scan for orders
-    //PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit);
-    TableScan<Bit> *packed_orders_table_scan = new TableScan<Bit>("orders", orders_limit);
-    packed_orders_table_scan->setOperatorId(-2);
+    StoredTableScan<Bit> *packed_orders_table_scan = new StoredTableScan<Bit>("orders", orders_limit);
 
     // Project orders table to o_orderkey, o_shippriority
     ExpressionMapBuilder<Bit> orders_builder(packed_orders_table_scan->getOutputSchema());
@@ -140,7 +132,6 @@ TEST_F(OMPCSortTest, tpchQ03Sort) {
     orders_builder.addMapping(7, 1);
 
     Project<Bit> *orders_project = new Project(packed_orders_table_scan, orders_builder.getExprs());
-    orders_project->setOperatorId(-2);
 
     // join output schema: (lineitem, orders)
     // l_orderkey, l_linenumber, revenue, o_orderkey, o_shippriority
@@ -148,10 +139,8 @@ TEST_F(OMPCSortTest, tpchQ03Sort) {
                                                                                       orders_project, 3);
 
     BasicJoin<emp::Bit> *join = new BasicJoin(lineitem_project, orders_project, predicate);
-    join->setOperatorId(-2);
 
     Sort<Bit> *sort = new Sort(join, sort_def);
-    sort->setOperatorId(-2);
     SecureTable *sorted = sort->run();
 
     if(FLAGS_validation) {
@@ -177,9 +166,7 @@ TEST_F(OMPCSortTest, tpchQ05Sort) {
 
     SortDefinition sort_def{ColumnSort (2, SortDirection::DESCENDING)};
 
-    //PackedTableScan<emp::Bit> *packed_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, FLAGS_cutoff);
-    TableScan<Bit> *packed_table_scan = new TableScan<Bit>("lineitem", FLAGS_cutoff);
-    packed_table_scan->setOperatorId(-2);
+    StoredTableScan<Bit> *packed_table_scan = new StoredTableScan<Bit>("lineitem", FLAGS_cutoff);
 
     ExpressionMapBuilder<Bit> builder(packed_table_scan->getOutputSchema());
     builder.addMapping(0, 0);
@@ -193,7 +180,6 @@ TEST_F(OMPCSortTest, tpchQ05Sort) {
     builder.addExpression(revenue_expr, 2);
 
     Project<Bit> *project = new Project(packed_table_scan, builder.getExprs());
-    project->setOperatorId(-2);
 
     Sort<Bit> *sort = new Sort(project, sort_def);
     SecureTable *sorted = sort->run();
@@ -222,16 +208,13 @@ TEST_F(OMPCSortTest, tpchQ08Sort) {
 
     SortDefinition sort_def {ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
 
-    //PackedTableScan<emp::Bit> *packed_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, FLAGS_cutoff);
-    TableScan<Bit> *packed_table_scan = new TableScan<Bit>("orders", FLAGS_cutoff);
-    packed_table_scan->setOperatorId(-2);
+    StoredTableScan<Bit> *packed_table_scan = new StoredTableScan<Bit>("orders", FLAGS_cutoff);
 
     ExpressionMapBuilder<Bit> builder(packed_table_scan->getOutputSchema());
     builder.addMapping(9, 0);
     builder.addMapping(0, 1);
 
     Project<Bit> *project = new Project(packed_table_scan, builder.getExprs());
-    project->setOperatorId(-2);
 
     Sort<Bit> *sort = new Sort<emp::Bit>(project, sort_def);
     SecureTable *sorted = sort->run();
@@ -285,9 +268,7 @@ TEST_F(OMPCSortTest, tpchQ09Sort) {
                                    ColumnSort(7, SortDirection::ASCENDING)};
 
     // Table scan for lineitem
-    //PackedTableScan<emp::Bit> *packed_lineitem_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "lineitem", packed_pages_path_, FLAGS_party, lineitem_limit);
-    TableScan<Bit> *packed_lineitem_table_scan = new TableScan<Bit>("lineitem", lineitem_limit);
-    packed_lineitem_table_scan->setOperatorId(-2);
+    StoredTableScan<Bit> *packed_lineitem_table_scan = new StoredTableScan<Bit>("lineitem", lineitem_limit);
 
     // Project lineitem table to l_orderkey, l_suppkey
     ExpressionMapBuilder<Bit> lineitem_builder(packed_lineitem_table_scan->getOutputSchema());
@@ -295,12 +276,9 @@ TEST_F(OMPCSortTest, tpchQ09Sort) {
     lineitem_builder.addMapping(2, 1);
 
     Project<Bit> *lineitem_project = new Project(packed_lineitem_table_scan, lineitem_builder.getExprs());
-    lineitem_project->setOperatorId(-2);
 
     // Table scan for orders
-    //PackedTableScan<emp::Bit> *packed_orders_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, orders_limit);
-    TableScan<Bit> *packed_orders_table_scan = new TableScan<Bit>("orders", orders_limit);
-    packed_orders_table_scan->setOperatorId(-2);
+    StoredTableScan<Bit> *packed_orders_table_scan = new StoredTableScan<Bit>("orders", orders_limit);
 
     // Project orders table to o_orderkey, o_orderyear
     ExpressionMapBuilder<Bit> orders_builder(packed_orders_table_scan->getOutputSchema());
@@ -308,7 +286,6 @@ TEST_F(OMPCSortTest, tpchQ09Sort) {
     orders_builder.addMapping(9, 1);
 
     Project<Bit> *orders_project = new Project(packed_orders_table_scan, orders_builder.getExprs());
-    orders_project->setOperatorId(-2);
 
     // join output schema: (lineitem, orders)
     // l_orderkey, l_suppkey, o_orderkey, o_orderyear
@@ -316,12 +293,9 @@ TEST_F(OMPCSortTest, tpchQ09Sort) {
                                                                                          orders_project, 2);
 
     BasicJoin<emp::Bit> *lo_join = new BasicJoin(lineitem_project, orders_project, lo_predicate);
-    lo_join->setOperatorId(-2);
 
     // Table scan for supplier
-    //PackedTableScan<emp::Bit> *packed_supplier_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "supplier", packed_pages_path_, FLAGS_party, supplier_limit);
-    TableScan<Bit> *packed_supplier_table_scan = new TableScan<Bit>("supplier", supplier_limit);
-    packed_supplier_table_scan->setOperatorId(-2);
+    StoredTableScan<Bit> *packed_supplier_table_scan = new StoredTableScan<Bit>("supplier", supplier_limit);
 
     // Project supplier table to s_suppkey, s_nationkey
     ExpressionMapBuilder<Bit> supplier_builder(packed_supplier_table_scan->getOutputSchema());
@@ -329,7 +303,6 @@ TEST_F(OMPCSortTest, tpchQ09Sort) {
     supplier_builder.addMapping(3, 1);
 
     Project<Bit> *supplier_project = new Project(packed_supplier_table_scan, supplier_builder.getExprs());
-    supplier_project->setOperatorId(-2);
 
     // join output schema: (lineitem, orders, supplier)
     // l_orderkey, l_suppkey, o_orderkey, o_orderyear, s_suppkey, s_nationkey
@@ -337,12 +310,9 @@ TEST_F(OMPCSortTest, tpchQ09Sort) {
                                                                                           supplier_project, 4);
 
     BasicJoin<emp::Bit> *los_join = new BasicJoin(lo_join, supplier_project, los_predicate);
-    los_join->setOperatorId(-2);
 
     // Table scan for nation
-    //PackedTableScan<emp::Bit> *packed_nation_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "nation", packed_pages_path_, FLAGS_party, nation_limit);
-    TableScan<Bit> *packed_nation_table_scan = new TableScan<Bit>("nation", nation_limit);
-    packed_nation_table_scan->setOperatorId(-2);
+    StoredTableScan<Bit> *packed_nation_table_scan = new StoredTableScan<Bit>("nation", nation_limit);
 
     // Project nation table to n_nationkey, n_name
     ExpressionMapBuilder<Bit> nation_builder(packed_nation_table_scan->getOutputSchema());
@@ -350,7 +320,6 @@ TEST_F(OMPCSortTest, tpchQ09Sort) {
     nation_builder.addMapping(1, 1);
 
     Project<Bit> *nation_project = new Project(packed_nation_table_scan, nation_builder.getExprs());
-    nation_project->setOperatorId(-2);
 
     // join output schema: (lineitem, orders, supplier, nation)
     // l_orderkey, l_suppkey, o_orderkey, o_orderyear, s_suppkey, s_nationkey, n_nationkey, n_name
@@ -358,10 +327,8 @@ TEST_F(OMPCSortTest, tpchQ09Sort) {
                                                                                            nation_project, 6);
 
     BasicJoin<emp::Bit> *losn_join = new BasicJoin(los_join, nation_project, losn_predicate);
-    losn_join->setOperatorId(-2);
 
     Sort<Bit> *sort = new Sort(losn_join, sort_definition);
-    sort->setOperatorId(-2);
     SecureTable *sorted = sort->run();
 
     if(FLAGS_validation) {
@@ -384,9 +351,7 @@ TEST_F(OMPCSortTest, tpchQ18Sort) {
 
     SortDefinition sort_def {ColumnSort(3, SortDirection::ASCENDING), ColumnSort(0, SortDirection::ASCENDING)};
 
-    //PackedTableScan<emp::Bit> *packed_table_scan = new PackedTableScan<Bit>(FLAGS_unioned_db, "orders", packed_pages_path_, FLAGS_party, FLAGS_cutoff);
-    TableScan<Bit> *packed_table_scan = new TableScan<Bit>("orders", FLAGS_cutoff);
-    packed_table_scan->setOperatorId(-2);
+    StoredTableScan<Bit> *packed_table_scan = new StoredTableScan<Bit>("orders", FLAGS_cutoff);
 
     ExpressionMapBuilder<Bit> builder(packed_table_scan->getOutputSchema());
     builder.addMapping(0, 0);
@@ -395,7 +360,6 @@ TEST_F(OMPCSortTest, tpchQ18Sort) {
     builder.addMapping(1, 3);
 
     Project<Bit> *project = new Project(packed_table_scan, builder.getExprs());
-    project->setOperatorId(-2);
 
     Sort<Bit> *sort = new Sort(project, sort_def);
     SecureTable *sorted = sort->run();

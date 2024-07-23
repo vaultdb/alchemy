@@ -56,6 +56,7 @@ namespace  vaultdb {
     private:
         void bitonicSort(const int &lo, const int &cnt, const bool &dir,  int & counter);
 
+        static B swapTuples(const QueryTable<B> *table, const int & lhs_idx, const int & rhs_idx, const SortDefinition  & sort_definition, const bool & dir);
         static Bit swapTuples(const QueryTable<Bit> *table, const int & lhs_idx, const int & rhs_idx, const bool & dir, const int & sort_key_width_bits);
         static bool swapTuples(const QueryTable<bool> *table, const int & lhs_idx, const int & rhs_idx, const bool & dir, const int & sort_key_width_bits);
 
