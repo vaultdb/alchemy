@@ -43,8 +43,7 @@ int main(int argc, char **argv) {
     string dst_path = argv[1];
     int party_cnt = atoi(argv[2]);
     int tuple_cnt = atoi(argv[3]);
-    //srand (time(nullptr));
-    srand (1);
+    srand (time(nullptr));
 
     dst_path = GeneratePhameDataNParties::getCurrentWorkingDirectory() + "/" + dst_path;
 
