@@ -35,13 +35,8 @@ using namespace Logging;
 class OMPCKeyedJoinTest : public OmpcBaseTest {
 protected:
 
-    std::string src_path_ = Utilities::getCurrentWorkingDirectory();
-    std::string packed_pages_path_ = src_path_ + "/packed_pages/";
-
     const int customer_limit_ = 10;
-
     const int orders_limit_ = 50;
-
     const int lineitem_limit_ = 100;
 
     const std::string customer_sql_ = "SELECT c_custkey \n" // ignore c_mktsegment <> 'HOUSEHOLD' cdummy for now
