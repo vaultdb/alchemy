@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#usage: bash wire_pack_tpch_instance.sh <db name>
-#e.g., bash wire_pack_tpch_instance.sh tpch_unioned_150
+#usage: bash secret_share_tpch_instance.sh <db name>
+#e.g., bash secret_share_tpch_instance.sh tpch_unioned_150
 
 if [ $# -lt 1 ];
 then
