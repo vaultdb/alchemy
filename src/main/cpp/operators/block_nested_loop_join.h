@@ -8,8 +8,8 @@ namespace vaultdb {
     class BlockNestedLoopJoin : public Join<B> {
 
     public:
-        BlockNestedLoopJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate, const SortDefinition &sort = SortDefinition());
-        BlockNestedLoopJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate, const SortDefinition &sort = SortDefinition());
+        BlockNestedLoopJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate, const SortDefinition &sort = SortDefinition());
+        BlockNestedLoopJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate, const SortDefinition &sort = SortDefinition());
         BlockNestedLoopJoin(const BlockNestedLoopJoin<B> &src) : Join<B>(src) { this->updateCollation(); }
 
         Operator<B> *clone() const override {
@@ -45,6 +45,8 @@ namespace vaultdb {
     protected:
         QueryTable<B> *runSelf() override;
         inline OperatorType getType() const override { return OperatorType::BLOCK_NESTED_LOOP_JOIN; }
+
+        int32_t foreign_key_input_ = 0; // 0 for lhs, 1 for rhs
     };
 }
 
