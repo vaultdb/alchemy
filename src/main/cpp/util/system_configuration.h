@@ -102,7 +102,7 @@ namespace vaultdb{
         }
 
         void initializeWirePackedDb(const string & db_path);
-        void initializeSecretSharedDb(const string & db_path);
+        void initializeOutsourcedSecretShareDb(const string & db_path);
 
         string getUnionedDbName() const { return unioned_db_name_; }
         string getEmptyDbName() const { return empty_db_name_; }
@@ -144,10 +144,10 @@ namespace vaultdb{
     private:
         SystemConfiguration() { }
 
+        void parseTableMetadata(const string & db_path);
+
         string unioned_db_name_, empty_db_name_; // empty DB used for schema lookups (for public info)
-
         StorageModel storage_model_ = StorageModel::COLUMN_STORE; // only support one storage model at a time
-
         std::map<ColumnReference, BitPackingDefinition> bit_packing_;
     };
 

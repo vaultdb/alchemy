@@ -223,7 +223,7 @@ int main(int argc, char **argv) {
 
     // just encode the first table
     for(auto const &entry : table_to_query_) {
-        encodeTable(entry.first);
+            encodeTable(entry.first);
     }
 
 
@@ -232,16 +232,23 @@ int main(int argc, char **argv) {
     if(conf_.inputParty()) {
 
         OMPCBackend<N> *protocol = (OMPCBackend<N> *) emp::backend;
-        string delta_file = dst_root_ + "/" + "delta";
-        vector<int8_t> delta;
-        delta.resize(sizeof(block));
-        memcpy(delta.data(), &protocol->multi_pack_delta, sizeof(block));
-        DataUtilities::writeFile(delta_file, delta);
+        vector<int8_t> settings_bytes;
+        settings_bytes.resize((3 + N) * sizeof(block));
+        block *settings = (block *) settings_bytes.data();
+        settings[0] = protocol->lpn_seed;
+        settings[1] = protocol->lpn_prg_seed_mask;
+        settings[2] = protocol->multi_pack_delta;
+
+        for(int i = 0; i < N; ++i) {
+            settings[3 + i] = protocol->deltas[i];
+        }
+
+        DataUtilities::writeFile(dst_root_ + "/settings",settings_bytes);
     }
 
     // validate it
     if(VALIDATE) {
-        conf_.initializeSecretSharedDb(dst_root_);
+        conf_.initializeOutsourcedSecretShareDb(dst_root_);
         for (auto table_entry: table_to_query_) {
             string table_name = table_entry.first;
                 string query = table_entry.second;
@@ -254,7 +261,6 @@ int main(int argc, char **argv) {
 
                 delete recvd_plain;
                 delete expected;
-
         }
     }
 

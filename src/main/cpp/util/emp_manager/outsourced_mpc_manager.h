@@ -19,6 +19,10 @@ namespace  vaultdb {
             throw;
         }
 
+        void initialize(string setup_file = "") {
+            throw;
+        }
+
         size_t andGateCount() const override { return 0; }
 
         size_t getCommCost() const override { return 0; }
@@ -105,6 +109,8 @@ namespace  vaultdb {
             s.emp_mode_ = EmpMode::PLAIN;
 
         }
+
+        void initialize(string setup_file = "");
 
         size_t andGateCount() const override {
            return  ((OMPCBackend<N> *) backend)->num_and();
