@@ -218,9 +218,9 @@ QueryTable<B> *QueryTable<B>::deserialize(const TableMetadata & md, const vector
 
     auto dst = QueryTable<B>::getTable(tuple_cnt, dst_schema, dst_collation);
     // baseline for RESCU-SQL
-    if(conf.emp_mode_ == EmpMode::OUTSOURCED && conf.inputParty()) {
-        return dst;
-    }
+//    if(conf.emp_mode_ == EmpMode::OUTSOURCED && conf.inputParty()) {
+//        return dst;
+//    }
 
     // else
     // find the offsets to read in serialized file for each column
@@ -228,12 +228,12 @@ QueryTable<B> *QueryTable<B>::deserialize(const TableMetadata & md, const vector
     long array_byte_cnt = 0L;
     ordinal_offsets[0] = 0;
     for(int i = 1; i < md.schema_.getFieldCount(); ++i) {
-        array_byte_cnt += dst->field_sizes_bytes_[i-1] * src_tuple_cnt;
+        array_byte_cnt += md.schema_.getField(i-1).size() * sizeof(emp::Bit) * src_tuple_cnt;
         ordinal_offsets[i] = array_byte_cnt;
     }
-    array_byte_cnt += dst->field_sizes_bytes_[md.schema_.getFieldCount()-1] * src_tuple_cnt;
+    array_byte_cnt += md.schema_.getField(md.schema_.getFieldCount()-1).size() * sizeof(emp::Bit) * src_tuple_cnt;
     ordinal_offsets[-1] = array_byte_cnt;
-    array_byte_cnt += dst->field_sizes_bytes_[-1] * src_tuple_cnt;
+    array_byte_cnt += md.schema_.getField(-1).size() * sizeof(emp::Bit) * src_tuple_cnt;
 
     auto filename = Utilities::getFilenameForTable(md.name_);
     FILE*  fp = fopen(filename.c_str(), "rb");
