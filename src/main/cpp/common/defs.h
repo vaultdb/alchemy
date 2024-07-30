@@ -242,6 +242,12 @@ namespace vaultdb {
         return os;
     }
 
+    struct ConnectionInfo {
+        std::map<int, std::string> hosts_; // party_id --> IP as string
+        int32_t port_ = -1;
+        int32_t ctrl_port_ = -1;
+    };
+
 
 
 }

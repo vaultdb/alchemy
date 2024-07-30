@@ -50,10 +50,7 @@ protected:
 
     void SetUp() override;
     void TearDown() override;
-    void disableBitPacking();
     void initializeBitPacking(const string & unioned_db);
-    void parseIPsFromJson(const string &config_json_path);
-
 };
 
 #endif

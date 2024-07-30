@@ -4,13 +4,10 @@
 #include <stdexcept>
 #include <operators/filter.h>
 #include <operators/stored_table_scan.h>
-#include <operators/secure_sql_input.h>
 #include <test/ompc/ompc_base_test.h>
-#include <query_table/secure_tuple.h>
 #include <expression/comparator_expression_nodes.h>
 #include "expression/generic_expression.h"
 #include "opt/operator_cost_model.h"
-#include "operators/packed_table_scan.h"
 
 #if __has_include("emp-rescu/emp-rescu.h")
 
@@ -48,15 +45,7 @@ TEST_F(OMPCFilterTest, ompc_test_table_scan) {
     SortDefinition collation{ColumnSort(0, SortDirection::ASCENDING),
                             ColumnSort(3, SortDirection::ASCENDING)};
 
-    Operator<Bit> *input;
-
-    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-        input =  new  StoredTableScan<Bit>("lineitem", FLAGS_cutoff);
-    }
-    else {
-        input = new SecureSqlInput(db_name_, limit_sql, false);
-    }
-
+    Operator<Bit> *input =  new  StoredTableScan<Bit>("lineitem", FLAGS_cutoff);
     input->setOperatorId(-2);
 
     SecureTable *scanned = input->run();
@@ -88,14 +77,7 @@ TEST_F(OMPCFilterTest, ompc_test_filter) {
     SortDefinition collation{ColumnSort(0, SortDirection::ASCENDING),
                              ColumnSort(3, SortDirection::ASCENDING)};
 
-    Operator<Bit> *input;
-
-    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-        input =  new  StoredTableScan<Bit>("lineitem", FLAGS_cutoff);
-    }
-    else {
-        input = new SecureSqlInput(db_name_, limit_sql, false);
-    }
+    Operator<Bit> *input =  new  StoredTableScan<Bit>("lineitem", FLAGS_cutoff);
     input->setOperatorId(-2);
 
     // filtering for l_linenumber = 1

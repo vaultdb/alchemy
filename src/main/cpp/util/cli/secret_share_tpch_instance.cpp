@@ -7,6 +7,7 @@
 #include "operators/stored_table_scan.h"
 
 #include <boost/property_tree/json_parser.hpp>
+#include "util/parsing_utilities.h"
 
 #if __has_include("emp-rescu/emp-rescu.h")
 
@@ -16,8 +17,6 @@ using namespace vaultdb;
 // customize this as needed
 const string empty_db_ = "tpch_empty";
 vector<string> hosts_ = vector<string>(N + 1, "127.0.0.1");
-int port_ = 55370;
-int ctrl_port_ = 55380;
 string dst_root_;
 string db_name_;
 int party_ = -1;
@@ -27,131 +26,6 @@ SystemConfiguration & conf_ = SystemConfiguration::getInstance();
 map<string, string> table_to_query_;
 map<string, TableMetadata> table_to_metadata_;
 
-void parseIPsFromJson(const std::string &config_json_path) {
-    stringstream ss;
-    std::vector<std::string> json_lines = DataUtilities::readTextFile(config_json_path);
-    for(vector<string>::iterator pos = json_lines.begin(); pos != json_lines.end(); ++pos)
-        ss << *pos << endl;
-
-    boost::property_tree::ptree pt;
-    boost::property_tree::read_json(ss, pt);
-
-    if(pt.count("hosts") > 0) {
-        boost::property_tree::ptree hosts = pt.get_child("hosts");
-
-        for(ptree::const_iterator it = hosts.begin(); it != hosts.end(); ++it) {
-            for(int host_idx = 1; host_idx <= emp::N; ++host_idx) {
-                if(it->second.count(std::to_string(host_idx)) > 0) {
-                    hosts_[host_idx-1] = it->second.get_child(std::to_string(host_idx)).get_value<string>();
-                }
-                else {
-                    throw std::runtime_error("Host " + std::to_string(host_idx) + " is not found in config.json");
-                }
-            }
-
-            if(it->second.count(std::to_string(emp::TP)) > 0) {
-                hosts_[N] = it->second.get_child(std::to_string(emp::TP)).get_value<std::string>();
-            }
-            else {
-                throw std::runtime_error("No tp host found in config.json");
-            }
-        }
-
-        port_ = pt.get_child("port").get_value<int32_t>();
-        ctrl_port_ = pt.get_child("ctrl_port").get_value<int32_t>();
-    }
-    else {
-        throw std::runtime_error("No hosts found in config.json");
-    }
-}
-
-void loadTableInfoFromJson(string json_path) {
-    stringstream ss;
-    std::vector<std::string> json_lines = DataUtilities::readTextFile(json_path);
-    for(vector<string>::iterator pos = json_lines.begin(); pos != json_lines.end(); ++pos)
-        ss << *pos << endl;
-
-    boost::property_tree::ptree pt;
-    boost::property_tree::read_json(ss, pt);
-
-    if(pt.count("tables") > 0) {
-        boost::property_tree::ptree tables = pt.get_child("tables");
-
-        for(ptree::const_iterator it = tables.begin(); it != tables.end(); ++it) {
-            string table_name = "";
-            TableMetadata  md;
-
-            if(it->second.count("table_name") > 0) {
-                table_name = it->second.get_child("table_name").get_value<string>();
-            }
-            else {
-                throw std::runtime_error("No table_name found in table_config.json");
-            }
-
-            if(it->second.count("query") > 0) {
-                table_to_query_[table_name] = it->second.get_child("query").get_value<string>();
-            }
-            else {
-                throw std::runtime_error("No query found in table_config.json");
-            }
-
-            if(it->second.count("schema") > 0) {
-                md.schema_ = QuerySchema(it->second.get_child("schema").get_value<string>());
-
-            }
-            else {
-                throw std::runtime_error("No schema found in table_config.json");
-            }
-
-            if(it->second.count("tuple_count") > 0) {
-                md.tuple_cnt_ = it->second.get_child("tuple_count").get_value<int>();
-            }
-            else {
-                throw std::runtime_error("No tuple_count found in table_config.json");
-            }
-
-
-            if(it->second.count("collations") > 0) {
-                boost::property_tree::ptree collations = it->second.get_child("collations");
-
-                for(ptree::const_iterator collation_it = collations.begin(); collation_it != collations.end(); ++collation_it) {
-                    int column = -1;
-                    if(collation_it->second.count("column") > 0) {
-                        column = collation_it->second.get_child("column").get_value<int>();
-                    }
-                    else {
-                        throw std::runtime_error("No column found in table_config.json");
-                    }
-
-                    SortDirection direction = SortDirection::INVALID;
-                    if(collation_it->second.count("direction") > 0) {
-                        if(collation_it->second.get_child("direction").get_value<string>() == "ASCENDING") {
-                            direction = SortDirection::ASCENDING;
-                        }
-                        else if(collation_it->second.get_child("direction").get_value<string>() == "DESCENDING") {
-                            direction = SortDirection::DESCENDING;
-                        }
-                        else {
-                            throw std::runtime_error("Invalid direction found in table_config.json");
-                        }
-                    }
-                    else {
-                        throw std::runtime_error("No direction found in table_config.json");
-                    }
-
-                    md.collation_.push_back(ColumnSort(column, direction));
-                }
-            }
-            else {
-                throw std::runtime_error("No collation found in table_config.json");
-            }
-            table_to_metadata_[table_name] = md;
-        }
-
-    }
-
-
-}
 
 void encodeTable(string table_name) {
     // metadata consists of schema and tuple count
@@ -185,8 +59,8 @@ void encodeTable(string table_name) {
 int main(int argc, char **argv) {
 
     // paths are relative to local $VAULTDB_ROOT, the src/main/cpp within your vaultdb directory
-    // usage: ./wire_pack_table_from_query <db name> <destination root> <party>
-    // e.g., ./wire_pack_table_from_query tpch_unioned_600 wires/tpch_unioned_600 10086
+    // usage: ./secret_share_tpch_instance <db name> <destination root> <party>
+    // e.g., ./secret_share_tpch_instance tpch_unioned_600 wires/tpch_unioned_600 10086
     if (argc < 4) {
         std::cout << "usage: ./secret_share_tpch_instance <db name> <destination root> <party>" << std::endl;
         exit(-1);
@@ -197,23 +71,26 @@ int main(int argc, char **argv) {
      db_name_ = (party_ == emp::TP) ? argv[1] : empty_db_;
      string current_dir = Utilities::getCurrentWorkingDirectory();
      dst_root_ = current_dir + "/" + argv[2];
+    ConnectionInfo c = ParsingUtilities::parseIPsFromJson(current_dir + "/config.json");
 
     cout << "Party: " << party_ << endl;
     cout << "DB Name: " << db_name_ << endl;
     cout << "Destination dir: " << dst_root_ << endl;
-    cout << "Ports: " << port_ << ", " << ctrl_port_ << endl;
+    cout << "Ports: " << c.port_ << ", " << c.ctrl_port_ << endl;
 
     // attempt to create target dir
     string dst_dir = dst_root_.substr(0, dst_root_.find_last_of("/"));
     Utilities::mkdir(dst_dir);
     Utilities::mkdir(dst_root_);
 
-    loadTableInfoFromJson(current_dir + "/table_config.json");
+    auto table_specs = ParsingUtilities::loadTableInfoFromJson(current_dir + "/table_config.json");
+    table_to_query_ = table_specs.first;
+    table_to_metadata_ = table_specs.second;
 
     // set up OMPC
     // to enable wire packing set storage model to StorageModel::PACKED_COLUMN_STORE
-    parseIPsFromJson(current_dir + "/config.json");
-    EmpManager *manager = new OutsourcedMpcManager(hosts_.data(), party_, port_, ctrl_port_);
+
+    EmpManager *manager = new OutsourcedMpcManager(hosts_.data(), party_, c.port_, c.ctrl_port_);
 
     conf_.emp_manager_ = manager;
     conf_.setEmptyDbName(empty_db_);

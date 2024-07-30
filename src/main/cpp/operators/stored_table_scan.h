@@ -26,6 +26,7 @@ namespace vaultdb {
         }
 
         static QueryTable<B> *readStoredTable(string table_name, const vector<int> & col_ordinals, const int & limit = -1);
+        static QueryTable<B> *readSecretSharedStoredTable(string table_name, const vector<int> & col_ordinals, const int & limit = -1);
 
         QueryTable<B> *runSelf() override {
             this->start_time_ = clock_start();

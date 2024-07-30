@@ -1,12 +1,10 @@
 #include <gtest/gtest.h>
 #include <gflags/gflags.h>
-#include <operators/secure_sql_input.h>
 #include <operators/sort.h>
 #include <test/ompc/ompc_base_test.h>
 #include <operators/keyed_join.h>
 #include <operators/project.h>
 #include "util/field_utilities.h"
-#include "opt/operator_cost_model.h"
 #include "expression/generic_expression.h"
 #include "expression/math_expression_nodes.h"
 #include <operators/stored_table_scan.h>
@@ -15,10 +13,10 @@
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 43442, "port for EMP execution");
+DEFINE_int32(port, 43440, "port for EMP execution");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_int32(cutoff, 10, "limit clause for queries");
-DEFINE_int32(ctrl_port, 65458, "port for managing EMP control flow by passing public values");
+DEFINE_int32(ctrl_port, 65440, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "wire_packed", "storage model for columns (column or wire_packed)");
@@ -62,7 +60,7 @@ protected:
 Operator<Bit> *OMPCKeyedJoinTest::getCustomers() {
     SystemConfiguration & conf = SystemConfiguration::getInstance();
 
-    if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+//    if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
         return new StoredTableScan<Bit>("customer", "c_custkey", customer_limit_);
         //auto scan = new StoredTableScan<Bit>("customer", "c_custkey, c_mktsegment", customer_limit_);
 /*
@@ -77,17 +75,17 @@ Operator<Bit> *OMPCKeyedJoinTest::getCustomers() {
         auto proj = OperatorUtilities::getProjectionFromColNames(filter, "c_custkey");
 
         return proj;*/
-    }
+//    }
 
     // else
-    Operator<Bit> *input  = new SecureSqlInput(db_name_, customer_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, customer_limit_);
-    return input;
+//    Operator<Bit> *input  = new SecureSqlInput(db_name_, customer_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, customer_limit_);
+//    return input;
 }
 
 Operator<Bit> *OMPCKeyedJoinTest::getOrders() {
     SystemConfiguration &conf = SystemConfiguration::getInstance();
 
-    if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+//    if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
         // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
         vector<int> ordinals = {0, 1, 4, 7};
         auto scan = new StoredTableScan<Bit>("orders", ordinals, orders_limit_);
@@ -110,17 +108,17 @@ Operator<Bit> *OMPCKeyedJoinTest::getOrders() {
 
 
         return filter; */
-    }
+//    }
 
     // else
-    Operator<Bit> *input  = new SecureSqlInput(db_name_, orders_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, orders_limit_);
-    return input;
+//    Operator<Bit> *input  = new SecureSqlInput(db_name_, orders_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, orders_limit_);
+//    return input;
 
 }
 
 Operator<Bit> *OMPCKeyedJoinTest::getLineitem() {
     SystemConfiguration & conf = SystemConfiguration::getInstance();
-    if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+//    if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
         auto scan = new StoredTableScan<Bit>("lineitem", "l_orderkey, l_extendedprice, l_discount", lineitem_limit_);
 
         //auto scan = new StoredTableScan<Bit>("lineitem", "l_orderkey, l_extendedprice, l_discount, l_shipdate", lineitem_limit_);
@@ -156,11 +154,11 @@ Operator<Bit> *OMPCKeyedJoinTest::getLineitem() {
         auto proj2 = new Project(filter, builder.getExprs());
         return proj2;
 */
-    }
+//    }
 
     // else
-    Operator<Bit> *input  = new SecureSqlInput(db_name_, lineitem_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, lineitem_limit_);
-    return input;
+//    Operator<Bit> *input  = new SecureSqlInput(db_name_, lineitem_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, lineitem_limit_);
+//    return input;
 
 }
 

@@ -2,6 +2,7 @@
 #include "data_utilities.h"
 #include "emp_manager/outsourced_mpc_manager.h"
 #include "utilities.h"
+#include "parsing_utilities.h"
 
 using namespace vaultdb;
 
@@ -46,7 +47,7 @@ void SystemConfiguration::initializeWirePackedDb(const std::string &db_path) {
 
         emp_manager_->setDelta(delta);
 
-        parseTableMetadata(db_path);
+        table_metadata_ = ParsingUtilities::parseTableMetadata(db_path);
 
     }
 }
@@ -64,24 +65,8 @@ void SystemConfiguration::initializeOutsourcedSecretShareDb(const string & db_pa
         ((OutsourcedMpcManager *) emp_manager_) ->initialize(); // no inputs
     }
 
-    parseTableMetadata(db_path);
+    table_metadata_ = ParsingUtilities::parseTableMetadata(db_path);
 
 }
 
-void SystemConfiguration::parseTableMetadata(const string & db_path) {
-    string all_tables = Utilities::runCommand("ls *.metadata", stored_db_path_);
-    vector<string> tables = Utilities::splitStringByNewline(all_tables);
-
-    for(auto & metadata_file : tables) {
-        TableMetadata md;
-        md.name_ = metadata_file.substr(0, metadata_file.size() - 9);
-        auto metadata = DataUtilities::readTextFile(stored_db_path_ + "/" + metadata_file);
-        // drop ".metadata" suffix
-        md.schema_ = QuerySchema(metadata.at(0));
-        md.collation_ = DataUtilities::parseCollation(metadata.at(1));
-        md.tuple_cnt_ = atoi(metadata.at(2).c_str());
-        table_metadata_[md.name_] = md;
-    }
-
-}
 

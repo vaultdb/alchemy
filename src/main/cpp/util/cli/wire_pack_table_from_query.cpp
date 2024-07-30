@@ -11,8 +11,8 @@ using namespace vaultdb;
 
 // customize this as needed
 const string empty_db_ = "tpch_empty";
-const int port = 55370;
-const int ctrl_port = 55380;
+const int port_ = 55370;
+const int ctrl_port_ = 55380;
 
 
 int main(int argc, char **argv) {
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     cout << "DB Name: " << db_name << endl;
     cout << "Query: " << query << endl;
     cout << "Destination Root: " << dst_root << endl;
-    cout << "Ports: " << port << ", " << ctrl_port << endl;
+    cout << "Ports: " << port_ << ", " << ctrl_port_ << endl;
 
     string dst_dir = dst_root.substr(0, dst_root.find_last_of("/"));
     Utilities::mkdir(dst_dir);
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
     // set up OMPC
     string hosts[] = {"127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1"};
     // to enable wire packing set storage model to StorageModel::PACKED_COLUMN_STORE
-    EmpManager *manager = new OutsourcedMpcManager(hosts, party, port, ctrl_port);
+    EmpManager *manager = new OutsourcedMpcManager(hosts, party, port_, ctrl_port_);
     SystemConfiguration & conf = SystemConfiguration::getInstance();
 
     conf.emp_manager_ = manager;
