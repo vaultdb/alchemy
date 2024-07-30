@@ -1,7 +1,5 @@
 #include "system_configuration.h"
 #include "data_utilities.h"
-#include "emp_manager/outsourced_mpc_manager.h"
-#include "utilities.h"
 #include "parsing_utilities.h"
 
 using namespace vaultdb;
@@ -56,15 +54,6 @@ void SystemConfiguration::initializeWirePackedDb(const std::string &db_path) {
 void SystemConfiguration::initializeOutsourcedSecretShareDb(const string & db_path) {
     stored_db_path_ = db_path;
     assert(storageModel() == StorageModel::COLUMN_STORE);
-
-    // if input party, initialize delta first from file
-   if(inputParty()) {
-        ((OutsourcedMpcManager *) emp_manager_) ->initialize(stored_db_path_ + "/settings");
-    }
-    else {
-        ((OutsourcedMpcManager *) emp_manager_) ->initialize(); // no inputs
-    }
-
     table_metadata_ = ParsingUtilities::parseTableMetadata(db_path);
 
 }
