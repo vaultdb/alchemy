@@ -39,11 +39,8 @@ void encodeTable(string table_name) {
     DataUtilities::writeFile(metadata_filename, metadata);
     cout << "Wrote metadata for " << table_name << " to " << metadata_filename << '\n';
 
-    cout << "First rows encoded: " << table->toString(5, true);
-
     for(int i = 0; i < N; ++i) {
         string secret_shares_file = dst_root_ + "/" + table_name + "." + std::to_string(i+1);
-        cout << "Writing xor shares starting with " << DataUtilities::printByteArray(shares[i].data(), 10) << endl;
         DataUtilities::writeFile(secret_shares_file, shares[i]);
     }
 
@@ -98,14 +95,12 @@ int main(int argc, char **argv) {
                 vector<int8_t> src_data = DataUtilities::readFile(dst_root_ + "/" + table_name + ".1");
                 for (int i = 2; i <= N; ++i) {
                     auto tmp = DataUtilities::readFile(dst_root_ + "/" + table_name + "." + std::to_string(i));
-                    cout << "Reading shares starting with " << DataUtilities::printByteArray(tmp.data(), 10) << endl;
                     for (int j = 0; j < src_data.size(); ++j) {
                         src_data[j] ^= tmp[j];
                     }
                 }
-                cout << "Revealed bytes: " << DataUtilities::printByteArray(src_data.data(), 10) << endl;
+
                 PlainTable *recvd = QueryTable<bool>::deserialize(expected->getSchema(), src_data);
-                cout << "First rows recv'd: " << recvd->toString(5, true);
                 expected->order_by_ = recvd->order_by_;
                 assert(*expected == *recvd);
 
