@@ -9,7 +9,6 @@
 #include "opt/operator_cost_model.h"
 #include "expression/generic_expression.h"
 #include "expression/math_expression_nodes.h"
-#include <operators/packed_table_scan.h>
 #include <operators/stored_table_scan.h>
 
 #if __has_include("emp-rescu/emp-rescu.h")
