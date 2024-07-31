@@ -117,14 +117,14 @@ namespace vaultdb {
             template<typename T>
             inline T getValue()  const {
                 assert(validateTypeAlignment<T>());
-                // all other types are non-primitive and require more setup
+                // all other types are non-primitive and require more setup, e.g., getInt for emp::Integer
                 switch (type_) {
                     case FieldType::BOOL:
                     case FieldType::INT:
                     case FieldType::LONG:
                     case FieldType::FLOAT:
                     case FieldType::SECURE_BOOL:
-                        return *((T *) payload_.data());;
+                        return *((T *) payload_.data());
                     default:
                         throw;
 
