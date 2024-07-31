@@ -41,7 +41,6 @@ void encodeTable(string table_name) {
 
     for(int i = 0; i < N; ++i) {
         string secret_shares_file = dst_root_ + "/" + table_name + "." + std::to_string(i+1);
-        cout << "Shares for party " << i+1 << " start with: " << DataUtilities::printByteArray(shares[i].data(), 2) << endl;
         DataUtilities::writeFile(secret_shares_file, shares[i]);
     }
 
