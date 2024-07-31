@@ -32,7 +32,7 @@ DEFINE_int32(page_cnt, 50, "number of pages in buffer pool");
 // depends on
 // bash wire_pack_tpch_instance.sh tpch_unioned_150
 // or
-// bash ./bin/xor_secret_share_tpch_instance tpch_unioned_150 shares/tpch_unioned_150
+// ./bin/xor_secret_share_tpch_instance tpch_unioned_150 shares/tpch_unioned_150
 class OMPCFilterTest : public OmpcBaseTest {};
 
 
