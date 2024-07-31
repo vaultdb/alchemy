@@ -55,10 +55,6 @@ TEST_F(OMPCFilterTest, ompc_test_table_scan) {
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
         expected->order_by_ = collation;
         PlainTable *revealed = scanned->revealInsecure();
-
-        cout << "Revealed: " << revealed->toString(2, true) << endl;
-        cout << "Expected: " << expected->toString(2, true) << endl;
-        cout << "First bytes of expected: " << (int) (expected->column_data_[0].data())[0] << ", " << (int)(expected->column_data_[0].data())[1] << '\n';
         ASSERT_EQ(*expected, *revealed);
 
     }
@@ -79,7 +75,7 @@ TEST_F(OMPCFilterTest, ompc_test_filter) {
 
     // filtering for l_linenumber = 1
     PackedInputReference<emp::Bit> read_linenumber_field(3, input->getOutputSchema());
-    Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(4, 0));
+    Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1, 0));
     LiteralNode<emp::Bit> constant_input(one);
     EqualNode<emp::Bit> equality_check((ExpressionNode<emp::Bit> *) &read_linenumber_field, (ExpressionNode<emp::Bit> *) &constant_input);
     Expression<emp::Bit> *expression = new GenericExpression<emp::Bit>(&equality_check, "predicate", FieldType::SECURE_BOOL);
@@ -94,11 +90,6 @@ TEST_F(OMPCFilterTest, ompc_test_filter) {
 
         PlainTable *revealed = filtered->revealInsecure();
         DataUtilities::removeDummies(revealed);
-
-        // Order by l_orderkey, l_linenumber
-        Sort<bool> sort(revealed, collation);
-        sort.setOperatorId(-2);
-        revealed = sort.run();
 
         ASSERT_EQ(*expected, *revealed);
     }
