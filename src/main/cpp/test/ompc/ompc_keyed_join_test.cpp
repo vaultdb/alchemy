@@ -83,8 +83,7 @@ Operator<Bit> *OMPCKeyedJoinTest::getCustomers() {
 }
 
 Operator<Bit> *OMPCKeyedJoinTest::getOrders() {
-    SystemConfiguration &conf = SystemConfiguration::getInstance();
-
+//    SystemConfiguration &conf = SystemConfiguration::getInstance();
 //    if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
         // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
         vector<int> ordinals = {0, 1, 4, 7};
