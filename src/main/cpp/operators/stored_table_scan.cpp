@@ -28,7 +28,6 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
         return readSecretSharedStoredTable(table_name, limit);
     }
 
-
     SystemConfiguration & conf = SystemConfiguration::getInstance();
     assert(conf.table_metadata_.find(table_name) != conf.table_metadata_.end());
     TableMetadata md = conf.table_metadata_.at(table_name);
@@ -39,9 +38,12 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
 
     QuerySchema secure_schema = QuerySchema::toSecure(md.schema_);
     QuerySchema plain_schema = QuerySchema::toPlain(md.schema_);
-    size_t tuple_cnt;
+
+    size_t src_tuple_cnt = md.tuple_cnt_;
+    size_t tuple_cnt = (limit == -1 || limit > src_tuple_cnt) ? src_tuple_cnt : limit;
+
     bool *dst_bools;
-    size_t dst_bit_cnt;
+    size_t dst_bit_cnt = tuple_cnt * secure_schema.size();
 
     if(!conf.inputParty()) {
         string secret_shares_file = SystemConfiguration::getInstance().stored_db_path_ + "/" + table_name + "." +
@@ -50,8 +52,7 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
         // deduce row count
         size_t src_byte_cnt = std::filesystem::file_size(secret_shares_file);
         size_t src_bit_cnt = src_byte_cnt * 8;
-        int src_tuple_cnt = src_bit_cnt / plain_schema.size();
-        int tuple_cnt = (limit == -1 || limit > src_tuple_cnt) ? src_tuple_cnt : limit;
+
 
         map<int, long> ordinal_offsets;
         long array_byte_cnt = 0L;
@@ -65,16 +66,14 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
         array_byte_cnt += md.schema_.getField(-1).size() * src_tuple_cnt;
 
         // convert serialized representation from byte-aligned to bit-by-bit for EMP
-        dst_bit_cnt = tuple_cnt * dst_schema.size();
         dst_bools = new bool[dst_bit_cnt]; // dst_bit_alloc
         bool *dst_cursor = dst_bools;
 
         assert(src_bit_cnt % plain_schema.size() == 0);
         FILE *fp = fopen(secret_shares_file.c_str(), "rb");
 
-
        for (auto src_ordinal: col_ordinals) {
-            int read_size_bits = tuple_cnt * plain_schema.getField(src_ordinal).size();
+            int read_size_bits = tuple_cnt * secure_schema.getField(src_ordinal).size();
             fseek(fp, ordinal_offsets[src_ordinal], SEEK_SET); // read read_offset bytes from beginning of file
             if (plain_schema.getField(src_ordinal).getType() != FieldType::BOOL) {
                 vector<int8_t> tmp_read(read_size_bits / 8);
@@ -97,12 +96,10 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
             *dst_cursor = ((*dst_cursor & 1) != 0); // (bool)
             ++dst_cursor;
         }
+
         fclose(fp);
     }
-    else { // TP
-        tuple_cnt = md.tuple_cnt_;
-        dst_bit_cnt = tuple_cnt * dst_schema.size();
-    }
+
 
     Integer dst(dst_bit_cnt, 0L, emp::PUBLIC);
 
@@ -127,8 +124,6 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
 }
 
 // read all ordinals
-// JMR: confirmed that we are reading from the correct offsets.
-// need to figure out why this isn't revealing correctly!
 template<typename B>
 QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name, const int & limit) {
     SystemConfiguration & conf = SystemConfiguration::getInstance();
