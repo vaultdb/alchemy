@@ -138,9 +138,12 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
     QuerySchema secure_schema = QuerySchema::toSecure(md.schema_);
     QuerySchema plain_schema = QuerySchema::toPlain(md.schema_);
 
-    size_t tuple_cnt;
+    size_t src_tuple_cnt = md.tuple_cnt_;
+    size_t tuple_cnt = (limit == -1 || limit > src_tuple_cnt) ? src_tuple_cnt : limit;
+
     bool *dst_bools;
-    size_t dst_bit_cnt;
+    size_t dst_bit_cnt = tuple_cnt * secure_schema.size();
+
 
     if(!conf.inputParty()) {
         string secret_shares_file = SystemConfiguration::getInstance().stored_db_path_ + "/" + table_name + "." +
@@ -151,8 +154,6 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
         // deduce row count
         size_t src_byte_cnt = std::filesystem::file_size(secret_shares_file);
         size_t src_bit_cnt = src_byte_cnt * 8;
-        int src_tuple_cnt = src_bit_cnt / plain_schema.size();
-        tuple_cnt = (limit == -1 || limit > src_tuple_cnt) ? src_tuple_cnt : limit;
         bool truncating = (src_tuple_cnt != tuple_cnt);
 
         // convert serialized representation from byte-aligned to bit-by-bit
@@ -165,39 +166,40 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
         for (int i = 0; i < plain_schema.getFieldCount(); ++i) {
             auto plain_field = plain_schema.getField(i);
             auto secure_field = secure_schema.getField(i);
-            if (plain_field.size() == secure_field.size()) { // 1:1, just serialize it
-                int write_size_bits = secure_field.size() * tuple_cnt;
-                vector<int8_t> tmp_read(write_size_bits / 8);
+            cout << "Reading attribute " << i << "(" << plain_field << ") from file offset: " << ftell(fp) << '\n';
+            if (plain_field.getType() != FieldType::BOOL) { // 1:1, just serialize it
+                int size_bits = secure_field.size() * tuple_cnt;
+                cout << "   Reading " <<size_bits/8 << " bytes.\n";
+                vector<int8_t> tmp_read(size_bits / 8);
                 fread(tmp_read.data(), 1, tmp_read.size(), fp);
-                emp::to_bool<int8_t>(dst_cursor, tmp_read.data(), write_size_bits, false);
-                dst_cursor += write_size_bits;
+                if(i == 0) cout << "party " << conf.party_ << " read bytes from file starting with " << DataUtilities::printByteArray(tmp_read.data(), 2) << '\n';
+                emp::to_bool<int8_t>(dst_cursor, tmp_read.data(), size_bits, false);
+                dst_cursor += size_bits;
             } else { // just copy it in
-                int size_bits = secure_schema.getField(i).size() * tuple_cnt;
-                fread(dst_cursor, 1, size_bits, fp);
+//                int size_bits = secure_schema.getField(i).size() * tuple_cnt; // should just be tuple_cnt
+                fread(dst_cursor, 1, tuple_cnt, fp); // 1 bool per tuple
                 for(int j = 0; j < tuple_cnt; ++j) {
                     *dst_cursor = ((*dst_cursor & 1) != 0); // (bool)
                     ++dst_cursor;
                 } // end for each tuple
             }  // end else for bool check
+
             if(truncating) {
                 int to_seek =  ((src_tuple_cnt - tuple_cnt) * plain_field.size())/ 8;
-                cout << "Skipping over " << to_seek << " bytes.\n";
                 fseek(fp, to_seek, SEEK_CUR);
             }
         } // end for all fields
 
         // copy dummy tag
-        int size_bits = secure_schema.getField(-1).size() * tuple_cnt;
-        fread(dst_cursor, 1, size_bits, fp);
+//        int size_bits = secure_schema.getField(-1).size() * tuple_cnt;
+        fread(dst_cursor, 1, tuple_cnt, fp);
         for (int i = 0; i < tuple_cnt; ++i) {
             *dst_cursor = ((*dst_cursor & 1) != 0);
             ++dst_cursor;
         }
 
-    }
-    else {
-        tuple_cnt = md.tuple_cnt_;
-        dst_bit_cnt = tuple_cnt * secure_schema.size();
+        cout << "party " << conf.party_ << " read bits from file starting with " << DataUtilities::printBitArray(dst_bools, 16) << '\n';
+
     }
 
     Integer dst(dst_bit_cnt, 0L, emp::PUBLIC);
@@ -214,6 +216,7 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
         dst = dst ^ tmp;
     }
 
+    cout << "Input bits: " << DataUtilities::revealAndPrintFirstBits(dst.bits.data(), 16) << '\n';
     SecureTable *shared_table = QueryTable<Bit>::deserialize(secure_schema, dst.bits);
 
     if(!conf.inputParty()) delete [] dst_bools;
