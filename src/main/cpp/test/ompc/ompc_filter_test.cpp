@@ -54,16 +54,7 @@ TEST_F(OMPCFilterTest, ompc_test_table_scan) {
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
         expected->order_by_ = collation;
-        cout << "Revealing!\n";
-        auto suspect = scanned->getField(1, -1);
-        cout << "Trips on " << suspect.reveal(scanned->getSchema().getField(-1)) << '\n';
         PlainTable *revealed = scanned->revealInsecure();
-//        DataUtilities::removeDummies(revealed);
-        cout << "Revealed!\n";
-        // Order by l_orderkey, l_linenumber
-//        Sort<bool> sort(revealed, collation);
-//        sort.setOperatorId(-2);
-//        revealed = sort.run();
 
         cout << "Revealed: " << revealed->toString(2, true) << endl;
         cout << "Expected: " << expected->toString(2, true) << endl;
