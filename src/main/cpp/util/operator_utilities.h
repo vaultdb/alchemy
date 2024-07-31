@@ -62,11 +62,11 @@ namespace vaultdb {
                 continue;
             }
             for(int i = 0; i < ordinals.size(); ++i) {
-                int dst_ordinal = i;
-                int src_ordinal = ordinals.at(i);
+                int dst_pos = i;
+                int to_write = ordinals.at(i);
 
-                if(dst_ordinal == src_ordinal) {
-                    dst_collation.push_back(ColumnSort(dst_ordinal, sort.second));
+                if(to_write == src_ordinal) {
+                    dst_collation.push_back(ColumnSort(dst_pos, sort.second));
                     found = true;
                     break;
                 }
