@@ -49,7 +49,7 @@ void EmpBaseTest::SetUp()  {
     int port;
     int ctrl_port;
 
-    std::string config_json_path = Utilities::getCurrentWorkingDirectory() + "/config.json";
+    std::string config_json_path = Utilities::getCurrentWorkingDirectory() + "/conf/config.json";
 
     stringstream ss;
     std::vector<std::string> json_lines = DataUtilities::readTextFile(config_json_path);

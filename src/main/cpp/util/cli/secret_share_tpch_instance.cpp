@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
      db_name_ = (party_ == emp::TP) ? argv[1] : empty_db_;
      string current_dir = Utilities::getCurrentWorkingDirectory();
      dst_root_ = current_dir + "/" + argv[2];
-    ConnectionInfo c = ParsingUtilities::parseIPsFromJson(current_dir + "/config.json");
+    ConnectionInfo c = ParsingUtilities::parseIPsFromJson(current_dir + "/conf/config.json");
 
     cout << "Party: " << party_ << endl;
     cout << "DB Name: " << db_name_ << endl;

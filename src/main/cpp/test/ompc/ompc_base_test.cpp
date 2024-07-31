@@ -32,7 +32,7 @@ void OmpcBaseTest::SetUp()  {
 	Logger* log = get_log();
 
     // parse IPs and ports from config.json
-    ConnectionInfo c = ParsingUtilities::parseIPsFromJson(Utilities::getCurrentWorkingDirectory() + "/config.json");
+    ConnectionInfo c = ParsingUtilities::parseIPsFromJson(Utilities::getCurrentWorkingDirectory() + "/conf/config.json");
     for(auto & entry : c.hosts_) {
         hosts_.push_back(entry.second);
     }
@@ -54,8 +54,8 @@ void OmpcBaseTest::SetUp()  {
     s.setEmptyDbName(empty_db_);
     s.emp_manager_ = manager_;
     // TODO: disable bitpacking for packed wires to make this comparable to baseline
-    BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(FLAGS_unioned_db);
-    s.initialize(db_name_, md, storage_model_, bp_unpacked_page_size_bits_, bp_page_cnt_);
+//    BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(FLAGS_unioned_db);
+    s.initialize(db_name_, BitPackingMetadata(), storage_model_, bp_unpacked_page_size_bits_, bp_page_cnt_);
     string settings = Utilities::getTestParameters();
     log->write(settings, Level::INFO);
 
@@ -66,7 +66,7 @@ void OmpcBaseTest::SetUp()  {
         s.initializeWirePackedDb(packed_wires_path);
     }
     else {
-        s.clearBitPacking();
+//        s.clearBitPacking();
         string shares_path = Utilities::getCurrentWorkingDirectory() + "/shares/" + FLAGS_unioned_db;
         s.initializeOutsourcedSecretShareDb(shares_path);
     }

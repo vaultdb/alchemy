@@ -170,7 +170,7 @@ TEST_F(OMPCEmpTableTest, ompc_bit_packing_test) {
 
 TEST_F(OMPCEmpTableTest, ompc_test_table_scan) {
     stringstream ss;
-    std::vector<std::string> json_lines = DataUtilities::readTextFile(Utilities::getCurrentWorkingDirectory() + "/table_config.json");
+    std::vector<std::string> json_lines = DataUtilities::readTextFile(Utilities::getCurrentWorkingDirectory() + "/conf/table_config.json");
     for(vector<string>::iterator pos = json_lines.begin(); pos != json_lines.end(); ++pos)
         ss << *pos << endl;
 

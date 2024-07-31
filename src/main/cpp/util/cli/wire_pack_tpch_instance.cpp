@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
 
     // set up OMPC
     // to enable wire packing set storage model to StorageModel::PACKED_COLUMN_STORE
-    ConnectionInfo c = ParsingUtilities::parseIPsFromJson(current_dir + "/config.json");
+    ConnectionInfo c = ParsingUtilities::parseIPsFromJson(current_dir + "/conf/config.json");
     EmpManager *manager = new OutsourcedMpcManager(hosts_.data(), party_, c.port_, c.ctrl_port_);
 
     conf_.emp_manager_ = manager;
