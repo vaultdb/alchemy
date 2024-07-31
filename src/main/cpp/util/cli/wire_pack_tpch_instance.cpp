@@ -74,7 +74,6 @@ int main(int argc, char **argv) {
     cout << "Party: " << party_ << endl;
     cout << "DB Name: " << db_name_ << endl;
     cout << "Destination dir: " << dst_root_ << endl;
-    cout << "Ports: " << port_ << ", " << ctrl_port_ << endl;
 
     // attempt to create target dir
     string dst_dir = dst_root_.substr(0, dst_root_.find_last_of("/"));
@@ -90,6 +89,7 @@ int main(int argc, char **argv) {
     // to enable wire packing set storage model to StorageModel::PACKED_COLUMN_STORE
     ConnectionInfo c = ParsingUtilities::parseIPsFromJson(current_dir + "/conf/config.json");
     EmpManager *manager = new OutsourcedMpcManager(hosts_.data(), party_, c.port_, c.ctrl_port_);
+    cout << "Ports: " << c.port_ << ", " << c.ctrl_port_ << endl;
 
     conf_.emp_manager_ = manager;
     conf_.setEmptyDbName(empty_db_);
