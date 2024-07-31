@@ -57,10 +57,10 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
         long array_byte_cnt = 0L;
         ordinal_offsets[0] = 0;
         for (int i = 1; i < md.schema_.getFieldCount(); ++i) {
-            array_byte_cnt += md.schema_.getField(i - 1).size() * src_tuple_cnt;
+            array_byte_cnt += (md.schema_.getField(i - 1).size() * src_tuple_cnt)/8;
             ordinal_offsets[i] = array_byte_cnt;
         }
-        array_byte_cnt += md.schema_.getField(md.schema_.getFieldCount() - 1).size() * src_tuple_cnt;
+        array_byte_cnt += (md.schema_.getField(md.schema_.getFieldCount() - 1).size() * src_tuple_cnt)/8;
         ordinal_offsets[-1] = array_byte_cnt;
         array_byte_cnt += md.schema_.getField(-1).size() * src_tuple_cnt;
 
@@ -72,8 +72,8 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
         assert(src_bit_cnt % plain_schema.size() == 0);
         FILE *fp = fopen(secret_shares_file.c_str(), "rb");
 
-        int dst_ordinal = 0;
-        for (auto src_ordinal: col_ordinals) {
+
+       for (auto src_ordinal: col_ordinals) {
             int read_size_bits = tuple_cnt * plain_schema.getField(src_ordinal).size();
             fseek(fp, ordinal_offsets[src_ordinal], SEEK_SET); // read read_offset bytes from beginning of file
             if (plain_schema.getField(src_ordinal).getType() != FieldType::BOOL) {
@@ -127,6 +127,8 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
 }
 
 // read all ordinals
+// JMR: confirmed that we are reading from the correct offsets.
+// need to figure out why this isn't revealing correctly!
 template<typename B>
 QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name, const int & limit) {
     SystemConfiguration & conf = SystemConfiguration::getInstance();
@@ -155,7 +157,6 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
 
         // convert serialized representation from byte-aligned to bit-by-bit
         dst_bit_cnt = tuple_cnt * secure_schema.size();
-        //    size_t dst_bit_alloc = dst_bit_cnt + (dst_bit_cnt % 128);  // pad it to 128-bit increments for emp
         dst_bools = new bool[dst_bit_cnt]; // dst_bit_alloc
         bool *dst_cursor = dst_bools;
 
@@ -164,7 +165,6 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
         for (int i = 0; i < plain_schema.getFieldCount(); ++i) {
             auto plain_field = plain_schema.getField(i);
             auto secure_field = secure_schema.getField(i);
-
             if (plain_field.size() == secure_field.size()) { // 1:1, just serialize it
                 int write_size_bits = secure_field.size() * tuple_cnt;
                 vector<int8_t> tmp_read(write_size_bits / 8);
@@ -181,6 +181,7 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
             }  // end else for bool check
             if(truncating) {
                 int to_seek =  ((src_tuple_cnt - tuple_cnt) * plain_field.size())/ 8;
+                cout << "Skipping over " << to_seek << " bytes.\n";
                 fseek(fp, to_seek, SEEK_CUR);
             }
         } // end for all fields
