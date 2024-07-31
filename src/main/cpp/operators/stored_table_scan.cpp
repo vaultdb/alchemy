@@ -21,7 +21,7 @@ QueryTable<B> *StoredTableScan<B>::readStoredTable(string table_name, const vect
 
 }
 
-
+// these are outside of ColumnTable::deserialize because we are using those methods for pilot-related things
 template<typename B>
 QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name, const vector<int> & col_ordinals, const int & limit) {
     if(col_ordinals.empty()) {
@@ -43,7 +43,7 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
     size_t tuple_cnt = (limit == -1 || limit > src_tuple_cnt) ? src_tuple_cnt : limit;
 
     bool *dst_bools;
-    size_t dst_bit_cnt = tuple_cnt * secure_schema.size();
+    size_t dst_bit_cnt = tuple_cnt * dst_schema.size();
 
     if(!conf.inputParty()) {
         string secret_shares_file = SystemConfiguration::getInstance().stored_db_path_ + "/" + table_name + "." +
@@ -107,7 +107,6 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
     bool *to_send = (party == 1) ? dst_bools : nullptr;
     manager->feed(dst.bits.data(), 1, to_send, dst_bit_cnt);
-
 
     for(int i = 2; i <= N; ++i) {
         Integer tmp(dst_bit_cnt, 0L, emp::PUBLIC);
