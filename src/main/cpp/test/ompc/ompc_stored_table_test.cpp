@@ -22,6 +22,9 @@ DEFINE_int32(page_cnt, 50, "number of pages in unpacked buffer pool");
 
 // depends on
 // bash wire_pack_tpch_instance.sh tpch_unioned_150
+// or
+// ./bin/xor_secret_share_tpch_instance tpch_unioned_150 shares/tpch_unioned_150
+
 
 using namespace vaultdb;
 
@@ -117,7 +120,7 @@ TEST_F(OMPCStoredTableTest, lineitem) {
 
     std::string sql =  "SELECT l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment FROM lineitem ORDER BY l_orderkey, l_linenumber";
 
-    SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING), ColumnSort(4, SortDirection::ASCENDING)};
+    SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING), ColumnSort(3, SortDirection::ASCENDING)};
     scanAndValidate("lineitem", sql, collation);
 
 }
