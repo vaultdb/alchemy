@@ -80,6 +80,23 @@ TEST_F(OMPCStoredTableTest, customer) {
 
 }
 
+TEST_F(OMPCStoredTableTest, customer_limit_project) {
+    std::string sql =  "SELECT c_custkey FROM customer ORDER BY c_custkey LIMIT 10";
+    SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING)};
+    StoredTableScan<Bit> scan("customer", "c_custkey", 10);
+
+    auto observed = scan.run();
+
+    if(FLAGS_validation) {
+        PlainTable *revealed = observed->revealInsecure(emp::PUBLIC);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
+        expected->order_by_ = collation;
+
+        ASSERT_EQ(*expected, *revealed);
+        delete revealed;
+        delete expected;
+    }
+}
 
 
 TEST_F(OMPCStoredTableTest, orders) {
@@ -155,11 +172,8 @@ TEST_F(OMPCStoredTableTest, lineitem_limit_project) {
     StoredTableScan<Bit> scan("lineitem", "l_orderkey, l_extendedprice, l_discount", FLAGS_cutoff);
 
     auto observed = scan.run();
-    cout << "Observed collation: " << DataUtilities::printSortDefinition(observed->order_by_) << endl;
-
     if(FLAGS_validation) {
         PlainTable *revealed = observed->revealInsecure(emp::PUBLIC);
-        cout << "Revealed collation: " << DataUtilities::printSortDefinition(revealed->order_by_) << endl;
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
         expected->order_by_ = collation;
 
