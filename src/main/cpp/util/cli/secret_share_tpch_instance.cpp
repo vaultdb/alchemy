@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
     Utilities::mkdir(dst_dir);
     Utilities::mkdir(dst_root_);
 
-    auto table_specs = ParsingUtilities::loadTableInfoFromJson(current_dir + "/table_config.json");
+    auto table_specs = ParsingUtilities::loadTableInfoFromJson(current_dir + "/conf/table_config.json");
     table_to_query_ = table_specs.first;
     table_to_metadata_ = table_specs.second;
 

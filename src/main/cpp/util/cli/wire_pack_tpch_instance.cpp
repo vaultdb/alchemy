@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
     Utilities::mkdir(dst_dir);
     Utilities::mkdir(dst_root_);
 
-    auto table_specs = ParsingUtilities::loadTableInfoFromJson(current_dir + "/table_config.json");
+    auto table_specs = ParsingUtilities::loadTableInfoFromJson(current_dir + "/conf/table_config.json");
     table_to_query_ = table_specs.first;
     table_to_metadata_ = table_specs.second;
 
@@ -93,8 +93,8 @@ int main(int argc, char **argv) {
 
     conf_.emp_manager_ = manager;
     conf_.setEmptyDbName(empty_db_);
-    BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(argv[1]);
-    conf_.initialize(db_name_, md, StorageModel::PACKED_COLUMN_STORE);
+//    BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(argv[1]);
+    conf_.initialize(db_name_, BitPackingMetadata(), StorageModel::PACKED_COLUMN_STORE);
     conf_.stored_db_path_ = dst_root_;
 
     // just encode the first table

@@ -41,6 +41,7 @@ void encodeTable(string table_name) {
 
     for(int i = 0; i < N; ++i) {
         string secret_shares_file = dst_root_ + "/" + table_name + "." + std::to_string(i+1);
+        cout << "Shares for party " << i+1 << " start with: " << DataUtilities::printByteArray(shares[i].data(), 2) << endl;
         DataUtilities::writeFile(secret_shares_file, shares[i]);
     }
 
@@ -70,7 +71,7 @@ int main(int argc, char **argv) {
     Utilities::mkdir(dst_dir);
     Utilities::mkdir(dst_root_);
 
-    auto table_specs = ParsingUtilities::loadTableInfoFromJson(current_dir + "/table_config.json");
+    auto table_specs = ParsingUtilities::loadTableInfoFromJson(current_dir + "/conf/table_config.json");
     table_to_query_ = table_specs.first;
     table_to_metadata_ = table_specs.second;
 
