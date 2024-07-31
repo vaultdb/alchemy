@@ -127,6 +127,47 @@ TEST_F(OMPCStoredTableTest, lineitem) {
 
 
 
+TEST_F(OMPCStoredTableTest, lineitem_limit) {
+    std::string sql =  "SELECT l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(FLAGS_cutoff);
+
+    SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING), ColumnSort(3, SortDirection::ASCENDING)};
+
+    StoredTableScan<Bit> scan("lineitem", FLAGS_cutoff);
+    auto observed = scan.run();
+
+    if(FLAGS_validation) {
+        PlainTable *revealed = observed->revealInsecure(emp::PUBLIC);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
+        expected->order_by_ = collation;
+
+        ASSERT_EQ(*expected, *revealed);
+        delete revealed;
+        delete expected;
+    }
+}
+
+
+TEST_F(OMPCStoredTableTest, lineitem_limit_project) {
+    std::string sql =  "SELECT l_orderkey, l_extendedprice, l_discount FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(FLAGS_cutoff);
+
+    SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING)};
+
+    StoredTableScan<Bit> scan("lineitem", "l_orderkey, l_extendedprice, l_discount", FLAGS_cutoff);
+
+    auto observed = scan.run();
+    cout << "Observed collation: " << DataUtilities::printSortDefinition(observed->order_by_) << endl;
+
+    if(FLAGS_validation) {
+        PlainTable *revealed = observed->revealInsecure(emp::PUBLIC);
+        cout << "Revealed collation: " << DataUtilities::printSortDefinition(revealed->order_by_) << endl;
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
+        expected->order_by_ = collation;
+
+        ASSERT_EQ(*expected, *revealed);
+        delete revealed;
+        delete expected;
+    }
+}
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
