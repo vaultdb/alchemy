@@ -31,7 +31,8 @@ DEFINE_int32(page_cnt, 50, "number of pages in buffer pool");
 
 // depends on
 // bash wire_pack_tpch_instance.sh tpch_unioned_150
-
+// or
+// bash ./bin/xor_secret_share_tpch_instance tpch_unioned_150 shares/tpch_unioned_150
 class OMPCFilterTest : public OmpcBaseTest {};
 
 
@@ -49,19 +50,24 @@ TEST_F(OMPCFilterTest, ompc_test_table_scan) {
     input->setOperatorId(-2);
 
     SecureTable *scanned = input->run();
-
+    cout << "Finished table scan!\n";
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
         expected->order_by_ = collation;
-
+        cout << "Revealing!\n";
+        auto suspect = scanned->getField(1, -1);
+        cout << "Trips on " << suspect.reveal(scanned->getSchema().getField(-1)) << '\n';
         PlainTable *revealed = scanned->revealInsecure();
-        DataUtilities::removeDummies(revealed);
-
+//        DataUtilities::removeDummies(revealed);
+        cout << "Revealed!\n";
         // Order by l_orderkey, l_linenumber
-        Sort<bool> sort(revealed, collation);
-        sort.setOperatorId(-2);
-        revealed = sort.run();
+//        Sort<bool> sort(revealed, collation);
+//        sort.setOperatorId(-2);
+//        revealed = sort.run();
 
+        cout << "Revealed: " << revealed->toString(2, true) << endl;
+        cout << "Expected: " << expected->toString(2, true) << endl;
+        cout << "First bytes of expected: " << (int) (expected->column_data_[0].data())[0] << ", " << (int)(expected->column_data_[0].data())[1] << '\n';
         ASSERT_EQ(*expected, *revealed);
 
     }
