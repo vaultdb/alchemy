@@ -12,6 +12,10 @@ using namespace  vaultdb;
 
 void BufferPoolManager::loadPage(PageId &pid) {
 
+    if((hits_ + misses_ > 1) && (hits_ + misses_) % 100 == 0) {
+        cout << "Buffer pool hit ratio: " << hits_ / (hits_ + misses_) << endl;
+    }
+
     if(position_map_.find(pid) != position_map_.end()) {
         ++hits_;
         return;
@@ -24,6 +28,7 @@ void BufferPoolManager::loadPage(PageId &pid) {
     ++misses_;
     Bit *dst = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
     emp_manager_->unpack((Bit *) &src, dst, unpacked_page_size_bits_);
+    ++unpack_calls_;
 
     PositionMapEntry p(target_slot, false, false);
     position_map_[pid] = p;
@@ -68,6 +73,7 @@ int BufferPoolManager::evictPage() {
             emp::Bit *src_ptr = unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
             OMPCPackedWire dst(block_n_);
             emp_manager_->pack(src_ptr, (Bit *) &dst, unpacked_page_size_bits_);
+            ++pack_calls_;
             packed_table_catalog_[pid.table_id_]->writePackedWire(pid, dst);
         }
     }
@@ -113,6 +119,7 @@ void BufferPoolManager::flushPage(const PageId &pid) {
         emp::Bit *src_ptr =  unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
         OMPCPackedWire dst(block_n_);
         emp_manager_->pack(src_ptr, (Bit *) &dst, unpacked_page_size_bits_);
+        ++pack_calls_;
         packed_table_catalog_[pid.table_id_]->writePackedWire(pid, dst);
         position_map_.at(pid).dirty_ = false;
     }

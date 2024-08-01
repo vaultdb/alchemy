@@ -12,7 +12,7 @@ DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65428, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(filter, "*.orders_limit_project", "run only the tests passing this filter");
 DEFINE_string(storage, "wire_packed", "storage model for columns (column or wire_packed)");
 DEFINE_string(empty_db, "tpch_empty", "empty db name for schemas");
 DEFINE_string(wire_path, "wires", "local path to wire files");
@@ -81,9 +81,9 @@ TEST_F(OMPCStoredTableTest, customer) {
 }
 
 TEST_F(OMPCStoredTableTest, customer_limit_project) {
-    std::string sql =  "SELECT c_custkey FROM customer ORDER BY c_custkey LIMIT 10";
+    std::string sql =  "SELECT c_custkey FROM customer ORDER BY c_custkey LIMIT 100";
     SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING)};
-    StoredTableScan<Bit> scan("customer", "c_custkey", 10);
+    StoredTableScan<Bit> scan("customer", "c_custkey", 100);
 
     auto observed = scan.run();
 
@@ -105,6 +105,24 @@ TEST_F(OMPCStoredTableTest, orders) {
     SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING)};
     scanAndValidate("orders", sql, collation);
 
+}
+
+TEST_F(OMPCStoredTableTest, orders_limit_project) {
+    std::string sql =  "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority FROM orders ORDER BY o_orderkey LIMIT 1500";
+    SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING)};
+
+    StoredTableScan<Bit> scan("orders", "o_orderkey, o_custkey, o_orderdate, o_shippriority", 1500);
+
+    auto observed = scan.run();
+    if(FLAGS_validation) {
+        PlainTable *revealed = observed->revealInsecure(emp::PUBLIC);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
+        expected->order_by_ = collation;
+
+        ASSERT_EQ(*expected, *revealed);
+        delete revealed;
+        delete expected;
+    }
 }
 
 

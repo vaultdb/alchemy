@@ -73,16 +73,24 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
         lhs_dummy_tag = lhs_table->getField(i, -1).template getValue<B>();
         this->output_->cloneRow(i, 0, lhs_table, i); // Join<B>::write_left(this->output_, i, lhs_table, i);
         dst_dummy_tag = true; // dummy by default, no matches found yet
-
+        int before = (SystemConfiguration::getInstance().bpm_.misses_ + SystemConfiguration::getInstance().bpm_.hits_);
+//        cout << "At i=" << i << " have " << SystemConfiguration::getInstance().bpm_.stats();
         for(uint32_t j = 0; j < rhs_table->tuple_cnt_; ++j) {
             rhs_dummy_tag = rhs_table->getField(j, -1).template getValue<B>();
             selected = Join<B>::predicate_->call(lhs_table, i, rhs_table, j).template getValue<B>();
 
             to_update = selected & (!lhs_dummy_tag) & (!rhs_dummy_tag);
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);
-            this->output_->cloneRow(to_update, i, rhs_col_offset, rhs_table, j);   //Join<B>::write_right(to_update, Operator<B>::output_, i, rhs_table, j);
-       }
+            this->output_->cloneRow(to_update, i, rhs_col_offset, rhs_table, j);
+//            cout << "At i=" << i << ", j=" << j << " have " << SystemConfiguration::getInstance().bpm_.stats();;
 
+
+        }
+        int after = (SystemConfiguration::getInstance().bpm_.misses_ + SystemConfiguration::getInstance().bpm_.hits_);
+
+//        cout << "At i=" << i << " after inner pass have " << SystemConfiguration::getInstance().bpm_.stats() << "delta: " << after - before << '\n';
+
+//        exit(0);
         this->output_->setDummyTag(i, dst_dummy_tag);
 
     }

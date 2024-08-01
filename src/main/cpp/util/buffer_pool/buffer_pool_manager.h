@@ -108,6 +108,8 @@ namespace vaultdb {
         // record stats for the buffer pool
         size_t hits_ = 0L;
         size_t misses_ = 0L;
+        size_t pack_calls_ = 0L;
+        size_t unpack_calls_ = 0L;
 
         int block_n_; // Bits per wire?
 
@@ -128,6 +130,12 @@ namespace vaultdb {
             cout << "Buffer pool requests: " << hits_ + misses_ << " hit rate: " << hits_ << "/(" << hits_ + misses_ << "): " << (float) hits_ / ((float) (hits_ + misses_) ) << endl;
         };
 
+        string stats() const {
+            stringstream s;
+            s << "Buffer pool requests: " << hits_ + misses_ << " hit rate: " << hits_ << "/(" << hits_ + misses_ << "): " << (float) hits_ / ((float) (hits_ + misses_) ) << ", pack calls: " << pack_calls_ << " unpack calls: " << unpack_calls_ <<  endl;
+            return s.str();
+
+        }
         void initialize(int unpacked_page_bits, int unpacked_page_cnt, EmpManager *manager)  {
             unpacked_page_size_bits_ = unpacked_page_bits;
             page_cnt_ = unpacked_page_cnt;
