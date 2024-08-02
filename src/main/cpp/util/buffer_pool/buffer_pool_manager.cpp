@@ -12,10 +12,6 @@ using namespace  vaultdb;
 
 void BufferPoolManager::loadPage(PageId &pid) {
 
-    if((hits_ + misses_ > 1) && (hits_ + misses_) % 100 == 0) {
-        cout << "Buffer pool hit ratio: " << hits_ / (hits_ + misses_) << endl;
-    }
-
     if(position_map_.find(pid) != position_map_.end()) {
         ++hits_;
         return;
