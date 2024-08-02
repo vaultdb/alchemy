@@ -132,7 +132,7 @@ namespace vaultdb {
 
         string stats() const {
             stringstream s;
-            s << "Buffer pool requests: " << hits_ + misses_ << " hit rate: " << hits_ << "/(" << hits_ + misses_ << "): " << (float) hits_ / ((float) (hits_ + misses_) ) << ", pack calls: " << pack_calls_ << " unpack calls: " << unpack_calls_ <<  endl;
+            s << "Buffer pool requests: " << hits_ + misses_ << " hit rate: " << hits_ << "/" << hits_ + misses_ << ": " << (float) hits_ / ((float) (hits_ + misses_) ) << ", pack calls: " << pack_calls_ << " unpack calls: " << unpack_calls_ <<  endl;
             return s.str();
 
         }
