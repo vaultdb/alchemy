@@ -118,10 +118,10 @@ Operator<Bit> *OMPCKeyedJoinTest::getOrders() {
 Operator<Bit> *OMPCKeyedJoinTest::getLineitem() {
     SystemConfiguration & conf = SystemConfiguration::getInstance();
 //    if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-        auto scan = new StoredTableScan<Bit>("lineitem", "l_orderkey, l_extendedprice, l_discount", lineitem_limit_);
-
+      //  auto scan = new StoredTableScan<Bit>("lineitem", "l_orderkey, l_extendedprice, l_discount", lineitem_limit_);
+return  new StoredTableScan<Bit>("lineitem", "l_orderkey, l_extendedprice, l_discount", lineitem_limit_);
         //auto scan = new StoredTableScan<Bit>("lineitem", "l_orderkey, l_extendedprice, l_discount, l_shipdate", lineitem_limit_);
-        auto schema = scan->getOutputSchema();
+       /* auto schema = scan->getOutputSchema();
 
         // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate
         ExpressionMapBuilder<Bit> lineitem_builder(schema);
