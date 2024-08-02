@@ -44,6 +44,11 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
     PackedColumnTable *outer_table;
     PackedColumnTable *inner_table;
 
+    // TODO: update this for compound join predicates using:
+    //   auto p = (GenericExpression<B> *) this->predicate_;
+    //    JoinEqualityConditionVisitor<B> join_visitor(p->root_);
+    //    vector<pair<uint32_t, uint32_t> > join_idxs = join_visitor.getEqualities(); // lhs, rhs
+
     ExpressionNode<Bit> *lhs_key_node = ((GenericExpression<Bit> *) this->predicate_)->root_->lhs_;
     ExpressionNode<Bit> *rhs_key_node = ((GenericExpression<Bit> *) this->predicate_)->root_->rhs_;
 
