@@ -52,7 +52,7 @@ protected:
                                     "ORDER BY o_orderkey \n"
                                     "LIMIT " + std::to_string(orders_limit_);
 
-    const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue \n" // ignore l_shipdate <= date '1995-03-25' ldummy for now
+    const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice, l_discount \n" // ignore l_shipdate <= date '1995-03-25' ldummy for now
                                       "FROM lineitem \n"
                                       "ORDER BY l_orderkey, l_linenumber \n"
                                       "LIMIT " + std::to_string(lineitem_limit_);
@@ -63,108 +63,17 @@ protected:
 };
 
 Operator<Bit> *OMPCBlockNestedLoopJoinTest::getCustomers() {
-    SystemConfiguration & conf = SystemConfiguration::getInstance();
-
-    //if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
     return new StoredTableScan<Bit>("customer", "c_custkey", customer_limit_);
-    //auto scan = new StoredTableScan<Bit>("customer", "c_custkey, c_mktsegment", customer_limit_);
-/*
-        // filter
-        Integer s = Field<Bit>::secretShareString("HOUSEHOLD ", conf.inputParty(), conf.input_party_, 10);
-        Field<Bit> sf(FieldType::SECURE_STRING, s);
-        auto schema = scan->getOutputSchema();
-        auto predicate = FieldUtilities::getComparisonWithLiteral(schema, sf,1, ExpressionKind::EQ);
-        auto filter = new Filter<Bit>(scan, predicate);
-
-        // project it down to the c_custkey
-        auto proj = OperatorUtilities::getProjectionFromColNames(filter, "c_custkey");
-
-        return proj;*/
-    //}
-
-    // else
-//    Operator<Bit> *input  = new SecureSqlInput(db_name_, customer_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, customer_limit_);
-//    return input;
 }
 
 Operator<Bit> *OMPCBlockNestedLoopJoinTest::getOrders() {
-    SystemConfiguration &conf = SystemConfiguration::getInstance();
-
-    //if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-    // Project orders table to o_orderkey, o_custkey, o_orderdate, o_shippriority
     vector<int> ordinals = {0, 1, 4, 7};
-    auto scan = new StoredTableScan<Bit>("orders", ordinals, orders_limit_);
-    return scan;
-    /*
-    // filter: o_orderdate < date '1995-03-25'
-    // $4 < 796089600 ($2 after projection)
-    auto schema = scan->getOutputSchema();
-    int64_t date =  796089600L;
-    PlainField p(FieldType::LONG, date);
-    SecureField s = Field<Bit>::secretShareHelper(p, schema.getField(2), conf.input_party_, conf.inputParty());
-    auto predicate = FieldUtilities::getComparisonWithLiteral(schema, 2, s, ExpressionKind::LT);
-
-    auto filter = new Filter<Bit>(scan, predicate);
-
-    SecureSqlInput test(FLAGS_unioned_db, orders_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, orders_limit_);
-    auto test_res = test.run()->revealInsecure();
-    DataUtilities::removeDummies(test_res);
-
-
-
-    return filter; */
-    //}
-
-    // else
-//    Operator<Bit> *input  = new SecureSqlInput(db_name_, orders_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, orders_limit_);
-//    return input;
+    return new StoredTableScan<Bit>("orders", ordinals, orders_limit_);
 
 }
 
 Operator<Bit> *OMPCBlockNestedLoopJoinTest::getLineitem() {
-    SystemConfiguration & conf = SystemConfiguration::getInstance();
-    //if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-    auto scan = new StoredTableScan<Bit>("lineitem", "l_orderkey, l_extendedprice, l_discount", lineitem_limit_);
-
-    //auto scan = new StoredTableScan<Bit>("lineitem", "l_orderkey, l_extendedprice, l_discount, l_shipdate", lineitem_limit_);
-    auto schema = scan->getOutputSchema();
-
-    // Project lineitem table to l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate
-    ExpressionMapBuilder<Bit> lineitem_builder(schema);
-    lineitem_builder.addMapping(0, 0);
-    auto extendedprice_field = new InputReference<emp::Bit>(1, schema);
-    auto discount_field = new InputReference<emp::Bit>(2, schema);
-    auto one_literal = new LiteralNode(Field<Bit>(FieldType::SECURE_FLOAT, emp::Float(1.0)));
-    auto one_minus_discount = new MinusNode<emp::Bit>(one_literal, discount_field);
-    auto extended_price_times_discount = new TimesNode<emp::Bit>(extendedprice_field, one_minus_discount);
-    Expression<emp::Bit> *revenue_expr = new GenericExpression<emp::Bit>(extended_price_times_discount, "revenue", FieldType::SECURE_FLOAT);
-    lineitem_builder.addExpression(revenue_expr, 1);
-//        lineitem_builder.addMapping(3, 2); // l_shipdate
-
-    auto proj = new Project(scan, lineitem_builder.getExprs());
-    return proj;
-
-/*        // filter: l_shipdate > date '1995-03-25'
-        schema = proj->getOutputSchema();
-        int64_t date =  796089600L;
-        PlainField p(FieldType::LONG, date);
-        SecureField s = Field<Bit>::secretShareHelper(p, schema.getField(2), conf.input_party_, conf.inputParty());
-        auto predicate = FieldUtilities::getComparisonWithLiteral(schema, 2, s, ExpressionKind::GT);
-        auto filter = new Filter<Bit>(proj, predicate);
-
-        // chop off l_shipdate
-        ExpressionMapBuilder<Bit> builder(schema);
-        builder.addMapping(0, 0);
-        builder.addMapping(1, 1);
-        auto proj2 = new Project(filter, builder.getExprs());
-        return proj2;
-*/
-    //}
-
-    // else
-//    Operator<Bit> *input  = new SecureSqlInput(db_name_, lineitem_sql_, true, {ColumnSort(0, SortDirection::ASCENDING)}, lineitem_limit_);
-//    return input;
-
+    return  new StoredTableScan<Bit>("lineitem", "l_orderkey, l_extendedprice, l_discount", lineitem_limit_);
 }
 
 
@@ -209,11 +118,11 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders) {
     // get inputs from local oblivious ops
     // first 3 customers, propagate this constraint up the join tree for the test
     std::string sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
-                                                             "lineitem_cte AS (" + lineitem_sql_ + ") "
-                                                                                                   "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority "
-                                                                                                   "FROM lineitem_cte, orders_cte "
-                                                                                                   "WHERE l_orderkey = o_orderkey "
-                                                                                                   "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority"; // ignore NOT odummy AND NOT ldummy for now
+                            "lineitem_cte AS (" + lineitem_sql_ + ") "
+                       "SELECT l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority "
+                       "FROM lineitem_cte, orders_cte "
+                       "WHERE l_orderkey = o_orderkey "
+                       "ORDER BY l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority"; // ignore NOT odummy AND NOT ldummy for now
 
 
     Operator<Bit> *lineitem = getLineitem();
@@ -221,8 +130,8 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders) {
 
     // test pkey-fkey join
     // join output schema: (lineitem, orders)
-    // l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority
-    Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(lineitem, 0, orders, 2);
+    // l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority
+    Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(lineitem, 0, orders, 3 );
     BlockNestedLoopJoin<emp::Bit> *join = new BlockNestedLoopJoin(lineitem, orders, 0, predicate);
     SecureTable *join_res = join->run();
 
@@ -247,10 +156,10 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::string sql = "WITH orders_cte AS (" + orders_sql_ + "), "
                                                              "lineitem_cte AS (" + lineitem_sql_ + "), "
                                                                                                    "customer_cte AS (" + customer_sql_ + ") "
-                                                                                                                                         "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
+                                                                                                                                         "SELECT l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
                                                                                                                                          "FROM lineitem_cte, orders_cte, customer_cte "
                                                                                                                                          "WHERE l_orderkey = o_orderkey AND c_custkey = o_custkey "
-                                                                                                                                         "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
+                                                                                                                                         "ORDER BY l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
 
     Operator<Bit> *orders = getOrders();
     Operator<Bit> *customers = getCustomers();
@@ -264,8 +173,8 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders_customer) {
     Operator<Bit> *lineitem = getLineitem();
 
     // join output schema:
-    //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>( lineitem, 0, co_join, 2);
+    //  l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>( lineitem, 0, co_join, 3);
     BlockNestedLoopJoin<Bit> *col_join = new BlockNestedLoopJoin(lineitem, co_join, 0, lineitem_orders_predicate);
     SecureTable *join_res = col_join->run();
 
