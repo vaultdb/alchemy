@@ -32,9 +32,9 @@ using namespace Logging;
 class OMPCKeyedJoinTest : public OmpcBaseTest {
 protected:
 
-    const int customer_limit_ = 10;
-    const int orders_limit_ = 50;
-    const int lineitem_limit_ = 100;
+    const int customer_limit_ = 10; // -1
+    const int orders_limit_ = 50; // -1
+    const int lineitem_limit_ = 100; // 1500
 
     const std::string customer_sql_ = "SELECT c_custkey \n" // ignore c_mktsegment <> 'HOUSEHOLD' cdummy for now
                                       "FROM customer \n"
@@ -46,7 +46,7 @@ protected:
                                     "ORDER BY o_orderkey \n"
                                     "LIMIT " + std::to_string(orders_limit_);
 
-    const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue \n" // ignore l_shipdate <= date '1995-03-25' ldummy for now
+    const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice, l_discount \n" // ignore l_shipdate <= date '1995-03-25' ldummy for now
                                       "FROM lineitem \n"
                                       "ORDER BY l_orderkey, l_linenumber \n"
                                       "LIMIT " + std::to_string(lineitem_limit_);
@@ -200,18 +200,18 @@ TEST_F(OMPCKeyedJoinTest, test_tpch_q3_lineitem_orders) {
     // first 3 customers, propagate this constraint up the join tree for the test
     std::string sql = "WITH orders_cte AS (" + orders_sql_ + "), "
                            "lineitem_cte AS (" + lineitem_sql_ + ") "
-                      "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority "
+                      "SELECT l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority "
                       "FROM lineitem_cte, orders_cte "
                       "WHERE l_orderkey = o_orderkey "
-                      "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority"; // ignore NOT odummy AND NOT ldummy for now
+                      "ORDER BY l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority"; // ignore NOT odummy AND NOT ldummy for now
 
     Operator<Bit> *lineitem = getLineitem();
     Operator<Bit> *orders = getOrders();
 
     // test pkey-fkey join
     // join output schema: (lineitem, orders)
-    // l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority
-    Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(lineitem, 0, orders, 2);
+    // l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority
+    Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(lineitem, 0, orders, 3);
     KeyedJoin<emp::Bit> *join = new KeyedJoin(lineitem, orders, predicate);
     SecureTable *join_res = join->run();
 
@@ -236,10 +236,10 @@ TEST_F(OMPCKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::string sql = "WITH lineitem_cte AS (" + lineitem_sql_ + "), "
                            "orders_cte AS (" + orders_sql_ + "), "
                            "customer_cte AS (" + customer_sql_ + ") "
-                     "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
+                     "SELECT l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
                      "FROM lineitem_cte, orders_cte, customer_cte "
                      "WHERE l_orderkey = o_orderkey AND c_custkey = o_custkey "
-                     "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
+                     "ORDER BY l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
 
     Operator<Bit> *orders = getOrders();
     Operator<Bit> *customers = getCustomers();
@@ -253,8 +253,8 @@ TEST_F(OMPCKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
     Operator<Bit> *lineitem = getLineitem();
 
     // join output schema:
-    //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>( lineitem, 0, co_join, 2);
+    //  l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>( lineitem, 0, co_join, 3);
     KeyedJoin<Bit> *col_join = new KeyedJoin(lineitem, co_join, lineitem_orders_predicate);
     SecureTable *join_res = col_join->run();
 
