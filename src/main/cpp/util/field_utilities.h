@@ -121,8 +121,7 @@ namespace vaultdb {
 
 
         template<typename B>
-        static  Expression<B> *
-        getEqualityPredicate(const uint32_t &lhs_idx, const QuerySchema &lhs, const uint32_t &rhs_idx,
+        static  Expression<B> *getEqualityPredicate(const uint32_t &lhs_idx, const QuerySchema &lhs, const uint32_t &rhs_idx,
                              const QuerySchema & rhs) {
 
             auto lhs_input = new InputReference<B>(lhs_idx, lhs,  rhs);
