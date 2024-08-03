@@ -5,8 +5,6 @@
 #include <operators/keyed_join.h>
 #include <operators/project.h>
 #include "util/field_utilities.h"
-#include "expression/generic_expression.h"
-#include "expression/math_expression_nodes.h"
 #include <operators/stored_table_scan.h>
 
 #if __has_include("emp-rescu/emp-rescu.h")
