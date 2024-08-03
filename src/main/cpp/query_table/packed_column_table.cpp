@@ -16,7 +16,9 @@ PackedColumnTable *PackedColumnTable::deserialize(const TableMetadata  & md, con
     bool truncating = (src_tuple_cnt != tuple_cnt);
 
     if(SystemConfiguration::getInstance().inputParty()) {
-        return new InputPartyPackedColumnTable(tuple_cnt, md.schema_, md.collation_);
+        auto tbl =  new InputPartyPackedColumnTable(tuple_cnt, md.schema_, md.collation_);
+        SystemConfiguration::getInstance().bpm_.registerTable(tbl->table_id_, tbl);
+        return tbl;
     }
 
     auto dst = new ComputingPartyPackedColumnTable(tuple_cnt, md.schema_, md.collation_);
@@ -34,6 +36,7 @@ PackedColumnTable *PackedColumnTable::deserialize(const TableMetadata  & md, con
     // dummy tag
     fread(dst->packed_pages_[-1].data(), 1, dst->packed_pages_[-1].size(), fp);
     fclose(fp);
+    SystemConfiguration::getInstance().bpm_.registerTable(dst->table_id_, dst);
 
     return dst;
 }
@@ -53,7 +56,9 @@ PackedColumnTable *PackedColumnTable::deserialize(const TableMetadata  & md, con
     auto dst_collation = OperatorUtilities::deriveCollation(md.collation_, ordinals);
 
     if(SystemConfiguration::getInstance().inputParty()) {
-        return new InputPartyPackedColumnTable(tuple_cnt, dst_schema, dst_collation);
+        auto tbl = new InputPartyPackedColumnTable(tuple_cnt, dst_schema, dst_collation);
+        SystemConfiguration::getInstance().bpm_.registerTable(tbl->table_id_, tbl);
+        return tbl;
     }
 
     // else
@@ -89,6 +94,7 @@ PackedColumnTable *PackedColumnTable::deserialize(const TableMetadata  & md, con
     fread(dst->packed_pages_[-1].data(),  1, dst->packed_pages_[-1].size(), fp);
 
     fclose(fp);
+    SystemConfiguration::getInstance().bpm_.registerTable(dst->table_id_, dst);
     return dst;
 
 }
