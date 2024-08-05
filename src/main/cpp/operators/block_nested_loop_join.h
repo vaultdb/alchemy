@@ -47,6 +47,13 @@ namespace vaultdb {
         inline OperatorType getType() const override { return OperatorType::BLOCK_NESTED_LOOP_JOIN; }
 
         int32_t foreign_key_input_ = 0; // 0 for lhs, 1 for rhs
+
+    private:
+        BufferPoolManager & bpm_ = SystemConfiguration::getInstance().bpm_;
+        void pinRowRange(PackedColumnTable *table, const int & col_ordinal, const int & start_row, const int & row_cnt);
+        void unpinRowRange(PackedColumnTable *table, const int & col_ordinal, const int & start_row, const int & row_cnt);
+
+        void joinRowRange(QueryTable<B> *fk_table, QueryTable<B> *pk_table, int start_row, int row_cnt);
     };
 }
 
