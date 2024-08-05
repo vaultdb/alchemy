@@ -11,6 +11,10 @@ using namespace  vaultdb;
 
 
 void BufferPoolManager::loadPage(PageId &pid) {
+    if(lru_k_enabled_) {
+        loadPageWithLRUK(pid);
+        return;
+    }
 
     if(position_map_.find(pid) != position_map_.end()) {
         ++hits_;
@@ -30,6 +34,42 @@ void BufferPoolManager::loadPage(PageId &pid) {
     position_map_[pid] = p;
     reverse_position_map_[target_slot] = pid;
 
+}
+
+void BufferPoolManager::loadPageWithLRUK(vaultdb::PageId &pid) {
+    lru_k_time_cursor_++;
+
+    if(position_map_.find(pid) != position_map_.end()) {
+        ++hits_;
+
+        // push the current time to the back of the lastKAccess list
+        if(position_map_.at(pid).lastKAccess.size() < K) {
+            position_map_[pid].lastKAccess.push_back(lru_k_time_cursor_);
+        }
+        else {
+            // remove oldest access time if the last K accesses is full
+            position_map_[pid].lastKAccess.erase(position_map_[pid].lastKAccess.begin());
+            position_map_[pid].lastKAccess.push_back(lru_k_time_cursor_);
+            assert(position_map_[pid].lastKAccess.size() == K);
+        }
+
+        return;
+    }
+
+    PackedColumnTable *tbl = packed_table_catalog_[pid.table_id_];
+    assert(tbl != nullptr);
+    OMPCPackedWire src = tbl->readPackedWire(pid);
+    int target_slot = evictPageWithLRUK();
+
+    ++misses_;
+    Bit *dst = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
+    emp_manager_->unpack((Bit *) &src, dst, unpacked_page_size_bits_);
+    ++unpack_calls_;
+
+    PositionMapEntry p(target_slot, false, false);
+    position_map_[pid] = p;
+    reverse_position_map_[target_slot] = pid;
+    position_map_[pid].lastKAccess.push_back(lru_k_time_cursor_);
 }
 
 
@@ -81,6 +121,51 @@ int BufferPoolManager::evictPage() {
     // increment clock hand one more time for next round
     clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
     return pos.slot_id_;
+}
+
+int BufferPoolManager::evictPageWithLRUK() {
+    // check if the unpacked buffer pool is full
+    if(reverse_position_map_.find(clock_hand_position_) == reverse_position_map_.end())  {
+        int slot = clock_hand_position_;
+        clock_hand_position_ = (clock_hand_position_ + 1) % page_cnt_;
+        return slot;
+    }
+
+    // If the pool is full, evict a page by LRU-K
+    int minKthAccess = INT_MAX;
+    int minSlot = -1;
+    PageId minPid;
+
+    for(auto &entry : position_map_) {
+        if(!entry.second.pinned_) {
+            assert(entry.second.lastKAccess.size() <= K);
+            int kthAccess = entry.second.lastKAccess.front();
+
+            if(kthAccess < minKthAccess) {
+                minKthAccess = kthAccess;
+                minSlot = entry.second.slot_id_;
+                minPid = entry.first;
+            }
+        }
+    }
+
+    PositionMapEntry pos = position_map_[minPid];
+    assert(pos.slot_id_ == minSlot);
+
+    if (pos.dirty_) {
+        if(packed_table_catalog_.find(minPid.table_id_) != packed_table_catalog_.end()) {
+            emp::Bit *src_ptr = unpacked_buffer_pool_.data() + position_map_.at(minPid).slot_id_ * unpacked_page_size_bits_;
+            OMPCPackedWire dst(block_n_);
+            emp_manager_->pack(src_ptr, (Bit *) &dst, unpacked_page_size_bits_);
+            ++pack_calls_;
+            packed_table_catalog_[minPid.table_id_]->writePackedWire(minPid, dst);
+        }
+    }
+
+    position_map_.erase(minPid);
+    reverse_position_map_.erase(pos.slot_id_);
+
+    return minSlot;
 }
 
 // makes a deep copy of src_pid at dst_pid

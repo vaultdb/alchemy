@@ -34,7 +34,14 @@ namespace vaultdb {
             return 0;
         }
 
+        int evictPageWithLRUK() {
+            return 0;
+        }
+
         void loadPage(PageId &pid) {
+        }
+
+        void loadPageWithLRUK(PageId &pid) {
         }
 
         emp::Bit *getUnpackedPagePtr(PageId &pid) {
@@ -70,6 +77,9 @@ namespace vaultdb {
         int page_cnt_;
 
         int block_n_;
+
+        int K = 3; // LRU-K parameter
+        int lru_k_time_cursor_ = 0;
 
         // setup for unpacked buffer pool
         std::vector<emp::Bit> unpacked_buffer_pool_;
@@ -117,6 +127,11 @@ namespace vaultdb {
         std::vector<emp::Bit> unpacked_buffer_pool_;
         int clock_hand_position_ = 0;
 
+        // LRU-K
+        bool lru_k_enabled_ = false;
+        int K = 3; // LRU-K parameter
+        int lru_k_time_cursor_ = 0;
+
 
         std::map<PageId, PositionMapEntry> position_map_; // map<pid, slot id in unpacked buffer pool>
         std::map<int, PageId> reverse_position_map_; // given an offset we want to access, what PID is it?
@@ -158,7 +173,9 @@ namespace vaultdb {
         }
 
 
-      int evictPage();
+        int evictPage();
+
+        int evictPageWithLRUK();
 
 
 
@@ -181,6 +198,8 @@ namespace vaultdb {
         }
 
         void loadPage(PageId &pid);
+
+        void loadPageWithLRUK(PageId &pid);
 
         void loadColumn(const int & table_id, const int & col_idx, const int & tuple_cnt, const  int & rows_per_page) {
             int page_cnt = tuple_cnt / rows_per_page + (tuple_cnt % rows_per_page != 0);

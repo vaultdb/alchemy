@@ -200,6 +200,8 @@ namespace vaultdb {
         bool pinned_ = false; // may need to make this a pin count in the long run
         bool dirty_ = false;
 
+        vector<int> lastKAccess; // for LRU-K
+
         position_map_entry_() {} // for map
         position_map_entry_(const int & slot, const bool & pinned, const bool & dirty) : slot_id_(slot) , pinned_(pinned), dirty_(dirty) {}
         position_map_entry_(const int & slot) : slot_id_(slot) , pinned_(false), dirty_(false) {}
