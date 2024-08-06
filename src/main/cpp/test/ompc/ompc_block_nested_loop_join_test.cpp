@@ -16,7 +16,7 @@ DEFINE_string(empty_db, "tpch_empty", "empty db name for schemas");
 DEFINE_int32(cutoff, 5, "limit clause for queries"); // not used here
 DEFINE_int32(ctrl_port, 65450, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(filter, "*.test_tpch_q3_lineitem_orders", "run only the tests passing this filter");
 DEFINE_string(storage, "wire_packed", "storage model for columns (column or wire_packed)");
 DEFINE_string(wire_path, "wires", "relative path to wire files");
 DEFINE_int32(input_party, 10086, "party for input data");
@@ -29,11 +29,11 @@ using namespace vaultdb;
 class OMPCBlockNestedLoopJoinTest : public OmpcBaseTest {
 protected:
 
-    const int customer_limit_ = 150; // smaller: 5
+    const int customer_limit_ =   150; // smaller: 5
 
-    const int orders_limit_ = 200; // smaller: 30
+    const int orders_limit_ = 200; // 1500; // smaller: 30
 
-    const int lineitem_limit_ = 500; // smaller: 90
+    const int lineitem_limit_ = 500; // 6005; // smaller: 90
 
     const std::string customer_sql_ = "SELECT c_custkey \n" // ignore c_mktsegment <> 'HOUSEHOLD' cdummy for now
                                       "FROM customer \n"
