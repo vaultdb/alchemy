@@ -28,11 +28,6 @@ BlockNestedLoopJoin<B>::BlockNestedLoopJoin(QueryTable<B> *lhs, QueryTable<B> *r
 template<typename B>
 QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
     SystemConfiguration &sys_conf = SystemConfiguration::getInstance();
-    assert(sys_conf.storageModel() == StorageModel::PACKED_COLUMN_STORE);
-    assert(sys_conf.bp_enabled_);
-
-    BufferPoolManager &bpm = sys_conf.bpm_;
-
     auto lhs = reinterpret_cast<PackedColumnTable *>(this->getChild(0)->getOutput());
     auto rhs = reinterpret_cast<PackedColumnTable *>(this->getChild(1)->getOutput());
 
@@ -53,9 +48,21 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
     int pk_offset = (foreign_key_input_ == 0) ? fk_schema.getFieldCount()  : 0;
     int fk_offset = (foreign_key_input_ == 0) ? 0 : pk_schema.getFieldCount();
 
+
+    int unpacked_page_size_bits;
+    int buffer_pool_page_cnt;
+
+    if(sys_conf.storageModel() == StorageModel::PACKED_COLUMN_STORE){
+        unpacked_page_size_bits = bpm_.unpacked_page_size_bits_;
+        buffer_pool_page_cnt = bpm_.page_cnt_;
+    } else { // default value if we're not using packing
+        unpacked_page_size_bits = 2048;
+        buffer_pool_page_cnt = 50;
+    }
+
     // get sunk costs
     int pk_sunk_costs = pk_reln->getSchema().getFieldCount() + 1; // number of cols + dummy tag
-    int pinnable_pages = bpm.page_cnt_ - pk_sunk_costs;
+    int pinnable_pages = buffer_pool_page_cnt - pk_sunk_costs;
 
     this->output_ = QueryTable<B>::getTable(fk_reln->tuple_cnt_, this->output_schema_,  this->sort_definition_);
     auto output = reinterpret_cast<PackedColumnTable *>(this->output_);
@@ -72,12 +79,12 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
     for(auto idx : join_idxs) {
         int ord = (foreign_key_input_ == 0) ? idx.first : idx.second;
         ordinals_to_pin.push_back(ord);
-        assert(output->wires_per_field_[ord] == 1); // does not handle large objects that span > 1 wire
+        assert(output_schema.getField(ord).size() <= unpacked_page_size_bits); // does not handle large objects that span > 1 wire
     }
 
     for(int i = 0; i < pk_schema.getFieldCount(); ++i) {
         ordinals_to_pin.push_back(pk_offset + i);
-        assert(output->wires_per_field_[pk_offset + i] == 1); // does not handle large objects that span > 1 wire
+        assert(output_schema.getField(pk_offset + i).size() <= unpacked_page_size_bits); // does not handle objects that span > 1 wire
     }
 
 
@@ -88,7 +95,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
     // both sides of a join equality have the same size
     // ignore the dummy tag for max because all fields have a size >= this
     for(auto ord : ordinals_to_pin) {
-        int fields_per_page = bpm.unpacked_page_size_bits_ / output_schema.getField(ord).size();
+        int fields_per_page = unpacked_page_size_bits / output_schema.getField(ord).size();
         if(fields_per_page < stride_size) stride_size = fields_per_page;
         row_width_bits += output_schema.getField(ord).size();
     }
@@ -97,34 +104,36 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
 
     // if a field's count / page is not evenly divisible by our stride side (it has no common multiple), allocate one page of headroom
     for(auto ord : ordinals_to_pin) {
-        int fields_per_page = bpm.unpacked_page_size_bits_ / output_schema.getField(ord).size();
+        int fields_per_page = unpacked_page_size_bits / output_schema.getField(ord).size();
         if(fields_per_page % stride_size > 0)  {
             --pinnable_pages;
         }
     }
 
     // if we can pin greedily
-    int64_t rows_per_block = (pinnable_pages * bpm.unpacked_page_size_bits_) / row_width_bits;
+    int64_t rows_per_block = (pinnable_pages * unpacked_page_size_bits) / row_width_bits;
     // make it align with strides
     rows_per_block -= rows_per_block % stride_size;
 
 
     // dummy tags
-    int dummy_tag_pages_per_block = rows_per_block / output->fields_per_wire_[-1] + (rows_per_block % output->fields_per_wire_[-1] > 0);
+    int dummy_tag_pages_per_block = rows_per_block / unpacked_page_size_bits + (rows_per_block % unpacked_page_size_bits > 0);
     int pages_to_pin = dummy_tag_pages_per_block * 2; // two dummy tags, FK and output
 
     // count up pinned cols
     for(auto ord : ordinals_to_pin) {
-        pages_to_pin += rows_per_block / output->fields_per_wire_[ord] + (rows_per_block % output->fields_per_wire_[ord] > 0);
+        int fields_per_page = unpacked_page_size_bits / output_schema.getField(ord).size();
+        pages_to_pin += rows_per_block / fields_per_page + (rows_per_block % fields_per_page > 0);
     }
 
     // step down one stride if we have too many pages
     while(pages_to_pin > pinnable_pages) {
         rows_per_block -= stride_size;
-        dummy_tag_pages_per_block = rows_per_block / output->fields_per_wire_[-1] + (rows_per_block % output->fields_per_wire_[-1] > 0);
+        dummy_tag_pages_per_block = rows_per_block / unpacked_page_size_bits + (rows_per_block % unpacked_page_size_bits > 0);
         pages_to_pin = dummy_tag_pages_per_block * 2;
         for(auto ord : ordinals_to_pin) {
-            pages_to_pin += rows_per_block / output->fields_per_wire_[ord] + (rows_per_block % output->fields_per_wire_[ord] > 0);
+            int fields_per_page = unpacked_page_size_bits / output_schema.getField(ord).size();
+            pages_to_pin += rows_per_block / fields_per_page + (rows_per_block % fields_per_page > 0);
         }
     }
 
@@ -150,34 +159,37 @@ void BlockNestedLoopJoin<B>::joinBlock(PackedColumnTable *fk_table, PackedColumn
     auto pk_schema = pk_table->getSchema();
     auto output = reinterpret_cast<PackedColumnTable *>(this->output_);
 
-    for(auto entry : join_idxs) {
-        pinRowRange(fk_table, (foreign_key_input_ == 0) ? entry.first : (entry.second - pk_offset),
-                    start_row, row_cnt);
+    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+        for (auto entry: join_idxs) {
+            pinRowRange(fk_table, (foreign_key_input_ == 0) ? entry.first : (entry.second - pk_offset),
+                        start_row, row_cnt);
+        }
+
+        // pin dummy tags
+        pinRowRange(fk_table, -1, start_row, row_cnt);
+
+        for (int i = 0; i < pk_schema.getFieldCount(); ++i) {
+            pinRowRange(output, i + pk_offset, start_row, row_cnt);
+        }
+        pinRowRange(output, -1, start_row, row_cnt);
     }
-
-    // pin dummy tags
-    pinRowRange(fk_table, -1, start_row, row_cnt);
-
-    for(int i = 0; i < pk_schema.getFieldCount(); ++i) {
-        pinRowRange(output, i + pk_offset, start_row, row_cnt);
-    }
-    pinRowRange(output, -1, start_row, row_cnt);
-
     // iterate through and join on all rows in pinned range
     joinRowRange((QueryTable<B> *) fk_table, (QueryTable<B> *)  pk_table, start_row, row_cnt);
 
-    // unpin this block's pages
-    for(auto entry : join_idxs) {
-        unpinRowRange(fk_table, (foreign_key_input_ == 0) ? entry.first : (entry.second - pk_offset),
-                      start_row, row_cnt);
-    }
-    // unpin dummy tags
-    unpinRowRange(fk_table, -1, start_row, row_cnt);
+    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+        // unpin this block's pages
+        for (auto entry: join_idxs) {
+            unpinRowRange(fk_table, (foreign_key_input_ == 0) ? entry.first : (entry.second - pk_offset),
+                          start_row, row_cnt);
+        }
+        // unpin dummy tags
+        unpinRowRange(fk_table, -1, start_row, row_cnt);
 
-    for(int i = 0; i < pk_schema.getFieldCount(); ++i) {
-        unpinRowRange(output, i + pk_offset, start_row, row_cnt);
+        for (int i = 0; i < pk_schema.getFieldCount(); ++i) {
+            unpinRowRange(output, i + pk_offset, start_row, row_cnt);
+        }
+        unpinRowRange(output, -1, start_row, row_cnt);
     }
-    unpinRowRange(output, -1, start_row, row_cnt);
 }
 
 template<typename B>
@@ -187,25 +199,29 @@ void BlockNestedLoopJoin<B>::joinRowRange(QueryTable<B> *fk_reln, QueryTable<B> 
 
     // each column in inner loop pins the page it is working on to prevent other columns from evicting it
     // incrementally "shift" pin as we work through the rows
-    for(int i = -1; i < pk_reln->getSchema().getFieldCount(); ++i) {
-        auto pid = PageId{reinterpret_cast<PackedColumnTable *>(pk_reln)->table_id_, i, 0};
-        bpm_.loadPage(pid);
-        bpm_.pinPage(pid);
+    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+        for (int i = -1; i < pk_reln->getSchema().getFieldCount(); ++i) {
+            auto pid = PageId{reinterpret_cast<PackedColumnTable *>(pk_reln)->table_id_, i, 0};
+            bpm_.loadPage(pid);
+            bpm_.pinPage(pid);
+        }
     }
-
 
     for(int j = 0; j < pk_reln->tuple_cnt_; ++j) {
         B pk_dummy_tag = pk_reln->getField(j, -1).template getValue<B>();
 
         // If we reach the end of a page on one column, shift its pin over to next page in this column
         // this "shielded scan" protects us from the vagaries of our eviction strategy
-        for(int k = -1; k < pk_reln->getSchema().getFieldCount(); ++k) {
-            if((j % reinterpret_cast<PackedColumnTable *>(pk_reln)->fields_per_wire_[k] == 0) && j > 0) {
-                auto pid = PageId{reinterpret_cast<PackedColumnTable *>(pk_reln)->table_id_, k, (j-1) / reinterpret_cast<PackedColumnTable *>(pk_reln)->fields_per_wire_[k]};
-                bpm_.unpinPage(pid);
-                ++pid.page_idx_;
-                bpm_.loadPage(pid);
-                bpm_.pinPage(pid);
+        if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+            for (int k = -1; k < pk_reln->getSchema().getFieldCount(); ++k) {
+                if ((j % reinterpret_cast<PackedColumnTable *>(pk_reln)->fields_per_wire_[k] == 0) && j > 0) {
+                    auto pid = PageId{reinterpret_cast<PackedColumnTable *>(pk_reln)->table_id_, k,
+                                      (j - 1) / reinterpret_cast<PackedColumnTable *>(pk_reln)->fields_per_wire_[k]};
+                    bpm_.unpinPage(pid);
+                    ++pid.page_idx_;
+                    bpm_.loadPage(pid);
+                    bpm_.pinPage(pid);
+                }
             }
         }
         // compare j'th PK row to all in block
@@ -219,18 +235,21 @@ void BlockNestedLoopJoin<B>::joinRowRange(QueryTable<B> *fk_reln, QueryTable<B> 
         }
     }
 
-    // unpin all last rows in PK
-    int last_idx = pk_reln->tuple_cnt_ - 1;
-    for(int i = -1; i < pk_reln->getSchema().getFieldCount(); ++i) {
-        int last_page_idx = last_idx / reinterpret_cast<PackedColumnTable *>(pk_reln)->fields_per_wire_[i];
-        auto pid = PageId{reinterpret_cast<PackedColumnTable *>(pk_reln)->table_id_, i, last_page_idx};
-        bpm_.unpinPage(pid);
+    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+        // unpin all last rows in PK
+        int last_idx = pk_reln->tuple_cnt_ - 1;
+        for (int i = -1; i < pk_reln->getSchema().getFieldCount(); ++i) {
+            int last_page_idx = last_idx / reinterpret_cast<PackedColumnTable *>(pk_reln)->fields_per_wire_[i];
+            auto pid = PageId{reinterpret_cast<PackedColumnTable *>(pk_reln)->table_id_, i, last_page_idx};
+            bpm_.unpinPage(pid);
+        }
     }
-
 }
 
 template<typename B>
 void BlockNestedLoopJoin<B>::pinRowRange(PackedColumnTable *table, const int & col_ordinal, const int & start_row, const int & row_cnt) {
+    assert(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE);
+
     PageId start_pid = bpm_.getPageId(table->table_id_, col_ordinal, start_row, table->fields_per_wire_[col_ordinal]);
     PageId end_pid = bpm_.getPageId(table->table_id_, col_ordinal, start_row + row_cnt - 1, table->fields_per_wire_[col_ordinal]);
 
@@ -248,6 +267,9 @@ void BlockNestedLoopJoin<B>::pinRowRange(PackedColumnTable *table, const int & c
 
 template<typename B>
 void BlockNestedLoopJoin<B>::unpinRowRange(PackedColumnTable *table, const int & col_ordinal, const int & start_row, const int & row_cnt) {
+
+    assert(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE);
+
     PageId start_pid = bpm_.getPageId(table->table_id_, col_ordinal, start_row, table->fields_per_wire_[col_ordinal]);
     PageId end_pid = bpm_.getPageId(table->table_id_, col_ordinal, start_row + row_cnt - 1, table->fields_per_wire_[col_ordinal]);
 

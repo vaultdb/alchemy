@@ -124,7 +124,7 @@ namespace vaultdb {
 
         EmpManager *emp_manager_ = nullptr;
 
-        int unpacked_page_size_bits_; // in emp::Bits
+        int unpacked_page_size_bits_ = 2048; // in emp::Bits, default value
         int page_cnt_;
 
         // record stats for the buffer pool
