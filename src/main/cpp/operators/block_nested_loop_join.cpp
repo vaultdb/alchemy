@@ -230,7 +230,6 @@ void BlockNestedLoopJoin<B>::joinRowRange(QueryTable<B> *fk_reln, QueryTable<B> 
         bpm_.unpinPage(pid);
     }
 
-
 }
 
 template<typename B>
