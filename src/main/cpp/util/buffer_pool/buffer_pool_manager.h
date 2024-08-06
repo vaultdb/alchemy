@@ -82,8 +82,16 @@ namespace vaultdb {
 
         int block_n_;
 
+        // LRU-K
+        bool lru_k_enabled_ = false;
         int K = 3; // LRU-K parameter
         int lru_k_time_cursor_ = 0;
+        struct LRUKCompare {
+            bool operator()(const std::pair<PageId, int> &lhs, const std::pair<PageId, int> &rhs) const {
+                return lhs.second > rhs.second;
+            }
+        };
+        std::priority_queue<std::pair<PageId, int>, std::vector<std::pair<PageId, int>>, LRUKCompare> lru_k_min_heap_;
 
         // setup for unpacked buffer pool
         std::vector<emp::Bit> unpacked_buffer_pool_;
@@ -135,6 +143,12 @@ namespace vaultdb {
         bool lru_k_enabled_ = false;
         int K = 3; // LRU-K parameter
         int lru_k_time_cursor_ = 0;
+        struct LRUKCompare {
+            bool operator()(const std::pair<PageId, int> &lhs, const std::pair<PageId, int> &rhs) const {
+                return lhs.second > rhs.second;
+            }
+        };
+        std::priority_queue<std::pair<PageId, int>, std::vector<std::pair<PageId, int>>, LRUKCompare> lru_k_min_heap_;
 
 
         std::map<PageId, PositionMapEntry> position_map_; // map<pid, slot id in unpacked buffer pool>
