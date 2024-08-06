@@ -1,9 +1,9 @@
 #include <util/data_utilities.h>
-#include "operator.h"
+#include "operators/operator.h"
 #include "util/logger.h"
-#include "sort.h"
-#include <ctime>
+#include "operators/sort.h"
 #include "opt/operator_cost_model.h"
+#include <ctime>
 #include <cmath>
 
 using namespace vaultdb;
@@ -69,8 +69,8 @@ QueryTable<B> *Operator<B>::run() {
 				", row width=" + std::to_string(output_schema_.size()), Level::INFO);
 
         if (gate_cnt_ > 0  && this->getOperatorId() >= -1) {
-            size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
-            float relative_error = std::fabs(((float) estimated_gates) - ((float) gate_cnt_)) / (float) gate_cnt_ * 100.0;
+            size_t estimated_gates = OperatorCostModel::operatorCost(reinterpret_cast<const SecureOperator *>(this));
+            float relative_error = std::fabs(static_cast<float>( estimated_gates) - static_cast<float>(gate_cnt_)) / static_cast<float>( gate_cnt_) * 100.0;
             log->write("Estimated cost for " + this->toString() + " : " + std::to_string(estimated_gates) +
                     ", Observed gates: " + std::to_string(gate_cnt_) +
                     ", Error rate(%) : " + std::to_string(relative_error), Level::DEBUG);
@@ -120,57 +120,13 @@ std::string Operator<B>::toString() const {
 
     ss << ": " <<  output_schema_ <<    " order by: " << DataUtilities::printSortDefinition(sort_definition_);
     if(std::is_same_v<B, Bit>) {
-        size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
+        size_t estimated_gates = OperatorCostModel::operatorCost(reinterpret_cast<const SecureOperator *>(this));
         ss << ", cost est: " << estimated_gates;
         ss << ", output card: " << output_cardinality_;
     }
     return ss.str();
 
 }
-
-//template<typename B>
-//std::string Operator<B>::printMinCostPlan() {
-//    return printMinCostHelper("");
-//
-//}
-//*** commented out because print method is changing tree structure
-//*** need to modularize this.
-
-//template<typename B>
-//std::string Operator<B>::printMinCostHelper(const string &prefix) {
-//    stringstream  ss;
-//    ss << prefix << toSortOptimizedString() << endl;
-//    string indent = prefix + "    ";
-//
-//    if(lhs_child_){
-//        if(lhs_child_->getParent() == nullptr)
-//            lhs_child_->setParent(this);
-//        ss << lhs_child_->printMinCostHelper(indent);
-//    }
-//    if(rhs_child_){
-//        if(rhs_child_->getParent() == nullptr)
-//            rhs_child_->setParent(this);
-//        ss << rhs_child_->printMinCostHelper(indent);
-//    }
-//
-//    return ss.str();
-//}
-//
-//template<typename B>
-//std::string Operator<B>::toSortOptimizedString() const {
-//    stringstream  ss;
-//
-//    ss << "#" << operator_id_ << ": " << getTypeString();
-//    ss << " order by: " << DataUtilities::printSortDefinition(sort_definition_);
-//
-//    // if operator id is -1, then this sort is inserted
-//    if(operator_id_ == -1 && parents_.size() == 1 && (parents_[0]->getType() == OperatorType::SORT_MERGE_AGGREGATE ||  parents_[0]->getType() == OperatorType::KEYED_SORT_MERGE_JOIN)) {
-//            ss << " | parent : " << parents_[0]->getOperatorId() << ", child : " << lhs_child_->getOperatorId();
-//    }
-//    return ss.str();
-//
-//}
-
 
 
 std::ostream &vaultdb::operator<<(std::ostream &os, const PlainOperator &op) {
@@ -196,7 +152,7 @@ size_t Operator<B>::planCost() const {
     if(rhs_child_ != nullptr)
         summed_cost += rhs_child_->planCost();
 
-    summed_cost += OperatorCostModel::operatorCost((SecureOperator *) this);
+    summed_cost += OperatorCostModel::operatorCost(reinterpret_cast<const SecureOperator *>(this));
     return summed_cost;
 }
 

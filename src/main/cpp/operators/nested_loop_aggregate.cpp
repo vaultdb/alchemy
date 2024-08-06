@@ -2,7 +2,7 @@
 #include <util/data_utilities.h>
 #include <util/field_utilities.h>
 
-#include "nested_loop_aggregate.h"
+#include "operators/nested_loop_aggregate.h"
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
 #include "query_table/query_table.h"

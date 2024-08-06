@@ -5,6 +5,9 @@
 #include "query_table/query_tuple.h"
 
 #include <pqxx/pqxx>
+#include <vector>
+#include <string>
+
 
 using namespace pqxx;
 using namespace vaultdb;

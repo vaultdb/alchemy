@@ -1,4 +1,4 @@
-#include "stored_table_scan.h"
+#include "operators/stored_table_scan.h"
 #include "util/system_configuration.h"
 #include "query_table/packed_column_table.h"
 #include <filesystem>
@@ -13,8 +13,7 @@ QueryTable<B> *StoredTableScan<B>::readStoredTable(string table_name, const vect
 
         if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
             return (QueryTable<B> *) PackedColumnTable::deserialize(md, col_ordinals, limit);
-        }
-        else {
+        } else {
             return readSecretSharedStoredTable(table_name, col_ordinals, limit);
         }
 
@@ -54,8 +53,8 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
         size_t src_bit_cnt = src_byte_cnt * 8;
 
 
-        map<int, long> ordinal_offsets;
-        long array_byte_cnt = 0L;
+        map<int, int64_t> ordinal_offsets;
+        int64_t array_byte_cnt = 0L;
         ordinal_offsets[0] = 0;
         for (int i = 1; i < md.schema_.getFieldCount(); ++i) {
             array_byte_cnt += (md.schema_.getField(i - 1).size() * src_tuple_cnt)/8;

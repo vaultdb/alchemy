@@ -1,5 +1,4 @@
-#include "keyed_join.h"
-
+#include "operators/keyed_join.h"
 #include "query_table/query_table.h"
 #include <util/data_utilities.h>
 #include <util/field_utilities.h>

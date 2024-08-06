@@ -2,7 +2,7 @@
 #include <util/data_utilities.h>
 #include <util/field_utilities.h>
 
-#include "sort_merge_aggregate.h"
+#include "operators/sort_merge_aggregate.h"
 #include "util/system_configuration.h"
 
 

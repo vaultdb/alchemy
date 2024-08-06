@@ -5,11 +5,7 @@
 #include <operators/sort.h>
 #include <test/ompc/ompc_base_test.h>
 #include "util/field_utilities.h"
-#include "expression/generic_expression.h"
-#include "expression/math_expression_nodes.h"
-#include <operators/table_scan.h>
 #include <operators/stored_table_scan.h>
-#include <operators/packed_table_scan.h>
 
 #if __has_include("emp-rescu/emp-rescu.h")
 
@@ -17,7 +13,7 @@ DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43443, "port for EMP execution");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(empty_db, "tpch_empty", "empty db name for schemas");
-DEFINE_int32(cutoff, 5, "limit clause for queries");
+DEFINE_int32(cutoff, 5, "limit clause for queries"); // not used here
 DEFINE_int32(ctrl_port, 65450, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
@@ -33,14 +29,11 @@ using namespace vaultdb;
 class OMPCBlockNestedLoopJoinTest : public OmpcBaseTest {
 protected:
 
-    std::string src_path_ = Utilities::getCurrentWorkingDirectory();
-    std::string packed_pages_path_ = src_path_ + "/packed_pages/";
+    const int customer_limit_ = 150; // smaller: 5
 
-    const int customer_limit_ = 10; // smaller: 5
+    const int orders_limit_ = 1500; // smaller: 30
 
-    const int orders_limit_ = 50; // smaller: 30
-
-    const int lineitem_limit_ = 100; // smaller: 90
+    const int lineitem_limit_ = 1500; // smaller: 90
 
     const std::string customer_sql_ = "SELECT c_custkey \n" // ignore c_mktsegment <> 'HOUSEHOLD' cdummy for now
                                       "FROM customer \n"

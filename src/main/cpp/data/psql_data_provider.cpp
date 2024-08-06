@@ -1,5 +1,5 @@
-#include "psql_data_provider.h"
-#include "pq_oid_defs.h"
+#include "data/psql_data_provider.h"
+#include "data/pq_oid_defs.h"
 #include <typeinfo>
 
 #include <query_table/plain_tuple.h>
@@ -7,7 +7,6 @@
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include "query_table/query_table.h"
 #include "util/system_configuration.h"
-
 
 // if has_dummy_tag == true, then last column needs to be a boolean that denotes whether the tuple was selected
 // tableName == nullptr if query result from more than one table
@@ -92,7 +91,7 @@ QuerySchema PsqlDataProvider::getSchema(pqxx::result input, bool has_dummy_tag) 
     }
 
    if(has_dummy_tag) {
-        pqxx::oid oid = input.column_type((int) col_cnt);
+        pqxx::oid oid = input.column_type(static_cast<int>(col_cnt));
         FieldType dummy_type = getFieldTypeFromOid(oid);
         assert(dummy_type == FieldType::BOOL); // check that dummy tag is a boolean
     }
@@ -177,8 +176,7 @@ PsqlDataProvider::getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_ta
 
                 PlainField parsed = getField(row[col_count]); // get the last col
                 dst_table.setDummyTag(idx, parsed.getValue<bool>());
-        }
-        else {
+        } else {
             dst_table.setDummyTag(idx, false); // default, not a dummy
         }
 
@@ -234,7 +232,7 @@ PsqlDataProvider::getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_ta
             default:
                 throw std::invalid_argument("Unsupported column type " + std::to_string(oid));
 
-        };
+        }
 
     }
 

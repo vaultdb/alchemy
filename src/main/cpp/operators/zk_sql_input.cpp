@@ -1,4 +1,4 @@
-#include "zk_sql_input.h"
+#include "operators/zk_sql_input.h"
 
 ZkSqlInput::ZkSqlInput(string db, string sql, bool dummy_tag,  const size_t &input_tuple_limit) :
                                                                                      input_query_(sql), db_name_(db), has_dummy_tag_(dummy_tag), input_tuple_limit_(input_tuple_limit) {

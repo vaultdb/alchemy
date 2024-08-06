@@ -15,7 +15,7 @@ DEFINE_int32(port, 43440, "port for EMP execution");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_int32(cutoff, 10, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65440, "port for managing EMP control flow by passing public values");
-DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
+DEFINE_bool(validation, false, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "wire_packed", "storage model for columns (column or wire_packed)");
 DEFINE_string(empty_db, "tpch_empty", "empty db name for schemas");
@@ -30,9 +30,9 @@ using namespace Logging;
 class OMPCKeyedJoinTest : public OmpcBaseTest {
 protected:
 
-    const int customer_limit_ = 10; // -1
-    const int orders_limit_ = 50; // -1
-    const int lineitem_limit_ = 100; // 1500
+    const int customer_limit_ = 150; // -1
+    const int orders_limit_ = 200; // smaller: 30
+    const int lineitem_limit_ = 500; // smaller: 90
 
     const std::string customer_sql_ = "SELECT c_custkey \n" // ignore c_mktsegment <> 'HOUSEHOLD' cdummy for now
                                       "FROM customer \n"
@@ -136,7 +136,7 @@ return  new StoredTableScan<Bit>("lineitem", "l_orderkey, l_extendedprice, l_dis
         auto proj = new Project(scan, lineitem_builder.getExprs());
         return proj;
 
-/*        // filter: l_shipdate > date '1995-03-25'
+      // filter: l_shipdate > date '1995-03-25'
         schema = proj->getOutputSchema();
         int64_t date =  796089600L;
         PlainField p(FieldType::LONG, date);

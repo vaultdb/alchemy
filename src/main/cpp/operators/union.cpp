@@ -1,6 +1,6 @@
-#include "union.h"
+#include "operators/union.h"
 #include "query_table/query_table.h"
-#include "project.h"
+#include "operators/project.h"
 
 using namespace vaultdb;
 
@@ -71,7 +71,7 @@ QueryTable<B> * Union<B>::runSelf() {
     }
 
     // else copy in one field at a time
-    // TODO: decide on cloneColumn vs field-at-a-time once per column
+    // TODO(future): decide on cloneColumn vs field-at-a-time once per column
     for(int i = 0; i < lhs->tuple_cnt_; ++i) {
         for(int j = 0; j < dst_schema.getFieldCount(); ++j) {
             auto f = lhs->getField(i, j);

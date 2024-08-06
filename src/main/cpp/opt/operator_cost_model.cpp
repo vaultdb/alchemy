@@ -9,33 +9,33 @@ using namespace vaultdb;
 size_t OperatorCostModel::operatorCost(const SecureOperator *op) {
    switch(op->getType()) {
        case OperatorType::FILTER:
-           return filterCost((Filter<Bit> *) op);
+           return filterCost(reinterpret_cast<const Filter<Bit> *>(op));
            case OperatorType::SECURE_SQL_INPUT:
-               return secureSqlInputCost((SecureSqlInput *) op);
+               return secureSqlInputCost(reinterpret_cast<const SecureSqlInput *>(op));
           case OperatorType::MERGE_INPUT:
-              return mergeInputCost((MergeInput *) op);
+              return mergeInputCost(reinterpret_cast<const MergeInput *>(op));
             case OperatorType::SORT:
-                return sortCost((Sort<Bit> *) op);
+                return sortCost(reinterpret_cast<const Sort<Bit> *>(op));
             case OperatorType::KEYED_NESTED_LOOP_JOIN:
-                return keyedJoinCost((KeyedJoin<Bit> *) op);
+                return keyedJoinCost(reinterpret_cast<const KeyedJoin<Bit> *>(op));
             case OperatorType::NESTED_LOOP_JOIN:
-                return basicJoinCost((BasicJoin<Bit> *) op);
+                return basicJoinCost(reinterpret_cast<const BasicJoin<Bit> *>(op));
             case OperatorType::MERGE_JOIN:
-                return mergeJoinCost((MergeJoin<Bit> *) op);
+                return mergeJoinCost(reinterpret_cast<const MergeJoin<Bit> *>(op));
            case OperatorType::KEYED_SORT_MERGE_JOIN:
-              return keyedSortMergeJoinCost((KeyedSortMergeJoin<Bit> *) op);
+              return keyedSortMergeJoinCost(reinterpret_cast<const KeyedSortMergeJoin<Bit> *>(op));
            case OperatorType::SORT_MERGE_JOIN:
-               return sortMergeJoinCost((SortMergeJoin<Bit> *) op);
+               return sortMergeJoinCost(reinterpret_cast<const SortMergeJoin<Bit> *>(op));
            case OperatorType::SHRINKWRAP:
-              return shrinkwrapCost((Shrinkwrap<Bit> *) op);
+              return shrinkwrapCost(reinterpret_cast<const Shrinkwrap<Bit> *>(op));
            case OperatorType::PROJECT:
-                return projectCost((Project<Bit> *) op);
+                return projectCost(reinterpret_cast<const Project<Bit> *>(op));
            case OperatorType::SORT_MERGE_AGGREGATE:
-                return groupByAggregateCost((SortMergeAggregate<Bit> *) op);
+                return groupByAggregateCost(reinterpret_cast<const SortMergeAggregate<Bit> *>(op));
            case OperatorType::NESTED_LOOP_AGGREGATE:
-              return nestedLoopAggregateCost((NestedLoopAggregate<Bit> *) op);
+              return nestedLoopAggregateCost(reinterpret_cast<const NestedLoopAggregate<Bit> *>(op));
            case OperatorType::SCALAR_AGGREGATE:
-                return scalarAggregateCost((ScalarAggregate<Bit> *) op);
+                return scalarAggregateCost(reinterpret_cast<const ScalarAggregate<Bit> *>(op));
        default:
            return 0;
    }
@@ -90,7 +90,7 @@ size_t OperatorCostModel::basicJoinCost(const BasicJoin<Bit> *join) {
 
 }
 
-size_t OperatorCostModel::mergeJoinCost(MergeJoin<Bit> *join) {
+size_t OperatorCostModel::mergeJoinCost(const MergeJoin<Bit> *join) {
     Expression<Bit> *predicate = join->getPredicate();
     assert(predicate->exprClass() == ExpressionClass::GENERIC);
     ExpressionNode<Bit> *root = ((GenericExpression<Bit> *) predicate)->root_;
@@ -119,7 +119,7 @@ size_t OperatorCostModel::keyedJoinCost(const KeyedJoin<Bit> *join) {
     return tuple_comparison_cnt * tuple_comparison_cost;
 }
 
-size_t OperatorCostModel::keyedSortMergeJoinCost(KeyedSortMergeJoin<Bit> *join) {
+size_t OperatorCostModel::keyedSortMergeJoinCost(const KeyedSortMergeJoin<Bit> *join) {
 	size_t cost = 0;
 
 	Operator<Bit>* lhs = join->getChild(0);
@@ -145,8 +145,7 @@ size_t OperatorCostModel::keyedSortMergeJoinCost(KeyedSortMergeJoin<Bit> *join) 
 
 		size_t c_and_s_cost = compareSwapCost(augmented_schema, sort_def, n);
 		augment_cost += comparison_cnt * c_and_s_cost;
-	}
-	else {
+	} else {
 		augment_cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());
 	}
 
@@ -202,7 +201,7 @@ size_t OperatorCostModel::keyedSortMergeJoinCost(KeyedSortMergeJoin<Bit> *join) 
 }
 
 
-size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
+size_t OperatorCostModel::sortMergeJoinCost(const SortMergeJoin<Bit> *join) {
     size_t cost = 0;
 
     Operator<Bit>* lhs = join->getChild(0);

@@ -1,5 +1,5 @@
 #include <util/type_utilities.h>
-#include "join.h"
+#include "operators/join.h"
 #include <query_table/field/field_factory.h>
 
 using namespace vaultdb;

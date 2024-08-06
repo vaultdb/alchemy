@@ -1,5 +1,5 @@
-#include "sort.h"
-#include "project.h"
+#include "operators/sort.h"
+#include "operators/project.h"
 #include <query_table/plain_tuple.h>
 #include <util/data_utilities.h>
 #include <operators/support/normalize_fields.h>
@@ -188,7 +188,6 @@ bool Sort<B>::swapTuples(const QueryTable<bool> *table, const int &lhs_idx, cons
     int8_t *rhs = rhs_tuple.getData();
     int byte_cnt = sort_key_width_bits / 8;
 
-    // TODO: streamline this with memcmp over reversed keys
     bool lhs_gt = false;
     for (int i = byte_cnt - 1; i >= 0; --i) {
         auto l = (unsigned int) lhs[i];
@@ -221,8 +220,6 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src) {
     // if one or more of the sort keys are floats, need to do a projection that creates a new column for sign_bit for each one
     // this is needed so we can reverse the process later
 
-    // TODO: add a check here to see if projection is needed.  If collating on (N, N-1, ..., 1)
-    //  then we don't need to reorder columns to have sort key "first"
 
     vector<int> sort_cols;
     for(int i = this->sort_definition_.size()-1; i >= 0; --i) {

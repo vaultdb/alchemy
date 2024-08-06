@@ -1,4 +1,4 @@
-#include "left_keyed_join.h"
+#include "operators/left_keyed_join.h"
 
 #include "query_table/query_table.h"
 #include <util/data_utilities.h>

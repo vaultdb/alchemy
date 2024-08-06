@@ -1,4 +1,4 @@
-#include "expression_deparser.h"
+#include "parser/expression_deparser.h"
 #include <emp-tool/circuits/bit.h>
 #include <expression/expression_node.h>
 #include <expression/math_expression_nodes.h>

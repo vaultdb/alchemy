@@ -59,6 +59,10 @@ namespace vaultdb {
 
         void addPageSequence(int table_id, int col_idx, int start_row_idx, int pages_to_add, int rows_per_page) {}
 
+        inline int pinnedPageCount() const {
+            return -1;
+        }
+
         void removeTable(int table_id) {}
 
         void markDirty(PageId &pid) {
@@ -142,15 +146,16 @@ namespace vaultdb {
         }
 
         ~BufferPoolManager() {
-            cout << "Buffer pool requests: " << hits_ + misses_ << " hit rate: " << hits_ << "/(" << hits_ + misses_ << "): " << (float) hits_ / ((float) (hits_ + misses_) ) << endl;
+            cout << stats() << endl;
         };
 
         string stats() const {
             stringstream s;
-            s << "Buffer pool requests: " << hits_ + misses_ << " hit rate: " << hits_ << "/" << hits_ + misses_ << ": " << (float) hits_ / ((float) (hits_ + misses_) ) << ", pack calls: " << pack_calls_ << " unpack calls: " << unpack_calls_ <<  endl;
+            auto reqs = hits_ + misses_;
+            s << "Buffer pool requests: " << reqs << " hit rate: " << hits_ << "/" << reqs << ": " << (float) hits_ / ((float) (reqs) ) << ", pack calls: " << pack_calls_ << " unpack calls: " << unpack_calls_ <<  " pinned pages: " << pinnedPageCount() << endl;
             return s.str();
-
         }
+
         void initialize(int unpacked_page_bits, int unpacked_page_cnt, EmpManager *manager)  {
             unpacked_page_size_bits_ = unpacked_page_bits;
             page_cnt_ = unpacked_page_cnt;
@@ -196,6 +201,7 @@ namespace vaultdb {
         inline void unpinPage(PageId &pid) {
             position_map_.at(pid).pinned_ = false;
         }
+
 
         void loadPage(PageId &pid);
 
@@ -248,6 +254,17 @@ namespace vaultdb {
                 loadPage(pid);
                 ++pid.page_idx_;
             }
+        }
+
+        inline int pinnedPageCount() const {
+           int counter = 0;
+           for(auto entry : position_map_) {
+               if(entry.second.pinned_) {
+                   ++counter;
+               }
+           }
+
+           return counter;
         }
 
         void removeTable(int target_table_id) {

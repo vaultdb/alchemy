@@ -42,6 +42,7 @@ find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
 
 include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR})
 
+
 add_subdirectory(test)
 if(EXISTS "/usr/local/include/emp-sh2pc/emp-sh2pc.h")
 	add_subdirectory(pilot)
@@ -185,3 +186,34 @@ target_link_libraries(wire_pack_tpch_instance vaultdb-emp)
 
 add_executable(wire_pack_table_from_query util/cli/wire_pack_table_from_query.cpp)
 target_link_libraries(wire_pack_table_from_query vaultdb-emp)
+
+# #########################################
+# "make check-lint"
+# #########################################
+file(GLOB_RECURSE VAULTDB_LINT_FILES ${sources}
+		"${CMAKE_CURRENT_SOURCE_DIR}/operators/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/operators/*.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/data/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/data/*.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/common/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/expression/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/expression/*.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/opt/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/opt/*.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/parser/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/parser/*.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/query_table/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/query_table/*.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/util/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/util/*.cpp"
+)
+
+#based on https://github.com/cmu-db/bustub/blob/master/CMakeLists.txt
+# Balancing act: cpplint.py takes a non-trivial time to launch,
+# so process 8 files per invocation, while still ensuring parallelism
+# TODO: gradually pare down the # of filters we use here as we fix up the code, starting with whitespace
+add_custom_target(check-lint echo '${VAULTDB_LINT_FILES}' | xargs -n8 -P8
+		cmake/cpplint.py
+		--verbose=2 --quiet
+		--filter=-legal/copyright,-build/header_guard,-runtime/references,-whitespace,-build/include_order,-build/namespaces,-build/c++11 # https://github.com/cpplint/cpplint/issues/148
+)

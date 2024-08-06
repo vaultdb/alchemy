@@ -1,4 +1,4 @@
-#include "bushy_plan_enumerator.h"
+#include "enumerator/bushy_plan_enumerator.h"
 #include <util/utilities.h>
 #include <util/data_utilities.h>
 
@@ -28,6 +28,9 @@
 
 #include <util/logger.h>
 #include <regex>
+#include <vector>
+#include <utility>
+#include <algorithm>
 
 using namespace vaultdb;
 using boost::property_tree::ptree;

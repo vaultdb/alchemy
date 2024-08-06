@@ -1,4 +1,4 @@
-#include "type_inference_visitor.h"
+#include "expression/visitor/type_inference_visitor.h"
 #include <expression/expression_node.h>
 #include <expression/math_expression_nodes.h>
 #include <expression/comparator_expression_nodes.h>

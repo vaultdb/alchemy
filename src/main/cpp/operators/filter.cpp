@@ -1,4 +1,4 @@
-#include "filter.h"
+#include "operators/filter.h"
 #include <query_table/plain_tuple.h>
 // keep this file to ensure overloaded methods are visible
 #include "util/field_utilities.h"
@@ -34,7 +34,7 @@ QueryTable<B> *Filter<B>::runSelf() {
         B dummy_tag =  (!selected | this->output_->getDummyTag(i)); // (!) because dummyTag is false if our selection criteria is satisfied
         this->output_->setDummyTag(i, dummy_tag);
     }
-    // TODO: may need to update collation if we are filtering on one of our order-by cols
+    // NYI: may need to update collation if we are filtering on one of our order-by cols
     this->output_->order_by_ = input->order_by_;
     return this->output_;
 

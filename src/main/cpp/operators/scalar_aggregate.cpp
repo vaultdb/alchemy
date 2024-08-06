@@ -1,5 +1,5 @@
 #include <operators/support/scalar_aggregate_impl.h>
-#include "scalar_aggregate.h"
+#include "operators/scalar_aggregate.h"
 #include <query_table/plain_tuple.h>
 #include "query_table/query_table.h"
 #include "util/system_configuration.h"

@@ -1,4 +1,4 @@
-#include "comparator_expression_nodes.h"
+#include "expression/comparator_expression_nodes.h"
 
 template class vaultdb::EqualNode<bool>;
 template class vaultdb::EqualNode<emp::Bit>;

@@ -1,4 +1,4 @@
-#include "sort_merge_join.h"
+#include "operators/sort_merge_join.h"
 #include "query_table/query_table.h"
 #include "operators/project.h"
 #include "expression/visitor/join_equality_condition_visitor.h"
@@ -8,7 +8,9 @@
 #include "query_table/field/field_factory.h"
 #include "util/system_configuration.h"
 #include "util/logger.h"
-#include <iostream>
+#include <utility>
+#include <vector>
+#include <string>
 
 using namespace vaultdb;
 using namespace Logging;
@@ -333,8 +335,7 @@ QueryTable<B> *SortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *src, v
     if(is_lhs) {
         lhs_projected_schema_ = projection.getOutputSchema();
         lhs_field_mapping_ = field_mapping;
-    }
-    else {
+    } else {
         rhs_field_mapping_ = field_mapping;
         rhs_projected_schema_ = projection.getOutputSchema();
     }
@@ -577,7 +578,7 @@ QueryTable<Bit> *SortMergeJoin<Bit>::revertProjection(QueryTable<Bit> *src, cons
     Integer dst_row(row_len, 0);
 
     for(int i = 0; i < row_cnt; ++i) {
-        auto unpacked = src->unpackRow(i); // TODO: only unpack the cols we need
+        auto unpacked = src->unpackRow(i); // TODO(future): only unpack the cols we need
         Bit *write_ptr = dst_row.bits.data();
         for(int j = 0; j < dst_schema.getFieldCount(); ++j) {
             int src_ordinal = dst_to_src[j];

@@ -1,4 +1,4 @@
-#include "table_scan.h"
+#include "operators/table_scan.h"
 
 
 

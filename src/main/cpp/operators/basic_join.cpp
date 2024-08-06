@@ -1,4 +1,4 @@
-#include "basic_join.h"
+#include "operators/basic_join.h"
 #include <query_table/query_table.h>
 
 using namespace vaultdb;
