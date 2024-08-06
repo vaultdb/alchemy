@@ -29,11 +29,11 @@ using namespace vaultdb;
 class OMPCBlockNestedLoopJoinTest : public OmpcBaseTest {
 protected:
 
-    const int customer_limit_ = 50; // smaller: 5
+    const int customer_limit_ = 150; // smaller: 5
 
-    const int orders_limit_ = 100; // smaller: 30
+    const int orders_limit_ = 200; // smaller: 30
 
-    const int lineitem_limit_ = 250; // smaller: 90
+    const int lineitem_limit_ = 500; // smaller: 90
 
     const std::string customer_sql_ = "SELECT c_custkey \n" // ignore c_mktsegment <> 'HOUSEHOLD' cdummy for now
                                       "FROM customer \n"
