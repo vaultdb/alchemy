@@ -6,7 +6,7 @@
 #include "plain_tuple.h"
 #include <operators/sort.h>
 #include <util/system_configuration.h>
-#include "secure_tuple.h"
+#include "query_table/secure_tuple.h"
 #include "column_table.h"
 #include "packed_column_table.h"
 #include "compression/compressed_table.h"

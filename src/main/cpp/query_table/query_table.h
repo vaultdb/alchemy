@@ -14,8 +14,6 @@
 
 namespace  vaultdb {
 
-
-
     template<typename B> class QueryTable;
     typedef QueryTable<bool> PlainTable;
     typedef QueryTable<emp::Bit> SecureTable;
