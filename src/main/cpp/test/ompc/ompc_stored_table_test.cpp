@@ -12,7 +12,7 @@ DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65428, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*.orders_limit_project", "run only the tests passing this filter");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "wire_packed", "storage model for columns (column or wire_packed)");
 DEFINE_string(empty_db, "tpch_empty", "empty db name for schemas");
 DEFINE_string(wire_path, "wires", "local path to wire files");

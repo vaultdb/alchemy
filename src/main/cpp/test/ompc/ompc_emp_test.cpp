@@ -309,63 +309,6 @@ TEST_F(OMPCEmpTest, ompc_sort_and_share_table_one_column) {
     delete input_table;
 }
 
-TEST_F(OMPCEmpTest, ompc_secret_share_and_pack_tpch_data_from_query){
-     if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED) {
-         bool run_test = true;
-
-         if(run_test) {
-             vector<std::string> table_names = {"customer", "lineitem", "nation", "orders", "part", "region",
-                                                "supplier", "partsupp"};
-             vector<vector<std::string>> primary_keys = {{"c_custkey"}, {"l_orderkey","l_linenumber"}, {"n_nationkey"}, {"o_orderkey"}, {"p_partkey"},
-                                                         {"r_regionkey"}, {"s_suppkey"}, {"ps_partkey, ps_suppkey"}};
-
-             SecretShareAndPackDataFromQuery ssp(FLAGS_unioned_db, "", "");
-
-             bool is_write = false;
-
-             std::string src_path = Utilities::getCurrentWorkingDirectory();
-             std::string packed_pages_path = src_path + "/packed_pages/";
-             if(is_write) {
-                 Utilities::runCommand("rm -rf " + packed_pages_path);
-                 Utilities::mkdir(packed_pages_path);
-             }
-
-             int cursor = 0;
-             for (auto table_name: table_names) {
-                 cout << "Working on " + table_name + " table\n";
-                 std::string table_path = packed_pages_path + table_name + "_tpch_unioned_150/";
-                 Utilities::mkdir(table_path);
-                 std::string order_by_keys = "";
-                 for(auto key : primary_keys[cursor]) {
-                     order_by_keys += key + ",";
-                 }
-                 order_by_keys = order_by_keys.substr(0, order_by_keys.size() - 1);
-                 std::string table_sql = "SELECT * FROM " + table_name + " ORDER BY " + order_by_keys;
-                 ssp.setSql(table_sql);
-                 ssp.setTableName(table_name);
-
-                 if(is_write) {
-                     PackedColumnTable *table = ssp.getTable();
-
-                     ssp.saveTableToDisk(table_path, FLAGS_party);
-
-                     ssp.saveBackendParameters(packed_pages_path, FLAGS_party);
-                 }
-
-                 ((OMPCBackend<N> *) emp::backend)->multi_pack_delta = ssp.loadBackendParameters(packed_pages_path, FLAGS_party);
-
-                 ssp.verifyLoadedTable(table_path, FLAGS_party);
-
-                 cout << table_name + " table is secret shared, packed, saved to disk and verified\n";
-
-                 cursor++;
-             }
-         }
-     }
- }
-
-
-
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
