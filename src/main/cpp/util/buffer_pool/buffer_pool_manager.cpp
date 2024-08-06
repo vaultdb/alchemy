@@ -44,15 +44,13 @@ void BufferPoolManager::loadPageWithLRUK(vaultdb::PageId &pid) {
         ++hits_;
 
         // push the current time to the back of the lastKAccess list
-        if(position_map_.at(pid).last_k_accesses_.size() < K) {
-            position_map_[pid].last_k_accesses_.push_back(lru_k_time_cursor_);
-        }
-        else {
-            // remove oldest access time if the last K accesses is full
+        if(position_map_.at(pid).last_k_accesses_.size() == K) {
             position_map_[pid].last_k_accesses_.erase(position_map_[pid].last_k_accesses_.begin());
-            position_map_[pid].last_k_accesses_.push_back(lru_k_time_cursor_);
-            assert(position_map_[pid].last_k_accesses_.size() == K);
         }
+
+        position_map_[pid].last_k_accesses_.push_back(lru_k_time_cursor_);
+
+        lru_k_min_heap_.emplace(pid, position_map_[pid].last_k_accesses_.front());
 
         return;
     }
@@ -71,6 +69,8 @@ void BufferPoolManager::loadPageWithLRUK(vaultdb::PageId &pid) {
     position_map_[pid] = p;
     reverse_position_map_[target_slot] = pid;
     position_map_[pid].last_k_accesses_.push_back(lru_k_time_cursor_);
+
+    lru_k_min_heap_.emplace(pid, position_map_[pid].last_k_accesses_.front());
 }
 
 
@@ -131,20 +131,40 @@ int BufferPoolManager::evictPageWithLRUK() {
     }
 
     // If the pool is full, evict a page by LRU-K
-    int min_kth_access = INT_MAX;
-    int min_slot = -1;
+//    int min_kth_access = INT_MAX;
+//    int min_slot = -1;
+//    PageId min_pid;
+//
+//    for(auto &entry : position_map_) {
+//        if(!entry.second.pinned_) {
+//            assert(entry.second.last_k_accesses_.size() <= K);
+//            int kth_access = entry.second.last_k_accesses_.front();
+//
+//            if(kth_access < min_kth_access) {
+//                min_kth_access = kth_access;
+//                min_slot = entry.second.slot_id_;
+//                min_pid = entry.first;
+//            }
+//        }
+//    }
+
+    // Use min heap to replace loop.
     PageId min_pid;
+    int min_slot = -1;
 
-    for(auto &entry : position_map_) {
-        if(!entry.second.pinned_) {
-            assert(entry.second.last_k_accesses_.size() <= K);
-            int kth_access = entry.second.last_k_accesses_.front();
+    while(!lru_k_min_heap_.empty()) {
+        pair<PageId, int> top = lru_k_min_heap_.top();
+        lru_k_min_heap_.pop();
 
-            if(kth_access < min_kth_access) {
-                min_kth_access = kth_access;
-                min_slot = entry.second.slot_id_;
-                min_pid = entry.first;
-            }
+        // break the loop if:
+        // 1. the page is not pinned
+        // 2. the page is in the position map
+        // 3. the last k access counter matches.
+        if((!position_map_[min_pid].pinned_) && (position_map_.find(top.first) != position_map_.end()) && (position_map_[top.first].last_k_accesses_.front() == top.second)) {
+            min_pid = top.first;
+            min_slot = position_map_[min_pid].slot_id_;
+
+            break;
         }
     }
 
