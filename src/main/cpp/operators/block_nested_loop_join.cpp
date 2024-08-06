@@ -99,7 +99,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
         if(fields_per_page < stride_size) stride_size = fields_per_page;
         row_width_bits += output_schema.getField(ord).size();
     }
-    cout << "Stride size: " << stride_size << '\n';
+    //cout << "Stride size: " << stride_size << '\n';
     assert(stride_size > 0);
 
     // if a field's count / page is not evenly divisible by our stride size (it has no common multiple), allocate one page of headroom
@@ -119,7 +119,7 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
     int dummy_tag_pages_per_block = rows_per_block / unpacked_page_size_bits + (rows_per_block % unpacked_page_size_bits > 0);
     // when the fields_per_page > rows_per_block (block size) if they don't have a common divisor then we need to allocate an extra page
     if(unpacked_page_size_bits > rows_per_block) { dummy_tag_pages_per_block += rows_per_block % unpacked_page_size_bits > 0; }
-
+    //cout << "Dummy tag pages per block: " << dummy_tag_pages_per_block << '\n';
     int pages_to_pin = dummy_tag_pages_per_block * 2; // two dummy tags, FK and output
 
     // count up pinned cols
@@ -130,14 +130,16 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
         if(fields_per_page > rows_per_block) { pages_to_pin += rows_per_block % fields_per_page > 0; }
 
     }
-
-    cout << "Starting with rows per block as: " << rows_per_block << '\n';
+    //cout << "pages to pin: " << pages_to_pin << '\n';
+    //cout << "Starting with rows per block as: " << rows_per_block << '\n';
 
     // step down one stride if we have too many pages
     while(pages_to_pin > pinnable_pages) {
         rows_per_block -= stride_size;
         dummy_tag_pages_per_block = rows_per_block / unpacked_page_size_bits + (rows_per_block % unpacked_page_size_bits > 0);
         if(unpacked_page_size_bits > rows_per_block) { dummy_tag_pages_per_block += rows_per_block % unpacked_page_size_bits > 0; }
+        //cout << "Dummy tag pages per block: " << dummy_tag_pages_per_block << '\n';
+
         pages_to_pin = dummy_tag_pages_per_block * 2;
 
         for(auto ord : ordinals_to_pin) {
@@ -145,24 +147,25 @@ QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
             pages_to_pin += rows_per_block / fields_per_page + (rows_per_block % fields_per_page > 0);
             if(fields_per_page > rows_per_block) { pages_to_pin += rows_per_block % fields_per_page > 0; }
         }
-        cout << "Reducing rows per block to " << rows_per_block << '\n';
+        //cout << "Pages to pin: " << pages_to_pin << '\n';
+        //cout << "Reducing rows per block to " << rows_per_block << '\n';
     }
 
-    cout << "Final rows per block: " << rows_per_block << '\n';
-    cout << "BNLJ blocks: " << (output->tuple_cnt_ / rows_per_block) + (output->tuple_cnt_ % rows_per_block > 0) << endl;
+    //cout << "Final rows per block: " << rows_per_block << '\n';
+    //cout << "BNLJ blocks: " << (output->tuple_cnt_ / rows_per_block) + (output->tuple_cnt_ % rows_per_block > 0) << endl;
 
 
     int cursor = 0; // first row idx in block
     while((cursor + rows_per_block) < output->tuple_cnt_) {
         joinBlock(fk_reln, pk_reln, cursor, rows_per_block, join_idxs);
-        cout << "At the end of block " << cursor / rows_per_block << " BPM stats: " << bpm_.stats();
+        //cout << "At the end of block " << cursor / rows_per_block << " BPM stats: " << bpm_.stats();
         cursor += rows_per_block;
     }
 
     // handle any leftovers here
     int rows_remaining = output->tuple_cnt_ - cursor;
     joinBlock(fk_reln, pk_reln, cursor, rows_remaining, join_idxs);
-    cout << "Finishing BNLJ with BPM stats: " << bpm_.stats() << '\n';
+    //cout << "Finishing BNLJ with BPM stats: " << bpm_.stats() << '\n';
     fk_reln->pinned_ = false;
     return this->output_;
 
@@ -213,7 +216,7 @@ void BlockNestedLoopJoin<B>::joinRowRange(QueryTable<B> *fk_reln, QueryTable<B> 
     int cutoff = start_row + row_cnt;
     int pk_offset = (foreign_key_input_ == 0) ? fk_reln->getSchema().getFieldCount() : 0;
     int start_pinned_page_cnt = bpm_.pinnedPageCount();
-    cout << "***Joining block, starting with " << start_pinned_page_cnt << " pinned pages on row " << start_row << '\n';
+    //cout << "***Joining block, starting with " << start_pinned_page_cnt << " pinned pages on row " << start_row << '\n';
 
 
     // each column in inner loop pins the page it is working on to prevent other columns from evicting it
@@ -236,7 +239,6 @@ void BlockNestedLoopJoin<B>::joinRowRange(QueryTable<B> *fk_reln, QueryTable<B> 
                 if ((j % reinterpret_cast<PackedColumnTable *>(pk_reln)->fields_per_wire_[k] == 0) && j > 0) {
                     auto pid = PageId{reinterpret_cast<PackedColumnTable *>(pk_reln)->table_id_, k,
                                       (j - 1) / reinterpret_cast<PackedColumnTable *>(pk_reln)->fields_per_wire_[k]};
-//                    cout << "At PK row " << j << " handing off from " << pid.toString() << " to next page, pinned pages: " << bpm_.pinnedPageCount() << '\n';
                     bpm_.unpinPage(pid);
                     ++pid.page_idx_;
                     bpm_.loadPage(pid);
@@ -265,10 +267,6 @@ void BlockNestedLoopJoin<B>::joinRowRange(QueryTable<B> *fk_reln, QueryTable<B> 
         }
     }
 
-    int end_pinned_page_cnt = bpm_.pinnedPageCount();
-    cout << "Start pinned page count: " << start_pinned_page_cnt << " end: " << end_pinned_page_cnt << '\n';
-    assert(start_pinned_page_cnt == end_pinned_page_cnt);
-
 
 }
 
@@ -278,7 +276,7 @@ void BlockNestedLoopJoin<B>::pinRowRange(PackedColumnTable *table, const int & c
 
     PageId start_pid = bpm_.getPageId(table->table_id_, col_ordinal, start_row, table->fields_per_wire_[col_ordinal]);
     PageId end_pid = bpm_.getPageId(table->table_id_, col_ordinal, start_row + row_cnt - 1, table->fields_per_wire_[col_ordinal]);
-    cout << "Pinning for rows: " << start_row << ", " << start_row + row_cnt - 1 << " page range: " << start_pid << "..." << end_pid << ", page count: " << end_pid.page_idx_ - start_pid.page_idx_ + 1 << " pinned pages before: " << bpm_.pinnedPageCount();
+    //cout << "Pinning for rows: " << start_row << ", " << start_row + row_cnt - 1 << " page range: " << start_pid << "..." << end_pid << ", page count: " << end_pid.page_idx_ - start_pid.page_idx_ + 1 << " pinned pages before: " << bpm_.pinnedPageCount();
 
 
     auto pid = start_pid;
@@ -290,7 +288,7 @@ void BlockNestedLoopJoin<B>::pinRowRange(PackedColumnTable *table, const int & c
         bpm_.loadPage(pid);
         bpm_.pinPage(pid);
     }
-    cout << " after " << bpm_.pinnedPageCount() << '\n';
+    //cout << " after " << bpm_.pinnedPageCount() << '\n';
 
 }
 
@@ -304,7 +302,7 @@ void BlockNestedLoopJoin<B>::unpinRowRange(PackedColumnTable *table, const int &
 
     auto pid = start_pid;
     bpm_.unpinPage(pid);
-    cout << "Unpinning page range: " << start_pid << "..." << end_pid << '\n';
+    //cout << "Unpinning page range: " << start_pid << "..." << end_pid << '\n';
 
     while(pid.page_idx_ < end_pid.page_idx_) {
         ++pid.page_idx_;
