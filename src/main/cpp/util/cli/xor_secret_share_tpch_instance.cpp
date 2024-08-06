@@ -50,8 +50,8 @@ void encodeTable(string table_name) {
 int main(int argc, char **argv) {
 
     // paths are relative to local $VAULTDB_ROOT, the src/main/cpp within your vaultdb directory
-    // usage: ./xor_secret_share_tpch_instance <db name> <destination root>
-    // e.g., ./xor_secret_share_tpch_instance tpch_unioned_600 wires/tpch_unioned_600
+    // usage: ./bin/xor_secret_share_tpch_instance <db name> <destination root>
+    // e.g., ./bin/xor_secret_share_tpch_instance tpch_unioned_150 shares/tpch_unioned_150
     if (argc < 3) {
         std::cout << "usage: ./xor_secret_share_tpch_instance <db name> <destination root>" << std::endl;
         exit(-1);
