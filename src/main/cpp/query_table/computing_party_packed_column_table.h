@@ -33,17 +33,27 @@ public:
 
         OMPCPackedWire zero(bpm_.block_n_);
         vector<int8_t> zero_block = serializePackedWire(zero);
+
         assert(zero_block.size() == packed_wire_size_bytes_);
 
-        // initialize packed wires for table including dummy tags
-        for(int i = -1; i < schema_.getFieldCount(); ++i) {
-            int col_packed_wires = (wires_per_field_.at(i) == 1) ? (tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0)) : (tuple_cnt_ * wires_per_field_.at(i));
+        // initialize packed wires
+        for(int i = 0; i < schema_.getFieldCount(); ++i) {
+            int col_packed_wires = (wires_per_field_.at(i) == 1) ? tuple_cnt_ / fields_per_wire_.at(i) + (tuple_cnt_ % fields_per_wire_.at(i) != 0) : (tuple_cnt_ * wires_per_field_.at(i));
 
             packed_pages_[i] = std::vector<int8_t>(col_packed_wires * packed_wire_size_bytes_);
             for(int j = 0; j < col_packed_wires; ++j) {
                 memcpy(packed_pages_[i].data() + j * packed_wire_size_bytes_, zero_block.data(), packed_wire_size_bytes_);
             }
         }
+
+        // initialize dummy tags to true until the row is initialized
+        vector<int8_t> one_block = serializePackedWire(one_wire_);
+        int dummy_tag_packed_wires = tuple_cnt_ / bpm_.unpacked_page_size_bits_ + ((tuple_cnt_ % bpm_.unpacked_page_size_bits_) != 0);
+        packed_pages_[-1] = std::vector<int8_t>(dummy_tag_packed_wires * packed_wire_size_bytes_);
+        for(int i = 0; i < dummy_tag_packed_wires; ++i) {
+            memcpy(packed_pages_[-1].data() + i * packed_wire_size_bytes_, one_block.data(), packed_wire_size_bytes_);
+        }
+
 
     }
 

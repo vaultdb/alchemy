@@ -140,7 +140,7 @@ public:
     map<int, int> fields_per_wire_;
     // if a field spans more than one block per instance (e.g., a string with length > 16 chars) then we need to map the field to multiple wires
     map<int, int> wires_per_field_;
-
+    OMPCPackedWire one_wire_; // consists of one wire of all true values, need to pack in the constructor so TP participates
     EmpManager *manager_;
 
     int block_size_bytes_ = sizeof(block); // 16 bytes per block = 128 bits
@@ -175,13 +175,17 @@ public:
         assert(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE);
         setSchema(schema);
 
+        vector<Bit> dummy_tags(bpm_.unpacked_page_size_bits_, Bit(true));
+        one_wire_ = OMPCPackedWire(bpm_.block_n_);
+        manager_->pack(dummy_tags.data(), reinterpret_cast<Bit *>(&one_wire_), bpm_.unpacked_page_size_bits_);
+
         bpm_.registerTable(table_id_, this);
     }
 
     PackedColumnTable(const PackedColumnTable &src) : QueryTable<Bit>(src), manager_(SystemConfiguration::getInstance().emp_manager_) {
         assert(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE);
         setSchema(src.schema_);
-
+        one_wire_ = src.one_wire_;
         if(src.tuple_cnt_ == 0)
             return;
 
@@ -346,8 +350,6 @@ public:
             fields_per_wire_[ordinal] = size_threshold / desc.size();
             wires_per_field_[ordinal] = 1;
         }
-
-        int field_packed_size_bytes = (1 + 2 * packed_blocks) * block_size_bytes_;
 
         cloneColumn(ordinal, -1, this, ordinal);
     }

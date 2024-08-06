@@ -74,11 +74,11 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_customer_orders) {
 
 
     std::string sql = "WITH customer_cte AS (" + customer_sql_ + "), "
-                                                                 "orders_cte AS (" + orders_sql_ + ") "
-                                                                                                   "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
-                                                                                                   "FROM customer_cte, orders_cte "
-                                                                                                   "WHERE c_custkey = o_custkey "
-                                                                                                   "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT cdummy AND NOT odummy for now
+                            "orders_cte AS (" + orders_sql_ + ") "
+                            "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
+                            "FROM customer_cte, orders_cte "
+                            "WHERE c_custkey = o_custkey "
+                            "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT cdummy AND NOT odummy for now
 
     Operator<Bit> *orders = getOrders();
     Operator<Bit> *customers = getCustomers();

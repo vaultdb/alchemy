@@ -196,7 +196,6 @@ void BlockNestedLoopJoin<B>::joinRowRange(QueryTable<B> *fk_reln, QueryTable<B> 
 
     for(int j = 0; j < pk_reln->tuple_cnt_; ++j) {
         B pk_dummy_tag = pk_reln->getField(j, -1).template getValue<B>();
-        B dst_dummy_tag = true; // dummy by default, no matches found yet
 
         // If we reach the end of a page on one column, shift its pin over to next page in this column
         // this "shielded scan" protects us from the vagaries of our eviction strategy
@@ -215,9 +214,7 @@ void BlockNestedLoopJoin<B>::joinRowRange(QueryTable<B> *fk_reln, QueryTable<B> 
             B selected = (foreign_key_input_ == 0)
                          ? Join<B>::predicate_->call(fk_reln, i, pk_reln, j).template getValue<B>()
                          : Join<B>::predicate_->call(pk_reln, j, fk_reln, i).template getValue<B>();
-
             B to_update = selected & (!fk_dummy_tag) & (!pk_dummy_tag);
-            dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);
             this->output_->cloneRow(to_update, i, pk_offset, pk_reln, j);
         }
     }
