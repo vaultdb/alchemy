@@ -1,4 +1,4 @@
-#include "parser/plan_parser.h"
+#include "plan_parser.h"
 #include <util/utilities.h>
 #include <util/data_utilities.h>
 
@@ -109,7 +109,8 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
             input_parameters = parseSqlHeader(*pos);
             query = "";
             init = true;
-        } else {
+        }
+        else {
             query += *pos + " ";
         }
     }
@@ -290,17 +291,17 @@ void PlanParser<B>::calculateAutoAggregate() {
             if (type == SMA) {
                 // Check if SMA has sort
                 if(sort_vector_[i] != nullptr)
-                    cost += OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(sort_vector_[i]));
+                    cost += OperatorCostModel::operatorCost((SecureOperator *) sort_vector_[i]);
 
                 sma = sma_vector_[i];
-                cost += OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(sma));
+                cost += OperatorCostModel::operatorCost((SecureOperator *) sma);
 
                 // Propagate output cardinality
                 cur_output_cardinality_ = sma->getOutputCardinality();
 
             } else {  // type == NestedLoopAggregate
                 NestedLoopAggregate<B> *nla = nla_vector_[i];
-                cost += OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(nla));
+                cost += OperatorCostModel::operatorCost((SecureOperator *) nla);
 
                 // Propagate output cardinality
                 cur_output_cardinality_ = nla->getOutputCardinality();
@@ -322,7 +323,7 @@ void PlanParser<B>::calculateAutoAggregate() {
                         continue;
                     }
                 }
-                cost += OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(cur_op));
+                cost += OperatorCostModel::operatorCost((SecureOperator *) cur_op);
                 cur_output_cardinality_ = cur_op->getOutputCardinality();
             }
         }
@@ -366,8 +367,9 @@ void PlanParser<B>::calculateAutoAggregate() {
             SortMergeAggregate<B> *real_sma = new SortMergeAggregate<B>(child, group_by_ordinals, aggregators, effective_sort, sma_vector_[i]->getCardinalityBound());
             operators_[agg_id_[i]] = real_sma;
 
-            if(agg_id_[i] + 1 == static_cast<int>(operators_.size())) {
+            if(agg_id_[i] + 1 == (int) operators_.size())
                 root_ = real_sma;
+
         } else {  // type == NestedLoopAggregate
             group_by_ordinals = nla_vector_[i]->group_by_;
             aggregators = nla_vector_[i]->aggregate_definitions_;
@@ -377,15 +379,14 @@ void PlanParser<B>::calculateAutoAggregate() {
             NestedLoopAggregate<B> *real_nla = new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, effective_sort, cardBound);
             operators_[agg_id_[i]] = real_nla;
 
-            if(agg_id_[i] + 1 == static_cast<int>(operators_.size())) {
+            if(agg_id_[i] + 1 == (int) operators_.size())
                 root_ = real_nla;
-            }
         }
 
         operators_.at(agg_id_[i])->setOperatorId(agg_id_[i]);
 
         // set the parent of the next operator to this one
-        if (agg_id_[i] + 1 <  static_cast<int>(operators_.size()) {
+        if (agg_id_[i] + 1 < (int) operators_.size()){
             operators_[agg_id_[i] + 1]->setChild(operators_[agg_id_[i]]);
             operators_[agg_id_[i]]->setParent(operators_[agg_id_[i] + 1]);
         }
@@ -442,7 +443,8 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
 
     if(aggregate_json.count("checkSort") > 0) {
         check_sort= aggregate_json.get_child("checkSort").template get_value<bool>();
-    } else if(aggregate_json.count("check-sort") > 0) {
+    }
+    else if(aggregate_json.count("check-sort") > 0) {
         check_sort= aggregate_json.get_child("check-sort").template get_value<bool>();
     }
 
@@ -529,7 +531,8 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
                         std::equal(child_sort.begin() + 1, child_sort.end(), effective_sort.begin())) {
                         condition_met = true;
                     }
-                } else if (child_sort.size() == effective_sort.size() &&
+                }
+                else if (child_sort.size() == effective_sort.size() &&
                          std::equal(child_sort.begin(), child_sort.end(), effective_sort.begin())) {
                     condition_met = true;
                 }
@@ -541,7 +544,9 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
                                                 cardinality_bound);
                 sort_vector_.push_back(nullptr);
                 sma->effective_sort_ = effective_sort;
-            } else {             // Else, needs to check if this is the same with group by orders
+            }
+                // Else, needs to check if this is the same with group by orders
+            else {
                 // if sort is needed, and current order is not the same with group by orders
                 if (!SortMergeAggregate<B>::sortCompatible(child_sort, group_by_ordinals) && check_sort) {
                     sort_needed = true;
@@ -554,8 +559,11 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
                                                     effective_sort, cardinality_bound);
                     sort_vector_.push_back(sort_before_sma);
                     sma->effective_sort_ = effective_sort;
-                } else {                 // if sort is not needed
-                    sma = new SortMergeAggregate<B>(child->clone(), group_by_ordinals, aggregators, effective_sort, cardinality_bound);
+                }
+                    // if sort is not needed
+                else {
+                    sma = new SortMergeAggregate<B>(child->clone(), group_by_ordinals, aggregators, effective_sort,
+                                                    cardinality_bound);
                     sort_vector_.push_back(nullptr);
                     sma->effective_sort_ = effective_sort;
                 }
@@ -570,8 +578,8 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
 
             agg_id_.push_back(operator_id);
 
-            size_t sma_cost = OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(sma));
-            size_t nla_cost = OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(nla));
+            size_t sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+            size_t nla_cost = OperatorCostModel::operatorCost((SecureOperator *) nla);
 
             string selected_agg = (sma_cost < nla_cost) ? "sort-merge-aggregate" : "nested-loop-aggregate";
 
@@ -588,7 +596,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
                 if(sort_needed){
                     Sort<B> *sort_before_sma = new Sort<B>(child, group_by_sort);
                     return new SortMergeAggregate<B>(sort_before_sma, group_by_ordinals, aggregators,
-                                                effective_sort, cardinality_bound);
+                                                     effective_sort, cardinality_bound);
                 }
                 else
                     return new SortMergeAggregate<B>(child, group_by_ordinals, aggregators,
@@ -596,7 +604,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
             }
             else
                 return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, effective_sort,
-                                                      cardinality_bound);
+                                                  cardinality_bound);
         } // end auto aggregate setup
         SortDefinition child_sort = child->getSortOrder();
 
@@ -615,7 +623,8 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
             support_ops_.template emplace_back(child);
         }
         return new SortMergeAggregate<B>(child, group_by_ordinals, aggregators, effective_sort,  cardinality_bound);
-    } else { // end group-by case
+    } // end group-by case
+    else {
         return new ScalarAggregate<B>(child, aggregators);
     }
 
@@ -659,14 +668,14 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
     // if fkey designation exists, use this to create keyed join
     if(join_tree.count("foreignKey") > 0 || join_tree.count("foreign-key") > 0) {
         int foreign_key = (join_tree.count("foreignKey") > 0) ? join_tree.get_child("foreignKey").template get_value<int>()
-                : join_tree.get_child("foreign-key").template get_value<int>();
+                                                              : join_tree.get_child("foreign-key").template get_value<int>();
 
         if (join_algo == "auto") {
 
             auto smj = new KeyedSortMergeJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
             auto nlj = new KeyedJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
-            size_t smj_cost = OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(smj));
-            size_t nlj_cost = OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(nlj));
+            size_t smj_cost = OperatorCostModel::operatorCost((SecureOperator *) smj);
+            size_t nlj_cost = OperatorCostModel::operatorCost((SecureOperator *) nlj);
 
             auto join_key_idxs = smj->joinKeyIdxs();
 
@@ -713,15 +722,15 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
                 if(!lhs_sort_compatible && rhs_sort_compatible)
                     smj_presorted = new KeyedSortMergeJoin<B>(lhs_sorter, rhs->clone(), foreign_key,
-                                                                   join_condition->clone());
+                                                              join_condition->clone());
                 else if(lhs_sort_compatible && !rhs_sort_compatible)
                     smj_presorted = new KeyedSortMergeJoin<B>(lhs->clone(), rhs_sorter, foreign_key,
-                                                                   join_condition->clone());
+                                                              join_condition->clone());
                 else if(!lhs_sort_compatible && !rhs_sort_compatible)
                     smj_presorted = new KeyedSortMergeJoin<B>(lhs_sorter, rhs_sorter, foreign_key,
-                                                                   join_condition->clone());
+                                                              join_condition->clone());
 
-                smj_cost = OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(smj_presorted));
+                smj_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
 
                 string selected_join = (smj_cost < nlj_cost) ? "keyed-sort-merge-join" : "nested-loop-join";
 
@@ -733,15 +742,21 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                 if (selected_join == "keyed-sort-merge-join") {
                     if(!lhs_sort_compatible && rhs_sort_compatible) {
                         lhs_sorter = new Sort<B>(lhs, lhs_sort);
-                        return new KeyedSortMergeJoin<B>(lhs_sorter, rhs, foreign_key, join_condition->clone());
-                    } else if(lhs_sort_compatible && !rhs_sort_compatible) {
+                        return new KeyedSortMergeJoin<B>(lhs_sorter, rhs, foreign_key,
+                                                         join_condition->clone());
+                    }
+                    else if(lhs_sort_compatible && !rhs_sort_compatible) {
                         rhs_sorter = new Sort<B>(rhs, rhs_sort);
-                        return new KeyedSortMergeJoin<B>(lhs, rhs_sorter, foreign_key, join_condition->clone());
-                    } else if(!lhs_sort_compatible && !rhs_sort_compatible) {
+                        return new KeyedSortMergeJoin<B>(lhs, rhs_sorter, foreign_key,
+                                                         join_condition->clone());
+                    }
+                    else if(!lhs_sort_compatible && !rhs_sort_compatible)
                         lhs_sorter = new Sort<B>(lhs, lhs_sort);
-                        rhs_sorter = new Sort<B>(rhs, rhs_sort);
-                        return new KeyedSortMergeJoin<B>(lhs_sorter, rhs_sorter, foreign_key, join_condition->clone());
-                } else {
+                    rhs_sorter = new Sort<B>(rhs, rhs_sort);
+                    return new KeyedSortMergeJoin<B>(lhs_sorter, rhs_sorter, foreign_key,
+                                                     join_condition->clone());
+                }
+                else {
                     return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition);
                 }
             }
@@ -755,7 +770,8 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
             if (selected_join == "keyed-sort-merge-join") {
                 return new KeyedSortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
-            } else {
+            }
+            else {
                 return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition);
             }
 
@@ -763,9 +779,10 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
         if (join_algo == "keyed-sort-merge-join") {
             return new KeyedSortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
-        } else if (join_algo == "cost-keyed-sort-merge-join") {
+        }
+        else if (join_algo == "cost-keyed-sort-merge-join") {
             auto smj = new KeyedSortMergeJoin<B>(lhs->clone(), rhs->clone(), foreign_key, join_condition->clone());
-            size_t smj_cost = OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(smj));
+            size_t smj_cost = OperatorCostModel::operatorCost((SecureOperator *) smj);
             size_t smj_presorted_cost;
 
             auto join_key_idxs = smj->joinKeyIdxs();
@@ -815,41 +832,41 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                 Operator<B> *smj_presorted;
 
                 if (!lhs_sort_compatible && rhs_sort_compatible) {
-                    // TODO(future): HERE THERE ARE SOME ISSUE, BECAUSE FOR THE SORT OPT BLOCK
+                    // TODO : HERE THERE ARE SOME ISSUE, BECAUSE FOR THE SORT OPT BLOCK
                     // NEED TO CONSIDER THAT LHS/RHS IS INPUT AND SORTED, THEN IT HAS MORE COST THAN INPUT WITH NO SORTED.
                     // BUT ITS HARD TO COMPARE WITH NO SORTED ONE
                     smj_presorted = new KeyedSortMergeJoin<B>(lhs_sorter, rhs->clone(), foreign_key,
                                                               join_condition->clone());
-                    smj_presorted_cost = OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(smj_presorted));
+                    smj_presorted_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
                     std::cout << std::to_string(smj_presorted_cost) + "(smj cost) + " ;
-                    size_t lhs_sort_cost = OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(lhs_sorter));
+                    size_t lhs_sort_cost = OperatorCostModel::operatorCost((SecureOperator *) lhs_sorter);
                     smj_presorted_cost += lhs_sort_cost;
                     std::cout << std::to_string(lhs_sort_cost) + "(lhs sort cost) = ";
                 } else if (lhs_sort_compatible && !rhs_sort_compatible) {
                     smj_presorted = new KeyedSortMergeJoin<B>(lhs->clone(), rhs_sorter, foreign_key,
                                                               join_condition->clone());
-                    smj_presorted_cost = OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(smj_presorted));
+                    smj_presorted_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
                     std::cout << std::to_string(smj_presorted_cost) + "(smj cost) + " ;
-                    size_t rhs_sort_cost = OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(rhs_sorter));
+                    size_t rhs_sort_cost = OperatorCostModel::operatorCost((SecureOperator *) rhs_sorter);
                     smj_presorted_cost += rhs_sort_cost;
                     std::cout << std::to_string(rhs_sort_cost) + "(rhs sort cost) = ";
                 } else if (!lhs_sort_compatible && !rhs_sort_compatible) {
                     smj_presorted = new KeyedSortMergeJoin<B>(lhs_sorter, rhs_sorter, foreign_key,
-                                                          join_condition->clone());
-                    smj_presorted_cost = OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(smj_presorted);
+                                                              join_condition->clone());
+                    smj_presorted_cost = OperatorCostModel::operatorCost((SecureOperator *) smj_presorted);
                     std::cout << std::to_string(smj_presorted_cost) + "(smj cost) + " ;
-                    size_t lhs_sort_cost = OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(lhs_sorter);
-                    size_t rhs_sort_cost = OperatorCostModel::operatorCost(reinterpret_cast<SecureOperator *>(rhs_sorter);
+                    size_t lhs_sort_cost = OperatorCostModel::operatorCost((SecureOperator *) lhs_sorter);
+                    size_t rhs_sort_cost = OperatorCostModel::operatorCost((SecureOperator *) rhs_sorter);
                     smj_presorted_cost += lhs_sort_cost;
                     smj_presorted_cost += rhs_sort_cost;
                     std::cout << std::to_string(lhs_sort_cost) + "(lhs sort cost) + "
-                    + std::to_string(rhs_sort_cost) + "(rhs sort cost) = ";
+                                 + std::to_string(rhs_sort_cost) + "(rhs sort cost) = ";
                 }
 
                 string selected_join = (smj_cost < smj_presorted_cost) ? "keyed-sort-merge-join" : "cost-keyed-sort-merge-join";
 
                 std::cout << std::to_string(smj_presorted_cost) +
-                           ", join type : " + selected_join;
+                             ", join type : " + selected_join;
 
                 if (selected_join == "cost-keyed-sort-merge-join") {
                     if(!lhs_sort_compatible && rhs_sort_compatible) {
@@ -857,26 +874,30 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
                         lhs_sorter = new Sort<B>(lhs, lhs_sort);
                         return new KeyedSortMergeJoin<B>(lhs_sorter, rhs, foreign_key,
                                                          join_condition->clone());
-                    } else if(lhs_sort_compatible && !rhs_sort_compatible) {
+                    }
+                    else if(lhs_sort_compatible && !rhs_sort_compatible) {
                         std::cout << ", rhs not sort compatible, add sort to rhs, lhs sort compatible\n";
                         rhs_sorter = new Sort<B>(rhs, rhs_sort);
                         return new KeyedSortMergeJoin<B>(lhs, rhs_sorter, foreign_key,
                                                          join_condition->clone());
-                    } else if(!lhs_sort_compatible && !rhs_sort_compatible) {
+                    }
+                    else if(!lhs_sort_compatible && !rhs_sort_compatible) {
                         std::cout << ", lhs, rhs both not sort compatible, add sort to lhs, rhs\n";
                         lhs_sorter = new Sort<B>(lhs, lhs_sort);
                         rhs_sorter = new Sort<B>(rhs, rhs_sort);
                         return new KeyedSortMergeJoin<B>(lhs_sorter, rhs_sorter, foreign_key,
                                                          join_condition->clone());
                     }
-                } else {
+                }
+                else {
                     std::cout << endl;
                     return new KeyedSortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
                 }
             }
 
             return new KeyedSortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
-        } else { // if algorithm unspecified but FK, use KeyedJoin
+        }
+        else { // if algorithm unspecified but FK, use KeyedJoin
             return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition);
         }
 
@@ -1059,7 +1080,7 @@ Operator<B> *PlanParser<B>::parseLocalScan(const int & operator_id, const boost:
     if(op_algo == "merge-input" && std::is_same_v<B, Bit> && local_tuple_limit > 0 && SystemConfiguration::getInstance().emp_mode_ == EmpMode::SH2PC) {
         return createMergeInput(merge_sql, dummy_tag, local_tuple_limit, sort_def, plain_has_dummy_tag);
     }
-   return createInputOperator(sql, sort_def, plain_has_dummy_tag, dummy_tag, local_tuple_limit, input_party);
+    return createInputOperator(sql, sort_def, plain_has_dummy_tag, dummy_tag, local_tuple_limit, input_party);
 
 }
 
@@ -1070,7 +1091,7 @@ Operator<B> *PlanParser<B>::parseShrinkwrap(const int & operator_id, const boost
     if(pt.count("inputs") > 0) {
         ptree input_list = pt.get_child("inputs.");
         ptree::const_iterator it = input_list.begin();
-         child_op_id = it->second.get_value<int>();
+        child_op_id = it->second.get_value<int>();
     }
 
     Operator<B> *op = operators_.at(child_op_id);

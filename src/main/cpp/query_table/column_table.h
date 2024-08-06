@@ -172,7 +172,7 @@ public:
     }
 
     B getDummyTag(const int & row)  const override {
-        auto dummy_tags = reinterpret_cast<B*>(this->column_data_.at(-1).data());
+        auto dummy_tags =  (B*) this->column_data_.at(-1).data();
         return dummy_tags[row];
     }
 
