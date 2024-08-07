@@ -16,7 +16,7 @@ DEFINE_string(empty_db, "tpch_empty", "empty db name for schemas");
 DEFINE_int32(cutoff, 5, "limit clause for queries"); // not used here
 DEFINE_int32(ctrl_port, 65450, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*.test_tpch_q3_lineitem_orders", "run only the tests passing this filter");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "wire_packed", "storage model for columns (column or wire_packed)");
 DEFINE_string(wire_path, "wires", "relative path to wire files");
 DEFINE_int32(input_party, 10086, "party for input data");
@@ -29,11 +29,22 @@ using namespace vaultdb;
 class OMPCBlockNestedLoopJoinTest : public OmpcBaseTest {
 protected:
 
-    const int customer_limit_ =   150; // smaller: 5
+  // small
+    const int customer_limit_ =   150;
+    const int orders_limit_ = 200; 
+    const int lineitem_limit_ =  500; 
+  
+  // medium
+  /*  const int customer_limit_ =   150;
+    const int orders_limit_ = 1500;
+    const int lineitem_limit_ =  1500;
+  */
 
-    const int orders_limit_ = 200; // 1500; // smaller: 30
-
-    const int lineitem_limit_ = 500; // 6005; // smaller: 90
+  // large
+  /*  const int customer_limit_ =   150;
+    const int orders_limit_ = 1500; 
+    const int lineitem_limit_ =  6005; 
+  */
 
     const std::string customer_sql_ = "SELECT c_custkey \n" // ignore c_mktsegment <> 'HOUSEHOLD' cdummy for now
                                       "FROM customer \n"
@@ -89,6 +100,7 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_customer_orders) {
     Expression<emp::Bit> *predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders, 1, customers, 4);
     BlockNestedLoopJoin<emp::Bit> *join = new BlockNestedLoopJoin(orders, customers, 0, predicate);
     SecureTable *join_res = join->run();
+    Utilities::checkMemoryUtilization(true);
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
@@ -127,6 +139,7 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders) {
     Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(lineitem, 0, orders, 3 );
     BlockNestedLoopJoin<emp::Bit> *join = new BlockNestedLoopJoin(lineitem, orders, 0, predicate);
     SecureTable *join_res = join->run();
+    Utilities::checkMemoryUtilization(true);
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
@@ -147,12 +160,12 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders) {
 TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     std::string sql = "WITH orders_cte AS (" + orders_sql_ + "), "
-                                                             "lineitem_cte AS (" + lineitem_sql_ + "), "
-                                                                                                   "customer_cte AS (" + customer_sql_ + ") "
-                                                                                                                                         "SELECT l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
-                                                                                                                                         "FROM lineitem_cte, orders_cte, customer_cte "
-                                                                                                                                         "WHERE l_orderkey = o_orderkey AND c_custkey = o_custkey "
-                                                                                                                                         "ORDER BY l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
+                            "lineitem_cte AS (" + lineitem_sql_ + "), "
+                            "customer_cte AS (" + customer_sql_ + ") "
+                       "SELECT l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
+                       "FROM lineitem_cte, orders_cte, customer_cte "
+                       "WHERE l_orderkey = o_orderkey AND c_custkey = o_custkey "
+                       "ORDER BY l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
 
     Operator<Bit> *orders = getOrders();
     Operator<Bit> *customers = getCustomers();
@@ -170,6 +183,7 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders_customer) {
     Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>( lineitem, 0, co_join, 3);
     BlockNestedLoopJoin<Bit> *col_join = new BlockNestedLoopJoin(lineitem, co_join, 0, lineitem_orders_predicate);
     SecureTable *join_res = col_join->run();
+    Utilities::checkMemoryUtilization(true);
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(col_join->getOutputSchema().getFieldCount());
