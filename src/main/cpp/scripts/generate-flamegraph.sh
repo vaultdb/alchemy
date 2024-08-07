@@ -13,7 +13,7 @@ TEST=$1
 # cd _deps && git clone https://github.com/brendangregg/FlameGraph
 FLAMEGRAPH="_deps/FlameGraph"
 
-$PERF_EXE record -F 100 -a --call-graph dwarf -m256M $TEST --party=1 & $TEST --party=2
+$PERF_EXE record -F 100 -a --call-graph dwarf -m256M $TEST --party=1 & $TEST --party=2 & $TEST --party=3 & $TEST --party=10086
 wait
 sleep 1
 sync
