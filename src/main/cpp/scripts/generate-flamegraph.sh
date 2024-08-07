@@ -28,7 +28,7 @@ wait
 ########################### # try pprof here ###########################
 $TEST --party=2 &
 ./$TEST --party=3 &
-./$TEST --party=10086
+./$TEST --party=10086 &
 
 env CPUPROFILE=`basename ${TEST}.prof` $TEST --party=1
 wait
