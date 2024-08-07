@@ -53,8 +53,7 @@ void OmpcBaseTest::SetUp()  {
 
     s.setEmptyDbName(empty_db_);
     s.emp_manager_ = manager_;
-    // TODO: disable bitpacking for packed wires to make this comparable to baseline
-//    BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(FLAGS_unioned_db);
+
     s.initialize(db_name_, BitPackingMetadata(), storage_model_, bp_unpacked_page_size_bits_, bp_page_cnt_);
     string settings = Utilities::getTestParameters();
     log->write(settings, Level::INFO);
