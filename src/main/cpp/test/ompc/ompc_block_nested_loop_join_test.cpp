@@ -22,29 +22,19 @@ DEFINE_string(wire_path, "wires", "relative path to wire files");
 DEFINE_int32(input_party, 10086, "party for input data");
 DEFINE_int32(unpacked_page_size_bits, 2048, "unpacked page size in bits");
 DEFINE_int32(page_cnt, 50, "number of pages in unpacked buffer pool");
-
+DEFINE_string(input_size, "s", "input size for the test (s, m, l)");
 
 using namespace vaultdb;
 
 class OMPCBlockNestedLoopJoinTest : public OmpcBaseTest {
 protected:
 
-  // small
-    const int customer_limit_ =   150;
-    const int orders_limit_ = 200; 
-    const int lineitem_limit_ =  500; 
-  
-  // medium
-  /*  const int customer_limit_ =   150;
-    const int orders_limit_ = 1500;
-    const int lineitem_limit_ =  1500;
-  */
 
-  // large
-  /*  const int customer_limit_ =   150;
-    const int orders_limit_ = 1500; 
-    const int lineitem_limit_ =  6005; 
-  */
+  // small
+     int customer_limit_ =   150;
+     int orders_limit_ = 200;
+     int lineitem_limit_ =  500;
+  
 
     const std::string customer_sql_ = "SELECT c_custkey \n" // ignore c_mktsegment <> 'HOUSEHOLD' cdummy for now
                                       "FROM customer \n"
@@ -60,6 +50,28 @@ protected:
                                       "FROM lineitem \n"
                                       "ORDER BY l_orderkey, l_linenumber \n"
                                       "LIMIT " + std::to_string(lineitem_limit_);
+
+    void SetUp() override {
+
+      OmpcBaseTest::SetUp();
+
+        if(FLAGS_input_size == "m") {
+            // medium
+             customer_limit_ = 150;
+             orders_limit_ = 1500;
+             lineitem_limit_ = 1500;
+        } else if(FLAGS_input_size == "l") {
+            // large
+             customer_limit_ = 150;
+             orders_limit_ = 1500;
+             lineitem_limit_ = 6005;
+        } else {
+            if(FLAGS_input_size != "s") {
+                std::cout << "Invalid input size: " << FLAGS_input_size << ", must be s/m/l." <<  std::endl;
+                exit(0);
+            }
+        }
+    }
 
     Operator<Bit> *getCustomers();
     Operator<Bit> *getOrders();
