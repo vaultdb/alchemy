@@ -44,7 +44,7 @@ protected:
     int bp_unpacked_page_size_bits_ = 2048;
     int bp_page_cnt_ = 50;
 
-    vector<string> hosts_ = vector<string>(emp::N + 1, "127.0.0.1");
+    vector<string> hosts_;
     int port_ = 54345;
     int ctrl_port_ = 65455;
 
