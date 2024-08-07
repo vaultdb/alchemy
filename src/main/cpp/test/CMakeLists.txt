@@ -1,5 +1,5 @@
 include(GoogleTest)
-
+#add_link_options("SHELL:-Wl,-no-as-needed -lprofiler -Wl,-as-needed")
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	if(NOT DEFINED GTEST_LIBRARY)
