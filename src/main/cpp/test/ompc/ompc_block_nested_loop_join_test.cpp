@@ -91,15 +91,21 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_customer_orders) {
                             "WHERE c_custkey = o_custkey "
                             "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT cdummy AND NOT odummy for now
 
+    time_point<high_resolution_clock> load_start_time = high_resolution_clock::now();
     Operator<Bit> *orders = getOrders();
     Operator<Bit> *customers = getCustomers();
+    double load_runtime = time_from(load_start_time)/1e6;
+    cout << "data load time: " << load_runtime << "s" << endl;
 
     // test fkey-pkey join
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<emp::Bit> *predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders, 1, customers, 4);
     BlockNestedLoopJoin<emp::Bit> *join = new BlockNestedLoopJoin(orders, customers, 0, predicate);
+    time_point<high_resolution_clock> querying_start_time = high_resolution_clock::now();
     SecureTable *join_res = join->run();
+    double querying_runtime = time_from(querying_start_time)/1e6;
+    cout << "querying time: " << querying_runtime << "s" << endl;
     Utilities::checkMemoryUtilization(true);
 
     if(FLAGS_validation) {
@@ -129,16 +135,21 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders) {
                        "WHERE l_orderkey = o_orderkey "
                        "ORDER BY l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority"; // ignore NOT odummy AND NOT ldummy for now
 
-
+    time_point<high_resolution_clock> load_start_time = high_resolution_clock::now();
     Operator<Bit> *lineitem = getLineitem();
     Operator<Bit> *orders = getOrders();
+    double load_runtime = time_from(load_start_time)/1e6;
+    cout << "data load time: " << load_runtime << "s" << endl;
 
     // test pkey-fkey join
     // join output schema: (lineitem, orders)
     // l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority
     Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(lineitem, 0, orders, 3 );
     BlockNestedLoopJoin<emp::Bit> *join = new BlockNestedLoopJoin(lineitem, orders, 0, predicate);
+    time_point<high_resolution_clock> querying_start_time = high_resolution_clock::now();
     SecureTable *join_res = join->run();
+    double querying_runtime = time_from(querying_start_time)/1e6;
+    cout << "querying time: " << querying_runtime << "s" << endl;
     Utilities::checkMemoryUtilization(true);
 
     if(FLAGS_validation) {
@@ -167,22 +178,26 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders_customer) {
                        "WHERE l_orderkey = o_orderkey AND c_custkey = o_custkey "
                        "ORDER BY l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey"; // ignore NOT odummy AND NOT ldummy AND NOT cdummy for now
 
+    time_point<high_resolution_clock> load_start_time = high_resolution_clock::now();
     Operator<Bit> *orders = getOrders();
     Operator<Bit> *customers = getCustomers();
+    Operator<Bit> *lineitem = getLineitem();
+    double load_runtime = time_from(load_start_time)/1e6;
+    cout << "data load time: " << load_runtime << "s" << endl;
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<emp::Bit> * customer_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders, 1,customers,4);
     BlockNestedLoopJoin<Bit> *co_join = new BlockNestedLoopJoin(orders, customers, 0, customer_orders_predicate);
-    co_join->setOperatorId(-2);
-
-    Operator<Bit> *lineitem = getLineitem();
 
     // join output schema:
     //  l_orderkey, l_extendedprice, l_discount, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>( lineitem, 0, co_join, 3);
     BlockNestedLoopJoin<Bit> *col_join = new BlockNestedLoopJoin(lineitem, co_join, 0, lineitem_orders_predicate);
+    time_point<high_resolution_clock> querying_start_time = high_resolution_clock::now();
     SecureTable *join_res = col_join->run();
+    double querying_runtime = time_from(querying_start_time)/1e6;
+    cout << "querying time: " << querying_runtime << "s" << endl;
     Utilities::checkMemoryUtilization(true);
 
     if(FLAGS_validation) {
