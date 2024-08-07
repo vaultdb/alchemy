@@ -27,6 +27,7 @@ enable_testing()
 find_package(OpenSSL REQUIRED)
 #find_package(GMP REQUIRED)
 find_package(EMP REQUIRED)
+#find_package(Gperftools REQUIRED)
 
 find_library(EMP_LIBRARIES NAMES emp-tool)
 find_library(EMP_ZK_LIBRARY NAMES emp-zk)
@@ -148,45 +149,6 @@ set(sources
 		enumerator/bushy_plan_enumerator.cpp
 )
 
-
-
-#message("verify ${OPENSSL_LIBRARIES}:${PQXX_LIBRARY}:${EMP_ZK_LIBRARY}  ${EMP_LIBRARIES} ${EMP_INCLUDE_DIR}")
-
-add_library(${NAME} SHARED ${sources})
-
-if(APPLE)
-	target_compile_definitions(${NAME} PUBLIC "-D_GNU_SOURCE")
-endif()
-
-add_executable(generate_enrich_data test/support/generate_enrich_data.cpp)
-
-#shouldn't need this last one, should be in Boost_LIBRARIES var, debug this later
-target_link_libraries(${NAME} ${OPENSSL_LIBRARIES}  ${EMP_LIBRARIES}  ${EMP_ZK_LIBRARY}  ${PQXX_LIBRARY}  ${GFLAGS_LIBRARY}   ${Boost_LIBRARIES} Boost::date_time )
-
-install(TARGETS ${NAME} DESTINATION ${CMAKE_SOURCE_DIR}/lib)
-
-
-add_executable(run_query util/cli/run_query.cpp)
-target_link_libraries(run_query vaultdb-emp)
-
-add_executable(parse_plan util/cli/parse_plan.cpp)
-target_link_libraries(parse_plan vaultdb-emp)
-
-add_executable(secret_share_tpch_instance util/cli/secret_share_tpch_instance.cpp)
-target_link_libraries(secret_share_tpch_instance vaultdb-emp)
-
-add_executable(xor_secret_share_tpch_instance util/cli/xor_secret_share_tpch_instance.cpp)
-target_link_libraries(xor_secret_share_tpch_instance vaultdb-emp)
-
-add_executable(secret_share_mpc_table_from_query util/cli/secret_share_mpc_table_from_query.cpp)
-target_link_libraries(secret_share_mpc_table_from_query vaultdb-emp)
-
-add_executable(wire_pack_tpch_instance util/cli/wire_pack_tpch_instance.cpp)
-target_link_libraries(wire_pack_tpch_instance vaultdb-emp)
-
-add_executable(wire_pack_table_from_query util/cli/wire_pack_table_from_query.cpp)
-target_link_libraries(wire_pack_table_from_query vaultdb-emp)
-
 # #########################################
 # "make check-lint"
 # #########################################
@@ -217,3 +179,41 @@ add_custom_target(check-lint echo '${VAULTDB_LINT_FILES}' | xargs -n8 -P8
 		--verbose=2 --quiet
 		--filter=-legal/copyright,-build/header_guard,-runtime/references,-whitespace,-build/include_order,-build/namespaces,-build/c++11 # https://github.com/cpplint/cpplint/issues/148
 )
+
+#message("verify ${OPENSSL_LIBRARIES}:${PQXX_LIBRARY}:${EMP_ZK_LIBRARY}  ${EMP_LIBRARIES} ${EMP_INCLUDE_DIR}")
+
+add_library(${NAME} SHARED ${sources})
+
+if(APPLE)
+	target_compile_definitions(${NAME} PUBLIC "-D_GNU_SOURCE")
+endif()
+
+add_executable(generate_enrich_data test/support/generate_enrich_data.cpp)
+
+#shouldn't need this last one, should be in Boost_LIBRARIES var, debug this later
+target_link_libraries(${NAME} ${OPENSSL_LIBRARIES}  ${EMP_LIBRARIES}  ${EMP_ZK_LIBRARY}  ${PQXX_LIBRARY}  ${GFLAGS_LIBRARY}   ${Boost_LIBRARIES} Boost::date_time )
+#add_link_options("SHELL:-Wl,-no-as-needed -lprofiler -Wl,-as-needed")
+
+install(TARGETS ${NAME} DESTINATION ${CMAKE_SOURCE_DIR}/lib)
+
+
+add_executable(run_query util/cli/run_query.cpp)
+target_link_libraries(run_query vaultdb-emp)
+
+add_executable(parse_plan util/cli/parse_plan.cpp)
+target_link_libraries(parse_plan vaultdb-emp)
+
+add_executable(secret_share_tpch_instance util/cli/secret_share_tpch_instance.cpp)
+target_link_libraries(secret_share_tpch_instance vaultdb-emp)
+
+add_executable(xor_secret_share_tpch_instance util/cli/xor_secret_share_tpch_instance.cpp)
+target_link_libraries(xor_secret_share_tpch_instance vaultdb-emp)
+
+add_executable(secret_share_mpc_table_from_query util/cli/secret_share_mpc_table_from_query.cpp)
+target_link_libraries(secret_share_mpc_table_from_query vaultdb-emp)
+
+add_executable(wire_pack_tpch_instance util/cli/wire_pack_tpch_instance.cpp)
+target_link_libraries(wire_pack_tpch_instance vaultdb-emp)
+
+add_executable(wire_pack_table_from_query util/cli/wire_pack_table_from_query.cpp)
+target_link_libraries(wire_pack_table_from_query vaultdb-emp)
