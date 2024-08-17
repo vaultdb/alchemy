@@ -31,46 +31,64 @@ protected:
 
 
   // small
-     int customer_limit_ =   150;
-     int orders_limit_ = 200;
-     int lineitem_limit_ =  500;
+     int customer_limit_;
+     int orders_limit_;
+     int lineitem_limit_;
   
 
-    const std::string customer_sql_ = "SELECT c_custkey \n" // ignore c_mktsegment <> 'HOUSEHOLD' cdummy for now
-                                      "FROM customer \n"
-                                      "ORDER BY c_custkey \n"
-                                      "LIMIT " + std::to_string(customer_limit_);
+     std::string customer_sql_;
 
-    const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority \n" // ignore o_orderdate >= date '1995-03-25' odummy for now
-                                    "FROM orders \n"
-                                    "ORDER BY o_orderkey \n"
-                                    "LIMIT " + std::to_string(orders_limit_);
+     std::string orders_sql_;
 
-    const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice, l_discount \n" // ignore l_shipdate <= date '1995-03-25' ldummy for now
-                                      "FROM lineitem \n"
-                                      "ORDER BY l_orderkey, l_linenumber \n"
-                                      "LIMIT " + std::to_string(lineitem_limit_);
+     std::string lineitem_sql_;
 
     void SetUp() override {
 
-      OmpcBaseTest::SetUp();
+        OmpcBaseTest::SetUp();
 
-        if(FLAGS_input_size == "m") {
+        SystemConfiguration &conf = SystemConfiguration::getInstance();
+        int customer_tuple_cnt = static_cast<int>(conf.table_metadata_.at("customer").tuple_cnt_);
+        int orders_tuple_cnt = static_cast<int>(conf.table_metadata_.at("orders").tuple_cnt_);
+        int lineitem_tuple_cnt = static_cast<int>(conf.table_metadata_.at("lineitem").tuple_cnt_);
+
+
+        if(FLAGS_input_size == "s") {
+            // small
+            customer_limit_ = customer_tuple_cnt;
+            orders_limit_ = orders_tuple_cnt * 0.5;
+            lineitem_limit_ = lineitem_tuple_cnt * 0.25;
+        }
+        else if(FLAGS_input_size == "m") {
             // medium
-             customer_limit_ = 150;
-             orders_limit_ = 1500;
-             lineitem_limit_ = 1500;
+             customer_limit_ = customer_tuple_cnt;
+             orders_limit_ = orders_tuple_cnt;
+             lineitem_limit_ = lineitem_tuple_cnt * 0.5;
         } else if(FLAGS_input_size == "l") {
             // large
-             customer_limit_ = 150;
-             orders_limit_ = 1500;
-             lineitem_limit_ = 6005;
+             customer_limit_ = customer_tuple_cnt;
+             orders_limit_ = orders_tuple_cnt;
+             lineitem_limit_ = lineitem_tuple_cnt;
         } else {
             if(FLAGS_input_size != "s") {
                 std::cout << "Invalid input size: " << FLAGS_input_size << ", must be s/m/l." <<  std::endl;
                 exit(0);
             }
         }
+
+        customer_sql_ = "SELECT c_custkey \n" // ignore c_mktsegment <> 'HOUSEHOLD' cdummy for now
+                        "FROM customer \n"
+                        "ORDER BY c_custkey \n"
+                        "LIMIT " + std::to_string(customer_limit_);
+
+        orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority \n" // ignore o_orderdate >= date '1995-03-25' odummy for now
+                      "FROM orders \n"
+                      "ORDER BY o_orderkey \n"
+                      "LIMIT " + std::to_string(orders_limit_);
+
+        lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice, l_discount \n" // ignore l_shipdate <= date '1995-03-25' ldummy for now
+                        "FROM lineitem \n"
+                        "ORDER BY l_orderkey, l_linenumber \n"
+                        "LIMIT " + std::to_string(lineitem_limit_);
     }
 
     Operator<Bit> *getCustomers();
@@ -117,6 +135,7 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_customer_orders) {
     cout << "querying time: " << querying_runtime << "s" << endl;
     Utilities::checkMemoryUtilization(true);
     size_t sum_memory_swap = Utilities::checkMemoryAndSwapUtilization();
+    Utilities::checkDiskIOUtilization();
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
@@ -159,6 +178,7 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders) {
     cout << "querying time: " << querying_runtime << "s" << endl;
     Utilities::checkMemoryUtilization(true);
     size_t sum_memory_swap = Utilities::checkMemoryAndSwapUtilization();
+    Utilities::checkDiskIOUtilization();
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
@@ -206,6 +226,7 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders_customer) {
     cout << "querying time: " << querying_runtime << "s" << endl;
     Utilities::checkMemoryUtilization(true);
     size_t sum_memory_swap = Utilities::checkMemoryAndSwapUtilization();
+    Utilities::checkDiskIOUtilization();
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(col_join->getOutputSchema().getFieldCount());

@@ -78,6 +78,7 @@ namespace  vaultdb {
 #else
 
 #include <emp-rescu/emp-rescu.h>
+#include <util/utilities.h>
 #define __OMPC_BACKEND__ 1
 namespace  vaultdb {
     class OutsourcedMpcManager : public EmpManager {
@@ -97,6 +98,7 @@ namespace  vaultdb {
             ios_ctrl_ = emp::setup_netio(tpio_ctrl_, hosts, ctrl_port, party_, N);
             emp::backend = new OMPCBackend<N>(ios_, tpio_, party_);
             protocol_ = (OMPCBackend<N> *) emp::backend;
+            cout << "Memory usage of backend setup: " << Utilities::checkMemoryUtilization(true) << endl;
             SystemConfiguration & s = SystemConfiguration::getInstance();
             s.party_ = party;
             s.emp_mode_ = EmpMode::OUTSOURCED;

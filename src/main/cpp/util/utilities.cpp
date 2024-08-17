@@ -133,6 +133,7 @@ size_t Utilities::checkSwapUtilization(bool print) {
         return -1;
     }
 #endif
+    return 0;
 }
 
 size_t Utilities::checkMemoryAndSwapUtilization() {
@@ -142,6 +143,24 @@ size_t Utilities::checkMemoryAndSwapUtilization() {
     size_t sum = current_memory + current_swap;
     std::cout << "Current memory + swap utilization: " << sum << " bytes" << std::endl;
     return sum;
+#endif
+    return 0;
+}
+
+void Utilities::checkDiskIOUtilization() {
+#if defined(__linux__)
+    std::ifstream status_file("/proc/self/io");
+    std::string line;
+
+    if (status_file.is_open()) {
+        cout << "Disk I/O utilization:" << endl;
+        while (std::getline(status_file, line)) {
+            cout << line << endl;
+        }
+        status_file.close();
+    } else {
+        std::cerr << "Unable to open /proc/self/io" << std::endl;
+    }
 #endif
 }
 

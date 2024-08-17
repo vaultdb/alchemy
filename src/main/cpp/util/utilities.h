@@ -45,6 +45,8 @@ namespace vaultdb {
 
         static size_t checkMemoryAndSwapUtilization();
 
+        static void checkDiskIOUtilization();
+
         static std::string getStackTrace();
 
         static bool *bytesToBool(int8_t *bytes, const int &  byte_cnt);
