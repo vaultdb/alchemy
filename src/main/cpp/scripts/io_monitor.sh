@@ -13,6 +13,7 @@ get_io_stats() {
 }
 
 # Capture initial I/O stats
+cat /proc/diskstats | grep " sda "
 read INITIAL_READS_COMPLETED INITIAL_READS_MERGED INITIAL_WRITES_COMPLETED INITIAL_WRITES_MERGED < <(get_io_stats)
 echo "Initial reads completed: $INITIAL_READS_COMPLETED, initial reads merged: $INITIAL_READS_MERGED, initial writes completed: $INITIAL_WRITES_COMPLETED, initial writes merged: $INITIAL_WRITES_MERGED"
 
@@ -21,6 +22,7 @@ echo "Initial reads completed: $INITIAL_READS_COMPLETED, initial reads merged: $
 $1 --party=1 --validation=false --input_size=$2 --storage=$3 --unioned_db=$4 --filter=$5
 
 # Capture final I/O stats
+cat /proc/diskstats | grep " sda "
 read FINAL_READS_COMPLETED FINAL_READS_MERGED FINAL_WRITES_COMPLETED FINAL_WRITES_MERGED < <(get_io_stats)
 echo "Final reads completed: $FINAL_READS_COMPLETED, Final reads merged: $FINAL_READS_MERGED, Final writes completed: $FINAL_WRITES_COMPLETED, Final writes merged: $FINAL_WRITES_MERGED"
 
