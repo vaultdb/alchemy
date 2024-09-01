@@ -1,5 +1,6 @@
 #include "buffer_pool_manager.h"
 #include <query_table/packed_column_table.h>
+#include <query_table/buffered_column_table.h>
 #include "util/utilities.h"
 
 using namespace  vaultdb;

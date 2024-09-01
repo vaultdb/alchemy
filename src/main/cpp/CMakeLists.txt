@@ -60,6 +60,7 @@ set(sources
 		query_table/query_schema.cpp
 		query_table/query_table.cpp
 		query_table/column_table.cpp
+		query_table/buffered_column_table.cpp
 		query_table/packed_column_table.cpp
 		query_table/input_party_packed_column_table.h
 		query_table/computing_party_packed_column_table.h

@@ -8,6 +8,7 @@
 #include <util/system_configuration.h>
 #include "query_table/secure_tuple.h"
 #include "column_table.h"
+#include "buffered_column_table.h"
 #include "packed_column_table.h"
 #include "compression/compressed_table.h"
 #include "input_party_packed_column_table.h"
@@ -469,6 +470,9 @@ QueryTable<B> *QueryTable<B>::getTable(const size_t &tuple_cnt, const QuerySchem
     }
     if(s == StorageModel::COMPRESSED_STORE) {
         return new CompressedTable<B>(tuple_cnt, schema, sort_def);
+    }
+    if(s == StorageModel::COLUMN_STORE && conf.bp_enabled_ && is_same_v<B, emp::Bit>) {
+        return (QueryTable<B> *) new BufferedColumnTable(tuple_cnt, schema, sort_def);
     }
     return new ColumnTable<B>(tuple_cnt, schema, sort_def);
 }

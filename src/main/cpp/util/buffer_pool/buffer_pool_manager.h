@@ -117,6 +117,7 @@ namespace vaultdb {
 #define __OMPC_BACKEND__ 1
 namespace vaultdb {
     class PackedColumnTable;
+    class BufferedColumnTable;
 
     class BufferPoolManager {
     public:
