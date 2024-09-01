@@ -179,7 +179,7 @@ public:
         one_wire_ = OMPCPackedWire(bpm_.block_n_);
         manager_->pack(dummy_tags.data(), reinterpret_cast<Bit *>(&one_wire_), bpm_.unpacked_page_size_bits_);
 
-        bpm_.registerTable(table_id_, this);
+        bpm_.registerTable(table_id_, (QueryTable<Bit> *) this);
     }
 
     PackedColumnTable(const PackedColumnTable &src) : QueryTable<Bit>(src), manager_(SystemConfiguration::getInstance().emp_manager_) {
@@ -189,7 +189,7 @@ public:
         if(src.tuple_cnt_ == 0)
             return;
 
-        bpm_.registerTable(table_id_, this);
+        bpm_.registerTable(table_id_, (QueryTable<Bit> *) this);
 
     }
 

@@ -295,7 +295,7 @@ namespace vaultdb {
                 }
             }
             // signal that the PackedColumnTable is no longer memory-resident
-            packed_table_catalog_.erase(target_table_id);
+            tables_catalog_.erase(target_table_id);
 
         }
 
@@ -306,12 +306,12 @@ namespace vaultdb {
             // This should probably be part of PackedColumnTable's constructor
             position_map_.clear();
             reverse_position_map_.clear();
-            packed_table_catalog_.clear();
+            tables_catalog_.clear();
             clock_hand_position_ = 0;
         }
 
-        inline void registerTable(int table_id, PackedColumnTable *table) {
-            packed_table_catalog_[table_id] = table;
+        inline void registerTable(int table_id, QueryTable<Bit> *table) {
+            tables_catalog_[table_id] = table;
         }
 
 
@@ -320,7 +320,7 @@ namespace vaultdb {
         BufferPoolManager() { }
 
 
-        std::map<int, PackedColumnTable *> packed_table_catalog_;
+        std::map<int, QueryTable<Bit> *> tables_catalog_;
 
 
 

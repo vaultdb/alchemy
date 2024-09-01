@@ -68,9 +68,32 @@ namespace vaultdb {
 namespace vaultdb {
     class BufferedColumnTable : public QueryTable<Bit> {
     public:
-        BufferedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<Bit>(tuple_cnt, schema, sort_def) {}
+        SystemConfiguration &conf_ = SystemConfiguration::getInstance();
+        int table_id_ = conf_.num_tables_++;
+        std::map<int, int> fields_per_page_;
+        std::map<int, int> pages_per_field_;
 
-        BufferedColumnTable(const BufferedColumnTable &src) : QueryTable<Bit>(src) {}
+        BufferedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<Bit>(tuple_cnt, schema, sort_def) {
+            assert(this->conf_.storageModel() == this->storageModel() && this->conf_.bp_enabled_);
+            setSchema(schema);
+
+            if(this->tuple_cnt_ == 0) {
+                return;
+            }
+
+            this->conf_.bpm_.registerTable(this->table_id_, (QueryTable<Bit> *) this);
+        }
+
+        BufferedColumnTable(const BufferedColumnTable &src) : QueryTable<Bit>(src) {
+            assert(this->conf_.storageModel() == this->storageModel() && this->conf_.bp_enabled_);
+            setSchema(src.schema_);
+
+            if(src.tuple_cnt_ == 0) {
+                return;
+            }
+
+            this->conf_.bpm_.registerTable(this->table_id_, (QueryTable<Bit> *) this);
+        }
 
         Field<Bit> getField(const int &row, const int &col) const override {
             return Field<Bit>();
@@ -97,7 +120,31 @@ namespace vaultdb {
             return new BufferedColumnTable(*this);
         }
 
-        void setSchema(const QuerySchema &schema) override {}
+        void setSchema(const QuerySchema &schema) override {
+            this->schema_ = schema;
+            this->plain_schema_ = QuerySchema::toPlain(schema);
+
+            this->tuple_size_bytes_ = 0;
+
+            for(int i = -1; i < this->schema_.getFieldCount(); ++i) {
+                QueryFieldDesc desc = this->schema_.getField(i);
+                int field_size_bytes = desc.size() * sizeof(emp::Bit);
+
+                this->tuple_size_bytes_ += field_size_bytes;
+                this->field_sizes_bytes_[i] = field_size_bytes;
+
+                int bits_per_page = this->conf_.bpm_.unpacked_page_size_bits_;
+
+                if(desc.size() / bits_per_page > 0) {
+                    this->fields_per_page_[i] = 1;
+                    this->pages_per_field_[i] = desc.size() / bits_per_page + (desc.size() % bits_per_page != 0);
+                }
+                else {
+                    this->fields_per_page_[i] = bits_per_page / desc.size();
+                    this->pages_per_field_[i] = 1;
+                }
+            }
+        }
 
         QueryTuple<Bit> getRow(const int & idx) override {
             return QueryTuple<Bit>();

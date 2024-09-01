@@ -22,7 +22,7 @@ void BufferPoolManager::loadPage(PageId &pid) {
         return;
     }
 
-    auto tbl = packed_table_catalog_[pid.table_id_];
+    PackedColumnTable *tbl = (PackedColumnTable *) tables_catalog_[pid.table_id_];
     assert(tbl != nullptr);
     OMPCPackedWire src = tbl->readPackedWire(pid);
     int target_slot = evictPage();
@@ -56,7 +56,7 @@ void BufferPoolManager::loadPageWithLRUK(vaultdb::PageId &pid) {
         return;
     }
 
-    PackedColumnTable *tbl = packed_table_catalog_[pid.table_id_];
+    PackedColumnTable *tbl = (PackedColumnTable *) tables_catalog_[pid.table_id_];
     assert(tbl != nullptr);
     OMPCPackedWire src = tbl->readPackedWire(pid);
     int target_slot = evictPageWithLRUK();
@@ -105,12 +105,12 @@ int BufferPoolManager::evictPage() {
 
 
     if (pos.dirty_) {
-        if(packed_table_catalog_.find(pid.table_id_) != packed_table_catalog_.end()) {
+        if(tables_catalog_.find(pid.table_id_) != tables_catalog_.end()) {
             emp::Bit *src_ptr = unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
             OMPCPackedWire dst(block_n_);
             emp_manager_->pack(src_ptr, (Bit *) &dst, unpacked_page_size_bits_);
             ++pack_calls_;
-            packed_table_catalog_[pid.table_id_]->writePackedWire(pid, dst);
+            ((PackedColumnTable *) tables_catalog_[pid.table_id_])->writePackedWire(pid, dst);
         }
     }
 
@@ -173,12 +173,12 @@ int BufferPoolManager::evictPageWithLRUK() {
     assert(pos.slot_id_ == min_slot);
 
     if (pos.dirty_) {
-        if(packed_table_catalog_.find(min_pid.table_id_) != packed_table_catalog_.end()) {
+        if(tables_catalog_.find(min_pid.table_id_) != tables_catalog_.end()) {
             emp::Bit *src_ptr = unpacked_buffer_pool_.data() + position_map_.at(min_pid).slot_id_ * unpacked_page_size_bits_;
             OMPCPackedWire dst(block_n_);
             emp_manager_->pack(src_ptr, (Bit *) &dst, unpacked_page_size_bits_);
             ++pack_calls_;
-            packed_table_catalog_[min_pid.table_id_]->writePackedWire(min_pid, dst);
+            ((PackedColumnTable *) tables_catalog_[min_pid.table_id_])->writePackedWire(min_pid, dst);
         }
     }
 
@@ -201,8 +201,8 @@ void BufferPoolManager::clonePage(PageId &src_pid, PageId &dst_pid) {
         position_map_.at(dst_pid).dirty_ = true;
     }
     else {
-        PackedColumnTable *src_table = packed_table_catalog_[src_pid.table_id_];
-        PackedColumnTable *dst_table = packed_table_catalog_[dst_pid.table_id_];
+        PackedColumnTable *src_table = (PackedColumnTable *) tables_catalog_[src_pid.table_id_];
+        PackedColumnTable *dst_table = (PackedColumnTable *) tables_catalog_[dst_pid.table_id_];
 
         int8_t *src_page_ptr = src_table->packed_pages_[src_pid.col_id_].data() + src_pid.page_idx_ * src_table->packed_wire_size_bytes_;
         int8_t *dst_page_ptr = dst_table->packed_pages_[dst_pid.col_id_].data() + dst_pid.page_idx_ * dst_table->packed_wire_size_bytes_;
@@ -219,7 +219,7 @@ void BufferPoolManager::flushPage(const PageId &pid) {
         OMPCPackedWire dst(block_n_);
         emp_manager_->pack(src_ptr, (Bit *) &dst, unpacked_page_size_bits_);
         ++pack_calls_;
-        packed_table_catalog_[pid.table_id_]->writePackedWire(pid, dst);
+        ((PackedColumnTable *) tables_catalog_[pid.table_id_])->writePackedWire(pid, dst);
         position_map_.at(pid).dirty_ = false;
     }
 }
