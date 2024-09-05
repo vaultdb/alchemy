@@ -1,6 +1,7 @@
 #include "operators/stored_table_scan.h"
 #include "util/system_configuration.h"
 #include "query_table/packed_column_table.h"
+#include "query_table/buffered_column_table.h"
 #include <filesystem>
 
 using namespace vaultdb;
@@ -13,7 +14,25 @@ QueryTable<B> *StoredTableScan<B>::readStoredTable(string table_name, const vect
 
         if(conf.storageModel() == StorageModel::PACKED_COLUMN_STORE) {
             return (QueryTable<B> *) PackedColumnTable::deserialize(md, col_ordinals, limit);
-        } else {
+        }
+        else if(conf.storageModel() == StorageModel::COLUMN_STORE && conf.bp_enabled_) {
+            QuerySchema secure_schema = col_ordinals.empty() ? QuerySchema::toSecure(md.schema_) : QuerySchema::toSecure(OperatorUtilities::deriveSchema(md.schema_, col_ordinals));
+            BufferedColumnTable *buffered_table = new BufferedColumnTable(md.tuple_cnt_, secure_schema, md.collation_);
+
+            if(!conf.inputParty()) {
+                std::filesystem::copy_file(conf.stored_db_path_ + "/" + table_name + "." + std::to_string(conf.party_), buffered_table->secret_shares_path_, std::filesystem::copy_options::overwrite_existing);
+
+                if(!col_ordinals.empty()) {
+                    std::vector<emp::Bit> xor_secret_shares = buffered_table->readSecretSharesFromDisk(md.schema_, limit);
+                    std::vector<int8_t> serialized = buffered_table->serializeWithRevealToXOR(xor_secret_shares);
+
+                    DataUtilities::writeFile(buffered_table->secret_shares_path_, serialized);
+                }
+            }
+
+            return (QueryTable<B> *) buffered_table;
+        }
+        else {
             return readSecretSharedStoredTable(table_name, col_ordinals, limit);
         }
 

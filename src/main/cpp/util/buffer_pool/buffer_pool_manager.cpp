@@ -22,15 +22,29 @@ void BufferPoolManager::loadPage(PageId &pid) {
         return;
     }
 
-    PackedColumnTable *tbl = (PackedColumnTable *) tables_catalog_[pid.table_id_];
-    assert(tbl != nullptr);
-    OMPCPackedWire src = tbl->readPackedWire(pid);
     int target_slot = evictPage();
+
+    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+        PackedColumnTable *tbl = (PackedColumnTable *) tables_catalog_[pid.table_id_];
+        assert(tbl != nullptr);
+        OMPCPackedWire src = tbl->readPackedWire(pid);
+
+        Bit *dst = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
+        //    cout << "Unpacking page " << pid.toString() << '\n';
+        emp_manager_->unpack((Bit *) &src, dst, unpacked_page_size_bits_);
+        ++unpack_calls_;
+    }
+    else {
+        assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COLUMN_STORE);
+        BufferedColumnTable *tbl = (BufferedColumnTable *) tables_catalog_[pid.table_id_];
+        assert(tbl != nullptr);
+
+        emp::Bit *src_ptr = tbl->getFieldPtr(pid.page_idx_ * tbl->fields_per_page_.at(pid.col_id_), pid.col_id_);
+        emp::Bit *dst_ptr = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
+        memcpy(dst_ptr, src_ptr, unpacked_page_size_bits_);
+    }
+
     ++misses_;
-    Bit *dst = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
-//    cout << "Unpacking page " << pid.toString() << '\n';
-    emp_manager_->unpack((Bit *) &src, dst, unpacked_page_size_bits_);
-    ++unpack_calls_;
 
     PositionMapEntry p(target_slot, false, false);
     position_map_[pid] = p;
@@ -107,10 +121,16 @@ int BufferPoolManager::evictPage() {
     if (pos.dirty_) {
         if(tables_catalog_.find(pid.table_id_) != tables_catalog_.end()) {
             emp::Bit *src_ptr = unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
-            OMPCPackedWire dst(block_n_);
-            emp_manager_->pack(src_ptr, (Bit *) &dst, unpacked_page_size_bits_);
-            ++pack_calls_;
-            ((PackedColumnTable *) tables_catalog_[pid.table_id_])->writePackedWire(pid, dst);
+            if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+                OMPCPackedWire dst(block_n_);
+                emp_manager_->pack(src_ptr, (Bit *) &dst, unpacked_page_size_bits_);
+                ++pack_calls_;
+                ((PackedColumnTable *) tables_catalog_[pid.table_id_])->writePackedWire(pid, dst);
+            }
+            else {
+                assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COLUMN_STORE);
+                ((BufferedColumnTable *) tables_catalog_[pid.table_id_])->writePageToDisk(pid, src_ptr);
+            }
         }
     }
 
@@ -216,10 +236,17 @@ void BufferPoolManager::flushPage(const PageId &pid) {
     if(position_map_.find(pid) != position_map_.end() && position_map_.at(pid).dirty_) {
 
         emp::Bit *src_ptr =  unpacked_buffer_pool_.data() + position_map_.at(pid).slot_id_ * unpacked_page_size_bits_;
-        OMPCPackedWire dst(block_n_);
-        emp_manager_->pack(src_ptr, (Bit *) &dst, unpacked_page_size_bits_);
-        ++pack_calls_;
-        ((PackedColumnTable *) tables_catalog_[pid.table_id_])->writePackedWire(pid, dst);
+
+        if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+            OMPCPackedWire dst(block_n_);
+            emp_manager_->pack(src_ptr, (Bit *) &dst, unpacked_page_size_bits_);
+            ++pack_calls_;
+            ((PackedColumnTable *) tables_catalog_[pid.table_id_])->writePackedWire(pid, dst);
+        }
+        else {
+            assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COLUMN_STORE);
+            ((BufferedColumnTable *) tables_catalog_[pid.table_id_])->writePageToDisk(pid, src_ptr);
+        }
         position_map_.at(pid).dirty_ = false;
     }
 }
