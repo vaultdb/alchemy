@@ -4,6 +4,10 @@ using namespace vaultdb;
 
 #if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/emp-zk.h")
 
+std::vector<emp::Bit> BufferedColumnTable::readSecretSharesFromDisk(const int &tuple_cnt, const int &limit) {
+    return vector<emp::Bit>();
+}
+
 std::vector<emp::Bit> BufferedColumnTable::readSecretSharesFromDisk(const int &tuple_cnt, const QuerySchema &schema, const vector<int> & col_ordinals, const int &limit) {
     return std::vector<emp::Bit>();
 }
@@ -20,11 +24,79 @@ void BufferedColumnTable::writePageToDisk(const PageId &pid, const emp::Bit *bit
 
 #else
 
+std::vector<emp::Bit> BufferedColumnTable::readSecretSharesFromDisk(const int &tuple_cnt, const int &limit) {
+    bool *dst_bools;
+    size_t dst_bit_cnt = this->tuple_cnt_ * this->schema_.size();
+
+    if(!this->conf_.inputParty()) {
+        size_t src_byte_cnt = std::filesystem::file_size(this->secret_shares_path_);
+        size_t src_bit_cnt = src_byte_cnt * 8;
+
+        dst_bit_cnt = this->tuple_cnt_ * this->schema_.size();
+        dst_bools = new bool[dst_bit_cnt]; // dst_bit_alloc
+        bool *dst_cursor = dst_bools;
+
+        assert(src_bit_cnt % this->plain_schema_.size() == 0);
+        FILE* fp = fopen(this->secret_shares_path_.c_str(), "rb");
+
+        for(int i = 0; i < this->schema_.getFieldCount(); ++i) {
+            auto plain_field = this->plain_schema_.getField(i);
+            auto secure_field = this->schema_.getField(i);
+
+            int read_size_bits = this->tuple_cnt_ * secure_field.size();
+            if(plain_field.getType() != FieldType::BOOL) {
+                vector<int8_t> tmp_read(read_size_bits / 8);
+                fread(tmp_read.data(), 1, tmp_read.size(), fp);
+                emp::to_bool<int8_t>(dst_cursor, tmp_read.data(), read_size_bits, false);
+                dst_cursor += read_size_bits;
+            }
+            else {
+                fread(dst_cursor, 1, read_size_bits, fp);
+                for(int j = 0; j < this->tuple_cnt_; ++j) {
+                    *dst_cursor = ((*dst_cursor & 1) != 0);
+                    ++dst_cursor;
+                }
+            }
+
+            if(tuple_cnt != this->tuple_cnt_) {
+                int to_seek = ((tuple_cnt - this->tuple_cnt_) * plain_field.size()) / 8;
+                fseek(fp, to_seek, SEEK_CUR);
+            }
+        }
+
+        fread(dst_cursor, 1, this->tuple_cnt_, fp);
+        for(int i = 0; i < this->tuple_cnt_; ++i) {
+            *dst_cursor = ((*dst_cursor & 1) != 0);
+            ++dst_cursor;
+        }
+
+        fclose(fp);
+    }
+
+    Integer dst(dst_bit_cnt, 0L, emp::PUBLIC);
+
+    bool *to_send = (this->conf_.party_ == 1) ? dst_bools : nullptr;
+    this->conf_.emp_manager_->feed(dst.bits.data(), 1, to_send, dst_bit_cnt);
+
+    for(int i = 2; i <= N; ++i) {
+        Integer tmp(dst_bit_cnt, 0L, emp::PUBLIC);
+        to_send = (this->conf_.party_ == i) ? dst_bools : nullptr;
+        this->conf_.emp_manager_->feed(tmp.bits.data(), i, to_send, dst_bit_cnt);
+        dst = dst ^ tmp;
+    }
+
+    return dst.bits;
+}
+
 std::vector<emp::Bit> BufferedColumnTable::readSecretSharesFromDisk(const int &tuple_cnt, const QuerySchema &schema, const vector<int> & col_ordinals, const int &limit) {
+    if(col_ordinals.empty()) {
+        return readSecretSharesFromDisk(tuple_cnt, limit);
+    }
+
     QuerySchema plain_schema = QuerySchema::toPlain(schema);
 
-    size_t dst_bit_cnt = this->tuple_cnt_ * this->schema_.size();
     bool *dst_bools;
+    size_t dst_bit_cnt = this->tuple_cnt_ * this->schema_.size();
 
     if(!this->conf_.inputParty()) {
         size_t src_byte_cnt = std::filesystem::file_size(this->secret_shares_path_);
@@ -46,27 +118,20 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharesFromDisk(const int &t
         assert(src_bit_cnt % plain_schema.size() == 0);
         FILE *fp = fopen(this->secret_shares_path_.c_str(), "rb");
 
-        int loop_cnt = col_ordinals.empty() ? this->schema_.getFieldCount() : col_ordinals.size();
-        for (int i = 0; i < loop_cnt; ++i) {
-            int col_ordinal = col_ordinals.empty() ? i : col_ordinals[i];
-            int read_size_bits = this->tuple_cnt_ * schema.getField(col_ordinal).size();
-            fseek(fp, col_bytes_offsets[col_ordinal], SEEK_SET);
-            if (plain_schema.getField(col_ordinal).getType() != FieldType::BOOL) {
+        for (auto src_ordinal : col_ordinals) {
+            int read_size_bits = this->tuple_cnt_ * schema.getField(src_ordinal).size();
+            fseek(fp, col_bytes_offsets[src_ordinal], SEEK_SET);
+            if (plain_schema.getField(src_ordinal).getType() != FieldType::BOOL) {
                 std::vector<int8_t> tmp_read(read_size_bits / 8);
                 fread(tmp_read.data(), 1, read_size_bits / 8, fp);
                 emp::to_bool<int8_t>(dst_cursor, tmp_read.data(), read_size_bits, false);
                 dst_cursor += read_size_bits;
             } else {
-                fread(dst_cursor, 1, this->tuple_cnt_, fp);
+                fread(dst_cursor, 1, read_size_bits, fp);
                 for (int j = 0; j < this->tuple_cnt_; ++j) {
                     *dst_cursor = ((*dst_cursor & 1) != 0);
                     ++dst_cursor;
                 }
-            }
-
-            if (tuple_cnt != this->tuple_cnt_) {
-                int to_seek = ((tuple_cnt - this->tuple_cnt_) * plain_schema.getField(col_ordinal).size()) / 8;
-                fseek(fp, to_seek, SEEK_CUR);
             }
         }
 
@@ -127,19 +192,18 @@ std::pair<int, int> BufferedColumnTable::getFieldPtrRange(const int &row, const 
 void BufferedColumnTable::writePageToDisk(const PageId &pid, const emp::Bit *bits) {
     assert(this->isEncrypted());
 
-    std::vector<emp::Bit> secret_shares = this->readSecretSharesFromDisk(this->tuple_cnt_, this->schema_, std::vector<int>(), -1);
+    std::vector<emp::Bit> secret_shares = this->readSecretSharesFromDisk(this->tuple_cnt_, -1);
 
     if(!this->conf_.inputParty()) {
         int col = pid.col_id_;
         int field_size_bytes = this->field_sizes_bytes_[col];
         int fields_per_page = this->fields_per_page_[col];
         int row = pid.page_idx_ * fields_per_page;
-        std::vector<int8_t> serialized = this->serializeWithRevealToXOR(secret_shares);
-        int8_t *write_ptr = serialized.data() + this->serialized_col_bytes_offsets_[col] + row * field_size_bytes;
-        memcpy(write_ptr, (int8_t *) bits, fields_per_page * field_size_bytes);
-        std::vector<int8_t> new_serialized = this->serializeWithRevealToXOR(secret_shares);
 
-        DataUtilities::writeFile(this->secret_shares_path_, new_serialized);
+        std::pair<int, int> range = this->getFieldPtrRange(row, col);
+        memcpy(secret_shares.data(), bits, range.second - range.first);
+        std::vector<int8_t> serialized = this->serializeWithRevealToXOR(secret_shares);
+        DataUtilities::writeFile(this->secret_shares_path_, serialized);
     }
 }
 

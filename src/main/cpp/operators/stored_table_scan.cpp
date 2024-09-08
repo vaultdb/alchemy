@@ -16,14 +16,15 @@ QueryTable<B> *StoredTableScan<B>::readStoredTable(string table_name, const vect
             return (QueryTable<B> *) PackedColumnTable::deserialize(md, col_ordinals, limit);
         }
         else if(conf.storageModel() == StorageModel::COLUMN_STORE && conf.bp_enabled_) {
-            int tuple_cnt = (limit == -1 || limit > md.tuple_cnt_) ? md.tuple_cnt_ : limit;
+            bool not_limit = (limit == -1 || limit > md.tuple_cnt_);
+            int tuple_cnt = not_limit ? md.tuple_cnt_ : limit;
             QuerySchema secure_schema = col_ordinals.empty() ? QuerySchema::toSecure(md.schema_) : QuerySchema::toSecure(OperatorUtilities::deriveSchema(md.schema_, col_ordinals));
             BufferedColumnTable *buffered_table = new BufferedColumnTable(tuple_cnt, secure_schema, md.collation_);
 
             if(!conf.inputParty()) {
                 std::filesystem::copy_file(conf.stored_db_path_ + "/" + table_name + "." + std::to_string(conf.party_), buffered_table->secret_shares_path_, std::filesystem::copy_options::overwrite_existing);
 
-                if(!col_ordinals.empty()) {
+                if(!col_ordinals.empty() || !not_limit) {
                     std::vector<emp::Bit> xor_secret_shares = buffered_table->readSecretSharesFromDisk(md.tuple_cnt_, md.schema_, col_ordinals, limit);
                     std::vector<int8_t> serialized = buffered_table->serializeWithRevealToXOR(xor_secret_shares);
 
