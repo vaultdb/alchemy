@@ -39,9 +39,10 @@ void BufferPoolManager::loadPage(PageId &pid) {
         BufferedColumnTable *tbl = (BufferedColumnTable *) tables_catalog_[pid.table_id_];
         assert(tbl != nullptr);
 
-        emp::Bit *src_ptr = tbl->getFieldPtr(pid.page_idx_ * tbl->fields_per_page_.at(pid.col_id_), pid.col_id_);
+        std::vector<emp::Bit> src = tbl->readSecretSharesFromDisk(tbl->tuple_cnt_, tbl->getSchema(), vector<int>(), -1);
+        std::pair<int, int> range = tbl->getFieldPtrRange(pid.page_idx_ * tbl->fields_per_page_[pid.col_id_], pid.col_id_);
         emp::Bit *dst_ptr = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
-        memcpy(dst_ptr, src_ptr, unpacked_page_size_bits_);
+        std::copy(src.begin() + range.first, src.begin() + range.second, dst_ptr);
     }
 
     ++misses_;
