@@ -12,7 +12,7 @@ namespace vaultdb {
             int table_id_ = conf_.num_tables_++;
             std::string file_path_ = this->conf_.stored_db_path_ + "/table_" + std::to_string(this->table_id_);
             std::string secret_shares_path_ = this->file_path_ + "/table_" + std::to_string(this->table_id_) + "." + std::to_string(this->conf_.party_);
-            std::map<int, int64_t> serialized_col_bytes_offsets_;
+            std::map<int, int64_t> serialized_col_bits_offsets_;
 
             std::map<int, int> fields_per_page_;
             std::map<int, int> pages_per_field_;
@@ -92,7 +92,7 @@ namespace vaultdb {
         int table_id_ = conf_.num_tables_++;
         std::string file_path_ = this->conf_.stored_db_path_ + "/table_" + std::to_string(this->table_id_);
         std::string secret_shares_path_ = this->file_path_ + "/table_" + std::to_string(this->table_id_) + "." + std::to_string(this->conf_.party_);
-        std::map<int, int64_t> serialized_col_bytes_offsets_; // bytes offsets for each column in the serialized file
+        std::map<int, int64_t> serialized_col_bits_offsets_; // bytes offsets for each column in the serialized file
 
         std::map<int, int> fields_per_page_;
         std::map<int, int> pages_per_field_;
@@ -221,13 +221,13 @@ namespace vaultdb {
 
             // calculate offsets for each column in the serialized file
             int64_t col_bytes_cnt = 0L;
-            this->serialized_col_bytes_offsets_[0] = 0;
+            this->serialized_col_bits_offsets_[0] = 0;
             for (int i = 1; i < this->schema_.getFieldCount(); ++i) {
-                col_bytes_cnt += (this->schema_.getField(i - 1).size() * this->tuple_cnt_) / 8;
-                this->serialized_col_bytes_offsets_[i] = col_bytes_cnt;
+                col_bytes_cnt += this->schema_.getField(i - 1).size() * this->tuple_cnt_;
+                this->serialized_col_bits_offsets_[i] = col_bytes_cnt;
             }
-            col_bytes_cnt += (this->schema_.getField(this->schema_.getFieldCount() - 1).size() * this->tuple_cnt_) / 8;
-            this->serialized_col_bytes_offsets_[-1] = col_bytes_cnt;
+            col_bytes_cnt += this->schema_.getField(this->schema_.getFieldCount() - 1).size() * this->tuple_cnt_;
+            this->serialized_col_bits_offsets_[-1] = col_bytes_cnt;
         }
 
         QueryTuple<Bit> getRow(const int & idx) override {

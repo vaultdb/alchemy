@@ -26,13 +26,12 @@ void BufferedColumnTable::writePageToDisk(const PageId &pid, const emp::Bit *bit
 
 std::vector<emp::Bit> BufferedColumnTable::readSecretSharesFromDisk(const int &tuple_cnt, const int &limit) {
     bool *dst_bools;
-    size_t dst_bit_cnt = this->tuple_cnt_ * this->schema_.size();
+    size_t dst_bit_cnt = this->tuple_cnt_ * this->plain_schema_.size();
 
     if(!this->conf_.inputParty()) {
         size_t src_byte_cnt = std::filesystem::file_size(this->secret_shares_path_);
         size_t src_bit_cnt = src_byte_cnt * 8;
 
-        dst_bit_cnt = this->tuple_cnt_ * this->schema_.size();
         dst_bools = new bool[dst_bit_cnt]; // dst_bit_alloc
         bool *dst_cursor = dst_bools;
 
@@ -43,7 +42,7 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharesFromDisk(const int &t
             auto plain_field = this->plain_schema_.getField(i);
             auto secure_field = this->schema_.getField(i);
 
-            int read_size_bits = this->tuple_cnt_ * secure_field.size();
+            int read_size_bits = this->tuple_cnt_ * plain_field.size();
             if(plain_field.getType() != FieldType::BOOL) {
                 vector<int8_t> tmp_read(read_size_bits / 8);
                 fread(tmp_read.data(), 1, tmp_read.size(), fp);
@@ -51,7 +50,8 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharesFromDisk(const int &t
                 dst_cursor += read_size_bits;
             }
             else {
-                fread(dst_cursor, 1, read_size_bits, fp);
+                assert(plain_field.size() == (secure_field.size() + 7));
+                fread(dst_cursor, 1, this->tuple_cnt_, fp);
                 for(int j = 0; j < this->tuple_cnt_; ++j) {
                     *dst_cursor = ((*dst_cursor & 1) != 0);
                     ++dst_cursor;
@@ -64,6 +64,7 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharesFromDisk(const int &t
             }
         }
 
+        fseek(fp, this->serialized_col_bits_offsets_[-1]/8, SEEK_SET);
         fread(dst_cursor, 1, this->tuple_cnt_, fp);
         for(int i = 0; i < this->tuple_cnt_; ++i) {
             *dst_cursor = ((*dst_cursor & 1) != 0);
@@ -96,7 +97,7 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharesFromDisk(const int &t
     QuerySchema plain_schema = QuerySchema::toPlain(schema);
 
     bool *dst_bools;
-    size_t dst_bit_cnt = this->tuple_cnt_ * this->schema_.size();
+    size_t dst_bit_cnt = this->tuple_cnt_ * this->plain_schema_.size();
 
     if(!this->conf_.inputParty()) {
         size_t src_byte_cnt = std::filesystem::file_size(this->secret_shares_path_);
@@ -105,11 +106,11 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharesFromDisk(const int &t
         std::map<int, int64_t> col_bytes_offsets;
         int64_t col_bytes_cnt = 0L;
         col_bytes_offsets[0] = 0;
-        for (int i = 1; i < schema.getFieldCount(); ++i) {
-            col_bytes_cnt += (schema.getField(i - 1).size() * tuple_cnt) / 8;
+        for (int i = 1; i < plain_schema.getFieldCount(); ++i) {
+            col_bytes_cnt += (plain_schema.getField(i - 1).size() * tuple_cnt) / 8;
             col_bytes_offsets[i] = col_bytes_cnt;
         }
-        col_bytes_cnt += (schema.getField(schema.getFieldCount() - 1).size() * tuple_cnt) / 8;
+        col_bytes_cnt += (plain_schema.getField(plain_schema.getFieldCount() - 1).size() * tuple_cnt) / 8;
         col_bytes_offsets[-1] = col_bytes_cnt;
 
         dst_bools = new bool[dst_bit_cnt];
@@ -119,7 +120,7 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharesFromDisk(const int &t
         FILE *fp = fopen(this->secret_shares_path_.c_str(), "rb");
 
         for (auto src_ordinal : col_ordinals) {
-            int read_size_bits = this->tuple_cnt_ * schema.getField(src_ordinal).size();
+            int read_size_bits = this->tuple_cnt_ * plain_schema.getField(src_ordinal).size();
             fseek(fp, col_bytes_offsets[src_ordinal], SEEK_SET);
             if (plain_schema.getField(src_ordinal).getType() != FieldType::BOOL) {
                 std::vector<int8_t> tmp_read(read_size_bits / 8);
@@ -127,6 +128,7 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharesFromDisk(const int &t
                 emp::to_bool<int8_t>(dst_cursor, tmp_read.data(), read_size_bits, false);
                 dst_cursor += read_size_bits;
             } else {
+                assert(plain_schema.getField(src_ordinal).size() == (schema.getField(src_ordinal).size() + 7));
                 fread(dst_cursor, 1, read_size_bits, fp);
                 for (int j = 0; j < this->tuple_cnt_; ++j) {
                     *dst_cursor = ((*dst_cursor & 1) != 0);
@@ -173,18 +175,19 @@ std::vector<int8_t> BufferedColumnTable::serializeWithRevealToXOR(std::vector<em
     bool *read_cursor = bools;
     int8_t *write_cursor = serialized.data();
     for(int i = 0; i < serialized.size(); ++i) {
-        *write_cursor = Utilities::boolsToByte(read_cursor);
+        *write_cursor = (int8_t) Utilities::boolsToByte(read_cursor);
         ++write_cursor;
         read_cursor += 8;
     }
+    //emp::from_bool(bools, serialized.data(), bits.size(), false);
 
     delete [] bools;
     return serialized;
 }
 
 std::pair<int, int> BufferedColumnTable::getFieldPtrRange(const int &row, const int &col) {
-    int start_offset = this->serialized_col_bytes_offsets_[col] * 8 + row * this->schema_.getField(col).size();
-    int end_offset = start_offset + this->schema_.getField(col).size() * (((this->tuple_cnt_ - row) < this->fields_per_page_[col]) ? (this->tuple_cnt_ - row) : this->fields_per_page_[col]);
+    int start_offset = this->serialized_col_bits_offsets_[col] + ((this->schema_.getField(col).getType() != FieldType::BOOL) ? (row * this->schema_.getField(col).size()) : (row * 8));
+    int end_offset = start_offset + ((this->schema_.getField(col).getType() != FieldType::BOOL) ? this->schema_.getField(col).size() : 8) * (((this->tuple_cnt_ - row) < this->fields_per_page_[col]) ? (this->tuple_cnt_ - row) : this->fields_per_page_[col]);
 
     return std::make_pair(start_offset, end_offset);
 }
