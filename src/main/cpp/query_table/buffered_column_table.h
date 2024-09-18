@@ -76,7 +76,7 @@ namespace vaultdb {
 
             std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid);
 
-            std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid, const QuerySchema &schema, const int &limit);
+            std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid, const int tuple_cnt, const QuerySchema &schema, const string &src_data_path);
 
             std::vector<int8_t> serializeWithRevealToXOR(std::vector<emp::Bit> &bits);
 
@@ -262,7 +262,7 @@ namespace vaultdb {
 
         std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid);
 
-        std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid, const QuerySchema &schema, const int &limit);
+        std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid, const int tuple_cnt, const QuerySchema &schema, const string &src_data_path);
 
         std::vector<int8_t> serializeWithRevealToXOR(std::vector<emp::Bit> &bits);
 

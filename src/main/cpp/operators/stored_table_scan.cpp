@@ -31,20 +31,30 @@ QueryTable<B> *StoredTableScan<B>::readStoredTable(string table_name, const vect
 //                    DataUtilities::writeFile(buffered_table->secret_shares_path_, serialized);
 //                }
 
-                if(!col_ordinals.empty()) {
-                    for(int i = -1; i < col_ordinals.size(); ++i) {
+                string src_data_path = conf.stored_db_path_ + "/" + table_name + "." + std::to_string(conf.party_);
+                if(!col_ordinals.empty() || !not_limit) {
+                    for(int i = 0; col_ordinals.empty() ? i < md.schema_.getFieldCount() : i < col_ordinals.size(); ++i) {
                         int max_page = tuple_cnt / buffered_table->fields_per_page_[i] + (tuple_cnt % buffered_table->fields_per_page_[i] != 0);
 
                         for(int j = 0; j < max_page; ++j) {
-                            PageId pid(buffered_table->table_id_, i == -1 ? i : col_ordinals[i], j);
-                            std::vector<emp::Bit> xor_secret_shares = buffered_table->readSecretSharedPageFromDisk(pid, md.schema_, limit);
+                            PageId pid(buffered_table->table_id_, col_ordinals.empty() ? i : col_ordinals[i], j);
+                            std::vector<emp::Bit> xor_secret_shares = buffered_table->readSecretSharedPageFromDisk(pid, md.tuple_cnt_, md.schema_, src_data_path);
                             std::vector<int8_t> serialized = buffered_table->serializeWithRevealToXOR(xor_secret_shares);
-                            // TODO: write to disk
+                            DataUtilities::appendFile(buffered_table->secret_shares_path_, serialized);
                         }
+                    }
+
+                    int max_dummy_page = tuple_cnt / (buffered_table->fields_per_page_[-1]*8) + (tuple_cnt % (buffered_table->fields_per_page_[-1]*8) != 0);
+
+                    for(int i = 0; i < max_dummy_page; ++i) {
+                        PageId pid(buffered_table->table_id_, -1, i);
+                        std::vector<emp::Bit> xor_secret_shares = buffered_table->readSecretSharedPageFromDisk(pid, md.tuple_cnt_, md.schema_, src_data_path);
+                        std::vector<int8_t> serialized = buffered_table->serializeWithRevealToXOR(xor_secret_shares);
+                        DataUtilities::appendFile(buffered_table->secret_shares_path_, serialized);
                     }
                 }
                 else {
-                    std::filesystem::copy_file(conf.stored_db_path_ + "/" + table_name + "." + std::to_string(conf.party_), buffered_table->secret_shares_path_, std::filesystem::copy_options::overwrite_existing);
+                    std::filesystem::copy_file(src_data_path, buffered_table->secret_shares_path_, std::filesystem::copy_options::overwrite_existing);
                 }
 
             }
