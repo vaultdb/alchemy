@@ -109,6 +109,7 @@ namespace vaultdb {
                 return;
             }
 
+            std::filesystem::remove_all(this->secret_shares_path_);
             Utilities::mkdir(this->file_path_);
 
             this->conf_.bpm_.registerTable(this->table_id_, (QueryTable<Bit> *) this);
@@ -122,6 +123,7 @@ namespace vaultdb {
                 return;
             }
 
+            std::filesystem::remove_all(this->secret_shares_path_);
             Utilities::mkdir(this->file_path_);
 
             this->conf_.bpm_.flushTable(src.table_id_);
