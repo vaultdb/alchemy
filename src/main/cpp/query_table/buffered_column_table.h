@@ -70,17 +70,11 @@ namespace vaultdb {
 
             void deserializeRow(const int & row, vector<int8_t> & src) override {}
 
-            std::vector<emp::Bit> readSecretSharesFromDisk(const int &tuple_cnt, const int &limit);
-
-            std::vector<emp::Bit> readSecretSharesFromDisk(const int &tuple_cnt, const QuerySchema &schema, const vector<int> & col_ordinals, const int &limit);
-
             std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid);
 
             std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid, const int tuple_cnt, const QuerySchema &schema, const string &src_data_path);
 
             std::vector<int8_t> serializeWithRevealToXOR(std::vector<emp::Bit> &bits);
-
-            std::pair<int, int> getFieldPtrRange(const int &row, const int &col);
 
             void writePageToDisk(const PageId &pid, const emp::Bit *bits);
 
@@ -258,17 +252,11 @@ namespace vaultdb {
 
         void deserializeRow(const int & row, vector<int8_t> & src) override {}
 
-        std::vector<emp::Bit> readSecretSharesFromDisk(const int &tuple_cnt, const int &limit);
-
-        std::vector<emp::Bit> readSecretSharesFromDisk(const int &tuple_cnt, const QuerySchema &schema, const vector<int> & col_ordinals, const int &limit);
-
         std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid);
 
         std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid, const int tuple_cnt, const QuerySchema &schema, const string &src_data_path);
 
         std::vector<int8_t> serializeWithRevealToXOR(std::vector<emp::Bit> &bits);
-
-        std::pair<int, int> getFieldPtrRange(const int &row, const int &col);
 
         void writePageToDisk(const PageId &pid, const emp::Bit *bits);
 
