@@ -218,7 +218,8 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharedPageFromDisk(const Pa
         assert(src_bits_cnt % this->plain_schema_.size() == 0);
         FILE *fp = fopen(this->secret_shares_path_.c_str(), "rb");
 
-        fseek(fp, this->serialized_col_bits_offsets_[col] / 8, SEEK_SET);
+        int64_t fread_offset = (this->serialized_col_bits_offsets_[col] + (int64_t) (pid.page_idx_ * dst_bit_cnt)) / 8;
+        fseek(fp, fread_offset, SEEK_SET);
 
         if(plain_field.getType() != FieldType::BOOL) {
             std::vector<int8_t> tmp_read(dst_bit_cnt / 8);

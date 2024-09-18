@@ -61,6 +61,26 @@ TEST_F(OMPCStoredTableTest, region) {
 
 }
 
+TEST_F(OMPCStoredTableTest, region_project) {
+
+    std::string sql =  "SELECT r_regionkey FROM region ORDER BY r_regionkey";
+    SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING)};
+    StoredTableScan<Bit> scan("region", "r_regionkey");
+
+    auto observed = scan.run();
+
+    if(FLAGS_validation) {
+        PlainTable *revealed = observed->revealInsecure(emp::PUBLIC);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
+        expected->order_by_ = collation;
+
+        ASSERT_EQ(*expected, *revealed);
+        delete revealed;
+        delete expected;
+    }
+
+}
+
 
 TEST_F(OMPCStoredTableTest, nation) {
 
@@ -78,6 +98,42 @@ TEST_F(OMPCStoredTableTest, customer) {
     SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING)};
     scanAndValidate("customer", sql, collation);
 
+}
+
+TEST_F(OMPCStoredTableTest, customer_project) {
+    std::string sql =  "SELECT c_custkey FROM customer ORDER BY c_custkey";
+    SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING)};
+    StoredTableScan<Bit> scan("customer", "c_custkey");
+
+    auto observed = scan.run();
+
+    if(FLAGS_validation) {
+        PlainTable *revealed = observed->revealInsecure(emp::PUBLIC);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
+        expected->order_by_ = collation;
+
+        ASSERT_EQ(*expected, *revealed);
+        delete revealed;
+        delete expected;
+    }
+}
+
+TEST_F(OMPCStoredTableTest, customer_limit) {
+    std::string sql =  "SELECT c_custkey, c_name, c_address, c_nationkey, c_phone, c_acctbal, c_mktsegment, c_comment FROM customer ORDER BY c_custkey LIMIT " + std::to_string(FLAGS_cutoff);
+    SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING)};
+    StoredTableScan<Bit> scan("customer", FLAGS_cutoff);
+
+    auto observed = scan.run();
+
+    if(FLAGS_validation) {
+        PlainTable *revealed = observed->revealInsecure(emp::PUBLIC);
+        PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
+        expected->order_by_ = collation;
+
+        ASSERT_EQ(*expected, *revealed);
+        delete revealed;
+        delete expected;
+    }
 }
 
 TEST_F(OMPCStoredTableTest, customer_limit_project) {
