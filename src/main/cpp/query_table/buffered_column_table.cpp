@@ -47,20 +47,9 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharedPageFromDisk(const Pa
         int64_t fread_offset = (this->serialized_col_bits_offsets_[col] + (int64_t) (pid.page_idx_ * dst_bit_cnt)) / 8;
         fseek(fp, fread_offset, SEEK_SET);
 
-        if(plain_field.getType() != FieldType::BOOL) {
-            std::vector<int8_t> tmp_read(dst_bit_cnt / 8);
-            fread(tmp_read.data(), 1, dst_bit_cnt / 8, fp);
-            emp::to_bool<int8_t>(dst_cursor, tmp_read.data(), dst_bit_cnt, false);
-            dst_cursor += dst_bit_cnt;
-        }
-        else {
-            assert(plain_field.size() == (this->schema_.getField(col).size() + 7));
-            fread(dst_cursor, 1, dst_bit_cnt, fp);
-            for(int j = 0; j < reading_tuple_cnt; ++j) {
-                *dst_cursor = ((*dst_cursor & 1) != 0);
-                ++dst_cursor;
-            }
-        }
+        std::vector<int8_t> tmp_read(dst_bit_cnt / 8);
+        fread(tmp_read.data(), 1, dst_bit_cnt / 8, fp);
+        emp::to_bool<int8_t>(dst_cursor, tmp_read.data(), dst_bit_cnt, false);
 
         fclose(fp);
     }
@@ -126,20 +115,9 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharedPageFromDisk(const Pa
         cout << "fread_offset: " << fread_offset << endl;
         fseek(fp, fread_offset, SEEK_SET);
 
-        if(plain_field.getType() != FieldType::BOOL) {
-            std::vector<int8_t> tmp_read(dst_bit_cnt / 8);
-            fread(tmp_read.data(), 1, dst_bit_cnt / 8, fp);
-            emp::to_bool<int8_t>(dst_cursor, tmp_read.data(), dst_bit_cnt, false);
-            dst_cursor += dst_bit_cnt;
-        }
-        else {
-            assert(plain_field.size() == (this->schema_.getField(col).size() + 7));
-            fread(dst_cursor, 1, dst_bit_cnt, fp);
-            for(int j = 0; j < reading_tuple_cnt; ++j) {
-                *dst_cursor = ((*dst_cursor & 1) != 0);
-                ++dst_cursor;
-            }
-        }
+        std::vector<int8_t> tmp_read(dst_bit_cnt / 8);
+        fread(tmp_read.data(), 1, dst_bit_cnt / 8, fp);
+        emp::to_bool<int8_t>(dst_cursor, tmp_read.data(), dst_bit_cnt, false);
 
         fclose(fp);
     }
@@ -174,15 +152,7 @@ std::vector<int8_t> BufferedColumnTable::serializeWithRevealToXOR(std::vector<em
     cout << "revealed to XOR\n";
 
     // convert bools to vector of int8_t
-    std::vector<int8_t> serialized(bits.size() / 8);
-//    bool *read_cursor = bools;
-//    int8_t *write_cursor = serialized.data();
-//    for(int i = 0; i < serialized.size(); ++i) {
-//        *write_cursor = (int8_t) Utilities::boolsToByte(read_cursor);
-//        ++write_cursor;
-//        read_cursor += 8;
-//    }
-    emp::from_bool(bools, serialized.data(), bits.size(), false);
+    std::vector<int8_t> serialized = Utilities::boolsToBytes(bools, bits.size());
 
     cout << "serialized size: " << serialized.size() << endl;
 

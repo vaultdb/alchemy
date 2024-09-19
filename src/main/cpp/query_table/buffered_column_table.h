@@ -180,7 +180,7 @@ namespace vaultdb {
 
             int fields_per_page = this->fields_per_page_.at(-1);
             PageId pid = this->conf_.bpm_.getPageId(this->table_id_, -1, row, fields_per_page);
-            emp::Bit *read_ptr = this->conf_.bpm_.getUnpackedPagePtr(pid) + (row % fields_per_page);
+            emp::Bit *read_ptr = this->conf_.bpm_.getUnpackedPagePtr(pid) + (row % fields_per_page) + 7;
             return *read_ptr;
         }
 
@@ -226,11 +226,11 @@ namespace vaultdb {
             // calculate offsets for each column in the serialized file
             int64_t col_bytes_cnt = 0L;
             this->serialized_col_bits_offsets_[0] = 0;
-            for (int i = 1; i < this->schema_.getFieldCount(); ++i) {
-                col_bytes_cnt += this->schema_.getField(i - 1).size() * this->tuple_cnt_;
+            for (int i = 1; i < this->plain_schema_.getFieldCount(); ++i) {
+                col_bytes_cnt += this->plain_schema_.getField(i - 1).size() * this->tuple_cnt_;
                 this->serialized_col_bits_offsets_[i] = col_bytes_cnt;
             }
-            col_bytes_cnt += this->schema_.getField(this->schema_.getFieldCount() - 1).size() * this->tuple_cnt_;
+            col_bytes_cnt += this->plain_schema_.getField(this->plain_schema_.getFieldCount() - 1).size() * this->tuple_cnt_;
             this->serialized_col_bits_offsets_[-1] = col_bytes_cnt;
         }
 

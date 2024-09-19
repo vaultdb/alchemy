@@ -22,15 +22,6 @@ QueryTable<B> *StoredTableScan<B>::readStoredTable(string table_name, const vect
             BufferedColumnTable *buffered_table = new BufferedColumnTable(tuple_cnt, secure_schema, md.collation_);
 
             if(!conf.inputParty()) {
-//                std::filesystem::copy_file(conf.stored_db_path_ + "/" + table_name + "." + std::to_string(conf.party_), buffered_table->secret_shares_path_, std::filesystem::copy_options::overwrite_existing);
-//
-//                if(!col_ordinals.empty() || !not_limit) {
-//                    std::vector<emp::Bit> xor_secret_shares = buffered_table->readSecretSharesFromDisk(md.tuple_cnt_, md.schema_, col_ordinals, limit);
-//                    std::vector<int8_t> serialized = buffered_table->serializeWithRevealToXOR(xor_secret_shares);
-//
-//                    DataUtilities::writeFile(buffered_table->secret_shares_path_, serialized);
-//                }
-
                 string src_data_path = conf.stored_db_path_ + "/" + table_name + "." + std::to_string(conf.party_);
                 if(!col_ordinals.empty() || !not_limit) {
                     for(int i = 0; col_ordinals.empty() ? i < md.schema_.getFieldCount() : i < col_ordinals.size(); ++i) {
