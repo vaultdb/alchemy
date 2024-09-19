@@ -44,7 +44,7 @@ QueryTable<B> *StoredTableScan<B>::readStoredTable(string table_name, const vect
                         }
                     }
 
-                    int max_dummy_page = tuple_cnt / (buffered_table->fields_per_page_[-1]*8) + (tuple_cnt % (buffered_table->fields_per_page_[-1]*8) != 0);
+                    int max_dummy_page = tuple_cnt / buffered_table->fields_per_page_.at(-1) + ((tuple_cnt % buffered_table->fields_per_page_.at(-1)) != 0);
 
                     for(int i = 0; i < max_dummy_page; ++i) {
                         PageId pid(buffered_table->table_id_, -1, i);

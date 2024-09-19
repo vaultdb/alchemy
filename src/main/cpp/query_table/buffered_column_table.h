@@ -178,8 +178,7 @@ namespace vaultdb {
         Bit getDummyTag(const int & row)  const override {
             assert(this->isEncrypted() && this->conf_.bp_enabled_);
 
-            // TODO: this is a hack, we need to fix this
-            int fields_per_page = this->conf_.bpm_.unpacked_page_size_bits_ / 8;
+            int fields_per_page = this->fields_per_page_.at(-1);
             PageId pid = this->conf_.bpm_.getPageId(this->table_id_, -1, row, fields_per_page);
             emp::Bit *read_ptr = this->conf_.bpm_.getUnpackedPagePtr(pid) + (row % fields_per_page);
             return *read_ptr;
@@ -219,7 +218,7 @@ namespace vaultdb {
                     this->pages_per_field_[i] = desc.size() / bits_per_page + (desc.size() % bits_per_page != 0);
                 }
                 else {
-                    this->fields_per_page_[i] = bits_per_page / desc.size();
+                    this->fields_per_page_[i] = bits_per_page / ((desc.getType() == FieldType::BOOL) ? 8 : desc.size());
                     this->pages_per_field_[i] = 1;
                 }
             }
