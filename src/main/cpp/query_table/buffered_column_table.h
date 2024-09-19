@@ -218,7 +218,7 @@ namespace vaultdb {
                     this->pages_per_field_[i] = desc.size() / bits_per_page + (desc.size() % bits_per_page != 0);
                 }
                 else {
-                    this->fields_per_page_[i] = bits_per_page / ((desc.getType() == FieldType::BOOL) ? 8 : desc.size());
+                    this->fields_per_page_[i] = bits_per_page / ((desc.getType() == FieldType::BOOL || i == -1) ? 8 : desc.size());
                     this->pages_per_field_[i] = 1;
                 }
             }
