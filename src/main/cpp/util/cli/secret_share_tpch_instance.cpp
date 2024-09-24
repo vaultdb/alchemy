@@ -29,31 +29,68 @@ map<string, TableMetadata> table_to_metadata_;
 
 void encodeTable(string table_name) {
     // metadata consists of schema and tuple count
-    PlainTable *table = DataUtilities::getQueryResults(db_name_, table_to_query_.at(table_name), false);
-    // all parties need packed table (even TP) to complete protocol, same for serialize because it flushes table from BP
-    auto shared_table =  table->secretShare();
-    // this still uses BPM under the hood, but it's less onerous than serializing one wire at a time as before
-    auto serialized = shared_table->serialize();
+    PlainTable *plain_table = DataUtilities::getQueryResults(db_name_, table_to_query_.at(table_name), false);
 
+    auto md = table_to_metadata_.at(table_name);
+    // metadata file schema, collation, and tuple count
     if(conf_.inputParty()) {
-        // metadata file schema, collation, and tuple count
         string metadata_filename = dst_root_ + "/" + table_name + ".metadata";
-        auto md = table_to_metadata_.at(table_name);
+        plain_table->order_by_ = md.collation_;
         string metadata = md.schema_.prettyPrint() + "\n"
-                + DataUtilities::printSortDefinition(md.collation_) + "\n"
-               + std::to_string(md.tuple_cnt_);
+                          + DataUtilities::printSortDefinition(md.collation_) + "\n"
+                          + std::to_string(md.tuple_cnt_);
         DataUtilities::writeFile(metadata_filename, metadata);
         cout << "Wrote metadata for " << table_name << " to " << metadata_filename << '\n';
     }
- //   else {
-        // write out shares
-        string secret_shares_file = Utilities::getFilenameForTable(table_name);
-        DataUtilities::writeFile(secret_shares_file, serialized);
-        cout << "Wrote secret shares to " << secret_shares_file << endl;
-//    }
 
-    delete shared_table;
-    delete table;
+    // Store secret shares (emp::Bits) to disk
+    SecureTable *secure_table = plain_table->secretShare();
+    QuerySchema secure_schema = secure_table->getSchema();
+
+    std::string secret_shares_file = dst_root_ + "/" + table_name + "." + std::to_string(party_);
+
+    // Serialize SecureTable
+    vector<int8_t> serialized = secure_table->serialize();
+
+    int dst_bit_cnt = secure_schema.size() * md.tuple_cnt_;
+
+    // Memcpy column data into Integer (array of emp::Bits)
+    Integer dst_int(dst_bit_cnt, 0L, emp::PUBLIC);
+    memcpy(dst_int.bits.data(), serialized.data(), dst_bit_cnt * empBitSizesInPhysicalBytes::bit_ram_size_);
+
+    vector<int8_t> write_buffer(dst_bit_cnt * (party_ == 1 ? empBitSizesInPhysicalBytes::evaluator_disk_size_ : (party_ == 10086 ? 1 : empBitSizesInPhysicalBytes::garbler_disk_size_)), 0);
+    int8_t *write_cursor = write_buffer.data();
+
+    // Serialize bit by bit to write buffer
+    for(int i = 0; i < dst_bit_cnt; ++i) {
+        emp::Bit cur_bit = dst_int.bits[i];
+
+        // only non-tp need macs and keys in the auth shares
+        if(party_ != 10086) {
+            memcpy(write_cursor, (int8_t *) &cur_bit.bit.auth.mac, emp::N * sizeof(emp::block));
+            write_cursor += emp::N * sizeof(emp::block);
+
+            memcpy(write_cursor, (int8_t *) &cur_bit.bit.auth.key, emp::N * sizeof(emp::block));
+            write_cursor += emp::N * sizeof(emp::block);
+        }
+
+        // TP only needs lambdas in auth shares (those lambdas are generated and distributed by TP)
+        memcpy(write_cursor, (int8_t *) &cur_bit.bit.auth.lambda, 1);
+        ++write_cursor;
+
+        // write maske value for evaluator
+        if (party_ == 1) {
+            memcpy(write_cursor, (int8_t *) &cur_bit.bit.masked_value, 1);
+            ++write_cursor;
+        }
+    }
+
+    // write to disk
+    DataUtilities::writeFile(secret_shares_file,write_buffer);
+    cout << "Wrote secret shares for " << table_name << " to " << secret_shares_file << '\n';
+
+    delete plain_table;
+    delete secure_table;
 }
 
 int main(int argc, char **argv) {
@@ -88,39 +125,18 @@ int main(int argc, char **argv) {
     table_to_metadata_ = table_specs.second;
 
     // set up OMPC
-    // to enable wire packing set storage model to StorageModel::PACKED_COLUMN_STORE
 
     EmpManager *manager = new OutsourcedMpcManager(hosts_.data(), party_, c.port_, c.ctrl_port_);
 
     conf_.emp_manager_ = manager;
     conf_.setEmptyDbName(empty_db_);
-    BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(argv[1]);
-    conf_.initialize(db_name_, md, StorageModel::COLUMN_STORE);
+    //BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(argv[1]);
+    conf_.initialize(db_name_, BitPackingMetadata(), StorageModel::COLUMN_STORE);
     conf_.stored_db_path_ = dst_root_;
 
-    // just encode the first table
+    // just encode the table
     for(auto const &entry : table_to_query_) {
-            encodeTable(entry.first);
-    }
-
-
-    // TP instance responsible for writing metadata
-    // everything is localhost so it does not matter which one does this
-    if(conf_.inputParty()) {
-
-        OMPCBackend<N> *protocol = (OMPCBackend<N> *) emp::backend;
-        vector<int8_t> settings_bytes;
-        settings_bytes.resize((3 + N) * sizeof(block));
-        block *settings = (block *) settings_bytes.data();
-        settings[0] = protocol->lpn_seed;
-        settings[1] = protocol->lpn_prg_seed_mask;
-        settings[2] = protocol->multi_pack_delta;
-
-        for(int i = 0; i < N; ++i) {
-            settings[3 + i] = protocol->deltas[i];
-        }
-
-        DataUtilities::writeFile(dst_root_ + "/settings",settings_bytes);
+        encodeTable(entry.first);
     }
 
     // validate it
@@ -128,16 +144,16 @@ int main(int argc, char **argv) {
         conf_.initializeOutsourcedSecretShareDb(dst_root_);
         for (auto table_entry: table_to_query_) {
             string table_name = table_entry.first;
-                string query = table_entry.second;
-                PlainTable *expected = DataUtilities::getQueryResults(argv[1], query, false);
-                SecureTable *recvd = StoredTableScan<Bit>::readStoredTable(table_name, vector<int>());
-                PlainTable *recvd_plain = recvd->revealInsecure();
+            string query = table_entry.second;
+            PlainTable *expected = DataUtilities::getQueryResults(argv[1], query, false);
+            SecureTable *recvd = StoredTableScan<Bit>::readStoredTable(table_name, vector<int>());
+            PlainTable *recvd_plain = recvd->revealInsecure();
 
-                expected->order_by_ = recvd_plain->order_by_;
-                assert(*expected == *recvd_plain);
+            expected->order_by_ = recvd_plain->order_by_;
+            assert(*expected == *recvd_plain);
 
-                delete recvd_plain;
-                delete expected;
+            delete recvd_plain;
+            delete expected;
         }
     }
 

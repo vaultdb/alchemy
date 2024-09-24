@@ -248,5 +248,29 @@ struct ConnectionInfo {
     int32_t ctrl_port_ = -1;
 };
 
+struct empBitSizesInPhysicalBytes {
+    const static int num_computing_party_ = 3;
+    const static int32_t block_size_ = 16;
+
+    // 2N blocks + 1 block (1 block for lambda bool)
+    const static int32_t auth_ram_size_ = (2 * num_computing_party_ + 1) * block_size_;
+    // a block<N> for mac and key respectively, a lambda bool (1 byte), and a masked value bool (1 byte)
+    const static int32_t auth_disk_size_ = 2 * num_computing_party_ * block_size_ + 1;
+    // auth + evaluator labels (N blocks) + 1 block (1 block for masked value bool)
+    //const static int32_t evaluator_ram_size_ = auth_ram_size_ + (emp::N + 1) * sizeof(emp::block);
+    // only store auth + masked value (1 byte) (evaluator labels will be regenerated after loading)
+    const static int32_t evaluator_disk_size_ = auth_disk_size_ + 1;
+    // auth + garbler label (1 block)
+    //const static int32_t garbler_ram_size_ = auth_ram_size_ + sizeof(emp::block);
+    // only store auth (garbler labels will be regenerated after loading)
+    const static int32_t garbler_disk_size_ = auth_disk_size_;
+    // This is a fixed size for all parties
+    // auth share
+    // evaluator labels (garbler has zero_blocks for it)
+    // masked value (garbler has zero_block for it)
+    // garbler labels (evaluator has zero_block for it)
+    const static int32_t bit_ram_size_ = auth_ram_size_ + (num_computing_party_ + 2) * block_size_;
+};
+
 } // namespace vaultdb
 #endif // _COMMON_DEFS_H
