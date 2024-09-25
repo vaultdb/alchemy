@@ -262,51 +262,7 @@ QueryTable<B> *StoredTableScan<B>::readStoredTable(string table_name, const vect
         return (QueryTable<B> *) buffered_table;
     }
     else {
-        //return readSecretSharedStoredTable(table_name, col_ordinals, limit);
-
-        QuerySchema secure_schema = QuerySchema::toSecure(md.schema_);
-        int dst_bit_cnt = secure_schema.size() * md.tuple_cnt_;
-
-        Integer tmp_read_int(dst_bit_cnt, 0, PUBLIC);
-        auto *new_auth_shares = new AuthShare<emp::N>[dst_bit_cnt];
-        bool *new_masked_values = new bool[dst_bit_cnt]();
-        bool *mask_cursor = new_masked_values;
-
-        string src_data_path = conf.stored_db_path_ + "/" + table_name + "." + std::to_string(conf.party_);
-        vector<int8_t> read_buffer = DataUtilities::readFile(src_data_path);
-        int8_t *read_cursor = read_buffer.data();
-
-        for(int i = 0; i < dst_bit_cnt; ++i) {
-            AuthShare<emp::N> auth_share;
-            if(!SystemConfiguration::getInstance().inputParty()) {
-                memcpy((int8_t *) &auth_share.mac, read_cursor, emp::N * sizeof(emp::block));
-                read_cursor += emp::N * sizeof(emp::block);
-
-                memcpy((int8_t *) &auth_share.key, read_cursor, emp::N * sizeof(emp::block));
-                read_cursor += emp::N * sizeof(emp::block);
-            }
-
-            auth_share.lambda = ((*read_cursor & 1) != 0);
-            ++read_cursor;
-
-            new_auth_shares[i] = auth_share;
-
-            if (conf.party_ == 1) {
-                *mask_cursor = ((*read_cursor & 1) != 0);
-                ++mask_cursor;
-                ++read_cursor;
-            }
-        }
-
-        ((OutsourcedMpcManager *)SystemConfiguration::getInstance().emp_manager_)->protocol_->regen_label(tmp_read_int.bits.data(), new_masked_values, new_auth_shares, dst_bit_cnt);
-
-        SecureTable *loaded_table = SecureTable::deserialize(secure_schema, tmp_read_int.bits);
-        loaded_table->order_by_ = md.collation_;
-
-        delete [] new_auth_shares;
-        delete [] new_masked_values;
-
-        return (QueryTable<B> *) loaded_table;
+        return readSecretSharedStoredTable(table_name, col_ordinals, limit);
     }
 
 
@@ -423,16 +379,10 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
     QuerySchema secure_schema = QuerySchema::toSecure(md.schema_);
     QuerySchema plain_schema = QuerySchema::toPlain(md.schema_);
 
-    cout << "secure schema: " << secure_schema << endl;
-    cout << "plain schema: " << plain_schema << endl;
-
     int src_tuple_cnt = (int) md.tuple_cnt_;
     int tuple_cnt = (limit == -1 || limit > src_tuple_cnt) ? src_tuple_cnt : limit;
-    cout << "src_tuple_cnt: " << src_tuple_cnt << endl;
-    cout << "tuple_cnt: " << tuple_cnt << endl;
 
     int dst_bit_cnt = tuple_cnt * secure_schema.size();
-    cout << "dst_bit_cnt: " << dst_bit_cnt << endl;
     Integer dst_int(dst_bit_cnt, 0L, emp::PUBLIC);
 
     auto *auth_shares = new AuthShare<emp::N>[dst_bit_cnt];
@@ -440,75 +390,60 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
 
     string secret_shares_file = SystemConfiguration::getInstance().stored_db_path_ + "/" + table_name + "." +
                                 std::to_string(conf.party_);
-    cout << "file size: " << std::filesystem::file_size(secret_shares_file) << endl;
 
     FILE*  fp = fopen(secret_shares_file.c_str(), "rb");
     int file_offset = 0;
     int currernt_emp_bit_size_on_disk = (conf.party_ == 1 ? empBitSizesInPhysicalBytes::evaluator_disk_size_ : (conf.party_ == 10086 ? 1 : empBitSizesInPhysicalBytes::garbler_disk_size_));
-    cout << "current emp bit size on disk: " << currernt_emp_bit_size_on_disk << endl;
 
+    int bit_cursor = 0;
     // read col by col
     for(int i = 0; i < secure_schema.getFieldCount(); ++i) {
         auto secure_field = secure_schema.getField(i);
         int read_size_bits = tuple_cnt * secure_field.size();
-        cout << "current field size: " << secure_field.size() << endl;
-        cout << "read size bits: " << read_size_bits << endl;
 
         // set to beginning of each column
         fseek(fp, file_offset, SEEK_SET);
-        cout << "offset: " << file_offset << endl;
-        cout << "fp current pos: " << ftell(fp) << endl;
 
         // read given size for each column
         for(int j = 0; j < read_size_bits; ++j) {
             AuthShare<emp::N> cur_auth_share;
 
             if(!conf.inputParty()) {
-                fread((int8_t *) &cur_auth_share.mac, sizeof(emp::block), emp::N, fp);
-                cout << "fp current pos after reading mac: " << ftell(fp) << endl;
-                fread((int8_t *) &cur_auth_share.key, sizeof(emp::block), emp::N, fp);
-                cout << "fp current pos after reading key: " << ftell(fp) << endl;
+                fread((int8_t *) &cur_auth_share.mac, 1, emp::N * sizeof(emp::block), fp);
+                fread((int8_t *) &cur_auth_share.key, 1, emp::N * sizeof(emp::block), fp);
             }
 
             int8_t cur_lambda = 0;
             fread((int8_t *) &cur_lambda, 1, 1, fp);
             cur_auth_share.lambda = ((cur_lambda & 1) != 0);
 
-            cout << "fp current pos after reading lambda: " << ftell(fp) << endl;
-
-            auth_shares[j] = cur_auth_share;
+            auth_shares[bit_cursor] = cur_auth_share;
 
             if(conf.party_ == 1) {
                 int8_t cur_masked_value = 0;
                 fread((int8_t *) &cur_masked_value, 1, 1, fp);
-                masked_values[j] = ((cur_masked_value & 1) != 0);
-
-                cout << "fp current pos after reading masked value: " << ftell(fp) << endl;
+                masked_values[bit_cursor] = ((cur_masked_value & 1) != 0);
             }
+
+            ++bit_cursor;
         }
 
         file_offset += src_tuple_cnt * secure_field.size() * currernt_emp_bit_size_on_disk;
     }
 
-    cout << "reading dummy tag" << endl;
     // read dummy tag
     fseek(fp, file_offset, SEEK_SET);
-    cout << "fp current pos before loading dummy tag: " << ftell(fp) << endl;
     for(int i = 0; i < tuple_cnt; ++i) {
         AuthShare<emp::N> cur_auth_share;
 
         if(!conf.inputParty()) {
             fread((int8_t *) &cur_auth_share.mac, sizeof(emp::block), emp::N, fp);
-            cout << "fp current pos after reading mac for dummy tag: " << ftell(fp) << endl;
             fread((int8_t *) &cur_auth_share.key, sizeof(emp::block), emp::N, fp);
-            cout << "fp current pos after reading key for dummy tag: " << ftell(fp) << endl;
         }
 
         int8_t cur_lambda = 0;
         fread((int8_t *) &cur_lambda, 1, 1, fp);
         cur_auth_share.lambda = ((cur_lambda & 1) != 0);
-
-        cout << "fp current pos after reading lambda for dummy tag: " << ftell(fp) << endl;
 
         auth_shares[dst_bit_cnt - tuple_cnt + i] = cur_auth_share;
 
@@ -516,23 +451,19 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
             int8_t cur_masked_value = 0;
             fread((int8_t *) &cur_masked_value, 1, 1, fp);
             masked_values[dst_bit_cnt - tuple_cnt + i] = ((cur_masked_value & 1) != 0);
-            cout << "fp current pos after reading masked value for dummy tag: " << ftell(fp) << endl;
         }
     }
-
-    cout << "fp current pos after loading dummy tag: " << ftell(fp) << endl;
 
     fclose(fp);
 
     ((OutsourcedMpcManager *) conf.emp_manager_)->protocol_->regen_label(dst_int.bits.data(), masked_values, auth_shares, dst_bit_cnt);
-    cout << "finish regenerating labels" << endl;
 
     delete [] auth_shares;
     delete [] masked_values;
 
     SecureTable *shared_table = QueryTable<Bit>::deserialize(secure_schema, dst_int.bits);
-    cout << "shared table: " << endl;
-    cout << DataUtilities::printTable(shared_table) << endl;
+    shared_table->order_by_ = md.collation_;
+
     return (QueryTable<B> *) shared_table;
 }
 
