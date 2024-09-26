@@ -5,6 +5,7 @@
 #include "opt/operator_cost_model.h"
 #include <ctime>
 #include <cmath>
+#include <set>
 
 using namespace vaultdb;
 using namespace Logging;

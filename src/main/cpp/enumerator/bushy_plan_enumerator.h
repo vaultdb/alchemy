@@ -11,6 +11,7 @@
 #include <operators/sort.h>
 #include <operators/merge_input.h>
 #include <enumerator/join_graph.h>
+#include <set>
 
 namespace vaultdb {
     template<typename B>
@@ -78,6 +79,7 @@ namespace vaultdb {
         std::vector<JoinPredicate<B>> all_predicates_;
         std::vector<JoinPredicate<B>> missing_predicates_;
 
+        BushyPlanEnumerator(Operator<B> * left_deep_root, map<int, Operator<B> * > operators, vector<Operator<B> * > support_ops, map<int, vector<SortDefinition>> interesting_orders);
         BushyPlanEnumerator(Operator<B> * root, std::map<int, Operator<B> * > operators, std::vector<Operator<B> * > support_ops, map<int, vector<SortDefinition>> interesting_orders, bool order_by_first_collation);
 
         Operator<B> *getRoot() const { return left_deep_root_; }
@@ -86,6 +88,15 @@ namespace vaultdb {
         Operator<B> *getMinCostPlan() const { return min_cost_plan_; }
 
         void createBushyBalancedTree();
+
+        void collectSQLInputOps(Operator<B> * op, std::map<int, Operator<B> *> &sqlInputOps);
+
+        std::vector<std::tuple<
+                std::pair<Operator<B> *,string>,
+                std::pair<Operator<B> *,string>, char, int
+        >> findJoinPairs(Operator<B> * left_deep_root, std::vector<std::tuple<std::pair<Operator<B> *,string>,std::pair<Operator<B> *,string>,char, int>> &join_pairs, std::map<int, Operator<B> *> &sqlInputOps);
+
+        Operator<B> *findJoinChildFromSqlInput(string join_predicate, std::map<int, Operator<B> *> &sqlInputOps);
 
         int total_plan_cnt_ = 0;
         bool order_by_first_collation_;
