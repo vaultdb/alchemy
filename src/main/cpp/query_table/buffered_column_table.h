@@ -12,6 +12,7 @@ namespace vaultdb {
             int table_id_ = conf_.num_tables_++;
             std::string file_path_ = this->conf_.stored_db_path_ + "/table_" + std::to_string(this->table_id_);
             std::string secret_shares_path_ = this->file_path_ + "/table_" + std::to_string(this->table_id_) + "." + std::to_string(this->conf_.party_);
+            int current_emp_bit_size_on_disk_ = 0;
             std::map<int, int64_t> serialized_col_bits_offsets_;
 
             std::map<int, int> fields_per_page_;
@@ -72,9 +73,9 @@ namespace vaultdb {
 
             std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid);
 
-            std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid, const int tuple_cnt, const QuerySchema &schema, const string &src_data_path);
+            std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid, const int tuple_cnt, const QuerySchema &schema, const int src_col, const string &src_data_path);
 
-            std::vector<int8_t> serializeWithRevealToXOR(std::vector<emp::Bit> &bits);
+            std::vector<int8_t> convertEMPBitToWriteBuffer(const std::vector<emp::Bit> bits);
 
             void writePageToDisk(const PageId &pid, const emp::Bit *bits);
 
@@ -90,6 +91,7 @@ namespace vaultdb {
         int table_id_ = conf_.num_tables_++;
         std::string file_path_ = this->conf_.stored_db_path_ + "/table_" + std::to_string(this->table_id_);
         std::string secret_shares_path_ = this->file_path_ + "/table_" + std::to_string(this->table_id_) + "." + std::to_string(this->conf_.party_);
+        int current_emp_bit_size_on_disk_ = (this->conf_.party_ == 1 ? empBitSizesInPhysicalBytes::evaluator_disk_size_ : (this->conf_.party_ == 10086 ? 1 : empBitSizesInPhysicalBytes::garbler_disk_size_));
         std::map<int, int64_t> serialized_col_bits_offsets_; // bytes offsets for each column in the serialized file
 
         std::map<int, int> fields_per_page_;
@@ -214,7 +216,7 @@ namespace vaultdb {
                     this->pages_per_field_[i] = desc.size() / bits_per_page + (desc.size() % bits_per_page != 0);
                 }
                 else {
-                    this->fields_per_page_[i] = bits_per_page / ((desc.getType() == FieldType::BOOL || i == -1) ? 8 : desc.size());
+                    this->fields_per_page_[i] = bits_per_page / desc.size();
                     this->pages_per_field_[i] = 1;
                 }
             }
@@ -222,11 +224,11 @@ namespace vaultdb {
             // calculate offsets for each column in the serialized file
             int64_t col_bytes_cnt = 0L;
             this->serialized_col_bits_offsets_[0] = 0;
-            for (int i = 1; i < this->plain_schema_.getFieldCount(); ++i) {
-                col_bytes_cnt += this->plain_schema_.getField(i - 1).size() * this->tuple_cnt_;
+            for (int i = 1; i < this->schema_.getFieldCount(); ++i) {
+                col_bytes_cnt += this->schema_.getField(i - 1).size() * this->tuple_cnt_ * current_emp_bit_size_on_disk_;
                 this->serialized_col_bits_offsets_[i] = col_bytes_cnt;
             }
-            col_bytes_cnt += this->plain_schema_.getField(this->plain_schema_.getFieldCount() - 1).size() * this->tuple_cnt_;
+            col_bytes_cnt += this->plain_schema_.getField(this->schema_.getFieldCount() - 1).size() * this->tuple_cnt_ * current_emp_bit_size_on_disk_;
             this->serialized_col_bits_offsets_[-1] = col_bytes_cnt;
         }
 
@@ -254,9 +256,9 @@ namespace vaultdb {
 
         std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid);
 
-        std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid, const int tuple_cnt, const QuerySchema &schema, const string &src_data_path);
+        std::vector<emp::Bit> readSecretSharedPageFromDisk(const PageId pid, const int tuple_cnt, const QuerySchema &schema, const int src_col, const string &src_data_path);
 
-        std::vector<int8_t> serializeWithRevealToXOR(std::vector<emp::Bit> &bits);
+        std::vector<int8_t> convertEMPBitToWriteBuffer(const std::vector<emp::Bit> bits);
 
         void writePageToDisk(const PageId &pid, const emp::Bit *bits);
 

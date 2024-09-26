@@ -212,6 +212,12 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
     return (QueryTable<B> *) shared_table;
 }
 
+// read secret shares from disk for BufferedColumnTable
+template<typename B>
+QueryTable<B> *StoredTableScan<B>::readSecretSharesForBufferedColumnTable(const TableMetadata & md, const vector<int> &col_ordinals, const int &limit) {
+    return QueryTable<B>::getTable(0, QuerySchema(), SortDefinition());
+}
+
 #else
 #include "util/emp_manager/outsourced_mpc_manager.h"
 
@@ -225,41 +231,7 @@ QueryTable<B> *StoredTableScan<B>::readStoredTable(string table_name, const vect
         return (QueryTable<B> *) PackedColumnTable::deserialize(md, col_ordinals, limit);
     }
     else if(conf.storageModel() == StorageModel::COLUMN_STORE && conf.bp_enabled_) {
-        bool not_limit = (limit == -1 || limit > md.tuple_cnt_);
-        int tuple_cnt = not_limit ? md.tuple_cnt_ : limit;
-        QuerySchema secure_schema = col_ordinals.empty() ? QuerySchema::toSecure(md.schema_) : QuerySchema::toSecure(OperatorUtilities::deriveSchema(md.schema_, col_ordinals));
-        BufferedColumnTable *buffered_table = new BufferedColumnTable(tuple_cnt, secure_schema, md.collation_);
-
-        if(!conf.inputParty()) {
-            string src_data_path = conf.stored_db_path_ + "/" + table_name + "." + std::to_string(conf.party_);
-            if(!col_ordinals.empty() || !not_limit) {
-                for(int i = 0; col_ordinals.empty() ? i < md.schema_.getFieldCount() : i < col_ordinals.size(); ++i) {
-                    int max_page = tuple_cnt / buffered_table->fields_per_page_[i] + (tuple_cnt % buffered_table->fields_per_page_[i] != 0);
-
-                    for(int j = 0; j < max_page; ++j) {
-                        PageId pid(buffered_table->table_id_, col_ordinals.empty() ? i : col_ordinals[i], j);
-                        std::vector<emp::Bit> xor_secret_shares = buffered_table->readSecretSharedPageFromDisk(pid, md.tuple_cnt_, md.schema_, src_data_path);
-                        std::vector<int8_t> serialized = buffered_table->serializeWithRevealToXOR(xor_secret_shares);
-                        DataUtilities::appendFile(buffered_table->secret_shares_path_, serialized);
-                    }
-                }
-
-                int max_dummy_page = tuple_cnt / buffered_table->fields_per_page_.at(-1) + ((tuple_cnt % buffered_table->fields_per_page_.at(-1)) != 0);
-
-                for(int i = 0; i < max_dummy_page; ++i) {
-                    PageId pid(buffered_table->table_id_, -1, i);
-                    std::vector<emp::Bit> xor_secret_shares = buffered_table->readSecretSharedPageFromDisk(pid, md.tuple_cnt_, md.schema_, src_data_path);
-                    std::vector<int8_t> serialized = buffered_table->serializeWithRevealToXOR(xor_secret_shares);
-                    DataUtilities::appendFile(buffered_table->secret_shares_path_, serialized);
-                }
-            }
-            else {
-                std::filesystem::copy_file(src_data_path, buffered_table->secret_shares_path_, std::filesystem::copy_options::overwrite_existing);
-            }
-
-        }
-
-        return (QueryTable<B> *) buffered_table;
+        return readSecretSharesForBufferedColumnTable(md, col_ordinals, limit);
     }
     else {
         return readSecretSharedStoredTable(table_name, col_ordinals, limit);
@@ -295,14 +267,14 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
     int currernt_emp_bit_size_on_disk = (conf.party_ == 1 ? empBitSizesInPhysicalBytes::evaluator_disk_size_ : (conf.party_ == 10086 ? 1 : empBitSizesInPhysicalBytes::garbler_disk_size_));
 
     map<int, int64_t> ordinal_offsets;
-    int64_t array_byte_cnt = 0L;
+    int64_t col_bytes_cnt = 0L;
     ordinal_offsets[0] = 0;
     for (int i = 1; i < md.schema_.getFieldCount(); ++i) {
-        array_byte_cnt += md.schema_.getField(i - 1).size() * src_tuple_cnt * currernt_emp_bit_size_on_disk;
-        ordinal_offsets[i] = array_byte_cnt;
+        col_bytes_cnt += md.schema_.getField(i - 1).size() * src_tuple_cnt * currernt_emp_bit_size_on_disk;
+        ordinal_offsets[i] = col_bytes_cnt;
     }
-    array_byte_cnt += md.schema_.getField(md.schema_.getFieldCount() - 1).size() * src_tuple_cnt * currernt_emp_bit_size_on_disk;
-    ordinal_offsets[-1] = array_byte_cnt;
+    col_bytes_cnt += md.schema_.getField(md.schema_.getFieldCount() - 1).size() * src_tuple_cnt * currernt_emp_bit_size_on_disk;
+    ordinal_offsets[-1] = col_bytes_cnt;
 
     auto *auth_shares = new AuthShare<emp::N>[dst_bit_cnt];
     bool *masked_values = new bool[dst_bit_cnt]();
@@ -310,15 +282,13 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
     string secret_shares_file = SystemConfiguration::getInstance().stored_db_path_ + "/" + table_name + "." + std::to_string(conf.party_);
 
     FILE*  fp = fopen(secret_shares_file.c_str(), "rb");
-    int file_offset = 0;
     int bit_cursor = 0;
 
     for(auto src_ordinal : col_ordinals) {
         auto secure_field = secure_schema.getField(src_ordinal);
         int read_size_bits = tuple_cnt * secure_field.size();
 
-        file_offset = ordinal_offsets[src_ordinal];
-        fseek(fp, file_offset, SEEK_SET);
+        fseek(fp, ordinal_offsets[src_ordinal], SEEK_SET);
 
         for(int j = 0; j < read_size_bits; ++j) {
             AuthShare<emp::N> cur_auth_share;
@@ -345,8 +315,7 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
     }
 
     // read dummy tag
-    file_offset = ordinal_offsets[-1];
-    fseek(fp, file_offset, SEEK_SET);
+    fseek(fp, ordinal_offsets[-1], SEEK_SET);
 
     for(int i = 0; i < tuple_cnt; ++i) {
         AuthShare<emp::N> cur_auth_share;
@@ -478,6 +447,47 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharedStoredTable(string table_name
     shared_table->order_by_ = md.collation_;
 
     return (QueryTable<B> *) shared_table;
+}
+
+// read secret shares from disk for BufferedColumnTable
+template<typename B>
+QueryTable<B> *StoredTableScan<B>::readSecretSharesForBufferedColumnTable(const TableMetadata  & md, const vector<int> &col_ordinals, const int &limit) {
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
+
+    bool not_limit = (limit == -1 || limit > md.tuple_cnt_);
+    int tuple_cnt = not_limit ? md.tuple_cnt_ : limit;
+    QuerySchema secure_schema = col_ordinals.empty() ? QuerySchema::toSecure(md.schema_) : QuerySchema::toSecure(OperatorUtilities::deriveSchema(md.schema_, col_ordinals));
+    BufferedColumnTable *buffered_table = new BufferedColumnTable(tuple_cnt, secure_schema, md.collation_);
+
+    string src_data_path = conf.stored_db_path_ + "/" + md.name_ + "." + std::to_string(conf.party_);
+    if(!col_ordinals.empty() || !not_limit) {
+        for(int i = 0; col_ordinals.empty() ? i < md.schema_.getFieldCount() : i < col_ordinals.size(); ++i) {
+            int max_page = tuple_cnt / buffered_table->fields_per_page_[i] + (tuple_cnt % buffered_table->fields_per_page_[i] != 0);
+
+            for(int j = 0; j < max_page; ++j) {
+                PageId pid(buffered_table->table_id_, i, j);
+                std::vector<emp::Bit> secret_shares = buffered_table->readSecretSharedPageFromDisk(pid, md.tuple_cnt_, md.schema_, col_ordinals.empty() ? i : col_ordinals[i], src_data_path);
+                std::vector<int8_t> write_buffer = buffered_table->convertEMPBitToWriteBuffer(secret_shares);
+                DataUtilities::appendFile(buffered_table->secret_shares_path_, write_buffer);
+            }
+        }
+
+        int max_dummy_page = tuple_cnt / buffered_table->fields_per_page_.at(-1) + ((tuple_cnt % buffered_table->fields_per_page_.at(-1)) != 0);
+
+        for(int i = 0; i < max_dummy_page; ++i) {
+            PageId pid(buffered_table->table_id_, -1, i);
+            std::vector<emp::Bit> secret_shares = buffered_table->readSecretSharedPageFromDisk(pid, md.tuple_cnt_, md.schema_, -1, src_data_path);
+
+            std::vector<int8_t> write_buffer = buffered_table->convertEMPBitToWriteBuffer(secret_shares);
+
+            DataUtilities::appendFile(buffered_table->secret_shares_path_, write_buffer);
+        }
+    }
+    else {
+        std::filesystem::copy_file(src_data_path, buffered_table->secret_shares_path_, std::filesystem::copy_options::overwrite_existing);
+    }
+
+    return (QueryTable<B> *) buffered_table;
 }
 
 

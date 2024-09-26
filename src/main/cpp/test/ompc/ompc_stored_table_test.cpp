@@ -164,10 +164,10 @@ TEST_F(OMPCStoredTableTest, orders) {
 }
 
 TEST_F(OMPCStoredTableTest, orders_limit_project) {
-    std::string sql =  "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority FROM orders ORDER BY o_orderkey LIMIT 1500";
+    std::string sql =  "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority FROM orders ORDER BY o_orderkey LIMIT " + std::to_string(FLAGS_cutoff);
     SortDefinition  collation = {ColumnSort(0, SortDirection::ASCENDING)};
 
-    StoredTableScan<Bit> scan("orders", "o_orderkey, o_custkey, o_orderdate, o_shippriority", 1500);
+    StoredTableScan<Bit> scan("orders", "o_orderkey, o_custkey, o_orderdate, o_shippriority", FLAGS_cutoff);
 
     auto observed = scan.run();
     if(FLAGS_validation) {
@@ -249,7 +249,7 @@ TEST_F(OMPCStoredTableTest, lineitem_limit_project) {
     if(FLAGS_validation) {
         PlainTable *revealed = observed->revealInsecure(emp::PUBLIC);
         PlainTable *expected = DataUtilities::getQueryResults(FLAGS_unioned_db, sql, false);
-        expected->order_by_ = collation;
+        expected->order_by_ = revealed->order_by_;
 
         ASSERT_EQ(*expected, *revealed);
         delete revealed;
