@@ -199,6 +199,7 @@ public:
 
     //returns total runtime of this operator and its children
     double planRuntime() const;
+    std::string getOutputOrderinString(bool order_by_first_collation_) const;
 
     inline string getTypeString() const {
         switch(this->getType()) {
