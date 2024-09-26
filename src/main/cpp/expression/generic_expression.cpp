@@ -1,6 +1,6 @@
-#include "generic_expression.h"
+#include "expression/generic_expression.h"
 #include <expression/visitor/type_inference_visitor.h>
-#include "expression_factory.h"
+#include "expression/expression_factory.h"
 
 using namespace vaultdb;
 

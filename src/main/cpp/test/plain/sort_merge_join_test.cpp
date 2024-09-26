@@ -12,7 +12,7 @@
 #include "util/field_utilities.h"
 
 
-DEFINE_int32(cutoff, 250, "limit clause for queries");
+DEFINE_int32(cutoff, 10, "limit clause for queries");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "column", "storage model for columns (column or compressed)");
@@ -21,7 +21,7 @@ DEFINE_string(storage, "column", "storage model for columns (column or compresse
 class SortMergeJoinTest :  public PlainBaseTest  {
 
 protected:
- 
+
 // simulating TPC-H Q5
     const std::string customer_sql_ = "SELECT c_custkey, c_nationkey, c_mktsegment, r_name = 'EUROPE' c_dummy \n"
                                       "FROM customer  JOIN nation ON c_nationkey = n_nationkey"
@@ -48,11 +48,11 @@ protected:
 TEST_F(SortMergeJoinTest, test_tpch_q3_customer_supplier) {
 
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
-                                     "supplier_cte AS (" + supplier_sql_ + ") "
-                               "SELECT c_custkey, c_nationkey, c_mktsegment,  s_suppkey, s_nationkey "
-                               "FROM  customer_cte JOIN supplier_cte ON c_nationkey = s_nationkey "
-                               "WHERE NOT c_dummy AND NOT s_dummy "
-                               "ORDER BY c_custkey, c_nationkey, c_mktsegment,  s_suppkey, s_nationkey  ";
+                                                                          "supplier_cte AS (" + supplier_sql_ + ") "
+                                                                                                                "SELECT c_custkey, c_nationkey, c_mktsegment,  s_suppkey, s_nationkey "
+                                                                                                                "FROM  customer_cte JOIN supplier_cte ON c_nationkey = s_nationkey "
+                                                                                                                "WHERE NOT c_dummy AND NOT s_dummy "
+                                                                                                                "ORDER BY c_custkey, c_nationkey, c_mktsegment,  s_suppkey, s_nationkey  ";
 
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
@@ -62,10 +62,11 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_supplier) {
 
     // join output schema: (customer, supplier)
     // c_custkey, c_nationkey, c_mktsegment, s_suppkey, s_nationkey
-    Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(customer_input, 1, supplier_input, 1);
+    Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(customer_input, 1, supplier_input, 4);
 
     auto join = new SortMergeJoin<bool>(customer_input, supplier_input,  predicate);
     auto joined = join->run();
+
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(4);
     Sort<bool> sorter(joined, sort_def);
     PlainTable *observed = sorter.run();
@@ -82,7 +83,7 @@ int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
 
-	::testing::GTEST_FLAG(filter)=FLAGS_filter;
+    ::testing::GTEST_FLAG(filter)=FLAGS_filter;
     int i = RUN_ALL_TESTS();
     google::ShutDownCommandLineFlags();
     return i;

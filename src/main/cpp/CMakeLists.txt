@@ -27,6 +27,7 @@ enable_testing()
 find_package(OpenSSL REQUIRED)
 #find_package(GMP REQUIRED)
 find_package(EMP REQUIRED)
+#find_package(Gperftools REQUIRED)
 
 find_library(EMP_LIBRARIES NAMES emp-tool)
 find_library(EMP_ZK_LIBRARY NAMES emp-zk)
@@ -41,6 +42,7 @@ find_package(Boost REQUIRED COMPONENTS date_time system program_options)
 find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
 
 include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR})
+
 
 add_subdirectory(test)
 if(EXISTS "/usr/local/include/emp-sh2pc/emp-sh2pc.h")
@@ -58,7 +60,10 @@ set(sources
 		query_table/query_schema.cpp
 		query_table/query_table.cpp
 		query_table/column_table.cpp
+		query_table/buffered_column_table.cpp
 		query_table/packed_column_table.cpp
+		query_table/input_party_packed_column_table.h
+		query_table/computing_party_packed_column_table.h
 		query_table/compression/compressed_table.cpp
 		query_table/compression/column_encoding.cpp
 		query_table/compression/uncompressed.cpp
@@ -69,9 +74,11 @@ set(sources
 		util/type_utilities.cpp
 		util/data_utilities.cpp
 		util/field_utilities.cpp
+		util/operator_utilities.cpp
 		util/table_manager.cpp
 		util/logger.cpp
 		util/system_configuration.cpp
+		util/buffer_pool/buffer_pool_manager.cpp
 		util/emp_manager/emp_manager.h
 		util/emp_manager/sh2pc_manager.cpp
 		util/emp_manager/zk_manager.cpp
@@ -85,6 +92,7 @@ set(sources
 		operators/sql_input.cpp
 		operators/secure_sql_input.cpp
 		operators/table_scan.cpp
+		operators/packed_table_scan.h
 		operators/zk_sql_input.cpp
 		operators/filter.cpp
 		operators/project.cpp
@@ -99,6 +107,7 @@ set(sources
 		operators/support/scalar_aggregate_impl.cpp
 		operators/scalar_aggregate.cpp
 		operators/union.cpp
+		operators/stored_table_scan.cpp
 		operators/sort_merge_aggregate.cpp
 		operators/support/group_by_aggregate_impl.h
 		operators/csv_input.cpp
@@ -136,12 +145,41 @@ set(sources
 		opt/operator_cost_model.cpp
 		opt/expression_cost_model.cpp
 		opt/plan_optimizer.cpp
+		opt/join_graph.h
 
 		enumerator/bushy_plan_enumerator.cpp
-		enumerator/join_graph.h
-		)
+)
 
+# #########################################
+# "make check-lint"
+# #########################################
+file(GLOB_RECURSE VAULTDB_LINT_FILES ${sources}
+		"${CMAKE_CURRENT_SOURCE_DIR}/operators/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/operators/*.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/data/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/data/*.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/common/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/expression/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/expression/*.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/opt/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/opt/*.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/parser/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/parser/*.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/query_table/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/query_table/*.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/util/*.h"
+		"${CMAKE_CURRENT_SOURCE_DIR}/util/*.cpp"
+)
 
+#based on https://github.com/cmu-db/bustub/blob/master/CMakeLists.txt
+# Balancing act: cpplint.py takes a non-trivial time to launch,
+# so process 8 files per invocation, while still ensuring parallelism
+# TODO: gradually pare down the # of filters we use here as we fix up the code, starting with whitespace
+add_custom_target(check-lint echo '${VAULTDB_LINT_FILES}' | xargs -n8 -P8
+		cmake/cpplint.py
+		--verbose=2 --quiet
+		--filter=-legal/copyright,-build/header_guard,-runtime/references,-whitespace,-build/include_order,-build/namespaces,-build/c++11 # https://github.com/cpplint/cpplint/issues/148
+)
 
 #message("verify ${OPENSSL_LIBRARIES}:${PQXX_LIBRARY}:${EMP_ZK_LIBRARY}  ${EMP_LIBRARIES} ${EMP_INCLUDE_DIR}")
 
@@ -155,5 +193,28 @@ add_executable(generate_enrich_data test/support/generate_enrich_data.cpp)
 
 #shouldn't need this last one, should be in Boost_LIBRARIES var, debug this later
 target_link_libraries(${NAME} ${OPENSSL_LIBRARIES}  ${EMP_LIBRARIES}  ${EMP_ZK_LIBRARY}  ${PQXX_LIBRARY}  ${GFLAGS_LIBRARY}   ${Boost_LIBRARIES} Boost::date_time )
+#add_link_options("SHELL:-Wl,-no-as-needed -lprofiler -Wl,-as-needed")
 
 install(TARGETS ${NAME} DESTINATION ${CMAKE_SOURCE_DIR}/lib)
+
+
+add_executable(run_query util/cli/run_query.cpp)
+target_link_libraries(run_query vaultdb-emp)
+
+add_executable(parse_plan util/cli/parse_plan.cpp)
+target_link_libraries(parse_plan vaultdb-emp)
+
+add_executable(secret_share_tpch_instance util/cli/secret_share_tpch_instance.cpp)
+target_link_libraries(secret_share_tpch_instance vaultdb-emp)
+
+add_executable(xor_secret_share_tpch_instance util/cli/xor_secret_share_tpch_instance.cpp)
+target_link_libraries(xor_secret_share_tpch_instance vaultdb-emp)
+
+add_executable(secret_share_mpc_table_from_query util/cli/secret_share_mpc_table_from_query.cpp)
+target_link_libraries(secret_share_mpc_table_from_query vaultdb-emp)
+
+add_executable(wire_pack_tpch_instance util/cli/wire_pack_tpch_instance.cpp)
+target_link_libraries(wire_pack_tpch_instance vaultdb-emp)
+
+add_executable(wire_pack_table_from_query util/cli/wire_pack_table_from_query.cpp)
+target_link_libraries(wire_pack_table_from_query vaultdb-emp)

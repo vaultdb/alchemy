@@ -78,21 +78,25 @@ void Catalyst::importSecretShares(const string & table_name, const int & src_par
 
     string suffix = (s.party_ == 1) ? "alice" : "bob";
     string secret_shares_file = fq_table_file + "." + suffix;
-
-    cout << "Importing secret shares for " << table_name << " from party " << src_party << " with " << fq_table_file << endl;
-
     QuerySchema schema = QuerySchema::toPlain(table_manager.getSchema(table_name));
 
-    // temporarily drop the site_id and project it in from src_party
+    // this is a hack for PHAME workflow
     bool drop_site_id = false;
-    // JMR: this is a hack to support the format from CAPriCORN queries, not for long-term use
     if(table_name == "phame_diagnosis" || table_name == "phame_demographic") {
-        schema.dropField("site_id");
         drop_site_id = true;
+        schema.dropField("site_id");
     }
+
+    // add site_id using src_party
+    // this schema should NOT have site_id
+    QuerySchema file_schema = QuerySchema::toPlain(QuerySchema(DataUtilities::readTextFileToString(fq_table_file + ".schema")));
+    // verify that it is what we were expecting
+    assert(file_schema == schema);
     SecureTable *secret_shares = UnionHybridData::readSecretSharedInput(secret_shares_file, schema);
 
+    // add site_id using src_party
     if(drop_site_id) {
+
         ExpressionMapBuilder<Bit> builder(schema);
         int field_cnt = schema.getFieldCount();
         for (int i = 0; i < field_cnt; ++i) {

@@ -28,7 +28,7 @@ TpcHTest::runTest(const int &test_id, const string & plan_file, const SortDefini
     PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 0);
     expected->order_by_ = expected_sort;
 
-    PlanParser<bool> plan_reader(db_name_,plan_file, input_tuple_limit_);
+    PlanParser<bool> plan_reader(db_name_,plan_file, input_tuple_limit_, true);
     PlainOperator *root = plan_reader.getRoot();
 
     PlainTable *observed = root->run();

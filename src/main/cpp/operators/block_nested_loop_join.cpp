@@ -1,24 +1,25 @@
-#include "block_nested_loop_join.h"
-#include "query_table/query_table.h"
-#include "util/system_configuration.h"
-#include "query_table/packed_column_table.h"
-#include "util/buffer_pool/buffer_pool_manager.h"
-#include "cmath"
+#include <operators/block_nested_loop_join.h>
+#include <query_table/query_table.h>
+#include <util/system_configuration.h>
+#include <query_table/packed_column_table.h>
+#include <util/buffer_pool/buffer_pool_manager.h>
+#include <expression/visitor/join_equality_condition_visitor.h>
+#include <util/field_utilities.h>
 
 using namespace vaultdb;
 
 template<typename B>
-BlockNestedLoopJoin<B>::BlockNestedLoopJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate,
+BlockNestedLoopJoin<B>::BlockNestedLoopJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,
                                            const SortDefinition &sort)
-        : Join<B>(lhs, rhs, predicate, sort) {
+        : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey) {
             this->output_cardinality_ = lhs->getOutputCardinality() * rhs->getOutputCardinality();
             this->updateCollation();
 }
 
 template<typename B>
-BlockNestedLoopJoin<B>::BlockNestedLoopJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate,
+BlockNestedLoopJoin<B>::BlockNestedLoopJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
                                            const SortDefinition &sort)
-        : Join<B>(lhs, rhs, predicate, sort) {
+        : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey) {
             this->output_cardinality_ = lhs->tuple_cnt_ * rhs->tuple_cnt_;
 
     this->updateCollation();
@@ -27,188 +28,269 @@ BlockNestedLoopJoin<B>::BlockNestedLoopJoin(QueryTable<B> *lhs, QueryTable<B> *r
 template<typename B>
 QueryTable<B> *BlockNestedLoopJoin<B>::runSelf() {
     SystemConfiguration &sys_conf = SystemConfiguration::getInstance();
-    assert(sys_conf.storageModel() == StorageModel::PACKED_COLUMN_STORE);
-    assert(sys_conf.bp_enabled_);
-
-    BufferPoolManager *bpm = sys_conf.bpm_;
-
-    cout << "It is packed column store" << endl;
-    cout << "Buffer pool is enabled" << endl;
-    cout << "Ready for block nested loop join" << endl;
-
-    PackedColumnTable *lhs = (PackedColumnTable *) Operator<B>::getChild(0)->getOutput();
-    lhs->pinned_ = true;
-    PackedColumnTable *rhs = (PackedColumnTable *) Operator<B>::getChild(1)->getOutput();
+    auto lhs = reinterpret_cast<PackedColumnTable *>(this->getChild(0)->getOutput());
+    auto rhs = reinterpret_cast<PackedColumnTable *>(this->getChild(1)->getOutput());
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-    B selected, dst_dummy_tag, lhs_dummy_tag;
-    this->output_ = QueryTable<B>::getTable(lhs->tuple_cnt_ * rhs->tuple_cnt_, this->output_schema_,
-                                           this->sort_definition_);
+    auto p = (GenericExpression<B> *) this->predicate_;
+    JoinEqualityConditionVisitor<B> join_visitor(p->root_);
+    vector<pair<uint32_t, uint32_t> > join_idxs = join_visitor.getEqualities(); // lhs, rhs
 
-    int cursor = 0;
-    int rhs_col_offset = this->output_->getSchema().getFieldCount() - rhs->getSchema().getFieldCount();
+    auto fk_reln = (foreign_key_input_ == 0) ? lhs : rhs;
+    auto pk_reln = (foreign_key_input_ == 0) ? rhs : lhs;
 
-    cout << "lhs schema: " << lhs->getSchema() << endl;
+    fk_reln->pinned_ = true;
+    auto output_schema = this->output_schema_;
+    auto pk_schema = pk_reln->getSchema();
+    auto fk_schema = fk_reln->getSchema();
+    int pk_offset = (foreign_key_input_ == 0) ? fk_schema.getFieldCount()  : 0;
+    int fk_offset = (foreign_key_input_ == 0) ? 0 : pk_schema.getFieldCount();
 
-    // calculate the largest fields per wire
-    int outer_largest_fields_per_wire = 0;
-    int inner_largest_fields_per_wire = 0;
 
-    cout << "lhs->getSchema().getFieldCount(): " << lhs->getSchema().getFieldCount() << endl;
+    int unpacked_page_size_bits;
+    int buffer_pool_page_cnt;
 
-    for(int i = 0; i < lhs->getSchema().getFieldCount(); ++i) {
-        cout << "lhs->fields_per_wire_[i]: " << lhs->fields_per_wire_[i] << endl;
+    if(sys_conf.storageModel() == StorageModel::PACKED_COLUMN_STORE){
+        unpacked_page_size_bits = bpm_.unpacked_page_size_bits_;
+        buffer_pool_page_cnt = bpm_.page_cnt_;
+    } else { // default value if we're not using packing
+        unpacked_page_size_bits = 2048;
+        buffer_pool_page_cnt = 50;
+    }
 
-        if(lhs->fields_per_wire_[i] > outer_largest_fields_per_wire) {
-            outer_largest_fields_per_wire = lhs->fields_per_wire_[i];
+    // get sunk costs
+    int pk_sunk_costs = pk_reln->getSchema().getFieldCount() + 1; // number of cols + dummy tag
+    int pinnable_pages = buffer_pool_page_cnt - pk_sunk_costs;
+
+    this->output_ = QueryTable<B>::getTable(fk_reln->tuple_cnt_, this->output_schema_,  this->sort_definition_);
+    auto output = reinterpret_cast<PackedColumnTable *>(this->output_);
+
+    // initialize FK rows in output table
+    for(int i = 0; i < fk_schema.getFieldCount(); ++i) {
+        output->cloneColumn(i + fk_offset, fk_reln, i);
+    }
+
+    vector<int> ordinals_to_pin;
+
+    // in output schema - using the dst schema as a stand-in for FK ones
+    //  this won't create duplicate entries because FK is mutually exclusive with PK
+    for(auto idx : join_idxs) {
+        int ord = (foreign_key_input_ == 0) ? idx.first : idx.second;
+        ordinals_to_pin.push_back(ord);
+        assert(output_schema.getField(ord).size() <= unpacked_page_size_bits); // does not handle large objects that span > 1 wire
+    }
+
+    for(int i = 0; i < pk_schema.getFieldCount(); ++i) {
+        ordinals_to_pin.push_back(pk_offset + i);
+        assert(output_schema.getField(pk_offset + i).size() <= unpacked_page_size_bits); // does not handle objects that span > 1 wire
+    }
+
+
+    // find largest column in variable costs (not inner scan) - this will determine our stride size
+    int stride_size = 63336; // min_fields_per_page, just initializing it to something high to get started
+    int row_width_bits = 2; // dummy tags for FK and output relations
+
+    // both sides of a join equality have the same size
+    // ignore the dummy tag for max because all fields have a size >= this
+    for(auto ord : ordinals_to_pin) {
+        int fields_per_page = unpacked_page_size_bits / output_schema.getField(ord).size();
+        if(fields_per_page < stride_size) stride_size = fields_per_page;
+        row_width_bits += output_schema.getField(ord).size();
+    }
+
+    assert(stride_size > 0);
+
+    // if a field's count / page is not evenly divisible by our stride size (it has no common multiple), allocate one page of headroom
+    for(auto ord : ordinals_to_pin) {
+        int fields_per_page = unpacked_page_size_bits / output_schema.getField(ord).size();
+        if(fields_per_page % stride_size > 0)  {
+            --pinnable_pages;
         }
     }
 
-    cout << "outer_largest_fields_per_wire: " << outer_largest_fields_per_wire << endl;
+    // if we can pin greedily
+    int64_t rows_per_block = (pinnable_pages * unpacked_page_size_bits) / row_width_bits;
+    // make it align with strides
+    rows_per_block -= rows_per_block % stride_size;
 
-    for(int i = 0; i < rhs->getSchema().getFieldCount(); ++i) {
-        if(rhs->fields_per_wire_[i] > inner_largest_fields_per_wire) {
-            inner_largest_fields_per_wire = rhs->fields_per_wire_[i];
+    // dummy tags
+    int dummy_tag_pages_per_block = rows_per_block / unpacked_page_size_bits + (rows_per_block % unpacked_page_size_bits > 0);
+    // when the fields_per_page > rows_per_block (block size) if they don't have a common divisor then we need to allocate an extra page
+    if(unpacked_page_size_bits > rows_per_block) { dummy_tag_pages_per_block += rows_per_block % unpacked_page_size_bits > 0; }
+    int pages_to_pin = dummy_tag_pages_per_block * 2; // two dummy tags, FK and output
+
+    // count up pinned cols
+    for(auto ord : ordinals_to_pin) {
+        int fields_per_page = unpacked_page_size_bits / output_schema.getField(ord).size();
+        pages_to_pin += rows_per_block / fields_per_page + (rows_per_block % fields_per_page > 0);
+        // when the fields_per_page > rows_per_block, if they don't have a common divisor then we need to allocate an extra page
+        if(fields_per_page > rows_per_block) { pages_to_pin += rows_per_block % fields_per_page > 0; }
+
+    }
+
+    // step down one stride if we have too many pages
+    while(pages_to_pin > pinnable_pages) {
+        rows_per_block -= stride_size;
+        dummy_tag_pages_per_block = rows_per_block / unpacked_page_size_bits + (rows_per_block % unpacked_page_size_bits > 0);
+        if(unpacked_page_size_bits > rows_per_block) { dummy_tag_pages_per_block += rows_per_block % unpacked_page_size_bits > 0; }
+
+        pages_to_pin = dummy_tag_pages_per_block * 2;
+
+        for(auto ord : ordinals_to_pin) {
+            int fields_per_page = unpacked_page_size_bits / output_schema.getField(ord).size();
+            pages_to_pin += rows_per_block / fields_per_page + (rows_per_block % fields_per_page > 0);
+            if(fields_per_page > rows_per_block) { pages_to_pin += rows_per_block % fields_per_page > 0; }
         }
     }
 
-    // calculate the size of inner/outer block
-    int outer_block_fields_size = INT_MAX;
-    int inner_block_fields_size = INT_MAX;
-
-    for(int i = 0; i < lhs->getSchema().getFieldCount(); ++i){
-        int fields_size_to_match_largest_fields = (outer_largest_fields_per_wire / lhs->fields_per_wire_[i]) * lhs->fields_per_wire_[i];
-        cout << "lhs->fields_per_wire_[i]: " << lhs->fields_per_wire_[i] << endl;
-        cout << "fields_size_to_match_largest_fields: " << fields_size_to_match_largest_fields << endl;
-
-        if(fields_size_to_match_largest_fields < outer_block_fields_size) {
-            outer_block_fields_size = fields_size_to_match_largest_fields;
-        }
+    int cursor = 0; // first row idx in block
+    while((cursor + rows_per_block) < output->tuple_cnt_) {
+        joinBlock(fk_reln, pk_reln, cursor, rows_per_block, join_idxs);
+        cursor += rows_per_block;
     }
 
-    cout << "outer_block_fields_size: " << outer_block_fields_size << endl;
+    // handle any leftovers here
+    int rows_remaining = output->tuple_cnt_ - cursor;
+    joinBlock(fk_reln, pk_reln, cursor, rows_remaining, join_idxs);
 
-    for(int i = 0; i < rhs->getSchema().getFieldCount(); ++i){
-        int fields_size_to_match_largest_fields = (inner_largest_fields_per_wire / rhs->fields_per_wire_[i]) * rhs->fields_per_wire_[i];
-
-        if(fields_size_to_match_largest_fields < inner_block_fields_size) {
-            inner_block_fields_size = fields_size_to_match_largest_fields;
-        }
-    }
-
-    // calculate the number of pages
-    vector<int> outer_block_pages;
-    vector<int> inner_block_pages;
-
-    for(int i = 0; i < lhs->getSchema().getFieldCount(); ++i){
-        int page_cnts = (outer_block_fields_size > lhs->fields_per_wire_[i]) ? (outer_block_fields_size / lhs->fields_per_wire_[i]) : 1;
-        cout << "page cnts: " << page_cnts << endl;
-        outer_block_pages.push_back(page_cnts);
-    }
-
-    for(int i = 0; i < rhs->getSchema().getFieldCount(); ++i){
-        int page_cnts = (inner_block_fields_size > rhs->fields_per_wire_[i]) ? (inner_block_fields_size / rhs->fields_per_wire_[i]) : 1;
-        inner_block_pages.push_back(page_cnts);
-    }
-
-    // block nested loop join
-    vector<int> outer_col_page_offsets(outer_block_pages.size(), 0);
-    vector<int> inner_col_page_offsets(inner_block_pages.size(), 0);
-
-    cout << "lhs tuple cnt: " << lhs->tuple_cnt_ << endl;
-    cout << "rhs tuple cnt: " << rhs->tuple_cnt_ << endl;
-    cout << "lhs id: " << lhs->table_id_ << endl;
-    cout << "rhs id: " << rhs->table_id_ << endl;
-    cout << "output id: " << ((PackedColumnTable *) this->output_)->table_id_ << endl;
-
-
-    for(int i = 0; i < lhs->tuple_cnt_; i += outer_block_fields_size) {
-        // get unpacked pages for each col and pin those pages
-        for(int outer_col_idx = 0; outer_col_idx < lhs->getSchema().getFieldCount(); ++outer_col_idx) {
-            int outer_page_cnts = outer_block_pages[outer_col_idx];
-            int max_page = ceil(static_cast<double>(lhs->tuple_cnt_) / lhs->fields_per_wire_[outer_col_idx]);
-            cout << "max page: " << max_page << endl;
-
-            for(int page_offset = 0; page_offset < outer_page_cnts; ++page_offset) {
-                // check if the page is valid (up to maximum number of pages)
-                if(outer_col_page_offsets[outer_col_idx] + page_offset < max_page) {
-                    BufferPoolManager::PageId pid = bpm->getPageId(lhs->table_id_, outer_col_idx,
-                                                                   (outer_col_page_offsets[outer_col_idx] + page_offset) *
-                                                                   lhs->fields_per_wire_[outer_col_idx],
-                                                                   lhs->fields_per_wire_[outer_col_idx]);
-                    cout << "page id: " << bpm->getPageIdKey(pid) << endl;
-                    BufferPoolManager::UnpackedPage up = bpm->getUnpackedPage(pid);
-                    up.pined = true;
-                    bpm->unpacked_page_buffer_pool_[bpm->getPageIdKey(pid)] = up;
-                }
-            }
-
-            outer_col_page_offsets[outer_col_idx] += outer_page_cnts;
-        }
-
-        cout << "print current unpacked buffer pool" << endl;
-        for (auto &[key, page]: bpm->unpacked_page_buffer_pool_) {
-            cout << "key: " << key << endl;
-            cout << "pined: " << page.pined << endl;
-        }
-
-        for(int j = 0; j < rhs->tuple_cnt_; j += inner_block_fields_size) {
-
-            // join for each block
-            for(int outer_block_idx = 0; outer_block_idx < outer_block_fields_size; ++outer_block_idx) {
-                lhs_dummy_tag = ((QueryTable<B> *) lhs)->getDummyTag(i + outer_block_idx);
-
-                for(int inner_block_idx = 0; inner_block_idx < inner_block_fields_size; ++inner_block_idx) {
-                    this->output_->cloneRow(cursor, 0, (QueryTable<B> *) lhs, i + outer_block_idx);
-                    this->output_->cloneRow(cursor, rhs_col_offset, (QueryTable<B> *) rhs, j + inner_block_idx);
-                    selected = Join<B>::predicate_->call((QueryTable<B> *) lhs, i + outer_block_idx, (QueryTable<B> *) rhs, j + inner_block_idx).template getValue<B>();
-                    dst_dummy_tag = (!selected) | lhs_dummy_tag | ((QueryTable<B> *) rhs)->getDummyTag(j + inner_block_idx);
-                    Operator<B>::output_->setDummyTag(cursor, dst_dummy_tag);
-                    ++cursor;
-                }
-            }
-
-
-            if(j + inner_block_fields_size > rhs->tuple_cnt_) {
-                inner_block_fields_size = rhs->tuple_cnt_ - j;
-            }
-        }
-
-        if(i + outer_block_fields_size > lhs->tuple_cnt_) {
-            outer_block_fields_size = lhs->tuple_cnt_ - i;
-        }
-
-        // unpin page
-        for(int outer_col_idx = 0; outer_col_idx < lhs->getSchema().getFieldCount(); ++outer_col_idx) {
-            int outer_page_cnts = outer_block_pages[outer_col_idx];
-            int max_page = ceil(static_cast<double>(lhs->tuple_cnt_) / lhs->fields_per_wire_[outer_col_idx]);
-            cout << "max page: " << max_page << endl;
-
-            for(int page_offset = 0; page_offset < outer_page_cnts; ++page_offset) {
-                // check if the page is valid (up to maximum number of pages)
-                if(outer_col_page_offsets[outer_col_idx] + page_offset < max_page) {
-                    BufferPoolManager::PageId pid = bpm->getPageId(lhs->table_id_, outer_col_idx,
-                                                                   (outer_col_page_offsets[outer_col_idx] + page_offset) *
-                                                                   lhs->fields_per_wire_[outer_col_idx],
-                                                                   lhs->fields_per_wire_[outer_col_idx]);
-                    cout << "unpin page id: " << bpm->getPageIdKey(pid) << endl;
-                    BufferPoolManager::UnpackedPage up = bpm->getUnpackedPage(pid);
-                    up.pined = false;
-                    bpm->unpacked_page_buffer_pool_[bpm->getPageIdKey(pid)] = up;
-                }
-            }
-
-            outer_col_page_offsets[outer_col_idx] += outer_page_cnts;
-        }
-    }
-
-    lhs->pinned_ = false;
-
-    cout << "Finished block nested loop join" << endl;
-    exit(0);
+    fk_reln->pinned_ = false;
     return this->output_;
+
+}
+
+
+template<typename B>
+void BlockNestedLoopJoin<B>::joinBlock(PackedColumnTable *fk_table, PackedColumnTable *pk_table, int start_row, int row_cnt, vector<pair<uint32_t, uint32_t> > & join_idxs) {
+    int pk_offset = (foreign_key_input_ == 0) ? fk_table->getSchema().getFieldCount() : 0;
+    auto pk_schema = pk_table->getSchema();
+    auto output = reinterpret_cast<PackedColumnTable *>(this->output_);
+
+    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+        for (auto entry: join_idxs) {
+            pinRowRange(fk_table, (foreign_key_input_ == 0) ? entry.first : (entry.second - pk_offset),
+                        start_row, row_cnt);
+        }
+
+        // pin dummy tags
+        pinRowRange(fk_table, -1, start_row, row_cnt);
+
+        for (int i = 0; i < pk_schema.getFieldCount(); ++i) {
+            pinRowRange(output, i + pk_offset, start_row, row_cnt);
+        }
+        pinRowRange(output, -1, start_row, row_cnt);
+    }
+    // iterate through and join on all rows in pinned range
+    joinRowRange((QueryTable<B> *) fk_table, (QueryTable<B> *)  pk_table, start_row, row_cnt);
+
+    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+        // unpin this block's pages
+        for (auto entry: join_idxs) {
+            unpinRowRange(fk_table, (foreign_key_input_ == 0) ? entry.first : (entry.second - pk_offset),
+                          start_row, row_cnt);
+        }
+        // unpin dummy tags
+        unpinRowRange(fk_table, -1, start_row, row_cnt);
+
+        for (int i = 0; i < pk_schema.getFieldCount(); ++i) {
+            unpinRowRange(output, i + pk_offset, start_row, row_cnt);
+        }
+        unpinRowRange(output, -1, start_row, row_cnt);
+    }
+}
+
+template<typename B>
+void BlockNestedLoopJoin<B>::joinRowRange(QueryTable<B> *fk_reln, QueryTable<B> *pk_reln, int start_row, int row_cnt) {
+    int cutoff = start_row + row_cnt;
+    int pk_offset = (foreign_key_input_ == 0) ? fk_reln->getSchema().getFieldCount() : 0;
+
+
+    // each column in inner loop pins the page it is working on to prevent other columns from evicting it
+    // incrementally "shift" pin as we work through the rows
+    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+        for (int i = -1; i < pk_reln->getSchema().getFieldCount(); ++i) {
+            auto pid = PageId{reinterpret_cast<PackedColumnTable *>(pk_reln)->table_id_, i, 0};
+            bpm_.loadPage(pid);
+            bpm_.pinPage(pid);
+        }
+    }
+
+    for(int j = 0; j < pk_reln->tuple_cnt_; ++j) {
+        B pk_dummy_tag = pk_reln->getField(j, -1).template getValue<B>();
+
+        // If we reach the end of a page on one column, shift its pin over to next page in this column
+        // this "shielded scan" protects us from the vagaries of our eviction strategy
+        if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+            for (int k = -1; k < pk_reln->getSchema().getFieldCount(); ++k) {
+                if ((j % reinterpret_cast<PackedColumnTable *>(pk_reln)->fields_per_wire_[k] == 0) && j > 0) {
+                    auto pid = PageId{reinterpret_cast<PackedColumnTable *>(pk_reln)->table_id_, k,
+                                      (j - 1) / reinterpret_cast<PackedColumnTable *>(pk_reln)->fields_per_wire_[k]};
+                    bpm_.unpinPage(pid);
+                    ++pid.page_idx_;
+                    bpm_.loadPage(pid);
+                    bpm_.pinPage(pid);
+                }
+            }
+        }
+        // compare j'th PK row to all in block
+        for(int i = start_row; i < cutoff; ++i) {
+            B fk_dummy_tag = fk_reln->getField(i, -1).template getValue<B>();
+            B selected = (foreign_key_input_ == 0)
+                         ? Join<B>::predicate_->call(fk_reln, i, pk_reln, j).template getValue<B>()
+                         : Join<B>::predicate_->call(pk_reln, j, fk_reln, i).template getValue<B>();
+            B to_update = selected & (!fk_dummy_tag) & (!pk_dummy_tag);
+            this->output_->cloneRow(to_update, i, pk_offset, pk_reln, j);
+        }
+    }
+
+    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+        // unpin all last rows in PK
+        int last_idx = pk_reln->tuple_cnt_ - 1;
+        for (int i = -1; i < pk_reln->getSchema().getFieldCount(); ++i) {
+            int last_page_idx = last_idx / reinterpret_cast<PackedColumnTable *>(pk_reln)->fields_per_wire_[i];
+            auto pid = PageId{reinterpret_cast<PackedColumnTable *>(pk_reln)->table_id_, i, last_page_idx};
+            bpm_.unpinPage(pid);
+        }
+    }
+
+
+}
+
+template<typename B>
+void BlockNestedLoopJoin<B>::pinRowRange(PackedColumnTable *table, const int & col_ordinal, const int & start_row, const int & row_cnt) {
+    assert(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE);
+
+    PageId start_pid = bpm_.getPageId(table->table_id_, col_ordinal, start_row, table->fields_per_wire_[col_ordinal]);
+    PageId end_pid = bpm_.getPageId(table->table_id_, col_ordinal, start_row + row_cnt - 1, table->fields_per_wire_[col_ordinal]);
+
+    auto pid = start_pid;
+    bpm_.loadPage(pid);
+    bpm_.pinPage(pid);
+
+    while(pid.page_idx_ < end_pid.page_idx_) {
+        ++pid.page_idx_;
+        bpm_.loadPage(pid);
+        bpm_.pinPage(pid);
+    }
+
+}
+
+template<typename B>
+void BlockNestedLoopJoin<B>::unpinRowRange(PackedColumnTable *table, const int & col_ordinal, const int & start_row, const int & row_cnt) {
+
+    assert(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE);
+
+    PageId start_pid = bpm_.getPageId(table->table_id_, col_ordinal, start_row, table->fields_per_wire_[col_ordinal]);
+    PageId end_pid = bpm_.getPageId(table->table_id_, col_ordinal, start_row + row_cnt - 1, table->fields_per_wire_[col_ordinal]);
+
+    auto pid = start_pid;
+    bpm_.unpinPage(pid);
+
+    while(pid.page_idx_ < end_pid.page_idx_) {
+        ++pid.page_idx_;
+        bpm_.unpinPage(pid);
+    }
 }
 
 template class vaultdb::BlockNestedLoopJoin<bool>;

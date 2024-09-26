@@ -6,7 +6,7 @@
       "id": "0",
       "relOp": "VaultDBTableScan",
       "table": "phame_demographic",
-      "outputFields": "(patid:int32 (#0), age_cat:char(1) (#1), gender:char(1) (#2), race:char(1) (#3), ethnicity:char(1) (#4), zip:char(5) (#5), payer_primary:char(1) (#6), payer_secondary:char(1) (#7), site_id:int32 (#8))"
+      "outputFields": "(patid:int32 (#0), age_cat:char(1) (#1), gender:char(1) (#2), race:char(1) (#3), ethnicity:char(1) (#4), zip:char(5) (#5), payer_primary:char(1) (#6), payer_secondary:char(1) (#7),, site_id:int32 (#8))"
     },
     {
       "id": "1",

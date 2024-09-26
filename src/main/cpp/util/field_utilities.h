@@ -13,6 +13,7 @@
 #include "expression/comparator_expression_nodes.h"
 #include "expression/generic_expression.h"
 #include <expression/visitor/to_packed_expression_visitor.h>
+#include <expression/expression_factory.h>
 
 
 namespace vaultdb {
@@ -120,8 +121,7 @@ namespace vaultdb {
 
 
         template<typename B>
-        static  Expression<B> *
-        getEqualityPredicate(const uint32_t &lhs_idx, const QuerySchema &lhs, const uint32_t &rhs_idx,
+        static  Expression<B> *getEqualityPredicate(const uint32_t &lhs_idx, const QuerySchema &lhs, const uint32_t &rhs_idx,
                              const QuerySchema & rhs) {
 
             auto lhs_input = new InputReference<B>(lhs_idx, lhs,  rhs);
@@ -152,20 +152,46 @@ namespace vaultdb {
         }
 
         template<typename B>
-        static  GenericExpression<B> *
-        getEqualityPredicate(const std::vector<uint32_t> &lhs_idx, const QuerySchema &lhs, const std::vector<uint32_t> &rhs_idx,
-                             const QuerySchema & rhs) {
+        static ExpressionNode<B> *getEqualityPredicateNode(const Operator<B> *lhs, const uint32_t &lhs_idx, const Operator<B> *rhs,
+                             const uint32_t &rhs_idx) {
 
-            assert(lhs_idx.size() == rhs_idx.size());
-            GenericExpression<B> *cur_predicate;
-            GenericExpression<B> *prev_predicate = ((GenericExpression<B> *)FieldUtilities::getEqualityPredicate<B>(lhs_idx[0], lhs, rhs_idx[0], rhs));
 
-            for(auto i = 1; i < lhs_idx.size(); ++i) {
-                cur_predicate = ((GenericExpression<B>*)FieldUtilities::getEqualityPredicate<B>(lhs_idx[i], lhs, rhs_idx[i], rhs));
-                prev_predicate->root_ = new AndNode<B>(prev_predicate->root_, cur_predicate->root_);
-            }
-            return prev_predicate;
+            auto lhs_input = new InputReference<B>(lhs_idx, lhs->getOutputSchema(),  rhs->getOutputSchema());
+            auto rhs_input = new InputReference<B>(rhs_idx, lhs->getOutputSchema(),  rhs->getOutputSchema());
+            auto equality_node = new EqualNode<B>(lhs_input, rhs_input);
+
+            ToPackedExpressionVisitor pack_it(equality_node);
+            return pack_it.getRoot();
+
         }
+
+
+
+        template<typename B>
+        static Expression<B> *getComparisonWithLiteral(QuerySchema & schema, Field<B> & literal, const int & ordinal, const ExpressionKind & comparator) {
+            auto lit = new LiteralNode<B>(literal);
+            auto in = new InputReference<B>(ordinal, schema);
+            auto cmp = ExpressionFactory<B>::getExpressionNode(comparator, lit, in);
+
+            ToPackedExpressionVisitor pack_it(cmp);
+            ExpressionNode<B> *packed_predicate = pack_it.getRoot();
+
+            return  new GenericExpression<B>(packed_predicate, "predicate",  std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
+        }
+
+        template<typename B>
+        static Expression<B> *getComparisonWithLiteral(QuerySchema & schema,  const int & ordinal, Field<B> & literal, const ExpressionKind & comparator) {
+            auto lit = new LiteralNode<B>(literal);
+
+            auto in = new InputReference<B>(ordinal, schema);
+            auto cmp = ExpressionFactory<B>::getExpressionNode(comparator, in, lit);
+
+            ToPackedExpressionVisitor pack_it(cmp);
+            ExpressionNode<B> *packed_predicate = pack_it.getRoot();
+
+            return  new GenericExpression<B>(packed_predicate, "predicate",  std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
+        }
+
 
         template<typename B>
         static string revealAndPrintTuple(QueryTable<B> *table, const int & idx) {

@@ -49,7 +49,7 @@ void SecureTpcHTest::runTest(const int &test_id, const SortDefinition &expected_
 
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q" + std::to_string(test_id) + ".json";
 
-    PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
+    PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_, true);
    SecureOperator *root = parser.getRoot();
 
     auto result = root->run();

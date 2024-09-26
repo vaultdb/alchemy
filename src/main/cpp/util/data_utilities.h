@@ -12,6 +12,7 @@
 #endif
 
 #include <cstdint>
+#include <regex>
 #include "utilities.h"
 #include "util/system_configuration.h"
 
@@ -48,6 +49,8 @@ namespace vaultdb {
         static void writeFile(const string &fileName, vector<int8_t> contents);
 
         static void writeFile(const string  &filename,const string & contents);
+
+        static void appendFile(const string &fileName, vector<int8_t> contents);
         // sort all columns one after another
         // default setting for many tests
         static SortDefinition getDefaultSortDefinition(const uint32_t &colCount);
@@ -68,7 +71,7 @@ namespace vaultdb {
         static string printFirstBytes(vector<int8_t> &bytes, const int &byteCount);
 
         static string revealAndPrintFirstBits(Bit *bits, const int & bit_cnt) {
-            stringstream s;
+            std::stringstream s;
             for(int i = 0; i < bit_cnt; ++i) {
                 s << (bits[i].reveal() ? "1" : "0");
             }
@@ -128,6 +131,35 @@ namespace vaultdb {
     static string printTable(SecureTable *table, int tuple_limit = -1, bool show_dummies = false);
     static string printTable(const PlainTable *table, int tuple_limit = -1, bool show_dummies = false);
 
+        // src is produced by DataUtilities::printSortDefinition
+        // e.g., {<1, ASC>, <2, DESC>}
+        static SortDefinition parseCollation(const string & src) {
+            int cursor = 1;
+            SortDefinition dst;
+            while(src.find('<', cursor) != -1) {
+                int start_entry = src.find('<', cursor);
+                int end_entry = src.find('>', cursor);
+                string entry = src.substr(start_entry + 1, end_entry - start_entry - 1); // omit the < and >
+
+                //  ordinal parser
+                int delimiter = entry.find(',', 0);
+                string col_str = entry.substr(0, delimiter);
+                // delete leading and trailing whitespaces
+                // https://stackoverflow.com/questions/1798112/removing-leading-and-trailing-spaces-from-a-string
+                col_str = std::regex_replace(col_str, std::regex("^ +| +$|( ) +"), "$1");
+                int col = std::stoi(col_str);
+
+                // sort direction parser
+                string sort_dir_str = entry.substr(delimiter + 1, entry.length() - delimiter - 1);
+                // delete leading and trailing whitespaces
+                sort_dir_str = std::regex_replace(sort_dir_str, std::regex("^ +| +$|( ) +"), "$1");
+                SortDirection dir =  (sort_dir_str  == "ASC") ? SortDirection::ASCENDING : SortDirection::DESCENDING;
+                dst.emplace_back(std::make_pair(col, dir));
+                cursor = end_entry + 1;
+            }
+
+            return dst;
+        }
     };
 }
 

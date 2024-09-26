@@ -134,7 +134,7 @@ ptree PlanDeparser<B>::deparseSchema(const QuerySchema &schema) {
 template<typename B>
 ptree  PlanDeparser<B>::deparseSecureSqlInput(const Operator<B> *input) {
     assert(input->getType() == OperatorType::SECURE_SQL_INPUT);
-    auto in = (SecureSqlInput *) input;
+    auto in = reinterpret_cast<const SecureSqlInput *>(input);
     ptree input_node;
     writeHeader(input_node, input, "LogicalValues");
 //    auto schema = deparseSchema(in->getOutputSchema());
@@ -154,7 +154,7 @@ ptree  PlanDeparser<B>::deparseSecureSqlInput(const Operator<B> *input) {
 template<typename B>
 ptree PlanDeparser<B>::deparseSqlInput(const Operator<B> *input) {
     assert(input->getType() == OperatorType::SQL_INPUT);
-    auto in = (SqlInput *) input;
+    auto in = reinterpret_cast<const SqlInput *>(input);
     ptree input_node;
 
     writeHeader(input_node, input, "LogicalValues");
@@ -196,13 +196,13 @@ ptree PlanDeparser<B>::deparseTableScan(const Operator<B> *input) {
 template<typename B>
 ptree PlanDeparser<B>::deparseMergeInput(const Operator<B> *input) {
     assert(input->getType() == OperatorType::MERGE_INPUT);
-    auto in = (MergeInput *) input;
+    auto in = reinterpret_cast<const MergeInput *>(input);
     ptree  input_node;
 
     writeHeader(input_node, input, "LogicalValues");
 //    auto schema = deparseSchema(in->getOutputSchema());
 //    input_node.add_child("type", schema);
-    input_node.put("sql", in->getSqlInput()); // TODO: consider holding onto original (unmerged) SQL input here
+    input_node.put("sql", in->getSqlInput()); // TODO(future): consider holding onto original (unmerged) SQL input here
     input_node.put("merge-sql", in->getSqlInput());
     input_node.put<bool>("dummy-tag", in->getHasDummyTag());
     input_node.put("input-limit", in->getTupleLimit());
@@ -283,7 +283,7 @@ ptree PlanDeparser<B>::deparseLeftKeyedNestedLoopJoin(const Operator<B> *input) 
 template<typename B>
 ptree PlanDeparser<B>::deparseZkSqlInput(const Operator<B> *input) {
     assert(input->getType() == OperatorType::ZK_SQL_INPUT);
-    auto in = (ZkSqlInput *) input;
+    auto in = reinterpret_cast<const ZkSqlInput *>(input);
     ptree input_node;
 
     writeHeader(input_node, input, "LogicalValues");

@@ -1,5 +1,5 @@
-#include "expression_factory.h"
-#include "function_expression.h"
+#include "expression/expression_factory.h"
+#include "expression/function_expression.h"
 
 using namespace vaultdb;
 
@@ -25,8 +25,7 @@ ExpressionNode<B> *ExpressionFactory<B>::getExpressionNode(const string &express
 
 
 template<typename B>
-ExpressionNode<B> *ExpressionFactory<B>::getExpressionNode(const ExpressionKind &kind, ExpressionNode<B> *lhs,
-ExpressionNode<B> *rhs) {
+ExpressionNode<B> *ExpressionFactory<B>::getExpressionNode(const ExpressionKind &kind, ExpressionNode<B> *lhs, ExpressionNode<B> *rhs) {
     switch(kind) {
         case ExpressionKind::PLUS:
             return new PlusNode<B>(lhs, rhs);
@@ -62,7 +61,7 @@ ExpressionNode<B> *rhs) {
             return new NoOp<B>();
 
         default:
-            throw new std::invalid_argument("Can't create ExpressionNode for kind " + std::to_string((int) kind));
+            throw new std::invalid_argument("Can't create ExpressionNode for kind " + std::to_string(static_cast<int>(kind)));
     }
 }
 

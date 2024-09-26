@@ -112,6 +112,9 @@ namespace vaultdb {
         }
 
 
+         void setDelta(const block & delta) override {
+            throw;
+        }
 
     private:
         static void secret_share_send(const int &party, const QueryTable<bool> *src_table, QueryTable<Bit> *dst_table);
@@ -177,6 +180,10 @@ namespace  vaultdb {
         void sendPublic(const int & to_send) override { throw; }
 
         int recvPublic() override { throw; }
+
+        void setDelta(const block & delta) override {
+            throw;
+        }
 
     };
 }

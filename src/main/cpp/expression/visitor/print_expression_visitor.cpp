@@ -1,5 +1,5 @@
 #include <emp-tool/circuits/bit.h>
-#include "print_expression_visitor.h"
+#include "expression/visitor/print_expression_visitor.h"
 #include <expression/expression_node.h>
 #include <expression/math_expression_nodes.h>
 #include <expression/comparator_expression_nodes.h>

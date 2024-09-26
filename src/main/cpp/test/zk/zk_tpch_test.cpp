@@ -40,7 +40,7 @@ void ZkTpcHTest::runTest(const int &test_id, const SortDefinition &expected_sort
     int limit = (TRUNCATE_INPUTS) ? input_tuple_limit_ : -1; // set to -1 for full test
 
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/zk-q" + std::to_string(test_id) + ".json";
-    PlanParser<Bit> parser(db_name_, plan_file, limit);
+    PlanParser<Bit> parser(db_name_, plan_file, limit, true);
 
     SecureOperator *root = parser.getRoot();
     SecureTable *observed = root->run();

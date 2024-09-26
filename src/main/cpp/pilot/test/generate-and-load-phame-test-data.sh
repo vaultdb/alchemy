@@ -77,7 +77,7 @@ psql $DB_NAME <  pilot/test/phame/load-generated-data.sql
 # create schema files for each test CSV
 for((i = 0; i < $HOST_COUNT; i++)); do
   echo '(age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64)' > pilot/secret_shares/input/$i/phame_diagnosis_rollup.schema
-  echo '(desc:varchar(42), count:int64, site_id:int32)' > pilot/secret_shares/input/$i/phame_cohort_counts.schema
+  echo '(desc:varchar(42), count:int64)' > pilot/secret_shares/input/$i/phame_cohort_counts.schema
 done
 
 for host in 1 3; do

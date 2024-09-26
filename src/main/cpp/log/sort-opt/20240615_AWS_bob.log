@@ -1,0 +1,604 @@
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from PreSortingTest
+[ RUN      ] PreSortingTest.no_sort_q3
+Connecting to 126.137.1.10 on ports 7654, 65482 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 5206c062f998c6c586aa67da052437c97dcf1e12
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65483	--cutoff=100	--filter=*	--party=2	--port=7655	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#9: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$3(32) shared-float>, <2, P$1(28) shared-int64>, <3, P$2(32) shared-int32>)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float revenue, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {<-1, ASC> , <1, DESC> , <2, ASC> }, cost est: 0, output card: 10
+    #8: Sort<Bit> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }, cost est: 6568, output card: 10
+        #7: SortMergeAggregate<Bit> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> , <1, ASC> , <2, ASC> }, cost est: 30000000, output card: 24000
+            #-1: Sort<Bit> ({<0, ASC> , <1, ASC> , <2, ASC> }) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> , <1, ASC> , <2, ASC> }, cost est: 274245280, output card: 24000
+                #6: Project<Bit> ((<0, P$3(20) shared-int32>, <1, P$1(28) shared-int64>, <2, P$2(32) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <0, ASC> }, cost est: 0, output card: 24000
+                    #5: KeyedSortMergeJoin<Bit> (P$0(20) == P$3(20) - not sort compatible, need sort in smj) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-int32(20) lineitem.l_orderkey, #4 shared-float revenue) order by: {<-1, ASC> , <0, ASC> , <3, ASC> }, cost est: 721540464, output card: 24000
+                        #3: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$2(28) shared-int64>, <2, P$3(32) shared-int32>)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority) order by: {<-1, ASC> }, cost est: 0, output card: 6000
+                            #2: KeyedSortMergeJoin<Bit> (P$1(14) == P$4(14) - not sort compatible, need sort in smj) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority, #4 shared-int32(14) customer.c_custkey) order by: {<-1, ASC> , <1, ASC> , <4, ASC> }, cost est: 118866450, output card: 6000
+                                #0: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders", tuple_count=6000) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {}, cost est: 0, output card: 6000
+                                #1: SecureSqlInput<Bit> ("SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer", tuple_count=600) : (#0 shared-int32(14) customer.c_custkey) order by: {}, cost est: 0, output card: 600
+                        #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float revenue) order by: {}, cost est: 0, output card: 24000
+
+Operator #0 SecureSqlInput ran for 25.085000 ms, gate count: 0 output cardinality: 6000, row width=95
+Operator #1 SecureSqlInput ran for 2.445000 ms, gate count: 0 output cardinality: 600, row width=15
+Operator #2 KeyedSortMergeJoin ran for 11207.379000 ms, gate count: 126817460 output cardinality: 6000, row width=109
+Operator #3 Project ran for 2.244000 ms, gate count: 0 output cardinality: 6000, row width=81
+Operator #4 SecureSqlInput ran for 57.324000 ms, gate count: 0 output cardinality: 24000, row width=53
+Operator #5 KeyedSortMergeJoin ran for 63703.198000 ms, gate count: 839409624 output cardinality: 24000, row width=133
+Operator #6 Project ran for 10.123000 ms, gate count: 0 output cardinality: 24000, row width=113
+Operator #-1 Sort ran for 24179.439000 ms, gate count: 253665088 output cardinality: 24000, row width=113
+Operator #7 SortMergeAggregate ran for 2486.531000 ms, gate count: 29302812 output cardinality: 24000, row width=113
+Operator #8 Sort ran for 21441.806000 ms, gate count: 233153152 output cardinality: 10, row width=113
+Operator #9 Project ran for 0.014000 ms, gate count: 0 output cardinality: 10, row width=113
+Runtime: 123.235 sec, CPU Time: 90.482 sec, CPU clock ticks: 9.0482e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.14466e+09. observed gates: 1355530676 gates, relative error (%)=15.5564
+Bandwidth: 128929 Bps
+[       OK ] PreSortingTest.no_sort_q3 (123308 ms)
+[ RUN      ] PreSortingTest.pre_sort_q3
+Connecting to 126.137.1.10 on ports 7655, 65483 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 5206c062f998c6c586aa67da052437c97dcf1e12
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65484	--cutoff=100	--filter=*	--party=2	--port=7656	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#9: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$3(32) shared-float>, <2, P$1(28) shared-int64>, <3, P$2(32) shared-int32>)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float revenue, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {<-1, ASC> , <1, DESC> , <2, ASC> }, cost est: 0, output card: 10
+    #8: Sort<Bit> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }, cost est: 6568, output card: 10
+        #7: SortMergeAggregate<Bit> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> , <1, ASC> , <2, ASC> }, cost est: 30000000, output card: 24000
+            #-1: Sort<Bit> ({<0, ASC> , <1, ASC> , <2, ASC> }) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> , <1, ASC> , <2, ASC> }, cost est: 274245280, output card: 24000
+                #6: Project<Bit> ((<0, P$3(20) shared-int32>, <1, P$1(28) shared-int64>, <2, P$2(32) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <0, ASC> }, cost est: 0, output card: 24000
+                    #5: KeyedSortMergeJoin<Bit> (P$0(20) == P$3(20) - not sort compatible, need sort in smj) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-int32(20) lineitem.l_orderkey, #4 shared-float revenue) order by: {<-1, ASC> , <0, ASC> , <3, ASC> }, cost est: 721540464, output card: 24000
+                        #3: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$2(28) shared-int64>, <2, P$3(32) shared-int32>)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority) order by: {<-1, ASC> }, cost est: 0, output card: 6000
+                            #2: KeyedSortMergeJoin<Bit> (P$1(14) == P$4(14) - sortCompatible) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority, #4 shared-int32(14) customer.c_custkey) order by: {<-1, ASC> , <1, ASC> , <4, ASC> }, cost est: 87055361, output card: 6000
+                                #0: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_custkey", tuple_count=6000) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {<1, ASC> }, cost est: 4217024, output card: 6000
+                                #1: SecureSqlInput<Bit> ("SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer ORDER BY c_custkey", tuple_count=600) : (#0 shared-int32(14) customer.c_custkey) order by: {<0, ASC> }, cost est: 88576, output card: 600
+                        #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 13270208, output card: 24000
+
+Operator #0 SecureSqlInput ran for 420.558000 ms, gate count: 4032160 output cardinality: 6000, row width=95
+Operator #1 SecureSqlInput ran for 12.722000 ms, gate count: 79800 output cardinality: 600, row width=15
+Operator #2 KeyedSortMergeJoin ran for 8701.068000 ms, gate count: 101663920 output cardinality: 6000, row width=109
+Operator #3 Project ran for 1.962000 ms, gate count: 0 output cardinality: 6000, row width=81
+Operator #4 SecureSqlInput ran for 1376.260000 ms, gate count: 12626176 output cardinality: 24000, row width=53
+Operator #5 KeyedSortMergeJoin ran for 63512.568000 ms, gate count: 826882260 output cardinality: 24000, row width=133
+Operator #6 Project ran for 10.696000 ms, gate count: 0 output cardinality: 24000, row width=113
+Operator #-1 Sort ran for 23607.882000 ms, gate count: 253665088 output cardinality: 24000, row width=113
+Operator #7 SortMergeAggregate ran for 2421.527000 ms, gate count: 29302812 output cardinality: 24000, row width=113
+Operator #8 Sort ran for 21183.902000 ms, gate count: 233153152 output cardinality: 10, row width=113
+Operator #9 Project ran for 0.016000 ms, gate count: 0 output cardinality: 10, row width=113
+Runtime: 121.379 sec, CPU Time: 90.2577 sec, CPU clock ticks: 9.02577e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.13042e+09. observed gates: 1343003312 gates, relative error (%)=15.8287
+Bandwidth: 130901 Bps
+[       OK ] PreSortingTest.pre_sort_q3 (121449 ms)
+[ RUN      ] PreSortingTest.fully_sort_opt_q3
+Connecting to 126.137.1.10 on ports 7656, 65484 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 5206c062f998c6c586aa67da052437c97dcf1e12
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65485	--cutoff=100	--filter=*	--party=2	--port=7657	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#10: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$3(32) shared-float>, <2, P$1(28) shared-int64>, <3, P$2(32) shared-int32>)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float revenue, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {<-1, ASC> , <1, DESC> , <2, ASC> }, cost est: 0, output card: 10
+    #9: Sort<Bit> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }, cost est: 6568, output card: 10
+        #8: SortMergeAggregate<Bit> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> , <1, ASC> , <2, DESC> }, cost est: 30000000, output card: 24000
+            #7: Project<Bit> ((<0, P$3(20) shared-int32>, <1, P$1(28) shared-int64>, <2, P$2(32) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <0, ASC> }, cost est: 0, output card: 24000
+                #6: KeyedSortMergeJoin<Bit> (P$0(20) == P$3(20) - sortCompatible) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-int32(20) lineitem.l_orderkey, #4 shared-float revenue) order by: {<-1, ASC> , <0, ASC> , <3, ASC> }, cost est: 529659352, output card: 24000
+                    #4: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority) order by: {<0, ASC> }, cost est: 26531230, output card: 6000
+                        #3: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$2(28) shared-int64>, <2, P$3(32) shared-int32>)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority) order by: {<-1, ASC> }, cost est: 0, output card: 6000
+                            #2: KeyedSortMergeJoin<Bit> (P$1(14) == P$4(14) - sortCompatible) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority, #4 shared-int32(14) customer.c_custkey) order by: {<-1, ASC> , <1, ASC> , <4, ASC> }, cost est: 87055361, output card: 6000
+                                #0: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_custkey", tuple_count=6000) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {<1, ASC> }, cost est: 4217024, output card: 6000
+                                #1: SecureSqlInput<Bit> ("SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer ORDER BY c_custkey", tuple_count=600) : (#0 shared-int32(14) customer.c_custkey) order by: {<0, ASC> }, cost est: 88576, output card: 600
+                    #5: SecureSqlInput<Bit> ("SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 13270208, output card: 24000
+
+Operator #0 SecureSqlInput ran for 422.390000 ms, gate count: 4032160 output cardinality: 6000, row width=95
+Operator #1 SecureSqlInput ran for 13.690000 ms, gate count: 79800 output cardinality: 600, row width=15
+Operator #2 KeyedSortMergeJoin ran for 8565.205000 ms, gate count: 101663920 output cardinality: 6000, row width=109
+Operator #3 Project ran for 2.084000 ms, gate count: 0 output cardinality: 6000, row width=81
+Operator #4 Sort ran for 2185.828000 ms, gate count: 24946752 output cardinality: 6000, row width=81
+Operator #5 SecureSqlInput ran for 1368.336000 ms, gate count: 12626176 output cardinality: 24000, row width=53
+Operator #6 KeyedSortMergeJoin ran for 47824.233000 ms, gate count: 672432228 output cardinality: 24000, row width=133
+Operator #7 Project ran for 10.004000 ms, gate count: 0 output cardinality: 24000, row width=113
+Operator #8 SortMergeAggregate ran for 2415.079000 ms, gate count: 29302812 output cardinality: 24000, row width=113
+Operator #9 Sort ran for 21196.086000 ms, gate count: 233153152 output cardinality: 10, row width=113
+Operator #10 Project ran for 0.017000 ms, gate count: 0 output cardinality: 10, row width=113
+Runtime: 84.1207 sec, CPU Time: 62.3956 sec, CPU clock ticks: 6.23956e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 6.90828e+08. observed gates: 934888192 gates, relative error (%)=26.1058
+Bandwidth: 188879 Bps
+[       OK ] PreSortingTest.fully_sort_opt_q3 (84191 ms)
+[ RUN      ] PreSortingTest.no_sort_q5_bushy
+Connecting to 126.137.1.10 on ports 7657, 65485 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 5206c062f998c6c586aa67da052437c97dcf1e12
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65486	--cutoff=100	--filter=*	--party=2	--port=7658	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#11: Sort<Bit> ({<1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<1, DESC> }, cost est: 363850176, output card: 24000
+    #10: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) revenue)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 35664000, output card: 24000
+        #-1: Sort<Bit> ({<0, ASC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 591935360, output card: 24000
+            #9: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$4(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                #8: KeyedSortMergeJoin<Bit> ((P$1(5) == P$5(5)) AND (P$2(20) == P$3(20)) - not sort compatible, need sort in smj) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int32(20) lineitem.l_orderkey, #4 shared-float revenue, #5 shared-int32(5) supplier.s_nationkey) order by: {<-1, ASC> , <1, ASC> , <5, ASC> , <2, ASC> , <3, ASC> }, cost est: 1441700464, output card: 24000
+                    #3: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$2(5) shared-int32>, <2, P$3(20) shared-int32>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(20) orders.o_orderkey) order by: {<-1, ASC> }, cost est: 0, output card: 6000
+                        #2: KeyedSortMergeJoin<Bit> (P$1(14) == P$4(14) - not sort compatible, need sort in smj) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(5) customer.c_nationkey, #3 shared-int32(20) orders.o_orderkey, #4 shared-int32(14) orders.o_custkey) order by: {<-1, ASC> , <1, ASC> , <4, ASC> }, cost est: 191390446, output card: 6000
+                            #0: SecureSqlInput<Bit> ("SELECT t1.n_name, t2.c_custkey, t2.c_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey", tuple_count=118) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(5) customer.c_nationkey) order by: {}, cost est: 0, output card: 118
+                            #1: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders", tuple_count=6000) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey) order by: {}, cost est: 0, output card: 6000
+                    #7: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$2(32) shared-float>, <2, P$4(5) shared-int32>)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float revenue, #2 shared-int32(5) supplier.s_nationkey) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                        #6: KeyedSortMergeJoin<Bit> (P$1(10) == P$3(10) - not sort compatible, need sort in smj) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(10) lineitem.l_suppkey, #2 shared-float revenue, #3 shared-int32(10) supplier.s_suppkey, #4 shared-int32(5) supplier.s_nationkey) order by: {<-1, ASC> , <1, ASC> , <3, ASC> }, cost est: 412399360, output card: 24000
+                            #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(10) lineitem.l_suppkey, #2 shared-float revenue) order by: {}, cost est: 0, output card: 24000
+                            #5: SecureSqlInput<Bit> ("SELECT t2.s_suppkey, t2.s_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT s_suppkey, s_nationkey FROM supplier) AS t2 ON t1.n_nationkey = t2.s_nationkey", tuple_count=7) : (#0 shared-int32(10) supplier.s_suppkey, #1 shared-int32(5) supplier.s_nationkey) order by: {}, cost est: 0, output card: 7
+
+Operator #0 SecureSqlInput ran for 1.338000 ms, gate count: 0 output cardinality: 118, row width=220
+Operator #1 SecureSqlInput ran for 10.126000 ms, gate count: 0 output cardinality: 6000, row width=35
+Operator #2 KeyedSortMergeJoin ran for 19227.479000 ms, gate count: 232086712 output cardinality: 6000, row width=254
+Operator #3 Project ran for 4.649000 ms, gate count: 0 output cardinality: 6000, row width=226
+Operator #4 SecureSqlInput ran for 70.198000 ms, gate count: 0 output cardinality: 24000, row width=63
+Operator #5 SecureSqlInput ran for 1.780000 ms, gate count: 0 output cardinality: 7, row width=16
+Operator #6 KeyedSortMergeJoin ran for 43394.972000 ms, gate count: 701447460 output cardinality: 24000, row width=78
+Operator #7 Project ran for 5.784000 ms, gate count: 0 output cardinality: 24000, row width=58
+Operator #8 KeyedSortMergeJoin ran for 129204.529000 ms, gate count: 2259487744 output cardinality: 24000, row width=283
+Operator #9 Project ran for 79.361000 ms, gate count: 0 output cardinality: 24000, row width=233
+Operator #-1 Sort ran for 50181.357000 ms, gate count: 567477568 output cardinality: 24000, row width=233
+Operator #10 SortMergeAggregate ran for 3179.480000 ms, gate count: 34918576 output cardinality: 24000, row width=233
+Operator #11 Sort ran for 29012.492000 ms, gate count: 350832832 output cardinality: 24000, row width=233
+Runtime: 274.516 sec, CPU Time: 200.697 sec, CPU clock ticks: 2.00697e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 3.03694e+09. observed gates: 3212716720 gates, relative error (%)=5.47129
+Bandwidth: 55858 Bps
+[       OK ] PreSortingTest.no_sort_q5_bushy (304034 ms)
+[ RUN      ] PreSortingTest.pre_sort_q5_bushy
+Connecting to 126.137.1.10 on ports 7658, 65486 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 5206c062f998c6c586aa67da052437c97dcf1e12
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65487	--cutoff=100	--filter=*	--party=2	--port=7659	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#11: Sort<Bit> ({<1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<1, DESC> }, cost est: 363850176, output card: 24000
+    #10: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) revenue)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 35664000, output card: 24000
+        #-1: Sort<Bit> ({<0, ASC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 591935360, output card: 24000
+            #9: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$4(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                #8: KeyedSortMergeJoin<Bit> ((P$1(5) == P$5(5)) AND (P$2(20) == P$3(20)) - not sort compatible, need sort in smj) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int32(20) lineitem.l_orderkey, #4 shared-float revenue, #5 shared-int32(5) supplier.s_nationkey) order by: {<-1, ASC> , <1, ASC> , <5, ASC> , <2, ASC> , <3, ASC> }, cost est: 1441700464, output card: 24000
+                    #3: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$2(5) shared-int32>, <2, P$3(20) shared-int32>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(20) orders.o_orderkey) order by: {<-1, ASC> }, cost est: 0, output card: 6000
+                        #2: KeyedSortMergeJoin<Bit> (P$1(14) == P$4(14) - sortCompatible) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(5) customer.c_nationkey, #3 shared-int32(20) orders.o_orderkey, #4 shared-int32(14) orders.o_custkey) order by: {<-1, ASC> , <1, ASC> , <4, ASC> }, cost est: 134584262, output card: 6000
+                            #0: SecureSqlInput<Bit> ("SELECT t1.n_name, t2.c_custkey, t2.c_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t2.c_custkey", tuple_count=118) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(5) customer.c_nationkey) order by: {<1, ASC> }, cost est: 96222, output card: 118
+                            #1: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders ORDER BY o_custkey", tuple_count=6000) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey) order by: {<1, ASC> }, cost est: 1957904, output card: 6000
+                    #7: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$2(32) shared-float>, <2, P$4(5) shared-int32>)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float revenue, #2 shared-int32(5) supplier.s_nationkey) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                        #6: KeyedSortMergeJoin<Bit> (P$1(10) == P$3(10) - sortCompatible) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(10) lineitem.l_suppkey, #2 shared-float revenue, #3 shared-int32(10) supplier.s_suppkey, #4 shared-int32(5) supplier.s_nationkey) order by: {<-1, ASC> , <1, ASC> , <3, ASC> }, cost est: 298787498, output card: 24000
+                            #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem ORDER BY l_suppkey", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(10) lineitem.l_suppkey, #2 shared-float revenue) order by: {<1, ASC> }, cost est: 13270208, output card: 24000
+                            #5: SecureSqlInput<Bit> ("SELECT t2.s_suppkey, t2.s_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT s_suppkey, s_nationkey FROM supplier) AS t2 ON t1.n_nationkey = t2.s_nationkey ORDER BY t2.s_suppkey", tuple_count=7) : (#0 shared-int32(10) supplier.s_suppkey, #1 shared-int32(5) supplier.s_nationkey) order by: {<0, ASC> }, cost est: 261, output card: 7
+
+Operator #0 SecureSqlInput ran for 9.951000 ms, gate count: 92356 output cardinality: 118, row width=220
+Operator #1 SecureSqlInput ran for 205.951000 ms, gate count: 1832800 output cardinality: 6000, row width=35
+Operator #2 KeyedSortMergeJoin ran for 14907.150000 ms, gate count: 180404868 output cardinality: 6000, row width=254
+Operator #3 Project ran for 5.162000 ms, gate count: 0 output cardinality: 6000, row width=226
+Operator #4 SecureSqlInput ran for 1345.355000 ms, gate count: 12626176 output cardinality: 24000, row width=63
+Operator #5 SecureSqlInput ran for 0.400000 ms, gate count: 244 output cardinality: 7, row width=16
+Operator #6 KeyedSortMergeJoin ran for 33864.102000 ms, gate count: 558887452 output cardinality: 24000, row width=78
+Operator #7 Project ran for 5.903000 ms, gate count: 0 output cardinality: 24000, row width=58
+Operator #8 KeyedSortMergeJoin ran for 131375.826000 ms, gate count: 2116927732 output cardinality: 24000, row width=283
+Operator #9 Project ran for 78.745000 ms, gate count: 0 output cardinality: 24000, row width=233
+Operator #-1 Sort ran for 50280.704000 ms, gate count: 567477568 output cardinality: 24000, row width=233
+Operator #10 SortMergeAggregate ran for 3162.945000 ms, gate count: 34918580 output cardinality: 24000, row width=233
+Operator #11 Sort ran for 27409.825000 ms, gate count: 350832832 output cardinality: 24000, row width=233
+Runtime: 262.798 sec, CPU Time: 190.806 sec, CPU clock ticks: 1.90806e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 2.88185e+09. observed gates: 3070156712 gates, relative error (%)=6.13358
+Bandwidth: 58348.7 Bps
+[       OK ] PreSortingTest.pre_sort_q5_bushy (292315 ms)
+[ RUN      ] PreSortingTest.fully_sort_opt_q5_bushy
+Connecting to 126.137.1.10 on ports 7659, 65487 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 5206c062f998c6c586aa67da052437c97dcf1e12
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65488	--cutoff=100	--filter=*	--party=2	--port=7660	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#13: Sort<Bit> ({<1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<1, DESC> }, cost est: 363850176, output card: 24000
+    #12: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) revenue)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 35664000, output card: 24000
+        #-1: Sort<Bit> ({<0, ASC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 591935360, output card: 24000
+            #11: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$4(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                #10: KeyedSortMergeJoin<Bit> ((P$1(5) == P$5(5)) AND (P$2(20) == P$3(20)) - sortCompatible) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int32(20) lineitem.l_orderkey, #4 shared-float revenue, #5 shared-int32(5) supplier.s_nationkey) order by: {<-1, ASC> , <1, ASC> , <5, ASC> , <2, ASC> , <3, ASC> }, cost est: 1013062796, output card: 24000
+                    #4: Sort<Bit> ({<1, ASC> , <2, ASC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(20) orders.o_orderkey) order by: {<1, ASC> , <2, ASC> }, cost est: 65562752, output card: 6000
+                        #3: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$2(5) shared-int32>, <2, P$3(20) shared-int32>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(5) customer.c_nationkey, #2 shared-int32(20) orders.o_orderkey) order by: {<-1, ASC> }, cost est: 0, output card: 6000
+                            #2: KeyedSortMergeJoin<Bit> (P$1(14) == P$4(14) - sortCompatible) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(5) customer.c_nationkey, #3 shared-int32(20) orders.o_orderkey, #4 shared-int32(14) orders.o_custkey) order by: {<-1, ASC> , <1, ASC> , <4, ASC> }, cost est: 134584262, output card: 6000
+                                #0: SecureSqlInput<Bit> ("SELECT t1.n_name, t2.c_custkey, t2.c_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t2.c_custkey", tuple_count=118) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(5) customer.c_nationkey) order by: {<1, ASC> }, cost est: 96222, output card: 118
+                                #1: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders ORDER BY o_custkey", tuple_count=6000) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey) order by: {<1, ASC> }, cost est: 1957904, output card: 6000
+                    #9: Sort<Bit> ({<2, ASC> , <0, ASC> }) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float revenue, #2 shared-int32(5) supplier.s_nationkey) order by: {<2, ASC> , <0, ASC> }, cost est: 120830840, output card: 24000
+                        #8: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$2(32) shared-float>, <2, P$4(5) shared-int32>)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float revenue, #2 shared-int32(5) supplier.s_nationkey) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                            #7: KeyedSortMergeJoin<Bit> (P$1(10) == P$3(10) - sortCompatible) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(10) lineitem.l_suppkey, #2 shared-float revenue, #3 shared-int32(10) supplier.s_suppkey, #4 shared-int32(5) supplier.s_nationkey) order by: {<-1, ASC> , <1, ASC> , <3, ASC> }, cost est: 298787498, output card: 24000
+                                #5: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem ORDER BY l_suppkey", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(10) lineitem.l_suppkey, #2 shared-float revenue) order by: {<1, ASC> }, cost est: 13270208, output card: 24000
+                                #6: SecureSqlInput<Bit> ("SELECT t2.s_suppkey, t2.s_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT s_suppkey, s_nationkey FROM supplier) AS t2 ON t1.n_nationkey = t2.s_nationkey ORDER BY t2.s_suppkey", tuple_count=7) : (#0 shared-int32(10) supplier.s_suppkey, #1 shared-int32(5) supplier.s_nationkey) order by: {<0, ASC> }, cost est: 261, output card: 7
+
+Operator #0 SecureSqlInput ran for 9.838000 ms, gate count: 92356 output cardinality: 118, row width=220
+Operator #1 SecureSqlInput ran for 205.979000 ms, gate count: 1832800 output cardinality: 6000, row width=35
+Operator #2 KeyedSortMergeJoin ran for 13801.785000 ms, gate count: 180404868 output cardinality: 6000, row width=254
+Operator #3 Project ran for 5.042000 ms, gate count: 0 output cardinality: 6000, row width=226
+Operator #4 Sort ran for 3967.060000 ms, gate count: 61633152 output cardinality: 6000, row width=226
+Operator #5 SecureSqlInput ran for 1360.974000 ms, gate count: 12626176 output cardinality: 24000, row width=63
+Operator #6 SecureSqlInput ran for 0.416000 ms, gate count: 244 output cardinality: 7, row width=16
+Operator #7 KeyedSortMergeJoin ran for 33647.815000 ms, gate count: 620520604 output cardinality: 24000, row width=78
+Operator #8 Project ran for 4.925000 ms, gate count: 0 output cardinality: 24000, row width=58
+Operator #9 Sort ran for 11090.309000 ms, gate count: 109834368 output cardinality: 24000, row width=58
+Operator #10 KeyedSortMergeJoin ran for 98323.098000 ms, gate count: 1882868068 output cardinality: 24000, row width=283
+Operator #11 Project ran for 79.844000 ms, gate count: 0 output cardinality: 24000, row width=233
+Operator #-1 Sort ran for 50257.233000 ms, gate count: 567477568 output cardinality: 24000, row width=233
+Operator #12 SortMergeAggregate ran for 3163.457000 ms, gate count: 34918580 output cardinality: 24000, row width=233
+Operator #13 Sort ran for 28934.308000 ms, gate count: 350832832 output cardinality: 24000, row width=233
+Runtime: 245.001 sec, CPU Time: 179.549 sec, CPU clock ticks: 1.79549e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 2.6396e+09. observed gates: 2836097048 gates, relative error (%)=6.92835
+Bandwidth: 62587.1 Bps
+[       OK ] PreSortingTest.fully_sort_opt_q5_bushy (274491 ms)
+[ RUN      ] PreSortingTest.no_sort_q8_bushy
+Connecting to 126.137.1.10 on ports 7660, 65488 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 5206c062f998c6c586aa67da052437c97dcf1e12
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65489	--cutoff=100	--filter=*	--party=2	--port=7661	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#12: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 135764992, output card: 24000
+    #11: Project<Bit> ((<0, P$0(32) shared-int32>, <1, $1 / $2 shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 91416000, output card: 24000
+        #10: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) null, SUM($2) null)) : (#0 shared-int32 orders.o_year, #1 shared-float null, #2 shared-float null) order by: {<0, ASC> }, cost est: 55200000, output card: 24000
+            #-1: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float nation_volume, #2 shared-float volume) order by: {<0, ASC> }, cost est: 179209776, output card: 24000
+                #9: Project<Bit> ((<0, P$0(32) shared-int32>, <1, CASE($4, $3, SECRET FLOAT) shared-float>, <2, P$3(32) shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float nation_volume, #2 shared-float volume) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                    #8: KeyedSortMergeJoin<Bit> (P$1(20) == P$2(20) - not sort compatible, need sort in smj) : (#0 shared-int32 orders.o_year, #1 shared-int32(20) orders.o_orderkey, #2 shared-int32(20) lineitem.l_orderkey, #3 shared-float volume, #4 shared-bool nation_check) order by: {<-1, ASC> , <1, ASC> , <2, ASC> }, cost est: 592716632, output card: 24000
+                        #3: Project<Bit> ((<0, P$3(32) shared-int32>, <1, P$1(20) shared-int32>)) : (#0 shared-int32 orders.o_year, #1 shared-int32(20) orders.o_orderkey) order by: {<-1, ASC> }, cost est: 0, output card: 6000
+                            #2: KeyedSortMergeJoin<Bit> (P$0(14) == P$2(14) - not sort compatible, need sort in smj) : (#0 shared-int32(14) customer.c_custkey, #1 shared-int32(20) orders.o_orderkey, #2 shared-int32(14) orders.o_custkey, #3 shared-int32 orders.o_year) order by: {<-1, ASC> , <0, ASC> , <2, ASC> }, cost est: 86941510, output card: 6000
+                                #0: SecureSqlInput<Bit> ("SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA'", tuple_count=110) : (#0 shared-int32(14) customer.c_custkey) order by: {}, cost est: 0, output card: 110
+                                #1: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders", tuple_count=6000) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-int32 orders.o_year) order by: {}, cost est: 0, output card: 6000
+                        #7: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$2(32) shared-float>, <2, P$4(1) shared-bool>)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float volume, #2 shared-bool nation_check) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                            #6: KeyedSortMergeJoin<Bit> (P$1(10) == P$3(10) - not sort compatible, need sort in smj) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(10) lineitem.l_suppkey, #2 shared-float volume, #3 shared-int32(10) supplier.s_suppkey, #4 shared-bool nation_check) order by: {<-1, ASC> , <1, ASC> , <3, ASC> }, cost est: 412961998, output card: 24000
+                                #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume, CASE WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE ELSE TRUE END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(10) lineitem.l_suppkey, #2 shared-float volume) order by: {}, cost est: 0, output card: 24000
+                                #5: SecureSqlInput<Bit> ("SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey", tuple_count=40) : (#0 shared-int32(10) supplier.s_suppkey, #1 shared-bool nation_check) order by: {}, cost est: 0, output card: 40
+
+Operator #0 SecureSqlInput ran for 0.272000 ms, gate count: 0 output cardinality: 110, row width=15
+Operator #1 SecureSqlInput ran for 14.034000 ms, gate count: 0 output cardinality: 6000, row width=67
+Operator #2 KeyedSortMergeJoin ran for 8583.067000 ms, gate count: 93976500 output cardinality: 6000, row width=81
+Operator #3 Project ran for 1.213000 ms, gate count: 0 output cardinality: 6000, row width=53
+Operator #4 SecureSqlInput ran for 56.947000 ms, gate count: 0 output cardinality: 24000, row width=63
+Operator #5 SecureSqlInput ran for 1.927000 ms, gate count: 0 output cardinality: 40, row width=12
+Operator #6 KeyedSortMergeJoin ran for 42836.978000 ms, gate count: 563883472 output cardinality: 24000, row width=74
+Operator #7 Project ran for 6.118000 ms, gate count: 0 output cardinality: 24000, row width=54
+Operator #8 KeyedSortMergeJoin ran for 52018.595000 ms, gate count: 1122341440 output cardinality: 24000, row width=106
+Operator #9 Project ran for 130.679000 ms, gate count: 768000 output cardinality: 24000, row width=97
+Operator #-1 Sort ran for 14923.800000 ms, gate count: 169981760 output cardinality: 24000, row width=97
+Operator #10 SortMergeAggregate ran for 3314.671000 ms, gate count: 52053896 output cardinality: 24000, row width=97
+Operator #11 Project ran for 5310.807000 ms, gate count: 91416000 output cardinality: 24000, row width=65
+Operator #12 Sort ran for 11757.256000 ms, gate count: 128140096 output cardinality: 24000, row width=65
+Runtime: 139.089 sec, CPU Time: 104.597 sec, CPU clock ticks: 1.04597e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.55421e+09. observed gates: 1564701192 gates, relative error (%)=0.670431
+Bandwidth: 120184 Bps
+[       OK ] PreSortingTest.no_sort_q8_bushy (151367 ms)
+[ RUN      ] PreSortingTest.pre_sort_q8_bushy
+Connecting to 126.137.1.10 on ports 7661, 65489 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 5206c062f998c6c586aa67da052437c97dcf1e12
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65490	--cutoff=100	--filter=*	--party=2	--port=7662	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#12: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 135764992, output card: 24000
+    #11: Project<Bit> ((<0, P$0(32) shared-int32>, <1, $1 / $2 shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 91416000, output card: 24000
+        #10: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) null, SUM($2) null)) : (#0 shared-int32 orders.o_year, #1 shared-float null, #2 shared-float null) order by: {<0, ASC> }, cost est: 55200000, output card: 24000
+            #-1: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float nation_volume, #2 shared-float volume) order by: {<0, ASC> }, cost est: 179209776, output card: 24000
+                #9: Project<Bit> ((<0, P$0(32) shared-int32>, <1, CASE($4, $3, SECRET FLOAT) shared-float>, <2, P$3(32) shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float nation_volume, #2 shared-float volume) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                    #8: KeyedSortMergeJoin<Bit> (P$1(20) == P$2(20) - not sort compatible, need sort in smj) : (#0 shared-int32 orders.o_year, #1 shared-int32(20) orders.o_orderkey, #2 shared-int32(20) lineitem.l_orderkey, #3 shared-float volume, #4 shared-bool nation_check) order by: {<-1, ASC> , <1, ASC> , <2, ASC> }, cost est: 592716632, output card: 24000
+                        #3: Project<Bit> ((<0, P$3(32) shared-int32>, <1, P$1(20) shared-int32>)) : (#0 shared-int32 orders.o_year, #1 shared-int32(20) orders.o_orderkey) order by: {<-1, ASC> }, cost est: 0, output card: 6000
+                            #2: KeyedSortMergeJoin<Bit> (P$0(14) == P$2(14) - sortCompatible) : (#0 shared-int32(14) customer.c_custkey, #1 shared-int32(20) orders.o_orderkey, #2 shared-int32(14) orders.o_custkey, #3 shared-int32 orders.o_year) order by: {<-1, ASC> , <0, ASC> , <2, ASC> }, cost est: 64255851, output card: 6000
+                                #0: SecureSqlInput<Bit> ("SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA' ORDER BY c_custkey", tuple_count=110) : (#0 shared-int32(14) customer.c_custkey) order by: {<0, ASC> }, cost est: 11904, output card: 110
+                                #1: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_custkey", tuple_count=6000) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-int32 orders.o_year) order by: {<1, ASC> }, cost est: 3162768, output card: 6000
+                        #7: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$2(32) shared-float>, <2, P$4(1) shared-bool>)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float volume, #2 shared-bool nation_check) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                            #6: KeyedSortMergeJoin<Bit> (P$1(10) == P$3(10) - sortCompatible) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(10) lineitem.l_suppkey, #2 shared-float volume, #3 shared-int32(10) supplier.s_suppkey, #4 shared-bool nation_check) order by: {<-1, ASC> , <1, ASC> , <3, ASC> }, cost est: 299161832, output card: 24000
+                                #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume, CASE WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE ELSE TRUE END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_suppkey", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(10) lineitem.l_suppkey, #2 shared-float volume) order by: {<1, ASC> }, cost est: 13270208, output card: 24000
+                                #5: SecureSqlInput<Bit> ("SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey ORDER BY s_suppkey", tuple_count=40) : (#0 shared-int32(10) supplier.s_suppkey, #1 shared-bool nation_check) order by: {<0, ASC> }, cost est: 2650, output card: 40
+
+Operator #0 SecureSqlInput ran for 2.758000 ms, gate count: 10712 output cardinality: 110, row width=15
+Operator #1 SecureSqlInput ran for 315.291000 ms, gate count: 3005792 output cardinality: 6000, row width=67
+Operator #2 KeyedSortMergeJoin ran for 6873.692000 ms, gate count: 76239272 output cardinality: 6000, row width=81
+Operator #3 Project ran for 1.170000 ms, gate count: 0 output cardinality: 6000, row width=53
+Operator #4 SecureSqlInput ran for 1372.593000 ms, gate count: 12626176 output cardinality: 24000, row width=63
+Operator #5 SecureSqlInput ran for 0.934000 ms, gate count: 2300 output cardinality: 40, row width=12
+Operator #6 KeyedSortMergeJoin ran for 34362.726000 ms, gate count: 455047460 output cardinality: 24000, row width=74
+Operator #7 Project ran for 9.922000 ms, gate count: 0 output cardinality: 24000, row width=54
+Operator #8 KeyedSortMergeJoin ran for 52641.029000 ms, gate count: 1013505428 output cardinality: 24000, row width=106
+Operator #9 Project ran for 112.032000 ms, gate count: 768000 output cardinality: 24000, row width=97
+Operator #-1 Sort ran for 15367.573000 ms, gate count: 169981760 output cardinality: 24000, row width=97
+Operator #10 SortMergeAggregate ran for 4219.109000 ms, gate count: 52053892 output cardinality: 24000, row width=97
+Operator #11 Project ran for 6948.157000 ms, gate count: 91416000 output cardinality: 24000, row width=65
+Operator #12 Sort ran for 12117.177000 ms, gate count: 128140096 output cardinality: 24000, row width=65
+Runtime: 134.457 sec, CPU Time: 96.7087 sec, CPU clock ticks: 9.67087e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.43417e+09. observed gates: 1455865176 gates, relative error (%)=1.49001
+Bandwidth: 124325 Bps
+[       OK ] PreSortingTest.pre_sort_q8_bushy (147015 ms)
+[ RUN      ] PreSortingTest.fully_sort_opt_q8_bushy
+Connecting to 126.137.1.10 on ports 7662, 65490 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 5206c062f998c6c586aa67da052437c97dcf1e12
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65491	--cutoff=100	--filter=*	--party=2	--port=7663	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#14: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 135764992, output card: 24000
+    #13: Project<Bit> ((<0, P$0(32) shared-int32>, <1, $1 / $2 shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 91416000, output card: 24000
+        #12: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) null, SUM($2) null)) : (#0 shared-int32 orders.o_year, #1 shared-float null, #2 shared-float null) order by: {<0, ASC> }, cost est: 55200000, output card: 24000
+            #-1: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float nation_volume, #2 shared-float volume) order by: {<0, ASC> }, cost est: 179209776, output card: 24000
+                #11: Project<Bit> ((<0, P$0(32) shared-int32>, <1, CASE($4, $3, SECRET FLOAT) shared-float>, <2, P$3(32) shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float nation_volume, #2 shared-float volume) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                    #10: KeyedSortMergeJoin<Bit> (P$1(20) == P$2(20) - sortCompatible) : (#0 shared-int32 orders.o_year, #1 shared-int32(20) orders.o_orderkey, #2 shared-int32(20) lineitem.l_orderkey, #3 shared-float volume, #4 shared-bool nation_check) order by: {<-1, ASC> , <1, ASC> , <2, ASC> }, cost est: 442616086, output card: 24000
+                        #4: Sort<Bit> ({<1, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-int32(20) orders.o_orderkey) order by: {<1, ASC> }, cost est: 19388206, output card: 6000
+                            #3: Project<Bit> ((<0, P$3(32) shared-int32>, <1, P$1(20) shared-int32>)) : (#0 shared-int32 orders.o_year, #1 shared-int32(20) orders.o_orderkey) order by: {<-1, ASC> }, cost est: 0, output card: 6000
+                                #2: KeyedSortMergeJoin<Bit> (P$0(14) == P$2(14) - sortCompatible) : (#0 shared-int32(14) customer.c_custkey, #1 shared-int32(20) orders.o_orderkey, #2 shared-int32(14) orders.o_custkey, #3 shared-int32 orders.o_year) order by: {<-1, ASC> , <0, ASC> , <2, ASC> }, cost est: 64255851, output card: 6000
+                                    #0: SecureSqlInput<Bit> ("SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA' ORDER BY c_custkey", tuple_count=110) : (#0 shared-int32(14) customer.c_custkey) order by: {<0, ASC> }, cost est: 11904, output card: 110
+                                    #1: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_custkey", tuple_count=6000) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-int32 orders.o_year) order by: {<1, ASC> }, cost est: 3162768, output card: 6000
+                        #9: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float volume, #2 shared-bool nation_check) order by: {<0, ASC> }, cost est: 104539040, output card: 24000
+                            #8: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$2(32) shared-float>, <2, P$4(1) shared-bool>)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float volume, #2 shared-bool nation_check) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                                #7: KeyedSortMergeJoin<Bit> (P$1(10) == P$3(10) - sortCompatible) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(10) lineitem.l_suppkey, #2 shared-float volume, #3 shared-int32(10) supplier.s_suppkey, #4 shared-bool nation_check) order by: {<-1, ASC> , <1, ASC> , <3, ASC> }, cost est: 299161832, output card: 24000
+                                    #5: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume, CASE WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE ELSE TRUE END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_suppkey", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(10) lineitem.l_suppkey, #2 shared-float volume) order by: {<1, ASC> }, cost est: 13270208, output card: 24000
+                                    #6: SecureSqlInput<Bit> ("SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey ORDER BY s_suppkey", tuple_count=40) : (#0 shared-int32(10) supplier.s_suppkey, #1 shared-bool nation_check) order by: {<0, ASC> }, cost est: 2650, output card: 40
+
+Operator #0 SecureSqlInput ran for 2.569000 ms, gate count: 10712 output cardinality: 110, row width=15
+Operator #1 SecureSqlInput ran for 307.357000 ms, gate count: 3005792 output cardinality: 6000, row width=67
+Operator #2 KeyedSortMergeJoin ran for 6668.828000 ms, gate count: 76239272 output cardinality: 6000, row width=81
+Operator #3 Project ran for 1.295000 ms, gate count: 0 output cardinality: 6000, row width=53
+Operator #4 Sort ran for 1663.564000 ms, gate count: 18098624 output cardinality: 6000, row width=53
+Operator #5 SecureSqlInput ran for 1336.887000 ms, gate count: 12626176 output cardinality: 24000, row width=63
+Operator #6 SecureSqlInput ran for 0.847000 ms, gate count: 2300 output cardinality: 40, row width=12
+Operator #7 KeyedSortMergeJoin ran for 33593.375000 ms, gate count: 473146084 output cardinality: 24000, row width=74
+Operator #8 Project ran for 4.853000 ms, gate count: 0 output cardinality: 24000, row width=54
+Operator #9 Sort ran for 9187.067000 ms, gate count: 98066400 output cardinality: 24000, row width=54
+Operator #10 KeyedSortMergeJoin ran for 38957.753000 ms, gate count: 990977140 output cardinality: 24000, row width=106
+Operator #11 Project ran for 118.613000 ms, gate count: 768000 output cardinality: 24000, row width=97
+Operator #-1 Sort ran for 14801.223000 ms, gate count: 169981760 output cardinality: 24000, row width=97
+Operator #12 SortMergeAggregate ran for 2951.371000 ms, gate count: 52053892 output cardinality: 24000, row width=97
+Operator #13 Project ran for 5258.156000 ms, gate count: 91416000 output cardinality: 24000, row width=65
+Operator #14 Sort ran for 11720.120000 ms, gate count: 128140096 output cardinality: 24000, row width=65
+Runtime: 126.687 sec, CPU Time: 95.0761 sec, CPU clock ticks: 9.50761e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.408e+09. observed gates: 1433336888 gates, relative error (%)=1.76773
+Bandwidth: 131950 Bps
+[       OK ] PreSortingTest.fully_sort_opt_q8_bushy (138902 ms)
+[ RUN      ] PreSortingTest.no_sort_q9
+Connecting to 126.137.1.10 on ports 7654, 65482 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: ed9449c7e446dc2d10d2e77d385fd5d06ec1e8f7
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65483	--cutoff=100	--filter=*	--party=2	--port=7655	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#11: Sort<Bit> ({<0, ASC> , <1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, DESC> }, cost est: 682897856, output card: 24000
+    #10: SortMergeAggregate<Bit> (group-by: (0, 1) aggs: (SUM($2) sum_profit)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, ASC> }, cost est: 37200000, output card: 24000
+        #-1: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float amount) order by: {<0, ASC> , <1, ASC> }, cost est: 682897856, output card: 24000
+            #9: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$6(32) shared-int32>, <2, ($3 * (SECRET FLOAT - $4)) - ($1 * $5) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float amount) order by: {<-1, ASC> }, cost est: 437472000, output card: 24000
+                #8: KeyedSortMergeJoin<Bit> (P$2(20) == P$7(20) - not sort compatible, need sort in smj) : (#0 shared-varchar(25) nation.n_name, #1 shared-float partsupp.ps_supplycost, #2 shared-int32(20) lineitem.l_orderkey, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float l_quantity, #6 shared-int32 o_year, #7 shared-int32(20) orders.o_orderkey) order by: {<-1, ASC> , <2, ASC> , <7, ASC> }, cost est: 2000236304, output card: 24000
+                    #6: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$3(32) shared-float>, <2, P$4(20) shared-int32>, <3, P$8(32) shared-float>, <4, P$9(32) shared-float>, <5, P$7(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float partsupp.ps_supplycost, #2 shared-int32(20) lineitem.l_orderkey, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float l_quantity) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                        #5: KeyedSortMergeJoin<Bit> ((P$2(10) == P$6(10)) AND (P$1(15) == P$5(15)) - not sort compatible, need sort in smj) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(15) partsupp.ps_partkey, #2 shared-int32(10) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost, #4 shared-int32(20) lineitem.l_orderkey, #5 shared-int32(15) lineitem.l_partkey, #6 shared-int32(10) lineitem.l_suppkey, #7 shared-float l_quantity, #8 shared-float lineitem.l_extendedprice, #9 shared-float lineitem.l_discount) order by: {<-1, ASC> , <2, ASC> , <6, ASC> , <1, ASC> , <5, ASC> }, cost est: 1141377366, output card: 24000
+                            #3: Project<Bit> ((<0, P$1(200) shared-varchar>, <1, P$2(15) shared-int32>, <2, P$3(10) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(15) partsupp.ps_partkey, #2 shared-int32(10) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost) order by: {<-1, ASC> , <2, ASC> }, cost est: 0, output card: 188
+                                #2: KeyedSortMergeJoin<Bit> (P$0(10) == P$3(10) - not sort compatible, need sort in smj) : (#0 shared-int32(10) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(15) partsupp.ps_partkey, #3 shared-int32(10) partsupp.ps_suppkey, #4 shared-float partsupp.ps_supplycost) order by: {<-1, ASC> , <0, ASC> , <3, ASC> }, cost est: 3158794, output card: 188
+                                    #0: SecureSqlInput<Bit> ("SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey", tuple_count=40) : (#0 shared-int32(10) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name) order by: {}, cost est: 0, output card: 40
+                                    #1: SecureSqlInput<Bit> ("SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%'", tuple_count=188) : (#0 shared-int32(15) partsupp.ps_partkey, #1 shared-int32(10) partsupp.ps_suppkey, #2 shared-float partsupp.ps_supplycost) order by: {}, cost est: 0, output card: 188
+                            #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice, l_discount FROM lineitem", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(15) lineitem.l_partkey, #2 shared-int32(10) lineitem.l_suppkey, #3 shared-float l_quantity, #4 shared-float lineitem.l_extendedprice, #5 shared-float lineitem.l_discount) order by: {}, cost est: 0, output card: 24000
+                    #7: SecureSqlInput<Bit> ("SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders", tuple_count=6000) : (#0 shared-int32 o_year, #1 shared-int32(20) orders.o_orderkey) order by: {}, cost est: 0, output card: 6000
+
+Operator #0 SecureSqlInput ran for 1.637000 ms, gate count: 0 output cardinality: 40, row width=211
+Operator #1 SecureSqlInput ran for 0.545000 ms, gate count: 0 output cardinality: 188, row width=58
+Operator #2 KeyedSortMergeJoin ran for 268.848000 ms, gate count: 3239752 output cardinality: 188, row width=268
+Operator #3 Project ran for 0.145000 ms, gate count: 0 output cardinality: 188, row width=258
+Operator #4 SecureSqlInput ran for 174.696000 ms, gate count: 0 output cardinality: 24000, row width=142
+Operator #5 KeyedSortMergeJoin ran for 119779.325000 ms, gate count: 1424241092 output cardinality: 24000, row width=399
+Operator #6 Project ran for 90.136000 ms, gate count: 0 output cardinality: 24000, row width=349
+Operator #7 SecureSqlInput ran for 11.423000 ms, gate count: 0 output cardinality: 6000, row width=53
+Operator #8 KeyedSortMergeJoin ran for 162152.187000 ms, gate count: 3666757892 output cardinality: 24000, row width=401
+Operator #9 Project ran for 17149.684000 ms, gate count: 218736000 output cardinality: 24000, row width=265
+Operator #-1 Sort ran for 58302.354000 ms, gate count: 651160896 output cardinality: 24000, row width=265
+Operator #10 SortMergeAggregate ran for 3235.642000 ms, gate count: 36478512 output cardinality: 24000, row width=265
+Operator #11 Sort ran for 58789.498000 ms, gate count: 652648896 output cardinality: 24000, row width=265
+Runtime: 420.682 sec, CPU Time: 327.23 sec, CPU clock ticks: 3.2723e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 4.98524e+09. observed gates: 5225782196 gates, relative error (%)=4.60299
+Bandwidth: 76835.6 Bps
+[       OK ] PreSortingTest.no_sort_q9 (480656 ms)
+[ RUN      ] PreSortingTest.pre_sort_q9
+Connecting to 126.137.1.10 on ports 7655, 65483 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: ed9449c7e446dc2d10d2e77d385fd5d06ec1e8f7
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65484	--cutoff=100	--filter=*	--party=2	--port=7656	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#11: Sort<Bit> ({<0, ASC> , <1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, DESC> }, cost est: 682897856, output card: 24000
+    #10: SortMergeAggregate<Bit> (group-by: (0, 1) aggs: (SUM($2) sum_profit)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, ASC> }, cost est: 37200000, output card: 24000
+        #-1: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float amount) order by: {<0, ASC> , <1, ASC> }, cost est: 682897856, output card: 24000
+            #9: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$6(32) shared-int32>, <2, ($3 * (SECRET FLOAT - $4)) - ($1 * $5) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float amount) order by: {<-1, ASC> }, cost est: 437472000, output card: 24000
+                #8: KeyedSortMergeJoin<Bit> (P$2(20) == P$7(20) - not sort compatible, need sort in smj) : (#0 shared-varchar(25) nation.n_name, #1 shared-float partsupp.ps_supplycost, #2 shared-int32(20) lineitem.l_orderkey, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float l_quantity, #6 shared-int32 o_year, #7 shared-int32(20) orders.o_orderkey) order by: {<-1, ASC> , <2, ASC> , <7, ASC> }, cost est: 2000236304, output card: 24000
+                    #6: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$3(32) shared-float>, <2, P$4(20) shared-int32>, <3, P$8(32) shared-float>, <4, P$9(32) shared-float>, <5, P$7(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float partsupp.ps_supplycost, #2 shared-int32(20) lineitem.l_orderkey, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float l_quantity) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                        #5: KeyedSortMergeJoin<Bit> ((P$2(10) == P$6(10)) AND (P$1(15) == P$5(15)) - not sort compatible, need sort in smj) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(15) partsupp.ps_partkey, #2 shared-int32(10) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost, #4 shared-int32(20) lineitem.l_orderkey, #5 shared-int32(15) lineitem.l_partkey, #6 shared-int32(10) lineitem.l_suppkey, #7 shared-float l_quantity, #8 shared-float lineitem.l_extendedprice, #9 shared-float lineitem.l_discount) order by: {<-1, ASC> , <2, ASC> , <6, ASC> , <1, ASC> , <5, ASC> }, cost est: 1141377366, output card: 24000
+                            #3: Project<Bit> ((<0, P$1(200) shared-varchar>, <1, P$2(15) shared-int32>, <2, P$3(10) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(15) partsupp.ps_partkey, #2 shared-int32(10) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost) order by: {<-1, ASC> , <2, ASC> }, cost est: 0, output card: 188
+                                #2: KeyedSortMergeJoin<Bit> (P$0(10) == P$3(10) - sortCompatible) : (#0 shared-int32(10) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(15) partsupp.ps_partkey, #3 shared-int32(10) partsupp.ps_suppkey, #4 shared-float partsupp.ps_supplycost) order by: {<-1, ASC> , <0, ASC> , <3, ASC> }, cost est: 2435776, output card: 188
+                                    #0: SecureSqlInput<Bit> ("SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY s_suppkey", tuple_count=40) : (#0 shared-int32(10) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name) order by: {<0, ASC> }, cost est: 23744, output card: 40
+                                    #1: SecureSqlInput<Bit> ("SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%' ORDER BY ps_suppkey", tuple_count=188) : (#0 shared-int32(15) partsupp.ps_partkey, #1 shared-int32(10) partsupp.ps_suppkey, #2 shared-float partsupp.ps_supplycost) order by: {<1, ASC> }, cost est: 50410, output card: 188
+                            #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice, l_discount FROM lineitem ORDER BY l_suppkey, l_partkey", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(15) lineitem.l_partkey, #2 shared-int32(10) lineitem.l_suppkey, #3 shared-float l_quantity, #4 shared-float lineitem.l_extendedprice, #5 shared-float lineitem.l_discount) order by: {<2, ASC> , <1, ASC> }, cost est: 30207184, output card: 24000
+                    #7: SecureSqlInput<Bit> ("SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders ORDER BY o_orderkey", tuple_count=6000) : (#0 shared-int32 o_year, #1 shared-int32(20) orders.o_orderkey) order by: {<1, ASC> }, cost est: 2861552, output card: 6000
+
+Operator #0 SecureSqlInput ran for 3.597000 ms, gate count: 22200 output cardinality: 40, row width=211
+Operator #1 SecureSqlInput ran for 6.192000 ms, gate count: 46920 output cardinality: 188, row width=58
+Operator #2 KeyedSortMergeJoin ran for 214.291000 ms, gate count: 2630968 output cardinality: 188, row width=268
+Operator #3 Project ran for 0.148000 ms, gate count: 0 output cardinality: 188, row width=258
+Operator #4 SecureSqlInput ran for 2948.873000 ms, gate count: 28664832 output cardinality: 24000, row width=142
+Operator #5 KeyedSortMergeJoin ran for 117176.403000 ms, gate count: 1452297140 output cardinality: 24000, row width=399
+Operator #6 Project ran for 88.046000 ms, gate count: 0 output cardinality: 24000, row width=349
+Operator #7 SecureSqlInput ran for 289.698000 ms, gate count: 2712544 output cardinality: 6000, row width=53
+Operator #8 KeyedSortMergeJoin ran for 174842.735000 ms, gate count: 3697526484 output cardinality: 24000, row width=401
+Operator #9 Project ran for 15474.931000 ms, gate count: 218736000 output cardinality: 24000, row width=265
+Operator #-1 Sort ran for 58286.852000 ms, gate count: 651160896 output cardinality: 24000, row width=265
+Operator #10 SortMergeAggregate ran for 3121.057000 ms, gate count: 36478512 output cardinality: 24000, row width=265
+Operator #11 Sort ran for 58809.738000 ms, gate count: 652648896 output cardinality: 24000, row width=265
+Runtime: 431.427 sec, CPU Time: 330.299 sec, CPU clock ticks: 3.30299e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 5.01766e+09. observed gates: 5256550788 gates, relative error (%)=4.54463
+Bandwidth: 74922 Bps
+[       OK ] PreSortingTest.pre_sort_q9 (490773 ms)
+[ RUN      ] PreSortingTest.fully_sort_opt_q9
+Connecting to 126.137.1.10 on ports 7656, 65484 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: ed9449c7e446dc2d10d2e77d385fd5d06ec1e8f7
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65485	--cutoff=100	--filter=*	--party=2	--port=7657	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#12: Sort<Bit> ({<0, ASC> , <1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, DESC> }, cost est: 682897856, output card: 24000
+    #11: SortMergeAggregate<Bit> (group-by: (0, 1) aggs: (SUM($2) sum_profit)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, ASC> }, cost est: 37200000, output card: 24000
+        #-1: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float amount) order by: {<0, ASC> , <1, ASC> }, cost est: 682897856, output card: 24000
+            #10: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$6(32) shared-int32>, <2, ($3 * (SECRET FLOAT - $4)) - ($1 * $5) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float amount) order by: {<-1, ASC> }, cost est: 437472000, output card: 24000
+                #9: KeyedSortMergeJoin<Bit> (P$2(20) == P$7(20) - not sort compatible, need sort in smj) : (#0 shared-varchar(25) nation.n_name, #1 shared-float partsupp.ps_supplycost, #2 shared-int32(20) lineitem.l_orderkey, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float l_quantity, #6 shared-int32 o_year, #7 shared-int32(20) orders.o_orderkey) order by: {<-1, ASC> , <2, ASC> , <7, ASC> }, cost est: 2000236304, output card: 24000
+                    #7: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$3(32) shared-float>, <2, P$4(20) shared-int32>, <3, P$8(32) shared-float>, <4, P$9(32) shared-float>, <5, P$7(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float partsupp.ps_supplycost, #2 shared-int32(20) lineitem.l_orderkey, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float l_quantity) order by: {<-1, ASC> }, cost est: 0, output card: 24000
+                        #6: KeyedSortMergeJoin<Bit> ((P$2(10) == P$6(10)) AND (P$1(15) == P$5(15)) - sortCompatible) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(15) partsupp.ps_partkey, #2 shared-int32(10) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost, #4 shared-int32(20) lineitem.l_orderkey, #5 shared-int32(15) lineitem.l_partkey, #6 shared-int32(10) lineitem.l_suppkey, #7 shared-float l_quantity, #8 shared-float lineitem.l_extendedprice, #9 shared-float lineitem.l_discount) order by: {<-1, ASC> , <2, ASC> , <6, ASC> , <1, ASC> , <5, ASC> }, cost est: 772362838, output card: 24000
+                            #4: Sort<Bit> ({<2, ASC> , <1, ASC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(15) partsupp.ps_partkey, #2 shared-int32(10) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost) order by: {<2, ASC> , <1, ASC> }, cost est: 877820, output card: 188
+                                #3: Project<Bit> ((<0, P$1(200) shared-varchar>, <1, P$2(15) shared-int32>, <2, P$3(10) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(15) partsupp.ps_partkey, #2 shared-int32(10) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost) order by: {<-1, ASC> , <2, ASC> }, cost est: 0, output card: 188
+                                    #2: KeyedSortMergeJoin<Bit> (P$0(10) == P$3(10) - sortCompatible) : (#0 shared-int32(10) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(15) partsupp.ps_partkey, #3 shared-int32(10) partsupp.ps_suppkey, #4 shared-float partsupp.ps_supplycost) order by: {<-1, ASC> , <0, ASC> , <3, ASC> }, cost est: 2435776, output card: 188
+                                        #0: SecureSqlInput<Bit> ("SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY s_suppkey", tuple_count=40) : (#0 shared-int32(10) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name) order by: {<0, ASC> }, cost est: 23744, output card: 40
+                                        #1: SecureSqlInput<Bit> ("SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%' ORDER BY ps_suppkey", tuple_count=188) : (#0 shared-int32(15) partsupp.ps_partkey, #1 shared-int32(10) partsupp.ps_suppkey, #2 shared-float partsupp.ps_supplycost) order by: {<1, ASC> }, cost est: 50410, output card: 188
+                            #5: SecureSqlInput<Bit> ("SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice, l_discount FROM lineitem ORDER BY l_suppkey, l_partkey", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-int32(15) lineitem.l_partkey, #2 shared-int32(10) lineitem.l_suppkey, #3 shared-float l_quantity, #4 shared-float lineitem.l_extendedprice, #5 shared-float lineitem.l_discount) order by: {<2, ASC> , <1, ASC> }, cost est: 30207184, output card: 24000
+                    #8: SecureSqlInput<Bit> ("SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders ORDER BY o_orderkey", tuple_count=6000) : (#0 shared-int32 o_year, #1 shared-int32(20) orders.o_orderkey) order by: {<1, ASC> }, cost est: 2861552, output card: 6000
+
+Operator #0 SecureSqlInput ran for 3.735000 ms, gate count: 22200 output cardinality: 40, row width=211
+Operator #1 SecureSqlInput ran for 6.244000 ms, gate count: 46920 output cardinality: 188, row width=58
+Operator #2 KeyedSortMergeJoin ran for 218.244000 ms, gate count: 2630968 output cardinality: 188, row width=268
+Operator #3 Project ran for 0.128000 ms, gate count: 0 output cardinality: 188, row width=258
+Operator #4 Sort ran for 60.857000 ms, gate count: 813944 output cardinality: 188, row width=258
+Operator #5 SecureSqlInput ran for 2948.121000 ms, gate count: 28664832 output cardinality: 24000, row width=142
+Operator #6 KeyedSortMergeJoin ran for 91571.103000 ms, gate count: 1106971320 output cardinality: 24000, row width=399
+Operator #7 Project ran for 91.435000 ms, gate count: 0 output cardinality: 24000, row width=349
+Operator #8 SecureSqlInput ran for 286.878000 ms, gate count: 2712544 output cardinality: 6000, row width=53
+Operator #9 KeyedSortMergeJoin ran for 171652.413000 ms, gate count: 3352200660 output cardinality: 24000, row width=401
+Operator #10 Project ran for 17412.832000 ms, gate count: 218736000 output cardinality: 24000, row width=265
+Operator #-1 Sort ran for 58478.826000 ms, gate count: 651160896 output cardinality: 24000, row width=265
+Operator #11 SortMergeAggregate ran for 3221.258000 ms, gate count: 36478512 output cardinality: 24000, row width=265
+Operator #12 Sort ran for 58791.788000 ms, gate count: 652648896 output cardinality: 24000, row width=265
+Runtime: 404.908 sec, CPU Time: 310.101 sec, CPU clock ticks: 3.10101e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 4.64952e+09. observed gates: 4911224964 gates, relative error (%)=5.32864
+Bandwidth: 79828.9 Bps
+[       OK ] PreSortingTest.fully_sort_opt_q9 (464405 ms)
+[ RUN      ] PreSortingTest.no_sort_q18
+Connecting to 126.137.1.10 on ports 7666, 65494 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 0f38ffc0d997ef9d4ea84cfd68d3f69eacdf6b1e
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65495	--cutoff=100	--filter=*	--party=2	--port=7667	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#14: Sort<Bit> ({<-1, ASC> , <4, DESC> , <3, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <4, DESC> , <3, ASC> }, cost est: 504037, output card: 100
+    #13: SortMergeAggregate<Bit> (group-by: (0, 1, 2, 3, 4) aggs: (SUM($5) sum_qty)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }, cost est: 40320000, output card: 24000
+        #-1: Sort<Bit> ({<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float lineitem.l_quantity) order by: {<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }, cost est: 863465344, output card: 24000
+            #12: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$1(14) shared-int32>, <2, P$2(20) shared-int32>, <3, P$3(28) shared-int64>, <4, P$4(32) shared-float>, <5, P$6(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float lineitem.l_quantity) order by: {<-1, ASC> , <2, ASC> }, cost est: 0, output card: 24000
+                #11: KeyedSortMergeJoin<Bit> (P$2(20) == P$5(20) - not sort compatible, need sort in smj) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-int32(20) lineitem.l_orderkey, #6 shared-float lineitem.l_quantity) order by: {<-1, ASC> , <2, ASC> , <5, ASC> }, cost est: 3624430592, output card: 24000
+                    #9: Project<Bit> ((<0, P$1(200) shared-varchar>, <1, P$2(14) shared-int32>, <2, P$3(20) shared-int32>, <3, P$4(28) shared-int64>, <4, P$5(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice) order by: {<-1, ASC> , <2, ASC> }, cost est: 0, output card: 24000
+                        #8: KeyedSortMergeJoin<Bit> (P$0(20) == P$3(20) - not sort compatible, need sort in smj) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-varchar(25) customer.c_name, #2 shared-int32(14) customer.c_custkey, #3 shared-int32(20) orders.o_orderkey, #4 shared-int64(28) orders.o_orderdate, #5 shared-float orders.o_totalprice) order by: {<-1, ASC> , <0, ASC> , <3, ASC> }, cost est: 1742588640, output card: 24000
+                            #3: Project<Bit> ((<0, P$0(20) shared-int32>)) : (#0 shared-int32(20) lineitem.l_orderkey) order by: {<0, ASC> }, cost est: 0, output card: 24000
+                                #2: Filter<Bit> (P$1(32) > SECRET FLOAT) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float null) order by: {<0, ASC> }, cost est: 5112000, output card: 24000
+                                    #1: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) null)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float null) order by: {<0, ASC> }, cost est: 27072000, output card: 24000
+                                        #-1: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float lineitem.l_quantity) order by: {<0, ASC> }, cost est: 103181392, output card: 24000
+                                            #0: SecureSqlInput<Bit> ("SELECT l_orderkey, l_quantity FROM lineitem", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float lineitem.l_quantity) order by: {}, cost est: 0, output card: 24000
+                            #7: Project<Bit> ((<0, P$5(200) shared-varchar>, <1, P$4(14) shared-int32>, <2, P$0(20) shared-int32>, <3, P$3(28) shared-int64>, <4, P$2(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice) order by: {<-1, ASC> , <1, ASC> }, cost est: 0, output card: 6000
+                                #6: KeyedSortMergeJoin<Bit> (P$1(14) == P$4(14) - not sort compatible, need sort in smj) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-int32(14) customer.c_custkey, #5 shared-varchar(25) customer.c_name) order by: {<-1, ASC> , <1, ASC> , <4, ASC> }, cost est: 209762102, output card: 6000
+                                    #4: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate FROM orders", tuple_count=6000) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate) order by: {}, cost est: 0, output card: 6000
+                                    #5: SecureSqlInput<Bit> ("SELECT c_custkey, c_name FROM customer", tuple_count=600) : (#0 shared-int32(14) customer.c_custkey, #1 shared-varchar(25) customer.c_name) order by: {}, cost est: 0, output card: 600
+                    #10: SecureSqlInput<Bit> ("SELECT L2.l_orderkey, L2.l_quantity FROM lineitem L2", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float lineitem.l_quantity) order by: {}, cost est: 0, output card: 24000
+
+Operator #0 SecureSqlInput ran for 46.708000 ms, gate count: 0 output cardinality: 24000, row width=53
+Operator #-1 Sort ran for 9118.328000 ms, gate count: 96758848 output cardinality: 24000, row width=53
+Operator #1 SortMergeAggregate ran for 2143.525000 ms, gate count: 26326936 output cardinality: 24000, row width=53
+Operator #2 Filter ran for 403.473000 ms, gate count: 5136000 output cardinality: 24000, row width=53
+Operator #3 Project ran for 2.201000 ms, gate count: 0 output cardinality: 24000, row width=21
+Operator #4 SecureSqlInput ran for 20.672000 ms, gate count: 0 output cardinality: 6000, row width=95
+Operator #5 SecureSqlInput ran for 6.327000 ms, gate count: 0 output cardinality: 600, row width=215
+Operator #6 KeyedSortMergeJoin ran for 21031.778000 ms, gate count: 370159800 output cardinality: 6000, row width=309
+Operator #7 Project ran for 21.623000 ms, gate count: 0 output cardinality: 6000, row width=295
+Operator #8 KeyedSortMergeJoin ran for 162771.118000 ms, gate count: 2304408204 output cardinality: 24000, row width=315
+Operator #9 Project ran for 85.785000 ms, gate count: 0 output cardinality: 24000, row width=295
+Operator #10 SecureSqlInput ran for 45.909000 ms, gate count: 0 output cardinality: 24000, row width=53
+Operator #11 KeyedSortMergeJoin ran for 265288.374000 ms, gate count: 5461161548 output cardinality: 24000, row width=347
+Operator #12 Project ran for 33.524000 ms, gate count: 0 output cardinality: 24000, row width=327
+Operator #-1 Sort ran for 75257.987000 ms, gate count: 816321344 output cardinality: 24000, row width=327
+Operator #13 SortMergeAggregate ran for 4114.603000 ms, gate count: 43990200 output cardinality: 24000, row width=327
+Operator #14 Sort ran for 43552.134000 ms, gate count: 512969280 output cardinality: 100, row width=327
+Runtime: 584.111 sec, CPU Time: 411.256 sec, CPU clock ticks: 4.11256e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 6.61644e+09. observed gates: 6834442372 gates, relative error (%)=3.18981
+Bandwidth: 49608.1 Bps
+[       OK ] PreSortingTest.no_sort_q18 (584900 ms)
+[ RUN      ] PreSortingTest.pre_sort_q18
+Connecting to 126.137.1.10 on ports 7667, 65495 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 0f38ffc0d997ef9d4ea84cfd68d3f69eacdf6b1e
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65496	--cutoff=100	--filter=*	--party=2	--port=7668	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#14: Sort<Bit> ({<-1, ASC> , <4, DESC> , <3, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <4, DESC> , <3, ASC> }, cost est: 504037, output card: 100
+    #13: SortMergeAggregate<Bit> (group-by: (0, 1, 2, 3, 4) aggs: (SUM($5) sum_qty)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }, cost est: 40320000, output card: 24000
+        #-1: Sort<Bit> ({<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float lineitem.l_quantity) order by: {<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }, cost est: 863465344, output card: 24000
+            #12: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$1(14) shared-int32>, <2, P$2(20) shared-int32>, <3, P$3(28) shared-int64>, <4, P$4(32) shared-float>, <5, P$6(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float lineitem.l_quantity) order by: {<-1, ASC> , <2, ASC> }, cost est: 0, output card: 24000
+                #11: KeyedSortMergeJoin<Bit> (P$2(20) == P$5(20) - not sort compatible, need sort in smj) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-int32(20) lineitem.l_orderkey, #6 shared-float lineitem.l_quantity) order by: {<-1, ASC> , <2, ASC> , <5, ASC> }, cost est: 3624430592, output card: 24000
+                    #9: Project<Bit> ((<0, P$1(200) shared-varchar>, <1, P$2(14) shared-int32>, <2, P$3(20) shared-int32>, <3, P$4(28) shared-int64>, <4, P$5(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice) order by: {<-1, ASC> , <2, ASC> }, cost est: 0, output card: 24000
+                        #8: KeyedSortMergeJoin<Bit> (P$0(20) == P$3(20) - not sort compatible, need sort in smj) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-varchar(25) customer.c_name, #2 shared-int32(14) customer.c_custkey, #3 shared-int32(20) orders.o_orderkey, #4 shared-int64(28) orders.o_orderdate, #5 shared-float orders.o_totalprice) order by: {<-1, ASC> , <0, ASC> , <3, ASC> }, cost est: 1742588640, output card: 24000
+                            #3: Project<Bit> ((<0, P$0(20) shared-int32>)) : (#0 shared-int32(20) lineitem.l_orderkey) order by: {<0, ASC> }, cost est: 0, output card: 24000
+                                #2: Filter<Bit> (P$1(32) > SECRET FLOAT) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float null) order by: {<0, ASC> }, cost est: 5112000, output card: 24000
+                                    #1: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) null)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float null) order by: {<0, ASC> }, cost est: 27072000, output card: 24000
+                                        #0: SecureSqlInput<Bit> ("SELECT l_orderkey, l_quantity FROM lineitem ORDER BY l_orderkey", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float lineitem.l_quantity) order by: {<0, ASC> }, cost est: 13270208, output card: 24000
+                            #7: Project<Bit> ((<0, P$5(200) shared-varchar>, <1, P$4(14) shared-int32>, <2, P$0(20) shared-int32>, <3, P$3(28) shared-int64>, <4, P$2(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice) order by: {<-1, ASC> , <1, ASC> }, cost est: 0, output card: 6000
+                                #6: KeyedSortMergeJoin<Bit> (P$1(14) == P$4(14) - sortCompatible) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-int32(14) customer.c_custkey, #5 shared-varchar(25) customer.c_name) order by: {<-1, ASC> , <1, ASC> , <4, ASC> }, cost est: 148586933, output card: 6000
+                                    #4: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate FROM orders ORDER BY o_custkey", tuple_count=6000) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate) order by: {<1, ASC> }, cost est: 4217024, output card: 6000
+                                    #5: SecureSqlInput<Bit> ("SELECT c_custkey, c_name FROM customer ORDER BY c_custkey", tuple_count=600) : (#0 shared-int32(14) customer.c_custkey, #1 shared-varchar(25) customer.c_name) order by: {<0, ASC> }, cost est: 642176, output card: 600
+                    #10: SecureSqlInput<Bit> ("SELECT L2.l_orderkey, L2.l_quantity FROM lineitem L2 ORDER BY L2.l_orderkey", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float lineitem.l_quantity) order by: {<0, ASC> }, cost est: 13270208, output card: 24000
+
+Operator #0 SecureSqlInput ran for 1296.953000 ms, gate count: 12626176 output cardinality: 24000, row width=53
+Operator #1 SortMergeAggregate ran for 2089.981000 ms, gate count: 26326936 output cardinality: 24000, row width=53
+Operator #2 Filter ran for 393.681000 ms, gate count: 5136000 output cardinality: 24000, row width=53
+Operator #3 Project ran for 1.942000 ms, gate count: 0 output cardinality: 24000, row width=21
+Operator #4 SecureSqlInput ran for 399.879000 ms, gate count: 4032160 output cardinality: 6000, row width=95
+Operator #5 SecureSqlInput ran for 60.066000 ms, gate count: 611800 output cardinality: 600, row width=215
+Operator #6 KeyedSortMergeJoin ran for 14165.345000 ms, gate count: 233310708 output cardinality: 6000, row width=309
+Operator #7 Project ran for 8.116000 ms, gate count: 0 output cardinality: 6000, row width=295
+Operator #8 KeyedSortMergeJoin ran for 156802.100000 ms, gate count: 2167559112 output cardinality: 24000, row width=315
+Operator #9 Project ran for 85.522000 ms, gate count: 0 output cardinality: 24000, row width=295
+Operator #10 SecureSqlInput ran for 1298.486000 ms, gate count: 12626176 output cardinality: 24000, row width=53
+Operator #11 KeyedSortMergeJoin ran for 247741.636000 ms, gate count: 5336938632 output cardinality: 24000, row width=347
+Operator #12 Project ran for 88.546000 ms, gate count: 0 output cardinality: 24000, row width=327
+Operator #-1 Sort ran for 73458.646000 ms, gate count: 816321344 output cardinality: 24000, row width=327
+Operator #13 SortMergeAggregate ran for 4020.769000 ms, gate count: 43990200 output cardinality: 24000, row width=327
+Operator #14 Sort ran for 42392.466000 ms, gate count: 512969280 output cardinality: 100, row width=327
+Runtime: 544.466 sec, CPU Time: 406.98 sec, CPU clock ticks: 4.0698e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 6.48348e+09. observed gates: 6710219456 gates, relative error (%)=3.37903
+Bandwidth: 53220.3 Bps
+[       OK ] PreSortingTest.pre_sort_q18 (545256 ms)
+[ RUN      ] PreSortingTest.fully_sort_opt_q18
+Connecting to 126.137.1.10 on ports 7668, 65496 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 0f38ffc0d997ef9d4ea84cfd68d3f69eacdf6b1e
+GFlags: --flagfile=	--alice_db=tpch_alice_600	--alice_host=126.137.1.10	--bob_db=tpch_bob_600	--ctrl_port=65497	--cutoff=100	--filter=*	--party=2	--port=7669	--storage=column	--unioned_db=tpch_unioned_600	--validation=true	--log_level=2	--logfile=	
+
+#16: Sort<Bit> ({<-1, ASC> , <4, DESC> , <3, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <4, DESC> , <3, ASC> }, cost est: 504037, output card: 100
+    #15: SortMergeAggregate<Bit> (group-by: (0, 1, 2, 3, 4) aggs: (SUM($5) sum_qty)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, DESC> }, cost est: 40320000, output card: 24000
+        #14: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$1(14) shared-int32>, <2, P$2(20) shared-int32>, <3, P$3(28) shared-int64>, <4, P$4(32) shared-float>, <5, P$6(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float lineitem.l_quantity) order by: {<-1, ASC> , <2, ASC> }, cost est: 0, output card: 24000
+            #13: KeyedSortMergeJoin<Bit> (P$2(20) == P$5(20) - sortCompatible) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-int32(20) lineitem.l_orderkey, #6 shared-float lineitem.l_quantity) order by: {<-1, ASC> , <2, ASC> , <5, ASC> }, cost est: 2703944048, output card: 24000
+                #11: Sort<Bit> ({<2, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice) order by: {<2, ASC> }, cost est: 431732672, output card: 24000
+                    #10: Project<Bit> ((<0, P$1(200) shared-varchar>, <1, P$2(14) shared-int32>, <2, P$3(20) shared-int32>, <3, P$4(28) shared-int64>, <4, P$5(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice) order by: {<-1, ASC> , <2, ASC> }, cost est: 0, output card: 24000
+                        #9: KeyedSortMergeJoin<Bit> (P$0(20) == P$3(20) - sortCompatible) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-varchar(25) customer.c_name, #2 shared-int32(14) customer.c_custkey, #3 shared-int32(20) orders.o_orderkey, #4 shared-int64(28) orders.o_orderdate, #5 shared-float orders.o_totalprice) order by: {<-1, ASC> , <0, ASC> , <3, ASC> }, cost est: 1219557840, output card: 24000
+                            #3: Project<Bit> ((<0, P$0(20) shared-int32>)) : (#0 shared-int32(20) lineitem.l_orderkey) order by: {<0, ASC> }, cost est: 0, output card: 24000
+                                #2: Filter<Bit> (P$1(32) > SECRET FLOAT) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float null) order by: {<0, ASC> }, cost est: 5112000, output card: 24000
+                                    #1: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) null)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float null) order by: {<0, ASC> }, cost est: 27072000, output card: 24000
+                                        #0: SecureSqlInput<Bit> ("SELECT l_orderkey, l_quantity FROM lineitem ORDER BY l_orderkey", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float lineitem.l_quantity) order by: {<0, ASC> }, cost est: 13270208, output card: 24000
+                            #8: Sort<Bit> ({<2, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice) order by: {<2, ASC> }, cost est: 81124336, output card: 6000
+                                #7: Project<Bit> ((<0, P$5(200) shared-varchar>, <1, P$4(14) shared-int32>, <2, P$0(20) shared-int32>, <3, P$3(28) shared-int64>, <4, P$2(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(14) customer.c_custkey, #2 shared-int32(20) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice) order by: {<-1, ASC> , <1, ASC> }, cost est: 0, output card: 6000
+                                    #6: KeyedSortMergeJoin<Bit> (P$1(14) == P$4(14) - sortCompatible) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-int32(14) customer.c_custkey, #5 shared-varchar(25) customer.c_name) order by: {<-1, ASC> , <1, ASC> , <4, ASC> }, cost est: 148586933, output card: 6000
+                                        #4: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate FROM orders ORDER BY o_custkey", tuple_count=6000) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate) order by: {<1, ASC> }, cost est: 4217024, output card: 6000
+                                        #5: SecureSqlInput<Bit> ("SELECT c_custkey, c_name FROM customer ORDER BY c_custkey", tuple_count=600) : (#0 shared-int32(14) customer.c_custkey, #1 shared-varchar(25) customer.c_name) order by: {<0, ASC> }, cost est: 642176, output card: 600
+                #12: SecureSqlInput<Bit> ("SELECT L2.l_orderkey, L2.l_quantity FROM lineitem L2 ORDER BY L2.l_orderkey", tuple_count=24000) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float lineitem.l_quantity) order by: {<0, ASC> }, cost est: 13270208, output card: 24000
+
+Operator #0 SecureSqlInput ran for 1302.656000 ms, gate count: 12626176 output cardinality: 24000, row width=53
+Operator #1 SortMergeAggregate ran for 2101.139000 ms, gate count: 26326936 output cardinality: 24000, row width=53
+Operator #2 Filter ran for 395.113000 ms, gate count: 5136000 output cardinality: 24000, row width=53
+Operator #3 Project ran for 2.172000 ms, gate count: 0 output cardinality: 24000, row width=21
+Operator #4 SecureSqlInput ran for 400.090000 ms, gate count: 4032160 output cardinality: 6000, row width=95
+Operator #5 SecureSqlInput ran for 60.742000 ms, gate count: 611800 output cardinality: 600, row width=215
+Operator #6 KeyedSortMergeJoin ran for 15075.415000 ms, gate count: 233310708 output cardinality: 6000, row width=309
+Operator #7 Project ran for 8.438000 ms, gate count: 0 output cardinality: 6000, row width=295
+Operator #8 Sort ran for 5132.810000 ms, gate count: 77286016 output cardinality: 6000, row width=295
+Operator #9 KeyedSortMergeJoin ran for 96412.931000 ms, gate count: 1742835640 output cardinality: 24000, row width=315
+Operator #10 Project ran for 87.806000 ms, gate count: 0 output cardinality: 24000, row width=295
+Operator #11 Sort ran for 25662.267000 ms, gate count: 413186432 output cardinality: 24000, row width=295
+Operator #12 SecureSqlInput ran for 1300.693000 ms, gate count: 12626176 output cardinality: 24000, row width=53
+Operator #13 KeyedSortMergeJoin ran for 167858.221000 ms, gate count: 4451956856 output cardinality: 24000, row width=347
+Operator #14 Project ran for 86.751000 ms, gate count: 0 output cardinality: 24000, row width=327
+Operator #15 SortMergeAggregate ran for 4056.457000 ms, gate count: 43990200 output cardinality: 24000, row width=327
+Operator #16 Sort ran for 42385.103000 ms, gate count: 512969280 output cardinality: 100, row width=327
+Runtime: 362.492 sec, CPU Time: 307.644 sec, CPU clock ticks: 3.07644e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 4.68935e+09. observed gates: 5008916336 gates, relative error (%)=6.37988
+Bandwidth: 79937.3 Bps
+[       OK ] PreSortingTest.fully_sort_opt_q18 (363265 ms)
+[----------] 15 tests from PreSortingTest (4554719 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (4554719 ms total)
+[  PASSED  ] 15 tests.

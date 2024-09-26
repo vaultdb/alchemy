@@ -4,7 +4,7 @@
 #include "emp_manager.h"
 #include <util/system_configuration.h>
 
-#if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/zk.h")
+#if  __has_include("emp-sh2pc/emp-sh2pc.h") || __has_include("emp-zk/emp-zk.h")
 namespace  vaultdb {
     // placeholder to make this build
     class OutsourcedMpcManager : public EmpManager {
@@ -16,6 +16,10 @@ namespace  vaultdb {
         }
 
         OutsourcedMpcManager() {
+            throw;
+        }
+
+        void initialize(string setup_file = "") {
             throw;
         }
 
@@ -33,6 +37,10 @@ namespace  vaultdb {
 
         int sendingParty() const override {
             return TP;
+        }
+
+        void setDelta(const block & delta) override {
+            throw;
         }
 
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override {
@@ -70,6 +78,7 @@ namespace  vaultdb {
 #else
 
 #include <emp-rescu/emp-rescu.h>
+#include <util/utilities.h>
 #define __OMPC_BACKEND__ 1
 namespace  vaultdb {
     class OutsourcedMpcManager : public EmpManager {
@@ -89,6 +98,7 @@ namespace  vaultdb {
             ios_ctrl_ = emp::setup_netio(tpio_ctrl_, hosts, ctrl_port, party_, N);
             emp::backend = new OMPCBackend<N>(ios_, tpio_, party_);
             protocol_ = (OMPCBackend<N> *) emp::backend;
+            cout << "Memory usage of backend setup: " << Utilities::checkMemoryUtilization(true) << endl;
             SystemConfiguration & s = SystemConfiguration::getInstance();
             s.party_ = party;
             s.emp_mode_ = EmpMode::OUTSOURCED;
@@ -101,6 +111,8 @@ namespace  vaultdb {
             s.emp_mode_ = EmpMode::PLAIN;
 
         }
+
+        void initialize(string setup_file = "");
 
         size_t andGateCount() const override {
            return  ((OMPCBackend<N> *) backend)->num_and();
@@ -136,7 +148,15 @@ namespace  vaultdb {
             for(NetIO *io : ios_ctrl_) {
                 if(io != nullptr) io->flush();
             }
+
+            // flush buffer pool
+            system_conf_.bpm_.reset();
         }
+
+        void setDelta(const block & delta) override {
+            ((OMPCBackend<N> *) emp::backend)->multi_pack_delta = delta;
+        }
+
 
         ~OutsourcedMpcManager() {
             delete emp::backend;

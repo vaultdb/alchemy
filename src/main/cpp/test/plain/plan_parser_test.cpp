@@ -30,7 +30,7 @@ void PlanParserTest::runTest(const int &test_id, const std::string &expected_pla
     string test_name = "q" + std::to_string(test_id);
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
 
-    PlanParser<bool> plan_reader(db_name_, plan_file, limit_);
+    PlanParser<bool> plan_reader(db_name_, plan_file, limit_, true);
     PlainOperator *root = plan_reader.getRoot();
     std::string observed_plan = root->printTree();
 

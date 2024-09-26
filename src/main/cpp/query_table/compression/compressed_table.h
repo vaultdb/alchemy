@@ -125,7 +125,7 @@ namespace vaultdb {
             return dst_table;
         }
 
-        PlainTable *revealInsecure(const int & party = emp::PUBLIC) override {
+        PlainTable *revealInsecure(const int & party = emp::PUBLIC) const override {
 
              if(!this->isEncrypted()) {
                     return (QueryTable<bool> *) this;
@@ -185,17 +185,22 @@ namespace vaultdb {
 
         }
 
+        void cloneRowRange(const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row, const int & copies) override {
+            throw std::invalid_argument("NYI!");
+        }
+
         void cloneRow(const B & write, const int & dst_row, const int & dst_col, const QueryTable<B> *src, const int & src_row) override;
 
-        void cloneTable(const int & dst_row, QueryTable<B> *s) override {
+        void cloneTable(const int & dst_row, const int & dst_col, QueryTable<B> *s) override {
             assert(s->getSchema() == this->schema_);
             assert((s->tuple_cnt_ + dst_row) <= this->tuple_cnt_);
             assert(s->storageModel() == StorageModel::COMPRESSED_STORE);
-
+            assert((dst_col + s->getSchema().getFieldCount()) <= this->schema_.getFieldCount());
 
             throw std::invalid_argument("NYI!");
 
         }
+
         QueryTuple<B> getRow(const int & idx) override {
 
             QueryTuple<B>  row(&this->schema_);

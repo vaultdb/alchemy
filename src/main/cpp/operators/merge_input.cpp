@@ -1,4 +1,4 @@
-#include "merge_input.h"
+#include "operators/merge_input.h"
 #include "query_table/query_table.h"
 
 

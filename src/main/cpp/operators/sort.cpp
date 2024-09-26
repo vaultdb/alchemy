@@ -1,5 +1,5 @@
-#include "sort.h"
-#include "project.h"
+#include "operators/sort.h"
+#include "operators/project.h"
 #include <query_table/plain_tuple.h>
 #include <util/data_utilities.h>
 #include <operators/support/normalize_fields.h>
@@ -58,15 +58,16 @@ QueryTable<B> *Sort<B>::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-    this->output_ = normalizeTable(input);
+    //this->output_ = normalizeTable(input);
+    this->output_ = input->clone();
     this->output_->order_by_ = this->sort_definition_;
 
     int counter = 0;
     bitonicSort(0, this->output_->tuple_cnt_, true, counter);
 
-    auto tmp = denormalizeTable(this->output_);
-    delete this->output_;
-    this->output_ = tmp;
+    //auto tmp = denormalizeTable(this->output_);
+    //delete this->output_;
+    //this->output_ = tmp;
 
 
     this->output_->order_by_ = this->sort_definition_;
@@ -120,7 +121,8 @@ void Sort<B>::bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_de
     if (n > 1) {
         int m = powerOfTwoLessThan(n);
         for (int i = lo; i < lo + n - m; ++i) {
-            B to_swap =   swapTuples(table, i, i+m, dir, sort_key_size_bits_);
+            //B to_swap =   swapTuples(table, i, i+m, dir, sort_key_size_bits_);
+            B to_swap =   swapTuples(table, i, i+m, sort_def, dir);
             table->compareSwap(to_swap, i, i+m);
             ++counter;
         }
@@ -128,6 +130,35 @@ void Sort<B>::bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_de
         bitonicMerge(table, sort_def, lo + m, n - m, dir, counter);
     }
 }
+
+template<typename B>
+B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int &rhs_idx,
+                      const SortDefinition &sort_definition, const bool &dir) {
+    B swap = false;
+    B not_init = true;
+
+    for (size_t i = 0; i < sort_definition.size(); ++i) {
+        bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
+        if(dir)
+            asc = !asc;
+
+        const Field<B> lhs_field = table->getField(lhs_idx,sort_definition[i].first);
+        const Field<B> rhs_field = table->getField(rhs_idx,sort_definition[i].first);
+
+        B eq = (lhs_field == rhs_field);
+
+        B to_swap =  ((lhs_field < rhs_field) == asc);
+
+
+        swap = FieldUtilities::select(not_init, to_swap, swap);
+        not_init = not_init & eq;
+    }
+
+
+    return swap;
+
+}
+
 
 
 template <typename B>
@@ -157,7 +188,6 @@ bool Sort<B>::swapTuples(const QueryTable<bool> *table, const int &lhs_idx, cons
     int8_t *rhs = rhs_tuple.getData();
     int byte_cnt = sort_key_width_bits / 8;
 
-    // TODO: streamline this with memcmp over reversed keys
     bool lhs_gt = false;
     for (int i = byte_cnt - 1; i >= 0; --i) {
         auto l = (unsigned int) lhs[i];
@@ -190,8 +220,6 @@ QueryTable<B> *Sort<B>::normalizeTable(QueryTable<B> *src) {
     // if one or more of the sort keys are floats, need to do a projection that creates a new column for sign_bit for each one
     // this is needed so we can reverse the process later
 
-    // TODO: add a check here to see if projection is needed.  If collating on (N, N-1, ..., 1)
-    //  then we don't need to reorder columns to have sort key "first"
 
     vector<int> sort_cols;
     for(int i = this->sort_definition_.size()-1; i >= 0; --i) {

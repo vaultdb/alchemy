@@ -1,4 +1,4 @@
-#include "expression_cost_model.h"
+#include "opt/expression_cost_model.h"
 #include <expression/expression_node.h>
 #include <expression/math_expression_nodes.h>
 #include <expression/comparator_expression_nodes.h>
@@ -21,8 +21,16 @@ void ExpressionCostModel<B>::visit(PackedInputReference<B> &node) {
 template<typename B>
 void ExpressionCostModel<B>::visit(LiteralNode<B> &node) {
     Field<B> field = node.payload_;
+    int str_len = 0;
+    if(field.getType() == FieldType::SECURE_STRING) {
+        str_len = field.payload_.size() / sizeof(Bit);
+    }
+    if(field.getType() == FieldType::STRING) {
+        str_len = field.payload_.size();
+    }
+
     // ordinal 65536 is a placeholder
-    last_field_desc_ = QueryFieldDesc(65536, "anon", "anon_table", field.getType());
+    last_field_desc_ = QueryFieldDesc(65536, "anon", "anon_table", field.getType(), str_len);
 
 }
 

@@ -1,4 +1,4 @@
-#include "shrinkwrap.h"
+#include "operators/shrinkwrap.h"
 #include <operators/sort.h>
 
 using namespace vaultdb;

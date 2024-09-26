@@ -33,7 +33,7 @@ void PlanDeparserTest::runTest(const int &test_id) {
     string test_name = "q" + std::to_string(test_id);
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
 
-    PlanParser<bool> plan_reader(db_name_, plan_file, limit_);
+    PlanParser<bool> plan_reader(db_name_, plan_file, limit_, true);
     PlainOperator *expected_root = plan_reader.getRoot();
 
     string json_plan = PlanDeparser<bool>::deparse(expected_root);
@@ -53,7 +53,7 @@ void PlanDeparserTest::runTest(const int &test_id) {
 // expression: ($2 == $6) AND ($1 == $5)
 TEST_F(PlanDeparserTest, conjunction_expression) {
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q9.json";
-    PlanParser<bool> plan_reader(db_name_, plan_file);
+    PlanParser<bool> plan_reader(db_name_, plan_file, -1, true);
 
     auto join =  (Join<bool> *) plan_reader.getOperator(5);
     auto predicate = join->getPredicate();
@@ -75,7 +75,7 @@ TEST_F(PlanDeparserTest, conjunction_expression) {
 // expression: ($8 * (1.000000 - $9)) - ($3 * $7)
 TEST_F(PlanDeparserTest, math_expression) {
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-q9.json";
-    PlanParser<bool> plan_reader(db_name_, plan_file);
+    PlanParser<bool> plan_reader(db_name_, plan_file, -1, true);
 
     auto project = (Project<bool> *) plan_reader.getOperator(6);
     auto expression_map = project->getExpressions();

@@ -2,23 +2,26 @@
 #define CSV_READER_H
 
 #include "query_table/query_table.h"
+#include <vector>
+#include <string>
+
 
 namespace  vaultdb {
-    class CsvReader {
-    public:
-        static PlainTable *readCsv(const std::string &filename, const QuerySchema &schema);
-        static PlainTable *readCsvFromBatch(const vector<string> &payload, const QuerySchema &schema);
+class CsvReader {
+public:
+    static PlainTable *readCsv(const std::string &filename, const QuerySchema &schema);
+    static PlainTable *readCsvFromBatch(const vector<string> &payload, const QuerySchema &schema);
 
-        static void
-        parseTuple(const std::string &csv_line, const QuerySchema &src_schema, PlainTable *dst,
-                   const int &idx);
+    static void
+    parseTuple(const std::string &csv_line, const QuerySchema &src_schema, PlainTable *dst,
+               const int &idx);
 
-        static vector<string> split(const string &tuple_entry);
-    private:
+    static vector<string> split(const string &tuple_entry);
 
-        static QuerySchema convertDatesToLong(const QuerySchema & input_schema);
+private:
+    static QuerySchema convertDatesToLong(const QuerySchema & input_schema);
 
-    };
-}
+};
+} // namespace vaultdb
 
 #endif //CSV_READER_H

@@ -1,8 +1,7 @@
-#include "csv_reader.h"
+#include "data/csv_reader.h"
 #include <boost/algorithm/string.hpp>
 #include <query_table/field/field.h>
 #include <query_table/field/field_factory.h>
-#include <query_table/query_table.h>
 #include <util/data_utilities.h>
 
 using namespace vaultdb;
@@ -28,11 +27,9 @@ vector<string> CsvReader::split(const string &tuple_entry) {
         if(token[0] == '"' && latest_entry.empty()) {  // starts with " and the beginning of an entry
             latest_entry =  token;
 
-        }
-        else if(latest_entry.empty()) {
+        } else if(latest_entry.empty()) {
             result.push_back(token);
-        }
-        else  {
+        } else  {
             latest_entry += "," + token;
             if(*(--token.end()) == '"') { // if it is the end of the string
                 result.push_back(latest_entry.substr(1, latest_entry.length() - 2)); // chop off leading and trailing double-quotes

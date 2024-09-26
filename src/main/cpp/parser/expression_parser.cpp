@@ -1,4 +1,4 @@
-#include "expression_parser.h"
+#include "parser/expression_parser.h"
 #include <boost/property_tree/json_parser.hpp>
 #include <util/data_utilities.h>
 #include <expression/expression_factory.h>
@@ -41,8 +41,7 @@ Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const Qu
         delete input_ref;
         expression_root = packed;
         g = new GenericExpression<B>(expression_root, input_schema);
-    }
-    else {
+    } else {
         ToPackedExpressionVisitor<B> pack_it(expression_root);
         expression_root->accept(&pack_it);
         g = new GenericExpression<B>(pack_it.getRoot(), input_schema);
@@ -115,16 +114,14 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
                                    Field<B>(FieldType::INT, literal_int)
                                                              :  Field<B>(FieldType::SECURE_INT, emp::Integer(32, literal_int));
             return new LiteralNode<B>(input_field);
-        }
-        else if(type_str == "LONG") {
+        } else if(type_str == "LONG") {
             int64_t literal_int = literal.template get_value<int64_t>();
 
             Field<B> input_field = (std::is_same_v<B, bool>) ?
                                    Field<B>(FieldType::LONG, literal_int)
                                                              :  Field<B>(FieldType::SECURE_LONG, emp::Integer(64, literal_int));
             return new LiteralNode<B>(input_field);
-        }
-        else if(type_str == "FLOAT" || type_str == "DECIMAL") {
+        } else if(type_str == "FLOAT" || type_str == "DECIMAL") {
             float_t literal_float = literal.template get_value<float_t>();
             Field<B> input_field = (std::is_same_v<B, bool>) ?
                                    Field<B>(FieldType::FLOAT, literal_float)
@@ -133,8 +130,7 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
             return new LiteralNode<B>(input_field);
 
 
-        }
-        else if(type_str == "CHAR" || type_str == "VARCHAR") {
+        } else if(type_str == "CHAR" || type_str == "VARCHAR") {
             boost::property_tree::ptree type_tree = tree.get_child("type");
             int length =    type_tree.get_child("precision").get_value<int>();
             std::string literal_string =   literal.template get_value<std::string>();
@@ -147,8 +143,7 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
                 // sender
                 if (SystemConfiguration::getInstance().party_ == sending_party) {
                      input_int = Field<B>::secretShareString(literal_string, true, sending_party, length);
-                }
-                else {
+                } else {
                     string placeholder(length, 0);
                     input_int = Field<B>::secretShareString(placeholder, false, sending_party, length);
                 }
@@ -158,8 +153,7 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
 
             return new LiteralNode<B>(input_field);
 
-        }
-        else if(type_str == "BOOL" || type_str == "BOOLEAN") {
+        } else if(type_str == "BOOL" || type_str == "BOOLEAN") {
             bool literal_bool = literal.template get_value<bool>();
             Field<B> input_field = (std::is_same_v<B, bool>) ?  Field<B>(FieldType::BOOL, literal_bool) :
                                    Field<B>(FieldType::SECURE_BOOL, emp::Bit(literal_bool));
@@ -178,8 +172,7 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
     uint32_t src_ordinal;
     if(DataUtilities::isOrdinal(expr)) { // mapping a column from one position to another
         src_ordinal = std::atoi(expr.c_str());
-    }
-    else {
+    } else {
         throw std::invalid_argument("Expression " + expr + " is not a properly formed input");
     }
 

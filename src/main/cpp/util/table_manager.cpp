@@ -26,7 +26,7 @@ void TableManager::putPlainTable(const string &table_name, QueryTable<bool> *tab
         throw std::runtime_error("TableManager::putTable: schema mismatch");
     }
 
-     plain_tables_[table_name] = table->clone();
+    plain_tables_[table_name] = table->clone();
 }
 
 
@@ -44,4 +44,3 @@ void TableManager::putSecureTable(const string &table_name, QueryTable<Bit> *tab
     secure_tables_[table_name] = table->clone();
 
 }
-

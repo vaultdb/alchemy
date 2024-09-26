@@ -6,10 +6,14 @@
 #include "plain_tuple.h"
 #include <operators/sort.h>
 #include <util/system_configuration.h>
-#include "secure_tuple.h"
+#include "query_table/secure_tuple.h"
 #include "column_table.h"
+#include "buffered_column_table.h"
 #include "packed_column_table.h"
 #include "compression/compressed_table.h"
+#include "input_party_packed_column_table.h"
+#include "computing_party_packed_column_table.h"
+#include "util/operator_utilities.h"
 
 
 using namespace vaultdb;
@@ -17,23 +21,18 @@ using namespace vaultdb;
 // iterate over all tuples and produce one long bit array for encrypting/decrypting in emp
 // only tested in PUBLIC or XOR mode
 template <typename B>
-vector<int8_t> QueryTable<B>::serialize() const {
-
+vector<int8_t> QueryTable<B>::serialize() {
     int dst_size = tuple_size_bytes_ * tuple_cnt_;
     vector<int8_t> dst(dst_size);
     if(dst_size == 0) return dst;
 
     int8_t *write_ptr = dst.data();
-    int write_size;
     for(int i = 0; i < schema_.getFieldCount(); ++i) {
-        write_size = field_sizes_bytes_.at(i) * tuple_cnt_;
-        memcpy(write_ptr, column_data_.at(i).data(), write_size);
-        write_ptr += write_size;
+        memcpy(write_ptr, column_data_.at(i).data(), column_data_.at(i).size());
+        write_ptr += column_data_.at(i).size();
     }
-
     // dummy tag
-    write_size =  field_sizes_bytes_.at(-1) * tuple_cnt_;
-    memcpy(write_ptr, column_data_.at(-1).data(), write_size);
+    memcpy(write_ptr, column_data_.at(-1).data(), column_data_.at(-1).size());
     return dst;
 }
 
@@ -58,20 +57,10 @@ QueryTable<B> & QueryTable<B>::operator=(const QueryTable<B> & s) {
     return *this;
 }
 
-
-
-
-
-
-
-
-
-
-
 // use this for acting as a data sharing party in the PDF
 // generates alice and bob's shares and returns the pair
 template<typename B>
-SecretShares QueryTable<B>::generateSecretShares() const {
+SecretShares QueryTable<B>::generateSecretShares()  {
     assert(!isEncrypted());
 
     vector<int8_t> serialized = serialize();
@@ -95,27 +84,59 @@ SecretShares QueryTable<B>::generateSecretShares() const {
 }
 
 
+template<typename B>
+vector<vector<int8_t> > QueryTable<B>::generateSecretShares(const int & party_count)  {
+    assert(!isEncrypted());
+    emp::PRG prg; // initializes with a random seed
+    vector<int8_t> serialized = serialize();
+    int8_t *to_xor = serialized.data();
+    size_t share_size = serialized.size();
 
 
+    vector<vector<int8_t> > shares;
+    shares.resize(party_count);
+
+    for(int i = 1; i < party_count; ++i) {
+        shares[i].resize(share_size);
+
+        prg.random_data(shares[i].data(), share_size);
+
+        for(int j = 0; j < share_size; ++j) {
+            to_xor[j] ^= shares[i][j];
+        }
+    }
+
+    shares[0] = serialized;
+    return shares;
+}
+
+
+
+// plaintext version
 template <typename B>
-QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vector<int8_t> & table_bytes) {
+QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vector<int8_t> & table_bytes, const int & limit) {
     const int8_t *read_ptr = table_bytes.data();
+    bool is_plain = std::is_same_v<B, bool>;
+    assert(is_plain);
 
-    uint32_t row_size = (std::is_same_v<B, bool>) ? schema.size() / 8 : schema.size() * sizeof(emp::Bit);
-    uint32_t tuple_cnt =  table_bytes.size() /  row_size;
+
+    uint32_t row_size =  schema.size() / 8;
+    uint32_t src_tuple_cnt =  table_bytes.size() /  row_size;
+    int tuple_cnt = (limit < src_tuple_cnt && limit > -1) ? limit : src_tuple_cnt;
+
     auto result = QueryTable<B>::getTable(tuple_cnt, schema);
     int write_size;
 
     for(int i = 0; i < schema.getFieldCount(); ++i) {
         write_size = result->field_sizes_bytes_[i] * tuple_cnt;
-        result->column_data_[i].resize(write_size);
+//        result->column_data_[i].resize(write_size);
         memcpy(result->column_data_[i].data(), read_ptr, write_size);
-        read_ptr += write_size;
+        read_ptr += result->field_sizes_bytes_[i] * src_tuple_cnt;
     }
 
     // dummy tag
     write_size = result->field_sizes_bytes_[-1] * tuple_cnt;
-    result->column_data_.at(-1).resize(write_size);
+//    result->column_data_.at(-1).resize(write_size);
     memcpy(result->column_data_.at(-1).data(), read_ptr, write_size);
 
     return result;
@@ -124,20 +145,21 @@ QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vecto
 
 // only works with no wire packing
 template <typename B>
-QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vector<Bit> & table_bits) {
+QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vector<Bit> & table_bits, const int & limit) {
     const Bit *read_ptr = table_bits.data();
-    assert(!(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE));
+    assert(SystemConfiguration::getInstance().storageModel() != StorageModel::PACKED_COLUMN_STORE);
     bool is_plain = std::is_same_v<B, bool>;
     assert(!is_plain);
 
-    uint32_t tuple_cnt =  table_bits.size() /  schema.size();
+    uint32_t src_tuple_cnt =  table_bits.size() /  schema.size();
+    int tuple_cnt = (limit < src_tuple_cnt && limit > -1) ? limit : src_tuple_cnt;
     auto result = QueryTable<B>::getTable(tuple_cnt, schema);
     int write_size;
 
     for(int i = 0; i < schema.getFieldCount(); ++i) {
         write_size = result->field_sizes_bytes_[i] * tuple_cnt;
         memcpy(result->column_data_[i].data(), read_ptr, write_size);
-        read_ptr += (write_size / sizeof(emp::Bit));
+        read_ptr += ((result->field_sizes_bytes_[i] * src_tuple_cnt) / sizeof(emp::Bit));
     }
 
     // dummy tag
@@ -147,8 +169,96 @@ QueryTable<B> *QueryTable<B>::deserialize(const QuerySchema &schema, const vecto
 }
 
 
+// read all cols
+// designed to only read bytes from file that are within limit
+template<typename B>
+QueryTable<B> *QueryTable<B>::deserialize(const TableMetadata  & md, const int &limit) {
+    int src_tuple_cnt = md.tuple_cnt_;
+    int tuple_cnt = (limit < md.tuple_cnt_ && limit > -1) ? limit : src_tuple_cnt;
+    auto filename = Utilities::getFilenameForTable(md.name_);
+    auto dst = QueryTable<B>::getTable(tuple_cnt, md.schema_, md.collation_);
+
+//    if(SystemConfiguration::getInstance().inputParty()) return dst;
+
+    bool truncating = (src_tuple_cnt != tuple_cnt);
+
+    FILE*  fp = fopen(filename.c_str(), "rb");
+    for(int i = 0; i < md.schema_.getFieldCount(); ++i) {
+        fread(dst->column_data_[i].data(), 1, dst->column_data_[i].size(), fp);
+        if(truncating) {
+            int to_seek =  dst->field_sizes_bytes_[i] * src_tuple_cnt - dst->column_data_[i].size();
+            fseek(fp, to_seek, SEEK_CUR);
+        }
+    }
+
+    // dummy tag
+    fread(dst->column_data_[-1].data(), 1, dst->column_data_[-1].size(), fp);
+    fclose(fp);
+
+    return dst;
+}
 
 
+
+// only read columns listed in ordinals
+template<typename B>
+QueryTable<B> *QueryTable<B>::deserialize(const TableMetadata & md, const vector<int> & ordinals, const int & limit) {
+    int src_tuple_cnt = md.tuple_cnt_;
+    int tuple_cnt = (limit == -1 || limit > src_tuple_cnt) ? src_tuple_cnt : limit;
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
+
+    // if no projection
+    if(ordinals.empty()) {
+       return deserialize(md, limit);
+    }
+
+
+    // else, first construct dst schema from projection
+    auto dst_schema = OperatorUtilities::deriveSchema(md.schema_, ordinals);
+    auto dst_collation = OperatorUtilities::deriveCollation(md.collation_, ordinals);
+
+    auto dst = QueryTable<B>::getTable(tuple_cnt, dst_schema, dst_collation);
+    // baseline for RESCU-SQL
+//    if(conf.emp_mode_ == EmpMode::OUTSOURCED && conf.inputParty()) {
+//        return dst;
+//    }
+
+    // else
+    // find the offsets to read in serialized file for each column
+    map<int, long> ordinal_offsets;
+    long array_byte_cnt = 0L;
+    ordinal_offsets[0] = 0;
+    for(int i = 1; i < md.schema_.getFieldCount(); ++i) {
+        array_byte_cnt += md.schema_.getField(i-1).size() * sizeof(emp::Bit) * src_tuple_cnt;
+        ordinal_offsets[i] = array_byte_cnt;
+    }
+    array_byte_cnt += md.schema_.getField(md.schema_.getFieldCount()-1).size() * sizeof(emp::Bit) * src_tuple_cnt;
+    ordinal_offsets[-1] = array_byte_cnt;
+    array_byte_cnt += md.schema_.getField(-1).size() * sizeof(emp::Bit) * src_tuple_cnt;
+
+    auto filename = Utilities::getFilenameForTable(md.name_);
+    FILE*  fp = fopen(filename.c_str(), "rb");
+
+    int dst_ordinal = 0;
+    for(auto src_ordinal : ordinals) {
+        fseek(fp, ordinal_offsets[src_ordinal], SEEK_SET); // read read_offset bytes from beginning of file
+        fread(dst->column_data_[dst_ordinal].data(), 1, dst->column_data_[dst_ordinal].size(), fp);
+        ++dst_ordinal;
+    }
+
+    // read dummy tag unconditionally
+    fseek(fp, ordinal_offsets[-1], SEEK_SET);
+    fread(dst->column_data_[-1].data(),  1, dst->column_data_[-1].size(), fp);
+
+    return dst;
+}
+
+template<typename B>
+QueryTable<B> *QueryTable<B>::deserialize(const TableMetadata & md, const string & col_names_csv, const int & limit) {
+    if(col_names_csv.empty()) return deserialize(md, limit);
+    auto ordinals = OperatorUtilities::getOrdinalsFromColNames(md.schema_, col_names_csv);
+    return QueryTable<B>::deserialize(md, ordinals, limit);
+}
 
 
 
@@ -317,8 +427,10 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
 }
 
 
+
+
 template<typename B>
-PlainTable *QueryTable<B>::revealInsecure(const int &party)  {
+PlainTable *QueryTable<B>::revealInsecure(const int &party)  const {
 
     if(!isEncrypted()) {
         return (QueryTable<bool> *) this;
@@ -328,10 +440,16 @@ PlainTable *QueryTable<B>::revealInsecure(const int &party)  {
 
     auto dst_table = PlainTable::getTable(tuple_cnt_, dst_schema, order_by_);
 
-    for(uint32_t i = 0; i < tuple_cnt_; ++i)  {
-        PlainTuple t = revealRow(i, party);
-        dst_table->putTuple(i, t);
+    for(int i = -1; i < schema_.getFieldCount(); ++i) {
+        QueryFieldDesc field_desc = schema_.getField(i);
+
+        for(int j = 0; j < tuple_cnt_; ++j) {
+            auto f = getField(j, i);
+            PlainField plain = f.reveal(field_desc, party);
+            dst_table->setField(j, i, plain);
+        }
     }
+
     return dst_table;
 
 }
@@ -340,15 +458,21 @@ PlainTable *QueryTable<B>::revealInsecure(const int &party)  {
 
 template<typename B>
 QueryTable<B> *QueryTable<B>::getTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def) {
-
-    StorageModel s = SystemConfiguration::getInstance().storageModel();
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
+    StorageModel s = conf.storageModel();
     // SystemConfiguration::initialize mirrors this logic for determining whether to allocate the buffer pool
     // if we change this, we need to change that too
     if(s == StorageModel::PACKED_COLUMN_STORE && std::is_same_v<B, emp::Bit>) {
-            return (QueryTable<B> *)  new PackedColumnTable(tuple_cnt, schema, sort_def);
+       if(conf.party_ == conf.input_party_)
+            return (QueryTable<B> *) new InputPartyPackedColumnTable(tuple_cnt, schema, sort_def);
+        else
+            return (QueryTable<B> *)  new ComputingPartyPackedColumnTable(tuple_cnt, schema, sort_def);
     }
     if(s == StorageModel::COMPRESSED_STORE) {
         return new CompressedTable<B>(tuple_cnt, schema, sort_def);
+    }
+    if(s == StorageModel::COLUMN_STORE && conf.bp_enabled_ && is_same_v<B, emp::Bit>) {
+        return (QueryTable<B> *) new BufferedColumnTable(tuple_cnt, schema, sort_def);
     }
     return new ColumnTable<B>(tuple_cnt, schema, sort_def);
 }

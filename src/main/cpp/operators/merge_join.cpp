@@ -1,6 +1,7 @@
-#include "merge_join.h"
+#include "operators/merge_join.h"
 #include "expression/visitor/join_equality_condition_visitor.h"
 #include "util/field_utilities.h"
+#include <algorithm>
 
 using namespace vaultdb;
 
@@ -40,15 +41,13 @@ QueryTable<B> *MergeJoin<B>::runSelf() {
 
             this->output_->setDummyTag(i, dst_dummy_tag);
         }
-    }
-    else if(one_sided_input) {
+    } else if(one_sided_input) {
         // all others have a single party providing input, so pad the remaining fields with zeros
 
         QueryTable<B> *non_empty;
         if(lhs_card > 0) {
             non_empty = lhs;
-        }
-        else {
+        } else {
             non_empty = rhs;
         }
 
@@ -57,8 +56,7 @@ QueryTable<B> *MergeJoin<B>::runSelf() {
             this->output_->setDummyTag(i, non_empty->getDummyTag(i));
         }
 
-    }
-    else {
+    } else {
         // two non-empty inputs, different cardinalities
         throw std::runtime_error("MergeJoin: unsupported input configuration");
     }

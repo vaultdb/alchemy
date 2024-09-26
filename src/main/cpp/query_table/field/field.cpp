@@ -1,4 +1,4 @@
-#include "field.h"
+#include "query_table/field/field.h"
 #include "util/utilities.h"
 #include <util/system_configuration.h>
 
@@ -109,7 +109,7 @@ bool Field<bool>::operator>=(const Field<bool> &r) const {
             return getValue<int64_t>() >= r.getValue<int64_t>();
         case FieldType::FLOAT:
             return (getValue<float_t>()>= r.getValue<float_t>());
-            // TODO: consider adding manual equality check, like "epsilon" in operator==
+            // TODO(future): consider adding manual equality check, like "epsilon" in operator==
         case FieldType::STRING:
             return getString() >= r.getString();
         default:
@@ -127,8 +127,8 @@ Bit Field<Bit>::operator>=(const Field<Bit> &r) const {
 
     switch(type_) {
         case FieldType::SECURE_BOOL: {
-            lhs = *((Bit *) payload_.data());
-            rhs = *((Bit *) r.payload_.data());
+            lhs = *(reinterpret_cast<const Bit *>(payload_.data()));
+            rhs = *(reinterpret_cast<const Bit *>(r.payload_.data()));
             gt = lhs & (!rhs);
             eq = (lhs == rhs);
             return eq | gt;
@@ -171,7 +171,7 @@ PlainField Field<B>::reveal( const QueryFieldDesc &desc, const int &party) const
 
     switch(type_) {
         case FieldType::SECURE_BOOL:
-            b =  *((Bit *) payload_.data());
+            b =  *(reinterpret_cast<const Bit *>(payload_.data()));
             return Field<bool>(FieldType::BOOL, b.reveal(party));
         case FieldType::SECURE_INT:
             i = getInt();
@@ -199,13 +199,13 @@ PlainField Field<B>::reveal( const QueryFieldDesc &desc, const int &party) const
 
 template<typename B>
 string Field<B>::revealString(const Integer &src, const int &party) {
-    long bit_cnt = src.size();
-    long byte_cnt = bit_cnt / 8;
+    int bit_cnt = src.size();
+    int byte_cnt = bit_cnt / 8;
     assert(bit_cnt % 8 == 0);
 
     bool *bools = new bool[bit_cnt];
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
-    manager->reveal(bools, party, (Bit *) src.bits.data(), bit_cnt);
+    manager->reveal(bools, party, const_cast<Bit *>(src.bits.data()), bit_cnt);
 
     bool *byte_cursor = bools;
     string dst(byte_cnt, ' ');
@@ -259,8 +259,8 @@ Bit Field<Bit>::operator==(const Field<Bit> &r) const {
 
     switch(type_) {
         case FieldType::SECURE_BOOL: {
-            Bit lhs = *((Bit *) payload_.data());
-            Bit rhs = *((Bit *) r.payload_.data());
+            Bit lhs = *(reinterpret_cast<const Bit *>(payload_.data()));
+            Bit rhs = *(reinterpret_cast<const Bit *>(r.payload_.data()));
             return (lhs == rhs);
             }
         case FieldType::SECURE_INT:
@@ -278,7 +278,7 @@ Bit Field<Bit>::operator==(const Field<Bit> &r) const {
     }
 }
 
-
+// dst field desc, src_party
 template<typename B>
 SecureField Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDesc &desc, const int &party, const bool &send) {
 

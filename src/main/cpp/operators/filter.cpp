@@ -1,4 +1,4 @@
-#include "filter.h"
+#include "operators/filter.h"
 #include <query_table/plain_tuple.h>
 // keep this file to ensure overloaded methods are visible
 #include "util/field_utilities.h"
@@ -28,14 +28,13 @@ QueryTable<B> *Filter<B>::runSelf() {
 
     // deep copy new output, then just modify the dummy tag
     this->output_ = input->clone();
-    int tuple_cnt = input->tuple_cnt_;
 
-    for(int i = 0; i < tuple_cnt; ++i) {
+    for(int i = 0; i < input->tuple_cnt_; ++i) {
         B selected = predicate_->call(this->output_, i).template getValue<B>();
         B dummy_tag =  (!selected | this->output_->getDummyTag(i)); // (!) because dummyTag is false if our selection criteria is satisfied
         this->output_->setDummyTag(i, dummy_tag);
     }
-
+    // NYI: may need to update collation if we are filtering on one of our order-by cols
     this->output_->order_by_ = input->order_by_;
     return this->output_;
 

@@ -72,7 +72,7 @@ void BaselineComparisonTest::runTest_all_mpc(const int &test_id,
 
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/zk-" + test_name + ".json";
 
-    PlanParser<emp::Bit> parser(db_name_, plan_file, input_tuple_limit_);
+    PlanParser<emp::Bit> parser(db_name_, plan_file, input_tuple_limit_, true);
     SecureOperator *root = parser.getRoot();
     //cout << "Parsed baseline plan for " << test_name <<  ":\n " << root->printTree() << endl;
     SecureTable *result = root->run();

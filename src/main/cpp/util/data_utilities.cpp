@@ -70,6 +70,15 @@ void DataUtilities::writeFile(const string &fileName, const string &contents) {
     outFile.close();
 }
 
+void DataUtilities::appendFile(const string &fileName, vector<int8_t> contents) {
+    std::ofstream outFile(fileName.c_str(), std::ios::binary | std::ios::app);
+    if(!outFile.is_open()) {
+        throw std::invalid_argument("Could not write output file " + fileName);
+    }
+    outFile.write((char *) contents.data(), contents.size());
+    outFile.close();
+}
+
 
 // reads binary file
 vector<int8_t> DataUtilities::readFile(const std::string & filename) {

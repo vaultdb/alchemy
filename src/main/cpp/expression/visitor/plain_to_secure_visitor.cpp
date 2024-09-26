@@ -1,4 +1,4 @@
-#include "plain_to_secure_visitor.h"
+#include "expression/visitor/plain_to_secure_visitor.h"
 
 using namespace vaultdb;
 PlainToSecureVisitor::PlainToSecureVisitor(ExpressionNode<bool> *root) {

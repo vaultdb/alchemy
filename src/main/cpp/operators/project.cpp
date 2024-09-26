@@ -1,4 +1,4 @@
-#include "project.h"
+#include "operators/project.h"
 #include <query_table/field/field_factory.h>
 #include <query_table/secure_tuple.h>  // do not delete this - need for template specialization
 #include <expression/expression_node.h>
@@ -30,9 +30,9 @@ QueryTable<B> *Project<B>::runSelf() {
         this->output_->cloneColumn(pos.second, src_table, pos.first);
     }
 
-    for(uint32_t i = 0; i < tuple_cnt; ++i) {
 
-        for(uint32_t j : exprs_to_exec_) {
+    for(uint32_t j : exprs_to_exec_) {
+        for(uint32_t i = 0; i < tuple_cnt; ++i) {
             Expression<B> *expression = expressions_.at(j);
             Field<B> v = expression->call(src_table, i);
             this->output_->setField(i, j, v);
@@ -66,13 +66,11 @@ void Project<B>::setup() {
             GenericExpression<B> *expr = (GenericExpression<B> *) expr_pos->second;
             InputReference<B> *node = (InputReference<B> *) expr->root_;
             column_mappings_.template emplace_back(node->read_idx_, expr_pos->first);
-        }
-        else if(expr_pos->second->kind() == ExpressionKind::PACKED_INPUT_REF) {
+        } else if(expr_pos->second->kind() == ExpressionKind::PACKED_INPUT_REF) {
             GenericExpression<B> *expr = (GenericExpression<B> *) expr_pos->second;
             PackedInputReference<B> *node = (PackedInputReference<B> *) expr->root_;
             column_mappings_.template emplace_back(node->read_idx_, expr_pos->first);
-        }
-        else {
+        } else {
             exprs_to_exec_.emplace_back(expr_pos->first); // dst_ordinal
         }
     }
@@ -113,7 +111,7 @@ void Project<B>::setup() {
 
 
 
-    Operator<B>::output_schema_ = dst_schema;
+    this->output_schema_ = dst_schema;
     updateCollation();
 }
 

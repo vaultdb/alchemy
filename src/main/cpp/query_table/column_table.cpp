@@ -1,6 +1,6 @@
-#include "column_table.h"
-#include "plain_tuple.h"
-#include "secure_tuple.h"
+#include "query_table/column_table.h"
+#include "query_table/plain_tuple.h"
+#include "query_table/secure_tuple.h"
 #include "util/field_utilities.h"
 
 using namespace vaultdb;
@@ -16,22 +16,15 @@ void ColumnTable<Bit>::cloneRow(const Bit & write, const int & dst_row, const in
 
     assert(s->storageModel() == StorageModel::COLUMN_STORE);
     auto src = (ColumnTable<Bit> *) s;
-    int src_size = src->tuple_size_bytes_ - src->field_sizes_bytes_.at(-1);
 
     int write_idx = dst_col; // field indexes
     int read_idx = 0;
     int bytes_read = 0;
 
-    // re-pack row
     while(read_idx < src->schema_.getFieldCount()) {
-        Bit *write_pos = (Bit *) getFieldPtr(dst_row, write_idx);
-        Bit *read_pos = (Bit *) src->getFieldPtr(src_row, read_idx);
-
-        int bytes_remaining = src_size - bytes_read;
-        int dst_len = field_sizes_bytes_.at(write_idx);
-        int to_read = (dst_len < bytes_remaining) ? dst_len : bytes_remaining;
-
-        int to_read_bits = to_read / sizeof(emp::Bit);
+        Bit *write_pos = reinterpret_cast<Bit *>(getFieldPtr(dst_row, write_idx));
+        Bit *read_pos = reinterpret_cast<Bit *>(src->getFieldPtr(src_row, read_idx));
+        int to_read_bits = this->field_sizes_bytes_[write_idx] / sizeof(emp::Bit);
         for(int i = 0; i <  to_read_bits; ++i) {
             *write_pos = emp::If(write, *read_pos, *write_pos);
             ++write_pos;
@@ -39,12 +32,11 @@ void ColumnTable<Bit>::cloneRow(const Bit & write, const int & dst_row, const in
         }
         ++read_idx;
         ++write_idx;
-        bytes_read += to_read;
     }
 
     // copy dummy tag
-    Bit *write_pos = (Bit *) getFieldPtr(dst_row, -1);
-    Bit *read_pos = (Bit *) src->getFieldPtr(src_row, -1);
+    Bit *write_pos = reinterpret_cast<Bit *>(getFieldPtr(dst_row, -1));
+    Bit *read_pos = reinterpret_cast<Bit *>(src->getFieldPtr(src_row, -1));
     *write_pos = emp::If(write, *read_pos, *write_pos);
 }
 
@@ -103,8 +95,8 @@ void ColumnTable<Bit>::compareSwap(const Bit &swap, const int &lhs_row, const in
     for(int col_id = 0; col_id < col_cnt; ++col_id) {
 
         int field_len = schema_.fields_.at(col_id).size();
-        Bit *l = (Bit *) getFieldPtr(lhs_row, col_id);
-        Bit *r = (Bit *) getFieldPtr(rhs_row, col_id);
+        Bit *l = reinterpret_cast<Bit *>(getFieldPtr(lhs_row, col_id));
+        Bit *r = reinterpret_cast<Bit *>(getFieldPtr(rhs_row, col_id));
 
         for(int i = 0; i < field_len; ++i) {
             emp::swap(swap, l[i], r[i]);
@@ -112,8 +104,8 @@ void ColumnTable<Bit>::compareSwap(const Bit &swap, const int &lhs_row, const in
 
     }
     // dummy tag
-    Bit *l = (Bit *)  getFieldPtr(lhs_row, -1);
-    Bit *r = (Bit *) getFieldPtr(rhs_row, -1);
+    Bit *l = reinterpret_cast<Bit *>(getFieldPtr(lhs_row, -1));
+    Bit *r = reinterpret_cast<Bit *>(getFieldPtr(rhs_row, -1));
     Bit o = emp::If(swap, *l, *r);
     o ^= *r;
     *l ^= o;

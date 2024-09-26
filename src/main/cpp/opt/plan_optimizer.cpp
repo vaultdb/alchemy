@@ -1,4 +1,4 @@
-#include "plan_optimizer.h"
+#include "opt/plan_optimizer.h"
 #include <util/utilities.h>
 #include <util/data_utilities.h>
 
@@ -113,9 +113,8 @@ void PlanOptimizer<B>::optimizeTreeHelper(Operator<B> *op) {
             SecureSqlInput* secureSqlInputOp = dynamic_cast<SecureSqlInput*>(op);
 
             // If it is party scan, just run the node with default sort order
-            if(secureSqlInputOp->getInputParty() > 0)
-                recurseNode(node);
-            else {
+            if(secureSqlInputOp->getInputParty() > 0) {
+                recurseNode(node); } else {
                 auto sorts = getCollations(op);
                 for (auto &sort: sorts) {
                     node = op->clone();
@@ -257,8 +256,7 @@ void PlanOptimizer<B>::recurseJoin(Operator<B> *join) {
                     smj = new KeyedSortMergeJoin<B>(lhs->clone(), rhs_sorter, kj->foreignKeyChild(),
                                                     kj->getPredicate()->clone());
                 }
-            }
-            else if (smj->sortCompatible(rhs)) {
+            } else if (smj->sortCompatible(rhs)) {
                 // If lhs is not scan, then add sort operator
                 // If lhs is scan, then do not add sort operator, just setSortOrder and updateCollation
                 if(lhs->getType() != OperatorType::SECURE_SQL_INPUT) {
@@ -290,8 +288,7 @@ void PlanOptimizer<B>::recurseJoin(Operator<B> *join) {
 
             //Since smj was not original node, delete it
             delete smj;
-        }
-        else if(join->getType() == OperatorType::KEYED_SORT_MERGE_JOIN){
+        } else if(join->getType() == OperatorType::KEYED_SORT_MERGE_JOIN){
             KeyedSortMergeJoin<B> *smj = (KeyedSortMergeJoin<B> *) join;
 
             // Need to reset right child as rhs because kj's rhs was pointing original child, which does not applied new sort order
@@ -329,16 +326,12 @@ void PlanOptimizer<B>::recurseJoin(Operator<B> *join) {
                     new_smj->updateCollation();
                     recurseNode(new_smj);
                     delete new_smj;
-                }
-                    //If rhs is scan, set scan's sort order and update collation
-                else{
+                } else {  //If rhs is scan, set scan's sort order and update collation
                     smj->getChild(1)->setSortOrder(rhs_sort);
                     smj->updateCollation();
                     recurseNode(smj);
                 }
-            }
-                // If rhs is sort compatible, then add sort at lhs.
-            else if (smj->sortCompatible(rhs)) {
+            } else if (smj->sortCompatible(rhs)) {   // If rhs is sort compatible, then add sort at lhs.
                 // add sort to lhs
                 // try inserting sort for RHS
                 auto join_key_idxs = smj->joinKeyIdxs();
@@ -361,16 +354,12 @@ void PlanOptimizer<B>::recurseJoin(Operator<B> *join) {
                     new_smj->updateCollation();
                     recurseNode(new_smj);
                     delete new_smj;
-                }
-                    // If lhs is scan, set scan's sort order and update collation
-                else{
+                } else {    // If lhs is scan, set scan's sort order and update collation
                     smj->getChild()->setSortOrder(lhs_sort);
                     smj->updateCollation();
                     recurseNode(smj);
                 }
-            }
-                // If both side is not sort compatible, then just do sort merge join
-            else{
+            } else {   // If both side is not sort compatible, then just do sort merge join
                 smj->updateCollation();
                 recurseNode(smj);
             }
@@ -418,17 +407,13 @@ void PlanOptimizer<B>::recurseAgg(Operator<B> *agg) {
             sma->setOperatorId(nla->getOperatorId());
             sma->updateCollation();
             recurseNode(sma);
-        }
-            // If Child's sort is compatible with effective_sort, then just insert sma.
-        else {
+        } else {  // If Child's sort is compatible with effective_sort, then just insert sma.
             SortMergeAggregate<B> *sma = new SortMergeAggregate<B>(child->clone(), group_by_ordinals, nla->aggregate_definitions_, effective_sort, nla->getCardinalityBound());
             sma->setOperatorId(nla->getOperatorId());
             sma->updateCollation();
             recurseNode(sma);
         }
-    }
-        // SortMergeAggregate Case
-    else {
+    } else {  // SortMergeAggregate Case
         SortMergeAggregate<B> *sma = (SortMergeAggregate<B> *) agg;
 
         SortDefinition child_sort = child->getSortOrder();
@@ -469,9 +454,7 @@ void PlanOptimizer<B>::recurseSort(Operator<B> *sort) {
                 Operator<B> *parent = operators_.at(sort->getParent()->getOperatorId());
                 parent->setChild(child);
                 recurseNode(parent);
-            }
-                // If sort was root
-            else {
+            } else {   // If sort was root
                 s->setChild(nullptr);
                 child->setParent(nullptr);
 
@@ -486,13 +469,10 @@ void PlanOptimizer<B>::recurseSort(Operator<B> *sort) {
                 }
                 return;
             }
-        }
-            // If sort is needed
-        else {
+        } else {  // If sort is needed
             recurseNode(sort);
         }
-    }
-    else{
+    } else{
         recurseNode(sort);
     }
 }

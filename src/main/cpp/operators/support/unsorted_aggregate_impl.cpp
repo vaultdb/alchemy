@@ -1,4 +1,4 @@
-#include "unsorted_aggregate_impl.h"
+#include "operators/support/unsorted_aggregate_impl.h"
 #include <util/field_utilities.h>
 
 using namespace vaultdb;
@@ -9,13 +9,12 @@ UnsortedAggregateImpl<B>::UnsortedAggregateImpl(const AggregateId &id, const Fie
         : agg_type_(id), field_type_(type), input_ordinal_(input_ordinal), output_ordinal_(output_ordinal) {
 
     if(max_value > 0 && std::is_same_v<B, Bit>) {
-        bit_packed_size_ =  ceil(log2((float) max_value)) + 1; // for sign bit
+        bit_packed_size_ =  ceil(log2(static_cast<float>(max_value))) + 1; // for sign bit
         if(this->field_type_ == FieldType::SECURE_INT || this->field_type_ == FieldType::SECURE_LONG)
             one_ = Field<B>(this->field_type_, Integer(bit_packed_size_, 1));
         else
             one_ = FieldFactory<B>::getOne(this->field_type_);
-    }
-    else  {
+    } else  {
         bit_packed_size_ = TypeUtilities::getTypeSize(this->field_type_);
         one_ = FieldFactory<B>::getOne(this->field_type_);
     }
@@ -43,8 +42,7 @@ void UnsortedStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & 
         input_field =  src->getField(src_row, this->input_ordinal_);
         input_field.unpack(src->getSchema().getField(this->input_ordinal_));
         output_field = dst->getField(dst_row, this->output_ordinal_);
-    }
-    else if(this->agg_type_ != AggregateId::COUNT) { // no input field for cnt
+    } else if(this->agg_type_ != AggregateId::COUNT) { // no input field for cnt
         input_field =  src->getField(src_row, this->input_ordinal_);
     }
 

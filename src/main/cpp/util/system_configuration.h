@@ -6,6 +6,7 @@
 #include <iostream>
 #include <util/emp_manager/emp_manager.h>
 #include "util/buffer_pool/buffer_pool_manager.h"
+#include <query_table/query_schema.h>
 
 using namespace std;
 
@@ -13,6 +14,44 @@ using namespace std;
 // creates mysterious compile-time bugs
 
 namespace vaultdb{
+
+    typedef struct table_metadata_ {
+        string name_;
+        QuerySchema schema_;
+        SortDefinition collation_;
+        size_t tuple_cnt_;
+
+        bool operator==(const table_metadata_ &other) const {
+            // need to do vectorEquality here without Utilities because of circular dependency
+            if(collation_.size() != other.collation_.size()) return false;
+            for(int i = 0; i < collation_.size(); ++i) if(collation_[i] != other.collation_[i]) return false;
+            return name_ == other.name_ && schema_ == other.schema_  && tuple_cnt_ == other.tuple_cnt_;
+        }
+
+        string toString() const {
+            std::stringstream s;
+            s << name_ << ": " << schema_.prettyPrint() << ", cardinality: " << tuple_cnt_ << ", collation: ";
+            // copy and paste of DataUtilities::printSortDefinition to avoid dependency
+            s << "{";
+            bool init = false;
+            for(ColumnSort c : collation_) {
+                if(init)
+                    s << ", ";
+                string direction = (c.second == SortDirection::ASCENDING) ? "ASC" : (c.second == SortDirection::DESCENDING) ? "DESC" : "INVALID";
+                s << "<" << c.first << ", "
+                       << direction << "> ";
+
+                init = true;
+            }
+
+            s << "}";
+            return s.str();
+
+        }
+
+    } TableMetadata;
+
+
     class SystemConfiguration {
 
     public:
@@ -20,11 +59,15 @@ namespace vaultdb{
         EmpManager *emp_manager_ = nullptr;
         EmpMode emp_mode_ = EmpMode::PLAIN;
         int party_;
+        int input_party_ = 10086;
 
-        bool bp_enabled_ = true;
-        BufferPoolManager *bpm_ = nullptr;
-
-        int num_tables_;
+        bool bp_enabled_ = false;
+        BufferPoolManager & bpm_ = BufferPoolManager::getInstance();
+        int num_tables_ = 0;
+        int bp_page_size_bits_ = 2048;
+        int bp_page_cnt_ = 50;
+        string stored_db_path_;
+        map<string, TableMetadata> table_metadata_;
 
 
         static SystemConfiguration& getInstance() {
@@ -32,29 +75,40 @@ namespace vaultdb{
             return instance;
         }
 
-        void initialize(const string &db_name, const std::map<ColumnReference, BitPackingDefinition> &bp,
-                        const StorageModel &model) {
+        // for sh2pc and ZK mostly
+        void initialize(const string &db_name, const std::map<ColumnReference, BitPackingDefinition> &bp, const StorageModel &model) {
             unioned_db_name_ = db_name;
             bit_packing_ = bp;
             storage_model_ = model;
 
-            // can only benefit from buffer pool in outsourced setting
-            // mirroring the logic in QueryTable<B>::getTable()
-            // this prevents the system from reaching an invalid state
-            // if changing QueryTable, also change this
-            if(storage_model_ != StorageModel::PACKED_COLUMN_STORE) {
-                bp_enabled_ = false;
-            }
-
-            if(bp_enabled_) {
-                bpm_ = new BufferPoolManager(256, 100, 5, 1000, emp_manager_);
+            if(storage_model_ == StorageModel::PACKED_COLUMN_STORE) {
+                bp_enabled_ = true;
+                bpm_.initialize(bp_page_size_bits_, bp_page_cnt_, emp_manager_);
             }
         }
+
+        void initialize(const string &db_name, const std::map<ColumnReference, BitPackingDefinition> &bp,
+                        const StorageModel &model, const int & bp_page_size_bits, const int & bp_page_cnt) {
+            unioned_db_name_ = db_name;
+            bit_packing_ = bp;
+            storage_model_ = model;
+            bp_page_size_bits_ = bp_page_size_bits;
+            bp_page_cnt_ = bp_page_cnt;
+
+            if(storage_model_ == StorageModel::PACKED_COLUMN_STORE) {
+                bp_enabled_ = true;
+                bpm_.initialize(bp_page_size_bits_, bp_page_cnt_, emp_manager_);
+            }
+        }
+
+        void initializeWirePackedDb(const string & db_path);
+        void initializeOutsourcedSecretShareDb(const string & db_path);
 
         string getUnionedDbName() const { return unioned_db_name_; }
         string getEmptyDbName() const { return empty_db_name_; }
         void setEmptyDbName(const string & db_name) { empty_db_name_ = db_name; }
-        
+        inline bool inputParty() { return party_ == input_party_; }
+
         BitPackingDefinition getBitPackingSpec(const string & table_name, const string & col_name);
         SystemConfiguration(const SystemConfiguration&) = delete;
         SystemConfiguration& operator=(const SystemConfiguration &) = delete;
@@ -62,6 +116,7 @@ namespace vaultdb{
         inline void clearBitPacking() {
             bit_packing_.clear();
         }
+
 
         inline StorageModel storageModel() const {
             return storage_model_;
@@ -81,7 +136,7 @@ namespace vaultdb{
 
         ~SystemConfiguration() {
             if(emp_manager_ != nullptr) delete emp_manager_;
-            if(bpm_ != nullptr) delete bpm_;
+
         }
 
 
@@ -90,9 +145,7 @@ namespace vaultdb{
         SystemConfiguration() { }
 
         string unioned_db_name_, empty_db_name_; // empty DB used for schema lookups (for public info)
-
         StorageModel storage_model_ = StorageModel::COLUMN_STORE; // only support one storage model at a time
-
         std::map<ColumnReference, BitPackingDefinition> bit_packing_;
     };
 

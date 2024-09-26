@@ -1,4 +1,4 @@
-#include "scalar_aggregate_impl.h"
+#include "operators/support/scalar_aggregate_impl.h"
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h> // leave this in to avoid templating issues
 
@@ -28,8 +28,7 @@ void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & sr
 
     if(this->agg_type_ == AggregateId::SUM || this->agg_type_ == AggregateId::AVG) {
         input_field = src->getField(src_row, this->input_ordinal_);
-    }
-    else {
+    } else {
         input_field = src->getField(src_row, this->input_ordinal_);
     }
 

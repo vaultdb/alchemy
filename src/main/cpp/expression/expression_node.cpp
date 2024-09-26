@@ -1,10 +1,10 @@
-#include "expression_node.h"
-#include "expression_factory.h"
+#include <expression/expression_node.h>
+#include <expression/expression_factory.h>
 #include <expression/visitor/print_expression_visitor.h>
 #include <query_table/plain_tuple.h>  // leave tuple includes in or else it will not resolve field lookups in release mode
 #include <query_table/secure_tuple.h>
 #include "util/field_utilities.h"
-
+#include <string>
 
 using namespace vaultdb;
 

@@ -104,7 +104,7 @@ PlainField FieldFactory<bool>::getOne(const FieldType &aType) {
         default:
             throw std::invalid_argument("Type unsupported in getOne(): " + TypeUtilities::getTypeName(aType));
 
-    };
+    }
 }
 
 PlainField FieldFactory<bool>::toFloat(const PlainField &src) {

@@ -7,6 +7,9 @@
 #include <expression/comparator_expression_nodes.h>
 #include <expression/connector_expression_nodes.h>
 #include <expression/case_node.h>
+#include <vector>
+#include <string>
+
 
 namespace  vaultdb {
 
@@ -25,9 +28,7 @@ public:
 
 };
 
-
-
-}
+} // namespace vaultdb
 
 
 #endif //_EXPRESSION_FACTORY_H

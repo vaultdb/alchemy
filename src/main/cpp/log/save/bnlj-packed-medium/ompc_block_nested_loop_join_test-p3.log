@@ -1,0 +1,86 @@
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from OMPCBlockNestedLoopJoinTest
+[ RUN      ] OMPCBlockNestedLoopJoinTest.test_tpch_q3_customer_orders
+Connecting on ports 54340, 65450 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 640.374ms to finish setup
+EMP mode: outsourced, storage mode: packed wires
+Code version: c0dfbbd93f87db7699d613af999c90df5796a6c8
+GFlags: --ctrl_port=65450	--cutoff=100	--empty_db=tpch_empty	--filter=*	--input_party=10086	--page_cnt=50	--party=3	--port=43443	--storage=wire_packed	--unioned_db=tpch_unioned_150	--unpacked_page_size_bits=2048	--validation=false	--wire_path=wires	--log_level=2	--logfile=	--flagfile=flagfiles/db_names.flags	
+
+data loading time: 0.003068 s
+Operator #-1 StoredTableScan ran for 12.686000 ms, gate count: 0 output cardinality: 1500, row width=161
+Operator #-1 StoredTableScan ran for 0.841000 ms, gate count: 0 output cardinality: 150, row width=33
+Operator #-1 BlockNestedLoopJoin ran for 8556.874000 ms, gate count: 15075000 output cardinality: 1500, row width=193
+[Mac]Peak resident set size: 1986789376 bytes, current memory size: 1539522560 bytes, virtual memory size: 422663503872 bytes.
+party 3 send 2896169472 bytes to party 1
+party 3 send 15456 bytes to TP 
+total AND gates: 15075000
+total pack call: 3
+total unpack call: 54
+total packed wire: 6144
+total unpacked wire: 110592
+[       OK ] OMPCBlockNestedLoopJoinTest.test_tpch_q3_customer_orders (9248 ms)
+[ RUN      ] OMPCBlockNestedLoopJoinTest.test_tpch_q3_lineitem_orders
+Connecting on ports 54340, 65450 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 589.322ms to finish setup
+EMP mode: outsourced, storage mode: packed wires
+Code version: c0dfbbd93f87db7699d613af999c90df5796a6c8
+GFlags: --ctrl_port=65450	--cutoff=100	--empty_db=tpch_empty	--filter=*	--input_party=10086	--page_cnt=50	--party=3	--port=43443	--storage=wire_packed	--unioned_db=tpch_unioned_150	--unpacked_page_size_bits=2048	--validation=false	--wire_path=wires	--log_level=2	--logfile=	--flagfile=flagfiles/db_names.flags	
+
+data loading time: 0.002998 s
+Operator #-1 StoredTableScan ran for 3.606000 ms, gate count: 0 output cardinality: 1500, row width=97
+Operator #-1 StoredTableScan ran for 2.415000 ms, gate count: 0 output cardinality: 1500, row width=161
+Operator #-1 BlockNestedLoopJoin ran for 273066.419000 ms, gate count: 438750000 output cardinality: 1500, row width=257
+[Mac]Peak resident set size: 2221588480 bytes, current memory size: 1753858048 bytes, virtual memory size: 423067271168 bytes.
+party 3 send 84260381696 bytes to party 1
+party 3 send 194528 bytes to TP 
+total AND gates: 438750000
+total pack call: 99
+total unpack call: 622
+total packed wire: 202752
+total unpacked wire: 1273856
+[       OK ] OMPCBlockNestedLoopJoinTest.test_tpch_q3_lineitem_orders (273715 ms)
+[ RUN      ] OMPCBlockNestedLoopJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting on ports 54340, 65450 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 565.922ms to finish setup
+EMP mode: outsourced, storage mode: packed wires
+Code version: c0dfbbd93f87db7699d613af999c90df5796a6c8
+GFlags: --ctrl_port=65450	--cutoff=100	--empty_db=tpch_empty	--filter=*	--input_party=10086	--page_cnt=50	--party=3	--port=43443	--storage=wire_packed	--unioned_db=tpch_unioned_150	--unpacked_page_size_bits=2048	--validation=false	--wire_path=wires	--log_level=2	--logfile=	--flagfile=flagfiles/db_names.flags	
+
+data loading time: 0.00341 s
+Operator #-1 StoredTableScan ran for 6.708000 ms, gate count: 0 output cardinality: 1500, row width=97
+Operator #-1 StoredTableScan ran for 3.251000 ms, gate count: 0 output cardinality: 1500, row width=161
+Operator #-1 StoredTableScan ran for 0.586000 ms, gate count: 0 output cardinality: 150, row width=33
+Operator #-1 BlockNestedLoopJoin ran for 319409.250000 ms, gate count: 510750000 output cardinality: 1500, row width=289
+[Mac]Peak resident set size: 2329100288 bytes, current memory size: 2139389952 bytes, virtual memory size: 423336771584 bytes.
+party 3 send 100989136384 bytes to party 1
+party 3 send 293280 bytes to TP 
+total AND gates: 525825000
+total pack call: 149
+total unpack call: 938
+total packed wire: 305152
+total unpacked wire: 1921024
+[       OK ] OMPCBlockNestedLoopJoinTest.test_tpch_q3_lineitem_orders_customer (328692 ms)
+[----------] 3 tests from OMPCBlockNestedLoopJoinTest (611656 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (611656 ms total)
+[  PASSED  ] 3 tests.
+Buffer pool requests: 91815756 hit rate: 91814142/91815756: 0.999982, pack calls: 240 unpack calls: 1614 pinned pages: 0
+

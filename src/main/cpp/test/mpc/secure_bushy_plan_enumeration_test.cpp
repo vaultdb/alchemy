@@ -68,7 +68,7 @@ SecureBushyPlanEnumerationTest::runTest(const int &test_id, const SortDefinition
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
 
-    PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
+    PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_, true);
     SecureOperator *root = parser.getRoot();
 
     std::cout << "Original Plan : " << endl;

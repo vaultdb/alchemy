@@ -112,6 +112,58 @@ size_t Utilities::residentMemoryUtilization(bool print) {
 #endif
 }
 
+size_t Utilities::checkSwapUtilization(bool print) {
+#if defined(__linux__)
+    std::ifstream status_file("/proc/self/status");
+    std::string line;
+
+    if (status_file.is_open()) {
+        while (std::getline(status_file, line)) {
+            if (line.find("VmSwap:") == 0) {
+                std::string swap_kb_str = line.substr(line.find_first_of("0123456789"));
+                long swap_kb = std::stol(swap_kb_str);
+                long swap_bytes = swap_kb * 1024;
+                std::cout << "Swap space usage: " << swap_bytes << " bytes" << std::endl;
+                return swap_bytes;
+            }
+        }
+        status_file.close();
+    } else {
+        std::cerr << "Unable to open /proc/self/status" << std::endl;
+        return -1;
+    }
+#endif
+    return 0;
+}
+
+size_t Utilities::checkMemoryAndSwapUtilization() {
+#if defined(__linux__)
+    size_t current_memory = Utilities::residentMemoryUtilization();
+    size_t current_swap = Utilities::checkSwapUtilization();
+    size_t sum = current_memory + current_swap;
+    std::cout << "Current memory + swap utilization: " << sum << " bytes" << std::endl;
+    return sum;
+#endif
+    return 0;
+}
+
+void Utilities::checkDiskIOUtilization() {
+#if defined(__linux__)
+    std::ifstream status_file("/proc/self/io");
+    std::string line;
+
+    if (status_file.is_open()) {
+        cout << "Disk I/O utilization:" << endl;
+        while (std::getline(status_file, line)) {
+            cout << line << endl;
+        }
+        status_file.close();
+    } else {
+        std::cerr << "Unable to open /proc/self/io" << std::endl;
+    }
+#endif
+}
+
 
 std::string Utilities::getStackTrace() {
     std::ostringstream  os;

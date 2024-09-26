@@ -1,4 +1,4 @@
-#include "keyed_sort_merge_join.h"
+#include "operators/keyed_sort_merge_join.h"
 #include "query_table/query_table.h"
 #include "operators/project.h"
 #include "expression/visitor/join_equality_condition_visitor.h"
@@ -180,8 +180,7 @@ QuerySchema KeyedSortMergeJoin<B>::deriveAugmentedSchema() const {
         ++write_cursor;
         QueryFieldDesc table_id(write_cursor, "table_id", "", FieldType::BOOL, 0);
         augmented_schema.putField(table_id);
-    }
-    else {
+    } else {
         QueryFieldDesc alpha(write_cursor, "alpha", "", int_field_type_);
         int max_alpha =  lhs_child->getOutputCardinality() + rhs_child->getOutputCardinality();
         alpha.initializeFieldSizeWithCardinality(max_alpha);
@@ -207,8 +206,7 @@ QuerySchema KeyedSortMergeJoin<B>::getAugmentedSchema() {
         QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::BOOL, 0);
         augmented_schema.putField(table_id);
         table_id_field_ = Field<B>(FieldType::BOOL, true);
-    }
-    else {
+    } else {
         QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_);
 	    int max_alpha =  this->getChild(0)->getOutputCardinality() + this->getChild(1)->getOutputCardinality();
         alpha.initializeFieldSizeWithCardinality(max_alpha);
@@ -321,11 +319,10 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionAndMergeTables() {
         unioned = unionTables(lhs_prime_, rhs_prime_, augmented_schema);
         int cursor = lhs_prime_->tuple_cnt_;
         while(cursor < unioned_len) {
-            unioned->setField(cursor, table_id_idx_, table_id_field_); // TODO: add batch write method for this
+            unioned->setField(cursor, table_id_idx_, table_id_field_); // NYI: add batch write method for this
             ++cursor;
         }
-    }
-    else {
+    } else {
         unioned = unionTables(rhs_prime_, lhs_prime_, augmented_schema);
         int cursor = 0;
 
@@ -350,11 +347,11 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionAndMergeTables() {
     sorter.setOperatorId(-2);
     auto normalized = sorter.normalizeTable(unioned); // normalize to move up table_id field
     sorter.bitonicMerge(normalized, sorter.getSortOrder(), 0, normalized->tuple_cnt_, true, counter);
-    unioned =  sorter.denormalizeTable(normalized);
-    unioned->order_by_ = sort_def;
+    auto collated_union =  sorter.denormalizeTable(normalized);
+    collated_union->order_by_ = sort_def;
 
     delete normalized;
-    return unioned;
+    return collated_union;
 
 }
 
@@ -365,8 +362,16 @@ QueryTable<B> *KeyedSortMergeJoin<B>::unionTables(QueryTable<B> *lhs, QueryTable
     auto unioned =  QueryTable<B>::getTable(unioned_len, dst_schema);
 
     // always FK --> PK
-    // TODO: add conditional so we only reshuffle columns for smaller relation
+    // NYI: add conditional so we only reshuffle columns for smaller relation
+    SystemConfiguration *sys_conf = &SystemConfiguration::getInstance();
     int cursor = 0;
+    // Initialize non-key columns in unioned to make sure we have pages in the buffer pool.
+    if(sys_conf->bp_enabled_) {
+        for(int i = join_idxs_.size(); i < unioned->getSchema().getFieldCount(); ++i) {
+            unioned->cloneColumn(i, -1, unioned, i);
+        }
+    }
+
     for(int i = lhs->tuple_cnt_ - 1; i >= 0; --i) {
         auto r = lhs->serializeRow(i);
         unioned->deserializeRow(cursor, r);
@@ -414,8 +419,7 @@ QueryTable<B> *KeyedSortMergeJoin<B>::projectJoinKeyToFirstAttr(QueryTable<B> *s
     if(is_lhs) {
         lhs_projected_schema_ = projection.getOutputSchema();
         lhs_field_mapping_ = field_mapping;
-    }
-    else {
+    } else {
         rhs_field_mapping_ = field_mapping;
         rhs_projected_schema_ = projection.getOutputSchema();
     }
@@ -442,7 +446,7 @@ void KeyedSortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
     dst->setField(0, alpha_idx_, Field<B>::If(is_foreign_key, alpha_2, alpha_1));
 
     // rhs has table_id = true
-    // TODO: we can likely cut down on our circuits if we say table_id = true is always fkey (or pkey)
+    // NYI: we can likely cut down on our circuits if we say table_id = true is always fkey (or pkey)
     for(int i = 1; i < dst->tuple_cnt_; i++) {
 		table_id = dst->getField(i, table_id_idx_).template getValue<B>();
 		is_foreign_key = (table_id == fkey_check);
@@ -620,8 +624,7 @@ QueryTable<bool> *KeyedSortMergeJoin<bool>::revertProjection(QueryTable<bool> *s
             auto r = src->serializeRow(i);
             to_project->deserializeRow(i, r);
         }
-    }
-    else {
+    } else {
         to_project = src->clone();
     }
 
@@ -668,7 +671,7 @@ QueryTable<Bit> *KeyedSortMergeJoin<Bit>::revertProjection(QueryTable<Bit> *src,
     Integer dst_row(row_len, 0);
 
     for(int i = 0; i < row_cnt; ++i) {
-        auto unpacked = src->unpackRow(i); // TODO: only unpack the cols we need
+        auto unpacked = src->unpackRow(i); // NYI: only unpack the cols we need
         Bit *write_ptr = dst_row.bits.data();
         for(int j = 0; j < dst_schema.getFieldCount(); ++j) {
             int src_ordinal = dst_to_src[j];
