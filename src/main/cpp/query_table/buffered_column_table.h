@@ -22,6 +22,10 @@ namespace vaultdb {
 
             BufferedColumnTable(const BufferedColumnTable &src) : QueryTable<Bit>(src) {}
 
+            std::vector<emp::Bit> getPage(const PageId &pid) override {
+                return std::vector<emp::Bit>();
+            }
+
             Field<Bit> getField(const int &row, const int &col) const override {
                 return Field<Bit>();
             }
@@ -127,6 +131,10 @@ namespace vaultdb {
             std::filesystem::copy_file(src.secret_shares_path_, this->secret_shares_path_, std::filesystem::copy_options::overwrite_existing);
 
             this->conf_.bpm_.registerTable(this->table_id_, (QueryTable<Bit> *) this);
+        }
+
+        std::vector<emp::Bit> getPage(const PageId &pid) override {
+            return this->readSecretSharedPageFromDisk(pid);
         }
 
         Field<Bit> getField(const int &row, const int &col) const override {

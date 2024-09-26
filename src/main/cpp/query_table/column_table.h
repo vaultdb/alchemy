@@ -53,6 +53,10 @@ public:
         setSchema(src.schema_);
     }
 
+    std::vector<emp::Bit> getPage(const PageId &pid) override {
+        return std::vector<emp::Bit>();
+    }
+
     inline Field<B> getField(const int  & row, const int & col)  const override {
         int8_t *src = getFieldPtr(row, col);
         QueryFieldDesc desc = this->schema_.getField(col);

@@ -94,6 +94,10 @@ namespace vaultdb {
 
         StorageModel storageModel() const override { return  StorageModel::COMPRESSED_STORE; }
 
+        std::vector<emp::Bit> getPage(const PageId &pid) override {
+            return std::vector<emp::Bit>();
+        }
+
         Field<B> getField(const int  & row, const int & col)  const override {
             return column_encodings_.at(col)->getField(row);
         }

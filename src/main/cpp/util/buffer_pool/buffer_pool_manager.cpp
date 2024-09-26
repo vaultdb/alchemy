@@ -24,26 +24,12 @@ void BufferPoolManager::loadPage(PageId &pid) {
 
     int target_slot = evictPage();
 
-    if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-        PackedColumnTable *tbl = (PackedColumnTable *) tables_catalog_[pid.table_id_];
-        assert(tbl != nullptr);
-        OMPCPackedWire src = tbl->readPackedWire(pid);
+    QueryTable<Bit> *tbl = tables_catalog_[pid.table_id_];
+    assert(tbl != nullptr);
 
-        Bit *dst = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
-        //    cout << "Unpacking page " << pid.toString() << '\n';
-        emp_manager_->unpack((Bit *) &src, dst, unpacked_page_size_bits_);
-        ++unpack_calls_;
-    }
-    else {
-        assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COLUMN_STORE);
-        BufferedColumnTable *tbl = (BufferedColumnTable *) tables_catalog_[pid.table_id_];
-        assert(tbl != nullptr);
-
-        assert(pid.table_id_ == tbl->table_id_);
-        std::vector<emp::Bit> src = tbl->readSecretSharedPageFromDisk(pid);
-        emp::Bit *dst_ptr = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
-        std::memcpy(dst_ptr, src.data(), src.size() * sizeof(emp::Bit));
-    }
+    std::vector<emp::Bit> src = tbl->getPage(pid);
+    emp::Bit *dst_ptr = unpacked_buffer_pool_.data() + target_slot * unpacked_page_size_bits_;
+    std::memcpy(dst_ptr, src.data(), src.size() * sizeof(emp::Bit));
 
     ++misses_;
 

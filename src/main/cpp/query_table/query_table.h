@@ -68,6 +68,7 @@ namespace  vaultdb {
         inline const  QuerySchema & getSchema() const  { return schema_; }
 
 
+        virtual std::vector<emp::Bit> getPage(const PageId &pid) = 0;
         virtual Field<B> getField(const int  & row, const int & col)  const = 0;
         virtual void setField(const int  & row, const int & col, const Field<B> & f)  = 0;
 

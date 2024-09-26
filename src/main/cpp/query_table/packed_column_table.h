@@ -272,6 +272,14 @@ public:
     static PackedColumnTable *deserialize(const TableMetadata & md, const int & limit = -1);
     static PackedColumnTable *deserialize(const TableMetadata & md, const vector<int> & ordinals, const int & limit = -1);
 
+    std::vector<emp::Bit> getPage(const PageId &pid) override {
+        OMPCPackedWire src = readPackedWire(pid);
+        std::vector<emp::Bit> dst(bpm_.unpacked_page_size_bits_, 0);
+        bpm_.emp_manager_->unpack((Bit *) &src, dst.data(), bpm_.unpacked_page_size_bits_);
+        ++bpm_.unpack_calls_;
+        return dst;
+    }
+
 
 
     Field<Bit> getField(const int  & row, const int & col)  const override {
