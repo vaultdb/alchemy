@@ -95,6 +95,7 @@ package_add_test(secure_merge_join_test mpc/secure_merge_join_test.cpp mpc/emp_b
 package_add_test(secure_keyed_join_test mpc/secure_keyed_join_test.cpp mpc/emp_base_test.cpp)
 #package_add_test(secure_sort_merge_join_test mpc/secure_sort_merge_join_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_keyed_sort_merge_join_test mpc/secure_keyed_sort_merge_join_test.cpp mpc/emp_base_test.cpp)
+package_add_test(secure_join_agg_cost_comparison_test mpc/secure_join_agg_cost_comparison_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_scalar_aggregate_test mpc/secure_scalar_aggregate_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_sort_merge_aggregate_test mpc/secure_sort_merge_aggregate_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_nested_loop_aggregate_test mpc/secure_nested_loop_aggregate_test.cpp mpc/emp_base_test.cpp)

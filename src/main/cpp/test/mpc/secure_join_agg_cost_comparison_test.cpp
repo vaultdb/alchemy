@@ -1,0 +1,911 @@
+#include <gtest/gtest.h>
+#include <stdexcept>
+#include <gflags/gflags.h>
+#include <operators/secure_sql_input.h>
+#include <operators/sort.h>
+#include <test/mpc/emp_base_test.h>
+#include <operators/keyed_sort_merge_join.h>
+#include <operators/basic_join.h>  // Add this for NLJ
+#include "util/field_utilities.h"
+#include "opt/operator_cost_model.h"
+#include "util/logger.h"
+
+DEFINE_int32(party, 1, "party for EMP execution");
+DEFINE_int32(port, 43455, "port for EMP execution");
+DEFINE_string(alice_host, "127.0.0.1", "hostname for generator");
+DEFINE_string(unioned_db, "tpch_unioned_5000", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_5000_join_cost", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_5000_join_cost", "bob db name");
+DEFINE_int32(ctrl_port, 65470, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
+DEFINE_string(storage, "column", "storage model for columns (column, wire_packed or compressed)");
+
+using namespace vaultdb;
+using namespace Logging;
+
+class SecureJoinAggCostComparisonTest : public EmpBaseTest {
+protected:
+    int orders_cutoff = 10;
+    int lineitem_cutoff = 10;
+
+};
+
+void execute_sort_merge_join(std::string db_name_, int orders_cutoff, int lineitem_cutoff){
+    string orders_rows = "SELECT * FROM orders ORDER BY o_orderkey LIMIT " + std::to_string(orders_cutoff);
+    string lineitem_rows = "SELECT * FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(lineitem_cutoff);
+
+    std::string orders_sql_ = "SELECT o_orderkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' AS o_dummy \n"
+                              "FROM (" + orders_rows + ") selection \n"
+                                                       "ORDER BY o_orderkey";
+
+    std::string lineitem_sql_ = "SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, l_shipdate <= date '1995-03-25' AS l_dummy \n"
+                                "FROM (" + lineitem_rows + ") selection \n"
+                                                           "ORDER BY l_orderkey";
+
+    SortDefinition orders_sort_{ColumnSort(0, SortDirection::ASCENDING)};
+    SortDefinition lineitem_sort_{ColumnSort(0, SortDirection::ASCENDING)};
+
+    string unioned_orders_rows = "SELECT * FROM orders ORDER BY o_orderkey LIMIT " + std::to_string(orders_cutoff*2);
+    string unioned_lineitem_rows = "SELECT * FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(lineitem_cutoff*2);
+
+
+    std::string expected_orders_sql_ = "SELECT o_orderkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' AS o_dummy \n"
+                                       "FROM (" + unioned_orders_rows + ") selection \n"
+                                                                        "ORDER BY o_orderkey";
+
+    std::string expected_lineitem_sql_ = "SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, l_shipdate <= date '1995-03-25' AS l_dummy \n"
+                                         "FROM (" + unioned_lineitem_rows + ") selection \n"
+                                                                            "ORDER BY l_orderkey";
+
+
+    std::string expected_sql = "WITH orders_cte AS (" + expected_orders_sql_ + "), "
+                                                                               "lineitem_cte AS (" + expected_lineitem_sql_ + ") "
+                                                                                                                              "SELECT o_orderkey, o_orderdate, o_shippriority, l_orderkey, revenue "
+                                                                                                                              "FROM orders_cte JOIN lineitem_cte ON o_orderkey = l_orderkey "
+                                                                                                                              "WHERE NOT o_dummy AND NOT l_dummy "
+                                                                                                                              "ORDER BY o_orderkey, revenue";
+
+    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, orders_sort_);
+    auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true, lineitem_sort_);
+
+    GenericExpression<emp::Bit>* predicate = (GenericExpression<Bit>*)FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 0, lineitem_input, 3);
+
+    auto smj = new KeyedSortMergeJoin(orders_input, lineitem_input, 1, predicate);
+
+    cout << "left child : " + std::to_string(smj->getChild(0)->getOutputCardinality()) << " , right child : " << std::to_string(smj->getChild(1)->getOutputCardinality()) << endl;
+    auto smj_cost = OperatorCostModel::operatorCost((SecureOperator *) smj);
+    cout << "SMJ Cost " << smj_cost << endl;
+
+    auto expected_sort = SortDefinition{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(4, SortDirection::ASCENDING)};
+    auto sort = new Sort(smj, expected_sort);
+
+    auto joined = sort->run();
+
+    Logger* log = get_log();
+    log->write("Performing Sort Merge Join", Level::INFO);
+    log->write("Observed gate count: " + std::to_string(smj->getGateCount()), Level::INFO);
+    log->write("Runtime: " + std::to_string(smj->getRuntimeMs()), Level::INFO);
+
+    if (FLAGS_validation) {
+        SortDefinition sort_def{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(4, SortDirection::ASCENDING),};
+        PlainTable* observed = joined->reveal();
+
+        PlainTable* expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
+        expected->order_by_ = sort_def;
+
+        ASSERT_EQ(*expected, *observed);
+        delete expected;
+        delete observed;
+    }
+}
+
+void execute_nested_loop_join(std::string db_name_, int orders_cutoff, int lineitem_cutoff){
+
+    string orders_rows = "SELECT * FROM orders ORDER BY o_orderkey LIMIT " + std::to_string(orders_cutoff);
+    string lineitem_rows = "SELECT * FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(lineitem_cutoff);
+
+    std::string orders_sql_ = "SELECT o_orderkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' AS o_dummy \n"
+                              "FROM (" + orders_rows + ") selection \n"
+                                                       "ORDER BY o_orderkey";
+
+    std::string lineitem_sql_ = "SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, l_shipdate <= date '1995-03-25' AS l_dummy \n"
+                                "FROM (" + lineitem_rows + ") selection \n"
+                                                           "ORDER BY l_orderkey";
+
+    SortDefinition orders_sort_{ColumnSort(0, SortDirection::ASCENDING)};
+    SortDefinition lineitem_sort_{ColumnSort(0, SortDirection::ASCENDING)};
+
+    string unioned_orders_rows = "SELECT * FROM orders ORDER BY o_orderkey LIMIT " + std::to_string(orders_cutoff*2);
+    string unioned_lineitem_rows = "SELECT * FROM lineitem ORDER BY l_orderkey LIMIT " + std::to_string(lineitem_cutoff*2);
+
+
+    std::string expected_orders_sql_ = "SELECT o_orderkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' AS o_dummy \n"
+                                       "FROM (" + unioned_orders_rows + ") selection \n"
+                                                                        "ORDER BY o_orderkey";
+
+    std::string expected_lineitem_sql_ = "SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, l_shipdate <= date '1995-03-25' AS l_dummy \n"
+                                "FROM (" + unioned_lineitem_rows + ") selection \n"
+                                                           "ORDER BY l_orderkey";
+
+
+    std::string expected_sql = "WITH orders_cte AS (" + expected_orders_sql_ + "), "
+                                                                      "lineitem_cte AS (" + expected_lineitem_sql_ + ") "
+                                                                                                            "SELECT o_orderkey, o_orderdate, o_shippriority, l_orderkey, revenue "
+                                                                                                            "FROM orders_cte JOIN lineitem_cte ON o_orderkey = l_orderkey "
+                                                                                                                     "WHERE NOT o_dummy AND NOT l_dummy "
+                                                                                                            "ORDER BY o_orderkey, revenue";
+
+    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, orders_sort_);
+    auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true, lineitem_sort_);
+
+    GenericExpression<emp::Bit>* predicate = (GenericExpression<Bit>*)FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 0, lineitem_input, 3);
+
+    auto nlj = new KeyedJoin(orders_input, lineitem_input, predicate);
+    nlj->setForeignKeyInput(1);
+    cout << "left child : " + std::to_string(nlj->getChild(0)->getOutputCardinality()) << " , right child : " << std::to_string(nlj->getChild(1)->getOutputCardinality()) << endl;
+
+    auto nlj_cost = OperatorCostModel::operatorCost((SecureOperator *) nlj);
+    cout << "NLJ Cost " << nlj_cost << endl;
+
+    auto expected_sort = SortDefinition{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(4, SortDirection::ASCENDING)};
+    auto sort = new Sort(nlj, expected_sort);
+
+    auto joined = sort->run();
+
+    Logger* log = get_log();
+    log->write("Performing Nested Loop Join", Level::INFO);
+    log->write("Observed gate count: " + std::to_string(nlj->getGateCount()), Level::INFO);
+    log->write("Runtime: " + std::to_string(nlj->getRuntimeMs()), Level::INFO);
+
+    if (FLAGS_validation) {
+        SortDefinition sort_def{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(4, SortDirection::ASCENDING),};
+        PlainTable* observed = joined->reveal();
+
+        PlainTable* expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
+        expected->order_by_ = sort_def;
+
+        ASSERT_EQ(*expected, *observed);
+        delete expected;
+        delete observed;
+    }
+
+}
+
+/*
+TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_10_2) {
+    int input_card = 5;
+    int output_card = 2;
+    // 300 has lineitem card 11999
+    string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+
+    string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                         " FROM (" + input_rows + ") selection \n"
+                                                  " ORDER BY l_returnflag, l_linestatus";
+
+
+    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+//            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+//            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+//            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+//            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+            ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+
+    auto input = new SecureSqlInput(db_name_, input_query, true);
+
+    auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+    auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+    auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+    auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+    cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+    sma_cost += sort_cost;
+
+    auto input2 = new SecureSqlInput(db_name_, input_query, true);
+
+    NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+    auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+
+    cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+         << ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_10_4) {
+    int input_card = 5;
+    int output_card = 4;
+    // 300 has lineitem card 11999
+    string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+
+    string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                         " FROM (" + input_rows + ") selection \n"
+                                                  " ORDER BY l_returnflag, l_linestatus";
+
+
+    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+//            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+//            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+//            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+//            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+            ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+
+    auto input = new SecureSqlInput(db_name_, input_query, true);
+
+    auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+    auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+    auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+    auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+    cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+    sma_cost += sort_cost;
+
+    auto input2 = new SecureSqlInput(db_name_, input_query, true);
+
+    NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+    auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+
+    cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+         << ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_10_8) {
+    int input_card = 5;
+    int output_card = 8;
+    // 300 has lineitem card 11999
+    string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+
+    string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                         " FROM (" + input_rows + ") selection \n"
+                                                  " ORDER BY l_returnflag, l_linestatus";
+
+
+    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+//            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+//            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+//            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+//            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+            ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+
+    auto input = new SecureSqlInput(db_name_, input_query, true);
+
+    auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+    auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+    auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+    auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+    cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+    sma_cost += sort_cost;
+
+    auto input2 = new SecureSqlInput(db_name_, input_query, true);
+
+    NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+    auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+
+    cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+         << ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+
+
+
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_100_2) {
+    int input_card = 50;
+    int output_card = 2;
+    // 300 has lineitem card 11999
+    string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+
+    string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                         " FROM (" + input_rows + ") selection \n"
+                                                  " ORDER BY l_returnflag, l_linestatus";
+
+
+    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+//            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+//            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+//            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+//            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+            ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+
+    auto input = new SecureSqlInput(db_name_, input_query, true);
+
+    auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+    auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+    auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+    auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+    cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+    sma_cost += sort_cost;
+
+    auto input2 = new SecureSqlInput(db_name_, input_query, true);
+
+    NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+    auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+
+    cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+         << ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_100_4) {
+    int input_card = 50;
+    int output_card = 4;
+    // 300 has lineitem card 11999
+    string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+
+    string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                         " FROM (" + input_rows + ") selection \n"
+                                                  " ORDER BY l_returnflag, l_linestatus";
+
+
+    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+//            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+//            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+//            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+//            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+            ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+
+    auto input = new SecureSqlInput(db_name_, input_query, true);
+
+    auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+    auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+    auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+    auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+    cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+    sma_cost += sort_cost;
+
+    auto input2 = new SecureSqlInput(db_name_, input_query, true);
+
+    NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+    auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+
+    cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+         << ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_100_8) {
+    int input_card = 50;
+    int output_card = 8;
+    // 300 has lineitem card 11999
+    string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+
+    string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                         " FROM (" + input_rows + ") selection \n"
+                                                  " ORDER BY l_returnflag, l_linestatus";
+
+
+    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+//            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+//            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+//            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+//            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+            ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+
+    auto input = new SecureSqlInput(db_name_, input_query, true);
+
+    auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+    auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+    auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+    auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+    cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+    sma_cost += sort_cost;
+
+    auto input2 = new SecureSqlInput(db_name_, input_query, true);
+
+    NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+    auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+
+    cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+         << ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_1000_2) {
+    int input_card = 500;
+    int output_card = 2;
+    // 300 has lineitem card 11999
+    string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+
+    string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                         " FROM (" + input_rows + ") selection \n"
+                                                  " ORDER BY l_returnflag, l_linestatus";
+
+
+    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+//            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+//            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+//            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+//            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+            ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+
+    auto input = new SecureSqlInput(db_name_, input_query, true);
+
+    auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+    auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+    auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+    auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+    cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+    sma_cost += sort_cost;
+
+    auto input2 = new SecureSqlInput(db_name_, input_query, true);
+
+    NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+    auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+
+    cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+         << ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_1000_4) {
+    int input_card = 500;
+    int output_card = 4;
+    // 300 has lineitem card 11999
+    string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+
+    string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                         " FROM (" + input_rows + ") selection \n"
+                                                  " ORDER BY l_returnflag, l_linestatus";
+
+
+    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+//            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+//            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+//            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+//            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+            ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+
+    auto input = new SecureSqlInput(db_name_, input_query, true);
+
+    auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+    auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+    auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+    auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+    cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+    sma_cost += sort_cost;
+
+    auto input2 = new SecureSqlInput(db_name_, input_query, true);
+
+    NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+    auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+
+    cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+         << ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_1000_8) {
+    int input_card = 500;
+    int output_card = 8;
+    // 300 has lineitem card 11999
+    string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+
+    string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                         " FROM (" + input_rows + ") selection \n"
+                                                  " ORDER BY l_returnflag, l_linestatus";
+
+
+    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+//            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+//            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+//            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+//            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+            ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+
+    auto input = new SecureSqlInput(db_name_, input_query, true);
+
+    auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+    auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+    auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+    auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+    cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+    sma_cost += sort_cost;
+
+    auto input2 = new SecureSqlInput(db_name_, input_query, true);
+
+    NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+    auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+
+    cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+         << ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+
+}
+
+//TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_10000_2) {
+//int input_card = 5000;
+//int output_card = 2;
+//// 300 has lineitem card 11999
+//string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+//
+//string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+//                     " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+//                     " FROM (" + input_rows + ") selection \n"
+//                                              " ORDER BY l_returnflag, l_linestatus";
+//
+//    string expected_sql = "WITH input_cte AS (" + input_query + ") "
+//                                                                     "SELECT l_returnflag, l_linestatus, SUM(l_quantity) AS sum_qty, COUNT(l_returnflag) AS count_order "
+//                                                                     "FROM input_cte "
+//                                                                     "WHERE NOT dummy "
+//                                                                     "GROUP BY l_returnflag, l_linestatus "
+//                                                                     "ORDER BY l_returnflag, l_linestatus";
+//
+//std::vector<int32_t> groupByCols{0, 1};
+//std::vector<ScalarAggregateDefinition> aggregators{
+//        ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+////            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+////            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+////            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+////            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+////            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+////            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+//        ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+//
+//
+//auto input = new SecureSqlInput(db_name_, input_query, true);
+//
+//auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+//auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+//auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+//auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+//cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+//sma_cost += sort_cost;
+//
+//auto input2 = new SecureSqlInput(db_name_, input_query, true);
+//
+//NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+//auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+//
+//cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+//<< ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+//
+//    auto aggregated = nested_loop_aggregate.run();
+//
+//    Logger* log = get_log();
+//    log->write("Performing Sort-Merge Join", Level::INFO);
+//    log->write("Predicted gate count: " + std::to_string(OperatorCostModel::operatorCost(&nested_loop_aggregate)), Level::INFO);
+//    log->write("Observed gate count: " + std::to_string(nested_loop_aggregate.getGateCount()), Level::INFO);
+//    log->write("Runtime: " + std::to_string(nested_loop_aggregate.getRuntimeMs()), Level::INFO);
+//
+//    auto sm_aggregated = sma->run();
+//
+//    Logger* log2 = get_log();
+//    log2->write("Performing Sort-Merge Join", Level::INFO);
+//    log2->write("Predicted gate count: " + std::to_string(OperatorCostModel::operatorCost((SecureOperator *)sma)), Level::INFO);
+//    log2->write("Observed gate count: " + std::to_string(sma->getGateCount()), Level::INFO);
+//    log2->write("Runtime: " + std::to_string(sma->getRuntimeMs()), Level::INFO);
+//
+//    if (FLAGS_validation) {
+//        auto sort_def = DataUtilities::getDefaultSortDefinition(1);
+//        aggregated->order_by_ = sort_def;
+//        PlainTable* observed = aggregated->reveal();
+//
+//        PlainTable* expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
+//        expected->order_by_ = sort_def;
+//
+//        ASSERT_EQ(*expected, *observed);
+//        delete expected;
+//        delete observed;
+//    }
+//
+//}
+
+TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_10000_4) {
+int input_card = 5000;
+int output_card = 4;
+// 300 has lineitem card 11999
+string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+
+string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                     " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                     " FROM (" + input_rows + ") selection \n"
+                                              " ORDER BY l_returnflag, l_linestatus";
+
+
+std::vector<int32_t> groupByCols{0, 1};
+std::vector<ScalarAggregateDefinition> aggregators{
+        ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+//            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+//            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+//            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+//            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+        ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+
+auto input = new SecureSqlInput(db_name_, input_query, true);
+
+auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+sma_cost += sort_cost;
+
+auto input2 = new SecureSqlInput(db_name_, input_query, true);
+
+NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+
+cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+<< ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_10000_8) {
+int input_card = 5000;
+int output_card = 8;
+// 300 has lineitem card 11999
+string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+
+string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                     " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                     " FROM (" + input_rows + ") selection \n"
+                                              " ORDER BY l_returnflag, l_linestatus";
+
+
+std::vector<int32_t> groupByCols{0, 1};
+std::vector<ScalarAggregateDefinition> aggregators{
+        ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+//            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+//            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+//            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+//            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+        ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+
+auto input = new SecureSqlInput(db_name_, input_query, true);
+
+auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+sma_cost += sort_cost;
+
+auto input2 = new SecureSqlInput(db_name_, input_query, true);
+
+NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+
+cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+<< ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_100000_2) {
+int input_card = 50000;
+int output_card = 2;
+// 300 has lineitem card 11999
+string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+
+string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                     " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                     " FROM (" + input_rows + ") selection \n"
+                                              " ORDER BY l_returnflag, l_linestatus";
+
+
+std::vector<int32_t> groupByCols{0, 1};
+std::vector<ScalarAggregateDefinition> aggregators{
+        ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+//            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+//            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+//            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+//            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+        ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+
+auto input = new SecureSqlInput(db_name_, input_query, true);
+
+auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+sma_cost += sort_cost;
+
+auto input2 = new SecureSqlInput(db_name_, input_query, true);
+
+NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+
+cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+<< ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_100000_4) {
+int input_card = 50000;
+int output_card = 4;
+// 300 has lineitem card 11999
+string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+
+string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                     " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                     " FROM (" + input_rows + ") selection \n"
+                                              " ORDER BY l_returnflag, l_linestatus";
+
+
+std::vector<int32_t> groupByCols{0, 1};
+std::vector<ScalarAggregateDefinition> aggregators{
+        ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+//            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+//            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+//            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+//            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+        ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+
+auto input = new SecureSqlInput(db_name_, input_query, true);
+
+auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+sma_cost += sort_cost;
+
+auto input2 = new SecureSqlInput(db_name_, input_query, true);
+
+NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+
+cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+<< ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, tpch_q01_agg_breakout_100000_8) {
+int input_card = 50000;
+int output_card = 8;
+// 300 has lineitem card 11999
+string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+
+string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                     " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                     " FROM (" + input_rows + ") selection \n"
+                                              " ORDER BY l_returnflag, l_linestatus";
+
+
+std::vector<int32_t> groupByCols{0, 1};
+std::vector<ScalarAggregateDefinition> aggregators{
+        ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+//            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+//            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+//            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+//            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+//            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+        ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+
+auto input = new SecureSqlInput(db_name_, input_query, true);
+
+auto sort = new Sort(input, DataUtilities::getDefaultSortDefinition(2));
+auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+auto sort_cost = OperatorCostModel::operatorCost((SecureOperator *) sort);
+auto sma_cost = OperatorCostModel::operatorCost((SecureOperator *) sma);
+cout << "SMA -> Sort Cost " << sort_cost << " -> SMA Cost: " << sma_cost << endl;
+sma_cost += sort_cost;
+
+auto input2 = new SecureSqlInput(db_name_, input_query, true);
+
+NestedLoopAggregate nested_loop_aggregate(input2, groupByCols, aggregators, SortDefinition(), output_card);
+auto nla_cost = OperatorCostModel::operatorCost((SecureOperator *) &nested_loop_aggregate);
+
+cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << " SMA Cost: " << sma_cost << " NLA Cost: " << nla_cost
+<< ((nla_cost < sma_cost) ? ", NLA wins!" : ", SMA wins!") << endl;
+
+}
+
+ */
+
+
+TEST_F(SecureJoinAggCostComparisonTest, test_tpch_q3_orders_lineitem_100_1_sort_merge_join) {
+    execute_sort_merge_join(db_name_, 50, 5000);
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, test_tpch_q3_orders_lineitem_100_1_nested_loop_join) {
+    execute_nested_loop_join(db_name_, 50, 5000);
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, test_tpch_q3_orders_lineitem_50_1_sort_merge_join) {
+    execute_sort_merge_join(db_name_, 100,5000);
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, test_tpch_q3_orders_lineitem_50_1_nested_loop_join) {
+    execute_nested_loop_join(db_name_, 100, 5000);
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, test_tpch_q3_orders_lineitem_10_1_sort_merge_join) {
+    execute_sort_merge_join(db_name_, 500, 5000);
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, test_tpch_q3_orders_lineitem_10_1_nested_loop_join) {
+    execute_nested_loop_join(db_name_, 500, 5000);
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, test_tpch_q3_orders_lineitem_5_1_sort_merge_join) {
+    execute_sort_merge_join(db_name_, 1000, 5000);
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, test_tpch_q3_orders_lineitem_5_1_nested_loop_join) {
+    execute_nested_loop_join(db_name_, 1000, 5000);
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, test_tpch_q3_orders_lineitem_1_1_nested_loop_join) {
+    execute_nested_loop_join(db_name_, 5000, 5000);
+}
+
+TEST_F(SecureJoinAggCostComparisonTest, test_tpch_q3_orders_lineitem_1_1_sort_merge_join) {
+    execute_sort_merge_join(db_name_, 5000, 5000);
+}
+
+
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    ::testing::GTEST_FLAG(filter) = FLAGS_filter;
+    int i = RUN_ALL_TESTS();
+    google::ShutDownCommandLineFlags();
+    return i;
+}

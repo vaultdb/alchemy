@@ -61,6 +61,10 @@ namespace  vaultdb {
             return new KeyedJoin<B>(*this);
         }
 
+        void setForeignKeyInput(int fkey){
+            foreign_key_input_ = fkey;
+        }
+
         ~KeyedJoin() = default;
         int foreignKeyChild() const { return foreign_key_input_; }
         bool operator==(const Operator<B> &other) const override {

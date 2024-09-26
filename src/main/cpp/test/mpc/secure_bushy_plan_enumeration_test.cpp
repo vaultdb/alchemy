@@ -87,7 +87,7 @@ SecureBushyPlanEnumerationTest::runTest(const int &test_id, const SortDefinition
 
     //root = optimizer.optimizeTree();
 
-    double PlanEnumerationDuration = time_from(BeforePlanEnumeration) / 1e6;
+x    double PlanEnumerationDuration = time_from(BeforePlanEnumeration) / 1e6;
 
     SecureTable *result = root->run();
 
