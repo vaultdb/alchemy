@@ -29,13 +29,11 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharedPageFromDisk(const Pa
     auto secure_field = this->schema_.getField(col);
     int dst_bit_cnt = reading_tuple_cnt * secure_field.size();
 
-    int currernt_emp_bit_size_on_disk = (this->conf_.party_ == 1 ? empBitSizesInPhysicalBytes::evaluator_disk_size_ : (this->conf_.party_ == 10086 ? 1 : empBitSizesInPhysicalBytes::garbler_disk_size_));
-
     auto *auth_shares = new AuthShare<emp::N>[dst_bit_cnt];
     bool *masked_values = new bool[dst_bit_cnt]();
 
     FILE*  fp = fopen(this->secret_shares_path_.c_str(), "rb");
-    int64_t fread_offset = this->serialized_col_bits_offsets_[col] + (int64_t) (pid.page_idx_ * this->fields_per_page_[col] * secure_field.size() * currernt_emp_bit_size_on_disk);
+    int64_t fread_offset = this->serialized_col_bytes_offsets_on_disk_[col] + (int64_t) (pid.page_idx_ * this->fields_per_page_[col] * secure_field.size() * current_emp_bit_size_on_disk_);
     fseek(fp, fread_offset, SEEK_SET);
 
     for(int i = 0; i < dst_bit_cnt; ++i) {
@@ -76,20 +74,18 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharedPageFromDisk(const Pa
     auto secure_field = this->schema_.getField(col);
     int dst_bit_cnt = reading_tuple_cnt * secure_field.size();
 
-    int currernt_emp_bit_size_on_disk = (this->conf_.party_ == 1 ? empBitSizesInPhysicalBytes::evaluator_disk_size_ : (this->conf_.party_ == 10086 ? 1 : empBitSizesInPhysicalBytes::garbler_disk_size_));
-
     int64_t col_bytes_cnt = 0L;
     int target_offset = 0;
     if(col != 0) {
         for (int i = 1; i < secure_schema.getFieldCount(); ++i) {
-            col_bytes_cnt += secure_schema.getField(i - 1).size() * tuple_cnt * currernt_emp_bit_size_on_disk;
+            col_bytes_cnt += secure_schema.getField(i - 1).size() * tuple_cnt * current_emp_bit_size_on_disk_;
             target_offset = col_bytes_cnt;
 
             if(i == src_col) break;
         }
     }
     if(col == -1) {
-        col_bytes_cnt += secure_schema.getField(secure_schema.getFieldCount() - 1).size() * tuple_cnt * currernt_emp_bit_size_on_disk;
+        col_bytes_cnt += secure_schema.getField(secure_schema.getFieldCount() - 1).size() * tuple_cnt * current_emp_bit_size_on_disk_;
         target_offset = col_bytes_cnt;
     }
 
@@ -97,7 +93,7 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharedPageFromDisk(const Pa
     bool *masked_values = new bool[dst_bit_cnt]();
 
     FILE*  fp = fopen(src_data_path.c_str(), "rb");
-    int fread_offset = target_offset + pid.page_idx_ * this->fields_per_page_[col] * secure_field.size() * currernt_emp_bit_size_on_disk;
+    int fread_offset = target_offset + pid.page_idx_ * this->fields_per_page_[col] * secure_field.size() * current_emp_bit_size_on_disk_;
     fseek(fp, fread_offset, SEEK_SET);
 
     for(int i = 0; i < dst_bit_cnt; ++i) {
@@ -130,9 +126,7 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharedPageFromDisk(const Pa
 }
 
 std::vector<int8_t> BufferedColumnTable::convertEMPBitToWriteBuffer(const std::vector<emp::Bit> bits) {
-    int current_emp_bit_size = (this->conf_.party_ == 1 ? empBitSizesInPhysicalBytes::evaluator_disk_size_ : (this->conf_.party_ == 10086 ? 1 : empBitSizesInPhysicalBytes::garbler_disk_size_));
-
-    std::vector<int8_t> write_buffer(bits.size() * current_emp_bit_size, 0);
+    std::vector<int8_t> write_buffer(bits.size() * current_emp_bit_size_on_disk_, 0);
     int8_t *write_cursor = write_buffer.data();
 
     for(int i = 0; i < bits.size(); ++i) {
@@ -161,9 +155,17 @@ std::vector<int8_t> BufferedColumnTable::convertEMPBitToWriteBuffer(const std::v
 void BufferedColumnTable::writePageToDisk(const PageId &pid, const emp::Bit *bits) {
     assert(this->isEncrypted());
 
-    if(!this->conf_.inputParty()) {
-        // TODO: write the page to disk
-    }
+    int col = pid.col_id_;
+    int remained_tuple_cnt = this->tuple_cnt_ - pid.page_idx_ * this->fields_per_page_[col];
+    int writing_tuple_cnt = (remained_tuple_cnt < this->fields_per_page_[col]) ? remained_tuple_cnt : this->fields_per_page_[col];
+    std::vector<emp::Bit> src_bits(bits, bits + writing_tuple_cnt * this->schema_.getField(col).size());
+    std::vector<int8_t> write_buffer = convertEMPBitToWriteBuffer(src_bits);
+
+    FILE*  fp = fopen(this->secret_shares_path_.c_str(), "rb+");
+    int write_offset = this->serialized_col_bytes_offsets_on_disk_[col] + (int64_t) (pid.page_idx_ * this->fields_per_page_[col] * this->schema_.getField(col).size() * current_emp_bit_size_on_disk_);
+    fseek(fp, write_offset, SEEK_SET);
+
+    fwrite(write_buffer.data(), 1, write_buffer.size(), fp);
 }
 
 #endif
