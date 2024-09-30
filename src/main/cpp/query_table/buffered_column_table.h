@@ -17,6 +17,7 @@ namespace vaultdb {
 
             std::map<int, int> fields_per_page_;
             std::map<int, int> pages_per_field_;
+            std::map<int, int> pages_per_col;
 
             BufferedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<Bit>(tuple_cnt, schema, sort_def) {}
 
@@ -69,6 +70,8 @@ namespace vaultdb {
 
             void cloneRowRange(const int & dst_row, const int & dst_col, const QueryTable<Bit> *src, const int & src_row, const int & copies) override {}
 
+            void cloneColumn(const int & dst_col, const QueryTable<Bit> *src_table, const int &src_col) override {}
+
             void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<Bit> *src, const int & src_col, const int & src_row = 0) override {}
 
             StorageModel storageModel() const override { return StorageModel::COLUMN_STORE; }
@@ -100,6 +103,7 @@ namespace vaultdb {
 
         std::map<int, int> fields_per_page_;
         std::map<int, int> pages_per_field_;
+        std::map<int, int> pages_per_col;
 
         BufferedColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, const SortDefinition &sort_def = SortDefinition()) : QueryTable<Bit>(tuple_cnt, schema, sort_def) {
             assert(this->conf_.storageModel() == this->storageModel() && this->conf_.bp_enabled_);
@@ -111,6 +115,10 @@ namespace vaultdb {
 
             std::filesystem::remove_all(this->secret_shares_path_);
             Utilities::mkdir(this->file_path_);
+
+            // initialize the secret shares file with zeros
+            std::vector<int8_t> initialized_bytes(this->tuple_cnt_ * this->schema_.size() * current_emp_bit_size_on_disk_, 0);
+            DataUtilities::writeFile(this->secret_shares_path_, initialized_bytes);
 
             this->conf_.bpm_.registerTable(this->table_id_, (QueryTable<Bit> *) this);
         }
@@ -212,7 +220,7 @@ namespace vaultdb {
 
             for(int i = -1; i < this->schema_.getFieldCount(); ++i) {
                 QueryFieldDesc desc = this->schema_.getField(i);
-                int field_size_bytes = desc.size() * sizeof(emp::Bit);
+                int field_size_bytes = desc.size() * this->current_emp_bit_size_on_disk_;
 
                 this->tuple_size_bytes_ += field_size_bytes;
                 this->field_sizes_bytes_[i] = field_size_bytes;
@@ -227,6 +235,8 @@ namespace vaultdb {
                     this->fields_per_page_[i] = bits_per_page / desc.size();
                     this->pages_per_field_[i] = 1;
                 }
+
+                this->pages_per_col[i] = this->tuple_cnt_ / this->fields_per_page_[i] + (this->tuple_cnt_ % this->fields_per_page_[i] != 0);
             }
 
             // calculate offsets for each column in the serialized file
@@ -250,13 +260,79 @@ namespace vaultdb {
 
         void cloneTable(const int & dst_row, const int & dst_col, QueryTable<Bit> *src) override {}
 
-        void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<Bit> * src, const int & src_row) override {}
+        void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<Bit> * src, const int & src_row) override {
+            assert(src->storageModel() == StorageModel::COLUMN_STORE);
 
-        void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<Bit> *src, const int & src_row) override {}
+            for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+                Field<Bit> f = src->getField(src_row, i);
+                this->setField(dst_row, dst_col + i, f);
+            }
+
+            this->setDummyTag(dst_row, src->getDummyTag(src_row));
+        }
+
+        void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<Bit> *src, const int & src_row) override {
+            assert(src->storageModel() == StorageModel::COLUMN_STORE);
+
+            for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
+                Integer dst_field_int = this->getField(dst_row, dst_col + i).getInt();
+                Integer src_field_int = src->getField(src_row, i).getInt();
+
+                Integer write_int = emp::If(write, src_field_int, dst_field_int);
+
+                Field<Bit> write_field = Field<Bit>::deserialize(this->schema_.getField(dst_col + i), (int8_t *) write_int.bits.data());
+                this->setField(dst_row, dst_col + i, write_field);
+            }
+
+            // copy the dummy tag
+            Bit dst_dummy_tag = this->getDummyTag(dst_row);
+            Bit src_dummy_tag = src->getDummyTag(src_row);
+            this->setDummyTag(dst_row, emp::If(write, src_dummy_tag, dst_dummy_tag));
+        }
 
         void cloneRowRange(const int & dst_row, const int & dst_col, const QueryTable<Bit> *src, const int & src_row, const int & copies) override {}
 
-        void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<Bit> *src, const int & src_col, const int & src_row = 0) override {}
+        void cloneColumn(const int & dst_col, const QueryTable<Bit> *src_table, const int &src_col) override {
+            assert(src_table->getSchema().getField(src_col) == this->schema_.getField(dst_col));
+
+            if(this->tuple_cnt_ == src_table->tuple_cnt_ && src_table->storageModel() == StorageModel::COLUMN_STORE) {
+                BufferedColumnTable *src = (BufferedColumnTable *) src_table;
+                this->conf_.bpm_.flushColumn(src->table_id_, src_col);
+
+                // direct read/write from/to disk page by page
+                for(int i = 0; i < src->pages_per_col[src_col]; ++i) {
+                    PageId src_pid(src->table_id_, src_col, i);
+                    PageId dst_pid(this->table_id_, dst_col, i);
+                    this->conf_.bpm_.clonePage(src_pid, dst_pid);
+                }
+
+                return;
+            }
+            this->cloneColumn(dst_col, 0, src_table, src_col, 0);
+        }
+
+        void cloneColumn(const int & dst_col, const int & dst_row, const QueryTable<Bit> *src, const int & src_col, const int & src_row = 0) override {
+            assert(src->getSchema().getField(src_col) == this->schema_.getField(dst_col));
+
+            BufferedColumnTable *src_table = (BufferedColumnTable *) src;
+
+            int rows_to_cp = src->tuple_cnt_ - src_row;
+            if(rows_to_cp > this->tuple_cnt_ - dst_row) {
+                rows_to_cp = this->tuple_cnt_ - dst_row;
+            }
+
+            int read_offset = src_row;
+            int write_offset = dst_row;
+
+            for(int i = 0; i < rows_to_cp; i = i + src_table->fields_per_page_.at(src_col)) {
+                PageId src_pid = this->conf_.bpm_.getPageId(src_table->table_id_, src_col, read_offset, src_table->fields_per_page_[dst_col]);
+                PageId dst_pid = this->conf_.bpm_.getPageId(this->table_id_, dst_col, write_offset, this->fields_per_page_[dst_col]);
+
+                this->conf_.bpm_.clonePage(src_pid, dst_pid);
+                read_offset += src_table->fields_per_page_[src_col];
+                write_offset += this->fields_per_page_[dst_col];
+            }
+        }
 
         StorageModel storageModel() const override { return StorageModel::COLUMN_STORE; }
 

@@ -166,6 +166,7 @@ void BufferedColumnTable::writePageToDisk(const PageId &pid, const emp::Bit *bit
     fseek(fp, write_offset, SEEK_SET);
 
     fwrite(write_buffer.data(), 1, write_buffer.size(), fp);
+    fclose(fp);
 }
 
 #endif

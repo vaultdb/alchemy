@@ -461,6 +461,7 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharesForBufferedColumnTable(const 
 
     string src_data_path = conf.stored_db_path_ + "/" + md.name_ + "." + std::to_string(conf.party_);
     if(!col_ordinals.empty() || !not_limit) {
+        FILE *fp = fopen(buffered_table->secret_shares_path_.c_str(), "rb+");
         for(int i = 0; col_ordinals.empty() ? i < md.schema_.getFieldCount() : i < col_ordinals.size(); ++i) {
             int max_page = tuple_cnt / buffered_table->fields_per_page_[i] + (tuple_cnt % buffered_table->fields_per_page_[i] != 0);
 
@@ -468,7 +469,7 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharesForBufferedColumnTable(const 
                 PageId pid(buffered_table->table_id_, i, j);
                 std::vector<emp::Bit> secret_shares = buffered_table->readSecretSharedPageFromDisk(pid, md.tuple_cnt_, md.schema_, col_ordinals.empty() ? i : col_ordinals[i], src_data_path);
                 std::vector<int8_t> write_buffer = buffered_table->convertEMPBitToWriteBuffer(secret_shares);
-                DataUtilities::appendFile(buffered_table->secret_shares_path_, write_buffer);
+                fwrite(write_buffer.data(), 1, write_buffer.size(), fp);
             }
         }
 
@@ -479,9 +480,9 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharesForBufferedColumnTable(const 
             std::vector<emp::Bit> secret_shares = buffered_table->readSecretSharedPageFromDisk(pid, md.tuple_cnt_, md.schema_, -1, src_data_path);
 
             std::vector<int8_t> write_buffer = buffered_table->convertEMPBitToWriteBuffer(secret_shares);
-
-            DataUtilities::appendFile(buffered_table->secret_shares_path_, write_buffer);
+            fwrite(write_buffer.data(), 1, write_buffer.size(), fp);
         }
+        fclose(fp);
     }
     else {
         std::filesystem::copy_file(src_data_path, buffered_table->secret_shares_path_, std::filesystem::copy_options::overwrite_existing);

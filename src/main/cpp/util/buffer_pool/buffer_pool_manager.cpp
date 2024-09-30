@@ -208,12 +208,24 @@ void BufferPoolManager::clonePage(PageId &src_pid, PageId &dst_pid) {
         position_map_.at(dst_pid).dirty_ = true;
     }
     else {
-        PackedColumnTable *src_table = (PackedColumnTable *) tables_catalog_[src_pid.table_id_];
-        PackedColumnTable *dst_table = (PackedColumnTable *) tables_catalog_[dst_pid.table_id_];
+        if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+            PackedColumnTable *src_table = (PackedColumnTable *) tables_catalog_[src_pid.table_id_];
+            PackedColumnTable *dst_table = (PackedColumnTable *) tables_catalog_[dst_pid.table_id_];
 
-        int8_t *src_page_ptr = src_table->packed_pages_[src_pid.col_id_].data() + src_pid.page_idx_ * src_table->packed_wire_size_bytes_;
-        int8_t *dst_page_ptr = dst_table->packed_pages_[dst_pid.col_id_].data() + dst_pid.page_idx_ * dst_table->packed_wire_size_bytes_;
-        memcpy(dst_page_ptr, src_page_ptr, src_table->packed_wire_size_bytes_);
+            int8_t *src_page_ptr = src_table->packed_pages_[src_pid.col_id_].data() +
+                                   src_pid.page_idx_ * src_table->packed_wire_size_bytes_;
+            int8_t *dst_page_ptr = dst_table->packed_pages_[dst_pid.col_id_].data() +
+                                   dst_pid.page_idx_ * dst_table->packed_wire_size_bytes_;
+            memcpy(dst_page_ptr, src_page_ptr, src_table->packed_wire_size_bytes_);
+        }
+        else {
+            assert(SystemConfiguration::getInstance().storageModel() == StorageModel::COLUMN_STORE);
+            BufferedColumnTable *src_table = (BufferedColumnTable *) tables_catalog_[src_pid.table_id_];
+            BufferedColumnTable *dst_table = (BufferedColumnTable *) tables_catalog_[dst_pid.table_id_];
+
+            std::vector<emp::Bit> src_page = src_table->readSecretSharedPageFromDisk(src_pid);
+            dst_table->writePageToDisk(dst_pid, src_page.data());
+        }
     }
 
 }
