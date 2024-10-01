@@ -41,7 +41,9 @@ void OmpcBaseTest::SetUp()  {
 
     log->write("Connecting on ports " + std::to_string(port_) + ", " + std::to_string(ctrl_port_) + " as " + std::to_string(FLAGS_party), Level::INFO);
 
-    manager_ = new OutsourcedMpcManager(hosts_.data(), FLAGS_party, port_, ctrl_port_);
+    string data_path = Utilities::getCurrentWorkingDirectory() + "/" + ((storage_model_ == StorageModel::PACKED_COLUMN_STORE) ? FLAGS_wire_path : "shares") + "/" + FLAGS_unioned_db;
+    manager_ = new OutsourcedMpcManager(hosts_.data(), FLAGS_party, port_, ctrl_port_, data_path + "/backend_state." +
+            to_string(FLAGS_party));
     db_name_ = (FLAGS_party == emp::TP) ? FLAGS_unioned_db : empty_db_;
 
     port_ += N;
@@ -59,14 +61,11 @@ void OmpcBaseTest::SetUp()  {
     log->write(settings, Level::INFO);
 
     if(storage_model_ == StorageModel::PACKED_COLUMN_STORE){
-        string packed_wires_path = Utilities::getCurrentWorkingDirectory() + "/" + FLAGS_wire_path + "/" + FLAGS_unioned_db;
         // read in files for packed wires
-        s.initializeWirePackedDb(packed_wires_path);
+        s.initializeWirePackedDb(data_path);
     }
     else {
-//        s.clearBitPacking();
-        string shares_path = Utilities::getCurrentWorkingDirectory() + "/shares/" + FLAGS_unioned_db;
-        s.initializeOutsourcedSecretShareDb(shares_path);
+        s.initializeOutsourcedSecretShareDb(data_path);
     }
 }
 

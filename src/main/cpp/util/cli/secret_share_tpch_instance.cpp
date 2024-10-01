@@ -139,6 +139,10 @@ int main(int argc, char **argv) {
         encodeTable(entry.first);
     }
 
+    OMPCBackend<N> *protocol = (OMPCBackend<N> *) emp::backend;
+    string backend_state_file = dst_root_ + "/backend_state." + to_string(party_);
+    protocol->dump_backend_state(backend_state_file);
+
     // validate it
     if(VALIDATE) {
         conf_.initializeOutsourcedSecretShareDb(dst_root_);

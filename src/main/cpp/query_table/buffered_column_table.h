@@ -348,7 +348,9 @@ namespace vaultdb {
 
         ~BufferedColumnTable() {
             this->conf_.bpm_.removeTable(this->table_id_);
-            std::filesystem::remove_all(this->file_path_);
+            if (std::filesystem::exists(this->file_path_)) {
+                std::filesystem::remove_all(this->secret_shares_path_);
+            }
         }
     };
 }

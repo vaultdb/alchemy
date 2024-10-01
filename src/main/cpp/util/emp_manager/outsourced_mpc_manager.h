@@ -104,6 +104,17 @@ namespace  vaultdb {
             s.emp_mode_ = EmpMode::OUTSOURCED;
         }
 
+        OutsourcedMpcManager(string hosts[], int party, int comm_port, int ctrl_port, string backend_state_path)  : party_(party) {
+            ios_ = emp::setup_netio(tpio_, hosts, comm_port, party_, N);
+            ios_ctrl_ = emp::setup_netio(tpio_ctrl_, hosts, ctrl_port, party_, N);
+            emp::backend = new OMPCBackend<N>(ios_, tpio_, party_, backend_state_path);
+            protocol_ = (OMPCBackend<N> *) emp::backend;
+            cout << "Memory usage of backend setup: " << Utilities::checkMemoryUtilization(true) << endl;
+            SystemConfiguration & s = SystemConfiguration::getInstance();
+            s.party_ = party;
+            s.emp_mode_ = EmpMode::OUTSOURCED;
+        }
+
         // setup for plaintext execution
         OutsourcedMpcManager() {
             emp::backend = new ClearPrinter();

@@ -102,18 +102,9 @@ int main(int argc, char **argv) {
         encodeTable(entry.first);
     }
 
-
-    // TP instance responsible for writing metadata
-    // everything is localhost so it does not matter which one does this
-    if(conf_.inputParty()) {
-
-        OMPCBackend<N> *protocol = (OMPCBackend<N> *) emp::backend;
-        string delta_file = dst_root_ + "/" + "delta";
-        vector<int8_t> delta;
-        delta.resize(sizeof(block));
-        memcpy(delta.data(), &protocol->multi_pack_delta, sizeof(block));
-        DataUtilities::writeFile(delta_file, delta);
-    }
+    OMPCBackend<N> *protocol = (OMPCBackend<N> *) emp::backend;
+    string backend_state_file = dst_root_ + "/backend_state." + to_string(party_);
+    protocol->dump_backend_state(backend_state_file);
 
     // validate it
     if(VALIDATE) {

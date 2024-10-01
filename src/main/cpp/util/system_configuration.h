@@ -61,7 +61,7 @@ namespace vaultdb{
         int party_;
         int input_party_ = 10086;
 
-        bool bp_enabled_ = false;
+        bool bp_enabled_ = true;
         BufferPoolManager & bpm_ = BufferPoolManager::getInstance();
         int num_tables_ = 0;
         int bp_page_size_bits_ = 2048;
@@ -81,8 +81,7 @@ namespace vaultdb{
             bit_packing_ = bp;
             storage_model_ = model;
 
-            if(storage_model_ == StorageModel::PACKED_COLUMN_STORE) {
-                bp_enabled_ = true;
+            if(bp_enabled_) {
                 bpm_.initialize(bp_page_size_bits_, bp_page_cnt_, emp_manager_);
             }
         }
@@ -95,8 +94,7 @@ namespace vaultdb{
             bp_page_size_bits_ = bp_page_size_bits;
             bp_page_cnt_ = bp_page_cnt;
 
-            if(storage_model_ == StorageModel::PACKED_COLUMN_STORE) {
-                bp_enabled_ = true;
+            if(bp_enabled_) {
                 bpm_.initialize(bp_page_size_bits_, bp_page_cnt_, emp_manager_);
             }
         }
