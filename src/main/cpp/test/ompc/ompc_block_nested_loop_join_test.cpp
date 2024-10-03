@@ -135,7 +135,8 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_customer_orders) {
     double querying_runtime = time_from(querying_start_time)/1e6;
     cout << "querying time: " << querying_runtime << "s" << endl;
     Utilities::checkMemoryUtilization(true);
-    size_t sum_memory_swap = Utilities::checkMemoryAndSwapUtilization();
+    cout << "total packing time: " << SystemConfiguration::getInstance().total_packing_time << "s" << endl;
+    cout << "total unpacking time: " << SystemConfiguration::getInstance().total_unpacking_time << "s" << endl;
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
@@ -177,7 +178,6 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders) {
     double querying_runtime = time_from(querying_start_time)/1e6;
     cout << "querying time: " << querying_runtime << "s" << endl;
     Utilities::checkMemoryUtilization(true);
-    size_t sum_memory_swap = Utilities::checkMemoryAndSwapUtilization();
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
@@ -224,7 +224,6 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders_customer) {
     double querying_runtime = time_from(querying_start_time)/1e6;
     cout << "querying time: " << querying_runtime << "s" << endl;
     Utilities::checkMemoryUtilization(true);
-    size_t sum_memory_swap = Utilities::checkMemoryAndSwapUtilization();
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(col_join->getOutputSchema().getFieldCount());
