@@ -1,0 +1,101 @@
+Note: Google Test filter = *.test_tpch_q3_customer_orders
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from OMPCBlockNestedLoopJoinTest
+[ RUN      ] OMPCBlockNestedLoopJoinTest.test_tpch_q3_customer_orders
+Connecting on ports 5434, 6545 as 1
+party 1 connected to TP
+GB connected to 2
+GB connected to 3
+party 1 connected to TP
+GB connected to 2
+GB connected to 3
+initializing cot
+setup finished! takes 1053.81ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 1411121152 bytes, current memory size: 1366745088 bytes.
+1411121152
+EMP mode: outsourced, storage mode: packed wires
+Code version: 2e3a99422b349bb24b3af68ab6c800cd228629b2
+GFlags: --flagfile=	--ctrl_port=65450	--cutoff=5	--empty_db=tpch_empty	--filter=*.test_tpch_q3_customer_orders	--input_party=10086	--input_size=l	--page_cnt=800	--party=1	--port=43443	--storage=wire_packed	--unioned_db=tpch_unioned_600	--unpacked_page_size_bits=2048	--validation=false	--wire_path=wires	--log_level=2	--logfile=	
+
+After setup: [Linux]Peak resident set size: 1465180160 bytes, current memory size: 1465180160 bytes.
+1465180160
+Operator #-1 StoredTableScan ran for 1.033000 ms, gate count: 0 output cardinality: 6000, row width=161
+Operator #-1 StoredTableScan ran for 1.416000 ms, gate count: 0 output cardinality: 600, row width=33
+extension finished! takes 877.137ms to extend lpn
+extension finished! takes 826.062ms to extend lpn
+extension finished! takes 806.815ms to extend lpn
+extension finished! takes 805.819ms to extend lpn
+extension finished! takes 787.135ms to extend lpn
+extension finished! takes 806.435ms to extend lpn
+extension finished! takes 796.527ms to extend lpn
+extension finished! takes 802.933ms to extend lpn
+extension finished! takes 804.708ms to extend lpn
+extension finished! takes 806.128ms to extend lpn
+extension finished! takes 809.153ms to extend lpn
+extension finished! takes 801.676ms to extend lpn
+extension finished! takes 790.956ms to extend lpn
+extension finished! takes 797.88ms to extend lpn
+extension finished! takes 800.32ms to extend lpn
+extension finished! takes 806.434ms to extend lpn
+extension finished! takes 796.707ms to extend lpn
+extension finished! takes 790.834ms to extend lpn
+extension finished! takes 807.831ms to extend lpn
+extension finished! takes 801.076ms to extend lpn
+extension finished! takes 790.695ms to extend lpn
+extension finished! takes 798.869ms to extend lpn
+extension finished! takes 805.518ms to extend lpn
+extension finished! takes 802.06ms to extend lpn
+extension finished! takes 803.925ms to extend lpn
+extension finished! takes 802.169ms to extend lpn
+extension finished! takes 807.423ms to extend lpn
+extension finished! takes 807.795ms to extend lpn
+extension finished! takes 807.123ms to extend lpn
+extension finished! takes 812.197ms to extend lpn
+extension finished! takes 808.096ms to extend lpn
+extension finished! takes 802.816ms to extend lpn
+extension finished! takes 799.939ms to extend lpn
+extension finished! takes 812.584ms to extend lpn
+extension finished! takes 797.089ms to extend lpn
+extension finished! takes 798.43ms to extend lpn
+extension finished! takes 802.095ms to extend lpn
+extension finished! takes 796.041ms to extend lpn
+extension finished! takes 790.949ms to extend lpn
+extension finished! takes 789.132ms to extend lpn
+extension finished! takes 794.1ms to extend lpn
+extension finished! takes 805.909ms to extend lpn
+extension finished! takes 796.23ms to extend lpn
+extension finished! takes 795.162ms to extend lpn
+extension finished! takes 784.917ms to extend lpn
+extension finished! takes 802.155ms to extend lpn
+extension finished! takes 790.888ms to extend lpn
+extension finished! takes 801.903ms to extend lpn
+Operator #-1 BlockNestedLoopJoin ran for 187972.644000 ms, gate count: 241200000 output cardinality: 6000, row width=193
+querying time: 187.975s
+[Linux]Peak resident set size: 1881759744 bytes, current memory size: 1881759744 bytes.
+total tuple comparison time: 72.3755s
+total packing time: 0.003164s
+total unpacking time: 6.33446s
+total disk read bytes: 255552 Bytes, 0.255552 MB
+total disk write bytes: 0 Bytes, 0 MB
+total disk read time: 3.9e-05s
+total disk write time: 0s
+average disk read speed: 6552MB/s
+average disk write speed: 0MB/s
+total runtime (tup comp + (un)packing + disk I/Os): 78s
+party 1 send 1536 bytes to party 2
+party 1 send 1536 bytes to party 3
+party 1 send 56528 bytes to TP 
+total AND gate: 241200000
+total pack call: 3
+total unpack call: 205
+total packed wire: 6144
+total unpacked wire: 419840
+[       OK ] OMPCBlockNestedLoopJoinTest.test_tpch_q3_customer_orders (194677 ms)
+[----------] 1 test from OMPCBlockNestedLoopJoinTest (194677 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (194677 ms total)
+[  PASSED  ] 1 test.
+Buffer pool requests: 32400805 hit rate: 32400600/32400805: 0.999994, pack calls: 0 unpack calls: 205 pinned pages: 0
+
