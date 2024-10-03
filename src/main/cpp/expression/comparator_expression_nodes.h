@@ -34,6 +34,12 @@ public:
     Field<B> call(const QueryTuple<B> & target) const override {
         Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
         Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
+        if(is_same_v<B, emp::Bit>) {
+            time_point<high_resolution_clock> tup_comp_start_time = high_resolution_clock::now();
+            Bit comp = lhs == rhs;
+            SystemConfiguration::getInstance().total_tup_comp_time_ += time_from(tup_comp_start_time) / 1e6;
+            return Field<B>(type_, comp);
+        }
         return Field<B>(type_, lhs == rhs);
 
     }
@@ -41,12 +47,24 @@ public:
     inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
         Field<B> lhs = ExpressionNode<B>::lhs_->call(src, row);
         Field<B> rhs = ExpressionNode<B>::rhs_->call(src, row);
+        if(is_same_v<B, emp::Bit>) {
+            time_point<high_resolution_clock> tup_comp_start_time = high_resolution_clock::now();
+            Bit comp = lhs == rhs;
+            SystemConfiguration::getInstance().total_tup_comp_time_ += time_from(tup_comp_start_time) / 1e6;
+            return Field<B>(type_, comp);
+        }
         return Field<B>(type_, lhs == rhs);
     }
 
     Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
         Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
         Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+        if(is_same_v<B, emp::Bit>) {
+            time_point<high_resolution_clock> tup_comp_start_time = high_resolution_clock::now();
+            Bit comp = l == r;
+            SystemConfiguration::getInstance().total_tup_comp_time_ += time_from(tup_comp_start_time) / 1e6;
+            return Field<B>(type_, comp);
+        }
         return Field<B>(type_, l == r);
     }
 

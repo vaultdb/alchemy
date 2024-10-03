@@ -135,8 +135,22 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_customer_orders) {
     double querying_runtime = time_from(querying_start_time)/1e6;
     cout << "querying time: " << querying_runtime << "s" << endl;
     Utilities::checkMemoryUtilization(true);
-    cout << "total packing time: " << SystemConfiguration::getInstance().total_packing_time << "s" << endl;
-    cout << "total unpacking time: " << SystemConfiguration::getInstance().total_unpacking_time << "s" << endl;
+
+    SystemConfiguration &conf = SystemConfiguration::getInstance();
+    cout << "total tuple comparison time: " << conf.total_tup_comp_time_ << "s" << endl;
+    cout << "total packing time: " << conf.total_packing_time_ << "s" << endl;
+    cout << "total unpacking time: " << conf.total_unpacking_time_ << "s" << endl;
+    cout << "total disk read bytes: " << conf.total_file_read_bytes_  << " Bytes, " << conf.total_file_read_bytes_ / 1e6 << " MB" << endl;
+    cout << "total disk write bytes: " << conf.total_file_write_bytes_ << " Bytes, " << conf.total_file_write_bytes_ / 1e6 << " MB" <<  endl;
+    cout << "total disk read time: " << conf.total_file_read_time_ << "s" << endl;
+    cout << "total disk write time: " << conf.total_file_write_time_ << "s" << endl;
+    size_t average_file_read_speed_in_mbps = conf.total_file_read_time_ != 0 ? conf.total_file_read_bytes_ / conf.total_file_read_time_ / 1e6 : 0;
+    size_t average_file_write_speed_in_mbps = conf.total_file_write_time_ != 0 ? conf.total_file_write_bytes_ / conf.total_file_write_time_ / 1e6 : 0;
+    cout << "average disk read speed: " << average_file_read_speed_in_mbps << "MB/s" << endl;
+    cout << "average disk write speed: " << average_file_write_speed_in_mbps << "MB/s" << endl;
+
+    size_t total_runtime = conf.total_tup_comp_time_ + conf.total_packing_time_ + conf.total_unpacking_time_ + conf.total_file_read_time_ + conf.total_file_write_time_;
+    cout << "total runtime (tup comp + (un)packing + disk I/Os): " << total_runtime << "s" << endl;
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
@@ -178,6 +192,22 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders) {
     double querying_runtime = time_from(querying_start_time)/1e6;
     cout << "querying time: " << querying_runtime << "s" << endl;
     Utilities::checkMemoryUtilization(true);
+
+    SystemConfiguration &conf = SystemConfiguration::getInstance();
+    cout << "total tuple comparison time: " << conf.total_tup_comp_time_ << "s" << endl;
+    cout << "total packing time: " << conf.total_packing_time_ << "s" << endl;
+    cout << "total unpacking time: " << conf.total_unpacking_time_ << "s" << endl;
+    cout << "total disk read bytes: " << conf.total_file_read_bytes_  << " Bytes, " << conf.total_file_read_bytes_ / 1e6 << " MB" << endl;
+    cout << "total disk write bytes: " << conf.total_file_write_bytes_ << " Bytes, " << conf.total_file_write_bytes_ / 1e6 << " MB" <<  endl;
+    cout << "total disk read time: " << conf.total_file_read_time_ << "s" << endl;
+    cout << "total disk write time: " << conf.total_file_write_time_ << "s" << endl;
+    size_t average_file_read_speed_in_mbps = conf.total_file_read_time_ != 0 ? conf.total_file_read_bytes_ / conf.total_file_read_time_ / 1e6 : 0;
+    size_t average_file_write_speed_in_mbps = conf.total_file_write_time_ != 0 ? conf.total_file_write_bytes_ / conf.total_file_write_time_ / 1e6 : 0;
+    cout << "average disk read speed: " << average_file_read_speed_in_mbps << "MB/s" << endl;
+    cout << "average disk write speed: " << average_file_write_speed_in_mbps << "MB/s" << endl;
+
+    size_t total_runtime = conf.total_tup_comp_time_ + conf.total_packing_time_ + conf.total_unpacking_time_ + conf.total_file_read_time_ + conf.total_file_write_time_;
+    cout << "total runtime (tup comp + (un)packing + disk I/Os): " << total_runtime << "s" << endl;
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
@@ -224,6 +254,22 @@ TEST_F(OMPCBlockNestedLoopJoinTest, test_tpch_q3_lineitem_orders_customer) {
     double querying_runtime = time_from(querying_start_time)/1e6;
     cout << "querying time: " << querying_runtime << "s" << endl;
     Utilities::checkMemoryUtilization(true);
+
+    SystemConfiguration &conf = SystemConfiguration::getInstance();
+    cout << "total tuple comparison time: " << conf.total_tup_comp_time_ << "s" << endl;
+    cout << "total packing time: " << conf.total_packing_time_ << "s" << endl;
+    cout << "total unpacking time: " << conf.total_unpacking_time_ << "s" << endl;
+    cout << "total disk read bytes: " << conf.total_file_read_bytes_  << " Bytes, " << conf.total_file_read_bytes_ / 1e6 << " MB" << endl;
+    cout << "total disk write bytes: " << conf.total_file_write_bytes_ << " Bytes, " << conf.total_file_write_bytes_ / 1e6 << " MB" <<  endl;
+    cout << "total disk read time: " << conf.total_file_read_time_ << "s" << endl;
+    cout << "total disk write time: " << conf.total_file_write_time_ << "s" << endl;
+    size_t average_file_read_speed_in_mbps = conf.total_file_read_time_ != 0 ? conf.total_file_read_bytes_ / conf.total_file_read_time_ / 1e6 : 0;
+    size_t average_file_write_speed_in_mbps = conf.total_file_write_time_ != 0 ? conf.total_file_write_bytes_ / conf.total_file_write_time_ / 1e6 : 0;
+    cout << "average disk read speed: " << average_file_read_speed_in_mbps << "MB/s" << endl;
+    cout << "average disk write speed: " << average_file_write_speed_in_mbps << "MB/s" << endl;
+
+    size_t total_runtime = conf.total_tup_comp_time_ + conf.total_packing_time_ + conf.total_unpacking_time_ + conf.total_file_read_time_ + conf.total_file_write_time_;
+    cout << "total runtime (tup comp + (un)packing + disk I/Os): " << total_runtime << "s" << endl;
 
     if(FLAGS_validation) {
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(col_join->getOutputSchema().getFieldCount());

@@ -469,7 +469,10 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharesForBufferedColumnTable(const 
                 PageId pid(buffered_table->table_id_, i, j);
                 std::vector<emp::Bit> secret_shares = buffered_table->readSecretSharedPageFromDisk(pid, md.tuple_cnt_, md.schema_, col_ordinals.empty() ? i : col_ordinals[i], src_data_path);
                 std::vector<int8_t> write_buffer = buffered_table->convertEMPBitToWriteBuffer(secret_shares);
+                time_point<high_resolution_clock> write_start_time = high_resolution_clock::now();
                 fwrite(write_buffer.data(), 1, write_buffer.size(), fp);
+                conf.total_file_write_time_ += time_from(write_start_time) / 1e6;
+                conf.total_file_write_bytes_ += write_buffer.size();
             }
         }
 
@@ -480,7 +483,10 @@ QueryTable<B> *StoredTableScan<B>::readSecretSharesForBufferedColumnTable(const 
             std::vector<emp::Bit> secret_shares = buffered_table->readSecretSharedPageFromDisk(pid, md.tuple_cnt_, md.schema_, -1, src_data_path);
 
             std::vector<int8_t> write_buffer = buffered_table->convertEMPBitToWriteBuffer(secret_shares);
+            time_point<high_resolution_clock> write_start_time = high_resolution_clock::now();
             fwrite(write_buffer.data(), 1, write_buffer.size(), fp);
+            conf.total_file_write_time_ += time_from(write_start_time) / 1e6;
+            conf.total_file_write_bytes_ += write_buffer.size();
         }
         fclose(fp);
     }

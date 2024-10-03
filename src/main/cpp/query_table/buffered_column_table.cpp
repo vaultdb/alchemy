@@ -40,19 +40,32 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharedPageFromDisk(const Pa
         AuthShare<emp::N> cur_auth_share;
 
         if(!this->conf_.inputParty()) {
+            time_point<high_resolution_clock> read_start_time1 = high_resolution_clock::now();
             fread((int8_t *) &cur_auth_share.mac, 1, emp::N * sizeof(emp::block), fp);
+            this->conf_.total_file_read_time_ += time_from(read_start_time1) / 1e6;
+            this->conf_.total_file_read_bytes_ += emp::N * sizeof(emp::block);
+
+            time_point<high_resolution_clock> read_start_time2 = high_resolution_clock::now();
             fread((int8_t *) &cur_auth_share.key, 1, emp::N * sizeof(emp::block), fp);
+            this->conf_.total_file_read_time_ += time_from(read_start_time2) / 1e6;
+            this->conf_.total_file_read_bytes_ += emp::N * sizeof(emp::block);
         }
 
         int8_t cur_lambda = 0;
+        time_point<high_resolution_clock> read_start_time1 = high_resolution_clock::now();
         fread((int8_t *) &cur_lambda, 1, 1, fp);
+        this->conf_.total_file_read_time_ += time_from(read_start_time1) / 1e6;
+        this->conf_.total_file_read_bytes_ += 1;
         cur_auth_share.lambda = ((cur_lambda & 1) != 0);
 
         auth_shares[i] = cur_auth_share;
 
         if(this->conf_.party_ == 1) {
             int8_t cur_masked_value = 0;
+            time_point<high_resolution_clock> read_start_time2 = high_resolution_clock::now();
             fread((int8_t *) &cur_masked_value, 1, 1, fp);
+            this->conf_.total_file_read_time_ += time_from(read_start_time2) / 1e6;
+            this->conf_.total_file_read_bytes_ += 1;
             masked_values[i] = ((cur_masked_value & 1) != 0);
         }
     }
@@ -100,19 +113,32 @@ std::vector<emp::Bit> BufferedColumnTable::readSecretSharedPageFromDisk(const Pa
         AuthShare<emp::N> cur_auth_share;
 
         if(!this->conf_.inputParty()) {
+            time_point<high_resolution_clock> read_start_time1 = high_resolution_clock::now();
             fread((int8_t *) &cur_auth_share.mac, 1, emp::N * sizeof(emp::block), fp);
+            this->conf_.total_file_read_time_ += time_from(read_start_time1) / 1e6;
+            this->conf_.total_file_read_bytes_ += emp::N * sizeof(emp::block);
+
+            time_point<high_resolution_clock> read_start_time2 = high_resolution_clock::now();
             fread((int8_t *) &cur_auth_share.key, 1, emp::N * sizeof(emp::block), fp);
+            this->conf_.total_file_read_time_ += time_from(read_start_time2) / 1e6;
+            this->conf_.total_file_read_bytes_ += emp::N * sizeof(emp::block);
         }
 
         int8_t cur_lambda = 0;
+        time_point<high_resolution_clock> read_start_time1 = high_resolution_clock::now();
         fread((int8_t *) &cur_lambda, 1, 1, fp);
+        this->conf_.total_file_read_time_ += time_from(read_start_time1) / 1e6;
+        this->conf_.total_file_read_bytes_ += 1;
         cur_auth_share.lambda = ((cur_lambda & 1) != 0);
 
         auth_shares[i] = cur_auth_share;
 
         if(this->conf_.party_ == 1) {
             int8_t cur_masked_value = 0;
+            time_point<high_resolution_clock> read_start_time2 = high_resolution_clock::now();
             fread((int8_t *) &cur_masked_value, 1, 1, fp);
+            this->conf_.total_file_read_time_ += time_from(read_start_time2) / 1e6;
+            this->conf_.total_file_read_bytes_ += 1;
             masked_values[i] = ((cur_masked_value & 1) != 0);
         }
     }
@@ -165,7 +191,10 @@ void BufferedColumnTable::writePageToDisk(const PageId &pid, const emp::Bit *bit
     int write_offset = this->serialized_col_bytes_offsets_on_disk_[col] + (int64_t) (pid.page_idx_ * this->fields_per_page_[col] * this->schema_.getField(col).size() * current_emp_bit_size_on_disk_);
     fseek(fp, write_offset, SEEK_SET);
 
+    time_point<high_resolution_clock> write_start_time = high_resolution_clock::now();
     fwrite(write_buffer.data(), 1, write_buffer.size(), fp);
+    this->conf_.total_file_write_time_ += time_from(write_start_time) / 1e6;
+    this->conf_.total_file_write_bytes_ += write_buffer.size();
     fclose(fp);
 }
 

@@ -204,14 +204,14 @@ namespace  vaultdb {
         void pack(Bit *src, Bit *dst, const int & bit_cnt)  override {
             time_point<high_resolution_clock> packing_start_time = high_resolution_clock::now();
             protocol_->pack(src, *((OMPCPackedWire *) dst), bit_cnt);
-            system_conf_.total_packing_time += time_from(packing_start_time) / 1e6;
+            system_conf_.total_packing_time_ += time_from(packing_start_time) / 1e6;
 
         }
 
         void unpack(Bit *src, Bit *dst, const int & bit_cnt) override {
             time_point<high_resolution_clock> unpacking_start_time = high_resolution_clock::now();
             protocol_->unpack(dst, *((OMPCPackedWire *) src), bit_cnt);
-            system_conf_.total_unpacking_time += time_from(unpacking_start_time) / 1e6;
+            system_conf_.total_unpacking_time_ += time_from(unpacking_start_time) / 1e6;
         }
 
         void sendPublic(const int & to_send) override {
