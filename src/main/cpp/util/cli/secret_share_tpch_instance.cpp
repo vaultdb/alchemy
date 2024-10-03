@@ -52,13 +52,16 @@ void encodeTable(string table_name) {
     // Serialize SecureTable
     vector<int8_t> serialized = secure_table->serialize();
 
-    int dst_bit_cnt = secure_schema.size() * md.tuple_cnt_;
+    size_t dst_bit_cnt = secure_schema.size() * md.tuple_cnt_;
 
     // Memcpy column data into Integer (array of emp::Bits)
     Integer dst_int(dst_bit_cnt, 0L, emp::PUBLIC);
-    memcpy(dst_int.bits.data(), serialized.data(), dst_bit_cnt * empBitSizesInPhysicalBytes::bit_ram_size_);
+    size_t copy_size = dst_bit_cnt * empBitSizesInPhysicalBytes::bit_ram_size_;
+    memcpy(dst_int.bits.data(), serialized.data(), copy_size);
 
-    vector<int8_t> write_buffer(dst_bit_cnt * (party_ == 1 ? empBitSizesInPhysicalBytes::evaluator_disk_size_ : (party_ == 10086 ? 1 : empBitSizesInPhysicalBytes::garbler_disk_size_)), 0);
+    int current_bit_size_on_disk = party_ == 1 ? empBitSizesInPhysicalBytes::evaluator_disk_size_ : (party_ == 10086 ? 1 : empBitSizesInPhysicalBytes::garbler_disk_size_);
+    size_t write_size_bytes = dst_bit_cnt * current_bit_size_on_disk;
+    vector<int8_t> write_buffer(write_size_bytes, 0);
     int8_t *write_cursor = write_buffer.data();
 
     // Serialize bit by bit to write buffer

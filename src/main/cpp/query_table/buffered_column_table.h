@@ -351,7 +351,7 @@ namespace vaultdb {
             if (std::filesystem::exists(this->file_path_)) {
                 std::filesystem::remove_all(this->secret_shares_path_);
 
-                if(std::filesystem::is_empty(this->file_path_)) {
+                if(std::filesystem::exists(this->file_path_) && std::filesystem::is_empty(this->file_path_)) {
                     std::filesystem::remove_all(this->file_path_);
                 }
             }

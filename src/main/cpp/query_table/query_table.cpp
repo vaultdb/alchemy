@@ -22,7 +22,7 @@ using namespace vaultdb;
 // only tested in PUBLIC or XOR mode
 template <typename B>
 vector<int8_t> QueryTable<B>::serialize() {
-    int dst_size = tuple_size_bytes_ * tuple_cnt_;
+    size_t dst_size = tuple_size_bytes_ * tuple_cnt_;
     vector<int8_t> dst(dst_size);
     if(dst_size == 0) return dst;
 
