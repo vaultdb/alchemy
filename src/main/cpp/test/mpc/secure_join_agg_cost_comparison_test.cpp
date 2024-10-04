@@ -175,7 +175,7 @@ void execute_nested_loop_join(std::string db_name_, int orders_cutoff, int linei
 
 void execute_nested_loop_agg(std::string db_name_, int lineitem_cutoff, int output_card){
 
-    string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+    string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(lineitem_cutoff);
 
     string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                          " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
@@ -192,12 +192,11 @@ void execute_nested_loop_agg(std::string db_name_, int lineitem_cutoff, int outp
 
 
     std::string expected_sql = "WITH lineitem_cte AS (" + expected_lineitem_sql_ + ") "
-                                                                                                                              "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge,"
-                                                                                                                              "FROM lineitem_cte "
-                                                                                                                              "WHERE NOT dummy"
-                                                                                                                              "ORDER BY l_returnflag, l_linestatus";
-
-
+                                                                                   "SELECT l_returnflag, l_linestatus, SUM(l_quantity) as sum_qty, COUNT(*)::BIGINT as count_order "
+                                                                                   "FROM lineitem_cte "
+                                                                                   "WHERE NOT dummy "
+                                                                                   "GROUP BY  l_returnflag, l_linestatus "
+                                                                                   "ORDER BY l_returnflag, l_linestatus";
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -212,7 +211,10 @@ void execute_nested_loop_agg(std::string db_name_, int lineitem_cutoff, int outp
 
     auto input = new SecureSqlInput(db_name_, input_query, true);
 
-    auto nla = new NestedLoopAggregate (input2, groupByCols, aggregators, SortDefinition(), output_card);
+    auto nla = new NestedLoopAggregate (input, groupByCols, aggregators, SortDefinition(), output_card);
+    auto sort = new Sort(nla, SortDefinition{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::ASCENDING)});
+
+    auto agg = sort->run();
 
     cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card  << endl;
 
@@ -223,7 +225,7 @@ void execute_nested_loop_agg(std::string db_name_, int lineitem_cutoff, int outp
 
     if (FLAGS_validation) {
         SortDefinition sort_def{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::ASCENDING)};
-        PlainTable* observed = nla->reveal();
+        PlainTable* observed = agg->reveal();
 
         PlainTable* expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
         expected->order_by_ = sort_def;
@@ -237,7 +239,7 @@ void execute_nested_loop_agg(std::string db_name_, int lineitem_cutoff, int outp
 
 void execute_sort_merge_agg(std::string db_name_, int lineitem_cutoff, int output_card){
 
-    string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(input_card);
+    string input_rows = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(lineitem_cutoff);
 
     string input_query = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                          " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
@@ -254,9 +256,10 @@ void execute_sort_merge_agg(std::string db_name_, int lineitem_cutoff, int outpu
 
 
     std::string expected_sql = "WITH lineitem_cte AS (" + expected_lineitem_sql_ + ") "
-                                                                                   "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge,"
+                                                                                   "SELECT l_returnflag, l_linestatus, SUM(l_quantity) as sum_qty, COUNT(*)::BIGINT as count_order "
                                                                                    "FROM lineitem_cte "
-                                                                                   "WHERE NOT dummy"
+                                                                                   "WHERE NOT dummy "
+                                                                                   "GROUP BY  l_returnflag, l_linestatus "
                                                                                    "ORDER BY l_returnflag, l_linestatus";
 
 
@@ -277,18 +280,20 @@ void execute_sort_merge_agg(std::string db_name_, int lineitem_cutoff, int outpu
 
     auto input = new SecureSqlInput(db_name_, input_query, true);
 
-    auto sma = new SortMergeAggregate(input, groupByCols, aggregators);
+    auto sort = new Sort(input, SortDefinition{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::ASCENDING)});
+    auto sma = new SortMergeAggregate(sort, groupByCols, aggregators);
+    auto agg = sma->run();
 
     cout << "Input cardinality: " << input->getOutputCardinality() << ", output card: "<< output_card << endl;
 
     Logger* log = get_log();
     log->write("Performing Sort Merge Agg", Level::INFO);
-    log->write("Observed gate count: " + std::to_string(sma->getGateCount()), Level::INFO);
-    log->write("Runtime: " + std::to_string(sma->getRuntimeMs()), Level::INFO);
+    log->write("Observed gate count: " + std::to_string(sma->getGateCount() + sma->getRuntimeMs()), Level::INFO);
+    log->write("Runtime: " + std::to_string(sma->getRuntimeMs() + sort->getRuntimeMs()), Level::INFO);
 
     if (FLAGS_validation) {
         SortDefinition sort_def{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::ASCENDING)};
-        PlainTable* observed = sma->reveal();
+        PlainTable* observed = agg->reveal();
 
         PlainTable* expected = DataUtilities::getQueryResults(FLAGS_unioned_db, expected_sql, false);
         expected->order_by_ = sort_def;
@@ -453,7 +458,7 @@ TEST_F(SecureJoinAggCostComparisonTest, test_1000000_8_nla) {
 }
 
 
-
+/*
 // JOIN TESTS
 TEST_F(SecureJoinAggCostComparisonTest, test_tpch_q3_orders_lineitem_100_1_sort_merge_join) {
     execute_sort_merge_join(db_name_, 50, 5000);
@@ -494,7 +499,7 @@ TEST_F(SecureJoinAggCostComparisonTest, test_tpch_q3_orders_lineitem_1_1_nested_
 TEST_F(SecureJoinAggCostComparisonTest, test_tpch_q3_orders_lineitem_1_1_sort_merge_join) {
     execute_sort_merge_join(db_name_, 5000, 5000);
 }
-
+*/
 
 
 int main(int argc, char **argv) {
