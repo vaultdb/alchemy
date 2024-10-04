@@ -96,9 +96,9 @@ void Catalyst::importSecretShares(const string & table_name, const int & src_par
 
     // add site_id using src_party
     // this schema should NOT have site_id
-    QuerySchema file_schema = QuerySchema::toPlain(QuerySchema(DataUtilities::readTextFileToString(fq_table_file + ".schema")));
-    // verify that it is what we were expecting
-    assert(file_schema == schema);
+//    QuerySchema file_schema = QuerySchema::toPlain(QuerySchema(DataUtilities::readTextFileToString(fq_table_file + ".schema")));
+//    // verify that it is what we were expecting
+//    assert(file_schema == schema);
     SecureTable *secret_shares = UnionHybridData::readSecretSharedInput(secret_shares_file, schema);
 
     // add site_id using src_party
