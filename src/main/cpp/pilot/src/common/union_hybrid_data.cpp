@@ -58,7 +58,7 @@ UnionHybridData::readLocalInput(const string &localInputFile, const QuerySchema 
 // plaintext input schema, setup for XOR-shared data
 SecureTable *UnionHybridData::readSecretSharedInput(const string &secret_shares_input, const QuerySchema &plain_schema) {
     QuerySchema secure_schema = QuerySchema::toSecure(plain_schema);
-
+    cout << "Reading " << secret_shares_input << " with schema: " << secure_schema << endl;
     // read in binary and then xor it with other side to secret share it.
     std::vector<int8_t> src_data = DataUtilities::readFile(secret_shares_input);
     size_t src_byte_cnt = src_data.size();
@@ -116,12 +116,15 @@ SecureTable *UnionHybridData::readSecretSharedInput(const string &secret_shares_
         manager->feed(bob.bits.data(), BOB, dst_bools, dst_bit_cnt);
 
     }
+    cout << "Done feeding secret shares." << endl;
 
     Integer shared_data = alice ^ bob;
+    cout << "Done xoring secret shares." << endl;
     // remove padding
    //    shared_data.bits.resize(dst_bit_cnt);
 
     SecureTable *shared_table = QueryTable<Bit>::deserialize(secure_schema, shared_data.bits);
+    cout << "Done deserializing secret shares." << endl;
 
      delete [] dst_bools;
      return shared_table;
