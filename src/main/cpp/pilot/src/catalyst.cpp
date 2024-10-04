@@ -8,13 +8,16 @@
 #include "data/csv_reader.h"
 #include "parser/plan_parser.h"
 
-#define TESTBED 1
+#define TESTBED 0
 #define EXPECTED_RESULTS_PATH "pilot/study/phame/expected"
 
 using namespace catalyst;
 
 Catalyst::Catalyst(int party, const std::string json_config_filename)  {
+    cout << "Parsing study configuration from " << json_config_filename << endl;
     StudyParser parser(json_config_filename);
+    cout << "Done parsing study configuration." << endl;
+
     assert(parser.protocol_ == "sh2pc");
     auto emp_manager = new SH2PCManager(parser.alice_host_, party, parser.port_);
     study_ = parser.study_;
@@ -30,6 +33,7 @@ void Catalyst::loadStudyData() {
     for(auto &input_table : study_.input_tables_) {
         for(auto &contributor : input_table.data_contributors_) {
             importSecretShares(input_table.name_, contributor);
+            cout << "Loaded secret shares for " << input_table.name_ << " from party " << contributor << endl;
         }
     }
     data_loaded_ = true;
@@ -73,6 +77,7 @@ void Catalyst::importSecretShares(const string & table_name, const int & src_par
     // read secret shares from file
     // import into table_manager
     string fq_table_file = study_.secret_shares_path_ + "/" + std::to_string(src_party) + "/" + table_name;
+    cout << "Ingesting table: " << fq_table_file << endl;
     SystemConfiguration & s = SystemConfiguration::getInstance();
     TableManager & table_manager = TableManager::getInstance();
 
