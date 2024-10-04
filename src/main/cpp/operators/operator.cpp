@@ -75,9 +75,9 @@ QueryTable<B> *Operator<B>::run() {
             log->write("Estimated cost for " + this->toString() + " : " + std::to_string(estimated_gates) +
                     ", Observed gates: " + std::to_string(gate_cnt_) +
                     ", Error rate(%) : " + std::to_string(relative_error), Level::DEBUG);
-            if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
-                log->write("Buffer pool statistics: " + SystemConfiguration::getInstance().bpm_.stats(), Level::DEBUG);
-            }
+//            if(SystemConfiguration::getInstance().storageModel() == StorageModel::PACKED_COLUMN_STORE) {
+//                log->write("Buffer pool statistics: " + SystemConfiguration::getInstance().bpm_.stats(), Level::DEBUG);
+//            }
         }
     }
 

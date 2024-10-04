@@ -120,6 +120,10 @@ public:
     ~PackedColumnTable() {
 
     }
+
+    std::vector<emp::Bit> getPage(const PageId &pid) override {
+        return std::vector<emp::Bit>();
+    }
 };
 }
 
