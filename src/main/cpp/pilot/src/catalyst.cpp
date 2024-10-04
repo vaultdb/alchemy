@@ -26,6 +26,8 @@ Catalyst::Catalyst(int party, const std::string json_config_filename)  {
     s.emp_manager_ = emp_manager;
     BitPackingMetadata md; // empty set
     s.initialize("", md, StorageModel::COLUMN_STORE);
+    cout << "Parsed study: "  << parser.study_.toString() << endl;
+
 }
 
 void Catalyst::loadStudyData() {
