@@ -1,0 +1,789 @@
+[==========] Running 36 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 36 tests from SecureJoinAggCostComparisonTest
+[ RUN      ] SecureJoinAggCostComparisonTest.test_10_2_sma
+Connecting to 127.0.0.1 on ports 43455, 65470 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65471	--filter=*	--party=1	--port=43456	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 0.245000 ms, gate count: 0 output cardinality: 10, row width=177
+Operator #-1 Sort ran for 0.635000 ms, gate count: 6404 output cardinality: 10, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 0.649000 ms, gate count: 9904 output cardinality: 10, row width=53
+SMA per_row_cost :  1163
+SMA per_row_cost :  1163
+Input cardinality: 10, output card: 2
+Performing Sort Merge Agg
+Observed gate count: 9904.649000
+Runtime: 1.284000
+[       OK ] SecureJoinAggCostComparisonTest.test_10_2_sma (251 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_10_2_nla
+Connecting to 127.0.0.1 on ports 43456, 65471 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65472	--filter=*	--party=1	--port=43457	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 0.202000 ms, gate count: 0 output cardinality: 10, row width=177
+Operator #-1 NestedLoopAggregate ran for 1.374000 ms, gate count: 22180 output cardinality: 2, row width=53
+NLA per_row_cost :  1200
+NLA per_row_cost :  1200
+Operator #-1 Sort ran for 0.085000 ms, gate count: 72 output cardinality: 2, row width=53
+compare and swap cost 75
+compare and swap cost 75
+Input cardinality: 10, output card: 2
+Performing Nested Loop Agg
+Observed gate count: 22180
+Runtime: 1.374000
+Failed to match on tuple count 3 vs 2
+/home/vaultdb/vaultdb-core-cost-comparison/src/main/cpp/test/mpc/secure_join_agg_cost_comparison_test.cpp:233: Failure
+Expected equality of these values:
+  *expected
+    Which is: (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 int64 count_order) isEncrypted? false, order by: {<0, ASC> , <1, ASC> }
+(A, F, 27.000000, 1)
+(N, O, 183.000000, 7)
+(R, F, 94.000000, 2)
+
+  *observed
+    Which is: (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 int64 count_order) isEncrypted? false, order by: {<0, ASC> , <1, ASC> }
+(N, O, 183.000000, 7)
+(R, F, 94.000000, 2)
+
+[  FAILED  ] SecureJoinAggCostComparisonTest.test_10_2_nla (246 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_10_4_sma
+Connecting to 127.0.0.1 on ports 43457, 65472 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65473	--filter=*	--party=1	--port=43458	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 0.217000 ms, gate count: 0 output cardinality: 10, row width=177
+Operator #-1 Sort ran for 0.552000 ms, gate count: 6404 output cardinality: 10, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 0.654000 ms, gate count: 9904 output cardinality: 10, row width=53
+SMA per_row_cost :  1163
+SMA per_row_cost :  1163
+Input cardinality: 10, output card: 4
+Performing Sort Merge Agg
+Observed gate count: 9904.654000
+Runtime: 1.206000
+[       OK ] SecureJoinAggCostComparisonTest.test_10_4_sma (249 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_10_4_nla
+Connecting to 127.0.0.1 on ports 43458, 65473 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65474	--filter=*	--party=1	--port=43459	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 0.203000 ms, gate count: 0 output cardinality: 10, row width=177
+Operator #-1 NestedLoopAggregate ran for 3.640000 ms, gate count: 44360 output cardinality: 4, row width=53
+NLA per_row_cost :  1200
+NLA per_row_cost :  1200
+Operator #-1 Sort ran for 0.126000 ms, gate count: 420 output cardinality: 4, row width=53
+compare and swap cost 75
+compare and swap cost 75
+Input cardinality: 10, output card: 4
+Performing Nested Loop Agg
+Observed gate count: 44360
+Runtime: 3.640000
+[       OK ] SecureJoinAggCostComparisonTest.test_10_4_nla (251 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_10_8_sma
+Connecting to 127.0.0.1 on ports 43459, 65474 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65475	--filter=*	--party=1	--port=43460	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 0.206000 ms, gate count: 0 output cardinality: 10, row width=177
+Operator #-1 Sort ran for 0.566000 ms, gate count: 6404 output cardinality: 10, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 0.611000 ms, gate count: 9904 output cardinality: 10, row width=53
+SMA per_row_cost :  1163
+SMA per_row_cost :  1163
+Input cardinality: 10, output card: 8
+Performing Sort Merge Agg
+Observed gate count: 9904.611000
+Runtime: 1.177000
+[       OK ] SecureJoinAggCostComparisonTest.test_10_8_sma (248 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_10_8_nla
+Connecting to 127.0.0.1 on ports 43460, 65475 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65476	--filter=*	--party=1	--port=43461	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 0.213000 ms, gate count: 0 output cardinality: 10, row width=177
+Operator #-1 NestedLoopAggregate ran for 7.174000 ms, gate count: 88720 output cardinality: 8, row width=53
+NLA per_row_cost :  1200
+NLA per_row_cost :  1200
+Operator #-1 Sort ran for 0.223000 ms, gate count: 1680 output cardinality: 8, row width=53
+compare and swap cost 75
+compare and swap cost 75
+Input cardinality: 10, output card: 8
+Performing Nested Loop Agg
+Observed gate count: 88720
+Runtime: 7.174000
+[       OK ] SecureJoinAggCostComparisonTest.test_10_8_nla (255 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_100_2_sma
+Connecting to 127.0.0.1 on ports 43461, 65476 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65477	--filter=*	--party=1	--port=43462	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 1.003000 ms, gate count: 0 output cardinality: 100, row width=177
+Operator #-1 Sort ran for 18.848000 ms, gate count: 231636 output cardinality: 100, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 7.718000 ms, gate count: 109232 output cardinality: 100, row width=56
+SMA per_row_cost :  1169
+SMA per_row_cost :  1169
+Input cardinality: 100, output card: 2
+Performing Sort Merge Agg
+Observed gate count: 109239.718000
+Runtime: 26.566000
+[       OK ] SecureJoinAggCostComparisonTest.test_100_2_sma (285 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_100_2_nla
+Connecting to 127.0.0.1 on ports 43462, 65477 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65478	--filter=*	--party=1	--port=43463	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 0.854000 ms, gate count: 0 output cardinality: 100, row width=177
+Operator #-1 NestedLoopAggregate ran for 14.283000 ms, gate count: 223600 output cardinality: 2, row width=56
+NLA per_row_cost :  1209
+NLA per_row_cost :  1209
+Operator #-1 Sort ran for 0.090000 ms, gate count: 76 output cardinality: 2, row width=56
+compare and swap cost 78
+compare and swap cost 78
+Input cardinality: 100, output card: 2
+Performing Nested Loop Agg
+Observed gate count: 223600
+Runtime: 14.283000
+Failed to match on tuple count 3 vs 2
+/home/vaultdb/vaultdb-core-cost-comparison/src/main/cpp/test/mpc/secure_join_agg_cost_comparison_test.cpp:233: Failure
+Expected equality of these values:
+  *expected
+    Which is: (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 int64 count_order) isEncrypted? false, order by: {<0, ASC> , <1, ASC> }
+(A, F, 665.000000, 25)
+(N, O, 1447.000000, 54)
+(R, F, 409.000000, 16)
+
+  *observed
+    Which is: (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 int64 count_order) isEncrypted? false, order by: {<0, ASC> , <1, ASC> }
+(A, F, 665.000000, 25)
+(N, O, 1447.000000, 54)
+
+[  FAILED  ] SecureJoinAggCostComparisonTest.test_100_2_nla (262 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_100_4_sma
+Connecting to 127.0.0.1 on ports 43463, 65478 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65479	--filter=*	--party=1	--port=43464	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 0.893000 ms, gate count: 0 output cardinality: 100, row width=177
+Operator #-1 Sort ran for 21.464000 ms, gate count: 231636 output cardinality: 100, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 9.023000 ms, gate count: 109232 output cardinality: 100, row width=56
+SMA per_row_cost :  1169
+SMA per_row_cost :  1169
+Input cardinality: 100, output card: 4
+Performing Sort Merge Agg
+Observed gate count: 109241.023000
+Runtime: 30.487000
+[       OK ] SecureJoinAggCostComparisonTest.test_100_4_sma (290 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_100_4_nla
+Connecting to 127.0.0.1 on ports 43464, 65479 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65480	--filter=*	--party=1	--port=43465	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 0.875000 ms, gate count: 0 output cardinality: 100, row width=177
+Operator #-1 NestedLoopAggregate ran for 29.763000 ms, gate count: 447200 output cardinality: 4, row width=56
+NLA per_row_cost :  1209
+NLA per_row_cost :  1209
+Operator #-1 Sort ran for 0.145000 ms, gate count: 440 output cardinality: 4, row width=56
+compare and swap cost 78
+compare and swap cost 78
+Input cardinality: 100, output card: 4
+Performing Nested Loop Agg
+Observed gate count: 447200
+Runtime: 29.763000
+[       OK ] SecureJoinAggCostComparisonTest.test_100_4_nla (279 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_100_8_sma
+Connecting to 127.0.0.1 on ports 43465, 65480 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65481	--filter=*	--party=1	--port=43466	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 0.881000 ms, gate count: 0 output cardinality: 100, row width=177
+Operator #-1 Sort ran for 20.157000 ms, gate count: 231636 output cardinality: 100, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 8.654000 ms, gate count: 109232 output cardinality: 100, row width=56
+SMA per_row_cost :  1169
+SMA per_row_cost :  1169
+Input cardinality: 100, output card: 8
+Performing Sort Merge Agg
+Observed gate count: 109240.654000
+Runtime: 28.811000
+[       OK ] SecureJoinAggCostComparisonTest.test_100_8_sma (286 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_100_8_nla
+Connecting to 127.0.0.1 on ports 43466, 65481 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65482	--filter=*	--party=1	--port=43467	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 0.900000 ms, gate count: 0 output cardinality: 100, row width=177
+Operator #-1 NestedLoopAggregate ran for 65.899000 ms, gate count: 894400 output cardinality: 8, row width=56
+NLA per_row_cost :  1209
+NLA per_row_cost :  1209
+Operator #-1 Sort ran for 0.284000 ms, gate count: 1752 output cardinality: 8, row width=56
+compare and swap cost 78
+compare and swap cost 78
+Input cardinality: 100, output card: 8
+Performing Nested Loop Agg
+Observed gate count: 894400
+Runtime: 65.899000
+[       OK ] SecureJoinAggCostComparisonTest.test_100_8_nla (314 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_1000_2_sma
+Connecting to 127.0.0.1 on ports 43467, 65482 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65483	--filter=*	--party=1	--port=43468	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 9.665000 ms, gate count: 0 output cardinality: 1000, row width=177
+Operator #-1 Sort ran for 392.467000 ms, gate count: 5234896 output cardinality: 1000, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 73.086000 ms, gate count: 1107924 output cardinality: 1000, row width=59
+SMA per_row_cost :  1175
+SMA per_row_cost :  1175
+Input cardinality: 1000, output card: 2
+Performing Sort Merge Agg
+Observed gate count: 1107997.086000
+Runtime: 465.553000
+[       OK ] SecureJoinAggCostComparisonTest.test_1000_2_sma (922 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_1000_2_nla
+Connecting to 127.0.0.1 on ports 43468, 65483 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65484	--filter=*	--party=1	--port=43469	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 8.805000 ms, gate count: 0 output cardinality: 1000, row width=177
+Operator #-1 NestedLoopAggregate ran for 164.839000 ms, gate count: 2254000 output cardinality: 2, row width=59
+NLA per_row_cost :  1218
+NLA per_row_cost :  1218
+Operator #-1 Sort ran for 0.101000 ms, gate count: 76 output cardinality: 2, row width=59
+compare and swap cost 81
+compare and swap cost 81
+Input cardinality: 1000, output card: 2
+Performing Nested Loop Agg
+Observed gate count: 2254000
+Runtime: 164.839000
+Failed to match on tuple count 4 vs 2
+/home/vaultdb/vaultdb-core-cost-comparison/src/main/cpp/test/mpc/secure_join_agg_cost_comparison_test.cpp:233: Failure
+Expected equality of these values:
+  *expected
+    Which is: (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 int64 count_order) isEncrypted? false, order by: {<0, ASC> , <1, ASC> }
+(A, F, 6536.000000, 258)
+(N, F, 299.000000, 10)
+(N, O, 11887.000000, 469)
+(R, F, 6013.000000, 241)
+
+  *observed
+    Which is: (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 int64 count_order) isEncrypted? false, order by: {<0, ASC> , <1, ASC> }
+(A, F, 6536.000000, 258)
+(N, F, 299.000000, 10)
+
+[  FAILED  ] SecureJoinAggCostComparisonTest.test_1000_2_nla (422 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_1000_4_sma
+Connecting to 127.0.0.1 on ports 43469, 65484 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65485	--filter=*	--party=1	--port=43470	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 9.552000 ms, gate count: 0 output cardinality: 1000, row width=177
+Operator #-1 Sort ran for 394.869000 ms, gate count: 5234896 output cardinality: 1000, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 81.070000 ms, gate count: 1107924 output cardinality: 1000, row width=59
+SMA per_row_cost :  1175
+SMA per_row_cost :  1175
+Input cardinality: 1000, output card: 4
+Performing Sort Merge Agg
+Observed gate count: 1108005.070000
+Runtime: 475.939000
+[       OK ] SecureJoinAggCostComparisonTest.test_1000_4_sma (932 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_1000_4_nla
+Connecting to 127.0.0.1 on ports 43470, 65485 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65486	--filter=*	--party=1	--port=43471	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 8.830000 ms, gate count: 0 output cardinality: 1000, row width=177
+Operator #-1 NestedLoopAggregate ran for 323.453000 ms, gate count: 4508000 output cardinality: 4, row width=59
+NLA per_row_cost :  1218
+NLA per_row_cost :  1218
+Operator #-1 Sort ran for 0.135000 ms, gate count: 456 output cardinality: 4, row width=59
+compare and swap cost 81
+compare and swap cost 81
+Input cardinality: 1000, output card: 4
+Performing Nested Loop Agg
+Observed gate count: 4508000
+Runtime: 323.453000
+[       OK ] SecureJoinAggCostComparisonTest.test_1000_4_nla (585 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_1000_8_sma
+Connecting to 127.0.0.1 on ports 43471, 65486 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65487	--filter=*	--party=1	--port=43472	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 8.884000 ms, gate count: 0 output cardinality: 1000, row width=177
+Operator #-1 Sort ran for 399.627000 ms, gate count: 5234896 output cardinality: 1000, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 77.823000 ms, gate count: 1107924 output cardinality: 1000, row width=59
+SMA per_row_cost :  1175
+SMA per_row_cost :  1175
+Input cardinality: 1000, output card: 8
+Performing Sort Merge Agg
+Observed gate count: 1108001.823000
+Runtime: 477.450000
+[       OK ] SecureJoinAggCostComparisonTest.test_1000_8_sma (932 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_1000_8_nla
+Connecting to 127.0.0.1 on ports 43472, 65487 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65488	--filter=*	--party=1	--port=43473	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 8.886000 ms, gate count: 0 output cardinality: 1000, row width=177
+Operator #-1 NestedLoopAggregate ran for 648.294000 ms, gate count: 9016000 output cardinality: 8, row width=59
+NLA per_row_cost :  1218
+NLA per_row_cost :  1218
+Operator #-1 Sort ran for 0.239000 ms, gate count: 1824 output cardinality: 8, row width=59
+compare and swap cost 81
+compare and swap cost 81
+Input cardinality: 1000, output card: 8
+Performing Nested Loop Agg
+Observed gate count: 9016000
+Runtime: 648.294000
+[       OK ] SecureJoinAggCostComparisonTest.test_1000_8_nla (910 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_10000_2_sma
+Connecting to 127.0.0.1 on ports 43473, 65488 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65489	--filter=*	--party=1	--port=43474	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 85.638000 ms, gate count: 0 output cardinality: 10000, row width=177
+Operator #-1 Sort ran for 6667.072000 ms, gate count: 88057376 output cardinality: 10000, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 827.796000 ms, gate count: 11168916 output cardinality: 10000, row width=63
+SMA per_row_cost :  1183
+SMA per_row_cost :  1183
+Input cardinality: 10000, output card: 2
+Performing Sort Merge Agg
+Observed gate count: 11169743.796000
+Runtime: 7494.868000
+[       OK ] SecureJoinAggCostComparisonTest.test_10000_2_sma (11224 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_10000_2_nla
+Connecting to 127.0.0.1 on ports 43474, 65489 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65490	--filter=*	--party=1	--port=43475	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 79.670000 ms, gate count: 0 output cardinality: 10000, row width=177
+Operator #-1 NestedLoopAggregate ran for 1495.723000 ms, gate count: 22780000 output cardinality: 2, row width=63
+NLA per_row_cost :  1230
+NLA per_row_cost :  1230
+Operator #-1 Sort ran for 0.103000 ms, gate count: 80 output cardinality: 2, row width=63
+compare and swap cost 85
+compare and swap cost 85
+Input cardinality: 10000, output card: 2
+Performing Nested Loop Agg
+Observed gate count: 22780000
+Runtime: 1495.723000
+Failed to match on tuple count 4 vs 2
+/home/vaultdb/vaultdb-core-cost-comparison/src/main/cpp/test/mpc/secure_join_agg_cost_comparison_test.cpp:233: Failure
+Expected equality of these values:
+  *expected
+    Which is: (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 int64 count_order) isEncrypted? false, order by: {<0, ASC> , <1, ASC> }
+(A, F, 61294.000000, 2434)
+(N, F, 1852.000000, 70)
+(N, O, 124183.000000, 4828)
+(R, F, 62210.000000, 2415)
+
+  *observed
+    Which is: (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 int64 count_order) isEncrypted? false, order by: {<0, ASC> , <1, ASC> }
+(A, F, 61294.000000, 2434)
+(N, F, 1852.000000, 70)
+
+[  FAILED  ] SecureJoinAggCostComparisonTest.test_10000_2_nla (1863 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_10000_4_sma
+Connecting to 127.0.0.1 on ports 43475, 65490 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65491	--filter=*	--party=1	--port=43476	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 73.855000 ms, gate count: 0 output cardinality: 10000, row width=177
+Operator #-1 Sort ran for 6653.859000 ms, gate count: 88057376 output cardinality: 10000, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 835.386000 ms, gate count: 11168916 output cardinality: 10000, row width=63
+SMA per_row_cost :  1183
+SMA per_row_cost :  1183
+Input cardinality: 10000, output card: 4
+Performing Sort Merge Agg
+Observed gate count: 11169751.386000
+Runtime: 7489.245000
+[       OK ] SecureJoinAggCostComparisonTest.test_10000_4_sma (11223 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_10000_4_nla
+Connecting to 127.0.0.1 on ports 43476, 65491 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65492	--filter=*	--party=1	--port=43477	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 78.492000 ms, gate count: 0 output cardinality: 10000, row width=177
+Operator #-1 NestedLoopAggregate ran for 3263.871000 ms, gate count: 45560000 output cardinality: 4, row width=63
+NLA per_row_cost :  1230
+NLA per_row_cost :  1230
+Operator #-1 Sort ran for 0.142000 ms, gate count: 480 output cardinality: 4, row width=63
+compare and swap cost 85
+compare and swap cost 85
+Input cardinality: 10000, output card: 4
+Performing Nested Loop Agg
+Observed gate count: 45560000
+Runtime: 3263.871000
+[       OK ] SecureJoinAggCostComparisonTest.test_10000_4_nla (3631 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_10000_8_sma
+Connecting to 127.0.0.1 on ports 43477, 65492 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65493	--filter=*	--party=1	--port=43478	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 77.062000 ms, gate count: 0 output cardinality: 10000, row width=177
+Operator #-1 Sort ran for 6699.142000 ms, gate count: 88057376 output cardinality: 10000, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 845.367000 ms, gate count: 11168916 output cardinality: 10000, row width=63
+SMA per_row_cost :  1183
+SMA per_row_cost :  1183
+Input cardinality: 10000, output card: 8
+Performing Sort Merge Agg
+Observed gate count: 11169761.367000
+Runtime: 7544.509000
+[       OK ] SecureJoinAggCostComparisonTest.test_10000_8_sma (11320 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_10000_8_nla
+Connecting to 127.0.0.1 on ports 43478, 65493 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65494	--filter=*	--party=1	--port=43479	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 80.034000 ms, gate count: 0 output cardinality: 10000, row width=177
+Operator #-1 NestedLoopAggregate ran for 6811.538000 ms, gate count: 91120000 output cardinality: 8, row width=63
+NLA per_row_cost :  1230
+NLA per_row_cost :  1230
+Operator #-1 Sort ran for 0.287000 ms, gate count: 1920 output cardinality: 8, row width=63
+compare and swap cost 85
+compare and swap cost 85
+Input cardinality: 10000, output card: 8
+Performing Nested Loop Agg
+Observed gate count: 91120000
+Runtime: 6811.538000
+[       OK ] SecureJoinAggCostComparisonTest.test_10000_8_nla (7185 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_100000_2_sma
+Connecting to 127.0.0.1 on ports 43479, 65494 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65495	--filter=*	--party=1	--port=43480	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 967.274000 ms, gate count: 0 output cardinality: 100000, row width=177
+Operator #-1 Sort ran for 104272.889000 ms, gate count: 1374783328 output cardinality: 100000, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 9002.774000 ms, gate count: 112298912 output cardinality: 100000, row width=66
+SMA per_row_cost :  1189
+SMA per_row_cost :  1189
+Input cardinality: 100000, output card: 2
+Performing Sort Merge Agg
+Observed gate count: 112307914.774000
+Runtime: 113275.663000
+[       OK ] SecureJoinAggCostComparisonTest.test_100000_2_sma (169010 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_100000_2_nla
+Connecting to 127.0.0.1 on ports 43480, 65495 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65496	--filter=*	--party=1	--port=43481	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 943.671000 ms, gate count: 0 output cardinality: 100000, row width=177
+Operator #-1 NestedLoopAggregate ran for 16063.487000 ms, gate count: 229600000 output cardinality: 2, row width=66
+NLA per_row_cost :  1239
+NLA per_row_cost :  1239
+Operator #-1 Sort ran for 0.126000 ms, gate count: 84 output cardinality: 2, row width=66
+compare and swap cost 88
+compare and swap cost 88
+Input cardinality: 100000, output card: 2
+Performing Nested Loop Agg
+Observed gate count: 229600000
+Runtime: 16063.487000
+Failed to match on tuple count 4 vs 2
+/home/vaultdb/vaultdb-core-cost-comparison/src/main/cpp/test/mpc/secure_join_agg_cost_comparison_test.cpp:233: Failure
+Expected equality of these values:
+  *expected
+    Which is: (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 int64 count_order) isEncrypted? false, order by: {<0, ASC> , <1, ASC> }
+(A, F, 629003.000000, 24578)
+(N, F, 15338.000000, 589)
+(N, O, 1213665.000000, 47698)
+(R, F, 625965.000000, 24514)
+
+  *observed
+    Which is: (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 int64 count_order) isEncrypted? false, order by: {<0, ASC> , <1, ASC> }
+(A, F, 629003.000000, 24578)
+(N, F, 15338.000000, 589)
+
+[  FAILED  ] SecureJoinAggCostComparisonTest.test_100000_2_nla (17660 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_100000_4_sma
+Connecting to 127.0.0.1 on ports 43481, 65496 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65497	--filter=*	--party=1	--port=43482	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 929.614000 ms, gate count: 0 output cardinality: 100000, row width=177
+Operator #-1 Sort ran for 104479.211000 ms, gate count: 1374783328 output cardinality: 100000, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 8966.009000 ms, gate count: 112298912 output cardinality: 100000, row width=66
+SMA per_row_cost :  1189
+SMA per_row_cost :  1189
+Input cardinality: 100000, output card: 4
+Performing Sort Merge Agg
+Observed gate count: 112307878.009000
+Runtime: 113445.220000
+[       OK ] SecureJoinAggCostComparisonTest.test_100000_4_sma (168888 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_100000_4_nla
+Connecting to 127.0.0.1 on ports 43482, 65497 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65498	--filter=*	--party=1	--port=43483	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 948.213000 ms, gate count: 0 output cardinality: 100000, row width=177
+Operator #-1 NestedLoopAggregate ran for 32033.971000 ms, gate count: 459200000 output cardinality: 4, row width=66
+NLA per_row_cost :  1239
+NLA per_row_cost :  1239
+Operator #-1 Sort ran for 0.167000 ms, gate count: 500 output cardinality: 4, row width=66
+compare and swap cost 88
+compare and swap cost 88
+Input cardinality: 100000, output card: 4
+Performing Nested Loop Agg
+Observed gate count: 459200000
+Runtime: 32033.971000
+[       OK ] SecureJoinAggCostComparisonTest.test_100000_4_nla (33638 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_100000_8_sma
+Connecting to 127.0.0.1 on ports 43483, 65498 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65499	--filter=*	--party=1	--port=43484	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 945.251000 ms, gate count: 0 output cardinality: 100000, row width=177
+Operator #-1 Sort ran for 104571.435000 ms, gate count: 1374783328 output cardinality: 100000, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 9031.938000 ms, gate count: 112298912 output cardinality: 100000, row width=66
+SMA per_row_cost :  1189
+SMA per_row_cost :  1189
+Input cardinality: 100000, output card: 8
+Performing Sort Merge Agg
+Observed gate count: 112307943.938000
+Runtime: 113603.373000
+[       OK ] SecureJoinAggCostComparisonTest.test_100000_8_sma (169546 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_100000_8_nla
+Connecting to 127.0.0.1 on ports 43484, 65499 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65500	--filter=*	--party=1	--port=43485	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 946.590000 ms, gate count: 0 output cardinality: 100000, row width=177
+Operator #-1 NestedLoopAggregate ran for 75165.476000 ms, gate count: 918400000 output cardinality: 8, row width=66
+NLA per_row_cost :  1239
+NLA per_row_cost :  1239
+Operator #-1 Sort ran for 0.296000 ms, gate count: 1992 output cardinality: 8, row width=66
+compare and swap cost 88
+compare and swap cost 88
+Input cardinality: 100000, output card: 8
+Performing Nested Loop Agg
+Observed gate count: 918400000
+Runtime: 75165.476000
+[       OK ] SecureJoinAggCostComparisonTest.test_100000_8_nla (76767 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_1000000_2_sma
+Connecting to 127.0.0.1 on ports 43485, 65500 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65501	--filter=*	--party=1	--port=43486	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 5860.111000 ms, gate count: 0 output cardinality: 600572, row width=177
+Operator #-1 Sort ran for 832338.753000 ms, gate count: 10954355500 output cardinality: 600572, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 54990.425000 ms, gate count: 678044692 output cardinality: 600572, row width=69
+SMA per_row_cost :  1195
+SMA per_row_cost :  1195
+Input cardinality: 600572, output card: 2
+Performing Sort Merge Agg
+Observed gate count: 678099682.425000
+Runtime: 887329.178000
+[       OK ] SecureJoinAggCostComparisonTest.test_1000000_2_sma (1340570 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_1000000_2_nla
+Connecting to 127.0.0.1 on ports 43486, 65501 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65502	--filter=*	--party=1	--port=43487	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 5862.358000 ms, gate count: 0 output cardinality: 600572, row width=177
+Operator #-1 NestedLoopAggregate ran for 102993.710000 ms, gate count: 1389723608 output cardinality: 2, row width=69
+NLA per_row_cost :  1248
+NLA per_row_cost :  1248
+Operator #-1 Sort ran for 0.139000 ms, gate count: 88 output cardinality: 2, row width=69
+compare and swap cost 91
+compare and swap cost 91
+Input cardinality: 600572, output card: 2
+Performing Nested Loop Agg
+Observed gate count: 1389723608
+Runtime: 102993.710000
+Failed to match on tuple count 4 vs 2
+/home/vaultdb/vaultdb-core-cost-comparison/src/main/cpp/test/mpc/secure_join_agg_cost_comparison_test.cpp:233: Failure
+Expected equality of these values:
+  *expected
+    Which is: (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 int64 count_order) isEncrypted? false, order by: {<0, ASC> , <1, ASC> }
+(A, F, 3774200.000000, 147790)
+(N, F, 95257.000000, 3765)
+(N, O, 7285768.000000, 285202)
+(R, F, 3785523.000000, 148301)
+
+  *observed
+    Which is: (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 int64 count_order) isEncrypted? false, order by: {<0, ASC> , <1, ASC> }
+(A, F, 3774200.000000, 147790)
+(N, F, 95257.000000, 3765)
+
+[  FAILED  ] SecureJoinAggCostComparisonTest.test_1000000_2_nla (111354 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_1000000_4_sma
+Connecting to 127.0.0.1 on ports 43487, 65502 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65503	--filter=*	--party=1	--port=43488	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 5855.596000 ms, gate count: 0 output cardinality: 600572, row width=177
+Operator #-1 Sort ran for 844868.380000 ms, gate count: 10954355500 output cardinality: 600572, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 55226.727000 ms, gate count: 678044692 output cardinality: 600572, row width=69
+SMA per_row_cost :  1195
+SMA per_row_cost :  1195
+Input cardinality: 600572, output card: 4
+Performing Sort Merge Agg
+Observed gate count: 678099918.727000
+Runtime: 900095.107000
+[       OK ] SecureJoinAggCostComparisonTest.test_1000000_4_sma (1353664 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_1000000_4_nla
+Connecting to 127.0.0.1 on ports 43488, 65503 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65504	--filter=*	--party=1	--port=43489	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 5992.036000 ms, gate count: 0 output cardinality: 600572, row width=177
+Operator #-1 NestedLoopAggregate ran for 203107.887000 ms, gate count: 2779447216 output cardinality: 4, row width=69
+NLA per_row_cost :  1248
+NLA per_row_cost :  1248
+Operator #-1 Sort ran for 0.170000 ms, gate count: 516 output cardinality: 4, row width=69
+compare and swap cost 91
+compare and swap cost 91
+Input cardinality: 600572, output card: 4
+Performing Nested Loop Agg
+Observed gate count: 2779447216
+Runtime: 203107.887000
+[       OK ] SecureJoinAggCostComparisonTest.test_1000000_4_nla (211609 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_1000000_8_sma
+Connecting to 127.0.0.1 on ports 43489, 65504 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65505	--filter=*	--party=1	--port=43490	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 5844.017000 ms, gate count: 0 output cardinality: 600572, row width=177
+Operator #-1 Sort ran for 835182.585000 ms, gate count: 10954355500 output cardinality: 600572, row width=177
+compare and swap cost 199
+compare and swap cost 199
+Operator #-1 SortMergeAggregate ran for 55712.811000 ms, gate count: 678044692 output cardinality: 600572, row width=69
+SMA per_row_cost :  1195
+SMA per_row_cost :  1195
+Input cardinality: 600572, output card: 8
+Performing Sort Merge Agg
+Observed gate count: 678100404.811000
+Runtime: 890895.396000
+[       OK ] SecureJoinAggCostComparisonTest.test_1000000_8_sma (1348114 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_1000000_8_nla
+Connecting to 127.0.0.1 on ports 43490, 65505 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: c5e64911af7158b541d1d04eebe5dae0b27dad38
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=127.0.0.1	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65506	--filter=*	--party=1	--port=43491	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+Operator #-1 SecureSqlInput ran for 5921.268000 ms, gate count: 0 output cardinality: 600572, row width=177
+Operator #-1 NestedLoopAggregate ran for 412301.449000 ms, gate count: 5558894432 output cardinality: 8, row width=69
+NLA per_row_cost :  1248
+NLA per_row_cost :  1248
+Operator #-1 Sort ran for 0.287000 ms, gate count: 2064 output cardinality: 8, row width=69
+compare and swap cost 91
+compare and swap cost 91
+Input cardinality: 600572, output card: 8
+Performing Nested Loop Agg
+Observed gate count: 5558894432
+Runtime: 412301.449000
+[       OK ] SecureJoinAggCostComparisonTest.test_1000000_8_nla (420721 ms)
+[----------] 36 tests from SecureJoinAggCostComparisonTest (5475925 ms total)
+
+[----------] Global test environment tear-down
+[==========] 36 tests from 1 test suite ran. (5475925 ms total)
+[  PASSED  ] 30 tests.
+[  FAILED  ] 6 tests, listed below:
+[  FAILED  ] SecureJoinAggCostComparisonTest.test_10_2_nla
+[  FAILED  ] SecureJoinAggCostComparisonTest.test_100_2_nla
+[  FAILED  ] SecureJoinAggCostComparisonTest.test_1000_2_nla
+[  FAILED  ] SecureJoinAggCostComparisonTest.test_10000_2_nla
+[  FAILED  ] SecureJoinAggCostComparisonTest.test_100000_2_nla
+[  FAILED  ] SecureJoinAggCostComparisonTest.test_1000000_2_nla
+
+ 6 FAILED TESTS
