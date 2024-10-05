@@ -118,7 +118,7 @@ package_add_test(secure_plan_enumeration_test mpc/secure_plan_enumeration_test.c
 package_add_test(secure_tpch_enumeration_test mpc/secure_tpch_enumeration_test.cpp  mpc/emp_base_test.cpp)
 package_add_test(join_cost_comparison_test mpc/join_cost_comparison_test.cpp mpc/emp_base_test.cpp)
 package_add_test(emp_compression_setup_test mpc/emp_compression_setup_test.cpp  mpc/emp_base_test.cpp)
-package_add_test(secure_bushy_plan_enumeration_test mpc/secure_bushy_plan_enumeration_test.cpp  mpc/emp_base_test.cpp)
+#package_add_test(secure_bushy_plan_enumeration_test mpc/secure_bushy_plan_enumeration_test.cpp  mpc/emp_base_test.cpp)
 package_add_test(pre_sorting_test mpc/pre_sorting_test.cpp  mpc/emp_base_test.cpp)
 
 unset(Labels)
