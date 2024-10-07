@@ -60,6 +60,8 @@ namespace vaultdb {
                 return;
             }
 
+            if(src->tuple_cnt_ == 0) return;
+
             SecureTable *dst = getSecureTable(table_name);
             // confirm we are inserting a table that matches the expected schema
             assert(dst->getSchema() == src->getSchema());
