@@ -61,7 +61,7 @@ namespace vaultdb{
         int party_;
         int input_party_ = 10086;
 
-        bool bp_enabled_ = true;
+        bool bp_enabled_ = false; // for OMPC only for now
         BufferPoolManager & bpm_ = BufferPoolManager::getInstance();
         int num_tables_ = 0;
         int bp_page_size_bits_ = 2048;

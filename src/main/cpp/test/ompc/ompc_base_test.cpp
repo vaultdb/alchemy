@@ -29,6 +29,8 @@ void OmpcBaseTest::SetUp()  {
 
     s.setStorageModel(storage_model_);
     s.input_party_ = FLAGS_input_party;
+    s.bp_enabled_ = true;
+
 	Logger* log = get_log();
 
     // parse IPs and ports from config.json
