@@ -18,7 +18,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	endif()
 endif()
 
-f
+
 mark_as_advanced(
 		BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
 		gmock_build_tests  gtest_build_tests
