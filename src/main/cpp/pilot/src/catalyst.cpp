@@ -99,6 +99,7 @@ void Catalyst::importSecretShares(const string & table_name, const int & src_par
     // this schema should NOT have site_id
     SecureTable *secret_shares = UnionHybridData::readSecretSharedInput(secret_shares_file, schema);
     cout << "Read " << secret_shares->tuple_cnt_ << " tuples from " << secret_shares_file << endl;
+    cout << "Memory footprint of secret shares: " << secret_shares->tuple_cnt_ * schema.size() * sizeof(emp::Bit) << " bytes" << endl;
 
     // add site_id using src_party
     if(drop_site_id) {
