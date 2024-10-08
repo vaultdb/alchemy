@@ -104,19 +104,28 @@ void Catalyst::importSecretShares(const string & table_name, const int & src_par
     // add site_id using src_party
     if(drop_site_id) {
 
-        ExpressionMapBuilder<Bit> builder(schema);
-        int field_cnt = schema.getFieldCount();
-        for (int i = 0; i < field_cnt; ++i) {
-            builder.addMapping(i, i);
+        QueryFieldDesc site_id_desc(schema.getFieldCount(), "site_id", "",  FieldType::SECURE_INT);
+        secret_shares->appendColumn(site_id_desc);
+        auto dst = Field<Bit>(FieldType::SECURE_INT, Integer(32, src_party));
+        for(int i = 0; i < secret_shares->tuple_cnt_; ++i) {
+            secret_shares->setField(i, site_id_desc.getOrdinal(), dst);
         }
 
-        LiteralNode<Bit> site_id(Field<Bit>(FieldType::SECURE_INT, Integer(32, src_party)));
-        Expression<Bit> *site_id_expr = new GenericExpression<Bit>(&site_id, "site_id", FieldType::SECURE_INT);
+//        ExpressionMapBuilder<Bit> builder(schema);
+//        int field_cnt = schema.getFieldCount();
+//        for (int i = 0; i < field_cnt; ++i) {
+//            builder.addMapping(i, i);
+//        }
+//
+//        LiteralNode<Bit> site_id(Field<Bit>(FieldType::SECURE_INT, Integer(32, src_party)));
+//        Expression<Bit> *site_id_expr = new GenericExpression<Bit>(&site_id, "site_id", FieldType::SECURE_INT);
+//
+//        builder.addExpression(site_id_expr, field_cnt);
+//
+//        Project<Bit> *projection = new Project<Bit>(secret_shares, builder.getExprs());
+//        secret_shares = projection->run();
+//        delete projection; // freeing input before we insertTable to reduce memory usage
 
-        builder.addExpression(site_id_expr, field_cnt);
-
-        Project<Bit> projection(secret_shares, builder.getExprs());
-        secret_shares = projection.run();
         // need to call insertTable within this scope for the project output to be available for TableManager copy
         table_manager.insertTable(table_name, secret_shares);
         return;
