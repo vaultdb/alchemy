@@ -80,6 +80,7 @@ void Catalyst::importSecretShares(const string & table_name, const int & src_par
     // import into table_manager
     string fq_table_file = study_.secret_shares_path_ + "/" + std::to_string(src_party) + "/" + table_name;
     cout << "Ingesting table: " << fq_table_file << endl;
+    Utilities::checkMemoryUtilization(true);
     SystemConfiguration & s = SystemConfiguration::getInstance();
     TableManager & table_manager = TableManager::getInstance();
 
