@@ -18,7 +18,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	endif()
 endif()
 
-
+f
 mark_as_advanced(
 		BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
 		gmock_build_tests  gtest_build_tests
@@ -113,7 +113,7 @@ package_add_test(true_cardinality_test mpc/true_cardinality_test.cpp mpc/emp_bas
 package_add_test(expression_cost_model_test mpc/expression_cost_model_test.cpp mpc/emp_base_test.cpp)
 package_add_test(operator_cost_model_test mpc/operator_cost_model_test.cpp mpc/emp_base_test.cpp)
 package_add_test(plan_cost_test mpc/plan_cost_test.cpp  mpc/emp_base_test.cpp)
-package_add_test(fully_optimized_test mpc/fully_optimized_test.cpp  mpc/emp_base_test.cpp)
+package_add_test(cost_optimized_test mpc/cost_optimized_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_plan_enumeration_test mpc/secure_plan_enumeration_test.cpp  mpc/emp_base_test.cpp)
 package_add_test(join_cost_comparison_test mpc/join_cost_comparison_test.cpp mpc/emp_base_test.cpp)
 package_add_test(emp_compression_setup_test mpc/emp_compression_setup_test.cpp  mpc/emp_base_test.cpp)

@@ -26,7 +26,7 @@ DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "column", "storage model for columns (column, wire_packed or compressed)");
 
 
-class FullyOptimizedTest : public EmpBaseTest {
+class CostOptimizedTest : public EmpBaseTest {
 protected:
 
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
@@ -38,7 +38,7 @@ protected:
 
 
 void
-FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
+CostOptimizedTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 
 
     this->initializeBitPacking(FLAGS_unioned_db);
@@ -57,7 +57,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
 
     //ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
-    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_5/Fully_Optimized/fully_optimized-"  + test_name + ".json";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_4/Cost_Optimized/cost_optimized-"  + test_name + ".json";
 
     // Initialize memory measurement
 //    size_t initial_memory = Utilities::checkMemoryUtilization(true);
@@ -109,7 +109,7 @@ FullyOptimizedTest::runTest(const int &test_id, const string & test_name, const 
 
 
 string
-FullyOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDefinition &expected_sort, const string &db_name) {
+CostOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDefinition &expected_sort, const string &db_name) {
     string alice_db = FLAGS_unioned_db;
     string bob_db = FLAGS_unioned_db;
     boost::replace_first(alice_db, "unioned", "alice");
@@ -129,7 +129,7 @@ FullyOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDe
 
 
 
-TEST_F(FullyOptimizedTest, tpch_q1) {
+TEST_F(CostOptimizedTest, tpch_q1) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest(1, "q1", expected_sort, FLAGS_unioned_db);
@@ -137,7 +137,7 @@ TEST_F(FullyOptimizedTest, tpch_q1) {
 }
 
 
-TEST_F(FullyOptimizedTest, tpch_q3) {
+TEST_F(CostOptimizedTest, tpch_q3) {
 
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
@@ -146,7 +146,7 @@ TEST_F(FullyOptimizedTest, tpch_q3) {
 }
 
 
-TEST_F(FullyOptimizedTest, tpch_q5) {
+TEST_F(CostOptimizedTest, tpch_q5) {
     //input_tuple_limit_ = 1000;
 
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
@@ -154,7 +154,7 @@ TEST_F(FullyOptimizedTest, tpch_q5) {
 }
 
 
-TEST_F(FullyOptimizedTest, tpch_q8) {
+TEST_F(CostOptimizedTest, tpch_q8) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     runTest(8, "q8", expected_sort, FLAGS_unioned_db);
@@ -162,7 +162,7 @@ TEST_F(FullyOptimizedTest, tpch_q8) {
 
 
 
-TEST_F(FullyOptimizedTest, tpch_q9) {
+TEST_F(CostOptimizedTest, tpch_q9) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
     runTest(9, "q9", expected_sort, FLAGS_unioned_db);
@@ -172,7 +172,7 @@ TEST_F(FullyOptimizedTest, tpch_q9) {
 
 
 
-TEST_F(FullyOptimizedTest, tpch_q18) {
+TEST_F(CostOptimizedTest, tpch_q18) {
     // -1 ASC, $4 DESC, $3 ASC
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(4, SortDirection::DESCENDING),
