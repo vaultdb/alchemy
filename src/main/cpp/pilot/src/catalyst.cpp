@@ -59,7 +59,7 @@ void Catalyst::parseAndRunQueries() {
             TableManager::getInstance().insertTable(dst_table_name, output);
 
             string fq_filename = dst_dir + "/" + s.name_ + (c.party_ == 1 ? ".alice" : ".bob");
-
+            string fq_schema_filename = dst_dir + "/" + s.name_ + ".schema";
             if (!TESTBED) {
                 // redact small cell counts
                 for (auto &col: s.count_cols_) {
@@ -70,6 +70,9 @@ void Catalyst::parseAndRunQueries() {
             std::vector<int8_t> results = output->reveal(emp::XOR)->serialize();
             cout << "Writing output of " << s.name_ << " to " << fq_filename << endl;
             DataUtilities::writeFile(fq_filename, results);
+
+            // write out schema
+            DataUtilities::writeFile(fq_schema_filename, output->getSchema().prettyPrint());
         }
 
 }
