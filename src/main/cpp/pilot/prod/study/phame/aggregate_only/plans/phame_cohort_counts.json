@@ -4,7 +4,7 @@
     {
       "id": "0",
       "relOp": "VaultDBTableScan",
-      "table": "phame_cohort_counts",
+      "table": "PHAME_COHORT_COUNTS",
       "outputFields": "(desc:varchar(42) (#0), count:int64 (#1))",
       "notes": "this operator relies on an earlier phase where we load up these unioned tables into a shared system catalog called TableManager.  This will just compute on existing QueryTables by creating a leaf operator for it.  Schema is already embedded in a previous step, outputFields are just a comment."
     },
