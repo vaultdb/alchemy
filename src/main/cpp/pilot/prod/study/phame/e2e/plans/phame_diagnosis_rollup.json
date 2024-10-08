@@ -1,0 +1,409 @@
+{
+  "outputTable": "B3",
+  "note": "This joins the row-only data and partially aggregates over it before doing a grand-aggregate with the aggregate-only data.",
+  "rels": [
+    {
+      "id": "0",
+      "relOp": "VaultDBTableScan",
+      "table": "phame_demographic",
+      "outputFields": "(patid:int32 (#0), age_cat:char(1) (#1), gender:char(1) (#2), race:char(1) (#3), ethnicity:char(1) (#4), zip:char(5) (#5), payer_primary:char(1) (#6), payer_secondary:char(1) (#7),, site_id:int32 (#8))"
+    },
+    {
+      "id": "1",
+      "relOp": "VaultDBTableScan",
+      "table": "phame_diagnosis",
+      "outputFields": "(patid:int32 (#0), dx_diabetes:bool (#1), dx_hypertension:bool (#2), dx_cervical_cancer:bool (#3), dx_breast_cancer:bool (#4), dx_lung_cancer:bool (#5), dx_colorectal_cancer:bool (#6), site_id:int32 (#7))"
+    },
+    {
+    "id":  "2",
+    "relOp": "LogicalJoin",
+    "joinType": "left",
+    "outputFields": "(patid:int32 (#0), age_cat:char(1) (#1), gender:char(1) (#2), race:char(1) (#3), ethnicity:char(1) (#4), zip:char(5) (#5), payer_primary:char(1) (#6), payer_secondary:char(1) (#7), site_id:int32 (#8), patid:int32 (#9), dx_diabetes:bool (#10), dx_hypertension:bool (#11), dx_cervical_cancer:bool (#12), dx_breast_cancer:bool (#13), dx_lung_cancer:bool (#14), dx_colorectal_cancer:bool (#15), site_id:int32 (#16))",
+    "joinOn" : "di.patid = dm.patid AND di.site_id = dm.site_id",
+    "condition": {
+        "op": {
+          "name": "AND",
+          "kind": "AND",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 0,
+                "name": "$0"
+              },
+              {
+                "input": 9,
+                "name": "$9"
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "input": 16,
+                "name": "$16"
+              }
+            ]
+          }
+        ]
+      },
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {"id":  "3",
+      "relOp": "LogicalProject",
+      "inputFields": "(patid:int32 (#0), age_cat:char(1) (#1), gender:char(1) (#2), race:char(1) (#3), ethnicity:char(1) (#4), zip:char(5) (#5), payer_primary:char(1) (#6), payer_secondary:char(1) (#7), site_id:int32 (#8), patid:int32 (#9), dx_diabetes:bool (#10), dx_hypertension:bool (#11), dx_cervical_cancer:bool (#12), dx_breast_cancer:bool (#13), dx_lung_cancer:bool (#14), dx_colorectal_cancer:bool (#15), site_id:int32 (#16))",
+      "outputFields": "(patid:int32 (#0), age_cat:char(1) (#1), gender:char(1) (#2), race:char(1) (#3), ethnicity:char(1) (#4), zip:char(5) (#5), payer_primary:char(1) (#6), payer_secondary:char(1) (#7), dx_diabetes:int64 (#8), dx_hypertension:int64 (#9), dx_cervical_cancer:int64 (#10), dx_breast_cancer:int64 (#11), dx_lung_cancer:int64 (#12), dx_colorectal_cancer:int64 (#13))",
+      "fields": ["patid", "age_cat", "gender", "race", "ethnicity", "zip", "payer_primary", "payer_secondary", "dx_diabetes", "dx_hypertension", "dx_cervical_cancer", "dx_breast_cancer", "dx_lung_cancer", "dx_colorectal_cancer"],
+      "exprs" : [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        },
+        {
+          "input": 6,
+          "name": "$6"
+        },
+        {
+          "input": 7,
+          "name": "$7"
+        },
+        { "op": {
+          "name": "CAST",
+          "kind": "CAST",
+          "syntax": "SPECIAL"
+        },
+          "operands": [
+            {
+              "input": 10,
+              "name": "$10"
+            }
+          ],
+          "type": {
+            "type": "BIGINT",
+            "nullable": false
+          }
+        },
+        { "op": {
+          "name": "CAST",
+          "kind": "CAST",
+          "syntax": "SPECIAL"
+        },
+          "operands": [
+            {
+              "input": 11,
+              "name": "$11"
+            }
+          ],
+          "type": {
+            "type": "BIGINT",
+            "nullable": false
+          }
+        },
+        { "op": {
+          "name": "CAST",
+          "kind": "CAST",
+          "syntax": "SPECIAL"
+        },
+          "operands": [
+            {
+              "input": 12,
+              "name": "$12"
+            }
+          ],
+          "type": {
+            "type": "BIGINT",
+            "nullable": false
+          }
+        },
+        { "op": {
+          "name": "CAST",
+          "kind": "CAST",
+          "syntax": "SPECIAL"
+        },
+          "operands": [
+            {
+              "input": 13,
+              "name": "$13"
+            }
+          ],
+          "type": {
+            "type": "BIGINT",
+            "nullable": false
+          }
+        },
+        { "op": {
+          "name": "CAST",
+          "kind": "CAST",
+          "syntax": "SPECIAL"
+        },
+          "operands": [
+            {
+              "input": 14,
+              "name": "$14"
+            }
+          ],
+          "type": {
+            "type": "BIGINT",
+            "nullable": false
+          }
+        },
+        { "op": {
+          "name": "CAST",
+          "kind": "CAST",
+          "syntax": "SPECIAL"
+        },
+          "operands": [
+            {
+              "input": 15,
+              "name": "$15"
+            }
+          ],
+          "type": {
+            "type": "BIGINT",
+            "nullable": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "relOp": "LogicalAggregate",
+      "inputFields": "(patid:int32 (#0), age_cat:char(1) (#1), gender:char(1) (#2), race:char(1) (#3), ethnicity:char(1) (#4), zip:char(5) (#5), payer_primary:char(1) (#6), payer_secondary:char(1) (#7), dx_diabetes:int64 (#8), dx_hypertension:int64 (#9), dx_cervical_cancer:int64 (#10), dx_breast_cancer:int64 (#11), dx_lung_cancer:int64 (#12), dx_colorectal_cancer:int64 (#13))",
+       "outputFields": "(age_cat:char(1) (#0), gender:char(1) (#1), race:char(1) (#2), ethnicity:char(1) (#3), zip:char(5) (#4), payer_primary:char(1) (#5), payer_secondary:char(1) (#6), patient_cnt:int64 (#7), diabetes_cnt:int64 (#8), hypertension_cnt:int64 (#9), cervical_cancer_cnt:int64 (#10), breast_cancer_cnt:int64 (#11), lung_cancer_cnt:int64 (#12), colorectal_cancer_cnt:int64) (#13)",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "group": [1, 2, 3, 4, 5, 6, 7],
+      "aggs": [
+        {
+          "agg": {
+            "name": "COUNT",
+            "kind": "COUNT",
+            "syntax": "FUNCTION_STAR"
+          },
+          "type": {
+            "type": "BIGINT",
+            "nullable": false
+          },
+          "distinct": false,
+          "operands": [],
+          "name": "patient_cnt"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "INTEGER"},
+          "distinct": false,
+          "operands": [8],
+          "name": "diabetes_cnt"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "INTEGER"},
+          "distinct": false,
+          "operands": [9],
+          "name": "hypertension_cnt"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "INTEGER"},
+          "distinct": false,
+          "operands": [10],
+          "name": "cervical_cancer_cnt"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "INTEGER"},
+          "distinct": false,
+          "operands": [11],
+          "name": "breast_cancer_cnt"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "INTEGER"},
+          "distinct": false,
+          "operands": [12],
+          "name": "lung_cancer_cnt"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "INTEGER"},
+          "distinct": false,
+          "operands": [13],
+          "name": "colorectal_cancer_cnt"
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "relOp": "VaultDBTableScan",
+      "table": "phame_diagnosis_rollup",
+      "outputFields": "(age_cat:char(1) (#0), gender:char(1) (#1), race:char(1) (#2), ethnicity:char(1) (#3), zip:char(5) (#4), payer_primary:char(1) (#5), payer_secondary:char(1) (#6), patient_cnt:int64 (#7), diabetes_cnt:int64 (#8), hypertension_cnt:int64 (#9), cervical_cancer_cnt:int64 (#10), breast_cancer_cnt:int64 (#11), lung_cancer_cnt:int64 (#12), colorectal_cancer_cnt:int64) (#13)"
+    },
+    {
+      "id":  "6",
+    "relOp": "LogicalUnion",
+    "inputs": ["4", "5"]
+    },
+    {
+        "id": "7",
+        "relOp": "LogicalAggregate",
+        "inputFields": "(age_cat:char(1) (#0), gender:char(1) (#1), race:char(1) (#2), ethnicity:char(1) (#3), zip:char(5) (#4), payer_primary:char(1) (#5), payer_secondary:char(1) (#6), patient_cnt:int64 (#7), diabetes_cnt:int64 (#8), hypertension_cnt:int64 (#9), cervical_cancer_cnt:int64 (#10), breast_cancer_cnt:int64 (#11), lung_cancer_cnt:int64 (#12), colorectal_cancer_cnt:int64) (#13)",
+      "outputFields": "(age_cat:char(1) (#0), gender:char(1) (#1), race:char(1) (#2), ethnicity:char(1) (#3), zip:char(5) (#4), payer_primary:char(1) (#5), payer_secondary:char(1) (#6), patient_cnt:int64 (#7), diabetes_cnt:int64 (#8), hypertension_cnt:int64 (#9), cervical_cancer_cnt:int64 (#10), breast_cancer_cnt:int64 (#11), lung_cancer_cnt:int64 (#12), colorectal_cancer_cnt:int64) (#13)",
+        "operator-algorithm" : "sort-merge-aggregate",
+        "group": [0, 1, 2, 3, 4, 5, 6],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "INTEGER"},
+          "distinct": false,
+          "operands": [7],
+          "name": "patient_cnt"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "INTEGER"},
+          "distinct": false,
+          "operands": [8],
+          "name": "diabetes_cnt"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "INTEGER"},
+          "distinct": false,
+          "operands": [9],
+          "name": "hypertension_cnt"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "INTEGER"},
+          "distinct": false,
+          "operands": [10],
+          "name": "cervical_cancer_cnt"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "INTEGER"},
+          "distinct": false,
+          "operands": [11],
+          "name": "breast_cancer_cnt"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "INTEGER"},
+          "distinct": false,
+          "operands": [12],
+          "name": "lung_cancer_cnt"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "INTEGER"},
+          "distinct": false,
+          "operands": [13],
+          "name": "colorectal_cancer_cnt"
+        }
+      ]
+    }
+  ]
+}
