@@ -128,10 +128,12 @@ void Catalyst::importSecretShares(const string & table_name, const int & src_par
 
         // need to call insertTable within this scope for the project output to be available for TableManager copy
         table_manager.insertTable(table_name, secret_shares);
+        delete secret_shares;
         return;
     }
 
     table_manager.insertTable(table_name, secret_shares);
+    delete secret_shares;
 }
 
 int main(int argc, char **argv) {
