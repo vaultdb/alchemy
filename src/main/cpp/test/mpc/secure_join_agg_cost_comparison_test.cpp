@@ -288,7 +288,7 @@ void execute_sort_merge_agg(std::string db_name_, int lineitem_cutoff, int outpu
 
     Logger* log = get_log();
     log->write("Performing Sort Merge Agg", Level::INFO);
-    log->write("Observed gate count: " + std::to_string(sma->getGateCount() + sma->getRuntimeMs()), Level::INFO);
+    log->write("Observed gate count: " + std::to_string(sort->getGateCount() + sma->getGateCount()), Level::INFO);
     log->write("Runtime: " + std::to_string(sma->getRuntimeMs() + sort->getRuntimeMs()), Level::INFO);
 
     if (FLAGS_validation) {
