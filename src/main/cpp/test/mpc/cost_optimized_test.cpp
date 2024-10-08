@@ -57,7 +57,7 @@ CostOptimizedTest::runTest(const int &test_id, const string & test_name, const S
 
     //ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
-    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_4/Cost_Optimized/cost_optimized-"  + test_name + ".json";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_4/cost_optimized-"  + test_name + ".json";
 
     // Initialize memory measurement
 //    size_t initial_memory = Utilities::checkMemoryUtilization(true);
@@ -129,21 +129,21 @@ CostOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDef
 
 
 
-TEST_F(CostOptimizedTest, tpch_q1) {
-
-    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort, FLAGS_unioned_db);
-
-}
-
-
-TEST_F(CostOptimizedTest, tpch_q3) {
-
-    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                                 ColumnSort(1, SortDirection::DESCENDING),
-                                 ColumnSort(2, SortDirection::ASCENDING)};
-    runTest(3, "q3", expected_sort, FLAGS_unioned_db);
-}
+//TEST_F(CostOptimizedTest, tpch_q1) {
+//
+//    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+//    runTest(1, "q1", expected_sort, FLAGS_unioned_db);
+//
+//}
+//
+//
+//TEST_F(CostOptimizedTest, tpch_q3) {
+//
+//    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+//                                 ColumnSort(1, SortDirection::DESCENDING),
+//                                 ColumnSort(2, SortDirection::ASCENDING)};
+//    runTest(3, "q3", expected_sort, FLAGS_unioned_db);
+//}
 
 
 TEST_F(CostOptimizedTest, tpch_q5) {

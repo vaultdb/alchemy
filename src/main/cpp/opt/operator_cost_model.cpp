@@ -280,7 +280,7 @@ size_t OperatorCostModel::groupByAggregateCost(const SortMergeAggregate<Bit> *ag
         ++output_ordinal;
     }
 
-    std::cout << "SMA per_row_cost :  " + std::to_string(per_row_cost) << std::endl;
+    //std::cout << "SMA per_row_cost :  " + std::to_string(per_row_cost) << std::endl;
 
     return per_row_cost * input_row_count;
 }
@@ -365,7 +365,7 @@ size_t OperatorCostModel::nestedLoopAggregateCost(const NestedLoopAggregate<Bit>
         ++output_ordinal;
     }
 
-    std::cout << "NLA per_row_cost :  " + std::to_string(per_row_cost) << std::endl;
+    //std::cout << "NLA per_row_cost :  " + std::to_string(per_row_cost) << std::endl;
 
     return per_row_cost * input_row_count * output_cardinality;
 }
@@ -532,7 +532,7 @@ size_t OperatorCostModel::sortCost(const QuerySchema &schema, const SortDefiniti
 
     // each comparison consists of an equality, a <, and a handful of ANDs
     size_t c_and_s_cost = compareSwapCost(schema, sort, n);
-    cout << "compare and swap cost " << c_and_s_cost << endl;
+    //cout << "compare and swap cost " << c_and_s_cost << endl;
     return comparison_cnt * c_and_s_cost;
 }
 
