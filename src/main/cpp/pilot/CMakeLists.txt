@@ -38,5 +38,6 @@ package_add_binary(catalyst src/catalyst.cpp src/common/union_hybrid_data.cpp sr
 package_add_binary(assemble_secret_shares src/assemble_secret_shares.cpp src/common/pilot_utilities.cpp)
 
 
-package_add_binary(reveal_public_column src/reveal_public_column.cpp src/common/pilot_utilities.cpp)
+
+package_add_binary(reveal_public_column src/reveal_public_column.cpp src/common/union_hybrid_data.cpp)
 

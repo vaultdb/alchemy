@@ -14,6 +14,13 @@ namespace catalyst {
     public:
         Catalyst(int party, const std::string json_config_filename);
 
+        ~Catalyst() {
+            SystemConfiguration & s = SystemConfiguration::getInstance();
+            EmpManager *emp_manager = s.emp_manager_;
+            emp_manager->flush();
+            delete emp_manager;
+            s.emp_manager_ = nullptr;
+        }
         void loadStudyData();
         void parseAndRunQueries();
 

@@ -1,6 +1,6 @@
 #include <util/data_utilities.h>
 #include "common/union_hybrid_data.h"
-#include "emp-sh2pc/semihonest.h"
+#include "util/emp_manager/sh2pc_manager.h"
 #include<cstring>
 
 using namespace std;
@@ -25,17 +25,18 @@ int main(int argc, char **argv) {
     int col_ordinal = atoi(argv[4]);
     string secret_shares_file(argv[5]);
 
-    cout << "Setup: party=" << party << " host=" << host << " port=" << port << " col_idx=" << col_ordinal << " input_shares=" << secret_shares_file << '\n';
-    NetIO *io = new NetIO(party==ALICE ? nullptr : host.c_str(), port);
-    setup_semi_honest(io, party);
+//    cout << "Setup: party=" << party << " host=" << host << " port=" << port << " col_idx=" << col_ordinal << " input_shares=" << secret_shares_file << '\n';
+    auto emp_manager = new SH2PCManager(host, party, port);
+    SystemConfiguration & s = SystemConfiguration::getInstance();
+    s.emp_mode_ = EmpMode::SH2PC;
+    s.emp_manager_ = emp_manager;
+    BitPackingMetadata md; // empty set
+    s.initialize("", md, StorageModel::COLUMN_STORE);
 
 
     // get schema:
     int suffix_start = secret_shares_file.find_last_of(".");
-    cout << "Secret shares file: " << secret_shares_file << '\n';
     string schema_file = secret_shares_file.substr(0, suffix_start) + ".schema";
-    cout << "Schema file: " << schema_file << '\n';
-
     auto schema_spec = DataUtilities::readTextFileToString(schema_file);
     auto schema = QuerySchema(schema_spec);
     auto public_schema = QuerySchema::toPlain(schema);
@@ -50,6 +51,8 @@ int main(int argc, char **argv) {
         cout << revealed.toString() << '\n';
     }
 
-    finalize_semi_honest();
+    emp_manager->flush();
+    delete emp_manager;
+    s.emp_manager_ = nullptr;
 
 }
