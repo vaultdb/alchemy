@@ -155,6 +155,10 @@ int main(int argc, char **argv) {
     // Alice = 1, Bob = 2
     int party = atoi(argv[1]);
     assert(party == 1 || party == 2);
+    string code_version = Utilities::runCommand("git rev-parse HEAD");
+    if(code_version[code_version.size()-1] != '\n') code_version += "\n";
+
+    cout << "Running on code version: " << code_version << '\n';
 
     Catalyst catalyst(party, argv[2]);
     catalyst.loadStudyData();
