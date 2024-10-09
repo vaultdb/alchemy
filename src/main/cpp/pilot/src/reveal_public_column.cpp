@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
 
     party = atoi(argv[1]);
     string host = argv[2];
-    port = 4445; //atoi(argv[3]);
+    port = atoi(argv[3]);
     int col_ordinal = atoi(argv[4]);
     string secret_shares_file(argv[5]);
 
