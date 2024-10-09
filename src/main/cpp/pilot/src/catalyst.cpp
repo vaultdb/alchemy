@@ -49,6 +49,8 @@ void Catalyst::parseAndRunQueries() {
     SystemConfiguration & c = SystemConfiguration::getInstance();
 
     for(auto q : study_.queries_) {
+        auto start_time = clock_start();
+
         QuerySpec s = q.second;
         cout << "Parsing query plan in " << s.plan_file_ << endl;
         auto root = PlanParser<Bit>::parse("", s.plan_file_);
@@ -56,6 +58,8 @@ void Catalyst::parseAndRunQueries() {
 
         cout << "Running " << s.name_ << " with execution plan: \n" << root->printTree() << endl;
             QueryTable<Bit> *output = root->run();
+            auto runtime_ms = time_from(start_time)/1e3;
+            cout << "Query " << s.name_ << " took " << runtime_ms << " ms." << endl;
             TableManager::getInstance().insertTable(dst_table_name, output);
 
             string fq_filename = dst_dir + "/" + s.name_ + (c.party_ == 1 ? ".alice" : ".bob");
