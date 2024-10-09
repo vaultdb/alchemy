@@ -9,8 +9,8 @@ using namespace vaultdb;
 
 // usage: ./reveal_public_column <party 1 || 2> <host> <port> <col ordinal> <secret shares file>
 // e.g.,
-// ./reveal_public_column 1 127.0.01. 4444 0 pilot/results/phame/aggregate_only/phame_cohort_counts.alice
-// ./reveal_public_column 2 127.0.01. 4444 0 pilot/results/phame/aggregate_only/phame_cohort_counts.bob
+// ./bin/reveal_public_column 1 127.0.0.1 4444 0 pilot/results/phame/aggregate_only/phame_cohort_counts.alice
+// ./bin/reveal_public_column 2 127.0.0.1 4444 0 pilot/results/phame/aggregate_only/phame_cohort_counts.bob
 
 int main(int argc, char **argv) {
     int port, party;
@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     int col_ordinal = atoi(argv[4]);
     string secret_shares_file(argv[5]);
 
-//    cout << "Setup: party=" << party << " host=" << host << " port=" << port << " col_idx=" << col_ordinal << " input_shares=" << secret_shares_file << '\n';
+    cout << "Setup: party=" << party << " host=" << host << " port=" << port << " col_idx=" << col_ordinal << " input_shares=" << secret_shares_file << '\n';
     auto emp_manager = new SH2PCManager(host, party, port);
     SystemConfiguration & s = SystemConfiguration::getInstance();
     s.emp_mode_ = EmpMode::SH2PC;
