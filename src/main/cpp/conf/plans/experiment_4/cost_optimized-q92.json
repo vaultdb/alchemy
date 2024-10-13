@@ -19,6 +19,28 @@
       ],
       "sql": "SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY n_name, s_suppkey",
       "dummy-tag": false,
+      "collation-1": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        },
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-3": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -47,6 +69,28 @@
       ],
       "sql": "SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%' ORDER BY ps_suppkey, ps_partkey",
       "dummy-tag": false,
+      "collation-1": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-3": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -54,7 +98,7 @@
       "id": "2",
       "relOp": "LogicalJoin",
       "joinCondition" : "s_suppkey = ps_suppkey",
-      "operator-algorithm" : "nested-loop-join",
+      "operator-algorithm" : "auto",
       "outputFields": "s_suppkey (#0), n_name (#1), ps_partkey (#2), ps_suppkey (#3), ps_supplycost (#4)",
       "condition": {
         "op": {
@@ -112,7 +156,7 @@
     {
       "id": "4",
       "relOp": "LogicalValues",
-      "outputFields": "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_quantity (#3), volume (#4)",
+      "outputFields": "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_quantity (#3), l_extendedprice (#4), l_discount (#5)",
       "type": [
         {
           "type": "INTEGER",
@@ -137,15 +181,55 @@
           "name": "l_quantity"
         },
         {
-          "type": "FLOAT",
+          "type": "DECIMAL",
           "nullable": true,
           "precision": 19,
           "scale": 0,
-          "name": "volume"
+          "name": "l_extendedprice"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_discount"
         }
       ],
-      "sql": "SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice * (1.0 - l_discount) AS volume FROM lineitem ORDER BY l_orderkey, l_partkey, l_suppkey",
+      "sql": "SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice, l_discount FROM lineitem ORDER BY l_orderkey, l_partkey, l_suppkey",
       "dummy-tag": false,
+      "collation-1": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        },
+        {
+          "field": 2,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 1,
+          "name": "l_partkey",
+          "direction": "ASCENDING"
+        },
+        {
+          "field": 2,
+          "name": "l_suppkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-3": [
+        {
+          "field": 0,
+          "name": "l_orderkey",
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -153,8 +237,8 @@
       "id": "5",
       "relOp": "LogicalJoin",
       "joinCondition" : "ps_suppkey = l_suppkey AND ps_partkey = l_partkey",
-      "operator-algorithm" : "nested-loop-join",
-      "outputFields": "n_name (#0), ps_partkey (#1), ps_suppkey (#2), ps_supplycost (#3), l_orderkey (#4), l_partkey (#5), l_suppkey (#6), l_quantity (#7), volume (#8)",
+      "operator-algorithm" : "auto",
+      "outputFields": "n_name (#0), ps_partkey (#1), ps_suppkey (#2), ps_supplycost (#3), l_orderkey (#4), l_partkey (#5), l_suppkey (#6), l_quantity (#7), l_extendedprice (#8), l_discount (#9)",
       "condition": {
         "op": {
           "name": "AND",
@@ -208,9 +292,9 @@
     {
       "id": "6",
       "relOp": "LogicalProject",
-      "inputFields": "nation (#0), ps_partkey (#1), ps_suppkey (#2), ps_supplycost (#3), l_orderkey (#4), l_partkey (#5), l_suppkey (#6), l_quantity (#7), volume (#8)",
+      "inputFields": "nation (#0), ps_partkey (#1), ps_suppkey (#2), ps_supplycost (#3), l_orderkey (#4), l_partkey (#5), l_suppkey (#6), l_quantity (#7), l_extendedprice (#8), l_discount (#9)",
       "outputFields": "nation (#0),  l_orderkey (#1), amount (#2)",
-      "amount": "volume : l.l_extendedprice * (1.0 - l.l_discount) - ps.ps_supplycost * l.l_quantity",
+      "amount": "l.l_extendedprice * (1.0 - l.l_discount) - ps.ps_supplycost * l.l_quantity",
       "fields": [
         "nation",
         "l_orderkey",
@@ -233,9 +317,39 @@
           },
           "operands": [
             {
-              "input": 8,
-              "name": "$8",
-              "field_name": "volume"
+              "op": {
+                "name": "*",
+                "kind": "TIMES",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 8,
+                  "field_name": "l_extendedprice",
+                  "name": "$8"
+                },
+                {
+                  "op": {
+                    "name": "-",
+                    "kind": "MINUS",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "literal": 1,
+                      "type": {
+                        "type": "FLOAT",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 9,
+                      "name": "$9",
+                      "field_name": "l_discount"
+                    }
+                  ]
+                }
+              ]
             },
             {
               "op": {
@@ -278,6 +392,18 @@
       ],
       "sql": "SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders ORDER BY o_orderkey",
       "dummy-tag": false,
+      "collation-1": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 0,
+          "direction": "DESCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -285,7 +411,7 @@
       "id": "8",
       "relOp": "LogicalJoin",
       "joinCondition" : "l_orderkey = o_orderkey",
-      "operator-algorithm" : "nested-loop-join",
+      "operator-algorithm" : "auto",
       "outputFields": "nation (#0),  l_orderkey (#1), amount (#2), o_year (#3), o_orderkey (#4)",
       "condition": {
         "op": {
@@ -338,7 +464,7 @@
     {
       "id": "10",
       "relOp": "LogicalAggregate",
-      "operator-algorithm" : "sort-merge-aggregate",
+      "operator-algorithm" : "auto",
       "cardBound" : 175,
       "effective-collation": [
         {

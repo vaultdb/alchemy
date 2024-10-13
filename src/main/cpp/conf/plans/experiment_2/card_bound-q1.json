@@ -480,22 +480,6 @@
           ]
         }
       ]
-    },
-    {
-      "id": "4",
-      "relOp": "LogicalSort",
-      "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        },
-        {
-          "field": 1,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
-      ]
     }
   ]
 }

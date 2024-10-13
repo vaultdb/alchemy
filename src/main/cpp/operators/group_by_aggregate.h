@@ -16,6 +16,7 @@ namespace vaultdb {
         std::vector<ScalarAggregateDefinition> aggregate_definitions_;
         std::vector<int32_t> group_by_;
         SortDefinition effective_sort_;
+        size_t cardinality_bound_  = 0; // stored in SMA for planning purposes, only used in NLA
 
 
         GroupByAggregate(const GroupByAggregate<B> & src) : Operator<B>(src), aggregate_definitions_(src.aggregate_definitions_), group_by_(src.group_by_), effective_sort_(src.effective_sort_), cardinality_bound_(src.cardinality_bound_) {}
@@ -100,9 +101,6 @@ namespace vaultdb {
 
 
     protected:
-        size_t cardinality_bound_  = 0; // stored in SMA for planning purposes, only used in NLA
-
-
         inline string getParameters() const override {
             stringstream  ss;
             ss << "group-by: (" << group_by_[0];
