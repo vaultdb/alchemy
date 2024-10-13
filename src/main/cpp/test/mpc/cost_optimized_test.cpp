@@ -7,7 +7,7 @@
 #include <test/support/tpch_queries.h>
 #include <boost/algorithm/string/replace.hpp>
 #include <parser/plan_parser.h>
-
+#include <opt/plan_optimizer.h>
 
 using namespace emp;
 using namespace vaultdb;
@@ -29,7 +29,7 @@ DEFINE_string(storage, "column", "storage model for columns (column, wire_packed
 class CostOptimizedTest : public EmpBaseTest {
 protected:
 
-    void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
+    void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name, int type_num);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
     void runStubTest(string & sql_plan, string & json_plan, string & expected_query, SortDefinition & expected_sort, const string & unioned_db);
     int input_tuple_limit_ = -1;
@@ -38,7 +38,7 @@ protected:
 
 
 void
-CostOptimizedTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
+CostOptimizedTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name, int type_num) {
 
 
     this->initializeBitPacking(FLAGS_unioned_db);
@@ -57,10 +57,21 @@ CostOptimizedTest::runTest(const int &test_id, const string & test_name, const S
 
     //ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
-    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_4/cost_optimized-"  + test_name + ".json";
+    std::string plan_file = "";
+    switch (type_num) {
+        case 2:
+            plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_2/card_bound-" + test_name + ".json";
+            break;
+        case 3:
+            plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_3/bushy_plan-" + test_name + ".json";
+            break;
+        case 4:
+            plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_4/cost_optimized-" + test_name + ".json";
+            break;
+    }
 
     // Initialize memory measurement
-//    size_t initial_memory = Utilities::checkMemoryUtilization(true);
+    size_t initial_memory = Utilities::checkMemoryUtilization(true);
 
     // Start measuring time
     time_point<high_resolution_clock> startTime = clock_start();
@@ -69,6 +80,21 @@ CostOptimizedTest::runTest(const int &test_id, const string & test_name, const S
     PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
+    cout << "Original Tree : " << endl;
+    cout << root->printTree() << endl;
+
+    if(type_num == 4) {
+        time_point <high_resolution_clock> BeforeCostOptimization = clock_start();
+
+        PlanOptimizer<Bit> optimizer(root, parser.getOperatorMap(), parser.getSupportOps(), parser.getInterestingSortOrders());
+        root = optimizer.optimizeTree();
+
+        std::cout << "Cost Optimized Plan : " << endl;
+        cout << root->printTree() << endl;
+
+        double CostOptimizationDuration = time_from(BeforeCostOptimization) / 1e6;
+        cout << "Cost Optimization Time : " << CostOptimizationDuration << " sec\n";
+    }
 
     SecureTable *result = root->run();
 
@@ -88,9 +114,9 @@ CostOptimizedTest::runTest(const int &test_id, const string & test_name, const S
     cout << "End-to-end estimated gates: " << cost_estimate <<  ". observed gates: " << end_gates - start_gates << " gates, relative error (%)=" << relative_error << endl;
 
     // Measure and print memory after execution
-//    size_t peak_memory = Utilities::checkMemoryUtilization(true);
-//    size_t memory_usage = peak_memory - initial_memory;
-//    cout << "Initial Memory: " << initial_memory << " bytes, Peak Memory After Execution: " << peak_memory << " bytes" << ", Memory Usage: " << memory_usage << " bytes" << endl;
+    size_t peak_memory = Utilities::checkMemoryUtilization(true);
+    size_t memory_usage = peak_memory - initial_memory;
+    cout << "Initial Memory: " << initial_memory << " bytes, Peak Memory After Execution: " << peak_memory << " bytes" << ", Memory Usage: " << memory_usage << " bytes" << endl;
 
     // Comm Cost measurement
     auto end_comm_cost = manager_->getCommCost();
@@ -127,57 +153,147 @@ CostOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDef
     return query;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// *** Card-Bound Tests ***
+// ---------------------------------------------------------
+// NOTE: From here, we are using keyed-relationship & card bound, so need to run every queries
+// ---------------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////
+
+/*
+TEST_F(CostOptimizedTest, card_bound_tpch_q1) {
+
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+    runTest(1, "q1", expected_sort, FLAGS_unioned_db, 2);
+
+}
 
 
-//TEST_F(CostOptimizedTest, tpch_q1) {
-//
-//    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-//    runTest(1, "q1", expected_sort, FLAGS_unioned_db);
-//
-//}
-//
-//
-//TEST_F(CostOptimizedTest, tpch_q3) {
-//
-//    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-//                                 ColumnSort(1, SortDirection::DESCENDING),
-//                                 ColumnSort(2, SortDirection::ASCENDING)};
-//    runTest(3, "q3", expected_sort, FLAGS_unioned_db);
-//}
+TEST_F(CostOptimizedTest, card_bound_tpch_q3) {
+
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(1, SortDirection::DESCENDING),
+                                 ColumnSort(2, SortDirection::ASCENDING)};
+    runTest(3, "q3", expected_sort, FLAGS_unioned_db, 2);
+}
 
 
-TEST_F(CostOptimizedTest, tpch_q5) {
+TEST_F(CostOptimizedTest, card_bound_tpch_q5) {
     //input_tuple_limit_ = 1000;
 
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(5, "q5", expected_sort, FLAGS_unioned_db);
+    runTest(5, "q5", expected_sort, FLAGS_unioned_db, 2);
 }
 
 
-TEST_F(CostOptimizedTest, tpch_q8) {
+TEST_F(CostOptimizedTest, card_bound_tpch_q8) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest(8, "q8", expected_sort, FLAGS_unioned_db);
+    runTest(8, "q8", expected_sort, FLAGS_unioned_db, 2);
 }
 
 
 
-TEST_F(CostOptimizedTest, tpch_q9) {
+TEST_F(CostOptimizedTest, card_bound_tpch_q9) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(9, "q9", expected_sort, FLAGS_unioned_db);
+    runTest(9, "q9", expected_sort, FLAGS_unioned_db, 2);
 
 }
 
 
-
-
-TEST_F(CostOptimizedTest, tpch_q18) {
+TEST_F(CostOptimizedTest, card_bound_tpch_q18) {
     // -1 ASC, $4 DESC, $3 ASC
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(4, SortDirection::DESCENDING),
                                  ColumnSort(3, SortDirection::ASCENDING)};
-    runTest(18, "q18", expected_sort, FLAGS_unioned_db);
+    runTest(18, "q18", expected_sort, FLAGS_unioned_db, 2);
+}
+*/
+
+///////////////////////////////////////////////////////////////////////////////
+// *** Bushy-Plan Tests ***
+// ---------------------------------------------------------
+// NOTE: Q1, Q3 are identical to the Card-Bound tests,
+// so no need to execute them in this section.
+// ---------------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////
+
+
+//TEST_F(CostOptimizedTest, bushy_plan_tpch_q5) {
+//    //input_tuple_limit_ = 1000;
+//
+//    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+//    runTest(5, "q5", expected_sort, FLAGS_unioned_db, 3);
+//}
+
+
+TEST_F(CostOptimizedTest, bushy_plan_tpch_q8) {
+
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+    runTest(8, "q8", expected_sort, FLAGS_unioned_db, 3);
+}
+
+
+TEST_F(CostOptimizedTest, bushy_plan_tpch_q18) {
+    // -1 ASC, $4 DESC, $3 ASC
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(4, SortDirection::DESCENDING),
+                                 ColumnSort(3, SortDirection::ASCENDING)};
+    runTest(18, "q18", expected_sort, FLAGS_unioned_db, 3);
+}
+
+
+
+
+// Cost-Optimized Tests
+
+TEST_F(CostOptimizedTest, cost_optimized_tpch_q1) {
+
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+    runTest(1, "q1", expected_sort, FLAGS_unioned_db, 4);
+
+}
+
+
+TEST_F(CostOptimizedTest, cost_optimized_tpch_q3) {
+
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(1, SortDirection::DESCENDING),
+                                 ColumnSort(2, SortDirection::ASCENDING)};
+    runTest(3, "q3", expected_sort, FLAGS_unioned_db, 4);
+}
+
+
+TEST_F(CostOptimizedTest, cost_optimized_tpch_q5) {
+    //input_tuple_limit_ = 1000;
+
+    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+    runTest(5, "q5", expected_sort, FLAGS_unioned_db, 4);
+}
+
+
+TEST_F(CostOptimizedTest, cost_optimized_tpch_q8) {
+
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+    runTest(8, "q8", expected_sort, FLAGS_unioned_db, 4);
+}
+
+
+TEST_F(CostOptimizedTest, cost_optimized_tpch_q9) {
+    // $0 ASC, $1 DESC
+    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+    runTest(9, "q9", expected_sort, FLAGS_unioned_db, 4);
+
+}
+
+
+TEST_F(CostOptimizedTest, cost_optimized_tpch_q18) {
+    // -1 ASC, $4 DESC, $3 ASC
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(4, SortDirection::DESCENDING),
+                                 ColumnSort(3, SortDirection::ASCENDING)};
+    runTest(18, "q18", expected_sort, FLAGS_unioned_db, 4);
 }
 
 
