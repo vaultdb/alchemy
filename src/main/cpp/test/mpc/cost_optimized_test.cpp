@@ -160,7 +160,7 @@ CostOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDef
 // ---------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-/*
+
 TEST_F(CostOptimizedTest, card_bound_tpch_q1) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
@@ -209,7 +209,7 @@ TEST_F(CostOptimizedTest, card_bound_tpch_q18) {
                                  ColumnSort(3, SortDirection::ASCENDING)};
     runTest(18, "q18", expected_sort, FLAGS_unioned_db, 2);
 }
-*/
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // *** Bushy-Plan Tests ***
@@ -220,12 +220,12 @@ TEST_F(CostOptimizedTest, card_bound_tpch_q18) {
 ///////////////////////////////////////////////////////////////////////////////
 
 
-//TEST_F(CostOptimizedTest, bushy_plan_tpch_q5) {
-//    //input_tuple_limit_ = 1000;
-//
-//    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-//    runTest(5, "q5", expected_sort, FLAGS_unioned_db, 3);
-//}
+TEST_F(CostOptimizedTest, bushy_plan_tpch_q5) {
+    //input_tuple_limit_ = 1000;
+
+    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+    runTest(5, "q5", expected_sort, FLAGS_unioned_db, 3);
+}
 
 
 TEST_F(CostOptimizedTest, bushy_plan_tpch_q8) {
