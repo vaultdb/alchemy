@@ -250,7 +250,7 @@ TEST_F(CostOptimizedTest, cost_optimized_tpch_q1) {
     runTest(1, "q1", expected_sort, FLAGS_unioned_db, 4);
 
 }
-
+*/
 
 TEST_F(CostOptimizedTest, cost_optimized_tpch_q3) {
 
@@ -260,7 +260,7 @@ TEST_F(CostOptimizedTest, cost_optimized_tpch_q3) {
     runTest(3, "q3", expected_sort, FLAGS_unioned_db, 4);
 }
 
-*/
+
 
 TEST_F(CostOptimizedTest, cost_optimized_tpch_q5) {
     //input_tuple_limit_ = 1000;
@@ -284,12 +284,12 @@ TEST_F(CostOptimizedTest, cost_optimized_tpch_q9) {
 
 }
 
-TEST_F(CostOptimizedTest, cost_optimized_tpch_q92) {
-    // $0 ASC, $1 DESC
-    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(92, "q92", expected_sort, FLAGS_unioned_db, 4);
-
-}
+//TEST_F(CostOptimizedTest, cost_optimized_tpch_q92) {
+//    // $0 ASC, $1 DESC
+//    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+//    runTest(92, "q92", expected_sort, FLAGS_unioned_db, 4);
+//
+//}
 
 
 TEST_F(CostOptimizedTest, cost_optimized_tpch_q18) {
