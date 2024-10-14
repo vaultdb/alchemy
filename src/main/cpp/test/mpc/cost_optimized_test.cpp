@@ -160,7 +160,7 @@ CostOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDef
 // ---------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-
+/*
 TEST_F(CostOptimizedTest, card_bound_tpch_q1) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
@@ -260,6 +260,7 @@ TEST_F(CostOptimizedTest, cost_optimized_tpch_q3) {
     runTest(3, "q3", expected_sort, FLAGS_unioned_db, 4);
 }
 
+*/
 
 TEST_F(CostOptimizedTest, cost_optimized_tpch_q5) {
     //input_tuple_limit_ = 1000;

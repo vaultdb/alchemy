@@ -52,6 +52,8 @@ namespace vaultdb {
         Operator<B> *fetchLeaf(Operator<B> *op);
 
         void recurseJoin(Operator<B> *join);
+        void recurseRightJoin(Operator<B> *join);
+
         void recurseAgg(Operator<B> *agg);
         void recurseSort(Operator<B> *sort);
 

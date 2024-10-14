@@ -17,25 +17,9 @@
           "name": "n_name"
         }
       ],
-      "sql": "SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY n_name, s_suppkey",
+      "sql": "SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY s_suppkey",
       "dummy-tag": false,
-      "collation-1": [
-        {
-          "field": 1,
-          "direction": "ASCENDING"
-        },
-        {
-          "field": 0,
-          "direction": "ASCENDING"
-        }
-      ],
-      "collation-2": [
-        {
-          "field": 1,
-          "direction": "ASCENDING"
-        }
-      ],
-      "collation-3": [
+      "collation": [
         {
           "field": 0,
           "direction": "ASCENDING"
@@ -196,23 +180,23 @@
           "direction": "ASCENDING"
         },
         {
-          "field": 1,
+          "field": 2,
           "direction": "ASCENDING"
         },
         {
-          "field": 2,
+          "field": 1,
           "direction": "ASCENDING"
         }
       ],
       "collation-2": [
         {
-          "field": 1,
-          "name": "l_partkey",
+          "field": 2,
+          "name": "l_suppkey",
           "direction": "ASCENDING"
         },
         {
-          "field": 2,
-          "name": "l_suppkey",
+          "field": 1,
+          "name": "l_partkey",
           "direction": "ASCENDING"
         }
       ],

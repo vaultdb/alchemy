@@ -43,27 +43,17 @@
           "name": "o_year"
         }
       ],
-      "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_year, o_orderkey",
+      "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_custkey",
       "dummy-tag": true,
       "collation-1": [
         {
-          "field": 2,
-          "direction": "ASCENDING"
-        },
-        {
-          "field": 0,
+          "field": 1,
           "direction": "ASCENDING"
         }
       ],
       "collation-2": [
         {
           "field": 0,
-          "direction": "ASCENDING"
-        }
-      ],
-      "collation-3": [
-        {
-          "field": 1,
           "direction": "ASCENDING"
         }
       ],
@@ -142,17 +132,17 @@
           "name": "volume"
         }
       ],
-      "sql" : "SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume,        CASE            WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE            ELSE TRUE            END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_orderkey",
+      "sql" : "SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume,        CASE            WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE            ELSE TRUE            END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_suppkey",
       "dummy-tag": true,
       "collation-1": [
         {
-          "field": 0,
+          "field": 1,
           "direction": "ASCENDING"
         }
       ],
       "collation-2": [
         {
-          "field": 1,
+          "field": 0,
           "direction": "ASCENDING"
         }
       ],

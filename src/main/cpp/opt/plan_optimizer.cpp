@@ -211,41 +211,43 @@ void PlanOptimizer<B>::recurseJoin(Operator<B> *join) {
     auto lhs = join->getChild();
     auto rhs = join->getChild(1);
 
-    // Recursively optimize left and right subtrees if they are joins
-    if (lhs->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN ||
-        lhs->getType() == OperatorType::KEYED_SORT_MERGE_JOIN) {
-        recurseJoin(lhs);
-    }
-    if (rhs->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN ||
-        rhs->getType() == OperatorType::KEYED_SORT_MERGE_JOIN) {
-        recurseJoin(rhs);
+    if (join->getOperatorId()==8)
+        rhs = join->getChild(1);
+
+    if (rhs->getType() == OperatorType::PROJECT){
+        if(rhs->getChild()->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN |rhs->getType() == OperatorType::KEYED_SORT_MERGE_JOIN)
+            recurseRightJoin(rhs->getChild());
     }
 
     auto rhs_sorts = getCollations(rhs);
+    auto lhs_sorts = getCollations(lhs);
 
-    for(auto &sort: rhs_sorts) {
-        // Clone the entire left and right subtrees
-        Operator<B> *lhs_clone = lhs->clone();
+    for (auto &sort: rhs_sorts) {
+
         Operator<B> *rhs_clone = rhs->clone();
+        Operator<B> *lhs_clone = lhs->clone();
 
         // Apply the sort order to the right child
         rhs_clone->setSortOrder(sort);
 
-        if(join->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN) {
-            KeyedJoin<B> *kj = (KeyedJoin<B> *)join->clone();
+        // If join was NLJ
+        if (join->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN) {
+
+            // Create plan for NLJ first.
+            KeyedJoin<B> *kj = (KeyedJoin<B> *) join->clone();
             kj->setChild(lhs_clone, 0);
             kj->setChild(rhs_clone, 1);
             kj->updateCollation();
 
             recurseNode(kj);
 
-            // Create SMJ alternative
+            // Create plan for SMJ next.
             KeyedSortMergeJoin<B> *smj = new KeyedSortMergeJoin(lhs_clone->clone(), rhs_clone->clone(),
-                                                                kj->foreignKeyChild(), kj->getPredicate()->clone());
+                                                                    kj->foreignKeyChild(), kj->getPredicate()->clone());
 
             // check sort compatibility for SMJ
             if (smj->sortCompatible(lhs_clone)) {
-                if(rhs_clone->getType() != OperatorType::SECURE_SQL_INPUT) {
+                if (rhs_clone->getType() != OperatorType::SECURE_SQL_INPUT) {
                     auto join_key_idxs = smj->joinKeyIdxs();
                     vector<ColumnSort> rhs_sort;
                     int lhs_col_cnt = lhs_clone->getOutputSchema().getFieldCount();
@@ -260,11 +262,10 @@ void PlanOptimizer<B>::recurseJoin(Operator<B> *join) {
 
                     Operator<B> *rhs_sorter = new Sort<B>(rhs_clone->clone(), rhs_sort);
                     smj = new KeyedSortMergeJoin<B>(lhs_clone->clone(), rhs_sorter, kj->foreignKeyChild(),
-                                                    kj->getPredicate()->clone());
+                                                        kj->getPredicate()->clone());
                 }
-            }
-            else if (smj->sortCompatible(rhs_clone)) {
-                if(lhs_clone->getType() != OperatorType::SECURE_SQL_INPUT) {
+            }else if (smj->sortCompatible(rhs_clone)) {
+                if (lhs_clone->getType() != OperatorType::SECURE_SQL_INPUT) {
                     auto join_key_idxs = smj->joinKeyIdxs();
                     vector<ColumnSort> lhs_sort;
                     SortDefinition rhs_sort = rhs_clone->getSortOrder();
@@ -278,7 +279,7 @@ void PlanOptimizer<B>::recurseJoin(Operator<B> *join) {
 
                     Operator<B> *lhs_sorter = new Sort<B>(lhs_clone->clone(), lhs_sort);
                     smj = new KeyedSortMergeJoin<B>(lhs_sorter, rhs_clone->clone(), kj->foreignKeyChild(),
-                                                    kj->getPredicate()->clone());
+                                                        kj->getPredicate()->clone());
                     lhs_sorter->setParent(smj);
                 }
             }
@@ -289,9 +290,13 @@ void PlanOptimizer<B>::recurseJoin(Operator<B> *join) {
 
             delete smj;
             delete kj;
+
         }
-        else if(join->getType() == OperatorType::KEYED_SORT_MERGE_JOIN) {
-            KeyedSortMergeJoin<B> *smj = (KeyedSortMergeJoin<B> *)join->clone();
+        // If join was SMJ
+        else if (join->getType() == OperatorType::KEYED_SORT_MERGE_JOIN) {
+
+            // Create plan for SMJ first
+            KeyedSortMergeJoin<B> *smj = (KeyedSortMergeJoin<B> *) join->clone();
             smj->setChild(lhs_clone, 0);
             smj->setChild(rhs_clone, 1);
             smj->updateCollation();
@@ -310,21 +315,20 @@ void PlanOptimizer<B>::recurseJoin(Operator<B> *join) {
                     rhs_sort.emplace_back(ColumnSort(idx - lhs_col_cnt, lhs_sort[i].second));
                 }
 
-                if(rhs_clone->getType() != OperatorType::SECURE_SQL_INPUT) {
+                if (rhs_clone->getType() != OperatorType::SECURE_SQL_INPUT) {
                     Operator<B> *rhs_sorter = new Sort<B>(rhs_clone->clone(), rhs_sort);
-                    Operator<B> *new_smj = new KeyedSortMergeJoin<B>(lhs_clone->clone(), rhs_sorter, foreign_key, smj->getPredicate()->clone());
+                    Operator<B> *new_smj = new KeyedSortMergeJoin<B>(lhs_clone->clone(), rhs_sorter, foreign_key,
+                                                                         smj->getPredicate()->clone());
                     new_smj->setOperatorId(operatorId);
                     new_smj->updateCollation();
                     recurseNode(new_smj);
                     delete new_smj;
-                }
-                else {
+                } else {
                     smj->getChild(1)->setSortOrder(rhs_sort);
                     smj->updateCollation();
                     recurseNode(smj);
                 }
-            }
-            else if (smj->sortCompatible(rhs_clone)) {
+            } else if (smj->sortCompatible(rhs_clone)) {
                 auto join_key_idxs = smj->joinKeyIdxs();
                 vector<ColumnSort> lhs_sort;
                 SortDefinition rhs_sort = rhs_clone->getSortOrder();
@@ -334,27 +338,27 @@ void PlanOptimizer<B>::recurseJoin(Operator<B> *join) {
                     lhs_sort.emplace_back(ColumnSort(idx, rhs_sort[i].second));
                 }
 
-                if(lhs_clone->getType() != OperatorType::SECURE_SQL_INPUT) {
+                if (lhs_clone->getType() != OperatorType::SECURE_SQL_INPUT) {
                     Operator<B> *lhs_sorter = new Sort<B>(lhs_clone->clone(), lhs_sort);
-                    Operator<B> *new_smj = new KeyedSortMergeJoin<B>(lhs_sorter, rhs_clone->clone(), foreign_key, smj->getPredicate()->clone());
+                    Operator<B> *new_smj = new KeyedSortMergeJoin<B>(lhs_sorter, rhs_clone->clone(), foreign_key,
+                                                                         smj->getPredicate()->clone());
                     new_smj->setOperatorId(operatorId);
                     new_smj->updateCollation();
                     recurseNode(new_smj);
                     delete new_smj;
-                }
-                else {
+                } else {
                     smj->getChild()->setSortOrder(lhs_sort);
                     smj->updateCollation();
                     recurseNode(smj);
                 }
-            }
-            else {
+            } else {
                 smj->updateCollation();
                 recurseNode(smj);
             }
 
-            // Make plan in case of KeyedJoin.
-            KeyedJoin<B> *kj = new KeyedJoin(lhs_clone->clone(), rhs_clone->clone(), foreign_key, smj->getPredicate()->clone());
+            // Create plan for NLJ next.
+            KeyedJoin<B> *kj = new KeyedJoin(lhs_clone->clone(), rhs_clone->clone(), foreign_key,
+                                                 smj->getPredicate()->clone());
             kj->setOperatorId(smj->getOperatorId());
             kj->updateCollation();
 
@@ -362,6 +366,165 @@ void PlanOptimizer<B>::recurseJoin(Operator<B> *join) {
 
             delete kj;
             delete smj;
+        }
+    }
+}
+
+template<typename B>
+void PlanOptimizer<B>::recurseRightJoin(Operator<B> *join) {
+    auto lhs = join->getChild();
+    auto rhs = join->getChild(1);
+
+    auto rhs_sorts = getCollations(rhs);
+    auto lhs_sorts = getCollations(lhs);
+
+    for(auto &l_sort: lhs_sorts) {
+        for (auto &sort: rhs_sorts) {
+            // Clone the entire left and right subtrees
+            Operator<B> *lhs_clone = lhs->clone();
+            Operator<B> *rhs_clone = rhs->clone();
+
+            // Apply the sort order to the right child
+            rhs_clone->setSortOrder(sort);
+            lhs_clone->setSortOrder(l_sort);
+
+            // If join was NLJ
+            if (join->getType() == OperatorType::KEYED_NESTED_LOOP_JOIN) {
+
+                // Create plan for NLJ first.
+                KeyedJoin<B> *kj = (KeyedJoin<B> *) join->clone();
+                kj->setChild(lhs_clone, 0);
+                kj->setChild(rhs_clone, 1);
+                kj->updateCollation();
+
+                recurseNode(kj);
+
+                // Create plan for SMJ next.
+                KeyedSortMergeJoin<B> *smj = new KeyedSortMergeJoin(lhs_clone->clone(), rhs_clone->clone(),
+                                                                    kj->foreignKeyChild(), kj->getPredicate()->clone());
+
+                // check sort compatibility for SMJ
+                if (smj->sortCompatible(lhs_clone)) {
+                    if (rhs_clone->getType() != OperatorType::SECURE_SQL_INPUT) {
+                        auto join_key_idxs = smj->joinKeyIdxs();
+                        vector<ColumnSort> rhs_sort;
+                        int lhs_col_cnt = lhs_clone->getOutputSchema().getFieldCount();
+                        SortDefinition lhs_sort = lhs_clone->getSortOrder();
+
+                        for (size_t i = 0; i < join_key_idxs.size(); ++i) {
+                            int idx = join_key_idxs[i].second;
+                            rhs_sort.emplace_back(ColumnSort(idx - lhs_col_cnt, lhs_sort[i].second));
+                        }
+
+                        delete smj;
+
+                        Operator<B> *rhs_sorter = new Sort<B>(rhs_clone->clone(), rhs_sort);
+                        smj = new KeyedSortMergeJoin<B>(lhs_clone->clone(), rhs_sorter, kj->foreignKeyChild(),
+                                                        kj->getPredicate()->clone());
+                    }
+                } else if (smj->sortCompatible(rhs_clone)) {
+                    if (lhs_clone->getType() != OperatorType::SECURE_SQL_INPUT) {
+                        auto join_key_idxs = smj->joinKeyIdxs();
+                        vector<ColumnSort> lhs_sort;
+                        SortDefinition rhs_sort = rhs_clone->getSortOrder();
+
+                        for (size_t i = 0; i < join_key_idxs.size(); ++i) {
+                            int idx = join_key_idxs[i].first;
+                            lhs_sort.emplace_back(ColumnSort(idx, rhs_sort[i].second));
+                        }
+
+                        delete smj;
+
+                        Operator<B> *lhs_sorter = new Sort<B>(lhs_clone->clone(), lhs_sort);
+                        smj = new KeyedSortMergeJoin<B>(lhs_sorter, rhs_clone->clone(), kj->foreignKeyChild(),
+                                                        kj->getPredicate()->clone());
+                        lhs_sorter->setParent(smj);
+                    }
+                }
+
+                smj->setOperatorId(kj->getOperatorId());
+                smj->updateCollation();
+                recurseNode(smj);
+
+                delete smj;
+                delete kj;
+
+            }
+                // If join was SMJ
+            else if (join->getType() == OperatorType::KEYED_SORT_MERGE_JOIN) {
+
+                // Create plan for SMJ first
+                KeyedSortMergeJoin<B> *smj = (KeyedSortMergeJoin<B> *) join->clone();
+                smj->setChild(lhs_clone, 0);
+                smj->setChild(rhs_clone, 1);
+                smj->updateCollation();
+
+                int foreign_key = smj->foreignKeyChild();
+                int operatorId = smj->getOperatorId();
+
+                if (smj->sortCompatible(lhs_clone)) {
+                    auto join_key_idxs = smj->joinKeyIdxs();
+                    vector<ColumnSort> rhs_sort;
+                    int lhs_col_cnt = lhs_clone->getOutputSchema().getFieldCount();
+                    SortDefinition lhs_sort = lhs_clone->getSortOrder();
+
+                    for (size_t i = 0; i < join_key_idxs.size(); ++i) {
+                        int idx = join_key_idxs[i].second;
+                        rhs_sort.emplace_back(ColumnSort(idx - lhs_col_cnt, lhs_sort[i].second));
+                    }
+
+                    if (rhs_clone->getType() != OperatorType::SECURE_SQL_INPUT) {
+                        Operator<B> *rhs_sorter = new Sort<B>(rhs_clone->clone(), rhs_sort);
+                        Operator<B> *new_smj = new KeyedSortMergeJoin<B>(lhs_clone->clone(), rhs_sorter, foreign_key,
+                                                                         smj->getPredicate()->clone());
+                        new_smj->setOperatorId(operatorId);
+                        new_smj->updateCollation();
+                        recurseNode(new_smj);
+                        delete new_smj;
+                    } else {
+                        smj->getChild(1)->setSortOrder(rhs_sort);
+                        smj->updateCollation();
+                        recurseNode(smj);
+                    }
+                } else if (smj->sortCompatible(rhs_clone)) {
+                    auto join_key_idxs = smj->joinKeyIdxs();
+                    vector<ColumnSort> lhs_sort;
+                    SortDefinition rhs_sort = rhs_clone->getSortOrder();
+
+                    for (size_t i = 0; i < join_key_idxs.size(); ++i) {
+                        int idx = join_key_idxs[i].first;
+                        lhs_sort.emplace_back(ColumnSort(idx, rhs_sort[i].second));
+                    }
+
+                    if (lhs_clone->getType() != OperatorType::SECURE_SQL_INPUT) {
+                        Operator<B> *lhs_sorter = new Sort<B>(lhs_clone->clone(), lhs_sort);
+                        Operator<B> *new_smj = new KeyedSortMergeJoin<B>(lhs_sorter, rhs_clone->clone(), foreign_key,
+                                                                         smj->getPredicate()->clone());
+                        new_smj->setOperatorId(operatorId);
+                        new_smj->updateCollation();
+                        recurseNode(new_smj);
+                        delete new_smj;
+                    } else {
+                        smj->getChild()->setSortOrder(lhs_sort);
+                        smj->updateCollation();
+                        recurseNode(smj);
+                    }
+                } else {
+                    smj->updateCollation();
+                    recurseNode(smj);
+                }
+
+                // Create plan for NLJ next.
+                KeyedJoin<B> *kj = new KeyedJoin(lhs_clone->clone(), rhs_clone->clone(), foreign_key,
+                                                 smj->getPredicate()->clone());
+                kj->setOperatorId(smj->getOperatorId());
+                kj->updateCollation();
+
+                recurseNode(kj);
+
+                delete kj;
+                delete smj;
+            }
         }
     }
 }
