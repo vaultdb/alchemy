@@ -38,7 +38,12 @@ SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &
     runQuery();
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
-    this->output_cardinality_ = manager->getTableCardinality(plain_input_->tuple_cnt_);
+
+    // if input_tuple_limit(= number of full row table) is larger than plain), it means no card bound, so need to dummy pad.
+    if (input_tuple_limit > plain_input_->tuple_cnt_)
+        this->output_cardinality_ = input_tuple_limit;
+    else
+        this->output_cardinality_ = manager->getTableCardinality(plain_input_->tuple_cnt_);
 
 }
 
@@ -53,6 +58,8 @@ SecureTable *SecureSqlInput::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = system_conf_.andGateCount();
     this->output_ =  plain_input_->secretShare();
+
+    //TODO : Need to dummy pad here if this->output_cardinality_ = input_tuple_limit;
     return this->output_;
 
 }

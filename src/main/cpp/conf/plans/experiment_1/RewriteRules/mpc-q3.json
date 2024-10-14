@@ -4,8 +4,6 @@
       "id": "0",
       "relOp": "LogicalValues",
       "outputFields": "o_orderkey (#0), o_custkey (#1), o_orderdate (#2), o_shippriority (#3)",
-	  "sql": "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_custkey",
-	  "dummy-tag": true,
       "type": [
         {
           "type": "INTEGER",
@@ -28,12 +26,8 @@
           "name": "o_shippriority"
         }
       ],
-	  "collation": [
-		{
-		  "field": 1,
-		  "direction": "ASCENDING"
-		}
-	  ],
+      "sql": "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_orderkey, o_orderdate, o_shippriority",
+      "dummy-tag": true,
       "tuples": [],
       "inputs": []
     },
@@ -41,8 +35,6 @@
       "id": "1",
       "relOp": "LogicalValues",
       "outputFields": "c_custkey (#0)",
-	  "sql": "SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer ORDER BY c_custkey",
-	  "dummy-tag": true,
       "type": [
         {
           "type": "INTEGER",
@@ -50,12 +42,8 @@
           "name": "c_custkey"
         }
       ],
-	  "collation": [
-		{
-		  "field": 0,
-		  "direction": "ASCENDING"
-		}
-	  ],
+      "sql": "SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer ORDER BY c_custkey",
+      "dummy-tag": true,
       "tuples": [],
       "inputs": []
     },
@@ -64,7 +52,6 @@
       "relOp": "LogicalJoin",
       "joinOn" : "o_custkey = c_custkey",
       "outputFields": "o_orderkey (#0), o_custkey (#1), o_orderdate (#2), o_shippriority (#3), c_custkey (#4)",
-      "operator-algorithm" : "nested-loop-join",
       "condition": {
         "op": {
           "name": "=",
@@ -83,7 +70,6 @@
         ]
       },
       "joinType": "inner",
-      "foreignKey": 0,
       "inputs": [
         "0",
         "1"
@@ -117,8 +103,6 @@
       "id": "4",
       "relOp": "LogicalValues",
       "outputFields": "l_orderkey (#0), revenue (#1)",
-	  "sql": "SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey",
-	  "dummy-tag": true,
       "type": [
         {
           "type": "INTEGER",
@@ -133,12 +117,8 @@
           "name": "revenue"
         }
       ],
-	  "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING"
-        }
-      ],
+      "sql": "SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey",
+      "dummy-tag": true,
       "tuples": [],
       "inputs": []
     },
@@ -147,7 +127,6 @@
       "relOp": "LogicalJoin",
       "joinOn" : "o_orderkey = l_orderkey",
       "outputFields": "o_orderkey (#0), o_orderdate (#1), o_shippriority (#2), l_orderkey (#3), revenue (#4)",
-      "operator-algorithm" : "nested-loop-join",
       "condition": {
         "op": {
           "name": "=",
@@ -166,7 +145,6 @@
         ]
       },
       "joinType": "inner",
-      "foreignKey": 1,
       "inputs": [
         "3",
         "4"
@@ -175,17 +153,17 @@
     {
       "id": "6",
       "relOp": "LogicalProject",
-      "outputFields": "l_orderkey (#0), o_orderdate (#1), o_shippriority (#2), revenue (#3)",
+      "outputFields": "o_orderkey (#0), o_orderdate (#1), o_shippriority (#2), revenue (#3)",
       "fields": [
-        "l_orderkey",
+        "o_orderkey",
         "o_orderdate",
         "o_shippriority",
         "revenue"
       ],
       "exprs": [
         {
-          "input": 3,
-          "name": "$3"
+          "input": 0,
+          "name": "$0"
         },
         {
           "input": 1,
@@ -205,6 +183,13 @@
       "id": "7",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "sort-merge-aggregate",
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
       "group": [
         0,
         1,
@@ -258,7 +243,7 @@
       "id": "9",
       "relOp": "LogicalProject",
       "fields": [
-        "l_orderkey",
+        "o_orderkey",
         "revenue",
         "o_orderdate",
         "o_shippriority"

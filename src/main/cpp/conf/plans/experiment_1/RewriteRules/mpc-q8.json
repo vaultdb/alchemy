@@ -4,8 +4,6 @@
       "id": "0",
       "relOp": "LogicalValues",
       "outputFields": "c_custkey (#0)",
-	  "sql": "SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA' ORDER BY c_custkey",
-	  "dummy-tag": false,
       "type": [
         {
           "type": "INTEGER",
@@ -13,12 +11,8 @@
           "name": "c_custkey"
         }
       ],
-	  "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING"
-		}
-      ],
+      "sql": "SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA' ORDER BY c_custkey",
+      "dummy-tag": false,
       "tuples": [],
       "inputs": []
     },
@@ -26,8 +20,6 @@
       "id": "1",
       "relOp": "LogicalValues",
       "outputFields": "o_orderkey (#0), o_custkey (#1), o_year (#2)",
-	  "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_custkey, o_orderkey",
-	  "dummy-tag": true,
       "type": [
         {
           "type": "INTEGER",
@@ -45,23 +37,14 @@
           "name": "o_year"
         }
       ],
-	  "collation": [
-        {
-          "field": 1,
-          "direction": "ASCENDING"
-		},
-		{
-          "field": 0,
-          "direction": "ASCENDING"
-		}
-      ],
+      "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_year, o_orderkey",
+      "dummy-tag": true,
       "tuples": [],
       "inputs": []
     },
     {
       "id": "2",
       "outputFields": "c_custkey (#0), o_orderkey (#1), o_custkey (#2), o_year (#3)",
-      "operator-algorithm" : "nested-loop-join",
       "joinOn" : "c_custkey = o_custkey",
       "relOp": "LogicalJoin",
       "condition": {
@@ -82,7 +65,6 @@
         ]
       },
       "joinType": "inner",
-      "foreignKey": 1,
       "inputs": [
         "0",
         "1"
@@ -91,27 +73,25 @@
     {
       "id": "3",
       "relOp": "LogicalProject",
-      "outputFields": "o_year (#0), o_orderkey (#1)",
+      "outputFields": "o_orderkey (#0), o_year (#1)",
       "fields": [
-        "o_year",
-        "o_orderkey"
+        "o_orderkey",
+        "o_year"
       ],
       "exprs": [
         {
-          "input": 3,
-          "name": "$3"
-        },
-        {
           "input": 1,
           "name": "$1"
+        },
+        {
+          "input": 3,
+          "name": "$3"
         }
       ]
     },
     {
       "id": "4",
       "relOp": "LogicalValues",
-	  "sql": "SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume, CASE WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE ELSE TRUE END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_orderkey",
-	  "dummy-tag": true,
       "type": [
         {
           "type": "INTEGER",
@@ -131,20 +111,15 @@
           "name": "volume"
         }
       ],
-	  "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING"
-		}
-      ],
+      "sql" : "SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume,        CASE            WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE            ELSE TRUE            END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_orderkey",
+      "dummy-tag": true,
       "tuples": [],
       "inputs": []
     },
     {
       "id": "5",
-      "joinOn" : "o_orderkey = l_orderkey",
-      "outputFields": "o_year (#0), o_orderkey (#1), l_orderkey (#2), l_suppkey (#3), volume (#4)",
-      "operator-algorithm" : "nested-loop-join",
+      "joinOn" : "l_orderkey = o_orderkey",
+      "outputFields": "o_orderkey (#0), o_year (#1), l_orderkey (#2),  l_suppkey (#3), volume (#4)",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
@@ -154,8 +129,8 @@
         },
         "operands": [
           {
-            "input": 1,
-            "name": "$1"
+            "input": 0,
+            "name": "$0"
           },
           {
             "input": 2,
@@ -164,7 +139,6 @@
         ]
       },
       "joinType": "inner",
-      "foreignKey": 1,
       "inputs": [
         "3",
         "4"
@@ -181,8 +155,8 @@
       ],
       "exprs": [
         {
-          "input": 0,
-          "name": "$0"
+          "input": 1,
+          "name": "$1"
         },
         {
           "input": 3,
@@ -198,8 +172,6 @@
       "id": "7",
       "relOp": "LogicalValues",
       "outputFields": "s_suppkey (#0), nation_check (#1)",
-	  "sql": "SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey ORDER BY s_suppkey",
-	  "dummy-tag": false,
       "type": [
         {
           "type": "INTEGER",
@@ -212,20 +184,15 @@
           "name": "nation_check"
         }
       ],
-	  "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING"
-		}
-      ],
+      "sql": "SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey ORDER BY s_suppkey",
+      "dummy-tag": false,
       "tuples": [],
       "inputs": []
     },
     {
       "id": "8",
-      "joinOn" : "s_suppkey = l_suppkey",
+      "joinOn" : "l_suppkey = s_suppkey",
       "outputFields": "o_year (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check (#4)",
-      "operator-algorithm" : "nested-loop-join",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
@@ -245,7 +212,6 @@
         ]
       },
       "joinType": "inner",
-      "foreignKey": 0,
       "inputs": [
         "6",
         "7"
@@ -253,18 +219,20 @@
     },
     {
       "id": "9",
-      "inputFields": "o_year (#0), l_suppkey (#1), volume (#2), s_suppkey (#3), nation_check (#4)",
-      "outputFields" : "o_year, nation_volume, volume",
       "relOp": "LogicalProject",
       "fields": [
         "o_year",
-        "nation_volume",
-        "volume"
+        "volume",
+        "selected_volume"
       ],
       "exprs": [
         {
           "input": 0,
           "name": "$0"
+        },
+        {
+          "input": 2,
+          "name": "$2"
         },
         {
           "op": {
@@ -274,11 +242,11 @@
           },
           "operands": [
             {
-              "input":  4,
+              "input": 4,
               "name": "$4"
             },
             {
-              "input":  2,
+              "input": 2,
               "name": "$2"
             },
             {
@@ -289,17 +257,21 @@
               }
             }
           ]
-        },
-        {
-          "input": 2,
-          "name": "$2"
         }
       ]
     },
     {
       "id": "10",
       "relOp": "LogicalAggregate",
+      "outputFields" : "o_year (#0), SUM(volume) (#1), SUM(selected_volume) (#2)",
       "operator-algorithm" : "sort-merge-aggregate",
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
       "group": [
         0
       ],
@@ -345,6 +317,7 @@
     {
       "id": "11",
       "relOp": "LogicalProject",
+      "outputFields" : "o_year (#0), SUM(volume) / SUM(selected_volume) mkt_share  (#1)",
       "fields": [
         "o_year",
         "mkt_share"
@@ -362,12 +335,12 @@
           },
           "operands": [
             {
-              "input": 1,
-              "name": "$1"
-            },
-            {
               "input": 2,
               "name": "$2"
+            },
+            {
+              "input": 1,
+              "name": "$1"
             }
           ]
         }
@@ -380,7 +353,7 @@
         {
           "field": 0,
           "direction": "ASCENDING",
-          "nulls": "LAST"
+          "nulls": "FIRST"
         }
       ]
     }
