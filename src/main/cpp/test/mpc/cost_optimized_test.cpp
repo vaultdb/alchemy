@@ -132,7 +132,7 @@ CostOptimizedTest::runTest(const int &test_id, const string & test_name, const S
         delete observed;
         delete expected;
     }
-    
+
 }
 
 
@@ -211,6 +211,7 @@ TEST_F(CostOptimizedTest, card_bound_tpch_q18) {
     runTest(18, "q18", expected_sort, FLAGS_unioned_db, 2);
 }
 
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // *** Bushy-Plan Tests ***
