@@ -96,6 +96,7 @@ CostOptimizedTest::runTest(const int &test_id, const string & test_name, const S
         cout << "Cost Optimization Time : " << CostOptimizationDuration << " sec\n";
     }
 
+
     SecureTable *result = root->run();
 
     // Measure CPU Time
@@ -131,6 +132,7 @@ CostOptimizedTest::runTest(const int &test_id, const string & test_name, const S
         delete observed;
         delete expected;
     }
+    
 }
 
 
@@ -238,7 +240,7 @@ TEST_F(CostOptimizedTest, bushy_plan_tpch_q9) {
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
     runTest(9, "q9", expected_sort, FLAGS_unioned_db, 3);
 }
-
+*/
 
 
 
@@ -250,7 +252,7 @@ TEST_F(CostOptimizedTest, cost_optimized_tpch_q1) {
     runTest(1, "q1", expected_sort, FLAGS_unioned_db, 4);
 
 }
-*/
+
 
 TEST_F(CostOptimizedTest, cost_optimized_tpch_q3) {
 
@@ -275,6 +277,7 @@ TEST_F(CostOptimizedTest, cost_optimized_tpch_q8) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     runTest(8, "q8", expected_sort, FLAGS_unioned_db, 4);
 }
+
 
 
 TEST_F(CostOptimizedTest, cost_optimized_tpch_q9) {

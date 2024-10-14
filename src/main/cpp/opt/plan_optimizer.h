@@ -10,6 +10,7 @@
 #include "util/system_configuration.h"
 #include <operators/sort.h>
 #include <operators/merge_input.h>
+#include <operators/keyed_sort_merge_join.h>
 
 namespace vaultdb {
 
@@ -53,6 +54,7 @@ namespace vaultdb {
 
         void recurseJoin(Operator<B> *join);
         void enumerateJoin(Operator<B>* join, Operator<B>* lhs_clone, Operator<B>* rhs_clone);
+
 
         void recurseAgg(Operator<B> *agg);
         void recurseSort(Operator<B> *sort);

@@ -187,7 +187,6 @@ template<typename B>
 size_t Operator<B>::planCost() const {
     size_t summed_cost = 0L;
     if(std::is_same_v<bool, B>) return summed_cost; // no gates if in plaintext mode
-
     if(lhs_child_ != nullptr)
         summed_cost += lhs_child_->planCost();
     if(rhs_child_ != nullptr)

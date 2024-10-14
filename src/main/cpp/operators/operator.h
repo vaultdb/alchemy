@@ -6,6 +6,7 @@
 #include <query_table/query_table.h>
 #include <common/defs.h>
 #include <util/system_configuration.h>
+#include <unordered_set>
 
 using namespace std;
 
