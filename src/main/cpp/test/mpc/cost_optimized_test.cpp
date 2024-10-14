@@ -241,7 +241,7 @@ TEST_F(CostOptimizedTest, bushy_plan_tpch_q9) {
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
     runTest(9, "q9", expected_sort, FLAGS_unioned_db, 3);
 }
-*/
+
 
 
 
