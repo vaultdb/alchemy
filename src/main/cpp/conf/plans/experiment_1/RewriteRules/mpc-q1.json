@@ -220,8 +220,7 @@
         "no-op": true
       },
       "joinType": "inner",
-      "cardinality-bound" : 6,
-      "dummy-handling" : "OR",
+      "cardinality-bound" : 1927,
       "inputs": [
         "0",
         "1"
@@ -485,5 +484,6 @@
     }
   ]
 }
+
 
 

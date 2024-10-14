@@ -19,6 +19,13 @@
         }
       ],
       "sql" : "SELECT l_orderkey, l_quantity FROM lineitem ORDER BY l_orderkey",
+      "collation": [
+        {
+          "field": 0,
+          "name": "s_suppkey",
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -47,6 +54,13 @@
             1
           ],
           "name": null
+        }
+      ],
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
         }
       ],
       "inputs": [
@@ -214,6 +228,7 @@
         ]
       },
       "joinType": "inner",
+      "foreignKey": 0,
       "inputs": [
         "6",
         "7"
@@ -297,6 +312,7 @@
         ]
       },
       "joinType": "inner",
+      "foreignKey": 0,
       "inputs": [
         "9",
         "10"

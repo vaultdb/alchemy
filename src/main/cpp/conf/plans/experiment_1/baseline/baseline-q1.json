@@ -3,7 +3,7 @@
     {
       "id": "0",
       "relOp": "LogicalValues",
-      "outputFields": "l_quantity (#1), l_extendedprice (#2), l_discount (#3), l_tax (#4), l_returnflag (#5), l_linestatus (#6)",
+      "outputFields": "l_quantity (#0), l_extendedprice (#1), l_discount (#2), l_tax (#3), l_returnflag (#4), l_linestatus (#5)",
       "type": [
         {
           "type": "DECIMAL",
@@ -65,12 +65,16 @@
       ],
       "exprs": [
         {
+          "input": 4,
+          "name": "$4"
+        },
+        {
           "input": 5,
           "name": "$5"
         },
         {
-          "input": 6,
-          "name": "$6"
+          "input": 0,
+          "name": "$0"
         },
         {
           "input": 1,
@@ -81,10 +85,6 @@
           "name": "$2"
         },
         {
-          "input": 3,
-          "name": "$3"
-        },
-        {
           "op": {
             "name": "*",
             "kind": "TIMES",
@@ -92,8 +92,8 @@
           },
           "operands": [
             {
-              "input": 2,
-              "name": "$2"
+              "input": 1,
+              "name": "$1"
             },
             {
               "op": {
@@ -110,8 +110,8 @@
                   }
                 },
                 {
-                  "input": 3,
-                  "name": "$3"
+                  "input": 2,
+                  "name": "$2"
                 }
               ]
             }
@@ -132,8 +132,8 @@
               },
               "operands": [
                 {
-                  "input": 2,
-                  "name": "$2"
+                  "input": 1,
+                  "name": "$1"
                 },
                 {
                   "op": {
@@ -150,8 +150,8 @@
                       }
                     },
                     {
-                      "input": 3,
-                      "name": "$3"
+                      "input": 2,
+                      "name": "$2"
                     }
                   ]
                 }
@@ -172,8 +172,8 @@
                   }
                 },
                 {
-                  "input": 4,
-                  "name": "$4"
+                  "input": 3,
+                  "name": "$3"
                 }
               ]
             }
@@ -184,6 +184,7 @@
     {
       "id": "2",
       "relOp": "LogicalAggregate",
+      "inputFields": "l_returnflag (#0), l_linestatus (#1), l_quantity (#2) l_extendedprice (#3), l_discount (#4), disc_price (#5), charge (#6)",
       "outputFields": "l_returnflag (#0),  l_linestatus (#1),  sum_qty (#2), sum_base_price (#3), sum_disc_price (#4),  sum_charge (#5), avg_qty (#6), avg_price (#7), avg_disc (#8), count_order (#9)",
       "operator-algorithm" : "sort-merge-aggregate",
       "group": [
@@ -277,7 +278,7 @@
           },
           "distinct": false,
           "operands": [
-            1
+            2
           ],
           "name": "avg_qty"
         },
@@ -295,7 +296,7 @@
           },
           "distinct": false,
           "operands": [
-            2
+            3
           ],
           "name": "avg_price"
         },

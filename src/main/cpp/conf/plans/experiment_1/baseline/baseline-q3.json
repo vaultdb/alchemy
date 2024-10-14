@@ -102,7 +102,7 @@
     {
       "id": "4",
       "relOp": "LogicalValues",
-      "outputFields": "l_orderkey (#0), revenue (#1)",
+      "outputFields": "l_orderkey (#0), l_extendedprice (#1), l_discount (#2)",
       "type": [
         {
           "type": "INTEGER",
@@ -114,16 +114,70 @@
           "nullable": true,
           "precision": 19,
           "scale": 0,
-          "name": "revenue"
+          "name": "l_extendedprice"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_discount"
         }
       ],
-      "sql": "SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey",
+      "sql": "SELECT l_orderkey, l_extendedprice, l_discount, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey",
       "dummy-tag": true,
       "tuples": [],
       "inputs": []
     },
     {
       "id": "5",
+      "relOp": "LogicalProject",
+      "fields": [
+        "l_orderkey",
+        "revenue"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "op": {
+            "name": "*",
+            "kind": "TIMES",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "op": {
+                "name": "-",
+                "kind": "MINUS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "literal": 1,
+                  "type": {
+                    "type": "FLOAT",
+                    "nullable": false
+                  }
+                },
+                {
+                  "input": 2,
+                  "name": "$2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "6",
       "relOp": "LogicalJoin",
       "joinOn" : "o_orderkey = l_orderkey",
       "outputFields": "o_orderkey (#0), o_orderdate (#1), o_shippriority (#2), l_orderkey (#3), revenue (#4)",
@@ -147,11 +201,11 @@
       "joinType": "inner",
       "inputs": [
         "3",
-        "4"
+        "5"
       ]
     },
     {
-      "id": "6",
+      "id": "7",
       "relOp": "LogicalProject",
       "outputFields": "o_orderkey (#0), o_orderdate (#1), o_shippriority (#2), revenue (#3)",
       "fields": [
@@ -180,7 +234,7 @@
       ]
     },
     {
-      "id": "7",
+      "id": "8",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "sort-merge-aggregate",
       "effective-collation": [
@@ -217,7 +271,7 @@
       ]
     },
     {
-      "id": "8",
+      "id": "9",
       "relOp": "LogicalSort",
       "collation": [
         {
@@ -240,7 +294,7 @@
       }
     },
     {
-      "id": "9",
+      "id": "10",
       "relOp": "LogicalProject",
       "fields": [
         "o_orderkey",
