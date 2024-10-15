@@ -72,6 +72,7 @@ package_add_test(plan_parser_test plain/plan_parser_test.cpp plain/plain_base_te
 package_add_test(plan_deparser_test plain/plan_deparser_test.cpp plain/plain_base_test.cpp)
 
 package_add_test(tpch_test plain/tpch_test.cpp plain/plain_base_test.cpp)
+package_add_test(plain_card_bound_test plain/plain_card_bound_test.cpp plain/plain_base_test.cpp)
 
 unset(Labels)
 set(Labels "LABELS;PlainTest")
