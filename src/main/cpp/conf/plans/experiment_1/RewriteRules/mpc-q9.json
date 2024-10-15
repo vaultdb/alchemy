@@ -300,6 +300,7 @@
         ]
       },
       "joinType": "inner",
+      "foreignKey": 0,
       "inputs": [
         "6",
         "7"
