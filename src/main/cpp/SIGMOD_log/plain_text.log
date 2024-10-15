@@ -1,0 +1,39 @@
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from PlainCardBoundTest
+[ RUN      ] PlainCardBoundTest.tpch_q01
+EMP mode: plain, storage mode: column store
+Code version: 21ed757808e43dda0bf5c9e25f5bbcb95cf8e96c
+GFlags: --flagfile=	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+Runtime: 0.044139 sec, CPU Time: 0.00677 sec, CPU clock ticks: 6770, CPU clock ticks per second: 1000000
+[       OK ] PlainCardBoundTest.tpch_q01 (1821 ms)
+[ RUN      ] PlainCardBoundTest.tpch_q03
+EMP mode: plain, storage mode: column store
+Code version: 21ed757808e43dda0bf5c9e25f5bbcb95cf8e96c
+GFlags: --flagfile=	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+Runtime: 0.028525 sec, CPU Time: 0.005245 sec, CPU clock ticks: 5245, CPU clock ticks per second: 1000000
+[       OK ] PlainCardBoundTest.tpch_q03 (2452 ms)
+[ RUN      ] PlainCardBoundTest.tpch_q05
+EMP mode: plain, storage mode: column store
+Code version: 21ed757808e43dda0bf5c9e25f5bbcb95cf8e96c
+GFlags: --flagfile=	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+Runtime: 0.04246 sec, CPU Time: 0.0048 sec, CPU clock ticks: 4800, CPU clock ticks per second: 1000000
+[       OK ] PlainCardBoundTest.tpch_q05 (2981 ms)
+[ RUN      ] PlainCardBoundTest.tpch_q08
+EMP mode: plain, storage mode: column store
+Code version: 21ed757808e43dda0bf5c9e25f5bbcb95cf8e96c
+GFlags: --flagfile=	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+Runtime: 0.037308 sec, CPU Time: 0.005179 sec, CPU clock ticks: 5179, CPU clock ticks per second: 1000000
+[       OK ] PlainCardBoundTest.tpch_q08 (1934 ms)
+[ RUN      ] PlainCardBoundTest.tpch_q09
+EMP mode: plain, storage mode: column store
+Code version: 21ed757808e43dda0bf5c9e25f5bbcb95cf8e96c
+GFlags: --flagfile=	--filter=*	--storage=column	--log_level=2	--logfile=	
+
+Runtime: 0.051387 sec, CPU Time: 0.006466 sec, CPU clock ticks: 6466, CPU clock ticks per second: 1000000
+[       OK ] PlainCardBoundTest.tpch_q09 (3170 ms)
+[ RUN      ] PlainCardBoundTest.tpch_q18
