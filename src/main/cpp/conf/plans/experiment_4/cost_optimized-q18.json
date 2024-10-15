@@ -226,6 +226,13 @@
         }
       ],
       "sql": "SELECT c_custkey, c_name FROM customer ORDER BY c_custkey",
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
