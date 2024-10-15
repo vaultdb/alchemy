@@ -66,13 +66,6 @@ namespace vaultdb{
         int num_tables_ = 0;
         int bp_page_size_bits_ = 2048;
         int bp_page_cnt_ = 50;
-        double total_packing_time_ = 0.0;
-        double total_unpacking_time_ = 0.0;
-        double total_file_read_time_ = 0.0;
-        double total_file_write_time_ = 0.0;
-        size_t total_file_read_bytes_ = 0;
-        size_t total_file_write_bytes_ = 0;
-        double total_tup_comp_time_ = 0.0;
         string stored_db_path_;
         map<string, TableMetadata> table_metadata_;
 

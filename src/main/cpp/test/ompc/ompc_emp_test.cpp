@@ -8,6 +8,7 @@
 #include "query_table/column_table.h"
 #include "data/secret_shared_data/secret_share_and_pack_data_from_query.h"
 #include "query_table/packed_column_table.h"
+#include "util/emp_manager/outsourced_mpc_manager.h"
 
 
 #if __has_include("emp-rescu/emp-rescu.h")
@@ -307,6 +308,25 @@ TEST_F(OMPCEmpTest, ompc_sort_and_share_table_one_column) {
     delete revealed;
     delete expected;
     delete input_table;
+}
+
+TEST_F(OMPCEmpTest, ompc_packing_unpacking_test) {
+    int block_n = 16;
+
+    int unpacked_size = block_n * sizeof(block) * 8;
+
+    int iteration = 100000;
+
+    vector<emp::OMPCPackedWire> wires(iteration, emp::OMPCPackedWire(block_n));
+
+    Integer output = Integer(unpacked_size, 0, ALICE);
+
+    time_point<high_resolution_clock> unpacking_start_time = high_resolution_clock::now();
+    for(auto &wire : wires) {
+        ((OutsourcedMpcManager *) SystemConfiguration::getInstance().emp_manager_)->protocol_->unpack(output.bits.data(), wire, unpacked_size);
+    }
+    double unpacking_runtime = time_from(unpacking_start_time)/1e6;
+    cout << "unpacking time for each packed wires: " << unpacking_runtime / wires.size() << "s" << endl;
 }
 
 int main(int argc, char **argv) {

@@ -24,10 +24,7 @@ PackedColumnTable *PackedColumnTable::deserialize(const TableMetadata  & md, con
 
     FILE*  fp = fopen(filename.c_str(), "rb");
     for(int i = 0; i < md.schema_.getFieldCount(); ++i) {
-        time_point<high_resolution_clock> read_start_time = high_resolution_clock::now();
         fread(dst->packed_pages_[i].data(), 1, dst->packed_pages_[i].size(), fp);
-        SystemConfiguration::getInstance().total_file_read_time_ += time_from(read_start_time) / 1e6;
-        SystemConfiguration::getInstance().total_file_read_bytes_ += dst->packed_pages_[i].size();
         if(truncating) {
             int bytes_to_seek = PackedColumnTable::bytesPerColumn(md.schema_.getField(i), src_tuple_cnt) - dst->packed_pages_[i].size();
             fseek(fp, bytes_to_seek, SEEK_CUR);
@@ -35,10 +32,7 @@ PackedColumnTable *PackedColumnTable::deserialize(const TableMetadata  & md, con
     }
 
     // dummy tag
-    time_point<high_resolution_clock> read_start_time = high_resolution_clock::now();
     fread(dst->packed_pages_[-1].data(), 1, dst->packed_pages_[-1].size(), fp);
-    SystemConfiguration::getInstance().total_file_read_time_ += time_from(read_start_time) / 1e6;
-    SystemConfiguration::getInstance().total_file_read_bytes_ += dst->packed_pages_[-1].size();
     fclose(fp);
 
     return dst;
@@ -86,19 +80,13 @@ PackedColumnTable *PackedColumnTable::deserialize(const TableMetadata  & md, con
 
     for(auto src_ordinal : ordinals) {
         fseek(fp,  ordinal_offsets[src_ordinal], SEEK_SET); // read read_offset bytes from beginning of file
-        time_point<high_resolution_clock> read_start_time = high_resolution_clock::now();
         fread(dst->packed_pages_[dst_ordinal].data(), 1, dst->packed_pages_[dst_ordinal].size(), fp);
-        SystemConfiguration::getInstance().total_file_read_time_ += time_from(read_start_time) / 1e6;
-        SystemConfiguration::getInstance().total_file_read_bytes_ += dst->packed_pages_[dst_ordinal].size();
         ++dst_ordinal;
     }
 
     // read dummy tag unconditionally
     fseek(fp, ordinal_offsets[-1], SEEK_SET);
-    time_point<high_resolution_clock> read_start_time = high_resolution_clock::now();
     fread(dst->packed_pages_[-1].data(),  1, dst->packed_pages_[-1].size(), fp);
-    SystemConfiguration::getInstance().total_file_read_time_ += time_from(read_start_time) / 1e6;
-    SystemConfiguration::getInstance().total_file_read_bytes_ += dst->packed_pages_[-1].size();
 
     fclose(fp);
     return dst;
