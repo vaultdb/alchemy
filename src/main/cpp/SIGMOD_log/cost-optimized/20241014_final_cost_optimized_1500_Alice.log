@@ -347,13 +347,13 @@ Initial Memory: 2630184960 bytes, Peak Memory After Execution: 4889096192 bytes,
 Bandwidth: 4.09879e+08 Bps
 [       OK ] CostOptimizedTest.cost_optimized_tpch_q9 (773676 ms)
 [ RUN      ] CostOptimizedTest.cost_optimized_tpch_q18
-Connecting to 127.0.0.1 on ports 7662, 65490 as 1
+Connecting to 127.0.0.1 on ports 7654, 65482 as 1
 connected
 EMP mode: sh2pc, storage mode: column store
-Code version: 6df2dbc91f90e576fd678b7bf4f1cf48278c4f0d
-GFlags: --flagfile=	--alice_db=tpch_alice_1500	--alice_host=127.0.0.1	--bob_db=tpch_bob_1500	--ctrl_port=65491	--cutoff=100	--filter=*	--party=1	--port=7663	--storage=column	--unioned_db=tpch_unioned_1500	--validation=true	--log_level=2	--logfile=	
+Code version: aaab8b1c36f961a50172caf92085acacb0670290
+GFlags: --flagfile=	--alice_db=tpch_alice_1500	--alice_host=127.0.0.1	--bob_db=tpch_bob_1500	--ctrl_port=65483	--cutoff=100	--filter=*	--party=1	--port=7655	--storage=column	--unioned_db=tpch_unioned_1500	--validation=true	--log_level=2	--logfile=	
 
-[Linux]Peak resident set size: 4889096192 bytes, current memory size: 3181502464 bytes.
+[Linux]Peak resident set size: 16646144 bytes, current memory size: 16646144 bytes.
 Operator (9). smj cost : 610841708, nlj cost : 5085000000, join type : keyed-sort-merge-join
 Original Tree : 
 #11: Sort<Bit> ({<-1, ASC> , <4, DESC> , <3, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(11) customer.c_custkey, #2 shared-int32(16) order_keys.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <4, DESC> , <3, ASC> }, cost est: 495150, output card: 100
@@ -367,9 +367,9 @@ Original Tree :
                                 #0: SecureSqlInput<Bit> ("WITH all_keys AS (SELECT o_orderkey  FROM order_keys), sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag FROM lineitem GROUP BY l_orderkey ORDER BY l_orderkey) SELECT o_orderkey, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = o_orderkey ORDER BY o_orderkey ", tuple_count=15000) : (#0 shared-int32(16) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 0, output card: 15000
                                 #1: SecureSqlInput<Bit> ("WITH all_keys AS (SELECT o_orderkey  FROM order_keys), sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag FROM lineitem GROUP BY l_orderkey ORDER BY l_orderkey) SELECT o_orderkey, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = o_orderkey ORDER BY o_orderkey ", tuple_count=15000) : (#0 shared-int32(16) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 0, output card: 15000
                     #5: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate, false dummy_tag FROM orders ORDER BY o_orderkey", tuple_count=15000) : (#0 shared-int32(16) orders.o_orderkey, #1 shared-int32(11) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate) order by: {<0, ASC> }, cost est: 11132815, output card: 15000
-            #8: SecureSqlInput<Bit> ("SELECT c_custkey, c_name FROM customer ORDER BY c_custkey", tuple_count=1500) : (#0 shared-int32(11) customer.c_custkey, #1 shared-varchar(25) customer.c_name) order by: {}, cost est: 0, output card: 1500
+            #8: SecureSqlInput<Bit> ("SELECT c_custkey, c_name FROM customer ORDER BY c_custkey", tuple_count=1500) : (#0 shared-int32(11) customer.c_custkey, #1 shared-varchar(25) customer.c_name) order by: {<0, ASC> }, cost est: 1788338, output card: 1500
 
-Total Plans : 2
+Total Plans : 4
 Cost Optimized Plan : 
 #11: Sort<Bit> ({<-1, ASC> , <4, DESC> , <3, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(11) customer.c_custkey, #2 shared-int32(16) order_keys.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <4, DESC> , <3, ASC> }, cost est: 495150, output card: 100
     #10: Project<Bit> ((<0, P$6(200) shared-varchar>, <1, P$5(11) shared-int32>, <2, P$0(16) shared-int32>, <3, P$3(28) shared-int64>, <4, P$2(32) shared-float>, <5, P$4(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(11) customer.c_custkey, #2 shared-int32(16) order_keys.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> }, cost est: 0, output card: 15000
@@ -383,30 +383,28 @@ Cost Optimized Plan :
                                     #0: SecureSqlInput<Bit> ("WITH all_keys AS (SELECT o_orderkey  FROM order_keys), sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag FROM lineitem GROUP BY l_orderkey ORDER BY l_orderkey) SELECT o_orderkey, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = o_orderkey ORDER BY o_orderkey ", tuple_count=15000) : (#0 shared-int32(16) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 0, output card: 15000
                                     #1: SecureSqlInput<Bit> ("WITH all_keys AS (SELECT o_orderkey  FROM order_keys), sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag FROM lineitem GROUP BY l_orderkey ORDER BY l_orderkey) SELECT o_orderkey, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = o_orderkey ORDER BY o_orderkey ", tuple_count=15000) : (#0 shared-int32(16) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 0, output card: 15000
                         #5: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate, false dummy_tag FROM orders ORDER BY o_orderkey", tuple_count=15000) : (#0 shared-int32(16) orders.o_orderkey, #1 shared-int32(11) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate) order by: {<0, ASC> }, cost est: 11132815, output card: 15000
-            #-1: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32(11) customer.c_custkey, #1 shared-varchar(25) customer.c_name) order by: {<0, ASC> }, cost est: 10328399, output card: 1500
-                #8: SecureSqlInput<Bit> ("SELECT c_custkey, c_name FROM customer ORDER BY c_custkey", tuple_count=1500) : (#0 shared-int32(11) customer.c_custkey, #1 shared-varchar(25) customer.c_name) order by: {}, cost est: 0, output card: 1500
+            #8: SecureSqlInput<Bit> ("SELECT c_custkey, c_name FROM customer ORDER BY c_custkey", tuple_count=1500) : (#0 shared-int32(11) customer.c_custkey, #1 shared-varchar(25) customer.c_name) order by: {<0, ASC> }, cost est: 1788338, output card: 1500
 
-Cost Optimization Time : 0.001312 sec
-Operator #0 SecureSqlInput ran for 22.874000 ms, gate count: 0 output cardinality: 15000, row width=49
-Operator #1 SecureSqlInput ran for 48.980000 ms, gate count: 0 output cardinality: 15000, row width=49
-Operator #2 MergeJoin ran for 18.299000 ms, gate count: 30000 output cardinality: 15000, row width=97
-Operator #3 Project ran for 1018.035000 ms, gate count: 14790000 output cardinality: 15000, row width=49
-Operator #4 Filter ran for 218.930000 ms, gate count: 3210000 output cardinality: 15000, row width=49
-Operator #5 SecureSqlInput ran for 1001.978000 ms, gate count: 10736460 output cardinality: 15000, row width=88
-Operator #6 MergeJoin ran for 12.693000 ms, gate count: 30000 output cardinality: 15000, row width=136
-Operator #7 Project ran for 6.338000 ms, gate count: 0 output cardinality: 15000, row width=120
-Operator #-1 Sort ran for 7674.551000 ms, gate count: 99497376 output cardinality: 15000, row width=120
-Operator #8 SecureSqlInput ran for 48.438000 ms, gate count: 0 output cardinality: 1500, row width=212
-Operator #-1 Sort ran for 701.057000 ms, gate count: 9758784 output cardinality: 1500, row width=212
-Operator #9 SortMergeJoin ran for 43488.973000 ms, gate count: 695225236 output cardinality: 15000, row width=331
-Operator #10 Project ran for 53.924000 ms, gate count: 0 output cardinality: 15000, row width=320
-Operator #11 Sort ran for 22315.234000 ms, gate count: 290583144 output cardinality: 100, row width=320
-Runtime: 76.7256 sec, CPU Time: 74.9737 sec, CPU clock ticks: 7.49737e+07, CPU clock ticks per second: 1000000
-End-to-end estimated gates: 5.69587e+08. observed gates: 985808380 gates, relative error (%)=42.2213
-[Linux]Peak resident set size: 4889096192 bytes, current memory size: 3341213696 bytes.
-Initial Memory: 4889096192 bytes, Peak Memory After Execution: 4889096192 bytes, Memory Usage: 0 bytes
-Bandwidth: 4.11152e+08 Bps
-[       OK ] CostOptimizedTest.cost_optimized_tpch_q18 (77661 ms)
+Cost Optimization Time : 0.002847 sec
+Operator #0 SecureSqlInput ran for 30.414000 ms, gate count: 0 output cardinality: 15000, row width=49
+Operator #1 SecureSqlInput ran for 46.879000 ms, gate count: 0 output cardinality: 15000, row width=49
+Operator #2 MergeJoin ran for 22.039000 ms, gate count: 30000 output cardinality: 15000, row width=97
+Operator #3 Project ran for 996.845000 ms, gate count: 14790000 output cardinality: 15000, row width=49
+Operator #4 Filter ran for 227.591000 ms, gate count: 3210000 output cardinality: 15000, row width=49
+Operator #5 SecureSqlInput ran for 1005.832000 ms, gate count: 10736460 output cardinality: 15000, row width=88
+Operator #6 MergeJoin ran for 12.906000 ms, gate count: 30000 output cardinality: 15000, row width=136
+Operator #7 Project ran for 6.504000 ms, gate count: 0 output cardinality: 15000, row width=120
+Operator #-1 Sort ran for 7487.167000 ms, gate count: 99497376 output cardinality: 15000, row width=120
+Operator #8 SecureSqlInput ran for 191.520000 ms, gate count: 1716736 output cardinality: 1500, row width=212
+Operator #9 SortMergeJoin ran for 42321.367000 ms, gate count: 687183188 output cardinality: 15000, row width=331
+Operator #10 Project ran for 59.936000 ms, gate count: 0 output cardinality: 15000, row width=320
+Operator #11 Sort ran for 22322.610000 ms, gate count: 290583144 output cardinality: 100, row width=320
+Runtime: 75.0031 sec, CPU Time: 73.0892 sec, CPU clock ticks: 7.30892e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 5.61047e+08. observed gates: 977766332 gates, relative error (%)=42.6195
+[Linux]Peak resident set size: 424419328 bytes, current memory size: 219557888 bytes.
+Initial Memory: 16646144 bytes, Peak Memory After Execution: 424419328 bytes, Memory Usage: 407773184 bytes
+Bandwidth: 4.17163e+08 Bps
+[       OK ] CostOptimizedTest.cost_optimized_tpch_q18 (77830 ms)
 [----------] 9 tests from CostOptimizedTest (28080571 ms total)
 
 [----------] Global test environment tear-down
