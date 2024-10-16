@@ -44,10 +44,10 @@ PlainCardBoundTest::runTest(const int &test_id, const string & plan_file, const 
     // Measure Runtime
     double duration = time_from(startTime) / 1e6;
 
+    PlainTable *observed = root->run();
+
     cout << "Runtime: " << duration << " sec, CPU Time: " << secureClockTicksPerSecond << " sec, CPU clock ticks: " << secureClockTicks << ", CPU clock ticks per second: " << CLOCKS_PER_SEC << "\n";
 
-
-    PlainTable *observed = root->run();
     DataUtilities::removeDummies(observed);
 
     ASSERT_EQ(*expected, *observed);
