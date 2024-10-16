@@ -17,7 +17,7 @@
         }
 
       ],
-      "sql": "SELECT s_suppkey, s_nationkey FROM supplier JOIN nation ON s_nationkey = n_nationkey JOIN region ON n_regionkey = r_regionkey WHERE r_name = 'EUROPE' ORDER BY s_suppkey",
+      "sql": "SELECT s_suppkey, s_nationkey FROM supplier JOIN nation ON s_nationkey = n_nationkey JOIN region ON n_regionkey = r_regionkey WHERE r_name = 'ASIA' ORDER BY s_suppkey",
       "dummy-tag": false,
       "tuples": [],
       "inputs": []

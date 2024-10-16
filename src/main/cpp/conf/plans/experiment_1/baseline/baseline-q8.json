@@ -128,12 +128,17 @@
       "relOp": "LogicalProject",
       "fields": [
         "l_orderkey",
+        "l_suppkey",
         "revenue"
       ],
       "exprs": [
         {
           "input": 0,
           "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
         },
         {
           "op": {
@@ -143,8 +148,8 @@
           },
           "operands": [
             {
-              "input": 1,
-              "name": "$1"
+              "input": 2,
+              "name": "$2"
             },
             {
               "op": {
@@ -161,8 +166,8 @@
                   }
                 },
                 {
-                  "input": 2,
-                  "name": "$2"
+                  "input": 3,
+                  "name": "$3"
                 }
               ]
             }
