@@ -76,6 +76,14 @@ QueryTable<B> *Operator<B>::run() {
                     ", Error rate(%) : " + std::to_string(relative_error), Level::DEBUG);
         }
     }
+    else if(std::is_same_v<B, bool> && this->getOperatorId() > -2) {
+        Logger* log = get_log();
+
+        log->write("Operator #" + std::to_string(this->getOperatorId()) + " " + getTypeString() +
+                   " ran for " + std::to_string(runtime_ms_) + " ms, " +
+                   " output cardinality: " + std::to_string(output_->tuple_cnt_) +
+                   ", row width=" + std::to_string(output_schema_.size()), Level::INFO);
+    }
 
     operator_executed_ = true;
     sort_definition_ = output_->order_by_; // update this if needed
