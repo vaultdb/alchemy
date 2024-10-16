@@ -144,7 +144,7 @@ BaselineComparisonTest::generateExpectedOutputQuery(const int &test_id, const So
 TEST_F(BaselineComparisonTest, plaintext_comparison_tpch_q1) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort, FLAGS_unioned_db, 1);
+    runTest(1, "q1", expected_sort, FLAGS_unioned_db, 3);
 
 }
 
@@ -153,7 +153,7 @@ TEST_F(BaselineComparisonTest, plaintext_comparison_tpch_q18) {
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
-    runTest(18, "q18", expected_sort, FLAGS_unioned_db, 1);
+    runTest(18, "q18", expected_sort, FLAGS_unioned_db, 3);
 }
 
 
