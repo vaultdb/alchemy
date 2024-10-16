@@ -65,6 +65,9 @@ BaselineComparisonTest::runTest(const int &test_id, const string & test_name, co
         case 2:
             plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/RewriteRules/mpc-" + test_name + ".json";
             break;
+        case 3:
+            plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/plaintext/plaintext-" + test_name + ".json";
+            break;
     }
 
     // Initialize memory measurement
@@ -136,6 +139,24 @@ BaselineComparisonTest::generateExpectedOutputQuery(const int &test_id, const So
     return query;
 }
 
+//These tests are to compare with the plaintext
+
+TEST_F(BaselineComparisonTest, plaintext_comparison_tpch_q1) {
+
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+    runTest(1, "q1", expected_sort, FLAGS_unioned_db, 1);
+
+}
+
+TEST_F(BaselineComparisonTest, plaintext_comparison_tpch_q18) {
+
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(1, SortDirection::DESCENDING),
+                                 ColumnSort(2, SortDirection::ASCENDING)};
+    runTest(18, "q18", expected_sort, FLAGS_unioned_db, 1);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // *** Baseline Tests ***
 // ---------------------------------------------------------
@@ -145,12 +166,12 @@ BaselineComparisonTest::generateExpectedOutputQuery(const int &test_id, const So
 // ---------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-/*
+
 
 TEST_F(BaselineComparisonTest, baseline_tpch_q1) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort, FLAGS_unioned_db, 1);
+    runTest(1, "q1", expected_sort, FLAGS_unioned_db, 3);
 
 }
 
@@ -159,7 +180,7 @@ TEST_F(BaselineComparisonTest, baseline_tpch_q3) {
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
-    runTest(3, "q3", expected_sort, FLAGS_unioned_db, 1);
+    runTest(3, "q3", expected_sort, FLAGS_unioned_db, 3);
 }
 
 
@@ -235,7 +256,7 @@ TEST_F(BaselineComparisonTest, rewrite_rules_tpch_q8) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     runTest(8, "q8", expected_sort, FLAGS_unioned_db, 2);
 }
-*/
+
 
 
 TEST_F(BaselineComparisonTest, rewrite_rules_tpch_q9) {
