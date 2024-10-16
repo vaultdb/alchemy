@@ -1,5 +1,5 @@
 {
-  "outputTable": "B3",
+  "outputTable": "phame_rollup",
   "note": "This joins the row-only data and partially aggregates over it before doing a grand-aggregate with the aggregate-only data.",
   "rels": [
     {
