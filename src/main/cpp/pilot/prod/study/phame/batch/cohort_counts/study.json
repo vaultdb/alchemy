@@ -1,0 +1,16 @@
+{
+	"alice_host": "127.0.0.1",
+	"min_cell_count": 11,
+	"name": "Catalyst MPC PHAME Study",
+	"note": "all paths are relative to $VAULTDB_ROOT/src/main/cpp",
+	"port": "4444",
+	"protocol": "sh2pc",
+	"query_path": "pilot/prod/study/phame/batch/cohort_counts/",
+	"secret_shares_path": "pilot/secret_shares/output",
+	"dst_path": "pilot/results/phame/batch/cohort_counts",
+	"tables": [
+	   {"input_parties": [0,1,2,3,4,5,6],"name": "PHAME_COHORT_COUNTS","schema": "(attribute_desc:varchar(42), n:int32)"}
+	],
+	"queries": [{"count_cols": [1], "name": "phame_cohort_counts","note": "count cols are zero-indexed."}
+	]
+}
