@@ -23,7 +23,7 @@ protected:
     void TearDown() override;
 
     std::string current_working_directory_;
-    const string db_name_ = "tpch_unioned_150";
+    const string db_name_ = "tpch_unioned_1500";
     StorageModel storage_model_ = StorageModel::COLUMN_STORE;
     EmpManager *manager_ = nullptr;
 

@@ -28,6 +28,8 @@ PlainCardBoundTest::runTest(const int &test_id, const string & plan_file, const 
     PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 0);
     expected->order_by_ = expected_sort;
 
+    cout << "DB Name : " << db_name_ << "\n";
+
     // Start measuring time
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
@@ -57,7 +59,7 @@ PlainCardBoundTest::runTest(const int &test_id, const string & plan_file, const 
 
 TEST_F(PlainCardBoundTest, tpch_q01) {
 SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/baseline/baseline-q1.json";
+string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/plaintext/plaintext-q1.json";
 
 runTest(1, plan_file, expected_sort);
 }
@@ -70,7 +72,7 @@ SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                              ColumnSort(1, SortDirection::DESCENDING),
                              ColumnSort(2, SortDirection::ASCENDING)};
 
-string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_2/card_bound-q3.json";
+string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/plaintext/plaintext-q3.json";
 
 runTest(3, plan_file, expected_sort);
 }
@@ -78,14 +80,14 @@ runTest(3, plan_file, expected_sort);
 //join(join(join(customer, orders), lineitem), supplier)
 TEST_F(PlainCardBoundTest, tpch_q05) {
 SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_2/card_bound-q5.json";
+string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/plaintext/plaintext-q5.json";
 
 runTest(5, plan_file, expected_sort);
 }
 
 TEST_F(PlainCardBoundTest, tpch_q08) {
 SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING)};
-string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_2/card_bound-q8.json";
+string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/plaintext/plaintext-q8.json";
 
 runTest(8, plan_file, expected_sort);
 }
@@ -94,13 +96,11 @@ runTest(8, plan_file, expected_sort);
 TEST_F(PlainCardBoundTest, tpch_q09) {
 // $0 ASC, $1 DESC
 SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_2/card_bound-q9.json";
+string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/plaintext/plaintext-q9.json";
 
 runTest(9, plan_file, expected_sort);
 
 }
-
-
 
 
 TEST_F(PlainCardBoundTest, tpch_q18) {
@@ -108,7 +108,7 @@ TEST_F(PlainCardBoundTest, tpch_q18) {
 SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                              ColumnSort(4, SortDirection::DESCENDING),
                              ColumnSort(3, SortDirection::ASCENDING)};
-string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/RewriteRules/mpc-q18.json";
+string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/plaintext/plaintext-q18.json";
 runTest(18, plan_file, expected_sort);
 }
 
