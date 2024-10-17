@@ -101,7 +101,7 @@
           "direction": "ASCENDING"
         }
       ],
-      "input-limit": 1927,
+      "input-limit": 195,
       "tuples": [],
       "inputs": []
     },
@@ -206,7 +206,7 @@
           "direction": "ASCENDING"
         }
       ],
-      "input-limit": 1927,
+      "input-limit": 195,
       "tuples": [],
       "inputs": []
     },
