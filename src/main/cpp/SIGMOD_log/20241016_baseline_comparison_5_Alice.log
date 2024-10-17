@@ -5,26 +5,26 @@
 Connecting to 127.0.0.1 on ports 7654, 65482 as 1
 connected
 EMP mode: sh2pc, storage mode: column store
-Code version: d797d9ee6e8bffe6b6f99b583fed56961b43d506
+Code version: 347abcddae268e1c73adf62dffb79533f3d5f8ab
 GFlags: --flagfile=	--alice_db=tpch_alice_5	--alice_host=127.0.0.1	--bob_db=tpch_bob_5	--ctrl_port=65483	--cutoff=100	--filter=*	--party=1	--port=7655	--storage=column	--unioned_db=tpch_unioned_5	--validation=true	--log_level=2	--logfile=	
 
-[Linux]Peak resident set size: 16646144 bytes, current memory size: 16646144 bytes.
+[Linux]Peak resident set size: 16515072 bytes, current memory size: 16515072 bytes.
 #3: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64(9) count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 2193030, output card: 390
     #2: SortMergeAggregate<Bit> (group-by: (0, 1) aggs: (SUM($2) sum_qty, SUM($3) sum_base_price, SUM($5) sum_disc_price, SUM($6) sum_charge, AVG($2) avg_qty, AVG($3) avg_price, AVG($4) avg_disc, COUNT(*) count_order)) : (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64(9) count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 8683740, output card: 390
         #-1: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge) order by: {<0, ASC> , <1, ASC> }, cost est: 1604460, output card: 390
             #1: Project<Bit> ((<0, P$4(8) shared-varchar>, <1, P$5(8) shared-varchar>, <2, P$0(32) shared-float>, <3, P$1(32) shared-float>, <4, P$2(32) shared-float>, <5, $1 * (SECRET FLOAT - $2) shared-float>, <6, ($1 * (SECRET FLOAT - $2)) * (SECRET FLOAT + $3) shared-float>)) : (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge) order by: {}, cost est: 8886150, output card: 390
                 #0: SecureSqlInput<Bit> ("SELECT l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, NOT l_shipdate <= DATE '1998-08-03' AS dummy_tag FROM lineitem ORDER BY l_returnflag, l_linestatus, l_orderkey, l_linenumber;", tuple_count=390) : (#0 shared-float lineitem.l_quantity, #1 shared-float lineitem.l_extendedprice, #2 shared-float lineitem.l_discount, #3 shared-float lineitem.l_tax, #4 shared-varchar(1) lineitem.l_returnflag, #5 shared-varchar(1) lineitem.l_linestatus) order by: {}, cost est: 0, output card: 390
 
-Operator #0 SecureSqlInput ran for 3.785000 ms, gate count: 0 output cardinality: 390, row width=145
-Operator #1 Project ran for 463.436000 ms, gate count: 5331692 output cardinality: 390, row width=177
-Operator #-1 Sort ran for 142.837000 ms, gate count: 1487396 output cardinality: 390, row width=177
-Operator #2 SortMergeAggregate ran for 694.236000 ms, gate count: 8563524 output cardinality: 390, row width=250
-Operator #3 Sort ran for 189.077000 ms, gate count: 2047088 output cardinality: 390, row width=250
-Runtime: 1.54059 sec, CPU Time: 1.4945 sec, CPU clock ticks: 1.4945e+06, CPU clock ticks per second: 1000000
+Operator #0 SecureSqlInput ran for 3.874000 ms, gate count: 0 output cardinality: 390, row width=145
+Operator #1 Project ran for 485.131000 ms, gate count: 5331692 output cardinality: 390, row width=177
+Operator #-1 Sort ran for 144.703000 ms, gate count: 1487396 output cardinality: 390, row width=177
+Operator #2 SortMergeAggregate ran for 731.188000 ms, gate count: 8563524 output cardinality: 390, row width=250
+Operator #3 Sort ran for 196.672000 ms, gate count: 2047088 output cardinality: 390, row width=250
+Runtime: 1.60834 sec, CPU Time: 1.56215 sec, CPU clock ticks: 1.56215e+06, CPU clock ticks per second: 1000000
 End-to-end estimated gates: 2.13674e+07. observed gates: 17429700 gates, relative error (%)=22.5918
-[Linux]Peak resident set size: 24813568 bytes, current memory size: 23351296 bytes.
-Initial Memory: 16646144 bytes, Peak Memory After Execution: 24813568 bytes, Memory Usage: 8167424 bytes
-Bandwidth: 3.62038e+08 Bps
+[Linux]Peak resident set size: 24887296 bytes, current memory size: 23425024 bytes.
+Initial Memory: 16515072 bytes, Peak Memory After Execution: 24887296 bytes, Memory Usage: 8372224 bytes
+Bandwidth: 3.46786e+08 Bps
 Comparing on idx 0 with (A, F, 1337.000000, 1917697.875000, 1813475.125000, 1884115.250000, 26.215687, 37601.917969, 0.051373, 51) (dummy=0)
           !=            (A, F, 2674.000000, 3835395.500000, 3626950.750000, 3768231.000000, 26.215687, 37601.917969, 0.051373, 102) (dummy=0)
     Failed to match!
@@ -42,7 +42,7 @@ Expected equality of these values:
 (N, O, 5180.000000, 7414320.500000, 7059732.000000, 7348500.500000, 25.900000, 37071.601562, 0.048600, 200)
 (R, F, 2074.000000, 3006983.250000, 2844944.250000, 2941908.500000, 26.589743, 38551.066406, 0.047949, 78)
 
-[  FAILED  ] BaselineComparisonTest.baseline_tpch_q1 (10426 ms)
+[  FAILED  ] BaselineComparisonTest.baseline_tpch_q1 (6455 ms)
 [ RUN      ] BaselineComparisonTest.baseline_tpch_q3
 Connecting to 127.0.0.1 on ports 7655, 65483 as 1
 connected
