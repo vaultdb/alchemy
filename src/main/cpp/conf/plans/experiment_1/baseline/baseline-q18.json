@@ -18,7 +18,7 @@
           "name": "l_quantity"
         }
       ],
-      "sql" : "SELECT l_orderkey, l_quantity FROM lineitem ORDER BY l_orderkey",
+      "sql" : "SELECT l_orderkey, l_quantity FROM lineitem",
       "tuples": [],
       "inputs": []
     },
@@ -119,7 +119,7 @@
           "name": "L2.l_quantity"
         }
       ],
-      "sql" : "SELECT L2.l_orderkey, L2.l_quantity FROM lineitem L2 ORDER BY L2.l_orderkey",
+      "sql" : "SELECT L2.l_orderkey, L2.l_quantity FROM lineitem L2",
       "tuples": [],
       "inputs": []
     },
@@ -198,7 +198,7 @@
           "name": "o_orderdate"
         }
       ],
-      "sql" : "SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate FROM orders ORDER BY o_orderkey, o_custkey",
+      "sql" : "SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate FROM orders",
       "tuples": [],
       "inputs": []
     },
@@ -281,7 +281,7 @@
           "name": "c_name"
         }
       ],
-      "sql" : "SELECT c_custkey, c_name FROM customer ORDER BY c_custkey",
+      "sql" : "SELECT c_custkey, c_name FROM customer",
       "tuples": [],
       "inputs": []
     },

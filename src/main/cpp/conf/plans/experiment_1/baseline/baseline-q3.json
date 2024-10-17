@@ -26,7 +26,7 @@
           "name": "o_shippriority"
         }
       ],
-      "sql": "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_orderkey, o_orderdate, o_shippriority",
+      "sql": "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders",
       "dummy-tag": true,
       "tuples": [],
       "inputs": []
@@ -42,7 +42,7 @@
           "name": "c_custkey"
         }
       ],
-      "sql": "SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer ORDER BY c_custkey",
+      "sql": "SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer",
       "dummy-tag": true,
       "tuples": [],
       "inputs": []
@@ -124,7 +124,7 @@
           "name": "l_discount"
         }
       ],
-      "sql": "SELECT l_orderkey, l_extendedprice, l_discount, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey",
+      "sql": "SELECT l_orderkey, l_extendedprice, l_discount, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem",
       "dummy-tag": true,
       "tuples": [],
       "inputs": []
@@ -237,13 +237,6 @@
       "id": "8",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "sort-merge-aggregate",
-      "effective-collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
-      ],
       "group": [
         0,
         1,

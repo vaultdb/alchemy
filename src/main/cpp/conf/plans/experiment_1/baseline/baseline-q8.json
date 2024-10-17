@@ -11,7 +11,7 @@
           "name": "c_custkey"
         }
       ],
-      "sql": "SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA' ORDER BY c_custkey",
+      "sql": "SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA'",
       "dummy-tag": false,
       "tuples": [],
       "inputs": []
@@ -37,7 +37,7 @@
           "name": "o_year"
         }
       ],
-      "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_year, o_orderkey",
+      "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders",
       "dummy-tag": true,
       "tuples": [],
       "inputs": []
@@ -118,7 +118,7 @@
           "name": "l_discount"
         }
       ],
-      "sql" : "SELECT l_orderkey, l_suppkey, l_extendedprice, l_discount,        CASE            WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE            ELSE TRUE            END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_orderkey",
+      "sql" : "SELECT l_orderkey, l_suppkey, l_extendedprice, l_discount,        CASE            WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE            ELSE TRUE            END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey",
       "dummy-tag": true,
       "tuples": [],
       "inputs": []
@@ -243,7 +243,7 @@
           "name": "nation_check"
         }
       ],
-      "sql": "SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey ORDER BY s_suppkey",
+      "sql": "SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey",
       "dummy-tag": false,
       "tuples": [],
       "inputs": []
@@ -324,13 +324,6 @@
       "relOp": "LogicalAggregate",
       "outputFields" : "o_year (#0), SUM(volume) (#1), SUM(selected_volume) (#2)",
       "operator-algorithm" : "sort-merge-aggregate",
-      "effective-collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
-      ],
       "group": [
         0
       ],

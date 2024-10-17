@@ -46,7 +46,7 @@
           "name": "l_linestatus"
         }
       ],
-      "sql": "SELECT l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, NOT l_shipdate <= DATE '1998-08-03' AS dummy_tag FROM lineitem ORDER BY l_returnflag, l_linestatus, l_orderkey, l_linenumber;",
+      "sql": "SELECT l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, NOT l_shipdate <= DATE '1998-08-03' AS dummy_tag FROM lineitem",
       "tuples": [],
       "inputs": []
     },

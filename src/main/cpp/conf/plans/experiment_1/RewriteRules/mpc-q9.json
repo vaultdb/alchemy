@@ -17,8 +17,15 @@
           "name": "n_name"
         }
       ],
-      "sql": "SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY n_name, s_suppkey",
+      "sql": "SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY s_suppkey",
       "dummy-tag": false,
+      "collation": [
+        {
+          "field": 0,
+          "name": "s_suppkey",
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -45,8 +52,15 @@
           "name": "ps_supplycost"
         }
       ],
-      "sql": "SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%' ORDER BY ps_suppkey, ps_partkey",
+      "sql": "SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%' ORDER BY ps_suppkey",
       "dummy-tag": false,
+      "collation": [
+        {
+          "field": 1,
+          "name": "ps_suppkey",
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -142,7 +156,19 @@
           "name": "volume"
         }
       ],
-      "sql": "SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice * (1.0 - l_discount) AS volume FROM lineitem ORDER BY l_orderkey, l_partkey, l_suppkey",
+      "sql": "SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice * (1.0 - l_discount) AS volume FROM lineitem ORDER BY l_suppkey, l_partkey",
+      "collation": [
+        {
+          "field": 2,
+          "name": "l_suppkey",
+          "direction": "ASCENDING"
+        },
+        {
+          "field": 1,
+          "name": "l_partkey",
+          "direction": "ASCENDING"
+        }
+      ],
       "dummy-tag": false,
       "tuples": [],
       "inputs": []
@@ -274,6 +300,13 @@
       ],
       "sql": "SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders ORDER BY o_orderkey",
       "dummy-tag": false,
+      "collation": [
+        {
+          "field": 1,
+          "name": "o_orderkey",
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },

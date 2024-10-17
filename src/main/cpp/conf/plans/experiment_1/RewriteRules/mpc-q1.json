@@ -101,7 +101,7 @@
           "direction": "ASCENDING"
         }
       ],
-      "input-limit": 195,
+      "input-limit": 338,
       "tuples": [],
       "inputs": []
     },
@@ -206,7 +206,7 @@
           "direction": "ASCENDING"
         }
       ],
-      "input-limit": 195,
+      "input-limit": 338,
       "tuples": [],
       "inputs": []
     },
@@ -220,7 +220,7 @@
         "no-op": true
       },
       "joinType": "inner",
-      "cardinality-bound" : 1927,
+      "cardinality-bound" : 338,
       "inputs": [
         "0",
         "1"

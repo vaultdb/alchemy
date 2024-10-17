@@ -12,6 +12,13 @@
         }
       ],
       "sql": "SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA' ORDER BY c_custkey",
+      "collation": [
+        {
+          "field": 0,
+          "name": "c_custkey",
+          "direction": "ASCENDING"
+        }
+      ],
       "dummy-tag": false,
       "tuples": [],
       "inputs": []
@@ -37,8 +44,15 @@
           "name": "o_year"
         }
       ],
-      "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_year, o_orderkey",
+      "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_custkey",
       "dummy-tag": true,
+      "collation": [
+        {
+          "field": 1,
+          "name": "o_custkey",
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -113,6 +127,13 @@
       ],
       "sql" : "SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume,        CASE            WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE            ELSE TRUE            END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_orderkey",
       "dummy-tag": true,
+      "collation": [
+        {
+          "field": 0,
+          "name": "l_orderkey",
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },
@@ -186,6 +207,13 @@
       ],
       "sql": "SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey ORDER BY s_suppkey",
       "dummy-tag": false,
+      "collation": [
+        {
+          "field": 0,
+          "name": "s_suppkey",
+          "direction": "ASCENDING"
+        }
+      ],
       "tuples": [],
       "inputs": []
     },

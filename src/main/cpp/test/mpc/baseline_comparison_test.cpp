@@ -16,9 +16,9 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 7654, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
-DEFINE_string(unioned_db, "tpch_unioned_5", "unioned db name");
-DEFINE_string(alice_db, "tpch_alice_5", "alice db name");
-DEFINE_string(bob_db, "tpch_bob_5", "bob db name");
+DEFINE_string(unioned_db, "tpch_unioned_10", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_10", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_10", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -82,6 +82,7 @@ BaselineComparisonTest::runTest(const int &test_id, const string & test_name, co
 
     cout << root->printTree() << endl;
 
+    
     SecureTable *result = root->run();
 
     // Measure CPU Time
@@ -117,6 +118,7 @@ BaselineComparisonTest::runTest(const int &test_id, const string & test_name, co
         delete observed;
         delete expected;
     }
+
 }
 
 
@@ -174,6 +176,7 @@ TEST_F(BaselineComparisonTest, baseline_tpch_q1) {
     runTest(1, "q1", expected_sort, FLAGS_unioned_db, 1);
 
 }
+
 
 TEST_F(BaselineComparisonTest, baseline_tpch_q3) {
 

@@ -17,7 +17,7 @@
         }
 
       ],
-      "sql": "SELECT s_suppkey, s_nationkey FROM supplier JOIN nation ON s_nationkey = n_nationkey JOIN region ON n_regionkey = r_regionkey WHERE r_name = 'MIDDLE EAST ' ORDER BY s_suppkey",
+      "sql": "SELECT s_suppkey, s_nationkey FROM supplier JOIN nation ON s_nationkey = n_nationkey JOIN region ON n_regionkey = r_regionkey WHERE r_name = 'MIDDLE EAST '",
       "dummy-tag": false,
       "tuples": [],
       "inputs": []
@@ -25,7 +25,7 @@
     {
       "id": "1",
       "relOp": "LogicalValues",
-      "outputFields": "l_orderkey (#0), l_suppkey (#1), revenue (#2)",
+      "outputFields": "l_orderkey (#0), l_suppkey (#1), l_extendedprice (#2), l_discount (#3)",
       "type": [
         {
           "type": "INTEGER",
@@ -42,16 +42,75 @@
           "nullable": true,
           "precision": 19,
           "scale": 0,
-          "name": "revenue"
+          "name": "l_extendedprice"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_discount"
         }
       ],
-      "sql": "SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem ORDER BY l_orderkey",
-      "dummy-tag": false,
+      "sql": "SELECT l_orderkey, l_suppkey, l_extendedprice, l_discount FROM lineitem",
+      "dummy-tag": true,
       "tuples": [],
       "inputs": []
     },
     {
       "id": "2",
+      "relOp": "LogicalProject",
+      "fields": [
+        "l_orderkey",
+        "l_suppkey",
+        "revenue"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "op": {
+            "name": "*",
+            "kind": "TIMES",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 2,
+              "name": "$2"
+            },
+            {
+              "op": {
+                "name": "-",
+                "kind": "MINUS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "literal": 1,
+                  "type": {
+                    "type": "FLOAT",
+                    "nullable": false
+                  }
+                },
+                {
+                  "input": 3,
+                  "name": "$3"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3",
       "relOp": "LogicalJoin",
       "joinOn" : "s_suppkey = l_suppkey",
       "outputFields": "s_suppkey (#0), s_nationkey (#1), l_orderkey (#2), l_suppkey (#3), revenue (#4)",
@@ -75,11 +134,11 @@
       "joinType": "inner",
       "inputs": [
         "0",
-        "1"
+        "2"
       ]
     },
     {
-      "id": "3",
+      "id": "4",
       "relOp": "LogicalProject",
       "outputFields": "s_nationkey (#0), l_orderkey (#1), revenue (#2)",
       "fields": [
@@ -103,7 +162,7 @@
       ]
     },
     {
-      "id": "4",
+      "id": "5",
       "relOp": "LogicalValues",
       "outputFields": "o_orderkey (#0), o_custkey (#1)",
       "type": [
@@ -118,13 +177,13 @@
           "name": "o_custkey"
         }
       ],
-      "sql": "SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders ORDER BY o_orderkey, o_custkey, o_orderdate",
+      "sql": "SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders",
       "dummy-tag": true,
       "tuples": [],
       "inputs": []
     },
     {
-      "id": "5",
+      "id": "6",
       "relOp": "LogicalJoin",
       "joinOn" : "l_orderkey = o_orderkey",
       "outputFields": "s_nationkey (#0), l_orderkey (#1), revenue (#2), o_orderkey (#3), o_custkey (#4)",
@@ -147,12 +206,12 @@
       },
       "joinType": "inner",
       "inputs": [
-        "3",
-        "4"
+        "4",
+        "5"
       ]
     },
     {
-      "id": "6",
+      "id": "7",
       "relOp": "LogicalProject",
       "outputFields": "s_nationkey (#0), revenue (#1), o_custkey (#2)",
       "fields": [
@@ -176,7 +235,7 @@
       ]
     },
     {
-      "id": "7",
+      "id": "8",
       "relOp": "LogicalValues",
       "outputFields": "c_custkey (#0), c_nationkey (#1), n_name (#2)",
       "type": [
@@ -203,7 +262,7 @@
       "inputs": []
     },
     {
-      "id": "8",
+      "id": "9",
       "relOp": "LogicalJoin",
       "joinOn" : "o_custkey = c_custkey",
       "outputFields": "s_nationkey (#0), revenue (#1), o_custkey (#2), c_custkey (#3), c_nationkey (#4), n_name (#5)",
@@ -252,12 +311,12 @@
       },
       "joinType": "inner",
       "inputs": [
-        "6",
-        "7"
+        "7",
+        "8"
       ]
     },
     {
-      "id": "9",
+      "id": "10",
       "relOp": "LogicalProject",
       "outputFields": "n_name (#0), revenue (#1)",
       "fields": [
@@ -276,16 +335,9 @@
       ]
     },
     {
-      "id": "10",
+      "id": "11",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "sort-merge-aggregate",
-      "effective-collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
-      ],
       "group": [
         0
       ],
@@ -311,7 +363,7 @@
       ]
     },
     {
-      "id": "11",
+      "id": "12",
       "relOp": "LogicalSort",
       "collation": [
         {
