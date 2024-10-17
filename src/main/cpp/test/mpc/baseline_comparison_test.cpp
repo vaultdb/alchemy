@@ -16,9 +16,9 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 7654, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
-DEFINE_string(unioned_db, "tpch_unioned_10", "unioned db name");
-DEFINE_string(alice_db, "tpch_alice_10", "alice db name");
-DEFINE_string(bob_db, "tpch_bob_10", "bob db name");
+DEFINE_string(unioned_db, "tpch_unioned_5", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_5", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_5", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -167,7 +167,7 @@ BaselineComparisonTest::generateExpectedOutputQuery(const int &test_id, const So
 ///////////////////////////////////////////////////////////////////////////////
 
 
-/*
+
 TEST_F(BaselineComparisonTest, baseline_tpch_q1) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
@@ -197,7 +197,7 @@ TEST_F(BaselineComparisonTest, baseline_tpch_q8) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     runTest(8, "q8", expected_sort, FLAGS_unioned_db, 1);
 }
-*/
+
 
 
 TEST_F(BaselineComparisonTest, baseline_tpch_q9) {
@@ -233,13 +233,13 @@ TEST_F(BaselineComparisonTest, rewrite_rules_tpch_q1) {
 }
 
 
-//TEST_F(BaselineComparisonTest, rewrite_rules_tpch_q3) {
-//
-//    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-//                                 ColumnSort(1, SortDirection::DESCENDING),
-//                                 ColumnSort(2, SortDirection::ASCENDING)};
-//    runTest(3, "q3", expected_sort, FLAGS_unioned_db, 2);
-//}
+TEST_F(BaselineComparisonTest, rewrite_rules_tpch_q3) {
+
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(1, SortDirection::DESCENDING),
+                                 ColumnSort(2, SortDirection::ASCENDING)};
+    runTest(3, "q3", expected_sort, FLAGS_unioned_db, 2);
+}
 
 
 
@@ -251,11 +251,11 @@ TEST_F(BaselineComparisonTest, rewrite_rules_tpch_q5) {
 }
 
 
-//TEST_F(BaselineComparisonTest, rewrite_rules_tpch_q8) {
-//
-//    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-//    runTest(8, "q8", expected_sort, FLAGS_unioned_db, 2);
-//}
+TEST_F(BaselineComparisonTest, rewrite_rules_tpch_q8) {
+
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+    runTest(8, "q8", expected_sort, FLAGS_unioned_db, 2);
+}
 
 
 

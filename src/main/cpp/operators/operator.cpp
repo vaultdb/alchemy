@@ -62,11 +62,11 @@ QueryTable<B> *Operator<B>::run() {
     if(std::is_same_v<B, Bit> && this->getOperatorId() > -2) {
 		Logger* log = get_log();
 
-        log->write("Operator #" + std::to_string(this->getOperatorId()) + " " + getTypeString() +
+        cout << "Operator #" + std::to_string(this->getOperatorId()) + " " + getTypeString() +
 				" ran for " + std::to_string(runtime_ms_) + " ms, " + 
 				"gate count: " + std::to_string(gate_cnt_) + 
 				" output cardinality: " + std::to_string(output_->tuple_cnt_) +
-				", row width=" + std::to_string(output_schema_.size()), Level::INFO);
+				", row width=" + std::to_string(output_schema_.size()) << endl;
 
         if (gate_cnt_ > 0  && this->getOperatorId() >= -1) {
             size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
