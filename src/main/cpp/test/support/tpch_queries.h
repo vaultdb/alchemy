@@ -30,7 +30,7 @@ namespace vaultdb {
                 "     JOIN supplier s ON l.l_suppkey = s.s_suppkey\n"
                 "     JOIN nation n ON s.s_nationkey = n.n_nationkey\n"
                 "     JOIN region r ON n.n_regionkey = r.r_regionkey\n"
-                "WHERE c.c_nationkey = s.s_nationkey  AND r.r_name = 'ASIA' AND o.o_orderdate >= date '1993-01-01' AND o.o_orderdate < date '1994-01-01'\n"
+                "WHERE c.c_nationkey = s.s_nationkey  AND r.r_name = 'EUROPE' AND o.o_orderdate >= date '1993-01-01' AND o.o_orderdate < date '1994-01-01'\n"
                 " GROUP BY   n.n_name\n"
                 " ORDER BY revenue DESC"},
             {8,     "SELECT   o_year, SUM(CASE WHEN  n_nation = 'KENYA' THEN volume ELSE 0.0 END) / SUM(VOLUME) AS mkt_share "
