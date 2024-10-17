@@ -55,11 +55,11 @@
       "dummy-tag": false,
       "collation-1": [
         {
-          "field": 0,
+          "field": 1,
           "direction": "ASCENDING"
         },
         {
-          "field": 1,
+          "field": 0,
           "direction": "ASCENDING"
         }
       ],
@@ -172,7 +172,7 @@
           "name": "volume"
         }
       ],
-      "sql": "SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice * (1.0 - l_discount) AS volume FROM lineitem ORDER BY l_orderkey, l_partkey, l_suppkey",
+      "sql": "SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice * (1.0 - l_discount) AS volume FROM lineitem ORDER BY l_orderkey, l_suppkey, l_partkey",
       "dummy-tag": false,
       "collation-1": [
         {
