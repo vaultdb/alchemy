@@ -1,0 +1,41 @@
+Note: Google Test filter = *.test_tpch_q3_customer_orders
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from OMPCBlockNestedLoopJoinTest
+[ RUN      ] OMPCBlockNestedLoopJoinTest.test_tpch_q3_customer_orders
+Connecting on ports 54340, 65450 as 2
+party 2 connected to TP
+party 2 connected to GB
+party 2 connected to TP
+party 2 connected to GB
+initializing cot
+setup finished! takes 2254.49ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 1408499712 bytes, current memory size: 1364148224 bytes.
+1408499712
+EMP mode: outsourced, storage mode: packed wires
+Code version: df59803bdf255b7bd8a995b22ee10d7befa5cb5e
+GFlags: --flagfile=	--ctrl_port=65450	--cutoff=5	--empty_db=tpch_empty	--filter=*.test_tpch_q3_customer_orders	--input_party=10086	--input_size=s	--page_cnt=50	--party=2	--port=43443	--storage=wire_packed	--unioned_db=tpch_unioned_150	--unpacked_page_size_bits=2048	--validation=false	--wire_path=wires	--log_level=2	--logfile=	
+
+After setup: [Linux]Peak resident set size: 1408499712 bytes, current memory size: 1370308608 bytes.
+1408499712
+Operator #-1 StoredTableScan ran for 0.931000 ms, gate count: 0 output cardinality: 750, row width=161
+Operator #-1 StoredTableScan ran for 0.663000 ms, gate count: 0 output cardinality: 150, row width=33
+extension finished! takes 1830.55ms to extend lpn
+Operator #-1 BlockNestedLoopJoin ran for 9197.486000 ms, gate count: 7537500 output cardinality: 750, row width=193
+querying time: 9.19919s
+[Linux]Peak resident set size: 1719554048 bytes, current memory size: 1719554048 bytes.
+party 2 send 1448183040 bytes to party 1
+party 2 send 8928 bytes to TP 
+total AND gate: 7537500
+total pack call: 3
+total unpack call: 30
+total packed wire: 6144
+total unpacked wire: 61440
+[       OK ] OMPCBlockNestedLoopJoinTest.test_tpch_q3_customer_orders (11589 ms)
+[----------] 1 test from OMPCBlockNestedLoopJoinTest (11589 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (11589 ms total)
+[  PASSED  ] 1 test.
+Buffer pool requests: 1012680 hit rate: 1012650/1012680: 0.99997, pack calls: 0 unpack calls: 30 pinned pages: 0
+

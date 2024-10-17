@@ -1,0 +1,43 @@
+Note: Google Test filter = *.test_tpch_q3_customer_orders
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from OMPCBlockNestedLoopJoinTest
+[ RUN      ] OMPCBlockNestedLoopJoinTest.test_tpch_q3_customer_orders
+Connecting on ports 54340, 65450 as 2
+party 2 connected to TP
+party 2 connected to GB
+party 2 connected to TP
+party 2 connected to GB
+initializing cot
+setup finished! takes 2440.78ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 1408761856 bytes, current memory size: 1364303872 bytes.
+1408761856
+EMP mode: outsourced, storage mode: column store
+Code version: df59803bdf255b7bd8a995b22ee10d7befa5cb5e
+GFlags: --flagfile=	--ctrl_port=65450	--cutoff=5	--empty_db=tpch_empty	--filter=*.test_tpch_q3_customer_orders	--input_party=10086	--input_size=l	--page_cnt=50	--party=2	--port=43443	--storage=column	--unioned_db=tpch_unioned_150	--unpacked_page_size_bits=2048	--validation=false	--wire_path=wires	--log_level=2	--logfile=	
+
+After setup: [Linux]Peak resident set size: 1408761856 bytes, current memory size: 1370464256 bytes.
+1408761856
+Operator #-1 StoredTableScan ran for 284.395000 ms, gate count: 0 output cardinality: 1500, row width=161
+Operator #-1 StoredTableScan ran for 3.662000 ms, gate count: 0 output cardinality: 150, row width=33
+extension finished! takes 2230.72ms to extend lpn
+extension finished! takes 1778.66ms to extend lpn
+extension finished! takes 1929.44ms to extend lpn
+Operator #-1 BlockNestedLoopJoin ran for 18274.717000 ms, gate count: 15075000 output cardinality: 1500, row width=193
+querying time: 18.5707s
+[Linux]Peak resident set size: 1804107776 bytes, current memory size: 1804107776 bytes.
+party 2 send 2903846400 bytes to party 1
+party 2 send 0 bytes to TP 
+total AND gate: 15075000
+total pack call: 0
+total unpack call: 0
+total packed wire: 0
+total unpacked wire: 0
+[       OK ] OMPCBlockNestedLoopJoinTest.test_tpch_q3_customer_orders (21169 ms)
+[----------] 1 test from OMPCBlockNestedLoopJoinTest (21169 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (21169 ms total)
+[  PASSED  ] 1 test.
+Buffer pool requests: 2025360 hit rate: 2025306/2025360: 0.999973, pack calls: 0 unpack calls: 0 pinned pages: 0
+
