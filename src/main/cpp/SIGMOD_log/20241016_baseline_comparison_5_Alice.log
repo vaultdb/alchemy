@@ -47,39 +47,41 @@ Expected equality of these values:
 Connecting to 127.0.0.1 on ports 7655, 65483 as 1
 connected
 EMP mode: sh2pc, storage mode: column store
-Code version: d797d9ee6e8bffe6b6f99b583fed56961b43d506
+Code version: 347abcddae268e1c73adf62dffb79533f3d5f8ab
 GFlags: --flagfile=	--alice_db=tpch_alice_5	--alice_host=127.0.0.1	--bob_db=tpch_bob_5	--ctrl_port=65484	--cutoff=100	--filter=*	--party=1	--port=7656	--storage=column	--unioned_db=tpch_unioned_5	--validation=true	--log_level=2	--logfile=	
 
-[Linux]Peak resident set size: 26497024 bytes, current memory size: 21893120 bytes.
-#9: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$3(32) shared-float>, <2, P$1(28) shared-int64>, <3, P$2(32) shared-int32>)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-float revenue, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {<-1, ASC> , <1, DESC> , <2, ASC> }, cost est: 0, output card: 10
-    #8: Sort<Bit> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }, cost est: 6568, output card: 10
-        #7: SortMergeAggregate<Bit> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> }, cost est: 487500, output card: 390
-            #-1: Sort<Bit> ({<0, ASC> , <1, ASC> , <2, ASC> }) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> , <1, ASC> , <2, ASC> }, cost est: 1628647, output card: 390
-                #6: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$1(28) shared-int64>, <2, P$2(32) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {}, cost est: 0, output card: 390
-                    #5: KeyedJoin<Bit> (P$0(20) == P$3(20)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-int32(20) lineitem.l_orderkey, #4 shared-float revenue) order by: {}, cost est: 4056000, output card: 390
-                        #3: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$2(28) shared-int64>, <2, P$3(32) shared-int32>)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority) order by: {}, cost est: 0, output card: 100
-                            #2: KeyedJoin<Bit> (P$1(14) == P$4(14)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority, #4 shared-int32(14) customer.c_custkey) order by: {}, cost est: 32000, output card: 100
+[Linux]Peak resident set size: 26570752 bytes, current memory size: 21966848 bytes.
+#10: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$3(32) shared-float>, <2, P$1(28) shared-int64>, <3, P$2(32) shared-int32>)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-float revenue, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {<-1, ASC> , <1, DESC> , <2, ASC> }, cost est: 0, output card: 10
+    #9: Sort<Bit> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }, cost est: 6568, output card: 10
+        #8: SortMergeAggregate<Bit> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> }, cost est: 487500000, output card: 390000
+            #-1: Sort<Bit> ({<0, ASC> , <1, ASC> , <2, ASC> }) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> , <1, ASC> , <2, ASC> }, cost est: 7159796224, output card: 390000
+                #7: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$1(28) shared-int64>, <2, P$2(32) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {}, cost est: 0, output card: 390000
+                    #6: BasicJoin<Bit> (P$0(20) == P$3(20)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-int32(20) lineitem.l_orderkey, #4 shared-float revenue) order by: {}, cost est: 9360000, output card: 390000
+                        #3: Project<Bit> ((<0, P$0(20) shared-int32>, <1, P$2(28) shared-int64>, <2, P$3(32) shared-int32>)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority) order by: {}, cost est: 0, output card: 1000
+                            #2: BasicJoin<Bit> (P$1(14) == P$4(14)) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority, #4 shared-int32(14) customer.c_custkey) order by: {}, cost est: 18000, output card: 1000
                                 #0: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_orderkey, o_orderdate, o_shippriority", tuple_count=100) : (#0 shared-int32(20) orders.o_orderkey, #1 shared-int32(14) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {}, cost est: 0, output card: 100
                                 #1: SecureSqlInput<Bit> ("SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer ORDER BY c_custkey", tuple_count=10) : (#0 shared-int32(14) customer.c_custkey) order by: {}, cost est: 0, output card: 10
-                        #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey", tuple_count=390) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float revenue) order by: {}, cost est: 0, output card: 390
+                        #5: Project<Bit> ((<0, P$0(20) shared-int32>, <1, $1 * (SECRET FLOAT - $2) shared-float>)) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float revenue) order by: {}, cost est: 1777230, output card: 390
+                            #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_extendedprice, l_discount, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey", tuple_count=390) : (#0 shared-int32(20) lineitem.l_orderkey, #1 shared-float lineitem.l_extendedprice, #2 shared-float lineitem.l_discount) order by: {}, cost est: 0, output card: 390
 
-Operator #0 SecureSqlInput ran for 0.514000 ms, gate count: 0 output cardinality: 100, row width=95
-Operator #1 SecureSqlInput ran for 0.161000 ms, gate count: 0 output cardinality: 10, row width=15
-Operator #2 KeyedJoin ran for 2.926000 ms, gate count: 33000 output cardinality: 100, row width=109
-Operator #3 Project ran for 0.048000 ms, gate count: 0 output cardinality: 100, row width=81
-Operator #4 SecureSqlInput ran for 3.093000 ms, gate count: 0 output cardinality: 390, row width=53
-Operator #5 KeyedJoin ran for 359.312000 ms, gate count: 4095000 output cardinality: 390, row width=133
-Operator #6 Project ran for 0.299000 ms, gate count: 0 output cardinality: 390, row width=113
-Operator #-1 Sort ran for 161.389000 ms, gate count: 1487400 output cardinality: 390, row width=113
-Operator #7 SortMergeAggregate ran for 42.067000 ms, gate count: 475000 output cardinality: 390, row width=113
-Operator #8 Sort ran for 145.673000 ms, gate count: 1398532 output cardinality: 10, row width=113
-Operator #9 Project ran for 0.012000 ms, gate count: 0 output cardinality: 10, row width=113
-Runtime: 0.744964 sec, CPU Time: 0.715501 sec, CPU clock ticks: 715501, CPU clock ticks per second: 1000000
-End-to-end estimated gates: 6.21072e+06. observed gates: 7488932 gates, relative error (%)=17.0681
-[Linux]Peak resident set size: 26497024 bytes, current memory size: 23728128 bytes.
-Initial Memory: 26497024 bytes, Peak Memory After Execution: 26497024 bytes, Memory Usage: 0 bytes
-Bandwidth: 3.21688e+08 Bps
-[       OK ] BaselineComparisonTest.baseline_tpch_q3 (898 ms)
+Operator #0 SecureSqlInput ran for 0.521000 ms, gate count: 0 output cardinality: 100, row width=95
+Operator #1 SecureSqlInput ran for 0.169000 ms, gate count: 0 output cardinality: 10, row width=15
+Operator #2 BasicJoin ran for 2.369000 ms, gate count: 17000 output cardinality: 1000, row width=109
+Operator #3 Project ran for 0.923000 ms, gate count: 0 output cardinality: 1000, row width=81
+Operator #4 SecureSqlInput ran for 5.220000 ms, gate count: 0 output cardinality: 390, row width=85
+Operator #5 Project ran for 159.435000 ms, gate count: 1777232 output cardinality: 390, row width=53
+Operator #6 BasicJoin ran for 2762.210000 ms, gate count: 8970000 output cardinality: 390000, row width=133
+Operator #7 Project ran for 738.143000 ms, gate count: 0 output cardinality: 390000, row width=113
+Operator #-1 Sort ran for 709581.022000 ms, gate count: 6691230720 output cardinality: 390000, row width=113
+Operator #8 SortMergeAggregate ran for 46041.254000 ms, gate count: 476188812 output cardinality: 390000, row width=113
+Operator #9 Sort ran for 625551.476000 ms, gate count: 6119534880 output cardinality: 10, row width=113
+Operator #10 Project ran for 0.033000 ms, gate count: 0 output cardinality: 10, row width=113
+Runtime: 1384.99 sec, CPU Time: 1374 sec, CPU clock ticks: 1.374e+09, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 7.65846e+09. observed gates: 13297718644 gates, relative error (%)=42.4077
+[Linux]Peak resident set size: 3060649984 bytes, current memory size: 21970944 bytes.
+Initial Memory: 26570752 bytes, Peak Memory After Execution: 3060649984 bytes, Memory Usage: 3034079232 bytes
+Bandwidth: 3.07241e+08 Bps
+[       OK ] BaselineComparisonTest.baseline_tpch_q3 (1387032 ms)
 [ RUN      ] BaselineComparisonTest.baseline_tpch_q5
 Connecting to 127.0.0.1 on ports 7656, 65484 as 1
 connected
