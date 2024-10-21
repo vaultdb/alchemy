@@ -10,8 +10,8 @@
   "secret_shares_path": "pilot/secret_shares/output",
   "dst_path": "pilot/results/phame/batch/row_level/2",
   "tables": [
-    {"input_parties": [0],"name": "PHAME_DEMOGRAPHIC","schema": "(patid:int32, age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1))"},
-    {"input_parties": [0],"name": "PHAME_DIAGNOSIS","schema": "(patid:int32, dx_diabetes:bool, dx_hypertension:bool, dx_cervical_cancer:bool, dx_breast_cancer:bool, dx_lung_cancer:bool, dx_colorectal_cancer:bool)"}
+    {"input_parties": [2],"name": "PHAME_DEMOGRAPHIC","schema": "(patid:int32, age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1))"},
+    {"input_parties": [2],"name": "PHAME_DIAGNOSIS","schema": "(patid:int32, dx_diabetes:bool, dx_hypertension:bool, dx_cervical_cancer:bool, dx_breast_cancer:bool, dx_lung_cancer:bool, dx_colorectal_cancer:bool)"}
   ],
   "queries": [
     {"count_cols": [7,8,9,10,11,12,13],"name": "phame_diagnosis_rollup"}
