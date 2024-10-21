@@ -201,6 +201,10 @@ install(TARGETS ${NAME} DESTINATION ${CMAKE_SOURCE_DIR}/lib)
 add_executable(run_query util/cli/run_query.cpp)
 target_link_libraries(run_query vaultdb-emp)
 
+
+add_executable(reveal_xor_shared_table util/cli/reveal_xor_shared_table.cpp)
+target_link_libraries(reveal_xor_shared_table vaultdb-emp)
+
 add_executable(parse_plan util/cli/parse_plan.cpp)
 target_link_libraries(parse_plan vaultdb-emp)
 
