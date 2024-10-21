@@ -7,6 +7,7 @@
 #include "expression/expression_node.h"
 #include "data/csv_reader.h"
 #include "parser/plan_parser.h"
+#include <iomanip>
 
 #define TESTBED 0
 #define EXPECTED_RESULTS_PATH "pilot/study/phame/expected"
@@ -57,13 +58,13 @@ void Catalyst::parseAndRunQueries() {
         string dst_table_name = s.name_ + "_res";
 
         cout << "Running " << s.name_ << " with execution plan: \n" << root->printTree() << endl;
-            QueryTable<Bit> *output = root->run();
-            auto runtime_ms = time_from(start_time)/1e3;
-            cout << "Query " << s.name_ << " took " << runtime_ms << " ms." << endl;
-            TableManager::getInstance().insertTable(dst_table_name, output);
+        QueryTable<Bit> *output = root->run();
+        auto runtime_ms = time_from(start_time)/1e3; // microsecs to ms
+        cout << "Query " << s.name_ << " took " << std::setiosflags(std::ios_base::fixed)<< runtime_ms << " ms." << endl;
+        TableManager::getInstance().insertTable(dst_table_name, output);
 
-            string fq_filename = dst_dir + "/" + s.name_ + (c.party_ == 1 ? ".alice" : ".bob");
-            string fq_schema_filename = dst_dir + "/" + s.name_ + ".schema";
+        string fq_filename = dst_dir + "/" + s.name_ + (c.party_ == 1 ? ".alice" : ".bob");
+        string fq_schema_filename = dst_dir + "/" + s.name_ + ".schema";
             if (!TESTBED) {
                 // redact small cell counts
                 for (auto &col: s.count_cols_) {
