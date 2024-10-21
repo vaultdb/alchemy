@@ -1,6 +1,7 @@
 {
 	"alice_host": "127.0.0.1",
-	"min_cell_count": 11,
+	"min_cell_count": -1,
+	"cell_note": "no min cell count because these partial results are not revealed",
 	"name": "Catalyst MPC PHAME Study",
 	"note": "all paths are relative to $VAULTDB_ROOT/src/main/cpp",
 	"port": "4444",
