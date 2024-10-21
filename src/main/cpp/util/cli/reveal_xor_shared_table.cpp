@@ -82,8 +82,8 @@ SecureTable *readSecretSharedInput(const string &secret_shares_file, const Query
 }
 // usage: ./reveal_public_column <party 1 || 2> <host> <port>  <secret shares file>
 // e.g.,
-// ./bin/reveal_xor_shared_table 1 127.0.0.1 4444 0 pilot/results/phame/aggregate_only/phame_cohort_counts.alice
-// ./bin/reveal_xor_shared_table 2 127.0.0.1 4444 0 pilot/results/phame/aggregate_only/phame_cohort_counts.bob
+// ./bin/reveal_xor_shared_table 1 127.0.0.1 4444 pilot/results/phame/aggregate_only/phame_cohort_counts.alice
+// ./bin/reveal_xor_shared_table 2 127.0.0.1 4444 pilot/results/phame/aggregate_only/phame_cohort_counts.bob
 
 int main(int argc, char **argv) {
     int port, party;
