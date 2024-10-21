@@ -16,9 +16,9 @@ using namespace vaultdb;
 #define REVEAL_RESULT 0
 
 int main(int argc, char **argv) {
-    // usage: run_query <party> <db_name for this party> <query plan json>
+    // usage: run_query <party> <port> <alice host> <db_name for this party> <query plan json>
     // target path is relative to $VAULTDB_ROOT/src/main/cpp
-    // e.g., ./run_query 1 tpch_alice_600 conf/plans/
+    // e.g., ./run_query 1 54321 127.0.0.1 tpch_alice_600 conf/plans/
 
     if(argc < 5) {
         std::cout << "usage: run_query <party> <port> <alice_host> <db_name for this party> <query plan json>" << std::endl;
@@ -32,16 +32,16 @@ int main(int argc, char **argv) {
     srand (time(nullptr));
 
     plan_file = Utilities::getCurrentWorkingDirectory() + "/" + plan_file;
+    cout << "Parsing query plan from " << plan_file << endl;
+    PlanParser<Bit> plan_reader(db_name, plan_file, 0, true);
+    SecureOperator *root = plan_reader.getRoot();
+    cout << "Running plan: \n" << root->printTree() << endl;
+
     SystemConfiguration & conf = SystemConfiguration::getInstance();
     conf.emp_mode_ = EmpMode::SH2PC;
     conf.setStorageModel(StorageModel::COLUMN_STORE);
     SH2PCManager *manager = new SH2PCManager(party == ALICE ? "" : host, party, port);
     conf.emp_manager_ = manager;
-
-    cout << "Parsing query plan from " << plan_file << endl;
-    PlanParser<Bit> plan_reader(db_name, plan_file, 0, true);
-    SecureOperator *root = plan_reader.getRoot();
-    cout << "Running plan: \n" << root->printTree() << endl;
 
     auto start = std::chrono::high_resolution_clock::now();
     SecureTable *res = root->run();
