@@ -1,5 +1,5 @@
 {
-  "outputTable": "B3",
+  "outputTable": "phame_rollup",
   "note": "This sums up the partially aggregated rows from each site from phame_rollup.",
   "rels": [
     {
