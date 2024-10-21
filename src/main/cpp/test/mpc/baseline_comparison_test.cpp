@@ -82,7 +82,7 @@ BaselineComparisonTest::runTest(const int &test_id, const string & test_name, co
 
     cout << root->printTree() << endl;
 
-    
+
     SecureTable *result = root->run();
 
     // Measure CPU Time
@@ -118,7 +118,6 @@ BaselineComparisonTest::runTest(const int &test_id, const string & test_name, co
         delete observed;
         delete expected;
     }
-
 }
 
 
@@ -157,6 +156,22 @@ BaselineComparisonTest::generateExpectedOutputQuery(const int &test_id, const So
 //                                 ColumnSort(2, SortDirection::ASCENDING)};
 //    runTest(18, "q18", expected_sort, FLAGS_unioned_db, 3);
 //}
+
+TEST_F(BaselineComparisonTest, baseline_tpch_q18) {
+    // -1 ASC, $4 DESC, $3 ASC
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(4, SortDirection::DESCENDING),
+                                 ColumnSort(3, SortDirection::ASCENDING)};
+    runTest(18, "q18", expected_sort, FLAGS_unioned_db, 1);
+}
+
+TEST_F(BaselineComparisonTest, rewrite_rules_tpch_q18) {
+    // -1 ASC, $4 DESC, $3 ASC
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(4, SortDirection::DESCENDING),
+                                 ColumnSort(3, SortDirection::ASCENDING)};
+    runTest(18, "q18", expected_sort, FLAGS_unioned_db, 2);
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -211,15 +226,6 @@ TEST_F(BaselineComparisonTest, baseline_tpch_q9) {
 }
 
 
-TEST_F(BaselineComparisonTest, baseline_tpch_q18) {
-    // -1 ASC, $4 DESC, $3 ASC
-    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                                 ColumnSort(4, SortDirection::DESCENDING),
-                                 ColumnSort(3, SortDirection::ASCENDING)};
-    runTest(18, "q18", expected_sort, FLAGS_unioned_db, 1);
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // *** Rewrite Rules Tests ***
 // ---------------------------------------------------------
@@ -269,14 +275,6 @@ TEST_F(BaselineComparisonTest, rewrite_rules_tpch_q9) {
 
 }
 
-
-TEST_F(BaselineComparisonTest, rewrite_rules_tpch_q18) {
-    // -1 ASC, $4 DESC, $3 ASC
-    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                                 ColumnSort(4, SortDirection::DESCENDING),
-                                 ColumnSort(3, SortDirection::ASCENDING)};
-    runTest(18, "q18", expected_sort, FLAGS_unioned_db, 2);
-}
 
 
 int main(int argc, char **argv) {
