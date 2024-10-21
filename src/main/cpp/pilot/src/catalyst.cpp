@@ -67,11 +67,12 @@ void Catalyst::parseAndRunQueries() {
         string fq_schema_filename = dst_dir + "/" + s.name_ + ".schema";
             if (!TESTBED) {
                 // redact small cell counts
+                cout << "Redacting small cell counts in " << s.name_ << endl;
                 for (auto &col: s.count_cols_) {
                     redactCellCounts(output, col, study_.min_cell_cnt_);
                 }
             }
-
+            cout << "Revealing to XOR output of " << s.name_ << endl;
             std::vector<int8_t> results = output->reveal(emp::XOR)->serialize();
             cout << "Writing output of " << s.name_ << " to " << fq_filename << endl;
             DataUtilities::writeFile(fq_filename, results);
