@@ -28,12 +28,12 @@
         },
         "operands": [
           {
-            "input": 8,
-            "name": "$8"
+            "input": 0,
+            "name": "$0"
           },
           {
-            "input": 15,
-            "name": "$15"
+            "input": 9,
+            "name": "$9"
           }
         ]
       },
