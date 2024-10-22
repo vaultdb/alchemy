@@ -289,15 +289,15 @@ Initial Memory: 5360324608 bytes, Peak Memory After Execution: 8469213184 bytes,
 Bandwidth: 1.38032 Bps
 [       OK ] BaselineComparisonTest.baseline_tpch_q9 (3518937 ms)
 [ RUN      ] BaselineComparisonTest.rewrite_rules_tpch_q1
-Connecting to 126.137.1.10 on ports 7661, 65489 as 2
+Connecting to 126.137.1.10 on ports 7654, 65482 as 2
 connected
 EMP mode: sh2pc, storage mode: column store
-Code version: 1748d00b1919be5522a5f52681951f4c3d14ea26
-GFlags: --flagfile=	--alice_db=tpch_alice_5	--alice_host=126.137.1.10	--bob_db=tpch_bob_5	--ctrl_port=65490	--cutoff=100	--filter=*	--party=2	--port=7662	--storage=column	--unioned_db=tpch_unioned_5	--validation=true	--log_level=2	--logfile=	
+Code version: e18d7036c03d0d25aab2324a6ecca4e39b8c4c6a
+GFlags: --flagfile=	--alice_db=tpch_alice_5	--alice_host=126.137.1.10	--bob_db=tpch_bob_5	--ctrl_port=65483	--cutoff=100	--filter=*	--party=2	--port=7655	--storage=column	--unioned_db=tpch_unioned_5	--validation=true	--log_level=2	--logfile=	
 
-[Linux]Peak resident set size: 9786998784 bytes, current memory size: 3836547072 bytes.
-#3: Project<Bit> ((<0, P$0(8) shared-varchar>, <1, P$1(8) shared-varchar>, <2, $2 + $15 shared-float>, <3, $3 + $16 shared-float>, <4, $4 + $17 shared-float>, <5, $5 + $18 shared-float>, <6, ($6 + $19) / ($7 + $20) shared-float>, <7, ($8 + $21) / ($9 + $22) shared-float>, <8, ($10 + $23) / ($11 + $24) shared-float>, <9, $12 + $25 shared-int64>)) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64 count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 9215908, output card: 338
-    #2: MergeJoin<Bit> (no-op) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt, #13 shared-varchar(1) l_returnflag, #14 shared-varchar(1) l_linestatus, #15 shared-float sum_qty, #16 shared-float sum_base_price, #17 shared-float sum_disc_price, #18 shared-float sum_charge, #19 shared-float avg_qty_sum, #20 shared-float avg_qty_cnt, #21 shared-float avg_price_sum, #22 shared-float avg_price_cnt, #23 shared-float avg_discount_sum, #24 shared-float avg_discount_cnt, #25 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 1014, output card: 338
+[Linux]Peak resident set size: 16515072 bytes, current memory size: 16515072 bytes.
+#3: Project<Bit> ((<0, P$0(8) shared-varchar>, <1, P$1(8) shared-varchar>, <2, $2 + $15 shared-float>, <3, $3 + $16 shared-float>, <4, $4 + $17 shared-float>, <5, $5 + $18 shared-float>, <6, ($6 + $19) / ($7 + $20) shared-float>, <7, ($8 + $21) / ($9 + $22) shared-float>, <8, ($10 + $23) / ($11 + $24) shared-float>, <9, $12 + $25 shared-int64>)) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64 count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 5316870, output card: 195
+    #2: MergeJoin<Bit> (no-op) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt, #13 shared-varchar(1) l_returnflag, #14 shared-varchar(1) l_linestatus, #15 shared-float sum_qty, #16 shared-float sum_base_price, #17 shared-float sum_disc_price, #18 shared-float sum_charge, #19 shared-float avg_qty_sum, #20 shared-float avg_qty_cnt, #21 shared-float avg_price_sum, #22 shared-float avg_price_cnt, #23 shared-float avg_discount_sum, #24 shared-float avg_discount_cnt, #25 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 585, output card: 195
         #0: SecureSqlInput<Bit> ("WITH output_domain AS (
     SELECT  *
     FROM (VALUES('R'::char(1), 'F'::char(1)), ('A', 'F'), ('N', 'F'), ('R', 'O'), ('A', 'O'), ('N', 'O')) AS li(l_returnflag, l_linestatus)
@@ -314,7 +314,7 @@ GFlags: --flagfile=	--alice_db=tpch_alice_5	--alice_host=126.137.1.10	--bob_db=t
          ORDER BY l_returnflag, l_linestatus)
 SELECT o.l_returnflag, o.l_linestatus, COALESCE(sum_qty, 0) sum_qty, COALESCE(sum_base_price, 0) sum_base_price, COALESCE(sum_disc_price, 0) sum_disc_price, COALESCE(sum_charge, 0) sum_charge, COALESCE(avg_qty_sum, 0) avg_qty_sum, COALESCE(avg_qty_cnt, 0) avg_qty_cnt,  COALESCE(avg_price_sum, 0) avg_price_sum, COALESCE(avg_price_cnt, 0) avg_price_cnt,  COALESCE(avg_discount_sum, 0) avg_discount_sum, COALESCE(avg_discount_cnt, 0) avg_discount_cnt,  COALESCE(cnt, 0)::BIGINT cnt, CASE WHEN p.l_returnflag IS NULL THEN true ELSE false END AS dummy_tag
 FROM output_domain o LEFT JOIN partial_aggs p ON o.l_returnflag = p.l_returnflag AND o.l_linestatus = p.l_linestatus
-ORDER BY o.l_returnflag, o.l_linestatus", tuple_count=338) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 0, output card: 338
+ORDER BY o.l_returnflag, o.l_linestatus", tuple_count=195) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 0, output card: 195
         #1: SecureSqlInput<Bit> ("WITH output_domain AS (
     SELECT  *
     FROM (VALUES('R'::char(1), 'F'::char(1)), ('A', 'F'), ('N', 'F'), ('R', 'O'), ('A', 'O'), ('N', 'O')) AS li(l_returnflag, l_linestatus)
@@ -331,18 +331,18 @@ ORDER BY o.l_returnflag, o.l_linestatus", tuple_count=338) : (#0 shared-varchar(
          ORDER BY l_returnflag, l_linestatus)
 SELECT o.l_returnflag, o.l_linestatus, COALESCE(sum_qty, 0) sum_qty, COALESCE(sum_base_price, 0) sum_base_price, COALESCE(sum_disc_price, 0) sum_disc_price, COALESCE(sum_charge, 0) sum_charge, COALESCE(avg_qty_sum, 0) avg_qty_sum, COALESCE(avg_qty_cnt, 0) avg_qty_cnt,  COALESCE(avg_price_sum, 0) avg_price_sum, COALESCE(avg_price_cnt, 0) avg_price_cnt,  COALESCE(avg_discount_sum, 0) avg_discount_sum, COALESCE(avg_discount_cnt, 0) avg_discount_cnt,  COALESCE(cnt, 0)::BIGINT cnt, CASE WHEN p.l_returnflag IS NULL THEN true ELSE false END AS dummy_tag
 FROM output_domain o LEFT JOIN partial_aggs p ON o.l_returnflag = p.l_returnflag AND o.l_linestatus = p.l_linestatus
-ORDER BY o.l_returnflag, o.l_linestatus", tuple_count=338) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 600237, output card: 338
+ORDER BY o.l_returnflag, o.l_linestatus", tuple_count=195) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 313443, output card: 195
 
-Operator #0 SecureSqlInput ran for 255.714000 ms, gate count: 0 output cardinality: 338, row width=401
-Operator #1 SecureSqlInput ran for 2.986000 ms, gate count: 0 output cardinality: 338, row width=401
-Operator #2 MergeJoin ran for 4.268000 ms, gate count: 676 output cardinality: 338, row width=801
-Operator #3 Project ran for 591.375000 ms, gate count: 7216300 output cardinality: 338, row width=305
-Runtime: 1.03185 sec, CPU Time: 0.421806 sec, CPU clock ticks: 421806, CPU clock ticks per second: 1000000
-End-to-end estimated gates: 9.81716e+06. observed gates: 7216976 gates, relative error (%)=36.0287
-[Linux]Peak resident set size: 9786998784 bytes, current memory size: 3836547072 bytes.
-Initial Memory: 9786998784 bytes, Peak Memory After Execution: 9786998784 bytes, Memory Usage: 0 bytes
-Bandwidth: 2432.53 Bps
-[       OK ] BaselineComparisonTest.rewrite_rules_tpch_q1 (1390 ms)
+Operator #0 SecureSqlInput ran for 273.139000 ms, gate count: 0 output cardinality: 195, row width=401
+Operator #1 SecureSqlInput ran for 2.074000 ms, gate count: 0 output cardinality: 195, row width=401
+Operator #2 MergeJoin ran for 5.816000 ms, gate count: 392 output cardinality: 195, row width=801
+Operator #3 Project ran for 340.226000 ms, gate count: 4163248 output cardinality: 195, row width=305
+Runtime: 0.79931 sec, CPU Time: 0.264859 sec, CPU clock ticks: 264859, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 5.6309e+06. observed gates: 4163640 gates, relative error (%)=35.2398
+[Linux]Peak resident set size: 22872064 bytes, current memory size: 22609920 bytes.
+Initial Memory: 16515072 bytes, Peak Memory After Execution: 22872064 bytes, Memory Usage: 6356992 bytes
+Bandwidth: 3140.21 Bps
+[       OK ] BaselineComparisonTest.rewrite_rules_tpch_q1 (1052 ms)
 [ RUN      ] BaselineComparisonTest.rewrite_rules_tpch_q3
 Connecting to 126.137.1.10 on ports 7662, 65490 as 2
 connected
