@@ -10,13 +10,16 @@ using namespace vaultdb;
 
 // plaintext input schema, setup for XOR-shared data
 // from: union_hybrid_data.cpp
-SecureTable *readSecretSharedInput(const string &secret_shares_file, const QuerySchema &plain_schema) {
+SecureTable *readSecretSharedInput(const string &secret_shares_file, const QuerySchema &plain_schema, int limit = -1) {
     QuerySchema secure_schema = QuerySchema::toSecure(plain_schema);
     // read in binary and then xor it with other side to secret share it.
     std::vector<int8_t> src_data = DataUtilities::readFile(secret_shares_file);
     size_t src_byte_cnt = src_data.size();
     size_t src_bit_cnt = src_byte_cnt * 8;
     size_t tuple_cnt = src_bit_cnt / plain_schema.size();
+    if(limit > 0) {
+        tuple_cnt = std::min(tuple_cnt, (size_t) limit);
+    }
 
     // convert serialized representation from byte-aligned to bit-by-bit
     size_t dst_bit_cnt = tuple_cnt * secure_schema.size();
@@ -80,10 +83,10 @@ SecureTable *readSecretSharedInput(const string &secret_shares_file, const Query
     return shared_table;
 
 }
-// usage: ./reveal_public_column <party 1 || 2> <host> <port>  <secret shares file>
+// usage: ./reveal_public_column <party 1 || 2> <host> <port>  <secret shares file> <optional max row count>
 // e.g.,
-// ./bin/reveal_xor_shared_table 1 127.0.0.1 4444 pilot/results/phame/aggregate_only/phame_cohort_counts.alice
-// ./bin/reveal_xor_shared_table 2 127.0.0.1 4444 pilot/results/phame/aggregate_only/phame_cohort_counts.bob
+// ./bin/reveal_xor_shared_table 1 127.0.0.1 4444 pilot/results/phame/aggregate_only/phame_rollup.alice <max row count>
+// ./bin/reveal_xor_shared_table 2 127.0.0.1 4444 pilot/results/phame/aggregate_only/phame_rollup.bob <max row count>
 
 int main(int argc, char **argv) {
     int port, party;
@@ -96,6 +99,10 @@ int main(int argc, char **argv) {
     string host = argv[2];
     port = atoi(argv[3]);
     string secret_shares_file(argv[4]);
+    int limit = -1;
+    if(argc > 5) {
+        limit = atoi(argv[5]);
+    }
 
     cout << "Setup: party=" << party << " host=" << host << " port=" << port << " input_shares=" << secret_shares_file << '\n';
     auto emp_manager = new SH2PCManager(host, party, port);
