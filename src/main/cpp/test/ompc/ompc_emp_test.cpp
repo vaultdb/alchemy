@@ -19,7 +19,7 @@ DEFINE_int32(port, 54345, "port for EMP execution");
 DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
 DEFINE_int32(ctrl_port, 65455, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
-DEFINE_string(filter, "*.ompc_and_gate_test", "run only the tests passing this filter");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "wire_packed", "storage model for columns (column or wire_packed)");
 DEFINE_string(empty_db, "tpch_empty", "empty db name for schemas");
 DEFINE_string(wire_path, "wires", "local path to wire files");
@@ -326,7 +326,7 @@ TEST_F(OMPCEmpTest, ompc_packing_unpacking_test) {
         ((OutsourcedMpcManager *) SystemConfiguration::getInstance().emp_manager_)->protocol_->unpack(output.bits.data(), wire, unpacked_size);
     }
     double unpacking_runtime = time_from(unpacking_start_time)/1e3;
-    cout << "Average unpacking time for each packed wires: " << unpacking_runtime / wires.size() << "ms/packed wire" << endl;
+    cout << "Average unpacking time for each packed wires: " << unpacking_runtime / wires.size() << " ms/packed wire" << endl;
 }
 
 TEST_F(OMPCEmpTest, ompc_and_gate_test) {
@@ -339,7 +339,7 @@ TEST_F(OMPCEmpTest, ompc_and_gate_test) {
         Bit and_result = alice_bit & bob_bit;
     }
     double and_gate_runtime = time_from(and_gate_start_time) / 1e3;
-    cout << "Average runtime for each and gate: " << and_gate_runtime / iteration << "ms/gate" << endl;
+    cout << "Average runtime for each and gate: " << and_gate_runtime / iteration << " ms/gate" << endl;
 }
 
 int main(int argc, char **argv) {
