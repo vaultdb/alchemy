@@ -17,7 +17,7 @@ using namespace vaultdb;
 int main(int argc, char **argv) {
     int port, party;
     if(argc < 4) {
-        cout << "Usage: ./reveal_public_column <party 1 || 2> <host> <port> <secret shares file>\n";
+        cout << "Usage: ./reveal_xor_shared_table <party 1 || 2> <host> <port> <secret shares file> <max row count (optional)>\n";
         return 1;
     }
 
