@@ -11,14 +11,10 @@
 
   "tables": [
     {"input_parties": [0,1,2,3,4,5,6],
-      "name": "PHAME_COHORT_COUNTS",
-      "schema": "(attribute_desc:varchar(42), n:int32)"},
-    {"input_parties": [0,1,2,3,4,5,6],
       "name": "PHAME_ROLLUP",
       "schema": "(age_cat:char(1), gender:char(1), race:char(1), ethnicity:char(1), zip:char(5), payer_primary:char(1), payer_secondary:char(1), patient_cnt:int64, diabetes_cnt:int64, hypertension_cnt:int64, cervical_cancer_cnt:int64, breast_cancer_cnt:int64, lung_cancer_cnt:int64, colorectal_cancer_cnt:int64)"}
   ],
   "queries": [
-    {"count_cols": [1], "name": "phame_cohort_counts","note": "cols are zero-indexed."},
     {"count_cols": [7,8,9,10,11,12,13],"name": "phame_rollup"}
   ]
 }
