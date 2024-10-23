@@ -49,6 +49,9 @@ int main(int argc, char **argv) {
 
     auto secret_shared = DataUtilities::readSecretSharedInput(secret_shares_file, plain_schema, limit);
     auto plain = secret_shared->reveal();
+    for(int i = 0; i < schema.getFieldCount(); ++i) {
+        cout << "First bits of column $" << i << ": " << DataUtilities::revealAndPrintFirstBits((Bit *) secret_shared->column_data_[i].data(), schema.getField(i).size());
+    }
 
     cout << "writing revealed data to " << dst_file << '\n';
     DataUtilities::writeFile(dst_file, plain->toString());
