@@ -96,7 +96,6 @@ void Catalyst::importSecretShares(const string & table_name, const int & src_par
     string suffix = (s.party_ == 1) ? "alice" : "bob";
     string secret_shares_file = fq_table_file + "." + suffix;
     cout << "Secret shares file: " << secret_shares_file << endl;
-    cout << "Schema: " << table_manager.getSchema(table_name).prettyPrint() << endl;
     QuerySchema schema = QuerySchema::toPlain(table_manager.getSchema(table_name));
 
     // this is a hack for PHAME workflow

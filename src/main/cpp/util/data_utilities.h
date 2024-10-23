@@ -64,6 +64,10 @@ namespace vaultdb {
         }
 
         static vector<int8_t> readFile(const string &fileName);
+
+        // onlu for sh2pc
+        static SecureTable * readSecretSharedInput(const string &secret_shares_input, const QuerySchema &plain_schema, const int & limit = -1);
+
         // if the file were divided into batches of length *batch_tuple_cnt*, read in the *batch_no* partition
         // zero_-indexed
         static vector<string> readTextFileBatch(const string &filename, const size_t & batch_tuple_cnt, const size_t & batch_no);
