@@ -121,6 +121,7 @@ SecureTable *UnionHybridData::readSecretSharedInput(const string &secret_shares_
    //    shared_data.bits.resize(dst_bit_cnt);
 
     SecureTable *shared_table = QueryTable<Bit>::deserialize(secure_schema, shared_data.bits);
+    
 
      delete [] dst_bools;
      return shared_table;

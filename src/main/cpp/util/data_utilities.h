@@ -74,6 +74,7 @@ namespace vaultdb {
             std::stringstream s;
             for(int i = 0; i < bit_cnt; ++i) {
                 s << (bits[i].reveal() ? "1" : "0");
+                if(i % 8 == 0) s << " ";
             }
 
             return s.str();
