@@ -122,8 +122,8 @@ SecureTable *UnionHybridData::readSecretSharedInput(const string &secret_shares_
 
     SecureTable *shared_table = QueryTable<Bit>::deserialize(secure_schema, shared_data.bits);
     cout << "First rows of table: " << DataUtilities::printTable(shared_table, 5) << endl;
-    if(shared_table->tuple_cnt_ > 0)
-        cout << "First bits of $7: " << DataUtilities::revealAndPrintFirstBits((Bit *) shared_table->column_data_[7].data(), 64) << endl;
+    if(shared_table->tuple_cnt_ > 3)
+        cout << "First bits of $8: " << DataUtilities::revealAndPrintFirstBits((Bit *) shared_table->column_data_[8].data(), 192) << endl;
     
      delete [] dst_bools;
      return shared_table;
