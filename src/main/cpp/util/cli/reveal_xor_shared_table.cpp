@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
     auto schema = QuerySchema(schema_spec);
     auto plain_schema = QuerySchema::toPlain(schema);
 
-    auto secret_shared = readSecretSharedInput(secret_shares_file, plain_schema);
+    auto secret_shared = readSecretSharedInput(secret_shares_file, plain_schema, limit);
     auto plain = secret_shared->reveal();
 
     cout << "writing revealed data to " << dst_file << '\n';
