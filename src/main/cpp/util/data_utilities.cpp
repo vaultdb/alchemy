@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <query_table/query_table.h>
 
+#include <algorithm>
 
 using namespace vaultdb;
 
@@ -287,10 +288,13 @@ SecureTable *DataUtilities::readSecretSharedInput(const string &secret_shares_in
     size_t src_byte_cnt = src_data.size();
     size_t src_bit_cnt = src_byte_cnt * 8;
     size_t tuple_cnt = src_bit_cnt / plain_schema.size();
-    size_t tuples_to_read = (limit > 0) ? limit : tuple_cnt;
+    size_t tuples_to_read = (limit > 0) ?
+                            ( limit < tuple_cnt ? limit : tuple_cnt)
+            : tuple_cnt;
+    size_t tuples_to_skip = (tuple_cnt > tuples_to_read) ? (tuple_cnt - tuples_to_read) : 0;
 
     // convert serialized representation from byte-aligned to bit-by-bit
-    size_t dst_bit_cnt = tuple_cnt * secure_schema.size();
+    size_t dst_bit_cnt = tuples_to_read * secure_schema.size();
     bool *dst_bools = new bool[dst_bit_cnt]; // dst_bit_alloc
     bool *dst_cursor = dst_bools;
     int8_t *src_cursor = src_data.data();
@@ -306,14 +310,14 @@ SecureTable *DataUtilities::readSecretSharedInput(const string &secret_shares_in
             emp::to_bool<int8_t>(dst_cursor, src_cursor, write_size, false);
             dst_cursor += write_size;
             src_cursor += read_size / 8;
-        } else {
+        } else { // bool case
             assert(plain_field.size() == (secure_field.size() + 7)); // only for bools
             for (int j = 0; j < tuples_to_read; ++j) {
                 *dst_cursor = ((*src_cursor & 1) != 0); // (bool) *src_cursor;
                 ++dst_cursor;
                 ++src_cursor;
             } // end for each tuple
-            src_cursor = src_cursor + (tuple_cnt - tuples_to_read);
+            src_cursor += tuples_to_skip;
         }
     } // end for all fields
 
@@ -341,8 +345,6 @@ SecureTable *DataUtilities::readSecretSharedInput(const string &secret_shares_in
     }
 
     Integer shared_data = alice ^ bob;
-    // remove padding
-    //    shared_data.bits.resize(dst_bit_cnt);
 
     SecureTable *shared_table = QueryTable<Bit>::deserialize(secure_schema, shared_data.bits);
     cout << "First rows of table: " << DataUtilities::printTable(shared_table, 5) << endl;
@@ -350,8 +352,8 @@ SecureTable *DataUtilities::readSecretSharedInput(const string &secret_shares_in
         cout << "First bits of $8: "
              << DataUtilities::revealAndPrintFirstBits((Bit *) shared_table->column_data_[8].data(), 192) << endl;
     }
-        delete[] dst_bools;
-        return shared_table;
+    delete[] dst_bools;
+    return shared_table;
 
 }
 
