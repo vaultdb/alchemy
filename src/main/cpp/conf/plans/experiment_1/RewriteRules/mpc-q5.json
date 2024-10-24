@@ -218,12 +218,12 @@
           "name": "n_name"
         }
       ],
-      "sql": "SELECT t2.c_custkey, t2.c_nationkey, t1.n_name FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'MIDDLE EAST') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t2.c_custkey ASC",
+      "sql": "SELECT t2.c_custkey, t2.c_nationkey, t1.n_name FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'MIDDLE EAST') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t1.n_name ASC",
       "dummy-tag": false,
       "collation": [
         {
-          "field": 0,
-          "name": "c_custkey",
+          "field": 2,
+          "name": "t1.n_name",
           "direction": "ASCENDING"
         }
       ],
@@ -234,7 +234,7 @@
       "id": "8",
       "relOp": "LogicalJoin",
       "joinOn" : "o_custkey = c_custkey",
-      "outputFields": "s_nationkey (#0), revenue (#1), o_custkey (#2), c_custkey (#3), c_nationkey (#4), n_name (#5)",
+      "outputFields": "c_custkey (#0), c_nationkey (#1), n_name (#2), s_nationkey (#3), revenue (#4), o_custkey (#5),",
       "condition": {
         "op": {
           "name": "AND",
@@ -254,8 +254,8 @@
                 "name": "$0"
               },
               {
-                "input": 4,
-                "name": "$4"
+                "input": 5,
+                "name": "$5"
               }
             ]
           },
@@ -267,8 +267,8 @@
             },
             "operands": [
               {
-                "input": 2,
-                "name": "$2"
+                "input": 1,
+                "name": "$1"
               },
               {
                 "input": 3,
@@ -280,8 +280,8 @@
       },
       "joinType": "inner",
       "inputs": [
-        "6",
-        "7"
+        "7",
+        "6"
       ]
     },
     {
@@ -294,12 +294,12 @@
       ],
       "exprs": [
         {
-          "input": 5,
-          "name": "$5"
+          "input": 2,
+          "name": "$2"
         },
         {
-          "input": 1,
-          "name": "$1"
+          "input": 4,
+          "name": "$4"
         }
       ]
     },

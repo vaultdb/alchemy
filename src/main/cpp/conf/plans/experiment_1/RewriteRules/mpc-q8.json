@@ -44,11 +44,11 @@
           "name": "o_year"
         }
       ],
-      "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_custkey",
+      "sql": "SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_year",
       "dummy-tag": true,
       "collation": [
         {
-          "field": 1,
+          "field": 2,
           "name": "o_custkey",
           "direction": "ASCENDING"
         }
@@ -58,7 +58,7 @@
     },
     {
       "id": "2",
-      "outputFields": "c_custkey (#0), o_orderkey (#1), o_custkey (#2), o_year (#3)",
+      "outputFields": "o_orderkey (#0), o_custkey (#1), o_year (#2), c_custkey (#3)",
       "joinOn" : "c_custkey = o_custkey",
       "relOp": "LogicalJoin",
       "condition": {
@@ -69,19 +69,19 @@
         },
         "operands": [
           {
-            "input": 0,
-            "name": "$0"
+            "input": 1,
+            "name": "$1"
           },
           {
-            "input": 2,
-            "name": "$2"
+            "input": 3,
+            "name": "$3"
           }
         ]
       },
       "joinType": "inner",
       "inputs": [
-        "0",
-        "1"
+        "1",
+        "0"
       ]
     },
     {
@@ -94,12 +94,12 @@
       ],
       "exprs": [
         {
-          "input": 1,
-          "name": "$1"
+          "input": 0,
+          "name": "$0"
         },
         {
-          "input": 3,
-          "name": "$3"
+          "input": 2,
+          "name": "$2"
         }
       ]
     },

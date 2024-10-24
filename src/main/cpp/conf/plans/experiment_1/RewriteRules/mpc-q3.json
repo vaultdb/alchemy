@@ -26,11 +26,11 @@
           "name": "o_shippriority"
         }
       ],
-      "sql": "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_custkey",
+      "sql": "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_orderkey",
       "collation": [
         {
-          "field": 1,
-          "name": "o_custkey",
+          "field": 0,
+          "name": "o_orderkey",
           "direction": "ASCENDING"
         }
       ],
@@ -49,14 +49,7 @@
           "name": "c_custkey"
         }
       ],
-      "sql": "SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer ORDER BY c_custkey",
-      "collation": [
-        {
-          "field": 0,
-          "name": "c_custkey",
-          "direction": "ASCENDING"
-        }
-      ],
+      "sql": "SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer",
       "dummy-tag": true,
       "tuples": [],
       "inputs": []
