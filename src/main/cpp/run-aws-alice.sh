@@ -14,7 +14,7 @@ log_file="${today}_Cost_optimized_Alice_${unioned_db}.log"
 run_test() {
   test_name=$1
   echo "Running $test_name..." | tee -a "$log_file"
-  sudo ./bin/cost_optimized_test --party=$party --unioned_db=$unioned_db --alice_db=$alice_db --bob_db=$bob_db --gtest_filter="$test_name" 2>&1 | tee -a "$log_file"
+  sudo ./bin/cost_optimized_test --party=$party --unioned_db=$unioned_db --alice_db=$alice_db --bob_db=$bob_db --filter="$test_name" 2>&1 | tee -a "$log_file"
   echo "Finished $test_name." | tee -a "$log_file"
   echo "---------------------------------" | tee -a "$log_file"
 }
@@ -23,23 +23,23 @@ run_test() {
 echo "Starting tests on $(date)" | tee "$log_file"
 echo "Logging output to $log_file"
 
-run_test "CostOptimizedTest.card_bound_tpch_q1"
-run_test "CostOptimizedTest.card_bound_tpch_q3"
-run_test "CostOptimizedTest.card_bound_tpch_q5"
-run_test "CostOptimizedTest.card_bound_tpch_q8"
-run_test "CostOptimizedTest.card_bound_tpch_q9"
-run_test "CostOptimizedTest.card_bound_tpch_q18"
+run_test "*.card_bound_tpch_q1"
+run_test "*.card_bound_tpch_q3"
+run_test "*.card_bound_tpch_q5"
+run_test "*.card_bound_tpch_q8"
+run_test "*.card_bound_tpch_q9"
+run_test "*.card_bound_tpch_q18"
 
-run_test "CostOptimizedTest.bushy_plan_tpch_q5"
-run_test "CostOptimizedTest.bushy_plan_tpch_q8"
-run_test "CostOptimizedTest.bushy_plan_tpch_q9"
+run_test "*.bushy_plan_tpch_q5"
+run_test "*.bushy_plan_tpch_q8"
+run_test "*.bushy_plan_tpch_q9"
 
-run_test "CostOptimizedTest.cost_optimized_tpch_q1"
-run_test "CostOptimizedTest.cost_optimized_tpch_q3"
-run_test "CostOptimizedTest.cost_optimized_tpch_q5"
-run_test "CostOptimizedTest.cost_optimized_tpch_q8"
-run_test "CostOptimizedTest.cost_optimized_tpch_q9"
-run_test "CostOptimizedTest.cost_optimized_tpch_q18"
+run_test "*.cost_optimized_tpch_q1"
+run_test "*.cost_optimized_tpch_q3"
+run_test "*.cost_optimized_tpch_q5"
+run_test "*.cost_optimized_tpch_q8"
+run_test "*.cost_optimized_tpch_q9"
+run_test "*.cost_optimized_tpch_q18"
 
 echo "All tests completed on $(date)" | tee -a "$log_file"
 
