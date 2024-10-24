@@ -21,7 +21,7 @@ DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
 DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
-DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
+DEFINE_bool(validation, false, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "column", "storage model for columns (column, wire_packed or compressed)");
 
@@ -221,48 +221,48 @@ TEST_F(CostOptimizedTest, card_bound_tpch_q18) {
 // ---------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-//
-//TEST_F(CostOptimizedTest, bushy_plan_tpch_q5) {
-//    //input_tuple_limit_ = 1000;
-//
-//    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-//    runTest(5, "q5", expected_sort, FLAGS_unioned_db, 3);
-//}
-//
-//
-//TEST_F(CostOptimizedTest, bushy_plan_tpch_q8) {
-//
-//    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-//    runTest(8, "q8", expected_sort, FLAGS_unioned_db, 3);
-//}
-//
-//TEST_F(CostOptimizedTest, bushy_plan_tpch_q9) {
-//
-//    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-//    runTest(9, "q9", expected_sort, FLAGS_unioned_db, 3);
-//}
-//
-//
-//
-//
+
+TEST_F(CostOptimizedTest, bushy_plan_tpch_q5) {
+    //input_tuple_limit_ = 1000;
+
+    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+    runTest(5, "q5", expected_sort, FLAGS_unioned_db, 3);
+}
+
+
+TEST_F(CostOptimizedTest, bushy_plan_tpch_q8) {
+
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+    runTest(8, "q8", expected_sort, FLAGS_unioned_db, 3);
+}
+
+TEST_F(CostOptimizedTest, bushy_plan_tpch_q9) {
+
+    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+    runTest(9, "q9", expected_sort, FLAGS_unioned_db, 3);
+}
+
+
+
+
 //// Cost-Optimized Tests
-//
-//TEST_F(CostOptimizedTest, cost_optimized_tpch_q1) {
-//
-//    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-//    runTest(1, "q1", expected_sort, FLAGS_unioned_db, 4);
-//
-//}
-//
-//
-//TEST_F(CostOptimizedTest, cost_optimized_tpch_q3) {
-//
-//    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-//                                 ColumnSort(1, SortDirection::DESCENDING),
-//                                 ColumnSort(2, SortDirection::ASCENDING)};
-//    runTest(3, "q3", expected_sort, FLAGS_unioned_db, 4);
-//}
-//
+
+TEST_F(CostOptimizedTest, cost_optimized_tpch_q1) {
+
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+    runTest(1, "q1", expected_sort, FLAGS_unioned_db, 4);
+
+}
+
+
+TEST_F(CostOptimizedTest, cost_optimized_tpch_q3) {
+
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(1, SortDirection::DESCENDING),
+                                 ColumnSort(2, SortDirection::ASCENDING)};
+    runTest(3, "q3", expected_sort, FLAGS_unioned_db, 4);
+}
+
 
 
 TEST_F(CostOptimizedTest, cost_optimized_tpch_q5) {
