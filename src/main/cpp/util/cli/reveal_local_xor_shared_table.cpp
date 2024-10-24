@@ -23,10 +23,6 @@ int main(int argc, char **argv) {
 
     string src_file_root(argv[1]);
     string dst_file_root(argv[2]);
-    // get schema:
-    string schema_file = src_file_root + ".schema";
-
-
 
     std::string alice_file = src_file_root+ ".alice";
     std::string bob_file = src_file_root + ".bob";
