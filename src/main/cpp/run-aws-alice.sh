@@ -14,7 +14,7 @@ log_file="${today}_Cost_optimized_Alice_${unioned_db}.log"
 run_test() {
   test_name=$1
   echo "Running $test_name..." | tee -a "$log_file"
-  sudo ./bin/baseline_comparison_test --party=$party --unioned_db=$unioned_db --alice_db=$alice_db --bob_db=$bob_db --gtest_filter="$test_name" 2>&1 | tee -a "$log_file"
+  sudo ./bin/cost_optimized_test --party=$party --unioned_db=$unioned_db --alice_db=$alice_db --bob_db=$bob_db --gtest_filter="$test_name" 2>&1 | tee -a "$log_file"
   echo "Finished $test_name." | tee -a "$log_file"
   echo "---------------------------------" | tee -a "$log_file"
 }
