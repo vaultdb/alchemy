@@ -162,7 +162,7 @@ CostOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDef
 // ---------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-/*
+
 TEST_F(CostOptimizedTest, card_bound_tpch_q1) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
@@ -211,7 +211,7 @@ TEST_F(CostOptimizedTest, card_bound_tpch_q18) {
     runTest(18, "q18", expected_sort, FLAGS_unioned_db, 2);
 }
 
-*/
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // *** Bushy-Plan Tests ***
