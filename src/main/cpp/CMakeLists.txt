@@ -205,6 +205,10 @@ target_link_libraries(run_query vaultdb-emp)
 add_executable(reveal_xor_shared_table util/cli/reveal_xor_shared_table.cpp)
 target_link_libraries(reveal_xor_shared_table vaultdb-emp)
 
+add_executable(reveal_local_xor_shared_table util/cli/reveal_local_xor_shared_table.cpp)
+target_link_libraries(reveal_local_xor_shared_table vaultdb-emp)
+
+
 add_executable(parse_plan util/cli/parse_plan.cpp)
 target_link_libraries(parse_plan vaultdb-emp)
 
