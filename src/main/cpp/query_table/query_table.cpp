@@ -393,7 +393,7 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
         auto table = (QueryTable<Bit> *) this;
         QuerySchema dst_schema = QuerySchema::toPlain(schema_);
         auto collation = table->order_by_;
-
+/* temporary comment out for pilot - JMR
         // if it is not sorted so that the dummies are at the end, sort it now.
         if(collation.empty() || collation[0].first != -1) {
             SortDefinition tmp{ColumnSort(-1, SortDirection::ASCENDING)};
@@ -406,7 +406,7 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
 
             table = sort.getOutput()->clone();
         }
-
+*/
         // count # of real (not dummy) rows
         int row_cnt = 0;
         while((row_cnt < table->tuple_cnt_) &&
@@ -415,10 +415,13 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
         }
 
         auto dst_table = new ColumnTable<bool>(row_cnt, dst_schema, collation);
-
-        for(int i = 0; i < row_cnt; ++i)  {
+        size_t cursor = 0;
+        for(int i = 0; i < this->tuple_cnt_; ++i)  {
             PlainTuple dst_tuple = table->revealRow(i, party);
-            dst_table->putTuple(i, dst_tuple);
+            if(!dst_tuple.getDummyTag()) {
+                dst_table->putTuple(cursor, dst_tuple);
+                ++cursor;
+            }
         }
 
         if(table != (QueryTable<Bit> *) this) // extra sort
