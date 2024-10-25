@@ -15,7 +15,6 @@
           "nullable": true,
           "name": "s_nationkey"
         }
-
       ],
       "sql": "SELECT s_suppkey, s_nationkey FROM supplier JOIN nation ON s_nationkey = n_nationkey JOIN region ON n_regionkey = r_regionkey WHERE r_name = 'EUROPE' ORDER BY s_suppkey",
       "dummy-tag": false,
@@ -106,22 +105,81 @@
     },
     {
       "id": "4",
-      "relOp": "LogicalSort",
-      "collation": [
+      "relOp": "LogicalValues",
+      "outputFields": "o_orderkey (#0), o_custkey (#1)",
+      "type": [
         {
-          "field": 1,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "o_orderkey"
         },
         {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "o_custkey"
+        }
+      ],
+      "sql": "SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders ORDER BY o_orderkey, o_custkey, o_orderdate",
+      "dummy-tag": true,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "5",
+      "relOp": "LogicalJoin",
+      "joinOn" : "l_orderkey = o_orderkey",
+      "outputFields": "s_nationkey (#0), l_orderkey (#1), revenue (#2), o_orderkey (#3), o_custkey (#4)",
+      "operator-algorithm" : "nested-loop-join",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 0,
+      "inputs": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalProject",
+      "outputFields": "s_nationkey (#0), revenue (#1), o_custkey (#2)",
+      "fields": [
+        "c_nationkey",
+        "revenue",
+        "o_custkey"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 4,
+          "name": "$4"
         }
       ]
     },
     {
-      "id": "5",
+      "id": "7",
       "relOp": "LogicalValues",
       "outputFields": "c_custkey (#0), c_nationkey (#1), n_name (#2)",
       "type": [
@@ -144,119 +202,14 @@
       ],
       "sql": "SELECT t2.c_custkey, t2.c_nationkey, t1.n_name FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t2.c_custkey ASC",
       "dummy-tag": false,
-      "collation": [
-        {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
-      ],
       "tuples": [],
       "inputs": []
-    },
-    {
-      "id": "6",
-      "relOp": "LogicalValues",
-      "outputFields": "o_orderkey (#0), o_custkey (#1)",
-      "type": [
-        {
-          "type": "INTEGER",
-          "nullable": false,
-          "name": "o_orderkey"
-        },
-        {
-          "type": "INTEGER",
-          "nullable": true,
-          "name": "o_custkey"
-        }
-      ],
-      "collation": [
-        {
-          "field": 1,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
-      ],
-      "sql": "SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders ORDER BY o_custkey",
-      "dummy-tag": true,
-      "tuples": [],
-      "inputs": []
-    },
-    {
-      "id": "7",
-      "relOp": "LogicalJoin",
-      "joinOn" : "c_custkey = o_custkey",
-      "outputFields": "c_custkey (#0), c_nationkey (#1), n_name (#2), o_orderkey (#3), o_custkey (#4)",
-      "operator-algorithm" : "nested-loop-join",
-      "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 0,
-            "name": "$0"
-          },
-          {
-            "input": 4,
-            "name": "$4"
-          }
-        ]
-      },
-      "joinType": "inner",
-      "foreignKey": 1,
-      "inputs": [
-        "5",
-        "6"
-      ]
     },
     {
       "id": "8",
-      "relOp": "LogicalProject",
-      "outputFields": "c_nationkey (#0), n_name (#1), o_orderkey (#2)",
-      "fields": [
-        "c_nationkey",
-        "revenue",
-        "o_custkey"
-      ],
-      "exprs": [
-        {
-          "input": 1,
-          "name": "$1"
-        },
-        {
-          "input": 2,
-          "name": "$2"
-        },
-        {
-          "input": 3,
-          "name": "$3"
-        }
-      ]
-    },
-    {
-      "id": "9",
-      "relOp": "LogicalSort",
-      "collation": [
-        {
-          "field": 2,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        },
-        {
-          "field": 0,
-          "direction": "ASCENDING",
-          "nulls": "FIRST"
-        }
-      ]
-    },
-    {
-      "id": "10",
       "relOp": "LogicalJoin",
-      "joinOn" : "l_orderkey = o_orderkey AND s_nationkey = c_nationkey",
-      "outputFields": "s_nationkey (#0), l_orderkey (#1), revenue (#2), c_nationkey (#3), n_name (#4), o_orderkey (#5)",
+      "joinOn" : "o_custkey = c_custkey",
+      "outputFields": "s_nationkey (#0), revenue (#1), o_custkey (#2), c_custkey (#3), c_nationkey (#4), n_name (#5)",
       "operator-algorithm" : "nested-loop-join",
       "condition": {
         "op": {
@@ -273,12 +226,12 @@
             },
             "operands": [
               {
-                "input": 1,
-                "name": "$1"
+                "input": 0,
+                "name": "$0"
               },
               {
-                "input": 5,
-                "name": "$5"
+                "input": 4,
+                "name": "$4"
               }
             ]
           },
@@ -290,8 +243,8 @@
             },
             "operands": [
               {
-                "input": 0,
-                "name": "$0"
+                "input": 2,
+                "name": "$2"
               },
               {
                 "input": 3,
@@ -304,13 +257,12 @@
       "joinType": "inner",
       "foreignKey": 0,
       "inputs": [
-        "3",
+        "6",
         "7"
       ]
     },
-
     {
-      "id": "11",
+      "id": "9",
       "relOp": "LogicalProject",
       "outputFields": "n_name (#0), revenue (#1)",
       "fields": [
@@ -319,17 +271,17 @@
       ],
       "exprs": [
         {
-          "input": 4,
-          "name": "$4"
+          "input": 5,
+          "name": "$5"
         },
         {
-          "input": 2,
-          "name": "$2"
+          "input": 1,
+          "name": "$1"
         }
       ]
     },
     {
-      "id": "12",
+      "id": "10",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "sort-merge-aggregate",
       "effective-collation": [
@@ -365,7 +317,7 @@
       ]
     },
     {
-      "id": "13",
+      "id": "11",
       "relOp": "LogicalSort",
       "collation": [
         {
