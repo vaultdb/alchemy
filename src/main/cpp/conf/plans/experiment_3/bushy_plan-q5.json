@@ -187,7 +187,7 @@
       "relOp": "LogicalJoin",
       "joinOn" : "c_custkey = o_custkey",
       "outputFields": "c_custkey (#0), c_nationkey (#1), n_name (#2), o_orderkey (#3), o_custkey (#4)",
-      "operator-algorithm" : "sort-merge-join",
+      "operator-algorithm" : "nested-loop-join",
       "condition": {
         "op": {
           "name": "=",
@@ -257,7 +257,7 @@
       "relOp": "LogicalJoin",
       "joinOn" : "l_orderkey = o_orderkey AND s_nationkey = c_nationkey",
       "outputFields": "s_nationkey (#0), l_orderkey (#1), revenue (#2), c_nationkey (#3), n_name (#4), o_orderkey (#5)",
-      "operator-algorithm" : "sort-merge-join",
+      "operator-algorithm" : "nested-loop-join",
       "condition": {
         "op": {
           "name": "AND",
