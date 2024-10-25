@@ -31,11 +31,12 @@ namespace catalyst {
 
             emp::Integer cutoff(col_width, min_cnt);
             Integer null(col_width, -1);
+            Integer zero(col_width, 0);
 
             // null out the ones with cell count below threshold
             for(int i = 0; i < table->tuple_cnt_; ++i) {
                 Integer v = table->getField(i, col).getInt();
-                v = emp::If(v < cutoff, null, v);
+                v = emp::If((v < cutoff) & (v > zero), null, v);
                table->setField(i, col, Field<Bit>(col_type, v));
             }
 

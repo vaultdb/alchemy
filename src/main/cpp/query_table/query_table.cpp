@@ -423,10 +423,10 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
                 ++cursor;
             }
         }
-
+/* temporary comment out for pilot - JMR
         if(table != (QueryTable<Bit> *) this) // extra sort
             delete table;
-
+*/
         return dst_table;
     }
 }
