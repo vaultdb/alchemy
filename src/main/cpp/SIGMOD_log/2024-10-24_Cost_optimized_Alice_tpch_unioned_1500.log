@@ -339,7 +339,50 @@ Note: Google Test filter = *.bushy_plan_tpch_q5
 [----------] Global test environment set-up.
 [----------] 1 test from CostOptimizedTest
 [ RUN      ] CostOptimizedTest.bushy_plan_tpch_q5
-cost_optimized_test: /home/vaultdb/vaultdb-core-cost-comparison/src/main/cpp/parser/plan_parser.cpp:612: vaultdb::Operator<B>* vaultdb::PlanParser<B>::parseJoin(const int&, const boost::property_tree::ptree&) [with B = emp::Bit; boost::property_tree::ptree = boost::property_tree::basic_ptree<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char> >]: Assertion `join_algo == "keyed-sort-merge-join" || join_algo == "nested-loop-join" || join_algo == "merge-join" || join_algo == "auto" || join_algo.empty()' failed.
+Connecting to 127.0.0.1 on ports 7654, 65482 as 1
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: a6f2ed7fab287091a13af5a5eef83fda5072b853
+GFlags: --flagfile=	--alice_db=tpch_alice_1500	--alice_host=127.0.0.1	--bob_db=tpch_bob_1500	--ctrl_port=65483	--cutoff=100	--filter=*.bushy_plan_tpch_q5	--party=1	--port=7655	--storage=column	--unioned_db=tpch_unioned_1500	--validation=false	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 16646144 bytes, current memory size: 16646144 bytes.
+Original Tree : 
+#11: Sort<Bit> ({<1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<1, DESC> }, cost est: 2583, output card: 5
+    #10: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) revenue)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 89420050, output card: 5
+        #-1: Sort<Bit> ({<0, ASC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 1757517824, output card: 60175
+            #9: Project<Bit> ((<0, P$4(200) shared-varchar>, <1, P$2(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {}, cost est: 0, output card: 60175
+                #8: KeyedJoin<Bit> ((P$1(16) == P$5(16)) AND (P$0(5) == P$3(5))) : (#0 shared-int32(5) supplier.s_nationkey, #1 shared-int32(16) lineitem.l_orderkey, #2 shared-float revenue, #3 shared-int32(5) customer.c_nationkey, #4 shared-varchar(25) nation.n_name, #5 shared-int32(16) orders.o_orderkey) order by: {}, cost est: 254540250000, output card: 60175
+                    #3: Project<Bit> ((<0, P$1(5) shared-int32>, <1, P$2(16) shared-int32>, <2, P$4(32) shared-float>)) : (#0 shared-int32(5) supplier.s_nationkey, #1 shared-int32(16) lineitem.l_orderkey, #2 shared-float revenue) order by: {}, cost est: 0, output card: 60175
+                        #2: KeyedJoin<Bit> (P$0(7) == P$3(7)) : (#0 shared-int32(7) supplier.s_suppkey, #1 shared-int32(5) supplier.s_nationkey, #2 shared-int32(16) lineitem.l_orderkey, #3 shared-int32(7) lineitem.l_suppkey, #4 shared-float revenue) order by: {<3, ASC> , <0, ASC> }, cost est: 27680500, output card: 60175
+                            #0: SecureSqlInput<Bit> ("SELECT s_suppkey, s_nationkey FROM supplier JOIN nation ON s_nationkey = n_nationkey JOIN region ON n_regionkey = r_regionkey WHERE r_name = 'EUROPE' ORDER BY s_suppkey", tuple_count=20) : (#0 shared-int32(7) supplier.s_suppkey, #1 shared-int32(5) supplier.s_nationkey) order by: {<0, ASC> }, cost est: 989, output card: 20
+                            #1: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem ORDER BY l_suppkey", tuple_count=60175) : (#0 shared-int32(16) lineitem.l_orderkey, #1 shared-int32(7) lineitem.l_suppkey, #2 shared-float revenue) order by: {<1, ASC> }, cost est: 31527870, output card: 60175
+                    #7: Project<Bit> ((<0, P$1(5) shared-int32>, <1, P$2(200) shared-varchar>, <2, P$3(16) shared-int32>)) : (#0 shared-int32(5) customer.c_nationkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(16) orders.o_orderkey) order by: {}, cost est: 0, output card: 15000
+                        #6: KeyedJoin<Bit> (P$0(11) == P$4(11)) : (#0 shared-int32(11) customer.c_custkey, #1 shared-int32(5) customer.c_nationkey, #2 shared-varchar(25) nation.n_name, #3 shared-int32(16) orders.o_orderkey, #4 shared-int32(11) orders.o_custkey) order by: {<4, ASC> , <0, ASC> }, cost est: 942480000, output card: 15000
+                            #4: SecureSqlInput<Bit> ("SELECT t2.c_custkey, t2.c_nationkey, t1.n_name FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t2.c_custkey ASC", tuple_count=272) : (#0 shared-int32(11) customer.c_custkey, #1 shared-int32(5) customer.c_nationkey, #2 shared-varchar(25) nation.n_name) order by: {<0, ASC> }, cost est: 253869, output card: 272
+                            #5: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders ORDER BY o_custkey, o_orderdate", tuple_count=15000) : (#0 shared-int32(16) orders.o_orderkey, #1 shared-int32(11) orders.o_custkey) order by: {<1, ASC> }, cost est: 4369890, output card: 15000
+
+Operator #0 SecureSqlInput ran for 0.442000 ms, gate count: 840 output cardinality: 20, row width=13
+Operator #1 SecureSqlInput ran for 2960.330000 ms, gate count: 30121344 output cardinality: 60175, row width=56
+Operator #2 KeyedJoin ran for 2524.743000 ms, gate count: 28884000 output cardinality: 60175, row width=68
+Operator #3 Project ran for 13.821000 ms, gate count: 0 output cardinality: 60175, row width=54
+Operator #4 SecureSqlInput ran for 44.408000 ms, gate count: 245488 output cardinality: 272, row width=217
+Operator #5 SecureSqlInput ran for 435.435000 ms, gate count: 4090080 output cardinality: 15000, row width=28
+Operator #6 KeyedJoin ran for 57542.575000 ms, gate count: 946560000 output cardinality: 15000, row width=244
+Operator #7 Project ran for 50.251000 ms, gate count: 0 output cardinality: 15000, row width=222
+Operator #8 KeyedJoin ran for 15121300.500000 ms, gate count: 224753625000 output cardinality: 60175, row width=275
+Operator #9 Project ran for 197.862000 ms, gate count: 0 output cardinality: 60175, row width=233
+Operator #-1 Sort ran for 140910.411000 ms, gate count: 1709304660 output cardinality: 60175, row width=233
+Operator #10 SortMergeAggregate ran for 7570.422000 ms, gate count: 87553204 output cardinality: 60175, row width=233
+Operator #11 Sort ran for 77170.497000 ms, gate count: 1055220388 output cardinality: 60175, row width=233
+Runtime: 15410.8 sec, CPU Time: 14971 sec, CPU clock ticks: 1.4971e+10, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 2.57394e+11. observed gates: 228615605004 gates, relative error (%)=12.5879
+[Linux]Peak resident set size: 1170989056 bytes, current memory size: 400777216 bytes.
+Initial Memory: 16646144 bytes, Peak Memory After Execution: 1170989056 bytes, Memory Usage: 1154342912 bytes
+Bandwidth: 4.74712e+08 Bps
+[       OK ] CostOptimizedTest.bushy_plan_tpch_q5 (15413183 ms)
+[----------] 1 test from CostOptimizedTest (15413183 ms total)
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (15413183 ms total)
 Finished *.bushy_plan_tpch_q5.
 ---------------------------------
 Running *.bushy_plan_tpch_q8...
