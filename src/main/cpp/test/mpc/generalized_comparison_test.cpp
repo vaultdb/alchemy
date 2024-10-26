@@ -26,7 +26,7 @@ DEFINE_string(filter, "*", "run only the tests passing this filter");
 DEFINE_string(storage, "column", "storage model for columns (column, wire_packed or compressed)");
 
 
-class CostOptimizedTest : public EmpBaseTest {
+class GeneralizedComparisonTest : public EmpBaseTest {
 protected:
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name, int type_num);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
@@ -37,7 +37,7 @@ protected:
 
 
 void
-CostOptimizedTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name, int type_num) {
+GeneralizedComparisonTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name, int type_num) {
 
     this->initializeBitPacking(FLAGS_unioned_db);
 
@@ -57,13 +57,10 @@ CostOptimizedTest::runTest(const int &test_id, const string & test_name, const S
 
     std::string plan_file = "";
     switch (type_num) {
+        case 1:
+            plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/baseline_withPKFK/baseline-" + test_name + ".json";
+            break;
         case 2:
-            plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_2/card_bound-" + test_name + ".json";
-            break;
-        case 3:
-            plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_3/bushy_plan-" + test_name + ".json";
-            break;
-        case 4:
             plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_4/cost_optimized-" + test_name + ".json";
             break;
     }
@@ -81,7 +78,7 @@ CostOptimizedTest::runTest(const int &test_id, const string & test_name, const S
     cout << "Original Tree : " << endl;
     cout << root->printTree() << endl;
 
-    if(type_num == 4) {
+    if(type_num == 2) {
         time_point <high_resolution_clock> BeforeCostOptimization = clock_start();
 
         PlanOptimizer<Bit> optimizer(root, parser.getOperatorMap(), parser.getSupportOps(), parser.getInterestingSortOrders());
@@ -135,7 +132,7 @@ CostOptimizedTest::runTest(const int &test_id, const string & test_name, const S
 
 
 string
-CostOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDefinition &expected_sort, const string &db_name) {
+GeneralizedComparisonTest::generateExpectedOutputQuery(const int &test_id, const SortDefinition &expected_sort, const string &db_name) {
     string alice_db = FLAGS_unioned_db;
     string bob_db = FLAGS_unioned_db;
     boost::replace_first(alice_db, "unioned", "alice");
@@ -161,132 +158,100 @@ CostOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDef
 ///////////////////////////////////////////////////////////////////////////////
 
 
-TEST_F(CostOptimizedTest, card_bound_tpch_q1) {
+TEST_F(GeneralizedComparisonTest, baseline_tpch_q1) {
 
-    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort, FLAGS_unioned_db, 2);
-
-}
-
-TEST_F(CostOptimizedTest, card_bound_tpch_q3) {
-
-    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                                 ColumnSort(1, SortDirection::DESCENDING),
-                                 ColumnSort(2, SortDirection::ASCENDING)};
-    runTest(3, "q3", expected_sort, FLAGS_unioned_db, 2);
-}
-
-
-TEST_F(CostOptimizedTest, card_bound_tpch_q5) {
-    //input_tuple_limit_ = 1000;
-
-    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(5, "q5", expected_sort, FLAGS_unioned_db, 2);
-}
-
-
-TEST_F(CostOptimizedTest, card_bound_tpch_q8) {
-
-    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest(8, "q8", expected_sort, FLAGS_unioned_db, 2);
-}
-
-
-
-TEST_F(CostOptimizedTest, card_bound_tpch_q9) {
-    // $0 ASC, $1 DESC
-    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(9, "q9", expected_sort, FLAGS_unioned_db, 2);
+SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+runTest(1, "q1", expected_sort, FLAGS_unioned_db, 2);
 
 }
 
+TEST_F(GeneralizedComparisonTest, baseline_tpch_q3) {
 
-TEST_F(CostOptimizedTest, card_bound_tpch_q18) {
-    // -1 ASC, $4 DESC, $3 ASC
-    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                                 ColumnSort(4, SortDirection::DESCENDING),
-                                 ColumnSort(3, SortDirection::ASCENDING)};
-    runTest(18, "q18", expected_sort, FLAGS_unioned_db, 2);
+SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                             ColumnSort(1, SortDirection::DESCENDING),
+                             ColumnSort(2, SortDirection::ASCENDING)};
+runTest(3, "q3", expected_sort, FLAGS_unioned_db, 2);
+}
+
+
+TEST_F(GeneralizedComparisonTest, baseline_tpch_q5) {
+//input_tuple_limit_ = 1000;
+
+SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+runTest(5, "q5", expected_sort, FLAGS_unioned_db, 2);
+}
+
+
+TEST_F(GeneralizedComparisonTest, baseline_tpch_q8) {
+
+SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+runTest(8, "q8", expected_sort, FLAGS_unioned_db, 2);
 }
 
 
 
-///////////////////////////////////////////////////////////////////////////////
-// *** Bushy-Plan Tests ***
-// ---------------------------------------------------------
-// NOTE: Q1, Q3 are identical to the Card-Bound tests,
-// so no need to execute them in this section.
-// ---------------------------------------------------------
-///////////////////////////////////////////////////////////////////////////////
+TEST_F(GeneralizedComparisonTest, baseline_tpch_q9) {
+// $0 ASC, $1 DESC
+SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+runTest(9, "q9", expected_sort, FLAGS_unioned_db, 2);
 
-
-TEST_F(CostOptimizedTest, bushy_plan_tpch_q5) {
-    //input_tuple_limit_ = 1000;
-
-    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(5, "q5", expected_sort, FLAGS_unioned_db, 3);
 }
 
 
-TEST_F(CostOptimizedTest, bushy_plan_tpch_q8) {
-
-    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest(8, "q8", expected_sort, FLAGS_unioned_db, 3);
+TEST_F(GeneralizedComparisonTest, baseline_tpch_q18) {
+// -1 ASC, $4 DESC, $3 ASC
+SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                             ColumnSort(4, SortDirection::DESCENDING),
+                             ColumnSort(3, SortDirection::ASCENDING)};
+runTest(18, "q18", expected_sort, FLAGS_unioned_db, 2);
 }
-
-TEST_F(CostOptimizedTest, bushy_plan_tpch_q9) {
-
-    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(9, "q9", expected_sort, FLAGS_unioned_db, 3);
-}
-
 
 
 
 //// Cost-Optimized Tests
 
-TEST_F(CostOptimizedTest, cost_optimized_tpch_q1) {
+TEST_F(GeneralizedComparisonTest, cost_optimized_tpch_q1) {
 
-    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort, FLAGS_unioned_db, 4);
+SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+runTest(1, "q1", expected_sort, FLAGS_unioned_db, 4);
 
 }
 
 
-TEST_F(CostOptimizedTest, cost_optimized_tpch_q3) {
+TEST_F(GeneralizedComparisonTest, cost_optimized_tpch_q3) {
 
-    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                                 ColumnSort(1, SortDirection::DESCENDING),
-                                 ColumnSort(2, SortDirection::ASCENDING)};
-    runTest(3, "q3", expected_sort, FLAGS_unioned_db, 4);
-}
-
-
-
-TEST_F(CostOptimizedTest, cost_optimized_tpch_q5) {
-    //input_tuple_limit_ = 1000;
-
-    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(5, "q5", expected_sort, FLAGS_unioned_db, 4);
-}
-
-
-TEST_F(CostOptimizedTest, cost_optimized_tpch_q8) {
-
-    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest(8, "q8", expected_sort, FLAGS_unioned_db, 4);
+SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                             ColumnSort(1, SortDirection::DESCENDING),
+                             ColumnSort(2, SortDirection::ASCENDING)};
+runTest(3, "q3", expected_sort, FLAGS_unioned_db, 4);
 }
 
 
 
-TEST_F(CostOptimizedTest, cost_optimized_tpch_q9) {
-    // $0 ASC, $1 DESC
-    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(9, "q9", expected_sort, FLAGS_unioned_db, 4);
+TEST_F(GeneralizedComparisonTest, cost_optimized_tpch_q5) {
+//input_tuple_limit_ = 1000;
+
+SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+runTest(5, "q5", expected_sort, FLAGS_unioned_db, 4);
+}
+
+
+TEST_F(GeneralizedComparisonTest, cost_optimized_tpch_q8) {
+
+SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+runTest(8, "q8", expected_sort, FLAGS_unioned_db, 4);
+}
+
+
+
+TEST_F(GeneralizedComparisonTest, cost_optimized_tpch_q9) {
+// $0 ASC, $1 DESC
+SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+runTest(9, "q9", expected_sort, FLAGS_unioned_db, 4);
 
 }
 
-//TEST_F(CostOptimizedTest, cost_optimized_tpch_q92) {
+//TEST_F(GeneralizedComparisonTest, cost_optimized_tpch_q92) {
 //    // $0 ASC, $1 DESC
 //    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
 //    runTest(92, "q92", expected_sort, FLAGS_unioned_db, 4);
@@ -294,12 +259,12 @@ TEST_F(CostOptimizedTest, cost_optimized_tpch_q9) {
 //}
 
 
-TEST_F(CostOptimizedTest, cost_optimized_tpch_q18) {
-    // -1 ASC, $4 DESC, $3 ASC
-    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                                 ColumnSort(4, SortDirection::DESCENDING),
-                                 ColumnSort(3, SortDirection::ASCENDING)};
-    runTest(18, "q18", expected_sort, FLAGS_unioned_db, 4);
+TEST_F(GeneralizedComparisonTest, cost_optimized_tpch_q18) {
+// -1 ASC, $4 DESC, $3 ASC
+SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                             ColumnSort(4, SortDirection::DESCENDING),
+                             ColumnSort(3, SortDirection::ASCENDING)};
+runTest(18, "q18", expected_sort, FLAGS_unioned_db, 4);
 }
 
 
