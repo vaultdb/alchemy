@@ -290,6 +290,7 @@
         ]
       },
       "joinType": "inner",
+      "foreignKey": 0,
       "inputs": [
         "9",
         "10"
