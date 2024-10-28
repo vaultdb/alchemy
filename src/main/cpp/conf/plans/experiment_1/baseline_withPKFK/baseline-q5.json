@@ -132,7 +132,7 @@
         ]
       },
       "joinType": "inner",
-      "foreignKey": 0,
+      "foreignKey": 1,
       "inputs": [
         "0",
         "2"
