@@ -31,9 +31,8 @@ public:
     static size_t projectCost(const Project<Bit> *project);
     static size_t basicJoinCost(const BasicJoin<Bit> *join);
     static size_t keyedJoinCost(const KeyedJoin<Bit> *join);
-    static size_t keyedSortMergeJoinCost(const KeyedSortMergeJoin<Bit> *join);
-    static size_t sortMergeJoinCost(const SortMergeJoin<Bit> *join);
-    static size_t mergeJoinCost(const MergeJoin<Bit> *join);
+    static size_t keyedSortMergeJoinCost(KeyedSortMergeJoin<Bit> *join);
+    static size_t mergeJoinCost(MergeJoin<Bit> *join);
     static size_t groupByAggregateCost(const SortMergeAggregate<Bit> *aggregate);
     static size_t nestedLoopAggregateCost(const NestedLoopAggregate<Bit> *aggregate);
     static size_t sortCost(const Sort<Bit> *sort);

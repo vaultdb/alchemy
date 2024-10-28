@@ -7,36 +7,36 @@
 using namespace vaultdb;
 
 size_t OperatorCostModel::operatorCost(const SecureOperator *op) {
-   switch(op->getType()) {
-       case OperatorType::FILTER:
-           return filterCost((Filter<Bit> *) op);
-           case OperatorType::SECURE_SQL_INPUT:
-               return secureSqlInputCost((SecureSqlInput *) op);
-          case OperatorType::MERGE_INPUT:
-              return mergeInputCost((MergeInput *) op);
-            case OperatorType::SORT:
-                return sortCost((Sort<Bit> *) op);
-            case OperatorType::KEYED_NESTED_LOOP_JOIN:
-                return keyedJoinCost((KeyedJoin<Bit> *) op);
-            case OperatorType::NESTED_LOOP_JOIN:
-                return basicJoinCost((BasicJoin<Bit> *) op);
-            case OperatorType::MERGE_JOIN:
-                return mergeJoinCost((MergeJoin<Bit> *) op);
-           case OperatorType::KEYED_SORT_MERGE_JOIN:
-              return keyedSortMergeJoinCost((KeyedSortMergeJoin<Bit> *) op);
-           case OperatorType::SHRINKWRAP:
-              return shrinkwrapCost((Shrinkwrap<Bit> *) op);
-           case OperatorType::PROJECT:
-                return projectCost((Project<Bit> *) op);
-           case OperatorType::SORT_MERGE_AGGREGATE:
-                return groupByAggregateCost((SortMergeAggregate<Bit> *) op);
-           case OperatorType::NESTED_LOOP_AGGREGATE:
-              return nestedLoopAggregateCost((NestedLoopAggregate<Bit> *) op);
-           case OperatorType::SCALAR_AGGREGATE:
-                return scalarAggregateCost((ScalarAggregate<Bit> *) op);
-       default:
-           return 0;
-   }
+    switch(op->getType()) {
+        case OperatorType::FILTER:
+            return filterCost((Filter<Bit> *) op);
+        case OperatorType::SECURE_SQL_INPUT:
+            return secureSqlInputCost((SecureSqlInput *) op);
+        case OperatorType::MERGE_INPUT:
+            return mergeInputCost((MergeInput *) op);
+        case OperatorType::SORT:
+            return sortCost((Sort<Bit> *) op);
+        case OperatorType::KEYED_NESTED_LOOP_JOIN:
+            return keyedJoinCost((KeyedJoin<Bit> *) op);
+        case OperatorType::NESTED_LOOP_JOIN:
+            return basicJoinCost((BasicJoin<Bit> *) op);
+        case OperatorType::MERGE_JOIN:
+            return mergeJoinCost((MergeJoin<Bit> *) op);
+        case OperatorType::KEYED_SORT_MERGE_JOIN:
+            return keyedSortMergeJoinCost((KeyedSortMergeJoin<Bit> *) op);
+        case OperatorType::SHRINKWRAP:
+            return shrinkwrapCost((Shrinkwrap<Bit> *) op);
+        case OperatorType::PROJECT:
+            return projectCost((Project<Bit> *) op);
+        case OperatorType::SORT_MERGE_AGGREGATE:
+            return groupByAggregateCost((SortMergeAggregate<Bit> *) op);
+        case OperatorType::NESTED_LOOP_AGGREGATE:
+            return nestedLoopAggregateCost((NestedLoopAggregate<Bit> *) op);
+        case OperatorType::SCALAR_AGGREGATE:
+            return scalarAggregateCost((ScalarAggregate<Bit> *) op);
+        default:
+            return 0;
+    }
 }
 size_t vaultdb::OperatorCostModel::filterCost(const vaultdb::Filter<Bit> *filter) {
     Expression<Bit> *predicate = filter->predicate_;
@@ -118,84 +118,84 @@ size_t OperatorCostModel::keyedJoinCost(const KeyedJoin<Bit> *join) {
 }
 
 size_t OperatorCostModel::keyedSortMergeJoinCost(KeyedSortMergeJoin<Bit> *join) {
-	size_t cost = 0;
+    size_t cost = 0;
 
-	Operator<Bit>* lhs = join->getChild(0);
-	Operator<Bit>* rhs = join->getChild(1);
-	QuerySchema augmented_schema = join->deriveAugmentedSchema();
+    Operator<Bit>* lhs = join->getChild(0);
+    Operator<Bit>* rhs = join->getChild(1);
+    QuerySchema augmented_schema = join->deriveAugmentedSchema();
 
-	//first we have the cost of two sorts from augmentTables
-	auto p = (GenericExpression<Bit>*) join->getPredicate();
-	JoinEqualityConditionVisitor<Bit> join_visitor(p->root_);
-	vector<pair<uint32_t, uint32_t> > join_idxs  = join_visitor.getEqualities();
-	SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join_idxs.size());
+    //first we have the cost of two sorts from augmentTables
+    auto p = (GenericExpression<Bit>*) join->getPredicate();
+    JoinEqualityConditionVisitor<Bit> join_visitor(p->root_);
+    vector<pair<uint32_t, uint32_t> > join_idxs  = join_visitor.getEqualities();
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join_idxs.size());
 
-	size_t table_id_idx = augmented_schema.getFieldCount() - 1;
-	sort_def.emplace_back(table_id_idx, SortDirection::ASCENDING);
+    size_t table_id_idx = augmented_schema.getFieldCount() - 1;
+    sort_def.emplace_back(table_id_idx, SortDirection::ASCENDING);
 
-	size_t augment_cost = 0;
-	if(join->sortCompatible()) {
-		float n =  lhs->getOutputCardinality() + rhs->getOutputCardinality();
-		float rounds = log2(n);
+    size_t augment_cost = 0;
+    if(join->sortCompatible()) {
+        float n =  lhs->getOutputCardinality() + rhs->getOutputCardinality();
+        float rounds = log2(n);
 
-		float comparisons_per_stage = n /2;
-		float comparison_cnt = rounds * comparisons_per_stage;
+        float comparisons_per_stage = n /2;
+        float comparison_cnt = rounds * comparisons_per_stage;
 
-		size_t c_and_s_cost = compareSwapCost(augmented_schema, sort_def, n);
-		augment_cost += comparison_cnt * c_and_s_cost;
-	}
-	else {
-		augment_cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());
-	}
+        size_t c_and_s_cost = compareSwapCost(augmented_schema, sort_def, n);
+        augment_cost += comparison_cnt * c_and_s_cost;
+    }
+    else {
+        augment_cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());
+    }
 
-	sort_def.clear();
+    sort_def.clear();
     sort_def.emplace_back(table_id_idx, SortDirection::ASCENDING);
     for(int i = 0; i < join_idxs.size(); ++i) {
         sort_def.emplace_back(i, SortDirection::ASCENDING);
     }
 
-	augment_cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());
-	cost += augment_cost;
+    augment_cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());
+    cost += augment_cost;
 
-	//next we have the cost of the sort from obliviousDistribute
-	QueryFieldDesc weight(augmented_schema.getFieldCount(), "weight", "", FieldType::SECURE_INT);
+    //next we have the cost of the sort from obliviousDistribute
+    QueryFieldDesc weight(augmented_schema.getFieldCount(), "weight", "", FieldType::SECURE_INT);
     augmented_schema.putField(weight);
     QueryFieldDesc is_new(augmented_schema.getFieldCount(), "is_new", "", FieldType::SECURE_INT);
     augmented_schema.putField(is_new);
     augmented_schema.initializeFieldOffsets();
 
-	size_t is_new_idx = augmented_schema.getFieldCount() - 1;
+    size_t is_new_idx = augmented_schema.getFieldCount() - 1;
     size_t weight_idx = augmented_schema.getFieldCount() - 2;
 
-	SortDefinition second_sort_def{ ColumnSort(is_new_idx, SortDirection::ASCENDING), ColumnSort(weight_idx, SortDirection::ASCENDING)};
+    SortDefinition second_sort_def{ ColumnSort(is_new_idx, SortDirection::ASCENDING), ColumnSort(weight_idx, SortDirection::ASCENDING)};
 
-	size_t distribute_cost = 0;
+    size_t distribute_cost = 0;
 
-	distribute_cost += sortCost(augmented_schema, second_sort_def, (join->foreignKeyChild() == 0) ? rhs->getOutputCardinality() : lhs->getOutputCardinality());
+    distribute_cost += sortCost(augmented_schema, second_sort_def, (join->foreignKeyChild() == 0) ? rhs->getOutputCardinality() : lhs->getOutputCardinality());
 
-	//obliviousDistribute
-	size_t n = join->getOutputCardinality();
-	float inner_loop = n;
-	float outer_loop = floor(log2(inner_loop));
-	 
-	float comparisons = outer_loop * inner_loop;
+    //obliviousDistribute
+    size_t n = join->getOutputCardinality();
+    float inner_loop = n;
+    float outer_loop = floor(log2(inner_loop));
+
+    float comparisons = outer_loop * inner_loop;
     size_t c_and_s_cost = compareSwapCost(augmented_schema, second_sort_def, n);
-	distribute_cost += c_and_s_cost * (size_t) comparisons;
+    distribute_cost += c_and_s_cost * (size_t) comparisons;
 
     cost += 2 * distribute_cost;
-	
-	//cost of conditional write step from expand
-	InputReference<Bit> read_field(is_new_idx, augmented_schema);
-	Field<Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
-	LiteralNode<Bit> constant_input(one);
-	EqualNode equality_check((ExpressionNode<Bit> *) &read_field, (ExpressionNode<Bit> *) &constant_input);
 
-	ExpressionCostModel<Bit> model(&equality_check, augmented_schema);
-	auto if_cost = model.cost();	
+    //cost of conditional write step from expand
+    InputReference<Bit> read_field(is_new_idx, augmented_schema);
+    Field<Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
+    LiteralNode<Bit> constant_input(one);
+    EqualNode equality_check((ExpressionNode<Bit> *) &read_field, (ExpressionNode<Bit> *) &constant_input);
 
-	size_t conditional_write_cost = n * (if_cost + augmented_schema.size() + 2);	
+    ExpressionCostModel<Bit> model(&equality_check, augmented_schema);
+    auto if_cost = model.cost();
+
+    size_t conditional_write_cost = n * (if_cost + augmented_schema.size() + 2);
     cost += 2 * conditional_write_cost;
-	
+
     return cost;
 }
 
@@ -515,7 +515,7 @@ size_t OperatorCostModel::compareSwapCost(const QuerySchema &schema, const SortD
         comparison_cost += 3; // bookkeeping overhead.  Bit::select (+1), & (+1)
     }
 
-    // Add swap_cost as row width. Needs to change whole row. 
+    // Add swap_cost as row width. Needs to change whole row.
     size_t swap_cost = schema.size();
     return comparison_cost + swap_cost;
 }
@@ -543,5 +543,4 @@ size_t OperatorCostModel::mergeInputCost(const MergeInput *input) {
     // do two conditional writes of length {row bits} plus ANDing the dummy tags
     return tuple_cnt * (2*tuple_len + 1);
 }
-
 

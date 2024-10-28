@@ -53,7 +53,7 @@ PlanCostTest::runTest(const int &test_id, const string & test_name, const SortDe
     string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + test_name + ".sql";
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
 
-    PlanParser<Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
+    PlanParser<Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_PlanParser<Bit> parser();
     SecureOperator *root = parser.getRoot();
     auto result = root->run();
 

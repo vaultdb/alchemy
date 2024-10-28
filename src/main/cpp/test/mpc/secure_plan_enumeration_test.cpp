@@ -138,7 +138,7 @@ SecurePlanEnumerationTest::runMultiAggregatesTest(const int &test_id, const stri
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
 
-    PlanParser<Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
+    PlanParser<Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_, true);
     SecureOperator *root = parser.getRoot();
 
     std::cout << root->printTree() << endl;

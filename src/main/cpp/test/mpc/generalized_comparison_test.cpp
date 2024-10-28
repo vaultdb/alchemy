@@ -72,7 +72,8 @@ GeneralizedComparisonTest::runTest(const int &test_id, const string & test_name,
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
 
-    PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_);
+    PlanParser<Bit> parser(db_name_, plan_file, input_tuple_limit_, /* read_from_file */ true);
+
     SecureOperator *root = parser.getRoot();
 
     cout << "Original Tree : " << endl;
