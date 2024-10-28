@@ -61,8 +61,8 @@ TrueCardinalityTest::runTest(const int &test_id, const string & test_name, const
     PlainTable *expected = DataUtilities::getExpectedResults(FLAGS_dbname, expected_query, false, 0);
     expected->order_by_ = expected_sort;
 
-    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_3/True_Cardinality/truecard-" + test_name + ".sql";
-    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_3/True_Cardinality/truecard-"  + test_name + ".json";
+    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/True_Cardinality/truecard-" + test_name + ".sql";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_6/True_Cardinality/truecard-"  + test_name + ".json";
 
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();

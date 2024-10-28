@@ -13,6 +13,7 @@
 #include <map>
 #include <vector>
 #include <limits>
+#include <operators/keyed_sort_merge_join.h>
 
 namespace vaultdb {
 
@@ -54,9 +55,10 @@ private:
 
     Operator<B> *fetchLeaf(Operator<B> *op);
 
-    void recurseJoin(Operator<B> *join);
-    void recurseAgg(Operator<B> *agg);
-    void recurseSort(Operator<B> *sort);
+        void recurseJoin(Operator<B> *join);
+        void enumerateJoin(Operator<B>* join, Operator<B>* lhs_clone, Operator<B>* rhs_clone);
+        void recurseAgg(Operator<B> *agg);
+        void recurseSort(Operator<B> *sort);
 
     vector<SortDefinition> getCollations(Operator<B> *op) {
         map<SortDefinition, int> collations; // making a map to eliminate duplicate collations

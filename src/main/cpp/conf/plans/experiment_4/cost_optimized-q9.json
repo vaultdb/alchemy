@@ -1,0 +1,481 @@
+{
+  "rels": [
+    {
+      "id": "0",
+      "relOp": "LogicalValues",
+      "outputFields": "s_suppkey (#0), n_name (#1)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "s_suppkey"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 25,
+          "name": "n_name"
+        }
+      ],
+      "sql": "SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY s_suppkey",
+      "dummy-tag": false,
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "outputFields": "ps_partkey (#0), ps_suppkey (#1), ps_supplycost (#2)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "ps_partkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "ps_suppkey"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "ps_supplycost"
+        }
+      ],
+      "sql": "SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%' ORDER BY ps_suppkey, ps_partkey",
+      "dummy-tag": false,
+      "collation-1": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        },
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-3": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalJoin",
+      "joinCondition" : "s_suppkey = ps_suppkey",
+      "operator-algorithm" : "auto",
+      "outputFields": "s_suppkey (#0), n_name (#1), ps_partkey (#2), ps_suppkey (#3), ps_supplycost (#4)",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 1,
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalProject",
+      "outputFields": "n_name (#0), ps_partkey (#1), ps_suppkey (#2), ps_supplycost (#3)",
+      "fields": [
+        "n_name",
+        "ps_partkey",
+        "ps_suppkey",
+        "ps_supplycost"
+      ],
+      "exprs": [
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "relOp": "LogicalValues",
+      "outputFields": "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_quantity (#3), l_extendedprice (#4), l_discount (#5)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_orderkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "l_partkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "l_suppkey"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_quantity"
+        },
+        {
+          "type": "FLOAT",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "volume"
+        }
+      ],
+      "sql": "SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice * (1.0 - l_discount) AS volume FROM lineitem ORDER BY l_orderkey, l_suppkey, l_partkey",
+      "dummy-tag": false,
+      "collation-1": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        },
+        {
+          "field": 2,
+          "direction": "ASCENDING"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 2,
+          "name": "l_suppkey",
+          "direction": "ASCENDING"
+        },
+        {
+          "field": 1,
+          "name": "l_partkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-3": [
+        {
+          "field": 0,
+          "name": "l_orderkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "5",
+      "relOp": "LogicalValues",
+      "outputFields": "o_year (#0), o_orderkey (#1)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "o_year"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "o_orderkey"
+        }
+      ],
+      "sql": "SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders ORDER BY o_orderkey",
+      "dummy-tag": false,
+      "collation-1": [
+        {
+          "field": 1,
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 0,
+          "direction": "DESCENDING"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalJoin",
+      "joinCondition" : "l_orderkey = o_orderkey",
+      "operator-algorithm" : "auto",
+      "outputFields": "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_quantity (#3), volume (#4), o_year (#5), o_orderkey (#6)",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 0,
+      "inputs": [
+        "4",
+        "5"
+      ]
+    },
+    {
+      "id": "7",
+      "relOp": "LogicalProject",
+      "inputFields": "l_partkey (#0), l_suppkey (#1), l_quantity (#2), volume (#3), o_year (#4)",
+      "fields": [
+        "l_partkey",
+        "l_suppkey",
+        "l_quantity",
+        "volume",
+        "o_year"
+      ],
+      "exprs": [
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        }
+      ]
+    },
+    {
+      "id": "8",
+      "relOp": "LogicalJoin",
+      "joinCondition" : "ps_suppkey = l_suppkey AND ps_partkey = l_partkey",
+      "operator-algorithm" : "auto",
+      "outputFields": "n_name (#0), ps_partkey (#1), ps_suppkey (#2), ps_supplycost (#3), l_partkey (#4), l_suppkey (#5), l_quantity (#6), volume (#7), o_year (#8)",
+      "condition": {
+        "op": {
+          "name": "AND",
+          "kind": "AND",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 2,
+                "name": "$2"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 1,
+                "name": "$1"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              }
+            ]
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 1,
+      "inputs": [
+        "3",
+        "7"
+      ]
+    },
+    {
+      "id": "9",
+      "relOp": "LogicalProject",
+      "inputFields": "n_name (#0), ps_partkey (#1), ps_suppkey (#2), ps_supplycost (#3), l_partkey (#4), l_suppkey (#5), l_quantity (#6), volume (#7), o_year (#8)",
+      "outputFields": "nation (#0),  o_year (#1), amount (#2)",
+      "amount": "volume - ps.ps_supplycost * l.l_quantity",
+      "fields": [
+        "nation",
+        "o_year",
+        "amount"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 8,
+          "name": "$8"
+        },
+        {
+          "op": {
+            "name": "-",
+            "kind": "MINUS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 7,
+              "name": "$7",
+              "field_name": "volume"
+            },
+            {
+              "op": {
+                "name": "*",
+                "kind": "TIMES",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 3,
+                  "name": "$3",
+                  "field_name": "ps_supplycost"
+                },
+                {
+                  "input": 6,
+                  "name": "$6",
+                  "field_name": "l_quantity"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "relOp": "LogicalAggregate",
+      "operator-algorithm" : "auto",
+      "cardBound" : 175,
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        },
+        {
+          "field": 1,
+          "direction": "DESCENDING",
+          "nulls": "FIRST"
+        }
+      ],
+      "inputFields": "n_name (#0), o_year (#1), amount (#2)",
+      "group": [
+        0,
+        1
+      ],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            2
+          ],
+          "name": "sum_profit"
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        },
+        {
+          "field": 1,
+          "direction": "DESCENDING",
+          "nulls": "FIRST"
+        }
+      ]
+    }
+  ]
+}

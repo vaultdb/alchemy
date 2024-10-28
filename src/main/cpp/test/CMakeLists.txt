@@ -72,6 +72,7 @@ package_add_test(plan_parser_test plain/plan_parser_test.cpp plain/plain_base_te
 package_add_test(plan_deparser_test plain/plan_deparser_test.cpp plain/plain_base_test.cpp)
 
 package_add_test(tpch_test plain/tpch_test.cpp plain/plain_base_test.cpp)
+package_add_test(plain_card_bound_test plain/plain_card_bound_test.cpp plain/plain_base_test.cpp)
 
 unset(Labels)
 set(Labels "LABELS;PlainTest")
@@ -113,7 +114,8 @@ package_add_test(true_cardinality_test mpc/true_cardinality_test.cpp mpc/emp_bas
 package_add_test(expression_cost_model_test mpc/expression_cost_model_test.cpp mpc/emp_base_test.cpp)
 package_add_test(operator_cost_model_test mpc/operator_cost_model_test.cpp mpc/emp_base_test.cpp)
 package_add_test(plan_cost_test mpc/plan_cost_test.cpp  mpc/emp_base_test.cpp)
-package_add_test(fully_optimized_test mpc/fully_optimized_test.cpp  mpc/emp_base_test.cpp)
+package_add_test(cost_optimized_test mpc/cost_optimized_test.cpp mpc/emp_base_test.cpp)
+package_add_test(generalized_comparison_test mpc/generalized_comparison_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_plan_enumeration_test mpc/secure_plan_enumeration_test.cpp  mpc/emp_base_test.cpp)
 package_add_test(secure_tpch_enumeration_test mpc/secure_tpch_enumeration_test.cpp  mpc/emp_base_test.cpp)
 package_add_test(join_cost_comparison_test mpc/join_cost_comparison_test.cpp mpc/emp_base_test.cpp)

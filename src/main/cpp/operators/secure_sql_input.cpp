@@ -37,7 +37,12 @@ SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &
     runQuery();
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
-    this->output_cardinality_ = manager->getTableCardinality(plain_input_->tuple_cnt_);
+
+    // if input_tuple_limit(= number of full row table) is larger than plain), it means no card bound, so need to dummy pad.
+    if (input_tuple_limit != -1 && input_tuple_limit > plain_input_->tuple_cnt_)
+        this->output_cardinality_ = input_tuple_limit;
+    else
+        this->output_cardinality_ = manager->getTableCardinality(plain_input_->tuple_cnt_);
 
 }
 
@@ -52,8 +57,43 @@ SecureTable *SecureSqlInput::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = system_conf_.andGateCount();
     this->output_ =  plain_input_->secretShare();
+
+    if(input_tuple_limit_ > plain_input_->tuple_cnt_)
+        addDummyRows();
     return this->output_;
 
+}
+
+void SecureSqlInput::addDummyRows() {
+    assert(this->output_ != nullptr);
+    SecureTable* secure_table = dynamic_cast<SecureTable*>(this->output_);
+    assert(secure_table != nullptr);
+
+    size_t current_row_count = secure_table->tuple_cnt_;
+    size_t rows_to_add = this->output_cardinality_ - current_row_count;
+
+    if (rows_to_add <= 0) {
+        return;  // No need to add dummy rows
+    }
+
+    // Resize the table if necessary
+    secure_table->resize(this->output_cardinality_);
+
+    // Get the schema to know the structure of the table
+    const QuerySchema& schema = secure_table->getSchema();
+
+    // Add dummy rows
+    for (size_t i = current_row_count; i < this->output_cardinality_; ++i) {
+        // Set default values for each field
+        for (int field_idx = 0; field_idx < schema.getFieldCount(); ++field_idx) {
+            const QueryFieldDesc& field_desc = schema.getField(field_idx);
+            SecureField default_field(field_desc.getType());  // This will create a field with default values
+            secure_table->setField(i, field_idx, default_field);
+        }
+
+        // Set the dummy tag to true for this row
+        secure_table->setDummyTag(i, emp::Bit(true));
+    }
 }
 
 

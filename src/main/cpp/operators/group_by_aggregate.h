@@ -13,10 +13,11 @@ namespace vaultdb {
 template<typename B>
 class GroupByAggregate : public Operator<B> {
 
-public:
-    std::vector<ScalarAggregateDefinition> aggregate_definitions_;
-    std::vector<int32_t> group_by_;
-    SortDefinition effective_sort_;
+    public:
+        std::vector<ScalarAggregateDefinition> aggregate_definitions_;
+        std::vector<int32_t> group_by_;
+        SortDefinition effective_sort_;
+        size_t cardinality_bound_  = 0; // stored in SMA for planning purposes, only used in NLA
 
 
     GroupByAggregate(const GroupByAggregate<B> & src) : Operator<B>(src), aggregate_definitions_(src.aggregate_definitions_), group_by_(src.group_by_), effective_sort_(src.effective_sort_), cardinality_bound_(src.cardinality_bound_) {}
@@ -130,15 +131,12 @@ public:
     }
 
 
-protected:
-    size_t cardinality_bound_  = 0; // stored in SMA for planning purposes, only used in NLA
-
-
-    inline string getParameters() const override {
-        stringstream  ss;
-        ss << "group-by: (" << group_by_[0];
-        for(size_t i = 1; i < group_by_.size(); ++i)
-            ss << ", " << group_by_[i];
+    protected:
+        inline string getParameters() const override {
+            stringstream  ss;
+            ss << "group-by: (" << group_by_[0];
+            for(size_t i = 1; i < group_by_.size(); ++i)
+                ss << ", " << group_by_[i];
 
         ss << ") aggs: (" << aggregate_definitions_[0].toString();
 

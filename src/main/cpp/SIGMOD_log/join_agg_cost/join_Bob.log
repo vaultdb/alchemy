@@ -1,0 +1,228 @@
+[==========] Running 10 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 10 tests from SecureJoinAggCostComparisonTest
+[ RUN      ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_100_1_sort_merge_join
+Connecting to 126.137.1.10 on ports 43455, 65470 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=126.137.1.10	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65471	--filter=*	--party=2	--port=43456	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+left child : 100 , right child : 10000
+compare and swap cost 95
+compare and swap cost 202
+SMJ Cost 108370107
+Operator #-1 SecureSqlInput ran for 4.375000 ms, gate count: 22436 output cardinality: 100, row width=50
+Operator #-1 SecureSqlInput ran for 471.128000 ms, gate count: 4780992 output cardinality: 10000, row width=53
+Operator #-1 SortMergeJoin ran for 10501.785000 ms, gate count: 126233400 output cardinality: 10000, row width=102
+compare and swap cost 95
+compare and swap cost 202
+compare and swap cost 95
+compare and swap cost 202
+Operator #-1 Sort ran for 5934.360000 ms, gate count: 71615120 output cardinality: 10000, row width=102
+compare and swap cost 160
+compare and swap cost 160
+Performing Sort Merge Join
+Observed gate count: 126233400
+Runtime: 10501.785000
+[       OK ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_100_1_sort_merge_join (23228 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_100_1_nested_loop_join
+Connecting to 126.137.1.10 on ports 43456, 65471 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=126.137.1.10	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65472	--filter=*	--party=2	--port=43457	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+left child : 100 , right child : 10000
+NLJ Cost 73000000
+Operator #-1 SecureSqlInput ran for 4.356000 ms, gate count: 22436 output cardinality: 100, row width=50
+Operator #-1 SecureSqlInput ran for 476.282000 ms, gate count: 4780992 output cardinality: 10000, row width=53
+Operator #-1 KeyedJoin ran for 5415.319000 ms, gate count: 74000000 output cardinality: 10000, row width=102
+Operator #-1 Sort ran for 5924.437000 ms, gate count: 71615120 output cardinality: 10000, row width=102
+compare and swap cost 160
+compare and swap cost 160
+Performing Nested Loop Join
+Observed gate count: 74000000
+Runtime: 5415.319000
+[       OK ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_100_1_nested_loop_join (18099 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_50_1_sort_merge_join
+Connecting to 126.137.1.10 on ports 43457, 65472 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=126.137.1.10	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65473	--filter=*	--party=2	--port=43458	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+left child : 200 , right child : 10000
+compare and swap cost 95
+compare and swap cost 202
+SMJ Cost 109808852
+Operator #-1 SecureSqlInput ran for 7.586000 ms, gate count: 51972 output cardinality: 200, row width=50
+Operator #-1 SecureSqlInput ran for 429.534000 ms, gate count: 4780992 output cardinality: 10000, row width=53
+Operator #-1 SortMergeJoin ran for 10781.622000 ms, gate count: 127130128 output cardinality: 10000, row width=102
+compare and swap cost 95
+compare and swap cost 202
+compare and swap cost 95
+compare and swap cost 202
+Operator #-1 Sort ran for 5997.207000 ms, gate count: 71615120 output cardinality: 10000, row width=102
+compare and swap cost 160
+compare and swap cost 160
+Performing Sort Merge Join
+Observed gate count: 127130128
+Runtime: 10781.622000
+[       OK ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_50_1_sort_merge_join (23735 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_50_1_nested_loop_join
+Connecting to 126.137.1.10 on ports 43458, 65473 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=126.137.1.10	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65474	--filter=*	--party=2	--port=43459	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+left child : 200 , right child : 10000
+NLJ Cost 146000000
+Operator #-1 SecureSqlInput ran for 7.580000 ms, gate count: 51972 output cardinality: 200, row width=50
+Operator #-1 SecureSqlInput ran for 461.964000 ms, gate count: 4780992 output cardinality: 10000, row width=53
+Operator #-1 KeyedJoin ran for 10865.595000 ms, gate count: 148000000 output cardinality: 10000, row width=102
+Operator #-1 Sort ran for 5930.200000 ms, gate count: 71615120 output cardinality: 10000, row width=102
+compare and swap cost 160
+compare and swap cost 160
+Performing Nested Loop Join
+Observed gate count: 148000000
+Runtime: 10865.595000
+[       OK ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_50_1_nested_loop_join (23553 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_10_1_sort_merge_join
+Connecting to 126.137.1.10 on ports 43459, 65474 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=126.137.1.10	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65475	--filter=*	--party=2	--port=43460	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+left child : 1000 , right child : 10000
+compare and swap cost 95
+compare and swap cost 202
+SMJ Cost 124486325
+Operator #-1 SecureSqlInput ran for 35.863000 ms, gate count: 350172 output cardinality: 1000, row width=50
+Operator #-1 SecureSqlInput ran for 436.897000 ms, gate count: 4780992 output cardinality: 10000, row width=53
+Operator #-1 SortMergeJoin ran for 10920.089000 ms, gate count: 134197904 output cardinality: 10000, row width=102
+compare and swap cost 95
+compare and swap cost 202
+compare and swap cost 95
+compare and swap cost 202
+Operator #-1 Sort ran for 5988.022000 ms, gate count: 71615120 output cardinality: 10000, row width=102
+compare and swap cost 160
+compare and swap cost 160
+Performing Sort Merge Join
+Observed gate count: 134197904
+Runtime: 10920.089000
+[       OK ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_10_1_sort_merge_join (24118 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_10_1_nested_loop_join
+Connecting to 126.137.1.10 on ports 43460, 65475 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=126.137.1.10	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65476	--filter=*	--party=2	--port=43461	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+left child : 1000 , right child : 10000
+NLJ Cost 730000000
+Operator #-1 SecureSqlInput ran for 39.035000 ms, gate count: 350172 output cardinality: 1000, row width=50
+Operator #-1 SecureSqlInput ran for 470.578000 ms, gate count: 4780992 output cardinality: 10000, row width=53
+Operator #-1 KeyedJoin ran for 54386.410000 ms, gate count: 740000000 output cardinality: 10000, row width=102
+Operator #-1 Sort ran for 5989.895000 ms, gate count: 71615120 output cardinality: 10000, row width=102
+compare and swap cost 160
+compare and swap cost 160
+Performing Nested Loop Join
+Observed gate count: 740000000
+Runtime: 54386.410000
+[       OK ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_10_1_nested_loop_join (67561 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_5_1_sort_merge_join
+Connecting to 126.137.1.10 on ports 43461, 65476 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=126.137.1.10	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65477	--filter=*	--party=2	--port=43462	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+left child : 2000 , right child : 10000
+compare and swap cost 95
+compare and swap cost 202
+SMJ Cost 146263644
+Operator #-1 SecureSqlInput ran for 81.885000 ms, gate count: 771344 output cardinality: 2000, row width=50
+Operator #-1 SecureSqlInput ran for 465.534000 ms, gate count: 4780992 output cardinality: 10000, row width=53
+Operator #-1 SortMergeJoin ran for 11981.274000 ms, gate count: 144869868 output cardinality: 10000, row width=102
+compare and swap cost 95
+compare and swap cost 202
+compare and swap cost 95
+compare and swap cost 202
+Operator #-1 Sort ran for 5942.426000 ms, gate count: 71615120 output cardinality: 10000, row width=102
+compare and swap cost 160
+compare and swap cost 160
+Performing Sort Merge Join
+Observed gate count: 144869868
+Runtime: 11981.274000
+[       OK ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_5_1_sort_merge_join (25504 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_5_1_nested_loop_join
+Connecting to 126.137.1.10 on ports 43462, 65477 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=126.137.1.10	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65478	--filter=*	--party=2	--port=43463	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+left child : 2000 , right child : 10000
+NLJ Cost 1460000000
+Operator #-1 SecureSqlInput ran for 81.988000 ms, gate count: 771344 output cardinality: 2000, row width=50
+Operator #-1 SecureSqlInput ran for 463.297000 ms, gate count: 4780992 output cardinality: 10000, row width=53
+Operator #-1 KeyedJoin ran for 108757.567000 ms, gate count: 1480000000 output cardinality: 10000, row width=102
+Operator #-1 Sort ran for 5910.578000 ms, gate count: 71615120 output cardinality: 10000, row width=102
+compare and swap cost 160
+compare and swap cost 160
+Performing Nested Loop Join
+Observed gate count: 1480000000
+Runtime: 108757.567000
+[       OK ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_5_1_nested_loop_join (122191 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_1_1_nested_loop_join
+Connecting to 126.137.1.10 on ports 43463, 65478 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=126.137.1.10	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65479	--filter=*	--party=2	--port=43464	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+left child : 10000 , right child : 10000
+NLJ Cost 7300000000
+Operator #-1 SecureSqlInput ran for 438.686000 ms, gate count: 4587168 output cardinality: 10000, row width=50
+Operator #-1 SecureSqlInput ran for 461.545000 ms, gate count: 4780992 output cardinality: 10000, row width=53
+Operator #-1 KeyedJoin ran for 552760.020000 ms, gate count: 7400000000 output cardinality: 10000, row width=102
+Operator #-1 Sort ran for 6051.335000 ms, gate count: 71615120 output cardinality: 10000, row width=102
+compare and swap cost 160
+compare and swap cost 160
+Performing Nested Loop Join
+Observed gate count: 7400000000
+Runtime: 552760.020000
+[       OK ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_1_1_nested_loop_join (567048 ms)
+[ RUN      ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_1_1_sort_merge_join
+Connecting to 126.137.1.10 on ports 43464, 65479 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 
+GFlags: --flagfile=	--alice_db=tpch_alice_15000_join_cost	--alice_host=126.137.1.10	--bob_db=tpch_bob_15000_join_cost	--ctrl_port=65480	--filter=*	--party=2	--port=43465	--storage=column	--unioned_db=tpch_unioned_15000	--validation=true	--log_level=2	--logfile=	
+
+left child : 10000 , right child : 10000
+compare and swap cost 96
+compare and swap cost 203
+SMJ Cost 367379660
+Operator #-1 SecureSqlInput ran for 448.787000 ms, gate count: 4587168 output cardinality: 10000, row width=50
+Operator #-1 SecureSqlInput ran for 468.140000 ms, gate count: 4780992 output cardinality: 10000, row width=53
+Operator #-1 SortMergeJoin ran for 19851.936000 ms, gate count: 242992944 output cardinality: 10000, row width=102
+compare and swap cost 96
+compare and swap cost 203
+compare and swap cost 96
+compare and swap cost 203
+Operator #-1 Sort ran for 5898.848000 ms, gate count: 71615120 output cardinality: 10000, row width=102
+compare and swap cost 160
+compare and swap cost 160
+Performing Sort Merge Join
+Observed gate count: 242992944
+Runtime: 19851.936000
+[       OK ] SecureJoinAggCostComparisonTest.test_tpch_q3_orders_lineitem_1_1_sort_merge_join (33824 ms)
+[----------] 10 tests from SecureJoinAggCostComparisonTest (928866 ms total)
+
+[----------] Global test environment tear-down
+[==========] 10 tests from 1 test suite ran. (928866 ms total)
+[  PASSED  ] 10 tests.

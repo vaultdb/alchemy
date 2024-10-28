@@ -1015,6 +1015,7 @@ Operator<B> *PlanParser<B>::parseLocalScan(const int & operator_id, const boost:
     B plain_has_dummy_tag = false;
     string merge_sql = "", op_algo = "";
     int local_tuple_limit = input_limit_;
+    int cardinality_bound = 0;
 
     if(local_scan_tree.count("sql") > 0)
         sql = local_scan_tree.get_child("sql").template get_value<string>();
@@ -1031,6 +1032,10 @@ Operator<B> *PlanParser<B>::parseLocalScan(const int & operator_id, const boost:
 
     plain_has_dummy_tag =  (sql.find("dummy-tag") != std::string::npos) || (sql.find("dummy_tag") != std::string::npos);
     bool dummy_tag = (sql.find("dummy-tag") != std::string::npos) || (sql.find("dummy_tag") != std::string::npos);
+
+    // Parse Cardinality Bound info from JSON
+    if(local_scan_tree.count("cardinality-bound") > 0)
+        cardinality_bound = local_scan_tree.get_child("cardinality-bound").template get_value<int>();
 
     int collationIndex = 1; // Start index for multiple collations
     bool foundMultipleSorts = false;

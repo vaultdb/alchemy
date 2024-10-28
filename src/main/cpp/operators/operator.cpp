@@ -63,11 +63,11 @@ QueryTable<B> *Operator<B>::run() {
     if(std::is_same_v<B, Bit> && this->getOperatorId() > -2) {
 		Logger* log = get_log();
 
-        log->write("Operator #" + std::to_string(this->getOperatorId()) + " " + getTypeString() +
+        cout << "Operator #" + std::to_string(this->getOperatorId()) + " " + getTypeString() +
 				" ran for " + std::to_string(runtime_ms_) + " ms, " + 
 				"gate count: " + std::to_string(gate_cnt_) + 
 				" output cardinality: " + std::to_string(output_->tuple_cnt_) +
-				", row width=" + std::to_string(output_schema_.size()), Level::INFO);
+				", row width=" + std::to_string(output_schema_.size()) << endl;
 
         if (gate_cnt_ > 0  && this->getOperatorId() >= -1) {
             size_t estimated_gates = OperatorCostModel::operatorCost(reinterpret_cast<const SecureOperator *>(this));
@@ -79,6 +79,14 @@ QueryTable<B> *Operator<B>::run() {
 //                log->write("Buffer pool statistics: " + SystemConfiguration::getInstance().bpm_.stats(), Level::DEBUG);
 //            }
         }
+    }
+    else if(std::is_same_v<B, bool> && this->getOperatorId() > -2) {
+        Logger* log = get_log();
+
+        log->write("Operator #" + std::to_string(this->getOperatorId()) + " " + getTypeString() +
+                   " ran for " + std::to_string(runtime_ms_) + " ms, " +
+                   " output cardinality: " + std::to_string(output_->tuple_cnt_) +
+                   ", row width=" + std::to_string(output_schema_.size()), Level::INFO);
     }
 
     operator_executed_ = true;
@@ -147,7 +155,6 @@ template<typename B>
 size_t Operator<B>::planCost() const {
     size_t summed_cost = 0L;
     if(std::is_same_v<bool, B>) return summed_cost; // no gates if in plaintext mode
-
     if(lhs_child_ != nullptr)
         summed_cost += lhs_child_->planCost();
     if(rhs_child_ != nullptr)

@@ -3,38 +3,7 @@
     {
       "id": "0",
       "relOp": "LogicalValues",
-      "outputFields": "p_partkey (#0), ps_supplycost (#1), ps_suppkey (#2), ps_partkey (#3)",
-      "type": [
-        {
-          "type": "INTEGER",
-          "nullable": false,
-          "name": "p_partkey"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "ps_supplycost"
-        },
-        {
-          "type": "INTEGER",
-          "nullable": false,
-          "name": "ps_suppkey"
-        },
-        {
-          "type": "INTEGER",
-          "nullable": false,
-          "name": "ps_partkey"
-        }
-      ],
-      "tuples": [],
-      "inputs": []
-    },
-    {
-      "id": "1",
-      "relOp": "LogicalValues",
-      "outputFields": "s_suppkey (#0), s_nationkey (#1)",
+      "outputFields": "s_suppkey (#0), n_name (#1)",
       "type": [
         {
           "type": "INTEGER",
@@ -42,20 +11,50 @@
           "name": "s_suppkey"
         },
         {
-          "type": "INTEGER",
-          "nullable": false,
-          "name": "s_nationkey"
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 25,
+          "name": "n_name"
         }
       ],
+      "sql": "SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey",
+      "dummy-tag": false,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "outputFields": "ps_partkey (#0), ps_suppkey (#1), ps_supplycost (#2)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "ps_partkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "ps_suppkey"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "ps_supplycost"
+        }
+      ],
+      "sql": "SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%'",
+      "dummy-tag": false,
       "tuples": [],
       "inputs": []
     },
     {
       "id": "2",
       "relOp": "LogicalJoin",
-      "joinOn" : "ps_suppkey = s_suppkey",
-      "operator-algorithm" : "nested-loop-join",
-      "outputFields": "p_partkey (#0), ps_supplycost (#1), ps_suppkey (#2), ps_partkey (#3), s_suppkey (#4), s_nationkey (#5)",
+      "joinCondition" : "s_suppkey = ps_suppkey",
+      "outputFields": "s_suppkey (#0), n_name (#1), ps_partkey (#2), ps_suppkey (#3), ps_supplycost (#4)",
       "condition": {
         "op": {
           "name": "=",
@@ -64,17 +63,16 @@
         },
         "operands": [
           {
-            "input": 2,
-            "name": "$2"
+            "input": 0,
+            "name": "$0"
           },
           {
-            "input": 4,
-            "name": "$4"
+            "input": 3,
+            "name": "$3"
           }
         ]
       },
       "joinType": "inner",
-      "foreignKey": 0,
       "inputs": [
         "0",
         "1"
@@ -82,71 +80,15 @@
     },
     {
       "id": "3",
-      "relOp": "LogicalValues",
-      "outputFields": "n_name (#0), n_nationkey (#1)",
-      "type": [
-        {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 25,
-          "name": "n_name"
-        },
-        {
-          "type": "INTEGER",
-          "nullable": false,
-          "name": "n_nationkey"
-        }
-      ],
-      "tuples": [],
-      "inputs": []
-    },
-    {
-      "id": "4",
-      "relOp": "LogicalJoin",
-      "joinOn" : "s_nationkey = n_nationkey",
-      "operator-algorithm" : "nested-loop-join",
-      "outputFields": "p_partkey (#0), ps_supplycost (#1), ps_suppkey (#2), ps_partkey (#3), s_suppkey (#4), s_nationkey (#5), n_name (#6), n_nationkey (#7)",
-      "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 5,
-            "name": "$5"
-          },
-          {
-            "input": 7,
-            "name": "$7"
-          }
-        ]
-      },
-      "joinType": "inner",
-      "foreignKey": 0,
-      "inputs": [
-        "2",
-        "3"
-      ]
-    },
-    {
-      "id": "5",
       "relOp": "LogicalProject",
-      "inputFields": "p_partkey (#0), ps_supplycost (#1), ps_suppkey (#2), ps_partkey (#3), s_suppkey (#4), s_nationkey (#5), n_name (#6), n_nationkey (#7)",
+      "outputFields": "n_name (#0), ps_partkey (#1), ps_suppkey (#2), ps_supplycost (#3)",
       "fields": [
-        "p_partkey",
-        "ps_supplycost",
-        "ps_suppkey",
+        "n_name",
         "ps_partkey",
-        "s_suppkey",
-        "n_name"
+        "ps_suppkey",
+        "ps_supplycost"
       ],
       "exprs": [
-        {
-          "input": 0,
-          "name": "$0"
-        },
         {
           "input": 1,
           "name": "$1"
@@ -162,17 +104,13 @@
         {
           "input": 4,
           "name": "$4"
-        },
-        {
-          "input": 6,
-          "name": "$6"
         }
       ]
     },
     {
-      "id": "6",
+      "id": "4",
       "relOp": "LogicalValues",
-      "outputFields" : "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_linenumber (#3), l_quantity (#4), l_extendedprice (#5), l_discount (#6), l_tax (#7), l_returnflag (#8), l_linestatus (#9), l_shipdate (#10), l_commitdate (#11), l_receiptdate (#12), l_shipinstruct (#13), l_shipmode (#14), l_comment (#15)",
+      "outputFields": "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_quantity (#3), l_extendedprice (#4), l_discount (#5)",
       "type": [
         {
           "type": "INTEGER",
@@ -181,18 +119,13 @@
         },
         {
           "type": "INTEGER",
-          "nullable": false,
+          "nullable": true,
           "name": "l_partkey"
         },
         {
           "type": "INTEGER",
-          "nullable": false,
+          "nullable": true,
           "name": "l_suppkey"
-        },
-        {
-          "type": "INTEGER",
-          "nullable": false,
-          "name": "l_linenumber"
         },
         {
           "type": "DECIMAL",
@@ -214,69 +147,80 @@
           "precision": 19,
           "scale": 0,
           "name": "l_discount"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "l_tax"
-        },
-        {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 1,
-          "name": "l_returnflag"
-        },
-        {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 1,
-          "name": "l_linestatus"
-        },
-        {
-          "type": "DATE",
-          "nullable": true,
-          "name": "l_shipdate"
-        },
-        {
-          "type": "DATE",
-          "nullable": true,
-          "name": "l_commitdate"
-        },
-        {
-          "type": "DATE",
-          "nullable": true,
-          "name": "l_receiptdate"
-        },
-        {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 25,
-          "name": "l_shipstruct"
-        },
-        {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 10,
-          "name": "l_shipmode"
-        },
-        {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 44,
-          "name": "l_comment"
         }
       ],
+      "sql": "SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice, l_discount FROM lineitem",
+      "dummy-tag": false,
       "tuples": [],
       "inputs": []
     },
     {
-      "id": "7",
+      "id": "5",
+      "relOp": "LogicalProject",
+      "fields": [
+        "l_orderkey",
+        "l_partkey",
+        "l_suppkey",
+        "l_quantity",
+        "revenue"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "op": {
+            "name": "*",
+            "kind": "TIMES",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 4,
+              "name": "$4"
+            },
+            {
+              "op": {
+                "name": "-",
+                "kind": "MINUS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "literal": 1,
+                  "type": {
+                    "type": "FLOAT",
+                    "nullable": false
+                  }
+                },
+                {
+                  "input": 5,
+                  "name": "$5"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "6",
       "relOp": "LogicalJoin",
-      "joinOn" : "ps_suppkey = l_suppkey AND ps_partkey = l_partkey",
-      "operator-algorithm" : "nested-loop-join",
-      "outputFields": "p_partkey (#0), ps_supplycost (#1), ps_suppkey (#2), ps_partkey (#3), s_suppkey (#4), n_name (#5), l_orderkey (#6), l_partkey (#7), l_suppkey (#8), l_linenumber (#9), l_quantity (#10), l_extendedprice (#11), l_discount (#12), l_tax (#13), l_returnflag (#14), l_linestatus (#15), l_shipdate (#16), l_commitdate (#17), l_receiptdate (#18), l_shipinstruct (#19), l_shipmode (#20), l_comment (#21)",
+      "joinCondition" : "ps_suppkey = l_suppkey AND ps_partkey = l_partkey",
+      "outputFields": "n_name (#0), ps_partkey (#1), ps_suppkey (#2), ps_supplycost (#3), l_orderkey (#4), l_partkey (#5), l_suppkey (#6), l_quantity (#7), volume (#8)",
       "condition": {
         "op": {
           "name": "AND",
@@ -296,8 +240,8 @@
                 "name": "$2"
               },
               {
-                "input": 8,
-                "name": "$8"
+                "input": 6,
+                "name": "$6"
               }
             ]
           },
@@ -309,176 +253,42 @@
             },
             "operands": [
               {
-                "input": 3,
-                "name": "$3"
+                "input": 1,
+                "name": "$1"
               },
               {
-                "input": 7,
-                "name": "$7"
+                "input": 5,
+                "name": "$5"
               }
             ]
           }
         ]
       },
       "joinType": "inner",
-      "foreignKey": 1,
       "inputs": [
-        "5",
-        "6"
+        "3",
+        "5"
       ]
     },
     {
-      "id": "8",
+      "id": "7",
       "relOp": "LogicalProject",
-      "inputFields": "p_partkey (#0), ps_supplycost (#1), ps_suppkey (#2), ps_partkey (#3), s_suppkey (#4), n_name (#5), l_orderkey (#6), l_partkey (#7), l_suppkey (#8), l_linenumber (#9), l_quantity (#10), l_extendedprice (#11), l_discount (#12), l_tax (#13), l_returnflag (#14), l_linestatus (#15), l_shipdate (#16), l_commitdate (#17), l_receiptdate (#18), l_shipinstruct (#19), l_shipmode (#20), l_comment (#21)",
+      "inputFields": "nation (#0), ps_partkey (#1), ps_suppkey (#2), ps_supplycost (#3), l_orderkey (#4), l_partkey (#5), l_suppkey (#6), l_quantity (#7), volume (#8)",
+      "outputFields": "nation (#0),  l_orderkey (#1), amount (#2)",
+      "amount": "volume : l.l_extendedprice * (1.0 - l.l_discount) - ps.ps_supplycost * l.l_quantity",
       "fields": [
-        "l_extendedprice",
-        "l_discount",
-        "l_quantity",
+        "nation",
         "l_orderkey",
-        "ps_supplycost",
-        "n_name"
-      ],
-      "exprs": [
-        {
-          "input": 11,
-          "name": "$11"
-        },
-        {
-          "input": 12,
-          "name": "$12"
-        },
-        {
-          "input": 10,
-          "name": "$10"
-        },
-        {
-          "input": 6,
-          "name": "$6"
-        },
-        {
-          "input": 1,
-          "name": "$1"
-        },
-        {
-          "input": 5,
-          "name": "$5"
-        }
-      ]
-    },
-    {
-      "id": "9",
-      "relOp": "LogicalValues",
-      "outputFields" : "o_orderkey (#0), o_custkey (#1), o_orderstatus (#2), o_totalprice (#3), o_orderdate (#4), o_orderpriority (#5), o_clerk (#6), o_shippriority (#7), o_comment (#8), o_year (#9)",
-      "type": [
-        {
-          "type": "INTEGER",
-          "nullable": false,
-          "name": "o_orderkey"
-        },
-        {
-          "type": "INTEGER",
-          "nullable": true,
-          "name": "o_custkey"
-        },
-        {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 1,
-          "name": "o_orderstatus"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "o_totalprice"
-        },
-        {
-          "type": "DATE",
-          "nullable": true,
-          "name": "o_orderdate"
-        },
-        {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 15,
-          "name": "o_orderpriority"
-        },
-        {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 15,
-          "name": "o_clerk"
-        },
-        {
-          "type": "INTEGER",
-          "nullable": true,
-          "name": "o_shippriority"
-        },
-        {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 79,
-          "name": "o_comment"
-        },
-        {
-          "type": "INTEGER",
-          "nullable": true,
-          "name": "o_year"
-        }
-      ],
-      "tuples": [],
-      "inputs": []
-    },
-    {
-      "id": "10",
-      "relOp": "LogicalJoin",
-      "joinOn" : "l_orderkey = o_orderkey",
-      "operator-algorithm" : "nested-loop-join",
-      "outputFields": "l_extendedprice (#0), l_discount (#1), l_quantity (#2), l_orderkey (#3), ps_supplycost (#4), n_name (#5), o_orderkey (#6), o_custkey (#7), o_orderstatus (#8), o_totalprice (#9), o_orderdate (#10), o_orderpriority (#11), o_clerk (#12), o_shippriority (#13), o_comment (#14), o_year (#15)",
-      "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 3,
-            "name": "$3"
-          },
-          {
-            "input": 6,
-            "name": "$6"
-          }
-        ]
-      },
-      "joinType": "inner",
-      "foreignKey": 0,
-      "inputs": [
-        "8",
-        "9"
-      ]
-    },
-    {
-      "id": "11",
-      "relOp": "LogicalProject",
-      "inputFields": "l_extendedprice (#0), l_discount (#1), l_quantity (#2), l_orderkey (#3), ps_supplycost (#4), n_name (#5), o_orderkey (#6), o_custkey (#7), o_orderstatus (#8), o_totalprice (#9), o_orderdate (#10), o_orderpriority (#11), o_clerk (#12), o_shippriority (#13), o_comment (#14), o_year (#15)",
-      "amount": "l.l_extendedprice * (1.0 - l.l_discount) - ps.ps_supplycost * l.l_quantity",
-      "fields": [
-        "n_name",
-        "o_year",
         "amount"
       ],
       "exprs": [
         {
-          "input": 5,
-          "name": "$5"
+          "input": 0,
+          "name": "$0"
         },
         {
-          "input": 15,
-          "name": "$15"
+          "input": 4,
+          "name": "$4"
         },
         {
           "op": {
@@ -488,37 +298,9 @@
           },
           "operands": [
             {
-              "op": {
-                "name": "*",
-                "kind": "TIMES",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 0,
-                  "name": "$0"
-                },
-                {
-                  "op": {
-                    "name": "-",
-                    "kind": "MINUS",
-                    "syntax": "BINARY"
-                  },
-                  "operands": [
-                    {
-                      "literal": 1,
-                      "type": {
-                        "type": "FLOAT",
-                        "nullable": false
-                      }
-                    },
-                    {
-                      "input": 1,
-                      "name": "$1"
-                    }
-                  ]
-                }
-              ]
+              "input": 8,
+              "name": "$8",
+              "field_name": "volume"
             },
             {
               "op": {
@@ -528,12 +310,14 @@
               },
               "operands": [
                 {
-                  "input": 4,
-                  "name": "$4"
+                  "input": 3,
+                  "name": "$3",
+                  "field_name": "ps_supplycost"
                 },
                 {
-                  "input": 2,
-                  "name": "$2"
+                  "input": 7,
+                  "name": "$7",
+                  "field_name": "l_quantity"
                 }
               ]
             }
@@ -542,7 +326,80 @@
       ]
     },
     {
-      "id": "12",
+      "id": "8",
+      "relOp": "LogicalValues",
+      "outputFields": "o_year (#0), o_orderkey (#1)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "o_year"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "o_orderkey"
+        }
+      ],
+      "sql": "SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders",
+      "dummy-tag": false,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "9",
+      "relOp": "LogicalJoin",
+      "joinCondition" : "l_orderkey = o_orderkey",
+      "outputFields": "nation (#0),  l_orderkey (#1), amount (#2), o_year (#3), o_orderkey (#4)",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "inputs": [
+        "7",
+        "8"
+      ]
+    },
+    {
+      "id": "10",
+      "relOp": "LogicalProject",
+      "inputFields": "nation (#0), o_year (#1), amount (#2)",
+      "fields": [
+        "nation",
+        "amount",
+        "o_year"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        }
+      ]
+    },
+    {
+      "id": "11",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "sort-merge-aggregate",
       "inputFields": "n_name (#0), o_year (#1), amount (#2)",
@@ -572,7 +429,7 @@
       ]
     },
     {
-      "id": "13",
+      "id": "12",
       "relOp": "LogicalSort",
       "collation": [
         {

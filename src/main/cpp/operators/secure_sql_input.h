@@ -17,6 +17,7 @@ class SecureSqlInput : public Operator<emp::Bit> {
 
 protected:
     SecureTable *runSelf() override;
+    void addDummyRows();
 
     OperatorType getType() const override {     return OperatorType::SECURE_SQL_INPUT;  }
     string getParameters() const override {
@@ -32,7 +33,7 @@ public:
     string db_name_;
     bool has_dummy_tag_;
     int input_party_ = 0;
-    size_t input_tuple_limit_;
+    size_t input_tuple_limit_=-1;
     PlainTable *plain_input_ = nullptr;
 
 

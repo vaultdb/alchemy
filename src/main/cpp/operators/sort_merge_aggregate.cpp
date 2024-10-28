@@ -44,7 +44,7 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
         aggregators_.push_back(agg_impl);
         ++output_cursor;
     }
-    this->setOutputCardinality(input->tuple_cnt_);
+    this->setOutputCardinality(this->cardinality_bound_);
 
     this->output_ =  QueryTable<B>::getTable(input->tuple_cnt_, this->output_schema_, this->sort_definition_);
     QueryTable<B> *output = this->output_; // shorthand
@@ -107,9 +107,11 @@ QueryTable<B> *SortMergeAggregate<B>::runSelf() {
 template<typename B>
 void SortMergeAggregate<B>::setup() {
     QuerySchema input_schema = Operator<B>::getChild(0)->getOutputSchema();
-
     this->output_schema_ = this->generateOutputSchema(input_schema);
-    this->setOutputCardinality(this->getChild()->getOutputCardinality());
+    if(this->cardinality_bound_ != this->getChild()->getOutputCardinality())
+        this->setOutputCardinality(this->cardinality_bound_);
+    else
+        this->setOutputCardinality(this->getChild()->getOutputCardinality());
 
     if(!is_optimized_cloned_)
         updateCollation();

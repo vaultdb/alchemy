@@ -1,0 +1,303 @@
+[==========] Running 14 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 14 tests from BaselineComparisonTest
+[ RUN      ] BaselineComparisonTest.plaintext_comparison_tpch_q1
+Connecting to 126.137.1.10 on ports 7654, 65482 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 65ce6fc8d01a6e5767fcc228540944cb10aad9c0
+GFlags: --flagfile=	--alice_db=tpch_alice_1500	--alice_host=126.137.1.10	--bob_db=tpch_bob_1500	--ctrl_port=65483	--cutoff=100	--filter=*	--party=2	--port=7655	--storage=column	--unioned_db=tpch_unioned_1500	--validation=true	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 16384000 bytes, current memory size: 16384000 bytes.
+#3: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64(16) count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 1124650240, output card: 60175
+    #2: SortMergeAggregate<Bit> (group-by: (0, 1) aggs: (SUM($2) sum_qty, SUM($3) sum_base_price, SUM($5) sum_disc_price, SUM($6) sum_charge, AVG($2) avg_qty, AVG($3) avg_price, AVG($4) avg_disc, COUNT(*) count_order)) : (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64(16) count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 1340699000, output card: 60175
+        #-1: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge) order by: {<0, ASC> , <1, ASC> }, cost est: 802169856, output card: 60175
+            #1: Project<Bit> ((<0, P$4(8) shared-varchar>, <1, P$5(8) shared-varchar>, <2, P$0(32) shared-float>, <3, P$1(32) shared-float>, <4, P$2(32) shared-float>, <5, $1 * (SECRET FLOAT - $2) shared-float>, <6, ($1 * (SECRET FLOAT - $2)) * (SECRET FLOAT + $3) shared-float>)) : (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge) order by: {}, cost est: 1371087375, output card: 60175
+                #0: SecureSqlInput<Bit> ("SELECT l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, NOT l_shipdate <= DATE '1998-08-03' AS dummy_tag FROM lineitem ORDER BY l_returnflag, l_linestatus, l_orderkey, l_linenumber;", tuple_count=60175) : (#0 shared-float lineitem.l_quantity, #1 shared-float lineitem.l_extendedprice, #2 shared-float lineitem.l_discount, #3 shared-float lineitem.l_tax, #4 shared-varchar(1) lineitem.l_returnflag, #5 shared-varchar(1) lineitem.l_linestatus) order by: {}, cost est: 0, output card: 60175
+
+Operator #0 SecureSqlInput ran for 452.022000 ms, gate count: 0 output cardinality: 60175, row width=145
+Operator #1 Project ran for 72343.490000 ms, gate count: 822652428 output cardinality: 60175, row width=177
+Operator #-1 Sort ran for 69200.903000 ms, gate count: 764067060 output cardinality: 60175, row width=177
+Operator #2 SortMergeAggregate ran for 111508.584000 ms, gate count: 1323719396 output cardinality: 60175, row width=257
+Operator #3 Sort ran for 96361.093000 ms, gate count: 1079146260 output cardinality: 60175, row width=257
+Runtime: 350.237 sec, CPU Time: 264.14 sec, CPU clock ticks: 2.6414e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 4.63861e+09. observed gates: 3989585144 gates, relative error (%)=16.2679
+[Linux]Peak resident set size: 1079459840 bytes, current memory size: 879452160 bytes.
+Initial Memory: 16384000 bytes, Peak Memory After Execution: 1079459840 bytes, Memory Usage: 1063075840 bytes
+Bandwidth: 215549 Bps
+Comparing on idx 0 with (A, F, 380456.000000, 532348224.000000, 505822432.000000, 526165920.000000, 25.575155, 35785.710938, 0.050081, 14876) (dummy=0)
+          !=            (A, F, 380456.000000, 532347936.000000, 505822080.000000, 526167136.000000, 25.575155, 35785.691406, 0.050083, 14876) (dummy=0)
+    Failed to match!
+/home/vaultdb/vaultdb-core-cost-comparison/src/main/cpp/test/mpc/baseline_comparison_test.cpp:115: Failure
+Expected equality of these values:
+  *expected
+    Which is: (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 float sum_base_price, #4 float sum_disc_price, #5 float sum_charge, #6 float avg_qty, #7 float avg_price, #8 float avg_disc, #9 int64 count_order) isEncrypted? false, order by: {<0, ASC> , <1, ASC> }
+(A, F, 380456.000000, 532348224.000000, 505822432.000000, 526165920.000000, 25.575155, 35785.710938, 0.050081, 14876)
+(N, F, 8971.000000, 12384801.000000, 11798257.000000, 12282485.000000, 25.778736, 35588.507812, 0.047759, 348)
+(N, O, 727118.000000, 1019445824.000000, 968824128.000000, 1007655872.000000, 25.453075, 35686.136719, 0.049903, 28567)
+(R, F, 381449.000000, 534594432.000000, 507996448.000000, 528524224.000000, 25.597168, 35874.007812, 0.049828, 14902)
+
+  *observed
+    Which is: (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float sum_qty, #3 float sum_base_price, #4 float sum_disc_price, #5 float sum_charge, #6 float avg_qty, #7 float avg_price, #8 float avg_disc, #9 int64 count_order) isEncrypted? false, order by: {<0, ASC> , <1, ASC> }
+(A, F, 380456.000000, 532347936.000000, 505822080.000000, 526167136.000000, 25.575155, 35785.691406, 0.050083, 14876)
+(N, F, 8971.000000, 12384798.000000, 11798249.000000, 12282482.000000, 25.778736, 35588.500000, 0.047759, 348)
+(N, O, 727118.000000, 1019445504.000000, 968820032.000000, 1007655936.000000, 25.453075, 35686.125000, 0.049906, 28567)
+(R, F, 381449.000000, 534594048.000000, 507997632.000000, 528524512.000000, 25.597168, 35873.980469, 0.049828, 14902)
+
+[  FAILED  ] BaselineComparisonTest.plaintext_comparison_tpch_q1 (447726 ms)
+[ RUN      ] BaselineComparisonTest.plaintext_comparison_tpch_q18
+Connecting to 126.137.1.10 on ports 7655, 65483 as 2
+connected
+EMP mode: sh2pc, storage mode: column store
+Code version: 65ce6fc8d01a6e5767fcc228540944cb10aad9c0
+GFlags: --flagfile=	--alice_db=tpch_alice_1500	--alice_host=126.137.1.10	--bob_db=tpch_bob_1500	--ctrl_port=65484	--cutoff=100	--filter=*	--party=2	--port=7656	--storage=column	--unioned_db=tpch_unioned_1500	--validation=true	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 1333747712 bytes, current memory size: 870318080 bytes.
+#14: Sort<Bit> ({<-1, ASC> , <4, DESC> , <3, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(11) customer.c_custkey, #2 shared-int32(16) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <4, DESC> , <3, ASC> }, cost est: 495150, output card: 100
+    #13: SortMergeAggregate<Bit> (group-by: (0, 1, 2, 3, 4) aggs: (SUM($5) sum_qty)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(11) customer.c_custkey, #2 shared-int32(16) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }, cost est: 100251550, output card: 60175
+        #-1: Sort<Bit> ({<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(11) customer.c_custkey, #2 shared-int32(16) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float lineitem.l_quantity) order by: {<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }, cost est: 2507284736, output card: 60175
+            #12: Project<Bit> ((<0, P$6(200) shared-varchar>, <1, P$5(11) shared-int32>, <2, P$0(16) shared-int32>, <3, P$3(28) shared-int64>, <4, P$2(32) shared-float>, <5, P$4(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(11) customer.c_custkey, #2 shared-int32(16) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float lineitem.l_quantity) order by: {}, cost est: 0, output card: 60175
+                #11: KeyedJoin<Bit> (P$1(11) == P$5(11)) : (#0 shared-int32(16) orders.o_orderkey, #1 shared-int32(11) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-float lineitem.l_quantity, #5 shared-int32(11) customer.c_custkey, #6 shared-varchar(25) customer.c_name) order by: {}, cost est: 20399325000, output card: 60175
+                    #9: Project<Bit> ((<0, P$2(16) shared-int32>, <1, P$3(11) shared-int32>, <2, P$4(32) shared-float>, <3, P$5(28) shared-int64>, <4, P$1(32) shared-float>)) : (#0 shared-int32(16) orders.o_orderkey, #1 shared-int32(11) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-float lineitem.l_quantity) order by: {}, cost est: 0, output card: 60175
+                        #8: KeyedJoin<Bit> (P$0(16) == P$2(16)) : (#0 shared-int32(16) lineitem.L2.l_orderkey, #1 shared-float lineitem.L2.l_quantity, #2 shared-int32(16) orders.o_orderkey, #3 shared-int32(11) orders.o_custkey, #4 shared-float orders.o_totalprice, #5 shared-int64(28) orders.o_orderdate) order by: {}, cost est: 96580875000, output card: 60175
+                            #6: Project<Bit> ((<0, P$1(16) shared-int32>, <1, P$2(32) shared-float>)) : (#0 shared-int32(16) lineitem.L2.l_orderkey, #1 shared-float lineitem.L2.l_quantity) order by: {}, cost est: 0, output card: 60175
+                                #5: KeyedJoin<Bit> (P$0(16) == P$1(16)) : (#0 shared-int32(16) lineitem.l_orderkey, #1 shared-int32(16) lineitem.l_orderkey, #2 shared-float lineitem.l_quantity) order by: {}, cost est: 130357102500, output card: 60175
+                                    #3: Project<Bit> ((<0, P$0(16) shared-int32>)) : (#0 shared-int32(16) lineitem.l_orderkey) order by: {<0, ASC> }, cost est: 0, output card: 60175
+                                        #2: Filter<Bit> (P$1(32) > SECRET FLOAT) : (#0 shared-int32(16) lineitem.l_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 12817275, output card: 60175
+                                            #1: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) sum_qty)) : (#0 shared-int32(16) lineitem.l_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 67396000, output card: 60175
+                                                #0: SecureSqlInput<Bit> ("SELECT l_orderkey, l_quantity FROM lineitem ORDER BY l_orderkey", tuple_count=60175) : (#0 shared-int32(16) lineitem.l_orderkey, #1 shared-float lineitem.l_quantity) order by: {<0, ASC> }, cost est: 32483260, output card: 60175
+                                    #4: SecureSqlInput<Bit> ("SELECT L2.l_orderkey, L2.l_quantity FROM lineitem L2 ORDER BY L2.l_orderkey", tuple_count=60175) : (#0 shared-int32(16) lineitem.l_orderkey, #1 shared-float lineitem.l_quantity) order by: {}, cost est: 0, output card: 60175
+                            #7: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate FROM orders ORDER BY o_orderkey, o_custkey", tuple_count=15000) : (#0 shared-int32(16) orders.o_orderkey, #1 shared-int32(11) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate) order by: {}, cost est: 0, output card: 15000
+                    #10: SecureSqlInput<Bit> ("SELECT c_custkey, c_name FROM customer ORDER BY c_custkey", tuple_count=1500) : (#0 shared-int32(11) customer.c_custkey, #1 shared-varchar(25) customer.c_name) order by: {}, cost est: 0, output card: 1500
+
+Operator #0 SecureSqlInput ran for 3477.864000 ms, gate count: 31062636 output cardinality: 60175, row width=49
+Operator #1 SortMergeAggregate ran for 5722.614000 ms, gate count: 65529520 output cardinality: 60175, row width=49
+Operator #2 Filter ran for 1061.039000 ms, gate count: 12877448 output cardinality: 60175, row width=49
+Operator #3 Project ran for 4.643000 ms, gate count: 0 output cardinality: 60175, row width=17
+Operator #4 SecureSqlInput ran for 124.158000 ms, gate count: 0 output cardinality: 60175, row width=49
+Operator #5 KeyedJoin ran for 12883068.993000 ms, gate count: 133978133128 output cardinality: 60175, row width=65
+Operator #6 Project ran for 13.241000 ms, gate count: 0 output cardinality: 60175, row width=49
+Operator #7 SecureSqlInput ran for 48.925000 ms, gate count: 0 output cardinality: 15000, row width=88
+Operator #8 KeyedJoin ran for 8285522.351000 ms, gate count: 97483500000 output cardinality: 60175, row width=136
+Operator #9 Project ran for 28.638000 ms, gate count: 0 output cardinality: 60175, row width=120
+Operator #10 SecureSqlInput ran for 13.844000 ms, gate count: 0 output cardinality: 1500, row width=212
+Operator #11 KeyedJoin ran for 1634587.761000 ms, gate count: 20489587500 output cardinality: 60175, row width=331
+Operator #12 Project ran for 173.921000 ms, gate count: 0 output cardinality: 60175, row width=320
+Operator #-1 Sort ran for 244547.666000 ms, gate count: 2402183968 output cardinality: 60175, row width=320
+Operator #13 SortMergeAggregate ran for 11017.199000 ms, gate count: 109456540 output cardinality: 60175, row width=320
+Operator #14 Sort ran for 139292.257000 ms, gate count: 1516023720 output cardinality: 100, row width=320
+Runtime: 23209 sec, CPU Time: 17709.8 sec, CPU clock ticks: 1.77098e+10, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 2.50058e+11. observed gates: 256088354460 gates, relative error (%)=2.35478
+[Linux]Peak resident set size: 1833074688 bytes, current memory size: 1062862848 bytes.
+Initial Memory: 1333747712 bytes, Peak Memory After Execution: 1833074688 bytes, Memory Usage: 499326976 bytes
+Bandwidth: 2688.71 Bps
+Failed to match on sort order expected={<-1, ASC> , <1, DESC> , <2, ASC> }observed={<-1, ASC> , <4, DESC> , <3, ASC> }
+/home/vaultdb/vaultdb-core-cost-comparison/src/main/cpp/test/mpc/baseline_comparison_test.cpp:115: Failure
+Expected equality of these values:
+  *expected
+    Which is: (#0 varchar(25) customer.c_name, #1 int32 customer.c_custkey, #2 int32 orders.o_orderkey, #3 int64 orders.o_orderdate, #4 float orders.o_totalprice, #5 float sum_qty) isEncrypted? false, order by: {<-1, ASC> , <1, DESC> , <2, ASC> }
+(Customer#000000676       , 676, 52965, 843350400, 466001.281250, 271.000000)
+(Customer#000000667       , 667, 29158, 814233600, 439687.218750, 305.000000)
+(Customer#000001013       , 1013, 44707, 871516800, 431771.968750, 279.000000)
+(Customer#000000953       , 953, 59106, 846115200, 430619.750000, 276.000000)
+(Customer#000000178       , 178, 6882, 860544000, 422359.656250, 303.000000)
+(Customer#000000676       , 676, 57376, 803606400, 411255.468750, 240.000000)
+(Customer#000001016       , 1016, 39456, 887587200, 409770.843750, 266.000000)
+(Customer#000000358       , 358, 17571, 700704000, 408345.750000, 249.000000)
+(Customer#000001279       , 1279, 39620, 781315200, 406938.375000, 272.000000)
+(Customer#000000334       , 334, 35460, 754444800, 405742.281250, 242.000000)
+(Customer#000001003       , 1003, 15779, 888278400, 405401.750000, 256.000000)
+(Customer#000000154       , 154, 45382, 822182400, 405235.906250, 229.000000)
+(Customer#000000583       , 583, 52480, 743817600, 403464.000000, 261.000000)
+(Customer#000000166       , 166, 55937, 759628800, 402930.500000, 268.000000)
+(Customer#000000085       , 85, 4421, 860112000, 401055.625000, 255.000000)
+(Customer#000001210       , 1210, 10209, 754617600, 400191.781250, 263.000000)
+(Customer#000000772       , 772, 35424, 820713600, 397797.812500, 253.000000)
+(Customer#000001303       , 1303, 45670, 713232000, 397549.750000, 261.000000)
+(Customer#000001096       , 1096, 45697, 694224000, 396261.250000, 233.000000)
+(Customer#000000787       , 787, 37216, 754704000, 395495.843750, 238.000000)
+(Customer#000001375       , 1375, 11142, 875836800, 395039.062500, 260.000000)
+(Customer#000001436       , 1436, 51975, 787795200, 393923.750000, 270.000000)
+(Customer#000000424       , 424, 48483, 787104000, 392614.062500, 266.000000)
+(Customer#000000061       , 61, 41445, 823737600, 392172.906250, 256.000000)
+(Customer#000001147       , 1147, 54819, 781833600, 386714.937500, 257.000000)
+(Customer#000000379       , 379, 24832, 858729600, 386334.562500, 250.000000)
+(Customer#000000458       , 458, 14179, 873590400, 384265.437500, 246.000000)
+(Customer#000001318       , 1318, 43142, 823564800, 382233.062500, 246.000000)
+(Customer#000000665       , 665, 40132, 698889600, 381793.125000, 242.000000)
+(Customer#000000805       , 805, 27746, 755049600, 381170.125000, 262.000000)
+(Customer#000000214       , 214, 32129, 804729600, 379837.625000, 258.000000)
+(Customer#000000455       , 455, 21382, 695260800, 379689.843750, 247.000000)
+(Customer#000000832       , 832, 11296, 695001600, 378166.343750, 226.000000)
+(Customer#000000107       , 107, 8516, 828921600, 377636.625000, 271.000000)
+(Customer#000001477       , 1477, 38530, 798163200, 376904.187500, 270.000000)
+(Customer#000001441       , 1441, 57699, 721440000, 376309.968750, 250.000000)
+(Customer#000001453       , 1453, 5925, 816220800, 373674.812500, 242.000000)
+(Customer#000001117       , 1117, 10787, 855705600, 372954.406250, 259.000000)
+(Customer#000001360       , 1360, 23943, 803952000, 372934.562500, 271.000000)
+(Customer#000001025       , 1025, 46310, 743299200, 372916.062500, 245.000000)
+(Customer#000000545       , 545, 36803, 712972800, 372488.093750, 266.000000)
+(Customer#000001355       , 1355, 15202, 742262400, 371804.250000, 257.000000)
+(Customer#000001082       , 1082, 48229, 883440000, 371624.562500, 263.000000)
+(Customer#000000787       , 787, 16103, 711244800, 370957.406250, 233.000000)
+(Customer#000000955       , 955, 59841, 738547200, 370518.500000, 269.000000)
+(Customer#000000488       , 488, 7079, 729216000, 369844.656250, 234.000000)
+(Customer#000000706       , 706, 32321, 850608000, 369804.906250, 246.000000)
+(Customer#000000364       , 364, 45440, 713404800, 369658.218750, 264.000000)
+(Customer#000000457       , 457, 26976, 801014400, 368982.593750, 235.000000)
+(Customer#000000281       , 281, 1121, 853113600, 368220.468750, 242.000000)
+(Customer#000000538       , 538, 55234, 743904000, 367176.031250, 280.000000)
+(Customer#000000694       , 694, 2567, 888537600, 366949.500000, 266.000000)
+(Customer#000000802       , 802, 48199, 758937600, 366916.281250, 222.000000)
+(Customer#000000455       , 455, 46565, 803865600, 366528.125000, 251.000000)
+(Customer#000000260       , 260, 58371, 737164800, 366479.625000, 257.000000)
+(Customer#000001165       , 1165, 57216, 743990400, 366277.625000, 269.000000)
+(Customer#000000214       , 214, 19616, 819676800, 365518.531250, 233.000000)
+(Customer#000001226       , 1226, 36673, 747964800, 364437.750000, 279.000000)
+(Customer#000000737       , 737, 26631, 752198400, 362967.781250, 252.000000)
+(Customer#000000247       , 247, 9863, 810259200, 362398.218750, 248.000000)
+(Customer#000001205       , 1205, 52518, 702345600, 362242.875000, 249.000000)
+(Customer#000001126       , 1126, 12261, 751420800, 362237.843750, 256.000000)
+(Customer#000000491       , 491, 55873, 816825600, 362117.562500, 243.000000)
+(Customer#000000023       , 23, 358, 748483200, 362024.156250, 223.000000)
+(Customer#000000871       , 871, 8805, 838512000, 361167.250000, 224.000000)
+(Customer#000000518       , 518, 20865, 882489600, 360459.625000, 242.000000)
+(Customer#000001192       , 1192, 1888, 752025600, 360144.812500, 225.000000)
+(Customer#000000967       , 967, 32613, 819158400, 360022.875000, 205.000000)
+(Customer#000000572       , 572, 55713, 760233600, 359769.906250, 238.000000)
+(Customer#000000331       , 331, 38405, 742780800, 359455.093750, 271.000000)
+(Customer#000001499       , 1499, 59873, 761097600, 359414.781250, 265.000000)
+(Customer#000001300       , 1300, 49473, 872294400, 359406.031250, 220.000000)
+(Customer#000000136       , 136, 19968, 881452800, 359373.750000, 273.000000)
+(Customer#000000908       , 908, 52772, 721008000, 359364.875000, 244.000000)
+(Customer#000000827       , 827, 30790, 724032000, 358882.093750, 211.000000)
+(Customer#000000619       , 619, 34080, 837561600, 358646.812500, 244.000000)
+(Customer#000000430       , 430, 54563, 749779200, 358340.343750, 257.000000)
+(Customer#000000592       , 592, 14755, 726278400, 358175.593750, 235.000000)
+(Customer#000000734       , 734, 12804, 706838400, 358058.281250, 238.000000)
+(Customer#000000001       , 1, 9154, 867024000, 357345.468750, 228.000000)
+(Customer#000000424       , 424, 56772, 726969600, 356912.781250, 211.000000)
+(Customer#000000248       , 248, 29601, 895276800, 356824.500000, 235.000000)
+(Customer#000001202       , 1202, 36485, 707788800, 356711.625000, 249.000000)
+(Customer#000001400       , 1400, 21414, 799632000, 355597.031250, 227.000000)
+(Customer#000001477       , 1477, 55686, 796176000, 355352.906250, 239.000000)
+(Customer#000000191       , 191, 38789, 753321600, 354924.906250, 221.000000)
+(Customer#000000007       , 7, 14404, 846979200, 354885.812500, 258.000000)
+(Customer#000000298       , 298, 30208, 711331200, 354579.906250, 245.000000)
+(Customer#000000518       , 518, 5765, 787449600, 354366.718750, 247.000000)
+(Customer#000000808       , 808, 3460, 812678400, 354036.750000, 254.000000)
+(Customer#000000040       , 40, 25253, 807148800, 353894.281250, 222.000000)
+(Customer#000000052       , 52, 28772, 760579200, 353791.625000, 213.000000)
+(Customer#000000007       , 7, 23011, 740188800, 353727.968750, 211.000000)
+(Customer#000001168       , 1168, 32231, 720662400, 353334.187500, 252.000000)
+(Customer#000001087       , 1087, 24162, 777600000, 353202.937500, 241.000000)
+(Customer#000000139       , 139, 45731, 776563200, 353083.250000, 209.000000)
+(Customer#000001489       , 1489, 3590, 800323200, 352720.593750, 210.000000)
+(Customer#000000742       , 742, 53920, 764035200, 351797.593750, 270.000000)
+(Customer#000000481       , 481, 42565, 748742400, 351587.093750, 213.000000)
+(Customer#000000283       , 283, 2945, 820627200, 351345.562500, 231.000000)
+
+  *observed
+    Which is: (#0 varchar(25) customer.c_name, #1 int32 customer.c_custkey, #2 int32 orders.o_orderkey, #3 int64 orders.o_orderdate, #4 float orders.o_totalprice, #5 float sum_qty) isEncrypted? false, order by: {<-1, ASC> , <4, DESC> , <3, ASC> }
+(Customer#000000676       , 676, 52965, 843350400, 466001.281250, 271.000000)
+(Customer#000000667       , 667, 29158, 814233600, 439687.218750, 305.000000)
+(Customer#000001013       , 1013, 44707, 871516800, 431771.968750, 279.000000)
+(Customer#000000953       , 953, 59106, 846115200, 430619.750000, 276.000000)
+(Customer#000000178       , 178, 6882, 860544000, 422359.656250, 303.000000)
+(Customer#000000676       , 676, 57376, 803606400, 411255.468750, 240.000000)
+(Customer#000001016       , 1016, 39456, 887587200, 409770.843750, 266.000000)
+(Customer#000000358       , 358, 17571, 700704000, 408345.750000, 249.000000)
+(Customer#000001279       , 1279, 39620, 781315200, 406938.375000, 272.000000)
+(Customer#000000334       , 334, 35460, 754444800, 405742.281250, 242.000000)
+(Customer#000001003       , 1003, 15779, 888278400, 405401.750000, 256.000000)
+(Customer#000000154       , 154, 45382, 822182400, 405235.906250, 229.000000)
+(Customer#000000583       , 583, 52480, 743817600, 403464.000000, 261.000000)
+(Customer#000000166       , 166, 55937, 759628800, 402930.500000, 268.000000)
+(Customer#000000085       , 85, 4421, 860112000, 401055.625000, 255.000000)
+(Customer#000001210       , 1210, 10209, 754617600, 400191.781250, 263.000000)
+(Customer#000000772       , 772, 35424, 820713600, 397797.812500, 253.000000)
+(Customer#000001303       , 1303, 45670, 713232000, 397549.750000, 261.000000)
+(Customer#000001096       , 1096, 45697, 694224000, 396261.250000, 233.000000)
+(Customer#000000787       , 787, 37216, 754704000, 395495.843750, 238.000000)
+(Customer#000001375       , 1375, 11142, 875836800, 395039.062500, 260.000000)
+(Customer#000001436       , 1436, 51975, 787795200, 393923.750000, 270.000000)
+(Customer#000000424       , 424, 48483, 787104000, 392614.062500, 266.000000)
+(Customer#000000061       , 61, 41445, 823737600, 392172.906250, 256.000000)
+(Customer#000001147       , 1147, 54819, 781833600, 386714.937500, 257.000000)
+(Customer#000000379       , 379, 24832, 858729600, 386334.562500, 250.000000)
+(Customer#000000458       , 458, 14179, 873590400, 384265.437500, 246.000000)
+(Customer#000001318       , 1318, 43142, 823564800, 382233.062500, 246.000000)
+(Customer#000000665       , 665, 40132, 698889600, 381793.125000, 242.000000)
+(Customer#000000805       , 805, 27746, 755049600, 381170.125000, 262.000000)
+(Customer#000000214       , 214, 32129, 804729600, 379837.625000, 258.000000)
+(Customer#000000455       , 455, 21382, 695260800, 379689.843750, 247.000000)
+(Customer#000000832       , 832, 11296, 695001600, 378166.343750, 226.000000)
+(Customer#000000107       , 107, 8516, 828921600, 377636.625000, 271.000000)
+(Customer#000001477       , 1477, 38530, 798163200, 376904.187500, 270.000000)
+(Customer#000001441       , 1441, 57699, 721440000, 376309.968750, 250.000000)
+(Customer#000001453       , 1453, 5925, 816220800, 373674.812500, 242.000000)
+(Customer#000001117       , 1117, 10787, 855705600, 372954.406250, 259.000000)
+(Customer#000001360       , 1360, 23943, 803952000, 372934.562500, 271.000000)
+(Customer#000001025       , 1025, 46310, 743299200, 372916.062500, 245.000000)
+(Customer#000000545       , 545, 36803, 712972800, 372488.093750, 266.000000)
+(Customer#000001355       , 1355, 15202, 742262400, 371804.250000, 257.000000)
+(Customer#000001082       , 1082, 48229, 883440000, 371624.562500, 263.000000)
+(Customer#000000787       , 787, 16103, 711244800, 370957.406250, 233.000000)
+(Customer#000000955       , 955, 59841, 738547200, 370518.500000, 269.000000)
+(Customer#000000488       , 488, 7079, 729216000, 369844.656250, 234.000000)
+(Customer#000000706       , 706, 32321, 850608000, 369804.906250, 246.000000)
+(Customer#000000364       , 364, 45440, 713404800, 369658.218750, 264.000000)
+(Customer#000000457       , 457, 26976, 801014400, 368982.593750, 235.000000)
+(Customer#000000281       , 281, 1121, 853113600, 368220.468750, 242.000000)
+(Customer#000000538       , 538, 55234, 743904000, 367176.031250, 280.000000)
+(Customer#000000694       , 694, 2567, 888537600, 366949.500000, 266.000000)
+(Customer#000000802       , 802, 48199, 758937600, 366916.281250, 222.000000)
+(Customer#000000455       , 455, 46565, 803865600, 366528.125000, 251.000000)
+(Customer#000000260       , 260, 58371, 737164800, 366479.625000, 257.000000)
+(Customer#000001165       , 1165, 57216, 743990400, 366277.625000, 269.000000)
+(Customer#000000214       , 214, 19616, 819676800, 365518.531250, 233.000000)
+(Customer#000001226       , 1226, 36673, 747964800, 364437.750000, 279.000000)
+(Customer#000000737       , 737, 26631, 752198400, 362967.781250, 252.000000)
+(Customer#000000247       , 247, 9863, 810259200, 362398.218750, 248.000000)
+(Customer#000001205       , 1205, 52518, 702345600, 362242.875000, 249.000000)
+(Customer#000001126       , 1126, 12261, 751420800, 362237.843750, 256.000000)
+(Customer#000000491       , 491, 55873, 816825600, 362117.562500, 243.000000)
+(Customer#000000023       , 23, 358, 748483200, 362024.156250, 223.000000)
+(Customer#000000871       , 871, 8805, 838512000, 361167.250000, 224.000000)
+(Customer#000000518       , 518, 20865, 882489600, 360459.625000, 242.000000)
+(Customer#000001192       , 1192, 1888, 752025600, 360144.812500, 225.000000)
+(Customer#000000967       , 967, 32613, 819158400, 360022.875000, 205.000000)
+(Customer#000000572       , 572, 55713, 760233600, 359769.906250, 238.000000)
+(Customer#000000331       , 331, 38405, 742780800, 359455.093750, 271.000000)
+(Customer#000001499       , 1499, 59873, 761097600, 359414.781250, 265.000000)
+(Customer#000001300       , 1300, 49473, 872294400, 359406.031250, 220.000000)
+(Customer#000000136       , 136, 19968, 881452800, 359373.750000, 273.000000)
+(Customer#000000908       , 908, 52772, 721008000, 359364.875000, 244.000000)
+(Customer#000000827       , 827, 30790, 724032000, 358882.093750, 211.000000)
+(Customer#000000619       , 619, 34080, 837561600, 358646.812500, 244.000000)
+(Customer#000000430       , 430, 54563, 749779200, 358340.343750, 257.000000)
+(Customer#000000592       , 592, 14755, 726278400, 358175.593750, 235.000000)
+(Customer#000000734       , 734, 12804, 706838400, 358058.281250, 238.000000)
+(Customer#000000001       , 1, 9154, 867024000, 357345.468750, 228.000000)
+(Customer#000000424       , 424, 56772, 726969600, 356912.781250, 211.000000)
+(Customer#000000248       , 248, 29601, 895276800, 356824.500000, 235.000000)
+(Customer#000001202       , 1202, 36485, 707788800, 356711.625000, 249.000000)
+(Customer#000001400       , 1400, 21414, 799632000, 355597.031250, 227.000000)
+(Customer#000001477       , 1477, 55686, 796176000, 355352.906250, 239.000000)
+(Customer#000000191       , 191, 38789, 753321600, 354924.906250, 221.000000)
+(Customer#000000007       , 7, 14404, 846979200, 354885.812500, 258.000000)
+(Customer#000000298       , 298, 30208, 711331200, 354579.906250, 245.000000)
+(Customer#000000518       , 518, 5765, 787449600, 354366.718750, 247.000000)
+(Customer#000000808       , 808, 3460, 812678400, 354036.750000, 254.000000)
+(Customer#000000040       , 40, 25253, 807148800, 353894.281250, 222.000000)
+(Customer#000000052       , 52, 28772, 760579200, 353791.625000, 213.000000)
+(Customer#000000007       , 7, 23011, 740188800, 353727.968750, 211.000000)
+(Customer#000001168       , 1168, 32231, 720662400, 353334.187500, 252.000000)
+(Customer#000001087       , 1087, 24162, 777600000, 353202.937500, 241.000000)
+(Customer#000000139       , 139, 45731, 776563200, 353083.250000, 209.000000)
+(Customer#000001489       , 1489, 3590, 800323200, 352720.593750, 210.000000)
+(Customer#000000742       , 742, 53920, 764035200, 351797.593750, 270.000000)
+(Customer#000000481       , 481, 42565, 748742400, 351587.093750, 213.000000)
+(Customer#000000283       , 283, 2945, 820627200, 351345.562500, 231.000000)
+
+[  FAILED  ] BaselineComparisonTest.plaintext_comparison_tpch_q18 (23209847 ms)
