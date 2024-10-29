@@ -431,7 +431,7 @@
         },
         {
           "field": 1,
-          "direction": "DESCENDING",
+          "direction": "ASCENDING",
           "nulls": "FIRST"
         }
       ],
