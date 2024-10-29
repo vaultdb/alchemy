@@ -162,7 +162,7 @@ GeneralizedComparisonTest::generateExpectedOutputQuery(const int &test_id, const
 TEST_F(GeneralizedComparisonTest, baseline_tpch_q1) {
 
 SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-runTest(1, "q1", expected_sort, FLAGS_unioned_db, 2);
+runTest(1, "q1", expected_sort, FLAGS_unioned_db, 1);
 
 }
 
