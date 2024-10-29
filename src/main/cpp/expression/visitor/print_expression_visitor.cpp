@@ -1,3 +1,5 @@
+#include <cstdint>
+#include <stdint.h>
 #include <emp-tool/circuits/bit.h>
 #include "expression/visitor/print_expression_visitor.h"
 #include <expression/expression_node.h>
