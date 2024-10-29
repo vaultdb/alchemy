@@ -105,6 +105,13 @@ namespace vaultdb {
             dst->cloneColumn(-1, dst_tuple_cnt, src, -1);
         }
 
+        void deleteTable(const string & table_name) {
+            auto p = getPlainTable(table_name);
+            if(p != nullptr) delete p;
+
+            auto s = getSecureTable(table_name);
+            if(s != nullptr) delete s;
+        }
     private:
         // this makes it a singleton
         TableManager() {}
