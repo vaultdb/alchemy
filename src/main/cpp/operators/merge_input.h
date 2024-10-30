@@ -6,8 +6,8 @@
 #include <string>
 
 // for SQL input where we have truncation, but we are also using it for a MergeJoin - so it needs to be padded to line up with the other input
-// only enabled when there is an input tuple limit on the SQL input - i.e., DESIGNED FOR TESTING, NOT (PUBLICATION) EXPERIMENTAL RESULTS
-// essentially takes a SQL input from each party and coalesces each row to a single tuple - one of the two parties will input a dummy every time
+// only enabled when there is an input tuple limit on the SQL input - i.e., 
+//  takes a SQL input from each party and coalesces each row to a single tuple - one of the two parties will input a dummy every time
 // for Alice and Bob, this looks similar to:
 // WITH alice_orders AS (SELECT * FROM orders_alice ORDER BY o_orderkey),
 //    bob_orders AS (SELECT * FROM orders_bob ORDER BY o_orderkey) -- dummy padded so that when alice has a given row, bob has a dummy in this table offset using a supporting table like order_keys with public domain of primary key
