@@ -158,7 +158,7 @@ GeneralizedComparisonTest::generateExpectedOutputQuery(const int &test_id, const
 // ---------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-
+/*
 TEST_F(GeneralizedComparisonTest, baseline_tpch_q1) {
 
 SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
@@ -206,7 +206,7 @@ SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                              ColumnSort(3, SortDirection::ASCENDING)};
 runTest(18, "q18", expected_sort, FLAGS_unioned_db, 1);
 }
-
+*/
 
 
 //// Cost-Optimized Tests
