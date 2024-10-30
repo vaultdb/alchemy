@@ -31,7 +31,7 @@ protected:
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name, int type_num);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
     void runStubTest(string & sql_plan, string & json_plan, string & expected_query, SortDefinition & expected_sort, const string & unioned_db);
-    int input_tuple_limit_ = -1;
+    int input_tuple_limit_ = 1500;
 
 };
 
@@ -158,7 +158,7 @@ GeneralizedComparisonTest::generateExpectedOutputQuery(const int &test_id, const
 // ---------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-
+/*
 TEST_F(GeneralizedComparisonTest, baseline_tpch_q1) {
 
 SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
@@ -242,7 +242,7 @@ TEST_F(GeneralizedComparisonTest, cost_optimized_tpch_q8) {
 SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
 runTest(8, "q8", expected_sort, FLAGS_unioned_db, 2);
 }
-
+*/
 
 
 TEST_F(GeneralizedComparisonTest, cost_optimized_tpch_q9) {

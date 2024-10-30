@@ -39,7 +39,7 @@ SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &
     EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
 
     // if input_tuple_limit(= number of full row table) is larger than plain), it means no card bound, so need to dummy pad.
-    if (input_tuple_limit != -1 && input_tuple_limit > plain_input_->tuple_cnt_)
+    if (input_tuple_limit != -1 && input_tuple_limit < plain_input_->tuple_cnt_)
         this->output_cardinality_ = input_tuple_limit;
     else
         this->output_cardinality_ = manager->getTableCardinality(plain_input_->tuple_cnt_);
