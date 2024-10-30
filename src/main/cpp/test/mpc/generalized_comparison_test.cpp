@@ -16,9 +16,9 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 7654, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
-DEFINE_string(unioned_db, "tpch_unioned_150", "unioned db name");
-DEFINE_string(alice_db, "tpch_alice_150", "alice db name");
-DEFINE_string(bob_db, "tpch_bob_150", "bob db name");
+DEFINE_string(unioned_db, "tpch_unioned_1500", "unioned db name");
+DEFINE_string(alice_db, "tpch_alice_1500", "alice db name");
+DEFINE_string(bob_db, "tpch_bob_1500", "bob db name");
 DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, false, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -31,7 +31,7 @@ protected:
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name, int type_num);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
     void runStubTest(string & sql_plan, string & json_plan, string & expected_query, SortDefinition & expected_sort, const string & unioned_db);
-    int input_tuple_limit_ = -1;
+    int input_tuple_limit_ = 1500;
 
 };
 
