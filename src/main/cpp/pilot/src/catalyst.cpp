@@ -65,18 +65,21 @@ void Catalyst::parseAndRunQueries() {
 
         string fq_filename = dst_dir + "/" + s.name_ + (c.party_ == 1 ? ".alice" : ".bob");
         string fq_schema_filename = dst_dir + "/" + s.name_ + ".schema";
-            if (!TESTBED) {
+          /*  if (!TESTBED) {
                 // redact small cell counts
                 cout << "Redacting small cell counts in " << s.name_ << endl;
                 for (auto &col: s.count_cols_) {
                     redactCellCounts(output, col, study_.min_cell_cnt_);
                 }
-            }
+            }*/
+            /*
             cout << "Revealing to XOR output of " << s.name_ << endl;
             std::vector<int8_t> results = output->reveal(emp::XOR)->serialize();
             cout << "Writing output of " << s.name_ << " to " << fq_filename << endl;
             DataUtilities::writeFile(fq_filename, results);
-
+*/
+            cout << "Revealing to XOR output of " << s.name_ <<  " to " << fq_filename << endl;
+            output->revealAndWrite(emp::XOR, fq_filename);
             // write out schema
             DataUtilities::writeFile(fq_schema_filename, output->getSchema().prettyPrint());
         }
@@ -179,6 +182,7 @@ int main(int argc, char **argv) {
                 string dst_table_name = query_name + "_res";
                 SecureTable *output = TableManager::getInstance().getSecureTable(dst_table_name);
                 PlainTable *revealed = output->reveal();
+                DataUtilities::removeDummies(revealed);
 
                 string expected_results_file = string(EXPECTED_RESULTS_PATH) + "/" + query_name + ".csv";
                 // the test generator (pilot/test/generate-and-load-phame-test-data.sh) will write out the results to a file
@@ -188,6 +192,22 @@ int main(int argc, char **argv) {
                 expected->order_by_ = revealed->order_by_;
 
                 assert(*revealed == *expected);
+
+                // compare to the file that we wrote out earlier:
+                string fq_filename = study.dst_path_ + "/" + query_name + (party == 1 ? ".alice" : ".bob");
+                string schema_file = study.dst_path_ + "/" + query_name + ".schema";
+                auto schema_spec = DataUtilities::readTextFileToString(schema_file);
+                auto schema = QuerySchema(schema_spec);
+                auto plain_schema = QuerySchema::toPlain(schema);
+
+                cout << "Comparing revealed results to " << fq_filename << endl;
+                auto secret_shared = DataUtilities::readSecretSharedInput(fq_filename, plain_schema, -1);
+                auto plain = secret_shared->reveal();
+                plain->order_by_ = revealed->order_by_;
+                DataUtilities::removeDummies(plain);
+                assert(*plain == *expected);
+                cout << "Results match!" << endl;
+
         }
 
     }

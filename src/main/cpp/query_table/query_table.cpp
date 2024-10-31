@@ -36,7 +36,54 @@ vector<int8_t> QueryTable<B>::serialize() {
     return dst;
 }
 
+// batch write to file
+// sidesteps the need to materialize entire plain array in memory
+template<typename B>
+void  QueryTable<B>::revealAndWrite(const int & party, const string & dst_filename) {
+    assert(isEncrypted());
 
+    auto table = (QueryTable<Bit> *) this;
+    QuerySchema dst_schema = QuerySchema::toPlain(schema_);
+    int batch_rows = 1000;
+    int batch_cnt = (tuple_cnt_ / batch_rows) + ((tuple_cnt_ % batch_rows) > 0);
+    std::ofstream out(dst_filename, std::ios::binary);
+
+    map<int, int64_t> ordinal_offsets;
+    int64_t array_byte_cnt = 0L;
+    ordinal_offsets[0] = 0;
+    for (int i = 1; i <  dst_schema.getFieldCount(); ++i) {
+        array_byte_cnt += (dst_schema.getField(i - 1).size() * tuple_cnt_)/8;
+        ordinal_offsets[i] = array_byte_cnt;
+    }
+    // handle dummy tag
+    array_byte_cnt += (dst_schema.getField(dst_schema.getFieldCount() - 1).size() * tuple_cnt_)/8;
+    ordinal_offsets[-1] = array_byte_cnt;
+    array_byte_cnt += dst_schema.getField(-1).size() * tuple_cnt_;
+    int read_cursor = 0;
+
+    for(int i = 0; i < batch_cnt; ++i) {
+        int rows_to_read = (i == batch_cnt - 1) ? (tuple_cnt_ % batch_rows) : batch_rows;
+        ColumnTable<bool> dst_table(rows_to_read, dst_schema, order_by_);
+        int write_cursor = 0;
+
+        for(int j = 0; j < rows_to_read; ++j) {
+            PlainTuple dst_tuple = table->revealRow(read_cursor, party);
+            dst_table.putTuple(write_cursor, dst_tuple);
+            ++read_cursor;
+            ++write_cursor;
+        }
+
+        for(int k = -1; k < dst_schema.getFieldCount(); ++k) {
+            out.seekp(ordinal_offsets[k]);
+            out.write((char *) dst_table.column_data_[k].data(), dst_table.column_data_[k].size());
+            ordinal_offsets[k] += dst_table.column_data_[k].size();
+        }
+
+    }
+
+    out.close();
+
+}
 
 
 template <typename B>
@@ -406,22 +453,23 @@ PlainTable *QueryTable<B>::reveal(const int &party) {
 
             table = sort.getOutput()->clone();
         }
-*/
+
         // count # of real (not dummy) rows
         int row_cnt = 0;
         while((row_cnt < table->tuple_cnt_) &&
               !table->getDummyTag(row_cnt).reveal()) {
             ++row_cnt;
         }
-
+*/
+        int row_cnt = table->tuple_cnt_;
         auto dst_table = new ColumnTable<bool>(row_cnt, dst_schema, collation);
         size_t cursor = 0;
         for(int i = 0; i < this->tuple_cnt_; ++i)  {
             PlainTuple dst_tuple = table->revealRow(i, party);
-            if(!dst_tuple.getDummyTag()) {
+        //    if(!dst_tuple.getDummyTag()) {
                 dst_table->putTuple(cursor, dst_tuple);
                 ++cursor;
-            }
+          //  }
         }
 /* temporary comment out for pilot - JMR
         if(table != (QueryTable<Bit> *) this) // extra sort

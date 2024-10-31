@@ -78,7 +78,7 @@ namespace  vaultdb {
         virtual void appendColumn(const QueryFieldDesc & desc) = 0;
 
         virtual vector<int8_t> serialize();
-
+        virtual void revealAndWrite(const int & party, const string & filename);
 
         virtual SecureTable *secretShare() = 0;
 
