@@ -1,14 +1,22 @@
-# VaultDB : A Private Data Federation [![Build Status](https://travis-ci.com/vaultdb/vaultdb-core.svg?token=eqBexebXTQqzhcsDDVFJ&branch=master)](https://travis-ci.com/vaultdb/vaultdb-core)
-
-
---------------------------------------------------------------------------------
-Disclaimer
---------------------------------------------------------------------------------
-
-The code is a research-quality proof of concept, and is still under development for more features and bug-fixing.
+# Alchemy: An Optimizer for Oblivious SQL Queries
 
 --------------------------------------------------------------------------------
-Requirements
+Authors
+--------------------------------------------------------------------------------
+
+Donghyun Sohn, Kelly Jiang, Nicolas Hammer, Jennie Rogers
+
+{donghyun.sohn@u.,kellyjiang2022@u., nicolashammer2021@u., jennie@}northwestern.edu
+
+--------------------------------------------------------------------------------
+Abstract
+--------------------------------------------------------------------------------
+Data sharing opportunities are everywhere, but until now many of them have been stymied by privacy concerns and regulatory compliance. Data clean rooms provide one solution to this challenge by querying the union of multiple, privately held data stores such that the only information revealed from sensitive data are their query answers. We investigate optimizing relational data clean room queries evaluated under secure multiparty computation. These cryptographic protocols enable the data providers to privately compute over their joint data by passing encrypted messages amongst themselves. These queries run obliviously their program traces and memory access patterns are independent of their private inputs. This strong security guarantee exacts a performance penalty of several orders of magnitude slowdown viz insecure query evaluation. In database queries, this effect is amplified because each operator pads its output cardinality to the worst case to conceal its selectivity, and this blow-up cascades up the query tree.
+
+Fortunately, relational databases have schemas that give us many opportunities to reduce the runtime of these operators from full oblivious without compromising strong security guarantees.   We leverage schema constraints from the federation's schema to generalize conventional query optimization techniques to this privacy-preserving data clean room we call Alchemy.  It uses public information and schema constraints to reduce the complexity of oblivious query processing.  In addition, we introduce VaultDB, our framework for oblivious query processing and provide a fine-grained cost model with which to identify efficient oblivious query execution plans in this system.   We verified our approach on a workload of TPC-H queries and achieved 1-2 OOM faster speeds compared to non-MPC aware conventional optimizer.
+
+--------------------------------------------------------------------------------
+Dependencies
 --------------------------------------------------------------------------------
 * PostgreSQL 14+
 * Apache Calcite 1.18+
@@ -19,127 +27,101 @@ Requirements
 * libpqxx 7.7.4 - may be installed with setup.sh
 * libgflags-dev - 1.13
 
+
 --------------------------------------------------------------------------------
 Setup
 --------------------------------------------------------------------------------
-Clone the repository:
 
-	$ git clone  https://github.com/vaultdb/vaultdb-core
+Install the dependencies above as needed
 
-Install the dependencies above as needed.
+Configure psql and load TPC-H 1500 databases
 
-* Install PostgreSQL:
+Install emp toolkits (VOLE-based protocols) and pqxx
 
-	`$ sudo apt-get install postgresql postgresql-contrib`
+Before setup, you need to download tpch_unioned.sql file.
+https://drive.google.com/drive/folders/1ZI6TYcN2aGg-GaAWD9R7xy3SAXtMvP85?usp=sharing
+Go to this link and download this file. And then put this file in to ./dbs folder
 
-* Create a superuser PostgreSQL role for VaultDB: 
-
-	`$ sudo su - postgres`  
-	`$ createuser -sPE smcql`  
-	`$ exit`  
-	
-* Install Maven: 
-
-	`$ sudo apt-get install maven`
-
-* Install Java: 
-
-	`$ sudo apt-get install default-jdk`
-
-Edit the configuration files as needed:
-
-* conf/setup.localhost
-* conf/connections/localhost
-
-This configures your local environment for VaultDB. Note that you should insert your PostgreSQL password for VaultDB here. You also may want to add setup.localhost to your .gitignore to avoid pushing your password.
-
-Start up PostgreSQL and run the following command in the VaultDB home directory:
-
-    $ ./setup.sh
-
-This sets up the test databases in PostgreSQL. 
-
+```
+./setup.sh
+```
 --------------------------------------------------------------------------------
-Setup for C++ alone 
---------------------------------------------------------------------------------
-Clone the repository:
-
-	$ git clone --recurse-submodules https://github.com/vaultdb/vaultdb-core
-
-Configure the build:
-
-	$ cd src/main/cpp
-	$ cmake .
-
-Make the library and tests:
-	$ make 
-
-To run a test:
-	$ ./run-alice.sh <test name>
-	$ ./run-bob.sh <test name>
-	
-Run both scripts concurrently in separate terminals.
-
---------------------------------------------------------------------------------
-Running the example queries
---------------------------------------------------------------------------------
-Run the following commands for the respective queries:
-
-    Query 1: Comorbidity
-    $ ./build_and_execute.sh conf/workload/sql/comorbidity.sql testDB1 testDB2 
-
-    Query 2: Aspirin Count
-    $ ./build_and_execute.sh conf/workload/sql/aspirin-count.sql testDB1 testDB2
-
-    Query 3: Recurrent C.Diff
-    $ ./build_and_execute.sh conf/workload/sql/cdiff.sql testDB1 testDB2 
-
-Note that these queries are CPU-intensive. They may take several minutes to run, depending on hardware.
-
---------------------------------------------------------------------------------
-Running VaultDB with your own data and schema
---------------------------------------------------------------------------------
-Refer to conf/workload/testDB for the necessary files:
-
-1. create_test_dbs.sh - This script creates and populates the PostgreSQL databases that house the data
-2. test_schema.sql - This SQL query sets the schema, as well as the security level for each attribute
-
-The above files are an automated example for setting up the test databases and annotated schema. You can choose to set these up manually, or to use existing databases. Please note that you must set the security levels for your attributes. Look at the bottom of test_schema.sql for an example. Remember that each attribute must be set as either a public, protected, or private variable.
-
-
---------------------------------------------------------------------------------
-Running the example queries on different machines
---------------------------------------------------------------------------------
-1. Create new configuration files for your remote hosts:
-
-* conf/setup.remote
-* conf/connections/remote-hosts
-
-2. Ensure that you have three machines with direct ssh access to one another.
-
-3. Populate two of the machines with your data, in their local PostgreSQL instances. These will be your two workers, so each will have their own data.
-
-4. Make sure that both your workers have their schemas set correctly (as detailed in the previous section). Remember that the schemas, and security annotations, must be the same for both machines.
-
-5. On the third machine (the honest broker), ensure that you have a copy of the repository and that the configuration files are populated with the correct worker configuration information.
-
-6. Run the example command on the honest broker, from the VaultDB repository:
-
-    `$ ./build_and_execute.sh conf/workload/sql/comorbidity.sql remoteDB1 remoteDB2`
-
-Notes:
-
-* Machine 1: Contains PostgreSQL database 'remoteDB1' and correct schema
-* Machine 2: Contains PostgreSQL database 'remoteDB2' and correct schema
-* Machine 3: Contains configuration files that specify the locations and connection information for 'remoteDB1' and 'remoteDB2'
-
---------------------------------------------------------------------------------
-References
+Frontend
 --------------------------------------------------------------------------------
 
-*SMCQL*:
+In our experiments, we generate our plans for backend based on queries in TPC-H benchmark and plans can be found:
 
-J. Bater, G. Elliott, C. Eggen, S. Goel, A. Kho, and J. Rogers, “SMCQL: Secure Querying for Federated Databases.”, VLDB, 10(6), pages 673-684, 2017.
+```
+cd src/main/cpp/conf/plans/
+```
 
-*emp-toolkit*:
-X. Wang, A. J. Malozemoff, and J. Katz. EMP-toolkit: Efficient MultiParty computation toolkit. https://github.com/emp-toolkit,  2016. 
+This suite demos a parser for extracting a DAG of database operators from a SQL statement.   It regularizes the operator order to push down filters and projections.  In addition, it eagerly projects out columns as they are no longer needed from the query's intermediate results.  This outputs a JSON file for use in the back-end.
+
+
+Build this with:
+
+```
+mvn compile
+```
+## Parsing a SQL Query to Its Canonicalized Query Tree
+
+Before running this command, make sure you create a role named 'smcql' with the password 'smcql123'. 
+Otherwise, you will get Postgres connection error. 
+
+To generate a JSON query execution plan, run:
+```
+mvn compile exec:java -Dexec.mainClass="org.vaultdb.ParseSqlToJson" -Dexec.args="<db name> <file with SQL query>  <path to write output file>"
+```
+
+For example, to prepare a query for the `tpch` database in PostgreSQL with the query stored in `conf/workload/tpch/queries/01.sql` writing the query tree to `conf/workload/tpch/plans/01.json`, run:
+
+```
+mvn compile exec:java -Dexec.mainClass="org.vaultdb.ParseSqlToJson" -Dexec.args="tpch   conf/workload/tpch/queries/01.sql  conf/workload/tpch/plans"
+```
+
+--------------------------------------------------------------------------------
+Backend
+--------------------------------------------------------------------------------
+Build:
+```
+cd src/main/cpp
+cmake .
+```
+Confirm database in use :
+```
+# vi src/main/cpp/flagfiles/db_names.flags
+--unioned_db=tpch_unioned_1500
+--alice_db=tpch_alice_1500
+--bob_db=tpch_bob_1500
+```
+Make Alchemy tests:
+```
+make -j alchemy_test
+```
+Run tests for Alice and Bob concurrently in separate machines:
+```
+# Alice machine
+bash run-alice.sh ./bin/alchemy_test "alice_ip_address"
+# Bob machine
+bash run-bob.sh ./bin/alchemy_test "alice_ip_address"
+```
+To switch databases in use, please modify:
+```
+# vi src/main/cpp/flagfiles/db_names.flags and change unioned_db, alice_db, bob_db name as follow
+--unioned_db=tpch_unioned_1500 
+--alice_db=tpch_alice_1500 
+--bob_db=tpch_bob_1500 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

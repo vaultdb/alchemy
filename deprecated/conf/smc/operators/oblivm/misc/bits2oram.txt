@@ -1,8 +1,0 @@
-package org.smcql.generated.toSecureArray;
-
-int[m] run@m@n(int$size[m] a, int[n] b) {
-
-    writeArray(a, "$dstFile");
-    return a;
-
-}
