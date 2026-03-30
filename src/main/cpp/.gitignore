@@ -1,6 +1,31 @@
 *.bak
-test/*.cmake
 *~
 \#*\#
 .idea/*
 .vscode/
+
+# CMake build artifacts
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+test/Makefile
+test/CMakeFiles/
+
+# Build directories
+build/
+cmake-build-*/
+
+# CMake FetchContent
+_deps/
+
+# Compiled objects and libraries
+*.o
+*.o.d
+*.so
+*.a
+lib/
+
+# Compiled binaries
+bin/
