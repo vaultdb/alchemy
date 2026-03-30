@@ -1,0 +1,298 @@
+{
+  "rels": [
+    {
+      "id": "0",
+      "outputFields": "s_suppkey (#0), s_name (#1), s_acctbal (#2), s_address (#3), s_phone (#4), s_comment (#5), s_name (#6)",
+      "relOp": "LogicalValues",
+      "sql": "SELECT s_suppkey, s_name, s_acctbal, s_address, s_phone, s_comment, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey JOIN region ON n_regionkey = r_regionkey WHERE r_name = 'EUROPE' ORDER BY s_suppkey",
+      "dummy-tag": false,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "outputFields": "ps_suppkey (#0), ps_supplycost (#1), p_partkey (#2), p_mfgr (#3)",
+      "sql": "SELECT ps_suppkey, ps_supplycost, p_partkey, p_mfgr FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_size = 41 AND p_type LIKE '%NICKEL' ORDER BY ps_suppkey",
+      "dummy-tag": false,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalJoin",
+      "joinCondition" : "s_suppkey = ps_suppkey",
+      "outputFields": "s_suppkey (#0), s_name (#1), s_acctbal (#2), s_address (#3), s_phone (#4), s_comment (#5), n_name (#6), ps_suppkey (#7), ps_supplycost (#8), p_partkey (#9), p_mfgr (#10)",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 1,
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalProject",
+      "fields": [
+        "ps_supplycost"
+      ],
+      "exprs": [
+        {
+          "input": 8,
+          "name": "$8"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "relOp": "LogicalAggregate",
+      "aggs": [
+        {
+          "agg": {
+            "name": "MIN",
+            "kind": "MIN",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            0
+          ],
+          "name": "min_supplycost"
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "outputFields": "s_suppkey (#0), s_name (#1), s_acctbal (#2), s_address (#3), s_phone (#4), s_comment (#5), s_name (#6)",
+      "relOp": "LogicalValues",
+      "sql": "SELECT s_suppkey, s_name, s_acctbal, s_address, s_phone, s_comment, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey JOIN region ON n_regionkey = r_regionkey WHERE r_name = 'EUROPE' ORDER BY s_suppkey",
+      "dummy-tag": false,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalValues",
+      "outputFields": "ps_suppkey (#0), ps_supplycost (#1), p_partkey (#2), p_mfgr (#3)",
+      "sql": "SELECT ps_suppkey, ps_supplycost, p_partkey, p_mfgr FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_size = 41 AND p_type LIKE '%NICKEL' ORDER BY ps_suppkey",
+      "dummy-tag": false,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "7",
+      "relOp": "LogicalJoin",
+      "joinCondition" : "s_suppkey = ps_suppkey",
+      "outputFields": "s_suppkey (#0), s_name (#1), s_acctbal (#2), s_address (#3), s_phone (#4), s_comment (#5), n_name (#6), ps_suppkey (#7), ps_supplycost (#8), p_partkey (#9), p_mfgr (#10)",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 1,
+      "inputs": [
+        "5",
+        "6"
+      ]
+    },
+    {
+      "id": "8",
+      "relOp": "LogicalProject",
+      "outputFields": "s_name (#0), s_acctbal (#1), s_address (#2), s_phone (#3), s_comment (#4), n_name (#5), ps_supplycost (#6), p_partkey (#7), p_mfgr (#8)",
+      "fields": [
+        "s_name",
+        "s_acctbal",
+        "s_address",
+        "s_phone",
+        "s_comment",
+        "n_name",
+        "ps_supplycost",
+        "p_partkey",
+        "p_mfgr"
+      ],
+      "exprs": [
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        },
+        {
+          "input": 6,
+          "name": "$6"
+        },
+        {
+          "input": 8,
+          "name": "$8"
+        },
+        {
+          "input": 9,
+          "name": "$9"
+        },
+        {
+          "input": 10,
+          "name": "$10"
+        }
+      ]
+    },
+    {
+      "id": "9",
+      "relOp": "LogicalJoin",
+      "joinCondition" : "min_supplycost = ps_supplycost",
+      "outputFields": "min_supplycost (#0), s_name (#1), s_acctbal (#2), s_address (#3), s_phone (#4), s_comment (#5), n_name (#6), ps_supplycost (#7), p_partkey (#8), p_mfgr (#9)",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "inputs": [
+        "4",
+        "8"
+      ]
+    },
+    {
+      "id": "10",
+      "relOp": "LogicalProject",
+      "fields": [
+        "s_acctbal",
+        "s_name",
+        "n_name",
+        "p_partkey",
+        "p_mfgr",
+        "s_address",
+        "s_phone",
+        "s_comment"
+      ],
+      "exprs": [
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 6,
+          "name": "$6"
+        },
+        {
+          "input": 8,
+          "name": "$8"
+        },
+        {
+          "input": 9,
+          "name": "$9"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 0,
+          "direction": "DESCENDING",
+          "nulls": "FIRST"
+        },
+        {
+          "field": 2,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        },
+        {
+          "field": 3,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        }
+      ],
+      "fetch": {
+        "literal": 100,
+        "type": {
+          "type": "INTEGER",
+          "nullable": false
+        }
+      }
+    }
+  ]
+}

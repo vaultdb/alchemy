@@ -1,0 +1,1164 @@
+[==========] Running 12 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 12 tests from GeneralizedComparisonTest
+[ RUN      ] GeneralizedComparisonTest.baseline_tpch_q1
+Connecting to 127.0.0.1 on ports 7654, 65482 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 992.132ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 1408892928 bytes, current memory size: 1364336640 bytes.
+1408892928
+EMP mode: outsourced, storage mode: column store
+Code version: ad4e0ee5d37b3d640cc35784b9d9149d217134a8
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65482	--cutoff=100	--filter=*	--party=3	--port=7654	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 1408892928 bytes, current memory size: 1365123072 bytes.
+Original Tree : 
+#3: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64(11) count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 12522041, output card: 1500
+    #2: SortMergeAggregate<Bit> (group-by: (0, 1) aggs: (SUM($2) sum_qty, SUM($3) sum_base_price, SUM($5) sum_disc_price, SUM($6) sum_charge, AVG($2) avg_qty, AVG($3) avg_price, AVG($4) avg_disc, COUNT(*) count_order)) : (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64(11) count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 33405000, output card: 1500
+        #-1: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge) order by: {<0, ASC> , <1, ASC> }, cost est: 9094475, output card: 1500
+            #1: Project<Bit> ((<0, P$4(8) shared-varchar>, <1, P$5(8) shared-varchar>, <2, P$0(32) shared-float>, <3, P$1(32) shared-float>, <4, P$2(32) shared-float>, <5, $1 * (SECRET FLOAT - $2) shared-float>, <6, ($1 * (SECRET FLOAT - $2)) * (SECRET FLOAT + $3) shared-float>)) : (#0 shared-varchar(1) lineitem.l_returnflag, #1 shared-varchar(1) lineitem.l_linestatus, #2 shared-float lineitem.l_quantity, #3 shared-float lineitem.l_extendedprice, #4 shared-float lineitem.l_discount, #5 shared-float disc_price, #6 shared-float charge) order by: {}, cost est: 34177500, output card: 1500
+                #0: SecureSqlInput<Bit> ("SELECT l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, NOT l_shipdate <= DATE '1998-08-03' AS dummy_tag FROM lineitem", tuple_count=1500) : (#0 shared-float lineitem.l_quantity, #1 shared-float lineitem.l_extendedprice, #2 shared-float lineitem.l_discount, #3 shared-float lineitem.l_tax, #4 shared-varchar(1) lineitem.l_returnflag, #5 shared-varchar(1) lineitem.l_linestatus) order by: {}, cost est: 0, output card: 1500
+
+Operator #0 SecureSqlInput ran for 33.102000 ms, gate count: 0 output cardinality: 1500, row width=145
+extension finished! takes 801.06ms to extend lpn
+extension finished! takes 733.416ms to extend lpn
+extension finished! takes 738.077ms to extend lpn
+extension finished! takes 714.732ms to extend lpn
+Operator #1 Project ran for 15047.474000 ms, gate count: 20506500 output cardinality: 1500, row width=177
+extension finished! takes 759.24ms to extend lpn
+Operator #-1 Sort ran for 5043.482000 ms, gate count: 9279558 output cardinality: 1500, row width=177
+extension finished! takes 717.672ms to extend lpn
+extension finished! takes 722.388ms to extend lpn
+extension finished! takes 706.863ms to extend lpn
+extension finished! takes 714.07ms to extend lpn
+extension finished! takes 708.967ms to extend lpn
+extension finished! takes 720.176ms to extend lpn
+extension finished! takes 715.264ms to extend lpn
+Operator #2 SortMergeAggregate ran for 22984.907000 ms, gate count: 32971759 output cardinality: 1500, row width=252
+extension finished! takes 709.167ms to extend lpn
+extension finished! takes 732.911ms to extend lpn
+extension finished! takes 726.614ms to extend lpn
+Operator #3 Sort ran for 7888.759000 ms, gate count: 12547008 output cardinality: 1500, row width=252
+Runtime: 51.0225 sec, CPU Time: 54.1041 sec, CPU clock ticks: 5.41041e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 8.9199e+07. observed gates: 75304825 gates, relative error (%)=18.4506
+[Linux]Peak resident set size: 1860808704 bytes, current memory size: 1811410944 bytes.
+Initial Memory: 1408892928 bytes, Peak Memory After Execution: 1860808704 bytes, Memory Usage: 451915776 bytes
+Bandwidth: 2.83375e+08 Bps
+party 3 send 14458526400 bytes to party 1
+party 3 send 0 bytes to TP 
+total AND gate: 75304825
+total pack call: 0
+total unpack call: 0
+total packed wire: 0
+total unpacked wire: 0
+[       OK ] GeneralizedComparisonTest.baseline_tpch_q1 (57249 ms)
+[ RUN      ] GeneralizedComparisonTest.baseline_tpch_q3
+Connecting to 127.0.0.1 on ports 7654, 65482 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 747.204ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 1860808704 bytes, current memory size: 1807093760 bytes.
+1860808704
+EMP mode: outsourced, storage mode: column store
+Code version: ad4e0ee5d37b3d640cc35784b9d9149d217134a8
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65482	--cutoff=100	--filter=*	--party=3	--port=7654	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 1860808704 bytes, current memory size: 1807093760 bytes.
+Original Tree : 
+#10: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$3(32) shared-float>, <2, P$1(28) shared-int64>, <3, P$2(32) shared-int32>)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-float revenue, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {<-1, ASC> , <1, DESC> , <2, ASC> }, cost est: 0, output card: 10
+    #9: Sort<Bit> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }, cost est: 6317, output card: 10
+        #8: SortMergeAggregate<Bit> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> , <1, ASC> , <2, ASC> }, cost est: 1854000, output card: 1500
+            #-1: Sort<Bit> ({<0, ASC> , <1, ASC> , <2, ASC> }) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> , <1, ASC> , <2, ASC> }, cost est: 8591765, output card: 1500
+                #7: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$1(28) shared-int64>, <2, P$2(32) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {}, cost est: 0, output card: 1500
+                    #6: KeyedJoin<Bit> (P$0(13) == P$3(13)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-int32(13) lineitem.l_orderkey, #4 shared-float revenue) order by: {}, cost est: 202500000, output card: 1500
+                        #3: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$2(28) shared-int64>, <2, P$3(32) shared-int32>)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority) order by: {}, cost est: 0, output card: 1500
+                            #2: KeyedJoin<Bit> (P$1(8) == P$4(8)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority, #4 shared-int32(8) customer.c_custkey) order by: {}, cost est: 4500000, output card: 1500
+                                #0: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {}, cost est: 0, output card: 1500
+                                #1: SecureSqlInput<Bit> ("SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer", tuple_count=150) : (#0 shared-int32(8) customer.c_custkey) order by: {}, cost est: 0, output card: 150
+                        #5: Project<Bit> ((<0, P$0(13) shared-int32>, <1, $1 * (SECRET FLOAT - $2) shared-float>)) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float revenue) order by: {}, cost est: 6835500, output card: 1500
+                            #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_extendedprice, l_discount, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem", tuple_count=1500) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float lineitem.l_extendedprice, #2 shared-float lineitem.l_discount) order by: {}, cost est: 0, output card: 1500
+
+Operator #0 SecureSqlInput ran for 15.505000 ms, gate count: 0 output cardinality: 1500, row width=82
+Operator #1 SecureSqlInput ran for 0.188000 ms, gate count: 0 output cardinality: 150, row width=9
+Operator #2 KeyedJoin ran for 3383.303000 ms, gate count: 4725000 output cardinality: 1500, row width=90
+Operator #3 Project ran for 8.741000 ms, gate count: 0 output cardinality: 1500, row width=74
+Operator #4 SecureSqlInput ran for 13.515000 ms, gate count: 0 output cardinality: 1500, row width=78
+extension finished! takes 725.356ms to extend lpn
+extension finished! takes 728.979ms to extend lpn
+Operator #5 Project ran for 5755.042000 ms, gate count: 6835500 output cardinality: 1500, row width=46
+extension finished! takes 724.87ms to extend lpn
+extension finished! takes 741.196ms to extend lpn
+extension finished! takes 722.164ms to extend lpn
+extension finished! takes 721.273ms to extend lpn
+extension finished! takes 741.248ms to extend lpn
+extension finished! takes 736.297ms to extend lpn
+extension finished! takes 729.389ms to extend lpn
+extension finished! takes 722.531ms to extend lpn
+extension finished! takes 749.305ms to extend lpn
+extension finished! takes 761.271ms to extend lpn
+extension finished! takes 733.884ms to extend lpn
+extension finished! takes 739.08ms to extend lpn
+extension finished! takes 721.97ms to extend lpn
+extension finished! takes 721.661ms to extend lpn
+extension finished! takes 724.35ms to extend lpn
+extension finished! takes 717.79ms to extend lpn
+extension finished! takes 720.961ms to extend lpn
+extension finished! takes 724.096ms to extend lpn
+extension finished! takes 711.401ms to extend lpn
+extension finished! takes 716.476ms to extend lpn
+extension finished! takes 714.315ms to extend lpn
+extension finished! takes 716.328ms to extend lpn
+extension finished! takes 712.372ms to extend lpn
+extension finished! takes 709.112ms to extend lpn
+extension finished! takes 713.813ms to extend lpn
+extension finished! takes 727.05ms to extend lpn
+extension finished! takes 719.164ms to extend lpn
+extension finished! takes 722.708ms to extend lpn
+extension finished! takes 730.561ms to extend lpn
+extension finished! takes 723.24ms to extend lpn
+extension finished! takes 731.896ms to extend lpn
+extension finished! takes 740.241ms to extend lpn
+extension finished! takes 724.749ms to extend lpn
+extension finished! takes 714.359ms to extend lpn
+extension finished! takes 716.259ms to extend lpn
+extension finished! takes 717.969ms to extend lpn
+extension finished! takes 736.829ms to extend lpn
+extension finished! takes 710.703ms to extend lpn
+extension finished! takes 727.963ms to extend lpn
+extension finished! takes 728.553ms to extend lpn
+extension finished! takes 727.828ms to extend lpn
+Operator #6 KeyedJoin ran for 138989.519000 ms, gate count: 204750000 output cardinality: 1500, row width=119
+Operator #7 Project ran for 12.001000 ms, gate count: 0 output cardinality: 1500, row width=106
+extension finished! takes 727.78ms to extend lpn
+extension finished! takes 719.561ms to extend lpn
+Operator #-1 Sort ran for 9289.663000 ms, gate count: 11414292 output cardinality: 1500, row width=106
+Operator #8 SortMergeAggregate ran for 729.758000 ms, gate count: 1809325 output cardinality: 1500, row width=106
+extension finished! takes 720.804ms to extend lpn
+extension finished! takes 733.665ms to extend lpn
+extension finished! takes 722.536ms to extend lpn
+extension finished! takes 745.919ms to extend lpn
+extension finished! takes 728.293ms to extend lpn
+Operator #9 Sort ran for 17806.028000 ms, gate count: 26008902 output cardinality: 10, row width=106
+Operator #10 Project ran for 0.063000 ms, gate count: 0 output cardinality: 10, row width=106
+Runtime: 176.025 sec, CPU Time: 182.339 sec, CPU clock ticks: 1.82339e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 2.24288e+08. observed gates: 255543019 gates, relative error (%)=12.231
+[Linux]Peak resident set size: 1860808704 bytes, current memory size: 1800138752 bytes.
+Initial Memory: 1860808704 bytes, Peak Memory After Execution: 1860808704 bytes, Memory Usage: 0 bytes
+Bandwidth: 2.78734e+08 Bps
+party 3 send 49064259648 bytes to party 1
+party 3 send 0 bytes to TP 
+total AND gate: 255543019
+total pack call: 0
+total unpack call: 0
+total packed wire: 0
+total unpacked wire: 0
+[       OK ] GeneralizedComparisonTest.baseline_tpch_q3 (176957 ms)
+[ RUN      ] GeneralizedComparisonTest.baseline_tpch_q5
+Connecting to 127.0.0.1 on ports 7654, 65482 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 724.89ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 1860808704 bytes, current memory size: 1800118272 bytes.
+1860808704
+EMP mode: outsourced, storage mode: column store
+Code version: ad4e0ee5d37b3d640cc35784b9d9149d217134a8
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65482	--cutoff=100	--filter=*	--party=3	--port=7654	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 1860808704 bytes, current memory size: 1800118272 bytes.
+Original Tree : 
+#12: Sort<Bit> ({<1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<1, DESC> }, cost est: 12247836, output card: 1500
+    #11: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) revenue)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 2229000, output card: 1500
+        #-1: Sort<Bit> ({<0, ASC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 19925584, output card: 1500
+            #10: Project<Bit> ((<0, P$5(200) shared-varchar>, <1, P$1(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {}, cost est: 0, output card: 1500
+                #9: KeyedJoin<Bit> (($0 == $4) AND (P$2(8) == P$3(8))) : (#0 shared-int32(5) supplier.c_nationkey, #1 shared-float revenue, #2 shared-int32(8) orders.o_custkey, #3 shared-int32(8) customer.c_custkey, #4 shared-int32(5) customer.c_nationkey, #5 shared-varchar(25) nation.n_name) order by: {}, cost est: 9882000, output card: 1500
+                    #7: Project<Bit> ((<0, P$0(5) shared-int32>, <1, P$2(32) shared-float>, <2, P$4(8) shared-int32>)) : (#0 shared-int32(5) supplier.c_nationkey, #1 shared-float revenue, #2 shared-int32(8) orders.o_custkey) order by: {}, cost est: 0, output card: 1500
+                        #6: KeyedJoin<Bit> (P$1(13) == P$3(13)) : (#0 shared-int32(5) supplier.s_nationkey, #1 shared-int32(13) lineitem.l_orderkey, #2 shared-float revenue, #3 shared-int32(13) orders.o_orderkey, #4 shared-int32(8) orders.o_custkey) order by: {}, cost est: 85500000, output card: 1500
+                            #4: Project<Bit> ((<0, P$1(5) shared-int32>, <1, P$2(13) shared-int32>, <2, P$4(32) shared-float>)) : (#0 shared-int32(5) supplier.s_nationkey, #1 shared-int32(13) lineitem.l_orderkey, #2 shared-float revenue) order by: {}, cost est: 0, output card: 1500
+                                #3: KeyedJoin<Bit> (P$0(4) == P$3(4)) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-int32(5) supplier.s_nationkey, #2 shared-int32(13) lineitem.l_orderkey, #3 shared-int32(4) lineitem.l_suppkey, #4 shared-float revenue) order by: {}, cost est: 51000, output card: 1500
+                                    #0: SecureSqlInput<Bit> ("SELECT s_suppkey, s_nationkey FROM supplier JOIN nation ON s_nationkey = n_nationkey JOIN region ON n_regionkey = r_regionkey WHERE r_name = 'MIDDLE EAST '", tuple_count=2) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-int32(5) supplier.s_nationkey) order by: {}, cost est: 0, output card: 2
+                                    #2: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$1(4) shared-int32>, <2, $2 * (SECRET FLOAT - $3) shared-float>)) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float revenue) order by: {}, cost est: 6835500, output card: 1500
+                                        #1: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice, l_discount FROM lineitem", tuple_count=1500) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float lineitem.l_extendedprice, #3 shared-float lineitem.l_discount) order by: {}, cost est: 0, output card: 1500
+                            #5: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey) order by: {}, cost est: 0, output card: 1500
+                    #8: SecureSqlInput<Bit> ("SELECT t2.c_custkey, t2.c_nationkey, t1.n_name FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'MIDDLE EAST ') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t2.c_custkey ASC", tuple_count=27) : (#0 shared-int32(8) customer.c_custkey, #1 shared-int32(5) customer.c_nationkey, #2 shared-varchar(25) nation.n_name) order by: {}, cost est: 0, output card: 27
+
+Operator #0 SecureSqlInput ran for 0.019000 ms, gate count: 0 output cardinality: 2, row width=10
+Operator #1 SecureSqlInput ran for 15.524000 ms, gate count: 0 output cardinality: 1500, row width=82
+extension finished! takes 723.667ms to extend lpn
+Operator #2 Project ran for 5152.682000 ms, gate count: 6835500 output cardinality: 1500, row width=50
+Operator #3 KeyedJoin ran for 63.920000 ms, gate count: 54000 output cardinality: 1500, row width=59
+Operator #4 Project ran for 5.669000 ms, gate count: 0 output cardinality: 1500, row width=51
+Operator #5 SecureSqlInput ran for 4.990000 ms, gate count: 0 output cardinality: 1500, row width=22
+extension finished! takes 721.729ms to extend lpn
+extension finished! takes 718.352ms to extend lpn
+extension finished! takes 716.668ms to extend lpn
+extension finished! takes 716.643ms to extend lpn
+extension finished! takes 715.108ms to extend lpn
+extension finished! takes 726.032ms to extend lpn
+extension finished! takes 714.593ms to extend lpn
+extension finished! takes 717.286ms to extend lpn
+extension finished! takes 720.349ms to extend lpn
+extension finished! takes 723.759ms to extend lpn
+extension finished! takes 721.096ms to extend lpn
+extension finished! takes 726.391ms to extend lpn
+extension finished! takes 715.053ms to extend lpn
+extension finished! takes 717.448ms to extend lpn
+extension finished! takes 714.832ms to extend lpn
+extension finished! takes 711.195ms to extend lpn
+extension finished! takes 718.125ms to extend lpn
+Operator #6 KeyedJoin ran for 61268.076000 ms, gate count: 87750000 output cardinality: 1500, row width=72
+Operator #7 Project ran for 5.784000 ms, gate count: 0 output cardinality: 1500, row width=46
+Operator #8 SecureSqlInput ran for 0.800000 ms, gate count: 0 output cardinality: 27, row width=214
+extension finished! takes 742.103ms to extend lpn
+extension finished! takes 721.269ms to extend lpn
+extension finished! takes 718.309ms to extend lpn
+Operator #9 KeyedJoin ran for 8728.001000 ms, gate count: 11745000 output cardinality: 1500, row width=259
+Operator #10 Project ran for 29.387000 ms, gate count: 0 output cardinality: 1500, row width=233
+extension finished! takes 734.166ms to extend lpn
+extension finished! takes 754.241ms to extend lpn
+extension finished! takes 743.231ms to extend lpn
+extension finished! takes 736.01ms to extend lpn
+extension finished! takes 730.125ms to extend lpn
+Operator #-1 Sort ran for 19461.893000 ms, gate count: 27664410 output cardinality: 1500, row width=233
+extension finished! takes 734.633ms to extend lpn
+Operator #11 SortMergeAggregate ran for 2762.838000 ms, gate count: 2181077 output cardinality: 1500, row width=233
+extension finished! takes 721.137ms to extend lpn
+extension finished! takes 756.234ms to extend lpn
+extension finished! takes 732.057ms to extend lpn
+extension finished! takes 737.16ms to extend lpn
+extension finished! takes 739.014ms to extend lpn
+Operator #12 Sort ran for 20145.460000 ms, gate count: 28753560 output cardinality: 1500, row width=233
+Runtime: 117.681 sec, CPU Time: 118.796 sec, CPU clock ticks: 1.18796e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.36671e+08. observed gates: 164983547 gates, relative error (%)=17.1609
+[Linux]Peak resident set size: 1898708992 bytes, current memory size: 1820381184 bytes.
+Initial Memory: 1860808704 bytes, Peak Memory After Execution: 1898708992 bytes, Memory Usage: 37900288 bytes
+Bandwidth: 2.69175e+08 Bps
+party 3 send 31676841024 bytes to party 1
+party 3 send 0 bytes to TP 
+total AND gate: 164983547
+total pack call: 0
+total unpack call: 0
+total packed wire: 0
+total unpacked wire: 0
+[       OK ] GeneralizedComparisonTest.baseline_tpch_q5 (118594 ms)
+[ RUN      ] GeneralizedComparisonTest.baseline_tpch_q8
+Connecting to 127.0.0.1 on ports 7654, 65482 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 811.042ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 1898708992 bytes, current memory size: 1852866560 bytes.
+1898708992
+EMP mode: outsourced, storage mode: column store
+Code version: ad4e0ee5d37b3d640cc35784b9d9149d217134a8
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65482	--cutoff=100	--filter=*	--party=3	--port=7654	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 1898708992 bytes, current memory size: 1852866560 bytes.
+Original Tree : 
+#13: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 4570088, output card: 1500
+    #12: Project<Bit> ((<0, P$0(32) shared-int32>, <1, $2 / $1 shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 5713500, output card: 1500
+        #11: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) null, SUM($2) null)) : (#0 shared-int32 orders.o_year, #1 shared-float null, #2 shared-float null) order by: {<0, ASC> }, cost est: 3450000, output card: 1500
+            #-1: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float volume, #2 shared-float selected_volume) order by: {<0, ASC> }, cost est: 6032516, output card: 1500
+                #10: Project<Bit> ((<0, P$0(32) shared-int32>, <1, P$2(32) shared-float>, <2, CASE($4, $2, SECRET FLOAT) shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float volume, #2 shared-float selected_volume) order by: {}, cost est: 0, output card: 1500
+                    #9: KeyedJoin<Bit> (P$1(4) == P$3(4)) : (#0 shared-int32 orders.o_year, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float volume, #3 shared-int32(4) supplier.s_suppkey, #4 shared-bool nation_check) order by: {}, cost est: 195000, output card: 1500
+                        #7: Project<Bit> ((<0, P$1(32) shared-int32>, <1, P$3(4) shared-int32>, <2, P$4(32) shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float volume) order by: {}, cost est: 0, output card: 1500
+                            #6: KeyedJoin<Bit> (P$0(13) == P$2(13)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32 orders.o_year, #2 shared-int32(13) lineitem.l_orderkey, #3 shared-int32(4) lineitem.l_suppkey, #4 shared-float revenue) order by: {}, cost est: 148500000, output card: 1500
+                                #3: Project<Bit> ((<0, P$1(13) shared-int32>, <1, P$3(32) shared-int32>)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32 orders.o_year) order by: {}, cost est: 0, output card: 1500
+                                    #2: KeyedJoin<Bit> (P$0(8) == P$2(8)) : (#0 shared-int32(8) customer.c_custkey, #1 shared-int32(13) orders.o_orderkey, #2 shared-int32(8) orders.o_custkey, #3 shared-int32 orders.o_year) order by: {}, cost est: 870000, output card: 1500
+                                        #0: SecureSqlInput<Bit> ("SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA'", tuple_count=29) : (#0 shared-int32(8) customer.c_custkey) order by: {}, cost est: 0, output card: 29
+                                        #1: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int32 orders.o_year) order by: {}, cost est: 0, output card: 1500
+                                #5: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$1(4) shared-int32>, <2, $2 * (SECRET FLOAT - $3) shared-float>)) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float revenue) order by: {}, cost est: 6835500, output card: 1500
+                                    #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice, l_discount,        CASE            WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE            ELSE TRUE            END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey", tuple_count=1500) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float lineitem.l_extendedprice, #3 shared-float lineitem.l_discount) order by: {}, cost est: 0, output card: 1500
+                        #8: SecureSqlInput<Bit> ("SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey", tuple_count=10) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-bool nation_check) order by: {}, cost est: 0, output card: 10
+
+Operator #0 SecureSqlInput ran for 0.052000 ms, gate count: 0 output cardinality: 29, row width=9
+Operator #1 SecureSqlInput ran for 10.669000 ms, gate count: 0 output cardinality: 1500, row width=54
+Operator #2 KeyedJoin ran for 689.938000 ms, gate count: 913500 output cardinality: 1500, row width=62
+Operator #3 Project ran for 5.522000 ms, gate count: 0 output cardinality: 1500, row width=46
+Operator #4 SecureSqlInput ran for 15.302000 ms, gate count: 0 output cardinality: 1500, row width=82
+extension finished! takes 736.785ms to extend lpn
+Operator #5 Project ran for 4065.471000 ms, gate count: 6835500 output cardinality: 1500, row width=50
+extension finished! takes 734.301ms to extend lpn
+extension finished! takes 733.414ms to extend lpn
+extension finished! takes 723.712ms to extend lpn
+extension finished! takes 727.609ms to extend lpn
+extension finished! takes 738.629ms to extend lpn
+extension finished! takes 746.108ms to extend lpn
+extension finished! takes 728.677ms to extend lpn
+extension finished! takes 739.25ms to extend lpn
+extension finished! takes 724.353ms to extend lpn
+extension finished! takes 718.163ms to extend lpn
+extension finished! takes 715.214ms to extend lpn
+extension finished! takes 712.703ms to extend lpn
+extension finished! takes 728.757ms to extend lpn
+extension finished! takes 718.64ms to extend lpn
+extension finished! takes 718.042ms to extend lpn
+extension finished! takes 721.954ms to extend lpn
+extension finished! takes 731.187ms to extend lpn
+extension finished! takes 742.256ms to extend lpn
+extension finished! takes 725.575ms to extend lpn
+extension finished! takes 718.311ms to extend lpn
+extension finished! takes 737.239ms to extend lpn
+extension finished! takes 733.515ms to extend lpn
+extension finished! takes 730.062ms to extend lpn
+extension finished! takes 730.521ms to extend lpn
+extension finished! takes 739.039ms to extend lpn
+extension finished! takes 746.298ms to extend lpn
+extension finished! takes 730.403ms to extend lpn
+extension finished! takes 723.142ms to extend lpn
+extension finished! takes 747.116ms to extend lpn
+extension finished! takes 746.543ms to extend lpn
+Operator #6 KeyedJoin ran for 116387.861000 ms, gate count: 150750000 output cardinality: 1500, row width=95
+Operator #7 Project ran for 7.050000 ms, gate count: 0 output cardinality: 1500, row width=69
+Operator #8 SecureSqlInput ran for 0.053000 ms, gate count: 0 output cardinality: 10, row width=6
+Operator #9 KeyedJoin ran for 156.413000 ms, gate count: 210000 output cardinality: 1500, row width=74
+Operator #10 Project ran for 58.325000 ms, gate count: 48000 output cardinality: 1500, row width=97
+extension finished! takes 726.904ms to extend lpn
+extension finished! takes 725.651ms to extend lpn
+Operator #-1 Sort ran for 6443.850000 ms, gate count: 7101258 output cardinality: 1500, row width=97
+Operator #11 SortMergeAggregate ran for 1271.778000 ms, gate count: 3251395 output cardinality: 1500, row width=97
+extension finished! takes 729.963ms to extend lpn
+Operator #12 Project ran for 3358.833000 ms, gate count: 5713500 output cardinality: 1500, row width=65
+extension finished! takes 736.815ms to extend lpn
+extension finished! takes 712.45ms to extend lpn
+Operator #13 Sort ran for 7207.528000 ms, gate count: 5707146 output cardinality: 1500, row width=65
+Runtime: 139.709 sec, CPU Time: 142.5 sec, CPU clock ticks: 1.425e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.76167e+08. observed gates: 180530299 gates, relative error (%)=2.41715
+[Linux]Peak resident set size: 1900777472 bytes, current memory size: 1887690752 bytes.
+Initial Memory: 1898708992 bytes, Peak Memory After Execution: 1900777472 bytes, Memory Usage: 2068480 bytes
+Bandwidth: 2.48101e+08 Bps
+party 3 send 34661817408 bytes to party 1
+party 3 send 0 bytes to TP 
+total AND gate: 180530299
+total pack call: 0
+total unpack call: 0
+total packed wire: 0
+total unpacked wire: 0
+[       OK ] GeneralizedComparisonTest.baseline_tpch_q8 (140706 ms)
+[ RUN      ] GeneralizedComparisonTest.baseline_tpch_q9
+Connecting to 127.0.0.1 on ports 7654, 65482 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 1054.38ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 1900777472 bytes, current memory size: 1857044480 bytes.
+1900777472
+EMP mode: outsourced, storage mode: column store
+Code version: ad4e0ee5d37b3d640cc35784b9d9149d217134a8
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65482	--cutoff=100	--filter=*	--party=3	--port=7654	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 1900777472 bytes, current memory size: 1857044480 bytes.
+Original Tree : 
+#12: Sort<Bit> ({<0, ASC> , <1, DESC> }) : (#0 shared-varchar(25) nation.nation, #1 shared-int32 amount, #2 shared-float sum_profit) order by: {<0, ASC> , <1, DESC> }, cost est: 22987542, output card: 1500
+    #11: SortMergeAggregate<Bit> (group-by: (0, 1) aggs: (SUM($2) sum_profit)) : (#0 shared-varchar(25) nation.nation, #1 shared-int32 amount, #2 shared-float sum_profit) order by: {<0, ASC> , <1, ASC> }, cost est: 2325000, output card: 1500
+        #-1: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(25) nation.nation, #1 shared-int32 amount, #2 shared-float o_year) order by: {<0, ASC> , <1, ASC> }, cost est: 22987542, output card: 1500
+            #10: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$3(32) shared-int32>, <2, P$2(32) shared-float>)) : (#0 shared-varchar(25) nation.nation, #1 shared-int32 amount, #2 shared-float o_year) order by: {}, cost est: 0, output card: 1500
+                #9: KeyedJoin<Bit> (P$1(13) == P$4(13)) : (#0 shared-varchar(25) nation.nation, #1 shared-int32(13) lineitem.l_orderkey, #2 shared-float amount, #3 shared-int32 o_year, #4 shared-int32(13) orders.o_orderkey) order by: {}, cost est: 139500000, output card: 1500
+                    #7: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$4(13) shared-int32>, <2, $8 - ($3 * $7) shared-float>)) : (#0 shared-varchar(25) nation.nation, #1 shared-int32(13) lineitem.l_orderkey, #2 shared-float amount) order by: {}, cost est: 6835500, output card: 1500
+                        #6: KeyedJoin<Bit> ((P$2(4) == P$6(4)) AND (P$1(8) == P$5(8))) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(8) partsupp.ps_partkey, #2 shared-int32(4) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost, #4 shared-int32(13) lineitem.l_orderkey, #5 shared-int32(8) lineitem.l_partkey, #6 shared-int32(4) lineitem.l_suppkey, #7 shared-float l_quantity, #8 shared-float revenue) order by: {}, cost est: 22848000, output card: 1500
+                            #3: Project<Bit> ((<0, P$1(200) shared-varchar>, <1, P$2(8) shared-int32>, <2, P$3(4) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(8) partsupp.ps_partkey, #2 shared-int32(4) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost) order by: {}, cost est: 0, output card: 56
+                                #2: KeyedJoin<Bit> (P$0(4) == P$3(4)) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(8) partsupp.ps_partkey, #3 shared-int32(4) partsupp.ps_suppkey, #4 shared-float partsupp.ps_supplycost) order by: {}, cost est: 118720, output card: 56
+                                    #0: SecureSqlInput<Bit> ("SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey", tuple_count=10) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name) order by: {}, cost est: 0, output card: 10
+                                    #1: SecureSqlInput<Bit> ("SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%'", tuple_count=56) : (#0 shared-int32(8) partsupp.ps_partkey, #1 shared-int32(4) partsupp.ps_suppkey, #2 shared-float partsupp.ps_supplycost) order by: {}, cost est: 0, output card: 56
+                            #5: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$1(8) shared-int32>, <2, P$2(4) shared-int32>, <3, P$3(32) shared-float>, <4, $4 * (SECRET FLOAT - $5) shared-float>)) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(8) lineitem.l_partkey, #2 shared-int32(4) lineitem.l_suppkey, #3 shared-float l_quantity, #4 shared-float revenue) order by: {}, cost est: 6835500, output card: 1500
+                                #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice, l_discount FROM lineitem", tuple_count=1500) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(8) lineitem.l_partkey, #2 shared-int32(4) lineitem.l_suppkey, #3 shared-float l_quantity, #4 shared-float lineitem.l_extendedprice, #5 shared-float lineitem.l_discount) order by: {}, cost est: 0, output card: 1500
+                    #8: SecureSqlInput<Bit> ("SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders", tuple_count=1500) : (#0 shared-int32 o_year, #1 shared-int32(13) orders.o_orderkey) order by: {}, cost est: 0, output card: 1500
+
+Operator #0 SecureSqlInput ran for 0.268000 ms, gate count: 0 output cardinality: 10, row width=205
+Operator #1 SecureSqlInput ran for 0.291000 ms, gate count: 0 output cardinality: 56, row width=45
+Operator #2 KeyedJoin ran for 515.342000 ms, gate count: 119280 output cardinality: 56, row width=249
+Operator #3 Project ran for 1.151000 ms, gate count: 0 output cardinality: 56, row width=245
+Operator #4 SecureSqlInput ran for 25.374000 ms, gate count: 0 output cardinality: 1500, row width=122
+extension finished! takes 749.652ms to extend lpn
+Operator #5 Project ran for 3853.841000 ms, gate count: 6835500 output cardinality: 1500, row width=90
+extension finished! takes 756.167ms to extend lpn
+extension finished! takes 734.714ms to extend lpn
+extension finished! takes 734.188ms to extend lpn
+extension finished! takes 752.206ms to extend lpn
+Operator #6 KeyedJoin ran for 15301.701000 ms, gate count: 22092000 output cardinality: 1500, row width=334
+extension finished! takes 752.776ms to extend lpn
+extension finished! takes 751.862ms to extend lpn
+Operator #7 Project ran for 6223.084000 ms, gate count: 6835500 output cardinality: 1500, row width=246
+Operator #8 SecureSqlInput ran for 8.648000 ms, gate count: 0 output cardinality: 1500, row width=46
+extension finished! takes 748.54ms to extend lpn
+extension finished! takes 742.024ms to extend lpn
+extension finished! takes 742.279ms to extend lpn
+extension finished! takes 735.915ms to extend lpn
+extension finished! takes 728.926ms to extend lpn
+extension finished! takes 730.931ms to extend lpn
+extension finished! takes 745.858ms to extend lpn
+extension finished! takes 757.642ms to extend lpn
+extension finished! takes 745.751ms to extend lpn
+extension finished! takes 750.9ms to extend lpn
+extension finished! takes 749.225ms to extend lpn
+extension finished! takes 738.753ms to extend lpn
+extension finished! takes 738.169ms to extend lpn
+extension finished! takes 739.219ms to extend lpn
+extension finished! takes 748.736ms to extend lpn
+extension finished! takes 749.498ms to extend lpn
+extension finished! takes 740.001ms to extend lpn
+extension finished! takes 734.54ms to extend lpn
+extension finished! takes 736.725ms to extend lpn
+extension finished! takes 735.748ms to extend lpn
+extension finished! takes 740.066ms to extend lpn
+extension finished! takes 738.927ms to extend lpn
+extension finished! takes 749.159ms to extend lpn
+extension finished! takes 765.829ms to extend lpn
+extension finished! takes 758.409ms to extend lpn
+extension finished! takes 750.47ms to extend lpn
+extension finished! takes 741.438ms to extend lpn
+extension finished! takes 743.993ms to extend lpn
+Operator #9 KeyedJoin ran for 104480.097000 ms, gate count: 141750000 output cardinality: 1500, row width=291
+Operator #10 Project ran for 33.416000 ms, gate count: 0 output cardinality: 1500, row width=265
+extension finished! takes 754.385ms to extend lpn
+extension finished! takes 749.073ms to extend lpn
+extension finished! takes 744.19ms to extend lpn
+extension finished! takes 751.473ms to extend lpn
+extension finished! takes 752.814ms to extend lpn
+extension finished! takes 744.844ms to extend lpn
+Operator #-1 Sort ran for 24293.265000 ms, gate count: 31933878 output cardinality: 1500, row width=265
+extension finished! takes 740.165ms to extend lpn
+Operator #11 SortMergeAggregate ran for 2683.294000 ms, gate count: 2278512 output cardinality: 1500, row width=265
+extension finished! takes 736.8ms to extend lpn
+extension finished! takes 745.954ms to extend lpn
+extension finished! takes 743.755ms to extend lpn
+extension finished! takes 745.487ms to extend lpn
+extension finished! takes 747.063ms to extend lpn
+extension finished! takes 751.318ms to extend lpn
+Operator #12 Sort ran for 23220.164000 ms, gate count: 31933878 output cardinality: 1500, row width=265
+Runtime: 180.679 sec, CPU Time: 178.281 sec, CPU clock ticks: 1.78281e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 2.24438e+08. observed gates: 243778548 gates, relative error (%)=7.93373
+[Linux]Peak resident set size: 1998995456 bytes, current memory size: 1871040512 bytes.
+Initial Memory: 1900777472 bytes, Peak Memory After Execution: 1998995456 bytes, Memory Usage: 98217984 bytes
+Bandwidth: 2.59053e+08 Bps
+party 3 send 46805481216 bytes to party 1
+party 3 send 0 bytes to TP 
+total AND gate: 243778548
+total pack call: 0
+total unpack call: 0
+total packed wire: 0
+total unpacked wire: 0
+[       OK ] GeneralizedComparisonTest.baseline_tpch_q9 (181959 ms)
+[ RUN      ] GeneralizedComparisonTest.baseline_tpch_q18
+Connecting to 127.0.0.1 on ports 7654, 65482 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 795.01ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 1998995456 bytes, current memory size: 1909645312 bytes.
+1998995456
+EMP mode: outsourced, storage mode: column store
+Code version: ad4e0ee5d37b3d640cc35784b9d9149d217134a8
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65482	--cutoff=100	--filter=*	--party=3	--port=7654	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 1998995456 bytes, current memory size: 1909645312 bytes.
+Original Tree : 
+#14: Sort<Bit> ({<-1, ASC> , <4, DESC> , <3, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(13) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <4, DESC> , <3, ASC> }, cost est: 487532, output card: 100
+    #13: SortMergeAggregate<Bit> (group-by: (0, 1, 2, 3, 4) aggs: (SUM($5) sum_qty)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(13) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }, cost est: 2481000, output card: 1500
+        #-1: Sort<Bit> ({<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(13) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float l_quantity) order by: {<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }, cost est: 27877536, output card: 1500
+            #12: Project<Bit> ((<0, P$6(200) shared-varchar>, <1, P$5(8) shared-int32>, <2, P$0(13) shared-int32>, <3, P$3(28) shared-int64>, <4, P$2(32) shared-float>, <5, P$4(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(13) orders.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float l_quantity) order by: {}, cost est: 0, output card: 1500
+                #11: KeyedJoin<Bit> (P$1(8) == P$5(8)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-float l_quantity, #5 shared-int32(8) customer.c_custkey, #6 shared-varchar(25) customer.c_name) order by: {}, cost est: 49500000, output card: 1500
+                    #9: Project<Bit> ((<0, P$2(13) shared-int32>, <1, P$3(8) shared-int32>, <2, P$4(32) shared-float>, <3, P$5(28) shared-int64>, <4, P$1(32) shared-float>)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-float l_quantity) order by: {}, cost est: 0, output card: 1500
+                        #8: KeyedJoin<Bit> (P$0(13) == P$2(13)) : (#0 shared-int32(13) lineitem.L2.l_orderkey, #1 shared-float sum_qty, #2 shared-int32(13) orders.o_orderkey, #3 shared-int32(8) orders.o_custkey, #4 shared-float orders.o_totalprice, #5 shared-int64(28) orders.o_orderdate) order by: {<0, ASC> }, cost est: 220500000, output card: 1500
+                            #6: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$1(32) shared-float>)) : (#0 shared-int32(13) lineitem.L2.l_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 0, output card: 1500
+                                #5: KeyedJoin<Bit> (P$0(13) == P$2(13)) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float sum_qty, #2 shared-int32(13) lineitem.l_orderkey) order by: {<0, ASC> }, cost est: 67500000, output card: 1500
+                                    #3: Filter<Bit> (P$1(32) > SECRET FLOAT) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 319500, output card: 1500
+                                        #2: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) sum_qty)) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 1671000, output card: 1500
+                                            #1: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float lineitem.l_quantity) order by: {<0, ASC> }, cost est: 2833454, output card: 1500
+                                                #0: SecureSqlInput<Bit> ("SELECT l_orderkey, l_quantity FROM lineitem", tuple_count=1500) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float lineitem.l_quantity) order by: {}, cost est: 0, output card: 1500
+                                    #4: SecureSqlInput<Bit> ("SELECT L2.l_orderkey FROM lineitem L2", tuple_count=1500) : (#0 shared-int32(13) lineitem.l_orderkey) order by: {}, cost est: 0, output card: 1500
+                            #7: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate FROM orders", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate) order by: {}, cost est: 0, output card: 1500
+                    #10: SecureSqlInput<Bit> ("SELECT c_custkey, c_name FROM customer", tuple_count=150) : (#0 shared-int32(8) customer.c_custkey, #1 shared-varchar(25) customer.c_name) order by: {}, cost est: 0, output card: 150
+
+Operator #0 SecureSqlInput ran for 8.984000 ms, gate count: 0 output cardinality: 1500, row width=46
+Operator #1 Sort ran for 2165.310000 ms, gate count: 3311016 output cardinality: 1500, row width=46
+Operator #2 SortMergeAggregate ran for 1188.085000 ms, gate count: 1623449 output cardinality: 1500, row width=46
+extension finished! takes 720.738ms to extend lpn
+Operator #3 Filter ran for 1447.031000 ms, gate count: 321000 output cardinality: 1500, row width=46
+Operator #4 SecureSqlInput ran for 3.505000 ms, gate count: 0 output cardinality: 1500, row width=14
+extension finished! takes 729.079ms to extend lpn
+extension finished! takes 734.01ms to extend lpn
+extension finished! takes 726.182ms to extend lpn
+extension finished! takes 719.441ms to extend lpn
+extension finished! takes 721.132ms to extend lpn
+extension finished! takes 724.956ms to extend lpn
+extension finished! takes 729.061ms to extend lpn
+extension finished! takes 722.218ms to extend lpn
+extension finished! takes 722.064ms to extend lpn
+extension finished! takes 730.259ms to extend lpn
+extension finished! takes 735.395ms to extend lpn
+extension finished! takes 719.455ms to extend lpn
+extension finished! takes 733.663ms to extend lpn
+Operator #5 KeyedJoin ran for 51616.967000 ms, gate count: 69750000 output cardinality: 1500, row width=59
+Operator #6 Project ran for 6.184000 ms, gate count: 0 output cardinality: 1500, row width=46
+Operator #7 SecureSqlInput ran for 15.769000 ms, gate count: 0 output cardinality: 1500, row width=82
+extension finished! takes 752.193ms to extend lpn
+extension finished! takes 750.02ms to extend lpn
+extension finished! takes 757.003ms to extend lpn
+extension finished! takes 734.965ms to extend lpn
+extension finished! takes 722.031ms to extend lpn
+extension finished! takes 725.991ms to extend lpn
+extension finished! takes 718.593ms to extend lpn
+extension finished! takes 732.856ms to extend lpn
+extension finished! takes 735.945ms to extend lpn
+extension finished! takes 724.927ms to extend lpn
+extension finished! takes 754.684ms to extend lpn
+extension finished! takes 751.588ms to extend lpn
+extension finished! takes 735.215ms to extend lpn
+extension finished! takes 718.272ms to extend lpn
+extension finished! takes 718.356ms to extend lpn
+extension finished! takes 721.387ms to extend lpn
+extension finished! takes 725.987ms to extend lpn
+extension finished! takes 721.111ms to extend lpn
+extension finished! takes 722.213ms to extend lpn
+extension finished! takes 717.705ms to extend lpn
+extension finished! takes 720.187ms to extend lpn
+extension finished! takes 715.984ms to extend lpn
+extension finished! takes 723.278ms to extend lpn
+extension finished! takes 743.412ms to extend lpn
+extension finished! takes 741.501ms to extend lpn
+extension finished! takes 731.653ms to extend lpn
+extension finished! takes 715.531ms to extend lpn
+extension finished! takes 729.801ms to extend lpn
+extension finished! takes 727.365ms to extend lpn
+extension finished! takes 715.506ms to extend lpn
+extension finished! takes 717.67ms to extend lpn
+extension finished! takes 714.912ms to extend lpn
+extension finished! takes 723.198ms to extend lpn
+extension finished! takes 730.403ms to extend lpn
+extension finished! takes 739.222ms to extend lpn
+extension finished! takes 727.772ms to extend lpn
+extension finished! takes 736.355ms to extend lpn
+extension finished! takes 723.453ms to extend lpn
+extension finished! takes 714.685ms to extend lpn
+extension finished! takes 727.437ms to extend lpn
+extension finished! takes 729.68ms to extend lpn
+extension finished! takes 717.003ms to extend lpn
+extension finished! takes 731.771ms to extend lpn
+extension finished! takes 733.662ms to extend lpn
+extension finished! takes 737.249ms to extend lpn
+Operator #8 KeyedJoin ran for 159747.104000 ms, gate count: 222750000 output cardinality: 1500, row width=127
+Operator #9 Project ran for 11.892000 ms, gate count: 0 output cardinality: 1500, row width=114
+Operator #10 SecureSqlInput ran for 4.267000 ms, gate count: 0 output cardinality: 150, row width=209
+extension finished! takes 748.822ms to extend lpn
+extension finished! takes 744.316ms to extend lpn
+extension finished! takes 742.969ms to extend lpn
+extension finished! takes 742.07ms to extend lpn
+extension finished! takes 743.146ms to extend lpn
+extension finished! takes 740.079ms to extend lpn
+extension finished! takes 739.275ms to extend lpn
+extension finished! takes 739.126ms to extend lpn
+extension finished! takes 743.14ms to extend lpn
+extension finished! takes 728.312ms to extend lpn
+Operator #11 KeyedJoin ran for 33373.602000 ms, gate count: 49725000 output cardinality: 1500, row width=322
+Operator #12 Project ran for 36.468000 ms, gate count: 0 output cardinality: 1500, row width=314
+extension finished! takes 747.729ms to extend lpn
+extension finished! takes 734.362ms to extend lpn
+extension finished! takes 735.327ms to extend lpn
+extension finished! takes 740.869ms to extend lpn
+extension finished! takes 739.826ms to extend lpn
+extension finished! takes 734.401ms to extend lpn
+extension finished! takes 739.119ms to extend lpn
+extension finished! takes 732.326ms to extend lpn
+extension finished! takes 742.561ms to extend lpn
+extension finished! takes 738.59ms to extend lpn
+extension finished! takes 744.646ms to extend lpn
+Operator #-1 Sort ran for 41436.814000 ms, gate count: 54588198 output cardinality: 1500, row width=314
+Operator #13 SortMergeAggregate ran for 1386.476000 ms, gate count: 2708725 output cardinality: 1500, row width=314
+extension finished! takes 768.685ms to extend lpn
+extension finished! takes 744.288ms to extend lpn
+extension finished! takes 751.813ms to extend lpn
+extension finished! takes 739.839ms to extend lpn
+extension finished! takes 743.027ms to extend lpn
+extension finished! takes 740.842ms to extend lpn
+extension finished! takes 738.291ms to extend lpn
+Operator #14 Sort ran for 26570.097000 ms, gate count: 35070630 output cardinality: 100, row width=314
+Runtime: 319.05 sec, CPU Time: 318.508 sec, CPU clock ticks: 3.18508e+08, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 3.7317e+08. observed gates: 439848018 gates, relative error (%)=15.1593
+[Linux]Peak resident set size: 2089586688 bytes, current memory size: 1975779328 bytes.
+Initial Memory: 1998995456 bytes, Peak Memory After Execution: 2089586688 bytes, Memory Usage: 90591232 bytes
+Bandwidth: 2.64695e+08 Bps
+party 3 send 84450819456 bytes to party 1
+party 3 send 0 bytes to TP 
+total AND gate: 439848018
+total pack call: 0
+total unpack call: 0
+total packed wire: 0
+total unpacked wire: 0
+[       OK ] GeneralizedComparisonTest.baseline_tpch_q18 (320065 ms)
+[ RUN      ] GeneralizedComparisonTest.cost_optimized_tpch_q1
+Connecting to 127.0.0.1 on ports 7654, 65482 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 797.948ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 2089586688 bytes, current memory size: 1989922816 bytes.
+2089586688
+EMP mode: outsourced, storage mode: column store
+Code version: ad4e0ee5d37b3d640cc35784b9d9149d217134a8
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65482	--cutoff=100	--filter=*	--party=3	--port=7654	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 2089586688 bytes, current memory size: 1989922816 bytes.
+Original Tree : 
+#4: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64 count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 4545, output card: 6
+    #3: Project<Bit> ((<0, P$0(8) shared-varchar>, <1, P$1(8) shared-varchar>, <2, $2 + $15 shared-float>, <3, $3 + $16 shared-float>, <4, $4 + $17 shared-float>, <5, $5 + $18 shared-float>, <6, ($6 + $19) / ($7 + $20) shared-float>, <7, ($8 + $21) / ($9 + $22) shared-float>, <8, ($10 + $23) / ($11 + $24) shared-float>, <9, $12 + $25 shared-int64>)) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty, #7 shared-float avg_price, #8 shared-float avg_disc, #9 shared-int64 count_order) order by: {<0, ASC> , <1, ASC> }, cost est: 163596, output card: 6
+        #2: MergeJoin<Bit> (no-op) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt, #13 shared-varchar(1) l_returnflag, #14 shared-varchar(1) l_linestatus, #15 shared-float sum_qty, #16 shared-float sum_base_price, #17 shared-float sum_disc_price, #18 shared-float sum_charge, #19 shared-float avg_qty_sum, #20 shared-float avg_qty_cnt, #21 shared-float avg_price_sum, #22 shared-float avg_price_cnt, #23 shared-float avg_discount_sum, #24 shared-float avg_discount_cnt, #25 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 18, output card: 6
+            #0: SecureSqlInput<Bit> ("WITH output_domain AS (
+    SELECT  *
+    FROM (VALUES('R'::char(1), 'F'::char(1)), ('A', 'F'), ('N', 'F'), ('R', 'O'), ('A', 'O'), ('N', 'O')) AS li(l_returnflag, l_linestatus)
+    ORDER BY l_returnflag, l_linestatus),
+     partial_aggs AS (
+         SELECT l_returnflag, l_linestatus, SUM(l_quantity) sum_qty, SUM(l_extendedprice) sum_base_price,
+                SUM(l_extendedprice*(1-l_discount)) sum_disc_price, SUM(l_extendedprice*(1-l_discount)*(1+l_tax)) sum_charge,
+                SUM(l_quantity) avg_qty_sum, COUNT(l_quantity)::FLOAT4 avg_qty_cnt,
+                 SUM(l_extendedprice) avg_price_sum, COUNT(l_extendedprice)::FLOAT4 avg_price_cnt,
+                 SUM(l_discount) avg_discount_sum, COUNT(l_discount)::FLOAT4 avg_discount_cnt, COUNT(*) cnt
+         FROM lineitem
+         WHERE l_shipdate  <= date '1998-08-03'
+         GROUP BY l_returnflag, l_linestatus
+         ORDER BY l_returnflag, l_linestatus)
+SELECT o.l_returnflag, o.l_linestatus, COALESCE(sum_qty, 0) sum_qty, COALESCE(sum_base_price, 0) sum_base_price, COALESCE(sum_disc_price, 0) sum_disc_price, COALESCE(sum_charge, 0) sum_charge, COALESCE(avg_qty_sum, 0) avg_qty_sum, COALESCE(avg_qty_cnt, 0) avg_qty_cnt,  COALESCE(avg_price_sum, 0) avg_price_sum, COALESCE(avg_price_cnt, 0) avg_price_cnt,  COALESCE(avg_discount_sum, 0) avg_discount_sum, COALESCE(avg_discount_cnt, 0) avg_discount_cnt,  COALESCE(cnt, 0)::BIGINT cnt, CASE WHEN p.l_returnflag IS NULL THEN true ELSE false END AS dummy_tag
+FROM output_domain o LEFT JOIN partial_aggs p ON o.l_returnflag = p.l_returnflag AND o.l_linestatus = p.l_linestatus
+ORDER BY o.l_returnflag, o.l_linestatus", tuple_count=6) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 0, output card: 6
+            #1: SecureSqlInput<Bit> ("WITH output_domain AS (
+    SELECT  *
+    FROM (VALUES('R'::char(1), 'F'::char(1)), ('A', 'F'), ('N', 'F'), ('R', 'O'), ('A', 'O'), ('N', 'O')) AS li(l_returnflag, l_linestatus)
+    ORDER BY l_returnflag, l_linestatus),
+     partial_aggs AS (
+         SELECT l_returnflag, l_linestatus, SUM(l_quantity) sum_qty, SUM(l_extendedprice) sum_base_price,
+                SUM(l_extendedprice*(1-l_discount)) sum_disc_price, SUM(l_extendedprice*(1-l_discount)*(1+l_tax)) sum_charge,
+                SUM(l_quantity) avg_qty_sum, COUNT(l_quantity)::FLOAT4 avg_qty_cnt,
+                 SUM(l_extendedprice) avg_price_sum, COUNT(l_extendedprice)::FLOAT4 avg_price_cnt,
+                 SUM(l_discount) avg_discount_sum, COUNT(l_discount)::FLOAT4 avg_discount_cnt, COUNT(*) cnt
+         FROM lineitem
+         WHERE l_shipdate  <= date '1998-08-03'
+         GROUP BY l_returnflag, l_linestatus
+         ORDER BY l_returnflag, l_linestatus)
+SELECT o.l_returnflag, o.l_linestatus, COALESCE(sum_qty, 0) sum_qty, COALESCE(sum_base_price, 0) sum_base_price, COALESCE(sum_disc_price, 0) sum_disc_price, COALESCE(sum_charge, 0) sum_charge, COALESCE(avg_qty_sum, 0) avg_qty_sum, COALESCE(avg_qty_cnt, 0) avg_qty_cnt,  COALESCE(avg_price_sum, 0) avg_price_sum, COALESCE(avg_price_cnt, 0) avg_price_cnt,  COALESCE(avg_discount_sum, 0) avg_discount_sum, COALESCE(avg_discount_cnt, 0) avg_discount_cnt,  COALESCE(cnt, 0)::BIGINT cnt, CASE WHEN p.l_returnflag IS NULL THEN true ELSE false END AS dummy_tag
+FROM output_domain o LEFT JOIN partial_aggs p ON o.l_returnflag = p.l_returnflag AND o.l_linestatus = p.l_linestatus
+ORDER BY o.l_returnflag, o.l_linestatus", tuple_count=0) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 0, output card: 0
+
+Total Plans : 1
+Cost Optimized Plan : 
+#3: Project<Bit> ((<0, P$0(8) shared-varchar>, <1, P$1(8) shared-varchar>, <2, $2 + $15 shared-float>, <3, $3 + $16 shared-float>, <4, $4 + $17 shared-float>, <5, $5 + $18 shared-float>, <6, ($6 + $19) / ($7 + $20) shared-float>, <7, ($8 + $21) / ($9 + $22) shared-float>, <8, ($10 + $23) / ($11 + $24) shared-float>, <9, $12 + $25 shared-int64>)) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float anonymous, #3 shared-float anonymous, #4 shared-float anonymous, #5 shared-float anonymous, #6 shared-float anonymous, #7 shared-float anonymous, #8 shared-float anonymous, #9 shared-int64 anonymous) order by: {<0, ASC> , <1, ASC> }, cost est: 163596, output card: 6
+    #2: MergeJoin<Bit> (no-op) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt, #13 shared-varchar(1) l_returnflag, #14 shared-varchar(1) l_linestatus, #15 shared-float sum_qty, #16 shared-float sum_base_price, #17 shared-float sum_disc_price, #18 shared-float sum_charge, #19 shared-float avg_qty_sum, #20 shared-float avg_qty_cnt, #21 shared-float avg_price_sum, #22 shared-float avg_price_cnt, #23 shared-float avg_discount_sum, #24 shared-float avg_discount_cnt, #25 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 18, output card: 6
+        #0: SecureSqlInput<Bit> ("WITH output_domain AS (
+    SELECT  *
+    FROM (VALUES('R'::char(1), 'F'::char(1)), ('A', 'F'), ('N', 'F'), ('R', 'O'), ('A', 'O'), ('N', 'O')) AS li(l_returnflag, l_linestatus)
+    ORDER BY l_returnflag, l_linestatus),
+     partial_aggs AS (
+         SELECT l_returnflag, l_linestatus, SUM(l_quantity) sum_qty, SUM(l_extendedprice) sum_base_price,
+                SUM(l_extendedprice*(1-l_discount)) sum_disc_price, SUM(l_extendedprice*(1-l_discount)*(1+l_tax)) sum_charge,
+                SUM(l_quantity) avg_qty_sum, COUNT(l_quantity)::FLOAT4 avg_qty_cnt,
+                 SUM(l_extendedprice) avg_price_sum, COUNT(l_extendedprice)::FLOAT4 avg_price_cnt,
+                 SUM(l_discount) avg_discount_sum, COUNT(l_discount)::FLOAT4 avg_discount_cnt, COUNT(*) cnt
+         FROM lineitem
+         WHERE l_shipdate  <= date '1998-08-03'
+         GROUP BY l_returnflag, l_linestatus
+         ORDER BY l_returnflag, l_linestatus)
+SELECT o.l_returnflag, o.l_linestatus, COALESCE(sum_qty, 0) sum_qty, COALESCE(sum_base_price, 0) sum_base_price, COALESCE(sum_disc_price, 0) sum_disc_price, COALESCE(sum_charge, 0) sum_charge, COALESCE(avg_qty_sum, 0) avg_qty_sum, COALESCE(avg_qty_cnt, 0) avg_qty_cnt,  COALESCE(avg_price_sum, 0) avg_price_sum, COALESCE(avg_price_cnt, 0) avg_price_cnt,  COALESCE(avg_discount_sum, 0) avg_discount_sum, COALESCE(avg_discount_cnt, 0) avg_discount_cnt,  COALESCE(cnt, 0)::BIGINT cnt, CASE WHEN p.l_returnflag IS NULL THEN true ELSE false END AS dummy_tag
+FROM output_domain o LEFT JOIN partial_aggs p ON o.l_returnflag = p.l_returnflag AND o.l_linestatus = p.l_linestatus
+ORDER BY o.l_returnflag, o.l_linestatus", tuple_count=6) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 0, output card: 6
+        #1: SecureSqlInput<Bit> ("WITH output_domain AS (
+    SELECT  *
+    FROM (VALUES('R'::char(1), 'F'::char(1)), ('A', 'F'), ('N', 'F'), ('R', 'O'), ('A', 'O'), ('N', 'O')) AS li(l_returnflag, l_linestatus)
+    ORDER BY l_returnflag, l_linestatus),
+     partial_aggs AS (
+         SELECT l_returnflag, l_linestatus, SUM(l_quantity) sum_qty, SUM(l_extendedprice) sum_base_price,
+                SUM(l_extendedprice*(1-l_discount)) sum_disc_price, SUM(l_extendedprice*(1-l_discount)*(1+l_tax)) sum_charge,
+                SUM(l_quantity) avg_qty_sum, COUNT(l_quantity)::FLOAT4 avg_qty_cnt,
+                 SUM(l_extendedprice) avg_price_sum, COUNT(l_extendedprice)::FLOAT4 avg_price_cnt,
+                 SUM(l_discount) avg_discount_sum, COUNT(l_discount)::FLOAT4 avg_discount_cnt, COUNT(*) cnt
+         FROM lineitem
+         WHERE l_shipdate  <= date '1998-08-03'
+         GROUP BY l_returnflag, l_linestatus
+         ORDER BY l_returnflag, l_linestatus)
+SELECT o.l_returnflag, o.l_linestatus, COALESCE(sum_qty, 0) sum_qty, COALESCE(sum_base_price, 0) sum_base_price, COALESCE(sum_disc_price, 0) sum_disc_price, COALESCE(sum_charge, 0) sum_charge, COALESCE(avg_qty_sum, 0) avg_qty_sum, COALESCE(avg_qty_cnt, 0) avg_qty_cnt,  COALESCE(avg_price_sum, 0) avg_price_sum, COALESCE(avg_price_cnt, 0) avg_price_cnt,  COALESCE(avg_discount_sum, 0) avg_discount_sum, COALESCE(avg_discount_cnt, 0) avg_discount_cnt,  COALESCE(cnt, 0)::BIGINT cnt, CASE WHEN p.l_returnflag IS NULL THEN true ELSE false END AS dummy_tag
+FROM output_domain o LEFT JOIN partial_aggs p ON o.l_returnflag = p.l_returnflag AND o.l_linestatus = p.l_linestatus
+ORDER BY o.l_returnflag, o.l_linestatus", tuple_count=0) : (#0 shared-varchar(1) l_returnflag, #1 shared-varchar(1) l_linestatus, #2 shared-float sum_qty, #3 shared-float sum_base_price, #4 shared-float sum_disc_price, #5 shared-float sum_charge, #6 shared-float avg_qty_sum, #7 shared-float avg_qty_cnt, #8 shared-float avg_price_sum, #9 shared-float avg_price_cnt, #10 shared-float avg_discount_sum, #11 shared-float avg_discount_cnt, #12 shared-int64 cnt) order by: {<0, ASC> , <1, ASC> }, cost est: 0, output card: 0
+
+Cost Optimization Time : 0.000371 sec
+Operator #0 SecureSqlInput ran for 0.251000 ms, gate count: 0 output cardinality: 6, row width=401
+Operator #1 SecureSqlInput ran for 0.020000 ms, gate count: 0 output cardinality: 0, row width=401
+Operator #2 MergeJoin ran for 0.229000 ms, gate count: 0 output cardinality: 6, row width=801
+Operator #3 Project ran for 79.640000 ms, gate count: 128100 output cardinality: 6, row width=305
+Runtime: 0.158952 sec, CPU Time: 0.045211 sec, CPU clock ticks: 45211, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 163614. observed gates: 128100 gates, relative error (%)=27.7237
+[Linux]Peak resident set size: 2089586688 bytes, current memory size: 1989922816 bytes.
+Initial Memory: 2089586688 bytes, Peak Memory After Execution: 2089586688 bytes, Memory Usage: 0 bytes
+Bandwidth: 1.54734e+08 Bps
+party 3 send 24595200 bytes to party 1
+party 3 send 0 bytes to TP 
+total AND gate: 128100
+total pack call: 0
+total unpack call: 0
+total packed wire: 0
+total unpacked wire: 0
+[       OK ] GeneralizedComparisonTest.cost_optimized_tpch_q1 (1168 ms)
+[ RUN      ] GeneralizedComparisonTest.cost_optimized_tpch_q3
+Connecting to 127.0.0.1 on ports 7654, 65482 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 767.201ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 2089586688 bytes, current memory size: 1990258688 bytes.
+2089586688
+EMP mode: outsourced, storage mode: column store
+Code version: ad4e0ee5d37b3d640cc35784b9d9149d217134a8
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65482	--cutoff=100	--filter=*	--party=3	--port=7654	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 2089586688 bytes, current memory size: 1990258688 bytes.
+Original Tree : 
+#9: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$3(32) shared-float>, <2, P$1(28) shared-int64>, <3, P$2(32) shared-int32>)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-float revenue, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {<-1, ASC> , <1, DESC> , <2, ASC> }, cost est: 0, output card: 10
+    #8: Sort<Bit> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }, cost est: 6317, output card: 10
+        #7: SortMergeAggregate<Bit> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> , <1, ASC> , <2, ASC> }, cost est: 1854000, output card: 60175
+            #6: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$1(28) shared-int64>, <2, P$2(32) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <0, ASC> }, cost est: 0, output card: 1500
+                #5: KeyedSortMergeJoin<Bit> (P$0(13) == P$3(13) - sortCompatible) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-int32(13) lineitem.l_orderkey, #4 shared-float revenue) order by: {<-1, ASC> , <0, ASC> , <3, ASC> }, cost est: 40872566, output card: 1500
+                    #3: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$2(28) shared-int64>, <2, P$3(32) shared-int32>)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority) order by: {<0, ASC> }, cost est: 0, output card: 1500
+                        #2: KeyedJoin<Bit> (P$1(8) == P$4(8)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority, #4 shared-int32(8) customer.c_custkey) order by: {<0, ASC> , <4, ASC> }, cost est: 4500000, output card: 1500
+                            #0: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_orderkey, o_orderdate, o_shippriority", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {<0, ASC> }, cost est: 0, output card: 1500
+                            #1: SecureSqlInput<Bit> ("SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer ORDER BY c_custkey", tuple_count=150) : (#0 shared-int32(8) customer.c_custkey) order by: {<0, ASC> }, cost est: 0, output card: 150
+                    #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey", tuple_count=1500) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 0, output card: 1500
+
+Total Plans : 96
+Cost Optimized Plan : 
+#9: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$3(32) shared-float>, <2, P$1(28) shared-int64>, <3, P$2(32) shared-int32>)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-float revenue, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {<-1, ASC> , <1, DESC> , <2, ASC> }, cost est: 0, output card: 10
+    #8: Sort<Bit> ({<-1, ASC> , <3, DESC> , <1, ASC> }) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <3, DESC> , <1, ASC> }, cost est: 6317, output card: 10
+        #7: SortMergeAggregate<Bit> (group-by: (0, 1, 2) aggs: (SUM($3) revenue)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> , <1, ASC> , <2, ASC> }, cost est: 1854000, output card: 60175
+            #-1: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<0, ASC> }, cost est: 5575507, output card: 1500
+                #6: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$1(28) shared-int64>, <2, P$2(32) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-float revenue) order by: {<-1, ASC> , <0, ASC> }, cost est: 0, output card: 1500
+                    #5: KeyedSortMergeJoin<Bit> (P$0(13) == P$3(13) - sortCompatible) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority, #3 shared-int32(13) lineitem.l_orderkey, #4 shared-float revenue) order by: {<-1, ASC> , <0, ASC> , <3, ASC> }, cost est: 40872566, output card: 1500
+                        #3: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$2(28) shared-int64>, <2, P$3(32) shared-int32>)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int64(28) orders.o_orderdate, #2 shared-int32 orders.o_shippriority) order by: {<0, ASC> }, cost est: 0, output card: 1500
+                            #2: KeyedJoin<Bit> (P$1(8) == P$4(8)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority, #4 shared-int32(8) customer.c_custkey) order by: {<0, ASC> }, cost est: 4500000, output card: 1500
+                                #0: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DATE '1995-03-25' AS dummy_tag FROM orders ORDER BY o_orderkey, o_orderdate, o_shippriority", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int64(28) orders.o_orderdate, #3 shared-int32 orders.o_shippriority) order by: {<0, ASC> }, cost est: 0, output card: 1500
+                                #1: SecureSqlInput<Bit> ("SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag FROM customer ORDER BY c_custkey", tuple_count=150) : (#0 shared-int32(8) customer.c_custkey) order by: {}, cost est: 0, output card: 150
+                        #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_shipdate > DATE '1995-03-25' AS dummy_tag FROM lineitem ORDER BY l_orderkey", tuple_count=1500) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 0, output card: 1500
+
+Cost Optimization Time : 0.014669 sec
+Operator #0 SecureSqlInput ran for 14.742000 ms, gate count: 0 output cardinality: 1500, row width=82
+Operator #1 SecureSqlInput ran for 0.187000 ms, gate count: 0 output cardinality: 150, row width=9
+Operator #2 KeyedJoin ran for 2978.504000 ms, gate count: 4725000 output cardinality: 1500, row width=90
+Operator #3 Project ran for 8.810000 ms, gate count: 0 output cardinality: 1500, row width=74
+Operator #4 SecureSqlInput ran for 8.615000 ms, gate count: 0 output cardinality: 1500, row width=46
+extension finished! takes 752.589ms to extend lpn
+extension finished! takes 735.374ms to extend lpn
+extension finished! takes 731.34ms to extend lpn
+extension finished! takes 724.81ms to extend lpn
+extension finished! takes 729.961ms to extend lpn
+extension finished! takes 743.064ms to extend lpn
+extension finished! takes 732.378ms to extend lpn
+Operator #5 KeyedSortMergeJoin ran for 27758.303000 ms, gate count: 35140911 output cardinality: 1500, row width=119
+Operator #6 Project ran for 11.337000 ms, gate count: 0 output cardinality: 1500, row width=106
+extension finished! takes 731.298ms to extend lpn
+Operator #-1 Sort ran for 5259.995000 ms, gate count: 5924976 output cardinality: 1500, row width=106
+Operator #7 SortMergeAggregate ran for 1126.890000 ms, gate count: 1809325 output cardinality: 1500, row width=106
+extension finished! takes 730.595ms to extend lpn
+extension finished! takes 718.732ms to extend lpn
+extension finished! takes 729.08ms to extend lpn
+extension finished! takes 729.094ms to extend lpn
+extension finished! takes 725.813ms to extend lpn
+Operator #8 Sort ran for 21194.147000 ms, gate count: 26008902 output cardinality: 10, row width=106
+Operator #9 Project ran for 0.064000 ms, gate count: 0 output cardinality: 10, row width=106
+Runtime: 58.3971 sec, CPU Time: 50.4876 sec, CPU clock ticks: 5.04876e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 5.28084e+07. observed gates: 68884114 gates, relative error (%)=23.3373
+[Linux]Peak resident set size: 2175533056 bytes, current memory size: 2056740864 bytes.
+Initial Memory: 2089586688 bytes, Peak Memory After Execution: 2175533056 bytes, Memory Usage: 85946368 bytes
+Bandwidth: 2.26479e+08 Bps
+party 3 send 13225749888 bytes to party 1
+party 3 send 0 bytes to TP 
+total AND gate: 68884114
+total pack call: 0
+total unpack call: 0
+total packed wire: 0
+total unpacked wire: 0
+[       OK ] GeneralizedComparisonTest.cost_optimized_tpch_q3 (59312 ms)
+[ RUN      ] GeneralizedComparisonTest.cost_optimized_tpch_q5
+Connecting to 127.0.0.1 on ports 7654, 65482 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 790.223ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 2175533056 bytes, current memory size: 1992318976 bytes.
+2175533056
+EMP mode: outsourced, storage mode: column store
+Code version: ad4e0ee5d37b3d640cc35784b9d9149d217134a8
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65482	--cutoff=100	--filter=*	--party=3	--port=7654	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 2175533056 bytes, current memory size: 1992318976 bytes.
+Original Tree : 
+#11: Sort<Bit> ({<1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<1, DESC> }, cost est: 2583, output card: 5
+    #10: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) revenue)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 2229000, output card: 5
+        #-1: Sort<Bit> ({<0, ASC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<0, ASC> }, cost est: 19925584, output card: 1500
+            #9: Project<Bit> ((<0, P$4(200) shared-varchar>, <1, P$2(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<-1, ASC> }, cost est: 0, output card: 1500
+                #8: KeyedSortMergeJoin<Bit> ((P$1(13) == P$5(13)) AND ($0 == $3) - not sort compatible, need sort in smj) : (#0 shared-int32(5) supplier.s_nationkey, #1 shared-int32(13) lineitem.l_orderkey, #2 shared-float revenue, #3 shared-int32(5) customer.c_nationkey, #4 shared-varchar(25) nation.n_name, #5 shared-int32(13) orders.o_orderkey) order by: {<-1, ASC> , <1, ASC> , <5, ASC> , <0, ASC> , <3, ASC> }, cost est: 101961540, output card: 1500
+                    #-1: Sort<Bit> ({<1, ASC> , <0, ASC> }) : (#0 shared-int32(5) supplier.s_nationkey, #1 shared-int32(13) lineitem.l_orderkey, #2 shared-float revenue) order by: {<1, ASC> , <0, ASC> }, cost est: 3427566, output card: 1500
+                        #3: Project<Bit> ((<0, P$1(5) shared-int32>, <1, P$2(13) shared-int32>, <2, P$4(32) shared-float>)) : (#0 shared-int32(5) supplier.s_nationkey, #1 shared-int32(13) lineitem.l_orderkey, #2 shared-float revenue) order by: {}, cost est: 0, output card: 1500
+                            #2: KeyedJoin<Bit> (P$0(4) == P$3(4)) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-int32(5) supplier.s_nationkey, #2 shared-int32(13) lineitem.l_orderkey, #3 shared-int32(4) lineitem.l_suppkey, #4 shared-float revenue) order by: {<3, ASC> , <0, ASC> }, cost est: 25500, output card: 1500
+                                #0: SecureSqlInput<Bit> ("SELECT s_suppkey, s_nationkey FROM supplier JOIN nation ON s_nationkey = n_nationkey JOIN region ON n_regionkey = r_regionkey WHERE r_name = 'EUROPE' ORDER BY s_suppkey", tuple_count=1) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-int32(5) supplier.s_nationkey) order by: {<0, ASC> }, cost est: 0, output card: 1
+                                #1: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem ORDER BY l_suppkey", tuple_count=1500) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float revenue) order by: {<1, ASC> }, cost est: 0, output card: 1500
+                    #-1: Sort<Bit> ({}) : (#0 shared-int32(5) customer.c_nationkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(13) orders.o_orderkey) order by: {}, cost est: 10008492, output card: 1500
+                        #7: Project<Bit> ((<0, P$1(5) shared-int32>, <1, P$2(200) shared-varchar>, <2, P$3(13) shared-int32>)) : (#0 shared-int32(5) customer.c_nationkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(13) orders.o_orderkey) order by: {}, cost est: 0, output card: 1500
+                            #6: KeyedJoin<Bit> (P$0(8) == P$4(8)) : (#0 shared-int32(8) customer.c_custkey, #1 shared-int32(5) customer.c_nationkey, #2 shared-varchar(25) nation.n_name, #3 shared-int32(13) orders.o_orderkey, #4 shared-int32(8) orders.o_custkey) order by: {<4, ASC> , <0, ASC> }, cost est: 9112500, output card: 1500
+                                #4: SecureSqlInput<Bit> ("SELECT t2.c_custkey, t2.c_nationkey, t1.n_name FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t2.c_custkey ASC", tuple_count=27) : (#0 shared-int32(8) customer.c_custkey, #1 shared-int32(5) customer.c_nationkey, #2 shared-varchar(25) nation.n_name) order by: {<0, ASC> }, cost est: 0, output card: 27
+                                #5: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders ORDER BY o_custkey, o_orderdate", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey) order by: {<1, ASC> }, cost est: 0, output card: 1500
+
+Total Plans : 72
+Cost Optimized Plan : 
+#11: Sort<Bit> ({<1, DESC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<1, DESC> }, cost est: 2583, output card: 5
+    #10: NestedLoopAggregate<Bit> (group-by: (0) aggs: (SUM($1) revenue)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {}, cost est: 11385000, output card: 5
+        #9: Project<Bit> ((<0, P$4(200) shared-varchar>, <1, P$2(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-float revenue) order by: {<-1, ASC> }, cost est: 0, output card: 1500
+            #8: KeyedSortMergeJoin<Bit> ((P$1(13) == P$5(13)) AND ($0 == $3) - sortCompatible) : (#0 shared-int32(5) supplier.s_nationkey, #1 shared-int32(13) lineitem.l_orderkey, #2 shared-float revenue, #3 shared-int32(5) customer.c_nationkey, #4 shared-varchar(25) nation.n_name, #5 shared-int32(13) orders.o_orderkey) order by: {<-1, ASC> , <1, ASC> , <5, ASC> , <0, ASC> , <3, ASC> }, cost est: 78197083, output card: 1500
+                #3: Project<Bit> ((<0, P$1(5) shared-int32>, <1, P$2(13) shared-int32>, <2, P$4(32) shared-float>)) : (#0 shared-int32(5) supplier.s_nationkey, #1 shared-int32(13) lineitem.l_orderkey, #2 shared-float revenue) order by: {<1, ASC> , <0, ASC> }, cost est: 0, output card: 1500
+                    #2: KeyedJoin<Bit> (P$0(4) == P$3(4)) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-int32(5) supplier.s_nationkey, #2 shared-int32(13) lineitem.l_orderkey, #3 shared-int32(4) lineitem.l_suppkey, #4 shared-float revenue) order by: {<2, ASC> , <1, ASC> }, cost est: 25500, output card: 1500
+                        #0: SecureSqlInput<Bit> ("SELECT * FROM (SELECT s_suppkey, s_nationkey FROM supplier JOIN nation ON s_nationkey = n_nationkey JOIN region ON n_regionkey = r_regionkey WHERE r_name = 'EUROPE' ORDER BY s_suppkey) to_sort ORDER BY (2)  ASC ", tuple_count=1) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-int32(5) supplier.s_nationkey) order by: {<1, ASC> }, cost est: 0, output card: 1
+                        #1: SecureSqlInput<Bit> ("SELECT * FROM (SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem ORDER BY l_suppkey) to_sort ORDER BY (1)  ASC ", tuple_count=1500) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float revenue) order by: {<0, ASC> }, cost est: 522258, output card: 1500
+                #-1: Sort<Bit> ({<2, ASC> , <0, ASC> }) : (#0 shared-int32(5) customer.c_nationkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(13) orders.o_orderkey) order by: {<2, ASC> , <0, ASC> }, cost est: 11105314, output card: 1500
+                    #-1: Sort<Bit> ({}) : (#0 shared-int32(5) customer.c_nationkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(13) orders.o_orderkey) order by: {}, cost est: 10008492, output card: 1500
+                        #7: Project<Bit> ((<0, P$1(5) shared-int32>, <1, P$2(200) shared-varchar>, <2, P$3(13) shared-int32>)) : (#0 shared-int32(5) customer.c_nationkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(13) orders.o_orderkey) order by: {}, cost est: 0, output card: 1500
+                            #6: KeyedJoin<Bit> (P$0(8) == P$4(8)) : (#0 shared-int32(8) customer.c_custkey, #1 shared-int32(5) customer.c_nationkey, #2 shared-varchar(25) nation.n_name, #3 shared-int32(13) orders.o_orderkey, #4 shared-int32(8) orders.o_custkey) order by: {<4, ASC> , <0, ASC> }, cost est: 9112500, output card: 1500
+                                #4: SecureSqlInput<Bit> ("SELECT t2.c_custkey, t2.c_nationkey, t1.n_name FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t2.c_custkey ASC", tuple_count=27) : (#0 shared-int32(8) customer.c_custkey, #1 shared-int32(5) customer.c_nationkey, #2 shared-varchar(25) nation.n_name) order by: {<0, ASC> }, cost est: 0, output card: 27
+                                #5: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders ORDER BY o_custkey, o_orderdate", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey) order by: {<1, ASC> }, cost est: 0, output card: 1500
+
+Cost Optimization Time : 0.011472 sec
+Operator #0 SecureSqlInput ran for 0.021000 ms, gate count: 0 output cardinality: 1, row width=10
+Operator #1 SecureSqlInput ran for 10.123000 ms, gate count: 0 output cardinality: 1500, row width=50
+Operator #2 KeyedJoin ran for 155.108000 ms, gate count: 27000 output cardinality: 1500, row width=59
+Operator #3 Project ran for 5.948000 ms, gate count: 0 output cardinality: 1500, row width=51
+Operator #4 SecureSqlInput ran for 0.693000 ms, gate count: 0 output cardinality: 27, row width=214
+Operator #5 SecureSqlInput ran for 4.624000 ms, gate count: 0 output cardinality: 1500, row width=22
+extension finished! takes 747.895ms to extend lpn
+Operator #6 KeyedJoin ran for 5320.294000 ms, gate count: 9153000 output cardinality: 1500, row width=235
+Operator #7 Project ran for 27.201000 ms, gate count: 0 output cardinality: 1500, row width=219
+extension finished! takes 754.436ms to extend lpn
+extension finished! takes 746.882ms to extend lpn
+Operator #-1 Sort ran for 8842.177000 ms, gate count: 9540954 output cardinality: 1500, row width=219
+extension finished! takes 735.813ms to extend lpn
+extension finished! takes 731.529ms to extend lpn
+extension finished! takes 724.778ms to extend lpn
+Operator #-1 Sort ran for 8385.864000 ms, gate count: 11457858 output cardinality: 1500, row width=219
+extension finished! takes 742.213ms to extend lpn
+extension finished! takes 782.216ms to extend lpn
+extension finished! takes 772.537ms to extend lpn
+extension finished! takes 768.138ms to extend lpn
+extension finished! takes 781.065ms to extend lpn
+extension finished! takes 776.054ms to extend lpn
+extension finished! takes 784.872ms to extend lpn
+extension finished! takes 777.809ms to extend lpn
+extension finished! takes 783.773ms to extend lpn
+extension finished! takes 771.95ms to extend lpn
+extension finished! takes 799.988ms to extend lpn
+extension finished! takes 791.814ms to extend lpn
+extension finished! takes 774.372ms to extend lpn
+Operator #8 KeyedSortMergeJoin ran for 53604.854000 ms, gate count: 97102511 output cardinality: 1500, row width=269
+Operator #9 Project ran for 29.572000 ms, gate count: 0 output cardinality: 1500, row width=233
+extension finished! takes 713.483ms to extend lpn
+extension finished! takes 728.179ms to extend lpn
+Operator #10 NestedLoopAggregate ran for 8237.679000 ms, gate count: 10942500 output cardinality: 5, row width=233
+Operator #11 Sort ran for 1.881000 ms, gate count: 5940 output cardinality: 5, row width=233
+Runtime: 84.6868 sec, CPU Time: 78.9566 sec, CPU clock ticks: 7.89566e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.19836e+08. observed gates: 108050951 gates, relative error (%)=10.9074
+[Linux]Peak resident set size: 2349600768 bytes, current memory size: 2066128896 bytes.
+Initial Memory: 2175533056 bytes, Peak Memory After Execution: 2349600768 bytes, Memory Usage: 174067712 bytes
+Bandwidth: 2.44971e+08 Bps
+party 3 send 20745782592 bytes to party 1
+party 3 send 0 bytes to TP 
+total AND gate: 108050951
+total pack call: 0
+total unpack call: 0
+total packed wire: 0
+total unpacked wire: 0
+[       OK ] GeneralizedComparisonTest.cost_optimized_tpch_q5 (85642 ms)
+[ RUN      ] GeneralizedComparisonTest.cost_optimized_tpch_q8
+Connecting to 127.0.0.1 on ports 7654, 65482 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 841.098ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 2349600768 bytes, current memory size: 2066108416 bytes.
+2349600768
+EMP mode: outsourced, storage mode: column store
+Code version: ad4e0ee5d37b3d640cc35784b9d9149d217134a8
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65482	--cutoff=100	--filter=*	--party=3	--port=7654	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 2349600768 bytes, current memory size: 2066108416 bytes.
+Original Tree : 
+#12: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 100, output card: 2
+    #11: Project<Bit> ((<0, P$0(32) shared-int32>, <1, $2 / $1 shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 7618, output card: 2
+        #10: SortMergeAggregate<Bit> (group-by: (0) aggs: (SUM($1) null, SUM($2) null)) : (#0 shared-int32 orders.o_year, #1 shared-float null, #2 shared-float null) order by: {<0, ASC> }, cost est: 3450000, output card: 2
+            #-1: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float volume, #2 shared-float selected_volume) order by: {<0, ASC> }, cost est: 6032516, output card: 1500
+                #9: Project<Bit> ((<0, P$1(32) shared-int32>, <1, P$3(32) shared-float>, <2, CASE($4, $3, SECRET FLOAT) shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float volume, #2 shared-float selected_volume) order by: {}, cost est: 0, output card: 1500
+                    #8: KeyedJoin<Bit> (P$0(13) == P$2(13)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32 orders.o_year, #2 shared-int32(13) lineitem.l_orderkey, #3 shared-float volume, #4 shared-bool nation_check) order by: {}, cost est: 139500000, output card: 1500
+                        #3: Project<Bit> ((<0, P$1(13) shared-int32>, <1, P$3(32) shared-int32>)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32 orders.o_year) order by: {}, cost est: 0, output card: 1500
+                            #2: KeyedJoin<Bit> (P$0(8) == P$2(8)) : (#0 shared-int32(8) customer.c_custkey, #1 shared-int32(13) orders.o_orderkey, #2 shared-int32(8) orders.o_custkey, #3 shared-int32 orders.o_year) order by: {<2, ASC> , <0, ASC> }, cost est: 870000, output card: 1500
+                                #0: SecureSqlInput<Bit> ("SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA' ORDER BY c_custkey", tuple_count=29) : (#0 shared-int32(8) customer.c_custkey) order by: {<0, ASC> }, cost est: 0, output card: 29
+                                #1: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_custkey", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int32 orders.o_year) order by: {<1, ASC> }, cost est: 0, output card: 1500
+                        #7: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$2(32) shared-float>, <2, P$4(1) shared-bool>)) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float volume, #2 shared-bool nation_check) order by: {}, cost est: 0, output card: 1500
+                            #6: KeyedJoin<Bit> (P$1(4) == P$3(4)) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float volume, #3 shared-int32(4) supplier.s_suppkey, #4 shared-bool nation_check) order by: {<1, ASC> , <3, ASC> }, cost est: 195000, output card: 1500
+                                #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume,        CASE            WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE            ELSE TRUE            END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_suppkey", tuple_count=1500) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float volume) order by: {<1, ASC> }, cost est: 0, output card: 1500
+                                #5: SecureSqlInput<Bit> ("SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey ORDER BY s_suppkey", tuple_count=10) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-bool nation_check) order by: {<0, ASC> }, cost est: 0, output card: 10
+
+Total Plans : 576
+Cost Optimized Plan : 
+#12: Sort<Bit> ({<0, ASC> }) : (#0 shared-int32 orders.o_year, #1 shared-float mkt_share) order by: {<0, ASC> }, cost est: 100, output card: 2
+    #11: Project<Bit> ((<0, P$0(32) shared-int32>, <1, $2 / $1 shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float anonymous) order by: {}, cost est: 7618, output card: 2
+        #10: NestedLoopAggregate<Bit> (group-by: (0) aggs: (SUM($1) null, SUM($2) null)) : (#0 shared-int32 orders.o_year, #1 shared-float null, #2 shared-float null) order by: {}, cost est: 7092000, output card: 2
+            #9: Project<Bit> ((<0, P$1(32) shared-int32>, <1, P$3(32) shared-float>, <2, CASE($4, $3, SECRET FLOAT) shared-float>)) : (#0 shared-int32 orders.o_year, #1 shared-float volume, #2 shared-float anonymous) order by: {<-1, ASC> }, cost est: 0, output card: 1500
+                #8: KeyedSortMergeJoin<Bit> (P$0(13) == P$2(13) - sortCompatible) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32 orders.o_year, #2 shared-int32(13) lineitem.l_orderkey, #3 shared-float volume, #4 shared-bool nation_check) order by: {<-1, ASC> , <0, ASC> , <2, ASC> }, cost est: 34110261, output card: 1500
+                    #3: Project<Bit> ((<0, P$1(13) shared-int32>, <1, P$3(32) shared-int32>)) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32 orders.o_year) order by: {<0, ASC> }, cost est: 0, output card: 1500
+                        #2: KeyedJoin<Bit> (P$0(8) == P$2(8)) : (#0 shared-int32(8) customer.c_custkey, #1 shared-int32(13) orders.o_orderkey, #2 shared-int32(8) orders.o_custkey, #3 shared-int32 orders.o_year) order by: {<1, ASC> }, cost est: 870000, output card: 1500
+                            #0: SecureSqlInput<Bit> ("SELECT c_custkey FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey JOIN region ON r_regionkey = n_regionkey WHERE r_name = 'AFRICA' ORDER BY c_custkey", tuple_count=29) : (#0 shared-int32(8) customer.c_custkey) order by: {}, cost est: 0, output card: 29
+                            #1: SecureSqlInput<Bit> ("SELECT * FROM (SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= date '1995-01-01' and o_orderdate < date '1996-12-31') dummy_tag FROM orders ORDER BY o_custkey) to_sort ORDER BY (1)  ASC ", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-int32 orders.o_year) order by: {<0, ASC> }, cost est: 553910, output card: 1500
+                    #7: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$2(32) shared-float>, <2, P$4(1) shared-bool>)) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-float volume, #2 shared-bool nation_check) order by: {<0, ASC> }, cost est: 0, output card: 1500
+                        #6: KeyedJoin<Bit> (P$1(4) == P$3(4)) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float volume, #3 shared-int32(4) supplier.s_suppkey, #4 shared-bool nation_check) order by: {<0, ASC> }, cost est: 195000, output card: 1500
+                            #4: SecureSqlInput<Bit> ("SELECT * FROM (SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) AS volume,        CASE            WHEN p_type = 'LARGE ANODIZED STEEL' AND p_partkey = l_partkey THEN FALSE            ELSE TRUE            END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_suppkey) to_sort ORDER BY (1)  ASC ", tuple_count=1500) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float volume) order by: {<0, ASC> }, cost est: 522258, output card: 1500
+                            #5: SecureSqlInput<Bit> ("SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN true ELSE false END AS nation_check FROM supplier JOIN nation ON n_nationkey = s_nationkey ORDER BY s_suppkey", tuple_count=10) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-bool nation_check) order by: {}, cost est: 0, output card: 10
+
+Cost Optimization Time : 0.113571 sec
+Operator #0 SecureSqlInput ran for 0.055000 ms, gate count: 0 output cardinality: 29, row width=9
+Operator #1 SecureSqlInput ran for 10.126000 ms, gate count: 0 output cardinality: 1500, row width=54
+Operator #2 KeyedJoin ran for 1429.484000 ms, gate count: 913500 output cardinality: 1500, row width=62
+Operator #3 Project ran for 5.395000 ms, gate count: 0 output cardinality: 1500, row width=46
+Operator #4 SecureSqlInput ran for 9.640000 ms, gate count: 0 output cardinality: 1500, row width=50
+Operator #5 SecureSqlInput ran for 0.029000 ms, gate count: 0 output cardinality: 10, row width=6
+Operator #6 KeyedJoin ran for 238.652000 ms, gate count: 210000 output cardinality: 1500, row width=55
+Operator #7 Project ran for 6.121000 ms, gate count: 0 output cardinality: 1500, row width=47
+extension finished! takes 743.411ms to extend lpn
+extension finished! takes 740.669ms to extend lpn
+extension finished! takes 768.659ms to extend lpn
+extension finished! takes 760.495ms to extend lpn
+extension finished! takes 752.633ms to extend lpn
+Operator #8 KeyedSortMergeJoin ran for 20508.046000 ms, gate count: 25064109 output cardinality: 1500, row width=92
+Operator #9 Project ran for 91.723000 ms, gate count: 48000 output cardinality: 1500, row width=97
+extension finished! takes 725.916ms to extend lpn
+Operator #10 NestedLoopAggregate ran for 3428.831000 ms, gate count: 6528000 output cardinality: 2, row width=97
+Operator #11 Project ran for 3.342000 ms, gate count: 7618 output cardinality: 2, row width=65
+Operator #12 Sort ran for 0.080000 ms, gate count: 131 output cardinality: 2, row width=65
+Runtime: 25.8923 sec, CPU Time: 24.7684 sec, CPU clock ticks: 2.47684e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 4.2275e+07. observed gates: 31647858 gates, relative error (%)=33.5793
+[Linux]Peak resident set size: 2349600768 bytes, current memory size: 2066116608 bytes.
+Initial Memory: 2349600768 bytes, Peak Memory After Execution: 2349600768 bytes, Memory Usage: 0 bytes
+Bandwidth: 2.3468e+08 Bps
+party 3 send 6076388736 bytes to party 1
+party 3 send 0 bytes to TP 
+total AND gate: 31647858
+total pack call: 0
+total unpack call: 0
+total packed wire: 0
+total unpacked wire: 0
+[       OK ] GeneralizedComparisonTest.cost_optimized_tpch_q8 (26968 ms)
+[ RUN      ] GeneralizedComparisonTest.cost_optimized_tpch_q9
+Connecting to 127.0.0.1 on ports 7654, 65482 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 791.029ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 2349600768 bytes, current memory size: 2098339840 bytes.
+2349600768
+EMP mode: outsourced, storage mode: column store
+Code version: ad4e0ee5d37b3d640cc35784b9d9149d217134a8
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65482	--cutoff=100	--filter=*	--party=3	--port=7654	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 2349600768 bytes, current memory size: 2098339840 bytes.
+Original Tree : 
+#11: Sort<Bit> ({<0, ASC> , <1, DESC> }) : (#0 shared-varchar(25) nation.nation, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, DESC> }, cost est: 1385772, output card: 175
+    #10: SortMergeAggregate<Bit> (group-by: (0, 1) aggs: (SUM($2) sum_profit)) : (#0 shared-varchar(25) nation.nation, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, ASC> }, cost est: 2325000, output card: 175
+        #-1: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(25) nation.nation, #1 shared-int32 o_year, #2 shared-float amount) order by: {<0, ASC> , <1, ASC> }, cost est: 22987542, output card: 1500
+            #9: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$8(32) shared-int32>, <2, $7 - ($3 * $6) shared-float>)) : (#0 shared-varchar(25) nation.nation, #1 shared-int32 o_year, #2 shared-float amount) order by: {}, cost est: 6835500, output card: 1500
+                #8: KeyedJoin<Bit> ((P$2(4) == P$5(4)) AND (P$1(8) == P$4(8))) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(8) partsupp.ps_partkey, #2 shared-int32(4) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost, #4 shared-int32(8) lineitem.l_partkey, #5 shared-int32(4) lineitem.l_suppkey, #6 shared-float l_quantity, #7 shared-float volume, #8 shared-int32 o_year) order by: {<3, ASC> , <2, ASC> , <1, ASC> }, cost est: 22848000, output card: 1500
+                    #3: Project<Bit> ((<0, P$1(200) shared-varchar>, <1, P$2(8) shared-int32>, <2, P$3(4) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(8) partsupp.ps_partkey, #2 shared-int32(4) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost) order by: {<2, ASC> , <1, ASC> }, cost est: 0, output card: 56
+                        #2: KeyedJoin<Bit> (P$0(4) == P$3(4)) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(8) partsupp.ps_partkey, #3 shared-int32(4) partsupp.ps_suppkey, #4 shared-float partsupp.ps_supplycost) order by: {<3, ASC> , <2, ASC> , <0, ASC> }, cost est: 118720, output card: 56
+                            #0: SecureSqlInput<Bit> ("SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY s_suppkey", tuple_count=10) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name) order by: {<0, ASC> }, cost est: 0, output card: 10
+                            #1: SecureSqlInput<Bit> ("SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%' ORDER BY ps_suppkey, ps_partkey", tuple_count=56) : (#0 shared-int32(8) partsupp.ps_partkey, #1 shared-int32(4) partsupp.ps_suppkey, #2 shared-float partsupp.ps_supplycost) order by: {<1, ASC> , <0, ASC> }, cost est: 0, output card: 56
+                    #7: Project<Bit> ((<0, P$1(8) shared-int32>, <1, P$2(4) shared-int32>, <2, P$3(32) shared-float>, <3, P$4(32) shared-float>, <4, P$5(32) shared-int32>)) : (#0 shared-int32(8) lineitem.l_partkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float l_quantity, #3 shared-float volume, #4 shared-int32 o_year) order by: {<-1, ASC> }, cost est: 0, output card: 1500
+                        #6: KeyedSortMergeJoin<Bit> (P$0(13) == P$6(13) - sortCompatible) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(8) lineitem.l_partkey, #2 shared-int32(4) lineitem.l_suppkey, #3 shared-float l_quantity, #4 shared-float volume, #5 shared-int32 o_year, #6 shared-int32(13) orders.o_orderkey) order by: {<-1, ASC> , <0, ASC> , <6, ASC> }, cost est: 44879858, output card: 1500
+                            #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice * (1.0 - l_discount) AS volume FROM lineitem ORDER BY l_orderkey, l_suppkey, l_partkey", tuple_count=1500) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(8) lineitem.l_partkey, #2 shared-int32(4) lineitem.l_suppkey, #3 shared-float l_quantity, #4 shared-float volume) order by: {<0, ASC> , <2, ASC> , <1, ASC> }, cost est: 0, output card: 1500
+                            #5: SecureSqlInput<Bit> ("SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders ORDER BY o_orderkey", tuple_count=1500) : (#0 shared-int32 o_year, #1 shared-int32(13) orders.o_orderkey) order by: {<1, ASC> }, cost est: 0, output card: 1500
+
+Total Plans : 1536
+Cost Optimized Plan : 
+#11: Sort<Bit> ({<0, ASC> , <1, DESC> }) : (#0 shared-varchar(25) nation.nation, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, DESC> }, cost est: 1385772, output card: 175
+    #10: SortMergeAggregate<Bit> (group-by: (0, 1) aggs: (SUM($2) sum_profit)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float sum_profit) order by: {<0, ASC> , <1, ASC> }, cost est: 2325000, output card: 175
+        #-1: Sort<Bit> ({<0, ASC> , <1, ASC> }) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float anonymous) order by: {<0, ASC> , <1, ASC> }, cost est: 22987542, output card: 1500
+            #9: Project<Bit> ((<0, P$0(200) shared-varchar>, <1, P$8(32) shared-int32>, <2, $7 - ($3 * $6) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32 o_year, #2 shared-float anonymous) order by: {}, cost est: 6835500, output card: 1500
+                #8: KeyedJoin<Bit> ((P$2(4) == P$5(4)) AND (P$1(8) == P$4(8))) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(8) partsupp.ps_partkey, #2 shared-int32(4) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost, #4 shared-int32(8) lineitem.l_partkey, #5 shared-int32(4) lineitem.l_suppkey, #6 shared-float l_quantity, #7 shared-float volume, #8 shared-int32 o_year) order by: {<3, ASC> }, cost est: 22848000, output card: 1500
+                    #3: Project<Bit> ((<0, P$1(200) shared-varchar>, <1, P$2(8) shared-int32>, <2, P$3(4) shared-int32>, <3, P$4(32) shared-float>)) : (#0 shared-varchar(25) nation.n_name, #1 shared-int32(8) partsupp.ps_partkey, #2 shared-int32(4) partsupp.ps_suppkey, #3 shared-float partsupp.ps_supplycost) order by: {}, cost est: 0, output card: 56
+                        #2: KeyedJoin<Bit> (P$0(4) == P$3(4)) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name, #2 shared-int32(8) partsupp.ps_partkey, #3 shared-int32(4) partsupp.ps_suppkey, #4 shared-float partsupp.ps_supplycost) order by: {}, cost est: 118720, output card: 56
+                            #0: SecureSqlInput<Bit> ("SELECT s_suppkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY s_suppkey", tuple_count=10) : (#0 shared-int32(4) supplier.s_suppkey, #1 shared-varchar(25) nation.n_name) order by: {}, cost est: 0, output card: 10
+                            #1: SecureSqlInput<Bit> ("SELECT ps_partkey, ps_suppkey, ps_supplycost FROM partsupp JOIN part ON ps_partkey = p_partkey WHERE p_name LIKE '%yellow%' ORDER BY ps_suppkey, ps_partkey", tuple_count=56) : (#0 shared-int32(8) partsupp.ps_partkey, #1 shared-int32(4) partsupp.ps_suppkey, #2 shared-float partsupp.ps_supplycost) order by: {}, cost est: 0, output card: 56
+                    #7: Project<Bit> ((<0, P$1(8) shared-int32>, <1, P$2(4) shared-int32>, <2, P$3(32) shared-float>, <3, P$4(32) shared-float>, <4, P$5(32) shared-int32>)) : (#0 shared-int32(8) lineitem.l_partkey, #1 shared-int32(4) lineitem.l_suppkey, #2 shared-float l_quantity, #3 shared-float volume, #4 shared-int32 o_year) order by: {<-1, ASC> }, cost est: 0, output card: 1500
+                        #6: KeyedSortMergeJoin<Bit> (P$0(13) == P$6(13) - sortCompatible) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(8) lineitem.l_partkey, #2 shared-int32(4) lineitem.l_suppkey, #3 shared-float l_quantity, #4 shared-float volume, #5 shared-int32 o_year, #6 shared-int32(13) orders.o_orderkey) order by: {<-1, ASC> , <0, ASC> , <6, ASC> }, cost est: 44879858, output card: 1500
+                            #4: SecureSqlInput<Bit> ("SELECT l_orderkey, l_partkey, l_suppkey, l_quantity::float4, l_extendedprice * (1.0 - l_discount) AS volume FROM lineitem ORDER BY l_orderkey, l_suppkey, l_partkey", tuple_count=1500) : (#0 shared-int32(13) lineitem.l_orderkey, #1 shared-int32(8) lineitem.l_partkey, #2 shared-int32(4) lineitem.l_suppkey, #3 shared-float l_quantity, #4 shared-float volume) order by: {<0, ASC> , <2, ASC> , <1, ASC> }, cost est: 0, output card: 1500
+                            #5: SecureSqlInput<Bit> ("SELECT EXTRACT('year' FROM o_orderdate)::INT AS o_year, o_orderkey FROM orders ORDER BY o_orderkey", tuple_count=1500) : (#0 shared-int32 o_year, #1 shared-int32(13) orders.o_orderkey) order by: {<1, ASC> }, cost est: 0, output card: 1500
+
+Cost Optimization Time : 0.281031 sec
+Operator #0 SecureSqlInput ran for 0.346000 ms, gate count: 0 output cardinality: 10, row width=205
+Operator #1 SecureSqlInput ran for 0.359000 ms, gate count: 0 output cardinality: 56, row width=45
+Operator #2 KeyedJoin ran for 1156.399000 ms, gate count: 119280 output cardinality: 56, row width=249
+Operator #3 Project ran for 1.095000 ms, gate count: 0 output cardinality: 56, row width=245
+Operator #4 SecureSqlInput ran for 16.764000 ms, gate count: 0 output cardinality: 1500, row width=90
+Operator #5 SecureSqlInput ran for 8.109000 ms, gate count: 0 output cardinality: 1500, row width=46
+extension finished! takes 754.191ms to extend lpn
+extension finished! takes 747.455ms to extend lpn
+extension finished! takes 748.14ms to extend lpn
+extension finished! takes 752.03ms to extend lpn
+extension finished! takes 752.667ms to extend lpn
+extension finished! takes 768.228ms to extend lpn
+Operator #6 KeyedSortMergeJoin ran for 26155.222000 ms, gate count: 34372407 output cardinality: 1500, row width=135
+Operator #7 Project ran for 11.167000 ms, gate count: 0 output cardinality: 1500, row width=109
+extension finished! takes 769.274ms to extend lpn
+extension finished! takes 758.112ms to extend lpn
+extension finished! takes 770.857ms to extend lpn
+extension finished! takes 763.157ms to extend lpn
+extension finished! takes 773.769ms to extend lpn
+Operator #8 KeyedJoin ran for 16171.253000 ms, gate count: 22092000 output cardinality: 1500, row width=353
+extension finished! takes 767.962ms to extend lpn
+Operator #9 Project ran for 6338.362000 ms, gate count: 6835500 output cardinality: 1500, row width=265
+extension finished! takes 742.845ms to extend lpn
+extension finished! takes 739.993ms to extend lpn
+extension finished! takes 749.759ms to extend lpn
+extension finished! takes 752.362ms to extend lpn
+extension finished! takes 759.492ms to extend lpn
+extension finished! takes 750.07ms to extend lpn
+extension finished! takes 763.218ms to extend lpn
+Operator #-1 Sort ran for 23985.890000 ms, gate count: 31933878 output cardinality: 1500, row width=265
+Operator #10 SortMergeAggregate ran for 1487.136000 ms, gate count: 2278512 output cardinality: 1500, row width=265
+extension finished! takes 759.362ms to extend lpn
+extension finished! takes 754.877ms to extend lpn
+extension finished! takes 752.69ms to extend lpn
+extension finished! takes 749.55ms to extend lpn
+extension finished! takes 751.919ms to extend lpn
+extension finished! takes 747.738ms to extend lpn
+Operator #11 Sort ran for 25266.318000 ms, gate count: 31933878 output cardinality: 1500, row width=265
+Runtime: 100.921 sec, CPU Time: 96.8975 sec, CPU clock ticks: 9.68975e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 1.0138e+08. observed gates: 129446175 gates, relative error (%)=21.6814
+[Linux]Peak resident set size: 2349600768 bytes, current memory size: 2114867200 bytes.
+Initial Memory: 2349600768 bytes, Peak Memory After Execution: 2349600768 bytes, Memory Usage: 0 bytes
+Bandwidth: 2.46268e+08 Bps
+party 3 send 24853665600 bytes to party 1
+party 3 send 0 bytes to TP 
+total AND gate: 129446175
+total pack call: 0
+total unpack call: 0
+total packed wire: 0
+total unpacked wire: 0
+[       OK ] GeneralizedComparisonTest.cost_optimized_tpch_q9 (101944 ms)
+[ RUN      ] GeneralizedComparisonTest.cost_optimized_tpch_q18
+Connecting to 127.0.0.1 on ports 7654, 65482 as 3
+party 3 connected to TP
+party 3 connected to GB
+party 3 connected to TP
+party 3 connected to GB
+initializing cot
+setup finished! takes 782.199ms to finish setup
+Memory usage of backend setup: [Linux]Peak resident set size: 2349600768 bytes, current memory size: 2214592512 bytes.
+2349600768
+EMP mode: outsourced, storage mode: column store
+Code version: ad4e0ee5d37b3d640cc35784b9d9149d217134a8
+GFlags: --flagfile=	--alice_db=tpch_alice_150	--alice_host=127.0.0.1	--bob_db=tpch_bob_150	--ctrl_port=65482	--cutoff=100	--filter=*	--party=3	--port=7654	--storage=column	--unioned_db=tpch_unioned_150	--validation=false	--log_level=2	--logfile=	
+
+[Linux]Peak resident set size: 2349600768 bytes, current memory size: 2214592512 bytes.
+Original Tree : 
+#11: Sort<Bit> ({<-1, ASC> , <4, DESC> , <3, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(13) order_keys.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <4, DESC> , <3, ASC> }, cost est: 487532, output card: 100
+    #10: Project<Bit> ((<0, P$6(200) shared-varchar>, <1, P$5(8) shared-int32>, <2, P$0(13) shared-int32>, <3, P$3(28) shared-int64>, <4, P$2(32) shared-float>, <5, P$4(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(13) order_keys.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <1, ASC> }, cost est: 0, output card: 1500
+        #9: KeyedSortMergeJoin<Bit> (P$1(8) == P$5(8) - sortCompatible) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-float sum_qty, #5 shared-int32(8) customer.c_custkey, #6 shared-varchar(25) customer.c_name) order by: {<-1, ASC> , <1, ASC> , <5, ASC> }, cost est: 27433419, output card: 1500
+            #-1: Sort<Bit> ({<1, ASC> }) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-float sum_qty) order by: {<1, ASC> }, cost est: 5712610, output card: 1500
+                #7: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$3(8) shared-int32>, <2, P$4(32) shared-float>, <3, P$5(28) shared-int64>, <4, P$1(32) shared-float>)) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-float sum_qty) order by: {<0, ASC> }, cost est: 0, output card: 1500
+                    #6: MergeJoin<Bit> (no-op) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty, #2 shared-int32(13) orders.o_orderkey, #3 shared-int32(8) orders.o_custkey, #4 shared-float orders.o_totalprice, #5 shared-int64(28) orders.o_orderdate) order by: {<0, ASC> }, cost est: 4500, output card: 1500
+                        #4: Filter<Bit> (P$1(32) > SECRET FLOAT) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 319500, output card: 1500
+                            #3: Project<Bit> ((<0, P$0(13) shared-int32>, <1, $1 + $3 shared-float>)) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 1479000, output card: 1500
+                                #2: MergeJoin<Bit> (no-op) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty, #2 shared-int32(13) order_keys.o_orderkey, #3 shared-float sum_qty) order by: {<0, ASC> }, cost est: 4500, output card: 1500
+                                    #0: SecureSqlInput<Bit> ("WITH all_keys AS (SELECT o_orderkey  FROM order_keys), sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag FROM lineitem GROUP BY l_orderkey ORDER BY l_orderkey) SELECT o_orderkey, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = o_orderkey ORDER BY o_orderkey ", tuple_count=1500) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 0, output card: 1500
+                                    #1: SecureSqlInput<Bit> ("WITH all_keys AS (SELECT o_orderkey  FROM order_keys), sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag FROM lineitem GROUP BY l_orderkey ORDER BY l_orderkey) SELECT o_orderkey, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = o_orderkey ORDER BY o_orderkey ", tuple_count=0) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 0, output card: 0
+                        #5: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate, false dummy_tag FROM orders ORDER BY o_orderkey", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate) order by: {<0, ASC> }, cost est: 0, output card: 1500
+            #8: SecureSqlInput<Bit> ("SELECT c_custkey, c_name FROM customer ORDER BY c_custkey", tuple_count=150) : (#0 shared-int32(8) customer.c_custkey, #1 shared-varchar(25) customer.c_name) order by: {<0, ASC> }, cost est: 0, output card: 150
+
+Total Plans : 4
+Cost Optimized Plan : 
+#11: Sort<Bit> ({<-1, ASC> , <4, DESC> , <3, ASC> }) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(13) order_keys.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <4, DESC> , <3, ASC> }, cost est: 487532, output card: 100
+    #10: Project<Bit> ((<0, P$6(200) shared-varchar>, <1, P$5(8) shared-int32>, <2, P$0(13) shared-int32>, <3, P$3(28) shared-int64>, <4, P$2(32) shared-float>, <5, P$4(32) shared-float>)) : (#0 shared-varchar(25) customer.c_name, #1 shared-int32(8) customer.c_custkey, #2 shared-int32(13) order_keys.o_orderkey, #3 shared-int64(28) orders.o_orderdate, #4 shared-float orders.o_totalprice, #5 shared-float sum_qty) order by: {<-1, ASC> , <1, ASC> }, cost est: 0, output card: 1500
+        #9: KeyedSortMergeJoin<Bit> (P$1(8) == P$5(8) - sortCompatible) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-float sum_qty, #5 shared-int32(8) customer.c_custkey, #6 shared-varchar(25) customer.c_name) order by: {<-1, ASC> , <1, ASC> , <5, ASC> }, cost est: 27433419, output card: 1500
+            #-1: Sort<Bit> ({<1, ASC> }) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-float sum_qty) order by: {<1, ASC> }, cost est: 5712610, output card: 1500
+                #7: Project<Bit> ((<0, P$0(13) shared-int32>, <1, P$3(8) shared-int32>, <2, P$4(32) shared-float>, <3, P$5(28) shared-int64>, <4, P$1(32) shared-float>)) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate, #4 shared-float sum_qty) order by: {<0, ASC> }, cost est: 0, output card: 1500
+                    #6: MergeJoin<Bit> (no-op) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty, #2 shared-int32(13) orders.o_orderkey, #3 shared-int32(8) orders.o_custkey, #4 shared-float orders.o_totalprice, #5 shared-int64(28) orders.o_orderdate) order by: {<0, ASC> }, cost est: 4500, output card: 1500
+                        #4: Filter<Bit> (P$1(32) > SECRET FLOAT) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 319500, output card: 1500
+                            #3: Project<Bit> ((<0, P$0(13) shared-int32>, <1, $1 + $3 shared-float>)) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float anonymous) order by: {<0, ASC> }, cost est: 1479000, output card: 1500
+                                #2: MergeJoin<Bit> (no-op) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty, #2 shared-int32(13) order_keys.o_orderkey, #3 shared-float sum_qty) order by: {<0, ASC> }, cost est: 4500, output card: 1500
+                                    #0: SecureSqlInput<Bit> ("WITH all_keys AS (SELECT o_orderkey  FROM order_keys), sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag FROM lineitem GROUP BY l_orderkey ORDER BY l_orderkey) SELECT o_orderkey, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = o_orderkey ORDER BY o_orderkey ", tuple_count=1500) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 0, output card: 1500
+                                    #1: SecureSqlInput<Bit> ("WITH all_keys AS (SELECT o_orderkey  FROM order_keys), sum_qtys AS (SELECT l_orderkey, sum(l_quantity) as sum_qty, false AS dummy_tag FROM lineitem GROUP BY l_orderkey ORDER BY l_orderkey) SELECT o_orderkey, COALESCE(sum_qty, 0.0) sum_qty, COALESCE(dummy_tag, true) dummy_tag FROM all_keys LEFT JOIN sum_qtys ON l_orderkey = o_orderkey ORDER BY o_orderkey ", tuple_count=0) : (#0 shared-int32(13) order_keys.o_orderkey, #1 shared-float sum_qty) order by: {<0, ASC> }, cost est: 0, output card: 0
+                        #5: SecureSqlInput<Bit> ("SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate, false dummy_tag FROM orders ORDER BY o_orderkey", tuple_count=1500) : (#0 shared-int32(13) orders.o_orderkey, #1 shared-int32(8) orders.o_custkey, #2 shared-float orders.o_totalprice, #3 shared-int64(28) orders.o_orderdate) order by: {<0, ASC> }, cost est: 0, output card: 1500
+            #8: SecureSqlInput<Bit> ("SELECT c_custkey, c_name FROM customer ORDER BY c_custkey", tuple_count=150) : (#0 shared-int32(8) customer.c_custkey, #1 shared-varchar(25) customer.c_name) order by: {<0, ASC> }, cost est: 0, output card: 150
+
+Cost Optimization Time : 0.001101 sec
+Operator #0 SecureSqlInput ran for 9.079000 ms, gate count: 0 output cardinality: 1500, row width=46
+Operator #1 SecureSqlInput ran for 0.012000 ms, gate count: 0 output cardinality: 0, row width=46
+Operator #2 MergeJoin ran for 9.037000 ms, gate count: 0 output cardinality: 1500, row width=91
+Operator #3 Project ran for 920.019000 ms, gate count: 1479000 output cardinality: 1500, row width=46
+Operator #4 Filter ran for 149.120000 ms, gate count: 321000 output cardinality: 1500, row width=46
+Operator #5 SecureSqlInput ran for 14.982000 ms, gate count: 0 output cardinality: 1500, row width=82
+Operator #6 MergeJoin ran for 15.906000 ms, gate count: 3000 output cardinality: 1500, row width=127
+Operator #7 Project ran for 13.319000 ms, gate count: 0 output cardinality: 1500, row width=114
+extension finished! takes 728.863ms to extend lpn
+Operator #-1 Sort ran for 4143.664000 ms, gate count: 5837844 output cardinality: 1500, row width=114
+Operator #8 SecureSqlInput ran for 4.261000 ms, gate count: 0 output cardinality: 150, row width=209
+extension finished! takes 736.42ms to extend lpn
+extension finished! takes 744.654ms to extend lpn
+extension finished! takes 744.583ms to extend lpn
+extension finished! takes 749.936ms to extend lpn
+extension finished! takes 746.73ms to extend lpn
+extension finished! takes 745.021ms to extend lpn
+extension finished! takes 750.349ms to extend lpn
+Operator #9 KeyedSortMergeJoin ran for 25318.142000 ms, gate count: 42013990 output cardinality: 1500, row width=322
+Operator #10 Project ran for 37.600000 ms, gate count: 0 output cardinality: 1500, row width=314
+extension finished! takes 738.401ms to extend lpn
+extension finished! takes 743.021ms to extend lpn
+extension finished! takes 748.44ms to extend lpn
+extension finished! takes 739.634ms to extend lpn
+extension finished! takes 747.354ms to extend lpn
+extension finished! takes 745.818ms to extend lpn
+extension finished! takes 743.041ms to extend lpn
+Operator #11 Sort ran for 25357.623000 ms, gate count: 35070630 output cardinality: 100, row width=314
+Runtime: 56.0293 sec, CPU Time: 55.6766 sec, CPU clock ticks: 5.56766e+07, CPU clock ticks per second: 1000000
+End-to-end estimated gates: 3.54411e+07. observed gates: 77084620 gates, relative error (%)=54.0232
+[Linux]Peak resident set size: 2429042688 bytes, current memory size: 2273005568 bytes.
+Initial Memory: 2349600768 bytes, Peak Memory After Execution: 2429042688 bytes, Memory Usage: 79441920 bytes
+Bandwidth: 2.64152e+08 Bps
+party 3 send 14800247040 bytes to party 1
+party 3 send 0 bytes to TP 
+total AND gate: 77084620
+total pack call: 0
+total unpack call: 0
+total packed wire: 0
+total unpacked wire: 0
+[       OK ] GeneralizedComparisonTest.cost_optimized_tpch_q18 (57018 ms)
+[----------] 12 tests from GeneralizedComparisonTest (1327588 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (1327588 ms total)
+[  PASSED  ] 12 tests.
+Buffer pool requests: 0 hit rate: 0/0: -nan, pack calls: 0 unpack calls: 0 pinned pages: 0
+

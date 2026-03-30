@@ -1,0 +1,91 @@
+{
+  "rels" : [ {
+    "id" : "0",
+    "relOp" : "LogicalValues",
+    "outputFields" : "(#0: o_orderkey INTEGER, #1: o_orderpriority CHAR(15))",
+    "type" : [ {
+      "type" : "INTEGER",
+      "nullable" : false,
+      "name" : "o_orderkey"
+    }, {
+      "type" : "CHAR",
+      "nullable" : true,
+      "precision" : 15,
+      "name" : "o_orderpriority"
+    } ],
+    "tuples" : [ ],
+    "inputs" : [ ],
+    "sql" : "SELECT o_orderkey, o_orderpriority, NOT (o_orderdate >= DATE '1993-07-01' AND o_orderdate < DATE '1993-10-01') AS dummy_tag FROM orders ORDER BY o_orderkey, o_orderdate"
+  }, {
+    "id" : "1",
+    "relOp" : "LogicalValues",
+    "outputFields" : "(#0: l_orderkey INTEGER)",
+    "type" : [ {
+      "type" : "INTEGER",
+      "nullable" : false,
+      "name" : "l_orderkey"
+    } ],
+    "tuples" : [ ],
+    "inputs" : [ ],
+    "sql" : "SELECT l_orderkey, NOT l_commitdate < l_receiptdate AS dummy_tag FROM lineitem ORDER BY l_orderkey, l_commitdate, l_receiptdate"
+  }, {
+    "id" : "2",
+    "relOp" : "LogicalJoin",
+    "outputFields" : "(#0: o_orderkey INTEGER, #1: o_orderpriority CHAR(15), #2: l_orderkey INTEGER)",
+    "condition" : {
+      "op" : {
+        "name" : "=",
+        "kind" : "EQUALS",
+        "syntax" : "BINARY"
+      },
+      "operands" : [ {
+        "input" : 2,
+        "name" : "$2"
+      }, {
+        "input" : 0,
+        "name" : "$0"
+      } ]
+    },
+    "joinType" : "inner",
+    "inputs" : [ "0", "1" ],
+    "foreignKey" : 1
+  }, {
+    "id" : "3",
+    "relOp" : "LogicalProject",
+    "inputFields" : "(#0: o_orderkey INTEGER, #1: o_orderpriority CHAR(15), #2: l_orderkey INTEGER)",
+    "outputFields" : "(#0: o_orderpriority CHAR(15))",
+    "fields" : [ "o_orderpriority" ],
+    "exprs" : [ {
+      "input" : 1,
+      "name" : "$1"
+    } ]
+  }, {
+    "id" : "4",
+    "relOp" : "LogicalAggregate",
+    "inputFields" : "(#0: o_orderpriority CHAR(15))",
+    "outputFields" : "(#0: o_orderpriority CHAR(15), #1: order_count BIGINT)",
+    "group" : [ 0 ],
+    "aggs" : [ {
+      "agg" : {
+        "name" : "COUNT",
+        "kind" : "COUNT",
+        "syntax" : "FUNCTION_STAR"
+      },
+      "type" : {
+        "type" : "BIGINT",
+        "nullable" : false
+      },
+      "distinct" : false,
+      "operands" : [ ],
+      "name" : "order_count"
+    } ]
+  }, {
+    "id" : "5",
+    "relOp" : "LogicalSort",
+    "collation" : [ {
+      "field" : 0,
+      "direction" : "ASCENDING",
+      "nulls" : "LAST"
+    } ]
+  } ]
+}

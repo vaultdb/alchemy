@@ -1,0 +1,130 @@
+{
+  "rels": [
+    {
+      "id": "0",
+      "relOp": "LogicalValues",
+      "dummy_tag": true,
+      "party" : 1,
+      "outputFields": "(#0: SUM(revenue), #1 SUM(promo_revenue))",
+      "type": [
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "revenue"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "selected_revenue"
+        }
+      ],
+      "sql": "SELECT COALESCE(SUM(l.l_extendedprice * (1 - l.l_discount)), 0.0) AS revenue, COALESCE(SUM(CASE WHEN p.p_type LIKE 'PROMO%' THEN l.l_extendedprice * (1 - l.l_discount) ELSE 0.0 END), 0.0)::FLOAT4 AS selected_revenue FROM lineitem l JOIN part p ON l_partkey = p_partkey WHERE l.l_shipdate >= DATE '1994-08-01' AND l.l_shipdate < DATE '1994-09-01'"
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "dummy_tag": true,
+      "party" : 2,
+      "outputFields": "(#0: SUM(revenue), #1 SUM(promo_revenue))",
+      "type": [
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "revenue"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "selected_revenue"
+        }
+      ],
+      "sql": "SELECT COALESCE(SUM(l.l_extendedprice * (1 - l.l_discount)), 0.0) AS revenue, COALESCE(SUM(CASE WHEN p.p_type LIKE 'PROMO%' THEN l.l_extendedprice * (1 - l.l_discount) ELSE 0.0 END), 0.0)::FLOAT4 AS selected_revenue FROM lineitem l JOIN part p ON l_partkey = p_partkey WHERE l.l_shipdate >= DATE '1994-08-01' AND l.l_shipdate < DATE '1994-09-01'"
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalJoin",
+      "joinOn": "No-op, keys aligned in SQL setup",
+      "operator-algorithm" : "merge-join",
+      "outputFields":  "alice.sum(revenue), alice.sum(promo_revenue), bob.sum(revenue), bob.sum(promo_revenue)",
+      "condition": {
+        "no-op": true
+      },
+      "joinType": "inner",
+      "dummy-handling" : "OR",
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalProject",
+      "inputFields": "(#0: SUM(revenue), SUM(promo_revenue))",
+      "fields": ["promo_revenue"],
+      "exprs": [
+        {
+          "op": {
+            "name": "/",
+            "kind": "DIVIDE",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "*",
+                "kind": "TIMES",
+                "syntax": "BINARY"},
+              "operands": [
+                {
+                  "op": {
+                    "name": "+",
+                    "kind": "PLUS",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "input": 1,
+                      "name": "$1"
+                    },
+                    {
+                      "input": 3,
+                      "name": "$3"
+                    }
+                  ]
+                },
+                {"literal": 100.0,
+                  "type": { "type": "FLOAT" } }
+              ]
+            },
+            {
+              "op": {
+                "name": "+",
+                "kind": "PLUS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 0,
+                  "name": "$0"
+                },
+                {
+                  "input": 2,
+                  "name": "$2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+  ]
+}

@@ -1,0 +1,6 @@
+#List the workers and their associated databases here
+#workerName=host:psqlPort,db name,smcql root,emp port,smcql id (must be distinct, internal use)
+#TODO use ports as described here
+alice=localhost:5432,tpch_alice,$SMCQL_ROOT,54321,1
+bob=localhost:5432,tpch_bob,$SMCQL_ROOT,54321,2
+unioned=localhost:5432,tpch_unioned,$SMCQL_ROOT,54321,3

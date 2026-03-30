@@ -1,0 +1,6 @@
+*.bak
+test/*.cmake
+*~
+\#*\#
+.idea/*
+.vscode/

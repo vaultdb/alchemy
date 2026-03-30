@@ -1,0 +1,105 @@
+{
+  "rels" : [
+    {
+    "id" : "0",
+    "relOp" : "LogicalValues",
+    "outputFields" : "(#0: o_orderkey INTEGER, #1: o_orderpriority CHAR(15))",
+    "sql" : "SELECT o_orderkey, CASE WHEN o_orderpriority = '1-URGENT' OR o_orderpriority = '2-HIGH' THEN 1 ELSE 0 END AS high_line_count, CASE WHEN o_orderpriority <> '1-URGENT' AND o_orderpriority <> '2-HIGH' THEN 1 ELSE 0 END AS low_line_count FROM orders ORDER BY o_orderkey"
+  },
+    {
+    "id" : "1",
+    "relOp" : "LogicalValues",
+    "outputFields" : "(#0: l_orderkey INTEGER, #1: l_shipmode CHAR(10))",
+    "sql" : "SELECT l_orderkey, l_shipmode, NOT ((l_shipmode = 'TRUCK' OR l_shipmode = 'REG AIR') AND l_commitdate < l_receiptdate AND (l_shipdate < l_commitdate AND (l_receiptdate >= DATE '1994-01-01' AND l_receiptdate < DATE '1995-01-01'))) AS dummy_tag FROM (SELECT l_orderkey, l_shipdate, l_commitdate, l_receiptdate, l_shipmode FROM lineitem) AS t ORDER BY l_orderkey, l_shipdate, l_commitdate, l_receiptdate"
+  }, {
+    "id" : "2",
+    "relOp" : "LogicalJoin",
+    "outputFields" : "(#0: o_orderkey INTEGER, #1: high_line_count INTEGER, #2: low_line_count INTEGER, #3: l_orderkey INTEGER, #4: l_shipmode CHAR(10))",
+    "condition" : {
+      "op" : {
+        "name" : "=",
+        "kind" : "EQUALS",
+        "syntax" : "BINARY"
+      },
+      "operands" : [ {
+        "input" : 0,
+        "name" : "$0"
+      }, {
+        "input" : 3,
+        "name" : "$3"
+      } ]
+    },
+    "joinType" : "inner",
+    "inputs" : [ "0", "1" ],
+    "foreignKey" : 1},
+    {
+    "id" : "3",
+    "relOp" : "LogicalProject",
+    "inputFields" : "(#0: o_orderkey INTEGER, #1: high_line_count INTEGER, #2: low_line_count INTEGER, #3: l_orderkey INTEGER, #4: l_shipmode CHAR(10))",
+    "outputFields" : "(#0: l_shipmode CHAR(10), #1: high_line_count INTEGER, #2: low_line_count INTEGER)",
+    "fields" : [ "l_shipmode", "high_line_count", "low_line_count" ],
+    "exprs" : [
+      {
+        "input": 4,
+        "name": "$4"
+      },
+      {
+        "input": 1,
+        "name": "$1"
+      },
+      {
+        "input": 2,
+        "name": "$2"
+      }
+    ]
+  }, {
+    "id" : "4",
+    "relOp" : "LogicalAggregate",
+    "inputFields" : "(#0: l_shipmode CHAR(10), #1: $f1 INTEGER, #2: $f2 INTEGER)",
+    "outputFields" : "(#0: l_shipmode CHAR(10), #1: high_line_count INTEGER, #2: low_line_count INTEGER)",
+    "operator-algorithm" : "sort-merge-aggregate",
+    "effective-collation": [
+      {
+        "field": 0,
+        "direction": "ASCENDING",
+        "nulls" : "LAST"
+      }
+    ],
+    "group" : [ 0 ],
+    "aggs" : [ {
+      "agg" : {
+        "name" : "SUM",
+        "kind" : "SUM",
+        "syntax" : "FUNCTION"
+      },
+      "type" : {
+        "type" : "INTEGER",
+        "nullable" : false
+      },
+      "distinct" : false,
+      "operands" : [ 1 ],
+      "name" : "high_line_count"
+    }, {
+      "agg" : {
+        "name" : "SUM",
+        "kind" : "SUM",
+        "syntax" : "FUNCTION"
+      },
+      "type" : {
+        "type" : "INTEGER",
+        "nullable" : false
+      },
+      "distinct" : false,
+      "operands" : [ 2 ],
+      "name" : "low_line_count"
+    } ]
+  }, {
+    "id" : "5",
+    "relOp" : "LogicalSort",
+    "collation" : [ {
+      "field" : 0,
+      "direction" : "ASCENDING",
+      "nulls" : "LAST"
+    } ]
+  } ]
+}

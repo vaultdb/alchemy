@@ -1,0 +1,249 @@
+{
+  "rels" : [ {
+    "id" : "0",
+    "relOp" : "LogicalValues",
+    "outputFields" : "(#0: s_suppkey INTEGER, #1: s_name CHAR(25), #2: s_address VARCHAR(40))",
+    "tuples" : [ ],
+    "inputs" : [ ],
+    "sql" : "SELECT s_suppkey, s_name, s_address, NOT n_name = 'KENYA' AS dummy_tag FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY s_suppkey, s_nationkey"
+  },
+    {
+      "id" : "1",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: ps_suppkey INTEGER, #1: ps_partkey INTEGER, #2: ps_availqty INTEGER)",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "sql" : "SELECT ps_suppkey, ps_partkey, ps_availqty::FLOAT4 FROM partsupp JOIN part ON ps_partkey = p_partkey ORDER BY ps_suppkey, ps_partkey"
+    },
+    {
+      "id" : "2",
+      "relOp" : "LogicalJoin",
+      "outputFields" : "(#0: s_suppkey INTEGER, #1: s_name CHAR(25), #2: s_address VARCHAR(40), #3: ps_suppkey INTEGER, #4: ps_partkey INTEGER, #5: ps_availqty INTEGER)",
+      "condition" : {
+        "op" : {
+          "name" : "=",
+          "kind" : "EQUALS",
+          "syntax" : "BINARY"
+        },
+        "operands" : [ {
+          "input" : 0,
+          "name" : "$0"
+        }, {
+          "input" : 3,
+          "name" : "$3"
+        } ]
+      },
+      "joinType" : "inner",
+      "inputs" : [ "0", "1" ],
+      "foreignKey" : 1
+    },
+    {
+      "id" : "3",
+      "relOp" : "LogicalProject",
+      "inputFields" :"(#0: s_suppkey INTEGER, #1: s_name CHAR(25), #2: s_address VARCHAR(40), #3: ps_suppkey INTEGER, #4: ps_partkey INTEGER, #5: ps_availqty INTEGER)",
+      "outputFields" : "(#0: s_name CHAR(25), #1: s_address VARCHAR(40), #2: ps_suppkey INTEGER, #3: ps_partkey, #4: ps_availqty INTEGER)",
+      "fields" : [ "s_name", "s_address", "ps_suppkey", "ps_partkey","ps_availqty"],
+      "exprs" : [
+        {
+          "input" : 1,
+          "name" : "$1"
+        },
+        {
+          "input" : 2,
+          "name" : "$2"
+        },
+        {
+          "input" : 3,
+          "name" : "$3"
+        },
+        {
+          "input" : 4,
+          "name" : "$4"
+        },
+        {
+          "input" : 5,
+          "name" : "$5"
+        }
+      ]
+    },
+    {
+      "id" : "4",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: l_suppkey INTEGER, #1: l_partkey INTEGER, #2: l_quantity DECIMAL(19, 0))",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "sql" : "SELECT l_suppkey, l_partkey, l_quantity, CASE WHEN l_shipdate >= DATE '1993-01-01' AND l_shipdate < DATE '1994-01-01' AND p_name LIKE 'antique%' AND p_partkey = l_partkey THEN FALSE ELSE TRUE END AS dummy_tag FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_suppkey, l_partkey"
+    },
+    {
+      "id" : "5",
+      "relOp" : "LogicalAggregate",
+      "inputFields" : "(#0: l_suppkey INTEGER, #1: l_partkey INTEGER, #2: l_quantity DECIMAL(19, 0))",
+      "outputFields" : "(#0: sum_qty DECIMAL(19, 0))",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
+      "group": [
+        0, 1
+      ],
+      "aggs" : [ {
+        "agg" : {
+          "name" : "SUM",
+          "kind" : "SUM",
+          "syntax" : "FUNCTION"
+        },
+        "type" : {
+          "type" : "DECIMAL",
+          "nullable" : true,
+          "precision" : 19,
+          "scale" : 0
+        },
+        "distinct" : false,
+        "operands" : [ 2 ],
+        "name" : "sum_qty"
+      } ]
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalProject",
+      "inputFields": "(#0: l_suppkey INTEGER, #1: l_partkey INTEGER, #2: sum_qty DECIMAL(19, 0))",
+      "outputFields": "(#0: l_suppkey INTEGER, #1: l_partkey INTEGER, #2: threshold_qty DECIMAL(19, 0))",
+      "fields": ["l_suppkey", "l_partkey", "threshold_qty"],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "op": {
+            "name": "*",
+            "kind": "TIMES",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "literal": 0.5,
+              "type": {
+                "type": "DECIMAL",
+                "nullable": false,
+                "precision": 2,
+                "scale": 1
+              }
+            },
+            {
+              "input": 2,
+              "name": "sum_qty"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "relOp": "LogicalJoin",
+      "outputFields": "(#0: l_suppkey INTEGER, #1: l_partkey INTEGER, #2: threshold_qty DECIMAL(19, 0), #3: s_name CHAR(25), #4: s_address VARCHAR(40), #5: ps_suppkey INTEGER, #6: ps_partkey INTEGER, #7: ps_availqty INTEGER)",
+      "condition": {
+        "op": {
+          "name": "AND",
+          "kind": "AND",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 0,
+                "name": "$0"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 1,
+                "name": "$1"
+              },
+              {
+                "input": 6,
+                "name": "$6"
+              }
+            ]
+          }
+        ]
+      },
+      "foreignKey" : 0,
+      "joinType": "inner",
+      "inputs": [ "6", "3" ]
+    },
+    {
+      "id": "8",
+      "relOp": "LogicalFilter",
+      "condition": {
+        "op": {
+          "name": ">",
+          "kind": "GREATER_THAN",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 7,
+            "name": "$7"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ]
+      }
+    },
+    {
+      "id" : "9",
+      "relOp" : "LogicalProject",
+      "fields" : [ "s_name", "s_address" ],
+      "exprs" : [ {
+        "input" : 3,
+        "name" : "$3"
+      }, {
+        "input" : 4,
+        "name" : "$4"
+      } ]
+    },
+    {
+      "id" : "10",
+      "relOp" : "LogicalSort",
+      "outputFields" : "(#0: s_name CHAR(25), #1: s_address VARCHAR(40))",
+      "collation" : [ {
+        "field" : 0,
+        "direction" : "ASCENDING",
+        "nulls" : "LAST"
+      } ]
+    }
+  ]
+}

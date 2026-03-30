@@ -1,0 +1,180 @@
+{
+  "rels" : [
+    {
+      "id" : "0",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: mul DECIMAL(19,0))",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "type": [
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "mul"
+        }
+      ],
+      "sql": "SELECT psp.ps_supplycost * psp.ps_availqty as mul FROM partsupp psp JOIN supplier sp ON psp.ps_suppkey = sp.s_suppkey JOIN nation np ON sp.s_nationkey = np.n_nationkey WHERE np.n_name = 'JAPAN'"
+    },
+    {
+      "id" : "1",
+      "relOp" : "LogicalAggregate",
+      "inputFields" : "(#0: mul DECIMAL(19,0))",
+      "outputFields" : "(#0: sum_mul DECIMAL(19,0))",
+      "aggs" : [ {
+        "agg" : {
+          "name" : "SUM",
+          "kind" : "SUM",
+          "syntax" : "FUNCTION"
+        },
+        "type" : {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0
+        },
+        "distinct" : false,
+        "operands" : [ 0 ],
+        "name" : "sum_mul"
+      } ]
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalProject",
+      "outputFields": "#0: sum_mul DECIMAL(19,0)",
+      "inputFields":  "#0: percent_val DECIMAL(19,0)",
+      "fields": [
+        "percent_val"
+      ],
+      "exprs": [
+        {
+          "op": {
+            "name": "*",
+            "kind": "TIMES",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 0,
+              "name": "$0"
+            },
+            {
+              "literal": 0.0001,
+              "type": {
+                "type": "DECIMAL",
+                "nullable": false,
+                "precision": 19,
+                "scale": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id" : "3",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: ps_partkey INTEGER, #1: mul DECIMAL(19,0))",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "ps_partkey"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "mul"
+        }
+      ],
+      "sql": "SELECT psp.ps_partkey, psp.ps_supplycost * psp.ps_availqty as mul FROM partsupp psp JOIN supplier sp ON psp.ps_suppkey = sp.s_suppkey JOIN nation np ON sp.s_nationkey = np.n_nationkey WHERE np.n_name = 'JAPAN' ORDER BY psp.ps_partkey"
+    },
+    {
+      "id" : "4",
+      "relOp" : "LogicalAggregate",
+      "inputFields" : "(#0: ps_partkey INTEGER, #1: mul DECIMAL(19,0))",
+      "outputFields" : "(#0: ps_partkey INTEGER, #1: sum_mul DECIMAL(19,0))",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        }
+      ],
+      "group" : [ 0 ],
+      "aggs" : [ {
+        "agg" : {
+          "name" : "SUM",
+          "kind" : "SUM",
+          "syntax" : "FUNCTION"
+        },
+        "type" : {
+          "type" : "INTEGER",
+          "nullable" : false
+        },
+        "distinct" : false,
+        "operands" : [ 1 ],
+        "name" : "sum_mul"
+      }
+      ]
+    },
+    {
+      "id" : "5",
+      "relOp" : "LogicalJoin",
+      "outputFields" : "(#0: percent_val DECIMAL(19, 0), #1: ps_partkey, #2: sum_mul DECIMAL(19, 0))",
+      "joinType" : "cartesian",
+      "inputs" : [ "2", "4" ]
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalFilter",
+      "condition": {
+        "op": {
+          "name": ">",
+          "kind": "GREATER_THAN",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ]
+      }
+    },
+    {
+      "id" : "7",
+      "relOp" : "LogicalProject",
+      "fields" : [ "ps_partkey", "val" ],
+      "exprs" : [ {
+        "input" : 1,
+        "name" : "$1"
+      }, {
+        "input" : 2,
+        "name" : "$2"
+      } ]
+    },
+    {
+      "id" : "8",
+      "relOp" : "LogicalSort",
+      "outputFields" : "(#0: percent_val DECIMAL(19, 0), #1: ps_partkey INTEGER, #2: val DECIMAL(19, 0))",
+      "collation" : [
+        {
+          "field" : 1,
+          "direction" : "DESCENDING",
+          "nulls" : "FIRST"
+        }
+      ]
+    }
+  ]
+}

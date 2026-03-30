@@ -1,0 +1,65 @@
+{
+  "rels" : [
+    {
+      "id" : "0",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: revenue DECIMAL(19,0))",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "party" : 1,
+      "sql" : " select coalesce(sum(l.l_extendedprice* (1 - l.l_discount)),0) as revenue \n from \n   lineitem l, \n   part p \n where \n   ( \n     p.p_partkey = l.l_partkey \n     and p.p_brand = 'Brand#41' \n     and p.p_container in ('SM CASE', 'SM BOX', 'SM PACK', 'SM PKG') \n     and l.l_quantity >= 2 and l.l_quantity <= 2 + 10 \n     and p.p_size between 1 and 5 \n     and l.l_shipmode in ('AIR', 'AIR REG') \n     and l.l_shipinstruct = 'DELIVER IN PERSON' \n   ) \n   or \n   ( \n     p.p_partkey = l.l_partkey \n     and p.p_brand = 'Brand#13' \n     and p.p_container in ('MED BAG', 'MED BOX', 'MED PKG', 'MED PACK') \n     and l.l_quantity >= 14 and l.l_quantity <= 14 + 10 \n     and p.p_size between 1 and 10 \n     and l.l_shipmode in ('AIR', 'AIR REG') \n     and l.l_shipinstruct = 'DELIVER IN PERSON' \n   ) \n   or \n   ( \n     p.p_partkey = l.l_partkey \n     and p.p_brand = 'Brand#55' \n     and p.p_container in ('LG CASE', 'LG BOX', 'LG PACK', 'LG PKG') \n     and l.l_quantity >= 23 and l.l_quantity <= 23 + 10 \n     and p.p_size between 1 and 15 \n     and l.l_shipmode in ('AIR', 'AIR REG') \n     and l.l_shipinstruct = 'DELIVER IN PERSON' \n   )"
+    },
+    {
+      "id" : "1",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: revenue DECIMAL(19,0))",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "party" : 2,
+      "sql" : " select \n   coalesce(sum(l.l_extendedprice* (1 - l.l_discount)),0) as revenue \n from \n   lineitem l, \n   part p \n where \n   ( \n     p.p_partkey = l.l_partkey \n     and p.p_brand = 'Brand#41' \n     and p.p_container in ('SM CASE', 'SM BOX', 'SM PACK', 'SM PKG') \n     and l.l_quantity >= 2 and l.l_quantity <= 2 + 10 \n     and p.p_size between 1 and 5 \n     and l.l_shipmode in ('AIR', 'AIR REG') \n     and l.l_shipinstruct = 'DELIVER IN PERSON' \n   ) \n   or \n   ( \n     p.p_partkey = l.l_partkey \n     and p.p_brand = 'Brand#13' \n     and p.p_container in ('MED BAG', 'MED BOX', 'MED PKG', 'MED PACK') \n     and l.l_quantity >= 14 and l.l_quantity <= 14 + 10 \n     and p.p_size between 1 and 10 \n     and l.l_shipmode in ('AIR', 'AIR REG') \n     and l.l_shipinstruct = 'DELIVER IN PERSON' \n   ) \n   or \n   ( \n     p.p_partkey = l.l_partkey \n     and p.p_brand = 'Brand#55' \n     and p.p_container in ('LG CASE', 'LG BOX', 'LG PACK', 'LG PKG') \n     and l.l_quantity >= 23 and l.l_quantity <= 23 + 10 \n     and p.p_size between 1 and 15 \n     and l.l_shipmode in ('AIR', 'AIR REG') \n     and l.l_shipinstruct = 'DELIVER IN PERSON' \n   )"
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalJoin",
+      "joinOn": "No-op, keys aligned in SQL setup",
+      "operator-algorithm" : "merge-join",
+      "outputFields": "alice.revenue (#0), bob.revenue (#1)",
+      "condition": {
+        "no-op": true
+      },
+      "joinType": "inner",
+      "dummy-handling" : "AND",
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalProject",
+      "inputFields": "alice.revenue (#0), bob.revenue (#1)",
+      "fields": [
+        "revenue"
+      ],
+      "exprs": [
+        {
+          "op": {
+            "name": "+",
+            "kind": "PLUS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 0,
+              "name": "$0"
+            },
+            {
+              "input": 1,
+              "name": "$1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

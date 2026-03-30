@@ -1,0 +1,80 @@
+{
+  "rels": [
+    {
+      "id": "0",
+      "relOp": "LogicalValues",
+      "outputFields": "revenue (#0)",
+      "sql" : "WITH output_domain AS ( SELECT 0 AS revenue ), partial_aggs AS (SELECT SUM(l_extendedprice * l_discount) AS revenue FROM lineitem WHERE l_shipdate >= DATE '1997-01-01' AND l_shipdate < DATE '1998-01-01' AND l_discount >= 0.03 - 0.01 AND (l_discount <= 0.03 + 0.01 AND l_quantity < 24)) SELECT COALESCE(p.revenue, o.revenue) AS revenue, CASE WHEN p.revenue IS NULL THEN true ELSE false END AS dummy_tag FROM output_domain o LEFT JOIN partial_aggs p ON true",
+      "dummy_tag": true,
+      "party" : 1,
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "outputFields": "revenue (#0)",
+      "sql" : "WITH output_domain AS ( SELECT 0 AS revenue ), partial_aggs AS (SELECT SUM(l_extendedprice * l_discount) AS revenue FROM lineitem WHERE l_shipdate >= DATE '1997-01-01' AND l_shipdate < DATE '1998-01-01' AND l_discount >= 0.03 - 0.01 AND (l_discount <= 0.03 + 0.01 AND l_quantity < 24)) SELECT COALESCE(p.revenue, o.revenue) AS revenue, CASE WHEN p.revenue IS NULL THEN true ELSE false END AS dummy_tag FROM output_domain o LEFT JOIN partial_aggs p ON true",
+      "dummy_tag": true,
+      "party" : 2,
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalJoin",
+      "joinOn": "No-op, keys aligned in SQL setup",
+      "operator-algorithm" : "merge-join",
+      "outputFields":  "revenue (#0), revenue (#1)",
+      "condition": {
+        "no-op": true
+      },
+      "joinType": "inner",
+      "dummy-handling" : "OR",
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalProject",
+      "outputFields": "alice.revenue (#0),  bob.revenue (#1)",
+      "inputFields":  "revenue (#0)",
+      "fields": [
+        "revenue"
+      ],
+      "exprs": [
+        {
+          "op": {
+            "name": "+",
+            "kind": "PLUS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 0,
+              "name": "$0"
+            },
+            {
+              "input": 1,
+              "name": "$1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

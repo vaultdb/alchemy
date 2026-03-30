@@ -1,0 +1,148 @@
+package org.vaultdb.compiler.emp.generated;
+
+
+import org.apache.calcite.util.Pair;
+
+import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacpp.Pointer;
+import org.bytedeco.javacpp.annotation.Namespace;
+import org.bytedeco.javacpp.annotation.Platform;
+import org.bytedeco.javacpp.annotation.StdString;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.BitSet;
+
+
+import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.db.data.QueryTable;
+import org.vaultdb.executor.plaintext.SqlQueryExecutor;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.EmpJniUtilities;
+import org.vaultdb.util.Utilities;
+import org.vaultdb.util.EmpJniUtilities;
+
+
+
+
+
+
+
+import org.vaultdb.compiler.emp.EmpProgram;
+
+
+@Platform(include={"TpcHQuery1.h"}, 
+			compiler = "cpp11")
+
+
+
+
+
+@Namespace("TpcHQuery1")
+public class TpcHQuery1  extends EmpProgram  {
+
+	
+	public TpcHQuery1(int party, int port) {
+		super(party, port);
+		inputs.put("SeqScan0Union", "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice, l_extendedprice * (1 - l_discount) AS $f4, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS $f5, l_discount FROM (SELECT l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate FROM lineitem) AS t WHERE l_shipdate <= DATE '1998-08-03' ORDER BY l_quantity, l_extendedprice, l_discount, l_tax, l_shipdate");
+
+                Pair<Long, Long> SeqScan0Cardinalities = new Pair<Long, Long>(166725L, 134035L);
+obliviousCardinalities.put("SeqScan0Union", SeqScan0Cardinalities);
+
+	}
+	
+
+	public static class TpcHQuery1Class extends Pointer {
+	
+        static {         
+			Loader.load(); 
+	       } 
+       
+        public TpcHQuery1Class() { 	
+        	allocate(); 
+        	}
+        private native void allocate();
+        
+        // schema always has boolean dummyTag at the end of each tuple - both for input and output
+        // 1 = dummy, 0 = real value
+        public native void addInput(@StdString String opName,  @StdString String bitString);
+        public native void run(int party, int port); 
+        public native void setGeneratorHost(@StdString String host);
+        public native @StdString String getOutput();
+        
+        
+	}
+	
+	
+	   
+	   
+	
+	   	
+        @Override
+        public void runProgram() throws Exception {
+        	TpcHQuery1Class theQuery = new TpcHQuery1Class();
+
+	        Iterator inputItr = inputs.entrySet().iterator();
+	        while(inputItr.hasNext()) {
+	        	Map.Entry entry = (Map.Entry) inputItr.next();
+	        	String functionName = (String) entry.getKey();
+			String sql = (String) entry.getValue();
+
+	        	// For all inputs to MPC, get an associated QueryTable
+	        	String inputTable = getObliviousInput(functionName, sql);
+
+
+                // add the input strings using the addInput function - which is available in main.txt
+	        	theQuery.addInput(functionName, inputTable);
+	        }
+	        
+        	if(generatorHost != null) {
+        		theQuery.setGeneratorHost(generatorHost);
+        	}
+        	
+        	
+        	theQuery.run(party, port);
+        	outputString = theQuery.getOutput();
+		outputBits = EmpJniUtilities.stringToBitSet(outputString);
+	        theQuery.close();
+
+        }
+        
+
+
+
+	// for testing on localhost only
+	public static void main(String[] args) {
+           
+		int party = Integer.parseInt(args[0]);
+		int port = Integer.parseInt(args[1]);
+		String setupFile = Utilities.getVaultDBRoot() + "/conf/setup.global";
+		
+  	    System.setProperty("vaultdb.setup", setupFile);
+  	    String workerId = (party == 1) ? "alice" : "bob";
+  	    
+  	    
+  	    
+  	    System.setProperty("workerId", workerId);
+  	    
+		TpcHQuery1 qc = new TpcHQuery1(party, port);
+
+		
+		try {
+			SystemConfiguration.getInstance(); // initialize config
+		        qc.runProgram();
+		} catch(Exception e) {
+			System.err.println("Program execution failed!");
+			e.printStackTrace();
+			System.exit(-1);
+		}
+
+		System.err.print(qc.getOutputString());
+
+
+	        
+    }        
+	
+    	
+}

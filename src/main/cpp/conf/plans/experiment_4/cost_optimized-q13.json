@@ -1,0 +1,191 @@
+{
+  "rels" : [
+    {
+      "id" : "0",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: c_custkey INTEGER, #1: c_count INTEGER)",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "dummy-tag": true,
+      "party": 1,
+      "collation": [
+        {
+          "field": 0,
+          "name": "c_custkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "sql" : "WITH all_customers AS (SELECT c_custkey FROM customer_keys), special_order_counts AS (SELECT o_custkey, COUNT(o_orderkey) FILTER (WHERE o_comment NOT LIKE '%special%requests%') AS o_count, FALSE AS dummy_tag FROM orders GROUP BY o_custkey) SELECT c_custkey, COALESCE(o_count, 0)::INTEGER AS c_count, COALESCE(dummy_tag, TRUE) AS dummy_tag FROM all_customers LEFT JOIN special_order_counts ON o_custkey = c_custkey ORDER BY c_custkey"
+    },
+    {
+      "id" : "1",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: c_custkey INTEGER, #1: c_count INTEGER)",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "dummy-tag": true,
+      "party": 2,
+      "collation": [
+        {
+          "field": 0,
+          "name": "c_custkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "sql" : "WITH all_customers AS (SELECT c_custkey FROM customer_keys), special_order_counts AS (SELECT o_custkey, COUNT(o_orderkey) FILTER (WHERE o_comment NOT LIKE '%special%requests%') AS o_count, FALSE AS dummy_tag FROM orders GROUP BY o_custkey) SELECT c_custkey, COALESCE(o_count, 0)::INTEGER AS c_count, COALESCE(dummy_tag, TRUE) AS dummy_tag FROM all_customers LEFT JOIN special_order_counts ON o_custkey = c_custkey ORDER BY c_custkey"
+    },{
+      "id": "2",
+      "relOp": "LogicalJoin",
+      "joinOn": "No-op, keys aligned in SQL setup",
+      "operator-algorithm" : "merge-join",
+      "outputFields": "alice.c_custkey (#0), alice.c_count (#1), bob.c_custkey (#2), bob.c_count (#3)",
+      "condition": {
+        "no-op": true
+      },
+      "joinType": "inner",
+      "dummy-handling" : "AND",
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalProject",
+      "inputFields": "alice.c_custkey (#0), alice.c_count (#1), bob.c_custkey (#2), bob.c_count (#3)",
+      "fields": [
+        "c_custkey",
+        "c_count"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "op": {
+            "name": "+",
+            "kind": "PLUS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "input": 3,
+              "name": "$3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id" : "4",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: c_custkey INTEGER, #1: o_count INTEGER)",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "collation": [
+        {
+          "field": 0,
+          "name": "c_custkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "sql" : "SELECT c_custkey, 0 as o_count FROM customer ORDER BY c_custkey"
+    },
+    {
+      "id": "5",
+      "relOp": "LogicalJoin",
+      "joinOn": "No-op, keys aligned in SQL setup",
+      "operator-algorithm" : "merge-join",
+      "outputFields": "c_custkey (#0), c_count (#1), customer_c_custkey (#2), customer_c_count (#3)",
+      "condition": {
+        "no-op": true
+      },
+      "joinType": "inner",
+      "dummy-handling" : "AND",
+      "inputs": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalProject",
+      "inputFields": "c_custkey (#0), c_count (#1), customer_c_custkey (#2), customer_c_count (#3)",
+      "fields": [
+        "c_custkey",
+        "c_count"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "op": {
+            "name": "+",
+            "kind": "PLUS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "input": 3,
+              "name": "$3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id" : "7",
+      "relOp" : "LogicalAggregate",
+      "inputFields" : "(#0: o_custkey INTEGER, #1: o_count INTEGER)",
+      "outputFields" : "(#0: c_custkey INTEGER, #1: o_count BIGINT)",
+      "group" : [ 1 ],
+      "operator-algorithm" : "sort-merge-aggregate",
+      "cardBound" : "customer",
+      "effective-collation": [
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        }
+      ],
+      "aggs" : [ {
+        "agg" : {
+          "name" : "COUNT",
+          "kind" : "COUNT",
+          "syntax" : "FUNCTION_STAR"
+        },
+        "type" : {
+          "type" : "BIGINT",
+          "nullable" : false
+        },
+        "distinct" : false,
+        "operands" : [],
+        "name" : "custdist"
+      } ]
+    },
+    {
+      "id" : "8",
+      "relOp" : "LogicalSort",
+      "collation" : [ {
+        "field" : 1,
+        "direction" : "DESCENDING",
+        "nulls" : "FIRST"
+      }, {
+        "field" : 0,
+        "direction" : "DESCENDING",
+        "nulls" : "FIRST"
+      } ]
+    }
+  ]
+}

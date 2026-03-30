@@ -1,0 +1,204 @@
+{
+  "rels" : [ {
+    "id" : "0",
+    "relOp" : "LogicalValues",
+    "outputFields" : "(#0: sum_quantity INTEGER, #1: sum_count INTEGER)",
+    "tuples" : [ ],
+    "inputs" : [ ],
+    "party" : 1,
+    "sql" : "WITH all_keys AS (SELECT p_partkey  FROM part) SELECT l_partkey, COALESCE (SUM(l_quantity),0)::FLOAT4 AS total_quantity, COUNT(*)::FLOAT4 AS total_count FROM all_keys LEFT JOIN lineitem ON p_partkey = l_partkey GROUP BY l_partkey ORDER BY l_partkey"
+  },
+    {
+      "id" : "1",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: sum_quantity INTEGER, #1: sum_count INTEGER)",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "party" : 2,
+      "sql" : "WITH all_keys AS (SELECT p_partkey  FROM part) SELECT l_partkey, COALESCE (SUM(l_quantity),0)::FLOAT4 AS total_quantity, COUNT(*)::FLOAT4 AS total_count FROM all_keys LEFT JOIN lineitem ON p_partkey = l_partkey GROUP BY l_partkey ORDER BY l_partkey"
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalJoin",
+      "joinOn": "No-op, keys aligned in SQL setup",
+      "operator-algorithm" : "merge-join",
+      "outputFields": "alice.sum_quantity (#0), alice.sum_count (#1), bob.sum_quantity (#2), bob.sum_count (#3)",
+      "condition": {
+        "no-op": true
+      },
+      "joinType": "inner",
+      "dummy-handling" : "AND",
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalProject",
+      "inputFields": "alice.l_partkey (#0), alice.sum_quantity (#1), alice.sum_count (#2), bob.l_partkey (#3), bob.sum_quantity (#4), bob.sum_count (#5)",
+      "fields": ["l_partkey", "avg_quantity"],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "op": {
+            "name": "*",
+            "kind": "TIMES",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "literal": 0.2,
+              "type": {
+                "type": "DECIMAL",
+                "nullable": false,
+                "precision": 2,
+                "scale": 1
+              }
+            },
+            {
+              "op": {
+                "name": "/",
+                "kind": "DIVIDE",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "op": {
+                    "name": "+",
+                    "kind": "PLUS",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "input": 1,
+                      "name": "$1"
+                    },
+                    {
+                      "input": 4,
+                      "name": "$4"
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "+",
+                    "kind": "PLUS",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "input": 2,
+                      "name": "$2"
+                    },
+                    {
+                      "input": 5,
+                      "name": "$5"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id" : "4",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: l_partkey INTEGER, #1: l_quantity DECIMAL(19, 0), #2: l_extendedprice DECIMAL(19, 0))",
+      "sql" : "SELECT l_partkey, l_quantity, l_extendedprice, CASE WHEN p_brand = 'Brand#11' AND p_container = 'MED BOX' AND p_partkey = l_partkey THEN FALSE ELSE TRUE END AS dummy_tag  FROM lineitem LEFT JOIN part ON p_partkey = l_partkey ORDER BY l_partkey",
+      "tuples" : [ ],
+      "inputs" : [ ]
+    },
+    {
+      "id" : "5",
+      "relOp" : "LogicalJoin",
+      "outputFields" : "(#0: l_partkey INTEGER, #1: avg_quantity DECIMAL(19, 0), #2: l_partkey INTEGER, #3: l_quantity DECIMAL(19, 0), #4: l_extendedprice DECIMAL(19, 0))",
+      "condition" : {
+        "op" : {
+          "name" : "=",
+          "kind" : "EQUALS",
+          "syntax" : "BINARY"
+        },
+        "operands" : [ {
+          "input" : 0,
+          "name" : "$0"
+        }, {
+          "input" : 2,
+          "name" : "$2"
+        } ]
+      },
+      "inputs" : [ "3", "4" ],
+      "foreignKey" : 1
+    },
+    {
+      "id" : "6",
+      "relOp" : "LogicalFilter",
+      "outputFields" : "(#0: l_partkey INTEGER, #1: avg_quantity DECIMAL(19, 0), #2: l_partkey INTEGER, #3: l_quantity DECIMAL(19, 0), #4: l_extendedprice DECIMAL(19, 0))",
+      "condition" : {
+        "op" : {
+          "name" : "<",
+          "kind" : "LESS_THAN",
+          "syntax" : "BINARY"
+        },
+        "operands" : [ {
+          "input" : 3,
+          "name" : "$3"
+        }, {
+          "input" : 1,
+          "name" : "$1"
+        } ]
+      }
+    },
+    {
+      "id" : "7",
+      "relOp" : "LogicalAggregate",
+      "inputFields" : "(#0: avg_quantity DECIMAL(19, 0), #1: l_quantity DECIMAL(19, 0), #2: l_extendedprice DECIMAL(19, 0))",
+      "outputFields" : "(#0: sum_extendedprice DECIMAL(19, 0))",
+      "aggs" : [ {
+        "agg" : {
+          "name" : "SUM",
+          "kind" : "SUM",
+          "syntax" : "FUNCTION"
+        },
+        "type" : {
+          "type" : "DECIMAL",
+          "nullable" : true,
+          "precision" : 19,
+          "scale" : 0
+        },
+        "distinct" : false,
+        "operands" : [ 4 ],
+        "name" : "sum_extendedprice"
+      } ]
+    },
+    {
+      "id" : "8",
+      "relOp" : "LogicalProject",
+      "fields" : [ "avg_yearly" ],
+      "exprs" : [ {
+        "op" : {
+          "name" : "/",
+          "kind" : "DIVIDE",
+          "syntax" : "BINARY"
+        },
+        "operands" : [ {
+          "input" : 0,
+          "name" : "$0"
+        }, {
+          "literal" : 7.0,
+          "type" : {
+            "type" : "DECIMAL",
+            "nullable" : false,
+            "precision" : 2,
+            "scale" : 1
+          }
+        } ]
+      } ]
+    }
+  ]
+}

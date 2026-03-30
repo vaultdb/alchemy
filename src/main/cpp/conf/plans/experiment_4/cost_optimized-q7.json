@@ -1,0 +1,353 @@
+{
+  "rels" : [
+    {
+      "id": "0",
+      "outputFields": "s_suppkey (#0), n_name (#1)",
+      "relOp": "LogicalValues",
+      "sql": "WITH filtered_nations AS ( SELECT n_nationkey, n_name FROM nation  WHERE n_name IN ('UNITED STATES', 'EGYPT'))  SELECT s_suppkey, n_name FROM supplier JOIN filtered_nations ON s_nationkey = n_nationkey ORDER BY s_suppkey, n_name",
+      "dummy-tag": false,
+      "collation-1": [
+        {
+          "field": 0,
+          "name": "s_suppkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 1,
+          "name": "n_name",
+          "direction": "ASCENDING"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "outputFields": "l_orderkey (#0), l_suppkey (#1), volume (#2), l_year (#3)",
+      "sql": "SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS volume, EXTRACT(YEAR FROM l_shipdate)::INT AS l_year, l_suppkey, l_orderkey, NOT (l_shipdate >= DATE '1995-01-01' AND l_shipdate <= DATE '1996-12-31') AS dummy_tag FROM lineitem ORDER BY l_suppkey, l_orderkey",
+      "dummy-tag": false,
+      "collation-1": [
+        {
+          "field": 1,
+          "name": "l_suppkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 0,
+          "name": "l_orderkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalJoin",
+      "joinOn" : "s_suppkey = l_suppkey",
+      "outputFields": "s_suppkey (#0), n_name (#1), l_orderkey (#2), l_suppkey (#3), volume (#4), l_year (#5)",
+      "operator-algorithm" : "keyed-sort-merge-join",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 1,
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalProject",
+      "outputFields": "n_name (#0), l_orderkey (#1), volume (#2), l_year (#3)",
+      "fields": [
+        "n_name",
+        "l_orderkey",
+        "volume",
+        "l_year"
+      ],
+      "exprs": [
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "relOp": "LogicalValues",
+      "outputFields": "c_custkey (#0), n_name (#1)",
+      "sql": "WITH filtered_nations AS ( SELECT n_nationkey, n_name  FROM nation  WHERE n_name IN ('UNITED STATES', 'EGYPT'))  SELECT c_custkey, n_name FROM customer JOIN filtered_nations ON c_nationkey = n_nationkey ORDER BY c_custkey, n_name",
+      "dummy-tag": false,
+      "collation-1": [
+        {
+          "field": 0,
+          "name": "c_custkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 1,
+          "name": "n_name",
+          "direction": "ASCENDING"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "5",
+      "relOp": "LogicalValues",
+      "outputFields": "o_orderkey (#0), o_custkey (#1)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "o_orderkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "o_custkey"
+        }
+      ],
+      "sql": "SELECT o_orderkey, o_custkey FROM orders ORDER BY o_orderkey, o_custkey",
+      "dummy-tag": true,
+      "collation-1": [
+        {
+          "field": 0,
+          "name": "o_orderkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 1,
+          "name": "o_custkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalJoin",
+      "joinOn" : "c_custkey = o_custkey",
+      "outputFields": "c_custkey (#0), n_name (#1), o_orderkey (#2), o_custkey (#3)",
+      "operator-algorithm" : "keyed-sort-merge-join",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 1,
+      "inputs": [
+        "4",
+        "5"
+      ]
+    },
+    {
+      "id": "7",
+      "relOp": "LogicalProject",
+      "outputFields": "n_name (#0), o_orderkey (#1)",
+      "fields": [
+        "n_name",
+        "o_orderkey"
+      ],
+      "exprs": [
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        }
+      ]
+    },
+    {
+      "id": "8",
+      "relOp": "LogicalJoin",
+      "outputFields": "n_name (#0), l_orderkey (#1), volume (#2), l_year (#3), n_name (#4), o_orderkey (#5)",
+      "joinOn" : "l_orderkey = o_orderkey",
+      "operator-algorithm" : "keyed-sort-merge-join",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 5,
+            "name": "$5"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 0,
+      "inputs": [
+        "3",
+        "7"
+      ]
+    },
+    {
+      "id": "9",
+      "relOp": "LogicalProject",
+      "fields": [
+        "supp_nation",
+        "cust_nation",
+        "l_year",
+        "volume"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "relOp": "LogicalFilter",
+      "condition": {
+        "op": {
+          "name": "!=",
+          "kind": "NOT_EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ]
+      }
+    },
+    {
+    "id" : "11",
+    "relOp" : "LogicalAggregate",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        },
+        {
+          "field": 2,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        }
+      ],
+      "cardBound" : 8,
+    "inputFields" : "(#0: supp_nation CHAR(25), #1: cust_nation CHAR(25), #2: l_year INTEGER, #3: volume DECIMAL(19, 0))",
+    "outputFields" : "(#0: supp_nation CHAR(25), #1: cust_nation CHAR(25), #2: l_year INTEGER, #3: revenue DECIMAL(19, 0))",
+    "group" : [ 0, 1, 2 ],
+    "aggs" : [ {
+      "agg" : {
+        "name" : "SUM",
+        "kind" : "SUM",
+        "syntax" : "FUNCTION"
+      },
+      "type" : {
+        "type" : "DECIMAL",
+        "nullable" : true,
+        "precision" : 19,
+        "scale" : 0
+      },
+      "distinct" : false,
+      "operands" : [ 3 ],
+      "name" : "revenue"
+    } ]
+  },
+    {
+    "id" : "12",
+    "relOp" : "LogicalSort",
+    "collation" : [ {
+      "field" : 0,
+      "direction" : "ASCENDING",
+      "nulls" : "LAST"
+    }, {
+      "field" : 1,
+      "direction" : "ASCENDING",
+      "nulls" : "LAST"
+    }, {
+      "field" : 2,
+      "direction" : "ASCENDING",
+      "nulls" : "LAST"
+    } ]
+  } ]
+}

@@ -1,0 +1,264 @@
+{
+  "rels" : [
+    {
+      "id": "0",
+      "relOp": "LogicalValues",
+      "outputFields": "c_custkey (#0), c_name (#1), c_address (#2), c_phone (#3), c_acctbal (#4), c_comment (#5), n_name (#6)",
+      "sql": "SELECT c_custkey, c_name, c_address, c_phone, c_acctbal, c_comment, n_name FROM customer JOIN nation ON c_nationkey = n_nationkey ORDER BY c_custkey, n_name",
+      "dummy-tag": false,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id" : "1",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: o_orderkey INTEGER, #1: o_custkey INTEGER)",
+      "type" : [ {
+        "type" : "INTEGER",
+        "nullable" : false,
+        "name" : "o_orderkey"
+      }, {
+        "type" : "INTEGER",
+        "nullable" : true,
+        "name" : "o_custkey"
+      } ],
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "sql" : "SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1994-03-01' AND o_orderdate < DATE '1994-06-01') AS dummy_tag FROM (SELECT o_orderkey, o_custkey, o_orderdate FROM orders) AS t ORDER BY o_custkey, o_orderkey"
+    }, {
+      "id" : "2",
+      "relOp" : "LogicalJoin",
+      "outputFields" : "(#0: c_custkey INTEGER, #1: c_name VARCHAR(25), #2: c_address VARCHAR(40), #3: c_phone CHAR(15), #4: c_acctbal DECIMAL(19, 0), #5: c_comment VARCHAR(117), #6: n_name VARCHAR(25), #7: o_orderkey INTEGER, #8: o_custkey INTEGER)",
+      "condition" : {
+        "op" : {
+          "name" : "=",
+          "kind" : "EQUALS",
+          "syntax" : "BINARY"
+        },
+        "operands" : [ {
+          "input" : 0,
+          "name" : "$0"
+        }, {
+          "input" : 8,
+          "name" : "$8"
+        } ]
+      },
+      "joinType" : "inner",
+      "inputs" : [ "0", "1" ],
+      "foreignKey" : 1
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalProject",
+      "fields": [
+        "c_custkey",
+        "c_name",
+        "c_address",
+        "c_phone",
+        "c_acctbal",
+        "c_comment",
+        "n_name",
+        "o_orderkey"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        },
+        {
+          "input": 6,
+          "name": "$6"
+        },
+        {
+          "input": 7,
+          "name": "$7"
+        }
+      ]
+    },
+    {
+      "id" : "4",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: l_orderkey INTEGER, #1: revenue DECIMAL(19, 0))",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "sql" : "SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue, NOT l_returnflag = 'R' AS dummy_tag FROM lineitem ORDER BY l_orderkey"
+    }, {
+      "id" : "5",
+      "relOp" : "LogicalJoin",
+      "outputFields" : "(#0: c_custkey INTEGER, #1: c_name VARCHAR(25), #2: c_address VARCHAR(40), #3: c_phone CHAR(15), #4: c_acctbal DECIMAL(19, 0), #5: c_comment VARCHAR(117), #6: n_name VARCHAR(25), #7: o_orderkey INTEGER, #8: l_orderkey INTEGER, #9 : revenue DECIMAL(19, 0))",
+      "condition" : {
+        "op" : {
+          "name" : "=",
+          "kind" : "EQUALS",
+          "syntax" : "BINARY"
+        },
+        "operands" : [ {
+          "input" : 7,
+          "name" : "$7"
+        }, {
+          "input" : 8,
+          "name" : "$8"
+        } ]
+      },
+      "joinType" : "inner",
+      "inputs" : [ "3", "4" ],
+      "foreignKey" : 1
+    }, {
+      "id" : "6",
+      "relOp" : "LogicalProject",
+      "inputFields" : "(#0: c_custkey INTEGER, #1: c_name VARCHAR(25), #2: c_address VARCHAR(40), #3: c_phone CHAR(15), #4: c_acctbal DECIMAL(19, 0), #5: c_comment VARCHAR(117), #6: n_name VARCHAR(25), #7: o_orderkey INTEGER, #8: l_orderkey INTEGER, #9 : revenue DECIMAL(19, 0))",
+      "outputFields" : "(#0: c_custkey INTEGER, #1: c_name VARCHAR(25), #2: c_acctbal DECIMAL(19, 0), #3: c_phone CHAR(15), #4: n_name CHAR(25), #5: c_address VARCHAR(40), #6: c_comment VARCHAR(117), #7: revenue DECIMAL(19, 0))",
+      "fields" : [ "c_custkey", "c_name", "c_acctbal", "c_phone", "n_name", "c_address", "c_comment", "revenue" ],
+      "exprs" : [ {
+        "input" : 0,
+        "name" : "$0"
+      }, {
+        "input" : 1,
+        "name" : "$1"
+      }, {
+        "input" : 4,
+        "name" : "$4"
+      }, {
+        "input" : 3,
+        "name" : "$3"
+      }, {
+        "input" : 6,
+        "name" : "$6"
+      }, {
+        "input" : 2,
+        "name" : "$2"
+      }, {
+        "input" : 5,
+        "name" : "$5"
+      }, {
+        "input" : 9,
+        "name" : "$9"
+      }
+      ]
+    }, {
+      "id" : "7",
+      "relOp" : "LogicalAggregate",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "inputFields" : "(#0: c_custkey INTEGER, #1: c_name VARCHAR(25), #2: c_acctbal DECIMAL(19, 0), #3: c_phone CHAR(15), #4: n_name CHAR(25), #5: c_address VARCHAR(40), #6: c_comment VARCHAR(117), #7: $f7 DECIMAL(19, 0))",
+      "outputFields" : "(#0: c_custkey INTEGER, #1: c_name VARCHAR(25), #2: c_acctbal DECIMAL(19, 0), #3: c_phone CHAR(15), #4: n_name CHAR(25), #5: c_address VARCHAR(40), #6: c_comment VARCHAR(117), #7: revenue DECIMAL(19, 0))",
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        },
+        {
+          "field": 2,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        },
+        {
+          "field": 3,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        },
+        {
+          "field": 4,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        },
+        {
+          "field": 5,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        },
+        {
+          "field": 6,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        }
+      ],
+      "group" : [ 0, 1, 2, 3, 4, 5, 6 ],
+      "aggs" : [ {
+        "agg" : {
+          "name" : "SUM",
+          "kind" : "SUM",
+          "syntax" : "FUNCTION"
+        },
+        "type" : {
+          "type" : "DECIMAL",
+          "nullable" : true,
+          "precision" : 19,
+          "scale" : 0
+        },
+        "distinct" : false,
+        "operands" : [ 7 ],
+        "name" : "revenue"
+      } ]
+    }, {
+      "id" : "8",
+      "relOp" : "LogicalSort",
+      "outputFields" : "(#0: c_custkey INTEGER, #1: c_name VARCHAR(25), #2: c_acctbal DECIMAL(19, 0), #3: c_phone CHAR(15), #4: n_name CHAR(25), #5: c_address VARCHAR(40), #6: c_comment VARCHAR(117), #7: revenue DECIMAL(19, 0))",
+      "collation" : [ {
+        "field" : 7,
+        "direction" : "DESCENDING",
+        "nulls" : "FIRST"
+      } ],
+      "fetch" : {
+        "literal" : 20,
+        "type" : {
+          "type" : "INTEGER",
+          "nullable" : false
+        }
+      }
+    }, {
+      "id" : "9",
+      "relOp" : "LogicalProject",
+      "fields" : [ "c_custkey", "c_name", "revenue", "c_acctbal", "n_name", "c_address", "c_phone", "c_comment" ],
+      "exprs" : [ {
+        "input" : 0,
+        "name" : "$0"
+      }, {
+        "input" : 1,
+        "name" : "$1"
+      }, {
+        "input" : 7,
+        "name" : "$7"
+      }, {
+        "input" : 2,
+        "name" : "$2"
+      }, {
+        "input" : 4,
+        "name" : "$4"
+      }, {
+        "input" : 5,
+        "name" : "$5"
+      }, {
+        "input" : 3,
+        "name" : "$3"
+      }, {
+        "input" : 6,
+        "name" : "$6"
+      } ]
+    } ]
+}

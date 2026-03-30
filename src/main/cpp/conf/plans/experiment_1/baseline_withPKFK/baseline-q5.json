@@ -1,0 +1,299 @@
+{
+  "rels": [
+    {
+      "id": "0",
+      "outputFields": "s_suppkey (#0), s_nationkey (#1), n_name (#2)",
+      "relOp": "LogicalValues",
+      "sql": "SELECT s_suppkey, s_nationkey, n_name FROM supplier JOIN nation ON s_nationkey = n_nationkey JOIN region ON n_regionkey = r_regionkey WHERE r_name = 'EUROPE' ORDER BY s_suppkey",
+      "dummy-tag": false,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "outputFields": "l_orderkey (#0), l_suppkey (#1), revenue (#2)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_orderkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "l_suppkey"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "revenue"
+        }
+      ],
+      "sql": "SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue FROM lineitem ORDER BY l_suppkey",
+      "dummy-tag": false,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalJoin",
+      "joinOn" : "s_suppkey = l_suppkey",
+      "outputFields": "s_suppkey (#0), s_nationkey (#1), n_name (#2), l_orderkey (#3), l_suppkey (#4), revenue (#5)",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 1,
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalProject",
+      "outputFields": "s_nationkey (#0), n_name (#1), l_orderkey (#2), revenue (#3)",
+      "fields": [
+        "s_nationkey",
+        "n_name",
+        "l_orderkey",
+        "revenue"
+      ],
+      "exprs": [
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "relOp": "LogicalValues",
+      "outputFields": "o_orderkey (#0), o_custkey (#1)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "o_orderkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "o_custkey"
+        }
+      ],
+      "sql": "SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag FROM orders",
+      "dummy-tag": true,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "5",
+      "relOp": "LogicalJoin",
+      "joinOn" : "l_orderkey = o_orderkey",
+      "outputFields": "s_nationkey (#0), n_name (#1), l_orderkey (#2), revenue (#3), o_orderkey (#4), o_custkey (#5)",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 0,
+      "inputs": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalProject",
+      "outputFields": "s_nationkey (#0), n_name (#1), revenue (#2), o_custkey (#3)",
+      "fields": [
+        "s_nationkey",
+        "n_name",
+        "revenue",
+        "o_custkey"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "relOp": "LogicalValues",
+      "outputFields": "c_custkey (#0), c_nationkey",
+      "sql": "SELECT c_custkey, c_nationkey FROM customer ORDER BY c_custkey, c_nationkey",
+      "dummy-tag": false,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "8",
+      "relOp": "LogicalJoin",
+      "outputFields": "s_nationkey (#0), n_name (#1), revenue (#2), o_custkey (#3), c_custkey (#4), c_nationkey (#5)",
+      "condition": {
+        "op": {
+          "name": "AND",
+          "kind": "AND",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 3,
+                "name": "$3"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 0,
+                "name": "$0"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              }
+            ]
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 0,
+      "inputs": [
+        "6",
+        "7"
+      ]
+    },
+    {
+      "id": "9",
+      "relOp": "LogicalProject",
+      "outputFields": "n_name (#0), revenue (#1)",
+      "fields": [
+        "n_name",
+        "revenue"
+      ],
+      "exprs": [
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "relOp": "LogicalAggregate",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "group": [
+        0
+      ],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            1
+          ],
+          "name": "revenue"
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 1,
+          "direction": "DESCENDING",
+          "nulls": "FIRST"
+        }
+      ]
+    }
+  ]
+}

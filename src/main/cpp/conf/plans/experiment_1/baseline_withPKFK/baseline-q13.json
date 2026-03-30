@@ -1,0 +1,96 @@
+{
+  "rels" : [
+    {
+      "id" : "0",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: o_custkey INTEGER, #1: o_count INTEGER)",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "sql" : "SELECT o_custkey, COUNT(CASE WHEN NOT o_comment NOT LIKE '%special%requests%' THEN NULL ELSE o_orderkey END) OVER (PARTITION BY o_custkey)::INT AS o_count, NOT o_comment NOT LIKE '%special%requests%' AS dummy_tag FROM orders ORDER BY o_custkey"
+    },
+    {
+      "id" : "1",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: c_custkey INTEGER, #1: o_count INTEGER)",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "sql" : "SELECT c_custkey, 0 as o_count FROM customer ORDER BY c_custkey"
+    },
+    {
+      "id":  "2",
+      "relOp": "LogicalUnion",
+      "inputs": ["0", "1"]
+    },
+    {
+      "id" : "3",
+      "relOp" : "LogicalAggregate",
+      "inputFields" : "(#0: o_custkey INTEGER, #1: o_count INTEGER)",
+      "outputFields" : "(#0: c_custkey INTEGER, #1: o_count BIGINT)",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        }
+      ],
+      "group" : [ 0 ],
+      "aggs" : [ {
+        "agg" : {
+          "name" : "MAX",
+          "kind" : "MAX",
+          "syntax": "FUNCTION"
+        },
+        "type" : {
+          "type" : "BIGINT",
+          "nullable" : false
+        },
+        "distinct" : false,
+        "operands" : [1],
+        "name" : "o_count"
+      } ]
+    },
+    {
+      "id" : "4",
+      "relOp" : "LogicalAggregate",
+      "inputFields" : "(#0: o_custkey INTEGER, #1: o_count INTEGER)",
+      "outputFields" : "(#0: c_custkey INTEGER, #1: o_count BIGINT)",
+      "group" : [ 1 ],
+      "operator-algorithm" : "sort-merge-aggregate",
+      "effective-collation": [
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        }
+      ],
+      "aggs" : [ {
+        "agg" : {
+          "name" : "COUNT",
+          "kind" : "COUNT",
+          "syntax" : "FUNCTION_STAR"
+        },
+        "type" : {
+          "type" : "BIGINT",
+          "nullable" : false
+        },
+        "distinct" : false,
+        "operands" : [],
+        "name" : "custdist"
+      } ]
+    },
+    {
+      "id" : "5",
+      "relOp" : "LogicalSort",
+      "collation" : [ {
+        "field" : 1,
+        "direction" : "DESCENDING",
+        "nulls" : "FIRST"
+      }, {
+        "field" : 0,
+        "direction" : "DESCENDING",
+        "nulls" : "FIRST"
+      } ]
+    }
+  ]
+}

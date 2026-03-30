@@ -1,0 +1,59 @@
+// TODO: generalize for arbitrary selection criteria
+// see ObliVM generator for example of this
+// this example is based on aspirin expected code
+Data * $functionName(Data *left, Data *right) {
+ 
+    int writeIdx = 0;
+    Integer dstTuple, srcTuple, lTuple, rTuple;
+    int jointSchemaSize = $lSize + $rSize - 1; // don't double count the dummy tag 
+    int outputTupleCount = left->publicSize * right->publicSize;
+	int lhsPayloadSize = $lSize - 1; // sans dummy tag
+	int rhsPayloadSize = $rSize - 1; // sans dummy tag
+	int dummyTagIdx = $dSize - 1;
+	
+
+	Data *result = new Data;
+    
+	srcTuple = Integer(jointSchemaSize, 0, PUBLIC);
+    
+
+    // output tuple count
+    result->tuples = new Integer[outputTupleCount];
+    result->publicSize = outputTupleCount;
+    
+    dstTuple = Integer($dSize, 0, PUBLIC);
+	
+	// 
+    for (int i=0; i < left->publicSize; i++) {
+        lTuple = left->tuples[i];
+        EmpUtilities::writeToInteger(&srcTuple, &lTuple, 0, 0, lhsPayloadSize);
+        	
+        for (int j=0; j < right->publicSize; j++) {
+        	rTuple = right->tuples[j];
+	        EmpUtilities::writeToInteger(&srcTuple, &rTuple, lhsPayloadSize, 0, rhsPayloadSize);
+
+	        	
+        	
+        	
+        	// TODO: rewire filter flattener to skip the memcopies above
+        	Bit cmp = $filterCond;
+
+
+        	
+        	// populate dstTuple with any projections
+        	$writeDst;
+        	
+        	Bit dummyTag = (EmpUtilities::getDummyTag(lTuple)  == Bit(true, PUBLIC)) 
+        	           |  (EmpUtilities::getDummyTag(rTuple)  == Bit(true, PUBLIC))
+        	           |  (cmp == Bit(false, PUBLIC));
+        	           
+        	dstTuple[dummyTagIdx] = dummyTag;
+
+        		        
+	        result->tuples[writeIdx] = dstTuple;
+            writeIdx++;
+            
+        }
+    }
+    return result;
+}

@@ -1,0 +1,49 @@
+#include <emp-sh2pc/emp-sh2pc.h>
+#include <map>
+#include <string>
+
+#include "EmpUtilities.h"
+
+
+// header of an ExecutionSegment in emp
+// put in front of first generated MPC operator
+
+
+using namespace emp;
+using namespace std;
+
+
+
+
+namespace $queryName {
+
+class $queryClass {
+
+string aliceHost = "127.0.0.1";
+
+string output;
+map<string, string> inputs;    // maps opName --> bitString of input tuples
+
+
+
+	class Data {
+	public:
+		Integer * tuples;
+		int publicSize;
+
+	};
+
+public:
+	// maintains a map of inputs from JDBC
+	void addInput(const std::string& opName, const std::string& bitString) {
+
+     inputs[opName] = bitString;
+
+     }
+
+
+	const std::string& getOutput() {
+	      return output;
+	}
+
+

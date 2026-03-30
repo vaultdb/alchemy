@@ -1,0 +1,141 @@
+{
+  "rels" : [
+    {
+      "id" : "0",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: ps_suppkey INTEGER, #1: p_brand CHAR(10), #2: p_type VARCHAR(25), #3: p_size INTEGER)",
+      "sql" : "SELECT ps.ps_suppkey, p.p_brand, p.p_type, p.p_size FROM partsupp ps JOIN part p ON ps.ps_partkey = p.p_partkey WHERE p.p_brand <> 'Brand#21' AND p.p_type NOT LIKE 'MEDIUM PLATED%' AND p.p_size IN (38, 2, 8, 31, 44, 5, 14, 24) ORDER BY ps.ps_suppkey",
+      "collation-1": [
+        {
+          "field": 0,
+          "name": "ps_suppkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "collation-2": [
+        {
+          "field": 1,
+          "name": "p_brand",
+          "direction": "ASCENDING"
+        },
+        {
+          "field": 2,
+          "name": "p_type",
+          "direction": "ASCENDING"
+        },
+        {
+          "field": 3,
+          "name": "p_size",
+          "direction": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "id" : "1",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: s_suppkey INTEGER)",
+      "type" : [ {
+        "type" : "INTEGER",
+        "nullable" : false,
+        "name" : "s_suppkey"
+      } ],
+      "collation": [
+        {
+          "field": 0,
+          "name": "s_suppkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "sql" : "SELECT s_suppkey, (s_comment LIKE '%Customer%Complaints%') AS dummy_tag FROM supplier ORDER BY s_suppkey"
+    }, {
+      "id" : "2",
+      "relOp" : "LogicalJoin",
+      "operator-algorithm" : "keyed-sort-merge-join",
+      "outputFields" : "(#0: ps_suppkey INTEGER, #1: p_brand CHAR(10), #2: p_type VARCHAR(25), #3: p_size INTEGER, #4: s_suppkey INTEGER)",
+      "condition" : {
+        "op" : {
+          "name" : "=",
+          "kind" : "EQUALS",
+          "syntax" : "BINARY"
+        },
+        "operands" : [
+          { "input" : 0 },
+          {"input" : 4 } ]
+      },
+      "inputs" : [ "0", "1" ],
+      "foreignKey" : 0
+    },
+    {
+      "id" : "3",
+      "relOp" : "LogicalProject",
+      "inputFields" : "(#0: ps_suppkey INTEGER, #1: p_brand CHAR(10), #2: p_type VARCHAR(25), #3: p_size INTEGER, #4: s_suppkey INTEGER)",
+      "outputFields" : "(#0: p_brand CHAR(10), #1: p_type VARCHAR(25), #2: p_size INTEGER, #3: ps_suppkey INTEGER)",
+      "fields" : [ "p_brand, p_type, p_size", "ps_suppkey" ],
+      "exprs" : [
+        { "input":  1 },
+        { "input": 2 },
+        { "input": 3 },
+        { "input": 0 } ]
+    },
+    {
+      "id" : "4",
+      "relOp" : "LogicalAggregate",
+      "inputFields" : "(#0: p_brand CHAR(10), #1: p_type VARCHAR(25), #2: p_size INTEGER, #3: ps_suppkey INTEGER)",
+      "outputFields" : "(#0: p_brand CHAR(10), #1: p_type VARCHAR(25), #2: p_size INTEGER, #3: supplier_cnt BIGINT)",
+      "group" : [ 0, 1, 2 ],
+      "operator-algorithm" : "sort-merge-aggregate",
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        },
+        {
+          "field": 2,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        }
+      ],
+      "cardinality-bound" : 1164,
+      "aggs" : [ {
+        "agg" : {
+          "name" : "COUNT",
+          "kind" : "COUNT",
+          "syntax" : "FUNCTION_STAR"
+        },
+        "type" : {
+          "type" : "INTEGER",
+          "nullable" : false
+        },
+        "distinct" : false,
+        "operands" : [ 3 ],
+        "name" : "supplier_cnt"
+      } ]
+    }, {
+      "id" : "5",
+      "relOp" : "LogicalSort",
+      "collation" : [ {
+        "field" : 3,
+        "direction" : "DESCENDING",
+        "nulls" : "FIRST"
+      }, {
+        "field" : 0,
+        "direction" : "ASCENDING",
+        "nulls" : "LAST"
+      }, {
+        "field" : 1,
+        "direction" : "ASCENDING",
+        "nulls" : "LAST"
+      }, {
+        "field" : 2,
+        "direction" : "ASCENDING",
+        "nulls" : "LAST"
+      } ]
+    }
+  ]
+}

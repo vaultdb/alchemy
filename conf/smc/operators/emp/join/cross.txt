@@ -1,0 +1,32 @@
+Data * $functionName(Data *left, Data *right) {
+    Integer *output = new Integer[left->publicSize * right->publicSize];
+    Data *result = new Data;
+    int writeIdx = 0;
+    
+	int lhsTupleLength = left->data[0].size(); 
+	int rhsTupleLength = right->data[0].size(); 
+	// this may change later when we know more about the columns we will keep for output
+	int outLength = lhsTupleLength + rhsTupleLength; 
+	int lhsBitLength = sizeof(Bit)*lhsTupleLength;
+	int rhsBitLength = sizeof(Bit)*rhsTupleLength;
+
+    // output tuple count
+    result->publicSize = left->publicSize * right->publicSize;
+    result->realSize = left->publicSize * right->publicSize;
+    
+    
+    for (int i=0; i<left->publicSize; i++) {
+    	// integers are all bitlength, i.e., tuple length
+    	Integer lhs = left->data[i];
+    	
+        for (int j=0; j<right->publicSize; j++) {
+	    	Integer rhs = right->data[j];
+	    	Bit outBits = new Bit[outLength];
+			memcpy(outBits, lhs.bits, lhsBitLength);
+			memcpy(outBits + lhsBitLength, rhs.bits,  rhsBitLength);
+			result->data[writeIdx] = new Integer(outBits, outLength);
+			++writeIdx;
+        }
+    }
+    return result;
+}

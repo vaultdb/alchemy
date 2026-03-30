@@ -1,0 +1,344 @@
+{
+  "rels" : [
+    {
+      "id" : "0",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: c_custkey INTEGER, #1: o_custkey INTEGER)",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "dummy-tag": true,
+      "party": 1,
+      "collation": [
+        {
+          "field": 0,
+          "name": "c_custkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "sql" : "WITH all_customers AS (\n    SELECT \n        ck.c_custkey, \n        NOT (COALESCE(substring(c.c_phone from 1 for 2), '') IN ('24', '31', '11', '16', '21', '20', '34')) AS dummy_tag\n    FROM customer_keys ck\n    LEFT JOIN customer c ON ck.c_custkey = c.c_custkey\n),\norder_keys AS (\n    SELECT DISTINCT o_custkey FROM orders\n)\nSELECT  \n    c.c_custkey,  \n    COALESCE(o.o_custkey, 1) AS o_custkey,\n    CASE \n        WHEN c.dummy_tag = FALSE THEN FALSE\n        ELSE TRUE\n    END AS dummy_tag\nFROM all_customers c \nLEFT JOIN order_keys o ON c.c_custkey = o.o_custkey\nORDER BY c.c_custkey"
+    },
+    {
+      "id" : "1",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: c_custkey INTEGER, #1: o_custkey INTEGER)",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "dummy-tag": true,
+      "party": 2,
+      "collation": [
+        {
+          "field": 0,
+          "name": "c_custkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "sql" : "WITH all_customers AS (\n    SELECT \n        ck.c_custkey, \n        NOT (COALESCE(substring(c.c_phone from 1 for 2), '') IN ('24', '31', '11', '16', '21', '20', '34')) AS dummy_tag\n    FROM customer_keys ck\n    LEFT JOIN customer c ON ck.c_custkey = c.c_custkey\n),\norder_keys AS (\n    SELECT DISTINCT o_custkey FROM orders\n)\nSELECT  \n    c.c_custkey,  \n    COALESCE(o.o_custkey, 1) AS o_custkey,\n    CASE \n        WHEN c.dummy_tag = FALSE THEN FALSE\n        ELSE TRUE\n    END AS dummy_tag\nFROM all_customers c \nLEFT JOIN order_keys o ON c.c_custkey = o.o_custkey\nORDER BY c.c_custkey"
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalJoin",
+      "joinOn": "No-op, keys aligned in SQL setup",
+      "operator-algorithm" : "merge-join",
+      "outputFields": "alice.c_custkey (#0), alice.o_custkey (#1), bob.c_custkey (#2), bob.o_custkey (#3)",
+      "condition": {
+        "no-op": true
+      },
+      "joinType": "inner",
+      "dummy-handling" : "AND",
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalFilter",
+      "condition": {
+        "op": {
+          "name": "AND",
+          "kind": "AND",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 1,
+                "name": "$1"
+              },
+              {
+                "literal": 1,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 3,
+                "name": "$3"
+              },
+              {
+                "literal": 1,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id" : "4",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: cntrycode VARCHAR, #1: c_acctabl DECIMAL(12, 2))",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "collation": [
+        {
+          "field": 0,
+          "name": "c_custkey",
+          "direction": "ASCENDING"
+        }
+      ],
+      "sql" : "SELECT c_custkey, substring(c_phone from 1 for 2)::varchar as c_phone, c_acctbal FROM customer ORDER BY c_custkey"
+    },
+    {
+      "id": "5",
+      "relOp": "LogicalJoin",
+      "joinOn": "No-op, keys aligned in SQL setup",
+      "operator-algorithm": "merge-join",
+      "outputFields": "(#0: c_custkey INTEGER, #1: o_custkey INTEGER, #2: cntrycode VARCHAR, #3: c_acctabl DECIMAL(12, 2))",
+      "condition": {
+        "no-op": true
+      },
+      "joinType": "inner",
+      "dummy-handling": "OR",
+      "inputs": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalProject",
+      "fields": [
+        "cntrycode",
+        "c_acctabl"
+      ],
+      "exprs": [
+        {
+          "input": 5,
+          "name": "$5"
+        },
+        {
+          "input": 6,
+          "name": "$6"
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "relOp": "LogicalValues",
+      "outputFields" : "sum_c_acctbal (#0), count (#1)",
+      "sql": "SELECT COALESCE(SUM(c_acctbal), 0) as sum_c_acctbal, COALESCE(COUNT(*), 0)::float4 as cnt from customer WHERE substring(c_phone from 1 for 2) in ('24', '31', '11', '16', '21', '20', '34') AND c_acctbal > 0.0",
+      "dummy-tag": true,
+      "party": 1,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "8",
+      "relOp": "LogicalValues",
+      "outputFields" : "sum_c_acctbal (#0), count (#1)",
+      "sql": "SELECT COALESCE(SUM(c_acctbal), 0) as sum_c_acctbal, COALESCE(COUNT(*), 0)::float4 as cnt from customer WHERE substring(c_phone from 1 for 2) in ('24', '31', '11', '16', '21', '20', '34') AND c_acctbal > 0.0",
+      "dummy-tag": true,
+      "party": 2,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "9",
+      "relOp": "LogicalJoin",
+      "joinOn": "No-op, keys aligned in SQL setup",
+      "operator-algorithm" : "merge-join",
+      "outputFields": "alice.sum_c_acctbal (#0), alice.count (#1), bob.sum_c_acctbal (#2), bob.count (#3)",
+      "condition": {
+        "no-op": true
+      },
+      "joinType": "inner",
+      "dummy-handling" : "AND",
+      "inputs": [
+        "7",
+        "8"
+      ]
+    },
+    {
+      "id": "10",
+      "relOp": "LogicalProject",
+      "fields": [
+        "avg_acctbal"
+      ],
+      "exprs": [
+        {
+          "op": {
+            "name": "/",
+            "kind": "DIVIDE",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "+",
+                "kind": "PLUS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 0,
+                  "name": "$0"
+                },
+                {
+                  "input": 2,
+                  "name": "$2"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "+",
+                "kind": "PLUS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 1,
+                  "name": "$1"
+                },
+                {
+                  "input": 3,
+                  "name": "$3"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id" : "11",
+      "relOp" : "LogicalJoin",
+      "outputFields" : "(#0: cntrycode VARCHAR), #1: c_acctabl DECIMAL(19, 0), #2: avg_acctbal DECIMAL(19, 0))",
+      "joinType" : "cartesian",
+      "inputs" : [ "6", "10" ]
+    },
+    {
+      "id": "12",
+      "relOp": "LogicalFilter",
+      "condition": {
+        "op": {
+          "name": ">",
+          "kind": "GREATER_THAN",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "13",
+      "relOp": "LogicalProject",
+      "fields": [
+        "c_phone",
+        "c_acctabl"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        }
+      ]
+    },
+    {
+      "id" : "14",
+      "relOp" : "LogicalAggregate",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "inputFields" : "(#0: cntrycode VARCHAR(15), #1: c_acctbal DECIMAL(19, 0))",
+      "outputFields" : "(#0: cntrycode VARCHAR(15), #1: numcust BIGINT, #2: totacctbal DECIMAL(19, 0))",
+      "group" : [ 0 ],
+      "cardinality-bound" : "7",
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "FIRST"
+        }
+      ],
+      "aggs" : [ {
+        "agg" : {
+          "name" : "COUNT",
+          "kind" : "COUNT",
+          "syntax" : "FUNCTION_STAR"
+        },
+        "type" : {
+          "type" : "BIGINT",
+          "nullable" : false
+        },
+        "distinct" : false,
+        "operands" : [ ],
+        "name" : "numcust"
+      }, {
+        "agg" : {
+          "name" : "SUM",
+          "kind" : "SUM",
+          "syntax" : "FUNCTION"
+        },
+        "type" : {
+          "type" : "DECIMAL",
+          "nullable" : true,
+          "precision" : 19,
+          "scale" : 0
+        },
+        "distinct" : false,
+        "operands" : [ 1 ],
+        "name" : "totacctbal"
+      } ]
+    },
+    {
+      "id" : "15",
+      "relOp" : "LogicalSort",
+      "collation" : [ {
+        "field" : 0,
+        "direction" : "ASCENDING",
+        "nulls" : "LAST"
+      } ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+cat tmp | sed 's/^/\ \+\ "/g' | sed 's/$/\\n"/g' | sed '1 s/\ \+\ //g' | sed '$ s/$/,/g' | pbcopy

@@ -1,0 +1,30 @@
+Data * $functionName(Data *data) {
+
+
+    Data *result = new Data;
+    result->tuples = new Integer[1];
+    result->publicSize = 1; 
+
+    int dummyIdx = $sSize - 1;
+    Integer *output = new Integer($dSize, 0, PUBLIC);
+
+
+    cout << "Running $functionName " << endl;
+
+   $initAgg
+
+  for(int cursor = 0; cursor < data->publicSize; cursor++){
+        Integer tuple = data->tuples[cursor];
+        Bit dummyCheck = tuple[dummyIdx];
+
+	   $processAgg
+
+    }
+
+    $writeAgg
+
+    result->tuples = output;
+
+    return result;
+}
+

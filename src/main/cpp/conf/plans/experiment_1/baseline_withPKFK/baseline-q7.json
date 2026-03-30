@@ -1,0 +1,247 @@
+{
+  "rels" : [
+    {
+      "id": "0",
+      "outputFields": "s_suppkey (#0), n_name (#1)",
+      "relOp": "LogicalValues",
+      "sql": "WITH filtered_nations AS ( SELECT n_nationkey, n_name FROM nation  WHERE n_name IN ('UNITED STATES', 'EGYPT'))  SELECT s_suppkey, n_name FROM supplier JOIN filtered_nations ON s_nationkey = n_nationkey ORDER BY s_suppkey, n_name",
+      "dummy-tag": false,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+    "id" : "1",
+    "relOp" : "LogicalValues",
+    "outputFields" : "(#0: revenue DECIMAL(19, 0), #1: l_year INTEGER, #2: l_suppkey INTEGER, #3: l_orderkey INTEGER)",
+    "tuples" : [ ],
+    "inputs" : [ ],
+    "sql" : "SELECT l_extendedprice * (1 - l_discount) AS revenue, EXTRACT(YEAR FROM l_shipdate)::INT AS l_year, l_suppkey, l_orderkey, NOT (l_shipdate >= DATE '1995-01-01' AND l_shipdate <= DATE '1996-12-31') AS dummy_tag FROM lineitem ORDER BY l_orderkey, l_suppkey"
+  }, {
+    "id" : "2",
+    "relOp" : "LogicalJoin",
+    "outputFields" : "(#0: s_suppkey INTEGER, #1: n_name CHAR, #2: revenue DECIMAL(19, 0), #3: l_year INTEGER, #4: l_suppkey INTEGER, #5: l_orderkey INTEGER)",
+    "condition" : {
+      "op" : {
+        "name" : "=",
+        "kind" : "EQUALS",
+        "syntax" : "BINARY"
+      },
+      "operands" : [ {
+        "input" : 0,
+        "name" : "$0"
+      }, {
+        "input" : 4,
+        "name" : "$4"
+      } ]
+    },
+    "joinType" : "inner",
+    "inputs" : [ "0", "1" ],
+    "foreignKey" : 1
+  },
+    {
+      "id": "3",
+      "relOp": "LogicalProject",
+      "fields": [
+        "n_name",
+        "revenue",
+        "l_year",
+        "l_orderkey"
+      ],
+      "exprs": [
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        }
+      ]
+    },
+    {
+    "id" : "4",
+    "relOp" : "LogicalValues",
+    "outputFields" : "(#0: o_orderkey INTEGER, #1: o_custkey INTEGER)",
+    "type" : [ {
+      "type" : "INTEGER",
+      "nullable" : false,
+      "name" : "o_orderkey"
+    }, {
+      "type" : "INTEGER",
+      "nullable" : true,
+      "name" : "o_custkey"
+    } ],
+    "tuples" : [ ],
+    "inputs" : [ ],
+    "sql" : "SELECT o_orderkey, o_custkey FROM orders ORDER BY o_orderkey, o_custkey"
+  }, {
+    "id" : "5",
+    "relOp" : "LogicalJoin",
+    "outputFields" : "(#0: n_name INTEGER, #1: revenue DECIMAL(19, 0), #2: l_year INTEGER, #3: l_orderkey INTEGER, #4: o_orderkey INTEGER, #5: o_custkey INTEGER)",
+    "condition" : {
+      "op" : {
+        "name" : "=",
+        "kind" : "EQUALS",
+        "syntax" : "BINARY"
+      },
+      "operands" : [ {
+        "input" : 3,
+        "name" : "$3"
+      }, {
+        "input" : 4,
+        "name" : "$4"
+      } ]
+    },
+    "joinType" : "inner",
+    "inputs" : [ "3", "4" ],
+    "foreignKey" : 0
+  },
+    {
+      "id": "6",
+      "relOp": "LogicalProject",
+      "fields": [
+        "n_name",
+        "revenue",
+        "l_year",
+        "o_custkey"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "relOp": "LogicalValues",
+      "outputFields": "c_custkey (#0), n_name (#1)",
+      "sql": "WITH filtered_nations AS ( SELECT n_nationkey, n_name  FROM nation  WHERE n_name IN ('UNITED STATES', 'EGYPT'))  SELECT c_custkey, n_name FROM customer JOIN filtered_nations ON c_nationkey = n_nationkey ORDER BY c_custkey, n_name",
+      "dummy-tag": false,
+      "tuples": [],
+      "inputs": []
+    },
+    {
+    "id" : "8",
+    "relOp" : "LogicalJoin",
+    "outputFields" : "(#0: n_name CHAR, #1: volume DECIMAL(19, 0), #2: l_year INTEGER, #3: o_custkey INTEGER, #4: c_custkey INTEGER, #5: n_name CHAR)",
+    "condition" : {
+      "op" : {
+        "name" : "=",
+        "kind" : "EQUALS",
+        "syntax" : "BINARY"
+      },
+      "operands" : [ {
+        "input" : 3,
+        "name" : "$3"
+      }, {
+        "input" : 4,
+        "name" : "$4"
+      } ]
+    },
+    "joinType" : "inner",
+    "inputs" : [ "6", "7" ],
+    "foreignKey" : 0
+  },
+    {
+    "id" : "9",
+    "relOp" : "LogicalProject",
+    "inputFields" : "(#0: n_name CHAR, #1: volume DECIMAL(19, 0), #2: l_year INTEGER, #3: o_custkey INTEGER, #4: c_custkey INTEGER, #5: n_name CHAR)",
+      "outputFields" : "(#0: supp_nation CHAR(25), #1: cust_nation CHAR(25), #2: l_year INTEGER, #3: volume DECIMAL(19, 0))",
+    "fields" : [ "supp_nation", "cust_nation", "l_year", "volume" ],
+    "exprs" : [ {
+      "input" : 0,
+      "name" : "$0"
+    }, {
+      "input" : 5,
+      "name" : "$5"
+    }, {
+      "input" : 2,
+      "name" : "$2"
+    }, {
+      "input" : 1,
+      "name" : "$1"
+    }
+    ]
+  },
+    {
+      "id": "10",
+      "relOp": "LogicalFilter",
+      "condition": {
+        "op": {
+          "name": "!=",
+          "kind": "NOT_EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ]
+      }
+    },
+    {
+    "id" : "11",
+    "relOp" : "LogicalAggregate",
+    "inputFields" : "(#0: supp_nation CHAR(25), #1: cust_nation CHAR(25), #2: l_year INTEGER, #3: volume DECIMAL(19, 0))",
+    "outputFields" : "(#0: supp_nation CHAR(25), #1: cust_nation CHAR(25), #2: l_year INTEGER, #3: revenue DECIMAL(19, 0))",
+    "group" : [ 0, 1, 2 ],
+    "aggs" : [ {
+      "agg" : {
+        "name" : "SUM",
+        "kind" : "SUM",
+        "syntax" : "FUNCTION"
+      },
+      "type" : {
+        "type" : "DECIMAL",
+        "nullable" : true,
+        "precision" : 19,
+        "scale" : 0
+      },
+      "distinct" : false,
+      "operands" : [ 3 ],
+      "name" : "revenue"
+    } ]
+  }, {
+    "id" : "12",
+    "relOp" : "LogicalSort",
+    "collation" : [ {
+      "field" : 0,
+      "direction" : "ASCENDING",
+      "nulls" : "LAST"
+    }, {
+      "field" : 1,
+      "direction" : "ASCENDING",
+      "nulls" : "LAST"
+    }, {
+      "field" : 2,
+      "direction" : "ASCENDING",
+      "nulls" : "LAST"
+    } ]
+  } ]
+}

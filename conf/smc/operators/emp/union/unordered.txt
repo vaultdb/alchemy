@@ -1,0 +1,83 @@
+Data* $functionName(int party, NetIO * io) {
+
+    // std::cout << "Testing that this is the correct template" << std::endl;
+
+    int rowLength = $size;
+
+
+    std::cout << "The rowlength in bits is " << rowLength << std::endl;
+
+	string localBitstring = inputs["$functionName"];
+    bool *localData = EmpUtilities::toBool(localBitstring);
+
+    int aliceSize = localBitstring.length() / rowLength;
+    int bobSize = aliceSize;
+
+    // communicate with other party to correct sizes ( number of tuples )
+    if (party == ALICE) {
+        io->send_data(&aliceSize, 4);
+        io->flush();
+        io->recv_data(&bobSize, 4);
+        io->flush();
+    } else if (party == BOB) {
+        io->recv_data(&aliceSize, 4);
+        io->flush();
+        io->send_data(&bobSize, 4);
+        io->flush();
+    }
+
+    Integer * res = new Integer[aliceSize + bobSize];  // enough space for all inputs
+    Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit representation of res
+
+
+
+    bool *readPos = localData;
+
+    int writePos = 0;
+    int writeTuple = aliceSize; // last tuple
+
+    // reverse Alice's order for correct Bitonic Merge ( Increasing -> Max -> Decreasing )
+
+    for (int i = 0;  i < aliceSize; ++i) {
+    	--writeTuple;
+    	writePos = writeTuple * rowLength;
+
+
+        for (int j = 0; j < rowLength; ++j) {
+            // updating tmp pointer with alice's
+            tmp[writeTuple*rowLength + j] = Bit((ALICE==party) ? *readPos : 0, ALICE);
+
+            ++readPos;
+            ++writePos;
+         }
+	}
+
+	// Initialize Bob's Batcher
+    Batcher batcher;
+
+
+
+    for (int i = 0; i < bobSize*rowLength; ++i)
+        batcher.add<Bit>((BOB==party) ? localData[i]:0);
+
+    batcher.make_semi_honest(BOB); // Secret Share
+
+
+
+    // add Bob's encrypted tuples
+    for (int i = 0; i < bobSize*rowLength; ++i)
+        tmp[i+aliceSize*rowLength] = batcher.next<Bit>();
+
+    // create full Integer representation with both Bob and Alice's information
+    for(int i = 0; i < aliceSize + bobSize; ++i)
+        res[i] = Integer(rowLength, tmp+rowLength*i);
+
+    cout << "$functionName took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
+
+
+    Data * d = new Data;
+    d->tuples = res;
+    d->publicSize = aliceSize + bobSize;
+
+    return d;
+}

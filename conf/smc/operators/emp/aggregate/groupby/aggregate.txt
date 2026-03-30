@@ -1,0 +1,7 @@
+Data * $functionName(QueryTable *t) {
+    AggregateDef d;
+
+$aggregateDefinition
+
+    return Aggregate(t, d);
+}

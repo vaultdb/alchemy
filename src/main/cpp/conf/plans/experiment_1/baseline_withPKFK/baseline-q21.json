@@ -1,0 +1,315 @@
+{
+  "rels" : [
+    {
+      "id": "0",
+      "relOp": "LogicalValues",
+      "outputFields" : "o_orderkey (#0), late_suppkey (#1), late_suppliers (#2), all_suppliers (#3)",
+      "sql": "WITH all_keys AS (\n    SELECT o_orderkey\n    FROM order_keys\n),\npartial_agg AS (\n    SELECT \n        l_orderkey, \n        COALESCE(MIN(CASE WHEN l_receiptdate > l_commitdate THEN l_suppkey END), 0) AS late_suppkey,                        \n        COALESCE(COUNT(DISTINCT CASE WHEN l_receiptdate > l_commitdate THEN l_suppkey END), 0) AS late_suppliers,\n        COALESCE(COUNT(DISTINCT l_suppkey), 0) AS all_suppliers\n    FROM lineitem\n    GROUP BY l_orderkey\n)\nSELECT \n    ak.o_orderkey,\n    COALESCE(pa.late_suppkey, 0) AS late_suppkey,\n    COALESCE(pa.late_suppliers, 0) AS late_suppliers,\n    COALESCE(pa.all_suppliers, 0) AS all_suppliers\nFROM all_keys ak\nLEFT JOIN partial_agg pa\n    ON ak.o_orderkey = pa.l_orderkey\nORDER BY ak.o_orderkey",
+      "dummy-tag": true,
+      "party": 1,
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "outputFields" : "o_orderkey (#0), late_suppkey (#1), late_suppliers (#2), all_suppliers (#3)",
+      "sql": "WITH all_keys AS (\n    SELECT o_orderkey\n    FROM order_keys\n),\npartial_agg AS (\n    SELECT \n        l_orderkey, \n        COALESCE(MIN(CASE WHEN l_receiptdate > l_commitdate THEN l_suppkey END), 0) AS late_suppkey,                        \n        COALESCE(COUNT(DISTINCT CASE WHEN l_receiptdate > l_commitdate THEN l_suppkey END), 0) AS late_suppliers,\n        COALESCE(COUNT(DISTINCT l_suppkey), 0) AS all_suppliers\n    FROM lineitem\n    GROUP BY l_orderkey\n)\nSELECT \n    ak.o_orderkey,\n    COALESCE(pa.late_suppkey, 0) AS late_suppkey,\n    COALESCE(pa.late_suppliers, 0) AS late_suppliers,\n    COALESCE(pa.all_suppliers, 0) AS all_suppliers\nFROM all_keys ak\nLEFT JOIN partial_agg pa\n    ON ak.o_orderkey = pa.l_orderkey\nORDER BY ak.o_orderkey",
+      "dummy-tag": true,
+      "party": 2,
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING"
+        }],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalJoin",
+      "joinOn": "No-op, keys aligned in SQL setup",
+      "operator-algorithm" : "merge-join",
+      "outputFields": "alice.o_orderkey (#0), alice.late_suppkey (#1), alice.late_suppliers (#2), alice.all_suppliers (#3), bob.o_orderkey (#4), bob.late_suppkey (#5), bob.late_suppliers (#6), bob.all_suppliers (#7)",
+      "condition": {
+        "no-op": true
+      },
+      "joinType": "inner",
+      "dummy-handling" : "AND",
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalProject",
+      "fields": [
+        "o_orderkey",
+        "late_suppkey",
+        "late_suppliers",
+        "all_suppliers"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "op": {
+            "name": "+",
+            "kind": "PLUS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "input": 5,
+              "name": "$5"
+            }
+          ]
+        },
+        {
+          "op": {
+            "name": "+",
+            "kind": "PLUS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 2,
+              "name": "$2"
+            },
+            {
+              "input": 6,
+              "name": "$6"
+            }
+          ]
+        },
+        {
+          "op": {
+            "name": "+",
+            "kind": "PLUS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 3,
+              "name": "$3"
+            },
+            {
+              "input": 7,
+              "name": "$7"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id" : "4",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: o_orderkey INTEGER)",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "sql" : "SELECT o_orderkey, NOT o_orderstatus = 'F' AS dummy_tag FROM orders ORDER BY o_orderkey"
+    },
+    {
+      "id" : "5",
+      "relOp" : "LogicalJoin",
+      "inputFields" : "(#0: o_orderkey, #1 : late_suppkey, #2: late_suppliers, #3: all_suppliers, #4: o_orderkey INTEGER)",
+      "condition" : {
+        "op" : {
+          "name" : "=",
+          "kind" : "EQUALS",
+          "syntax" : "BINARY"
+        },
+        "operands" : [ {
+          "input" : 0,
+          "name" : "$0"
+        }, {
+          "input" : 4,
+          "name" : "$4"
+        } ]
+      },
+      "joinType" : "inner",
+      "inputs" : [ "3", "4" ],
+      "foreignKey" : 0
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalProject",
+      "inputFields": "#0 : late_suppkey, #1: late_suppliers, #2: all_suppliers",
+      "fields": [
+        "late_suppkey",
+        "late_suppliers",
+        "all_suppliers"
+      ],
+      "exprs": [
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        }
+      ]
+    },
+    {
+      "id" : "7",
+      "relOp" : "LogicalValues",
+      "outputFields" : "(#0: s_name, #1: s_suppkey INTEGER)",
+      "tuples" : [ ],
+      "inputs" : [ ],
+      "sql": "SELECT s_name, s_suppkey, NOT n_name = 'ARGENTINA' AS dummy_tag FROM supplier JOIN nation ON s_nationkey = n_nationkey ORDER BY s_suppkey"
+    },
+    {
+      "id" : "8",
+      "relOp" : "LogicalJoin",
+      "inputFields" : "(#0 : late_suppkey, #1: late_suppliers, #2: all_suppliers, #3: s_name, #4: s_suppkey INTEGER)",
+      "condition" : {
+        "op" : {
+          "name" : "=",
+          "kind" : "EQUALS",
+          "syntax" : "BINARY"
+        },
+        "operands" : [ {
+          "input" : 0,
+          "name" : "$0"
+        }, {
+          "input" : 4,
+          "name" : "$4"
+        } ]
+      },
+      "joinType" : "inner",
+      "inputs" : [ "6", "7" ],
+      "foreignKey" : 0
+    },
+
+    {
+      "id" : "9",
+      "relOp" : "LogicalFilter",
+      "outputFields" : "(#0 : late_suppkey, #1: late_suppliers, #2: all_suppliers, #3: s_name, #4: s_suppkey INTEGER)",
+      "condition": {
+        "op": {
+          "name": "AND",
+          "kind": "AND",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 1,
+                "name": "$1"
+              },
+              {
+                "literal": 1,
+                "type": {
+                  "type": "LONG",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op" : {
+              "name" : ">",
+              "kind" : "GREATER_THAN",
+              "syntax" : "BINARY"
+            },
+            "operands" : [ {
+              "input" : 2,
+              "name" : "$2"
+            },
+              {
+                "literal": 1,
+                "type": {
+                  "type": "LONG",
+                  "nullable": false
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id" : "10",
+      "relOp" : "LogicalProject",
+      "outputFields" : "(#0: s_name)",
+      "fields" : [ "s_name" ],
+      "exprs" : [ {
+        "input" : 3,
+        "name" : "$3"
+      }
+      ]
+    },
+    {
+      "id" : "11",
+      "relOp" : "LogicalAggregate",
+      "inputFields" : "(#0: s_name)",
+      "outputFields" : "(#0: s_name, #1: numwait INT)",
+      "group" : [ 0 ],
+      "operator-algorithm" : "sort-merge-aggregate",
+      "effective-collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls" : "LAST"
+        }
+      ],
+      "aggs" : [ {
+        "agg" : {
+          "name" : "COUNT",
+          "kind" : "COUNT",
+          "syntax" : "FUNCTION_STAR"
+        },
+        "type" : {
+          "type" : "INTEGER",
+          "nullable" : false
+        },
+        "distinct" : false,
+        "operands" : [ ],
+        "name" : "numwait"
+      } ]
+    },
+    {
+      "id" : "12",
+      "relOp" : "LogicalSort",
+      "collation" : [ {
+        "field" : 1,
+        "direction" : "DESCENDING",
+        "nulls" : "FIRST"
+      }, {
+        "field" : 0,
+        "direction" : "ASCENDING",
+        "nulls" : "LAST"
+      } ],
+      "fetch" : {
+        "literal" : 100,
+        "type" : {
+          "type" : "INTEGER",
+          "nullable" : false
+        }
+      }
+    }
+  ]
+}

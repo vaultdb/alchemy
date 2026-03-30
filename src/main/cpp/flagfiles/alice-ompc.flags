@@ -1,0 +1,6 @@
+#run test from src/main/cpp like this: "./bin/{test_name} --flagfile=flagfiles/alice.flags ..."
+#be careful when typing these: errors in flagfiles are silently suppressed
+--party=1
+--flagfile=flagfiles/cutoff.flags
+--flagfile=flagfiles/filter.flags
+--flagfile=flagfiles/db_names.flags
